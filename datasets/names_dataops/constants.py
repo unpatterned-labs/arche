@@ -31,7 +31,7 @@ UNIQUE_NAMES_JSONL_PATH = DATA_DIR / "african_names_unique_v1.jsonl"
 DEFAULT_COUNTRY_SCOPE = "west_east_core16"
 DEFAULT_WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
 DEFAULT_SOURCE_LICENSE = "CC0-1.0 (Wikidata)"
-DEFAULT_USER_AGENT = "arche-names-dataops/1.0 (https://github.com/Plehthore/arche)"
+DEFAULT_USER_AGENT = "arche-names-dataops/1.0 (https://github.com/unpatterned-labs/arche)"
 
 COUNTRY_SCOPE_CORE16: dict[str, str] = {
     "NG": "Q1033",  # Nigeria

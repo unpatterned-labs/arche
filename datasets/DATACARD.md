@@ -47,7 +47,7 @@ source_datasets: []
 
 ## Dataset Description
 
-- **Homepage:** https://github.com/unpatterned-labs/archetree/main/datasets
+- **Homepage:** https://github.com/unpatterned-labs/arche/tree/main/datasets
 - **Repository:** https://github.com/Plehthore/arche
 - **Paper:** N/A
 - **Point of Contact:** datasets@unpatterned.ai
@@ -227,23 +227,21 @@ This dataset contains **no personal data**. It consists entirely of common name 
 
 ### Dataset Curators
 
-This dataset is maintained by [unpatterned.ai](https://unpatterned.ai), a non-profit research initiative focused on cognitive infrastructure for frontier systems.
+This dataset is maintained by [unpatterned.org](https://unpatterned.org), a non-profit research initiative focused on Open infrastructure for how the world is represented in data, identity, and intelligence.
 
 ### Licensing Information
 
 This dataset is released under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC-BY-NC-SA 4.0)** license.
 
 - **Non-commercial use** (academic research, government DPI deployments, non-profit projects, open-source DPI integrations): Free to use with attribution
-- **Commercial use** (SaaS products, KYC/AML platforms, fintech deduplication): Requires a commercial license from unpatterned.ai
-
-Contact licensing@unpatterned.ai for commercial licensing. Pricing is by deployment scale, not per-record, with generous terms for startups and African-headquartered companies.
+- **Commercial use** (SaaS products, KYC/AML platforms, fintech deduplication): Requires a commercial license from unpatterned.org
 
 ### Citation Information
 
 ```bibtex
 @misc{arche_naming_2026,
   title={African Cultural Naming Intelligence Dataset: Name Equivalence Groups for African Identity Resolution},
-  author={unpatterned.ai},
+  author={unpatterned.org},
   year={2026},
   howpublished={\url{https://huggingface.co/datasets/unpatterned/african-cultural-naming}},
   note={114 equivalence groups covering 454 name forms across 20+ African ethnic/linguistic traditions}
@@ -252,13 +250,13 @@ Contact licensing@unpatterned.ai for commercial licensing. Pricing is by deploym
 
 ```
 arche Cultural Naming Dataset: Name equivalence groups for 20+ African
-ethnic naming traditions. unpatterned.ai, 2026.
+ethnic naming traditions. unpatterned.org, 2026.
 https://huggingface.co/datasets/unpatterned/african-cultural-naming
 ```
 
 ### Contributions
 
-We welcome contributions, especially for underrepresented traditions. See the [contribution guide](https://github.com/unpatterned-labs/archetree/main/datasets#contributing) for instructions.
+We welcome contributions, especially for underrepresented traditions. See the [contribution guide](https://github.com/unpatterned-labs/arche/tree/main/datasets#contributing) for instructions.
 
 Priority areas for expansion:
 - Central African naming traditions (Kinyarwanda, Kirundi, Lingala)
