@@ -50,7 +50,7 @@ docker-compose.override.yml
 # Database
 *.db
 
-datasets/
+
 demo/outputs/
 
 datasets/compliance/
