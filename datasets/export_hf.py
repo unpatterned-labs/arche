@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# Copyright 2026 unpatterned.ai
-#
 # Licensed under CC-BY-NC-SA 4.0 (dataset) / Apache 2.0 (this script).
 # See DATASET_LICENSE.md for dataset terms.
 

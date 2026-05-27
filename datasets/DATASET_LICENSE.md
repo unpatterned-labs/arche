@@ -2,7 +2,7 @@
 
 ## Apache License, Version 2.0
 
-Copyright 2026 unpatterned.ai
+Copyright 2026 unpatterned.org
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ By submitting a pull request to this dataset, you agree to license your contribu
 ```bibtex
 @misc{arche_naming_2026,
   title={African Cultural Naming Intelligence Dataset},
-  author={unpatterned.ai},
+  author={unpatterned.org},
   year={2026},
   howpublished={\url{https://huggingface.co/datasets/unpatterned/african-cultural-naming}},
   note={114+ equivalence groups covering 454 name forms across 50+ ethnic traditions}

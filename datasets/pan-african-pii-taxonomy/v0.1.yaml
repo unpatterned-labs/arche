@@ -5,7 +5,7 @@
 # An open hierarchical taxonomy of personally identifying information
 # categories with explicit attention to African contexts.  Published as
 # a digital public good under CC-BY-4.0 by Unpatterned Labs CIC as part
-# of the arche-core identity workflow framework (https://unpatterned.ai).
+# of the arche-core identity workflow framework (https://unpatterned.org).
 #
 # This file is the source of truth for the category labels that
 # arche-core uses in:
@@ -14,8 +14,6 @@
 #   - arche.workflow.Pipeline.Result       (PolicyOutcome.category)
 #   - arche.credentials.sd_jwt             (disclosable claim names)
 #
-# Versioning policy: v0.1 is the Stage-1 working draft drafted by
-# Unpatterned Labs.  v1.0 will be reviewed in consultation with the
 # Nigerian NDPC, Kenyan ODPC, South African Information Regulator,
 # and Ghanaian Data Protection Commission per the Stage 1 PRD §11.2
 # and the arche Business Plan v0.2 §10.
@@ -24,12 +22,8 @@
 # https://creativecommons.org/licenses/by/4.0/
 #
 # Cite as: Unpatterned Labs (2026). Pan-African PII Taxonomy v0.1.
-#          https://github.com/unpatterned/arche/datasets/pan-african-pii-taxonomy
+#          https://github.com/unpatterned-labs/arche/datasets/pan-african-pii-taxonomy
 #
-# Companion documents:
-#   - Arche Stage 1 Technical PRD §4.3 (Detector taxonomy)
-#   - Arche Stage 1 Technical PRD §4.4 (Identity class)
-#   - Arche Business Plan v0.2 §6 (Architecture)
 #
 # ====================================================================
 
