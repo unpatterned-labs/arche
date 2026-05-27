@@ -1,0 +1,111 @@
+{
+  "additionalProperties": false,
+  "description": "Normalized name record used for candidate generation.",
+  "properties": {
+    "contains_apostrophe": {
+      "title": "Contains Apostrophe",
+      "type": "boolean"
+    },
+    "contains_hyphen": {
+      "title": "Contains Hyphen",
+      "type": "boolean"
+    },
+    "country_iso2": {
+      "maxLength": 2,
+      "minLength": 2,
+      "title": "Country Iso2",
+      "type": "string"
+    },
+    "evidence_count": {
+      "minimum": 1,
+      "title": "Evidence Count",
+      "type": "integer"
+    },
+    "fetched_at": {
+      "format": "date-time",
+      "title": "Fetched At",
+      "type": "string"
+    },
+    "had_diacritics": {
+      "title": "Had Diacritics",
+      "type": "boolean"
+    },
+    "language_tag": {
+      "minLength": 2,
+      "title": "Language Tag",
+      "type": "string"
+    },
+    "name_ascii_key": {
+      "minLength": 1,
+      "title": "Name Ascii Key",
+      "type": "string"
+    },
+    "name_display": {
+      "minLength": 1,
+      "title": "Name Display",
+      "type": "string"
+    },
+    "name_nfc": {
+      "minLength": 1,
+      "title": "Name Nfc",
+      "type": "string"
+    },
+    "name_type": {
+      "enum": [
+        "given",
+        "family"
+      ],
+      "title": "Name Type",
+      "type": "string"
+    },
+    "script": {
+      "minLength": 1,
+      "title": "Script",
+      "type": "string"
+    },
+    "source": {
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "source_id": {
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_license": {
+      "minLength": 1,
+      "title": "Source License",
+      "type": "string"
+    },
+    "was_casefolded": {
+      "title": "Was Casefolded",
+      "type": "boolean"
+    },
+    "was_trimmed": {
+      "title": "Was Trimmed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "source",
+    "source_id",
+    "source_license",
+    "name_type",
+    "country_iso2",
+    "language_tag",
+    "evidence_count",
+    "fetched_at",
+    "name_display",
+    "name_nfc",
+    "name_ascii_key",
+    "was_trimmed",
+    "was_casefolded",
+    "had_diacritics",
+    "contains_apostrophe",
+    "contains_hyphen",
+    "script"
+  ],
+  "title": "NormalizedNameV1",
+  "type": "object"
+}

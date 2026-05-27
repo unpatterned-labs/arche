@@ -1,0 +1,59 @@
+name: Names Validate
+
+on:
+  pull_request:
+    paths:
+      - "datasets/**"
+      - ".github/workflows/names_*.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml pydantic pytest
+
+      - name: Validate schema files
+        run: |
+          if [ -f datasets/review/raw_name_evidence_v1.jsonl ]; then
+            python -m datasets.names_pipeline validate_schema --schema raw --input datasets/review/raw_name_evidence_v1.jsonl
+          fi
+          if [ -f datasets/review/normalized_names_v1.jsonl ]; then
+            python -m datasets.names_pipeline validate_schema --schema normalized --input datasets/review/normalized_names_v1.jsonl
+          fi
+          if [ -f datasets/review/candidate_equivalences_v1.jsonl ]; then
+            python -m datasets.names_pipeline validate_schema --schema candidate --input datasets/review/candidate_equivalences_v1.jsonl
+          fi
+          if [ -f datasets/data/african_naming_equivalences_enriched.csv ]; then
+            python -m datasets.names_pipeline validate_schema --schema published --input datasets/data/african_naming_equivalences_enriched.csv
+          fi
+          if [ -f datasets/data/african_names_lexicon_v1.csv ]; then
+            python -m datasets.names_pipeline validate_schema --schema lexicon --input datasets/data/african_names_lexicon_v1.csv
+          fi
+
+      - name: Deterministic generation check
+        run: |
+          if [ -f datasets/review/normalized_names_v1.jsonl ]; then
+            python -m datasets.names_pipeline materialize_lexicon \
+              --lexicon-csv /tmp/lexicon_a.csv \
+              --lexicon-jsonl /tmp/lexicon_a.jsonl
+            python -m datasets.names_pipeline materialize_lexicon \
+              --lexicon-csv /tmp/lexicon_b.csv \
+              --lexicon-jsonl /tmp/lexicon_b.jsonl
+            diff /tmp/lexicon_a.csv /tmp/lexicon_b.csv
+            diff /tmp/lexicon_a.jsonl /tmp/lexicon_b.jsonl
+          fi
+
+      - name: Run dataset pipeline tests
+        run: |
+          pytest -q datasets/tests

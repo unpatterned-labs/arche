@@ -1,0 +1,116 @@
+{
+  "additionalProperties": false,
+  "description": "Reviewable candidate equivalence generated from evidence.",
+  "properties": {
+    "candidate_id": {
+      "minLength": 1,
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "canonical": {
+      "minLength": 1,
+      "title": "Canonical",
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "conflict_flag": {
+      "default": false,
+      "title": "Conflict Flag",
+      "type": "boolean"
+    },
+    "countries": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Countries",
+      "type": "array"
+    },
+    "evidence_summary": {
+      "minLength": 1,
+      "title": "Evidence Summary",
+      "type": "string"
+    },
+    "languages": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Languages",
+      "type": "array"
+    },
+    "name_type": {
+      "enum": [
+        "given",
+        "family"
+      ],
+      "title": "Name Type",
+      "type": "string"
+    },
+    "reviewer_notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewer Notes"
+    },
+    "source": {
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "source_license": {
+      "minLength": 1,
+      "title": "Source License",
+      "type": "string"
+    },
+    "status": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "suggested_tradition": {
+      "minLength": 1,
+      "title": "Suggested Tradition",
+      "type": "string"
+    },
+    "variant": {
+      "minLength": 1,
+      "title": "Variant",
+      "type": "string"
+    },
+    "wikidata_qids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Wikidata Qids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "canonical",
+    "variant",
+    "name_type",
+    "suggested_tradition",
+    "confidence",
+    "evidence_summary",
+    "source",
+    "source_license"
+  ],
+  "title": "CandidateEquivalenceV1",
+  "type": "object"
+}

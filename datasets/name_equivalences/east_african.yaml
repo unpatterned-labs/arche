@@ -1,0 +1,88 @@
+# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
+tradition: East African names (Swahili, Luo, Amharic, Tigrinya, Somali)
+groups:
+- canonical: Juma
+  variants:
+  - Djuma
+  - Jouma
+- canonical: Baraka
+  variants:
+  - Barack
+  - Barrack
+- canonical: Amani
+  variants:
+  - Amány
+- canonical: Tekle
+  variants:
+  - Teklé
+  - Tekla
+  - Teklè
+- canonical: Haile
+  variants:
+  - Hailé
+  - Haylè
+  - Hayle
+- canonical: Abebe
+  variants:
+  - Abèbè
+  - Abäbä
+- canonical: Getachew
+  variants:
+  - Getatchew
+  - Getachaw
+- canonical: Abdi
+  variants:
+  - Abdirahman
+  - Abdikarim
+  - Abdiqani
+- canonical: Aden
+  variants:
+  - Aadan
+  - Aaden
+- canonical: Ochieng
+  variants:
+  - Otieng
+  - Ochieng'
+- canonical: Onyango
+  variants:
+  - Nyango
+  - Nyong'o
+- canonical: Akinyi
+  variants:
+  - Akiny
+  - Akini
+- canonical: Odhiambo
+  variants:
+  - Adhiambo
+  - Atieno
+- canonical: Owuor
+  variants:
+  - Owuour
+  - Ouwor
+- canonical: Berhe
+  variants:
+  - Berhé
+  - Birhe
+- canonical: Tesfaye
+  variants:
+  - Tesfay
+  - Tesfa
+- canonical: Gebremedhin
+  variants:
+  - Ghebremedhin
+  - Gibremedhin
+- canonical: Abrehet
+  variants:
+  - Abrahet
+  - Abreha
+- canonical: Mwalimu
+  variants:
+  - Mualimu
+- canonical: Rehema
+  variants:
+  - Rahma
+  - Rahmah
+- canonical: Zawadi
+  variants:
+  - Zawadie

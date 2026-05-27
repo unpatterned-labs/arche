@@ -1,0 +1,53 @@
+# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
+tradition: Southern African names (Zulu, Xhosa, Tswana, Sotho)
+groups:
+- canonical: Nkomo
+  variants:
+  - Nkhomo
+  - Ngomo
+- canonical: Mandela
+  variants:
+  - Madela
+- canonical: Dlamini
+  variants:
+  - Dhlamini
+  - Ndlamini
+- canonical: Mwangi
+  variants:
+  - Wangi
+- canonical: Kamau
+  variants:
+  - Kamao
+- canonical: Ndlovu
+  variants:
+  - Ndhlovu
+  - Dhlovu
+- canonical: Modise
+  variants:
+  - Modishe
+- canonical: Mokone
+  variants:
+  - Mogane
+  - Mokhone
+- canonical: Thabo
+  variants:
+  - Thabiso
+  - Thabs
+- canonical: Lerato
+  variants:
+  - Leratu
+- canonical: Mpho
+  variants:
+  - Mpho-Mary
+  - Neo
+- canonical: Sipho
+  variants:
+  - Sifiso
+- canonical: Nomusa
+  variants:
+  - Nomusá
+- canonical: Thandiwe
+  variants:
+  - Thandeka
+  - Thandi

@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+web/node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Next.js
+web/.next/
+web/out/
+
+# Build
+dist/
+
+# Built mkdocs output — regenerate with `cd docs-site && mkdocs build`.
+# Source of truth is docs-site/docs/. Built site/ should not be tracked.
+docs-site/site/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.db
+
+# Generated dataset exports (re-generate with: python datasets/export_hf.py)
+datasets/data/
+demo/outputs/
+
+datasets/compliance/
+
+
+CODEX_PLAN.md
+CODEX_PLAN_2.md
+RUNBOOK.md
+/scripts
+# Docs: track architecture / strategy / plan docs; ignore working drafts.
+# Pattern: ignore everything under /docs/, then re-include named docs that
+# follow our architecture-doc convention (UPPER_SNAKE_CASE .md or numbered
+# strategy docs). `docs-site/docs/` is the mkdocs source tree and stays
+# tracked separately.
+/docs/*.docx
+/docs/*
+!/docs/ARCHE_*.md
+!/docs/*PLAN*.md
+!/docs/HOW_*.md
+!/docs/LLM_*.md
+!/docs/ARCHITECTURE_*.md
+!/docs/archive/
+!/docs/archive/**
+
+/workbook

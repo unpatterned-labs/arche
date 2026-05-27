@@ -1,0 +1,532 @@
+# ====================================================================
+# Pan-African PII Taxonomy v0.1
+# ====================================================================
+#
+# An open hierarchical taxonomy of personally identifying information
+# categories with explicit attention to African contexts.  Published as
+# a digital public good under CC-BY-4.0 by Unpatterned Labs CIC as part
+# of the arche-core identity workflow framework (https://unpatterned.ai).
+#
+# This file is the source of truth for the category labels that
+# arche-core uses in:
+#   - arche.policy.statutes/*.yaml         (per-statute action mappings)
+#   - arche.detect.*                       (detection emissions)
+#   - arche.workflow.Pipeline.Result       (PolicyOutcome.category)
+#   - arche.credentials.sd_jwt             (disclosable claim names)
+#
+# Versioning policy: v0.1 is the Stage-1 working draft drafted by
+# Unpatterned Labs.  v1.0 will be reviewed in consultation with the
+# Nigerian NDPC, Kenyan ODPC, South African Information Regulator,
+# and Ghanaian Data Protection Commission per the Stage 1 PRD §11.2
+# and the arche Business Plan v0.2 §10.
+#
+# License: CC-BY-4.0 (Creative Commons Attribution 4.0 International)
+# https://creativecommons.org/licenses/by/4.0/
+#
+# Cite as: Unpatterned Labs (2026). Pan-African PII Taxonomy v0.1.
+#          https://github.com/unpatterned/arche/datasets/pan-african-pii-taxonomy
+#
+# Companion documents:
+#   - Arche Stage 1 Technical PRD §4.3 (Detector taxonomy)
+#   - Arche Stage 1 Technical PRD §4.4 (Identity class)
+#   - Arche Business Plan v0.2 §6 (Architecture)
+#
+# ====================================================================
+
+version: "0.1.1"
+schema: "pan-african-pii-taxonomy/v0.1"
+published: 2026-06-09
+updated: 2026-05-22
+maintainer: "Unpatterned Labs CIC <hello@unpatterned.ai>"
+license: "CC-BY-4.0"
+citation: "Unpatterned Labs (2026). Pan-African PII Taxonomy v0.1.1."
+status: "working-draft"
+review_status: "Pending DPA consultation in Stage 1 month 7 (per PRD §11.2)"
+
+# v0.1.1 additions (additive over v0.1):
+#   - PII-2-DID           — W3C decentralized identifiers
+#   - PII-4-LOCATION      — bare city / region mentions (gazetteer-backed)
+#   - PII-5-CRYPTO_WALLET — Bitcoin + Ethereum wallet addresses
+# All three are emitted by detector modules that shipped in v0.2.0a2.
+
+# --------------------------------------------------------------------
+# Identity classes
+# --------------------------------------------------------------------
+# Every PII category carries an `identity_class` field per PRD §4.4.
+# This four-class taxonomy distinguishes how an identifier was issued
+# and what level of trust it confers.
+
+identity_classes:
+  foundational:
+    description: "Root national identifiers issued by a foundational identity authority. The base of the DPI identity stack."
+    examples: ["NIN (Nigeria)", "SA ID (South Africa)", "Ghana Card", "Huduma (Kenya)", "Fayda (Ethiopia)"]
+
+  functional:
+    description: "Purpose-specific identifiers issued by a sector regulator or service provider. Derivative of foundational identity but used for one functional domain."
+    examples: ["BVN (banking, Nigeria)", "TIN (tax)", "Passport", "Driver's licence", "Voter card (PVC)", "KRA PIN (tax, Kenya)", "NHIF (health insurance, Kenya)"]
+
+  federated:
+    description: "Third-party-verified identifiers (typically commercial). Trusted within their issuing ecosystem."
+    examples: ["OAuth email (Google account)", "Mobile-money wallet identity (M-Pesa, MoMo, Wave)", "Bank account"]
+
+  inferred:
+    description: "Quasi-identifiers or attributes that are not themselves identifiers but in combination can re-identify a person."
+    examples: ["Date of birth alone", "Address alone", "Phone number alone", "Financial bracket"]
+    quasi_identifier: true
+
+# --------------------------------------------------------------------
+# PII categories (hierarchical)
+# --------------------------------------------------------------------
+# The taxonomy is organised under nine top-level groups per PRD §4.3.
+# Each entry has:
+#   - code:            stable identifier used as the category string
+#                      (e.g., the action key in arche.policy.statutes YAMLs)
+#   - name:            human-readable label
+#   - description:     one-paragraph definition
+#   - identity_class:  foundational | functional | federated | inferred
+#   - examples:        illustrative values (anonymised / synthetic)
+#   - regex_hint:      a sketch of the detection regex (not authoritative)
+#   - detected_by:     arche module(s) that emit this category today
+#   - notes:           optional clarifications, statute references
+
+categories:
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-1 — Direct person identifiers
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-1-NAME
+    name: "Person name"
+    description: "A given name, family name, or full personal name. African contexts include praise names (Yoruba oríkì), patronymic chains (Ethiopian, Eritrean), clan names (isiZulu), and code-mixed mononyms."
+    identity_class: foundational
+    examples:
+      - "Adesola Okonkwo"
+      - "Fatima Abdullahi"
+      - "Thabo Mokoena"
+      - "Kofi Mensah"
+      - "Wanjiru Kamau"
+    detected_by: ["arche.detect.gliner", "arche.detect.presidio", "arche.detect._names.lexicon"]
+    notes: "Stage 2 expansion: praise-name, oríkì, kunya (Hausa nicknames), and Habesha patronymic patterns."
+
+  - code: PII-1-PRAISE_NAME
+    name: "Praise name / oríkì / kunya"
+    description: "Cultural praise names used as person identifiers in African oral and written traditions. Distinct from family-name patterns; often poetic phrases."
+    identity_class: foundational
+    examples: ["Omoba", "Yeye", "Bara"]
+    detected_by: []
+    notes: "Stage 2 dataset work via the Afro-PII corpus."
+
+  - code: PII-1-CLAN_NAME
+    name: "Clan or family-line name"
+    description: "Multi-generational lineage identifiers (isiZulu izithakazelo, Akan abusua, etc.)."
+    identity_class: foundational
+    examples: ["Zwide", "Bretuo", "Oyoko"]
+    detected_by: []
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-2 — Government-issued identifiers
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-2-NIN
+    name: "Nigerian NIN"
+    description: "Nigeria National Identification Number — 11 digits, NIMC-issued. Foundational identifier under the NIMC Act."
+    identity_class: foundational
+    examples: ["12345678901"]
+    regex_hint: '(?<!\d)\d{11}(?!\d)'
+    detected_by: ["arche.detect.ng.ids"]
+    notes: "Check-digit algorithm not publicly documented; arche validates format only at v0.2."
+
+  - code: PII-2-BVN
+    name: "Nigerian BVN"
+    description: "Bank Verification Number — 11 digits starting with 22. NIBSS-issued under the CBN BVN Policy 2014."
+    identity_class: functional
+    examples: ["22156789012"]
+    regex_hint: '(?<!\d)22\d{9}(?!\d)'
+    detected_by: ["arche.detect.ng.ids"]
+
+  - code: PII-2-TIN
+    name: "Tax Identification Number"
+    description: "Tax authority-issued identifier. Format and length vary per jurisdiction (NG: 10 digits FIRS; KE: A/P+9+letter KRA PIN; ZA: 10 digits SARS; GH: 1 letter+10 digits GRA)."
+    identity_class: functional
+    examples: ["1234567890", "A000123456P", "P0123456789"]
+    detected_by: ["arche.detect.{ng,ke,za,gh}.ids"]
+
+  - code: PII-2-RC
+    name: "Company Registration Number"
+    description: "CAC-issued (Nigeria) company or business name registration number. Public per CAC; classed as retained in NDPA-2023 policy."
+    identity_class: federated
+    examples: ["RC245678", "BN567890"]
+    regex_hint: '(?:RC|BN)\s?\d{5,8}'
+    detected_by: ["arche.detect.ng.ids"]
+
+  - code: PII-2-PVC
+    name: "Permanent Voter Card"
+    description: "INEC-issued voter registration number (Nigeria). 19-character alphanumeric."
+    identity_class: functional
+    examples: ["90 AB CD EF 1234 567 8901"]
+    detected_by: ["arche.detect.ng.ids"]
+
+  - code: PII-2-DRIVERS_LICENCE
+    name: "Driver's licence"
+    description: "Driver's licence identifier. Format varies by country and (in Nigeria) by state code."
+    identity_class: functional
+    examples: ["AAA-12345678901"]
+    detected_by: ["arche.detect.ng.ids"]
+
+  - code: PII-2-NATIONAL_ID
+    name: "National ID (generic)"
+    description: "Foundational national identity number for countries other than Nigeria (Kenya: 7-8 digits; South Africa: 13 digits + Luhn + structural; Ghana Card: GHA-NNNNNNNNN-N)."
+    identity_class: foundational
+    examples: ["12345678 (KE)", "8001015009087 (ZA)", "GHA-123456789-0 (GH)"]
+    detected_by: ["arche.detect.{ke,za,gh}.ids"]
+
+  - code: PII-2-KRA_PIN
+    name: "Kenya KRA PIN"
+    description: "Kenya Revenue Authority tax identification number. Format: A/P + 9 digits + letter."
+    identity_class: functional
+    examples: ["A000123456P"]
+    regex_hint: '[AP]\d{9}[A-Z]'
+    detected_by: ["arche.detect.ke.ids"]
+
+  - code: PII-2-NHIF
+    name: "Kenya NHIF"
+    description: "National Hospital Insurance Fund member number (Kenya). 8-9 digits."
+    identity_class: functional
+    examples: ["12345678", "123456789"]
+    detected_by: ["arche.detect.ke.ids"]
+
+  - code: PII-2-TAX_REFERENCE
+    name: "Tax reference number"
+    description: "South African Revenue Service tax reference. 10 digits, first digit in {0,1,2,3,9}."
+    identity_class: functional
+    examples: ["1234567890"]
+    detected_by: ["arche.detect.za.ids"]
+
+  - code: PII-2-PASSPORT
+    name: "Passport number"
+    description: "Issued by national passport authority. Format varies (ZA: letter + 8 digits)."
+    identity_class: functional
+    examples: ["A12345678 (ZA)"]
+    detected_by: ["arche.detect.za.ids"]
+
+  - code: PII-2-GHANA_CARD
+    name: "Ghana Card"
+    description: "Ghana NIA-issued national identity card. Format: GHA-NNNNNNNNN-N."
+    identity_class: foundational
+    examples: ["GHA-123456789-0"]
+    detected_by: ["arche.detect.gh.ids"]
+
+  - code: PII-2-SSNIT
+    name: "Ghana SSNIT"
+    description: "Social Security and National Insurance Trust number (Ghana). 13 chars, letter prefix + alphanumeric."
+    identity_class: functional
+    examples: ["C123456789012"]
+    detected_by: ["arche.detect.gh.ids"]
+
+  - code: PII-2-FAYDA
+    name: "Ethiopia Fayda"
+    description: "Foundational ID for Ethiopia under the MOSIP-based national ID rollout."
+    identity_class: foundational
+    examples: []
+    detected_by: []
+    notes: "Stage 3 detector pending Fayda format publication."
+
+  - code: PII-2-HUDUMA
+    name: "Kenya Huduma Namba"
+    description: "Foundational ID issued under the Huduma Namba programme (Kenya). 9 digits."
+    identity_class: foundational
+    examples: []
+    detected_by: []
+    notes: "Stage 2 detector. Distinct from the 7-8 digit National ID."
+
+  - code: PII-2-DID
+    name: "W3C Decentralized Identifier (DID)"
+    description: "Self-sovereign decentralized identifier per the W3C DID specification. Format: `did:METHOD:METHOD_SPECIFIC_ID`. Known methods include did:key (self-describing keys), did:web (DNS-anchored), did:ion (Microsoft / Sidetree), did:ethr (Ethereum-anchored), did:polygon, did:jwk, did:pkh, did:indy, did:sov."
+    identity_class: federated
+    examples: ["did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSrnQ", "did:web:example.com", "did:ion:EiClkZMDxPKqC9c-umQfTkR8vvZ9JPhl_xLDI9Nfk38w5w"]
+    regex_hint: "did:[a-z0-9]+:[A-Za-z0-9._:-]+"
+    detected_by: ["arche.detect.digital_id"]
+    notes: "Added in taxonomy v0.1.1. Known methods detected at confidence 1.0; unknown methods at 0.7."
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-3 — Contact information
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-3-PHONE
+    name: "Phone number"
+    description: "Telephone or mobile number in any local or international format. Normalised to E.164 by arche.detect._africa.phones via libphonenumber."
+    identity_class: inferred
+    examples: ["+234 803 555 7890", "0803 555 7890", "+254 712 345 678"]
+    detected_by: ["arche.detect._africa.phones"]
+
+  - code: PII-3-EMAIL
+    name: "Email address"
+    description: "RFC 5322 email address."
+    identity_class: federated
+    examples: ["jane.doe@example.com"]
+    detected_by: ["arche.detect.presidio"]
+
+  - code: PII-3-SOCIAL_HANDLE
+    name: "Social media handle"
+    description: "User identifier on a social platform (Twitter/X @handle, Instagram @user, Facebook profile, etc.)."
+    identity_class: federated
+    examples: ["@adesola_o", "@thabo.m"]
+    detected_by: []
+
+  - code: PII-3-MESSAGING_HANDLE
+    name: "Messaging app handle"
+    description: "WhatsApp / Telegram / Signal phone-anchored handle. Often equivalent to PII-3-PHONE."
+    identity_class: federated
+    examples: []
+    detected_by: []
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-4 — Locational identifiers (handled by arche.addr)
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-4-ADDRESS
+    name: "Postal or street address"
+    description: "Physical address. African contexts include landmark-anchored addresses (\"behind the Total filling station, Madina Junction\"), compound addresses, and informal addresses without postal codes."
+    identity_class: inferred
+    examples: ["7B Allen Avenue, Ikeja, Lagos, Nigeria", "Plot 3 Madina Junction, near Total Filling Station, Accra"]
+    detected_by: ["arche.addr"]
+
+  - code: PII-4-GPS_COORDINATES
+    name: "GPS coordinates"
+    description: "Latitude/longitude pair narrow enough to identify a specific dwelling."
+    identity_class: inferred
+    examples: ["6.5244° N, 3.3792° E"]
+    detected_by: []
+
+  - code: PII-4-LANDMARK_ANCHOR
+    name: "Landmark anchor reference"
+    description: "\"Behind X\", \"near Y\", \"opposite Z\" — a re-identifying spatial reference common in African informal addressing."
+    identity_class: inferred
+    examples: ["behind the Total filling station", "near Madina Mosque"]
+    detected_by: ["arche.addr"]
+
+  - code: PII-4-LOCATION
+    name: "City or region mention"
+    description: "Bare mention of a city or administrative region without surrounding address structure. Distinct from PII-4-ADDRESS (full street address) — captures the 'travelled to Lagos' or 'based in Nairobi' case. The arche.detect.locations gazetteer covers 100+ African cities including aliases (e.g., Lagos / Eko / Lasgidi)."
+    identity_class: inferred
+    examples: ["Lagos", "Cape Town", "Nairobi", "Accra", "Lasgidi"]
+    detected_by: ["arche.detect.locations"]
+    notes: "Added in taxonomy v0.1.1. Generally low-tier (public-record); statute YAMLs may override per-jurisdiction."
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-5 — Financial identifiers
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-5-BANK_ACCOUNT
+    name: "Bank account number"
+    description: "Sort-code-plus-account-number, NUBAN (Nigeria 10-digit), or country-specific account format."
+    identity_class: functional
+    examples: ["0123456789"]
+    detected_by: ["arche.detect.presidio"]
+
+  - code: PII-5-IBAN
+    name: "IBAN"
+    description: "International Bank Account Number, ISO 13616. Two-letter country code + check digits + BBAN."
+    identity_class: functional
+    examples: ["GB29 NWBK 6016 1331 9268 19"]
+    detected_by: ["arche.detect.presidio"]
+
+  - code: PII-5-CRYPTO_WALLET
+    name: "Cryptocurrency wallet address"
+    description: "Public address for a cryptocurrency wallet — Bitcoin (base58check P2PKH/P2SH or bech32 SegWit) or Ethereum (0x + 40 hex chars, optionally EIP-55 mixed-case checksummed). Functional financial identifier in jurisdictions that regulate VASPs."
+    identity_class: federated
+    examples: ["1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"]
+    regex_hint: "BTC: [13][a-km-zA-HJ-NP-Z1-9]{25,34} | bc1[a-z0-9]{6,87} ; ETH: 0x[a-fA-F0-9]{40}"
+    detected_by: ["arche.detect.digital_id"]
+    notes: "Added in taxonomy v0.1.1. v0.2.0a2 ships shape-only validation; full EIP-55 / base58check checksum verification is v0.3 work."
+
+  - code: PII-5-CARD
+    name: "Payment card primary account number (PAN)"
+    description: "13-19 digit payment card number. PCI-DSS sensitive."
+    identity_class: functional
+    examples: ["4111 1111 1111 1111"]
+    detected_by: ["arche.detect.presidio"]
+
+  - code: PII-5-MPESA_REF
+    name: "M-Pesa transaction reference"
+    description: "Safaricom M-Pesa transaction ID, e.g., MPB000001A. Format varies; arche emits this for any African mobile-money reference where the provider can be inferred."
+    identity_class: federated
+    examples: ["MPB7H4Q12W"]
+    detected_by: []
+    notes: "Stage 2 detector targeting M-Pesa, MTN MoMo, Vodafone Cash, Wave, Airtel Money."
+
+  - code: PII-5-MOMO_REF
+    name: "MTN MoMo / mobile-money reference"
+    description: "MTN Mobile Money transaction reference (Ghana, Uganda, Cameroon, Côte d'Ivoire, Rwanda, Zambia)."
+    identity_class: federated
+    examples: []
+    detected_by: []
+
+  - code: PII-5-WALLET
+    name: "Crypto wallet address"
+    description: "Public blockchain address (Bitcoin, Ethereum, etc.). Re-identifying because public ledgers expose transaction graphs."
+    identity_class: federated
+    examples: []
+    detected_by: []
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-6 — Sensitive attributes (special category data)
+  # ────────────────────────────────────────────────────────────────
+  # All NDPA s.32 / POPIA s.26 / Kenya DPA s.44 / Ghana DPA s.20
+  # special-category data lives here. Default policy is `drop` across
+  # all four launch statutes.
+
+  - code: PII-6-HEALTH
+    name: "Health data"
+    description: "Medical conditions, diagnoses, treatments, prescriptions, mental health, genetic data. Special category data across all launch statutes."
+    identity_class: inferred
+    examples: ["diabetes", "HIV status"]
+    detected_by: ["arche.detect.gliner"]
+    statute_treatment: "drop"
+
+  - code: PII-6-RACE
+    name: "Race or ethnicity"
+    description: "Race, ethnic origin, or tribal/clan identity. Special category data."
+    identity_class: inferred
+    examples: []
+    detected_by: []
+    statute_treatment: "drop"
+
+  - code: PII-6-RELIGION
+    name: "Religious or philosophical beliefs"
+    description: "Special category data."
+    identity_class: inferred
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-6-SEXUAL_ORIENTATION
+    name: "Sexual orientation"
+    description: "Special category data. Doubly sensitive in jurisdictions where LGBTQ+ identity carries legal risk."
+    identity_class: inferred
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-6-POLITICAL_AFFILIATION
+    name: "Political affiliation"
+    description: "Special category data."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-6-TRADE_UNION
+    name: "Trade union membership"
+    description: "Special category data under POPIA s.26 and equivalents."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-6-CRIMINAL_RECORD
+    name: "Criminal record"
+    description: "Allegations, charges, convictions. Special category data."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-6-REFUGEE_STATUS
+    name: "Refugee or asylum status"
+    description: "Refugee or asylum-seeker identity. Special category data with particular life-safety implications across African contexts."
+    examples: []
+    statute_treatment: "drop"
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-7 — Biometric data references
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-7-FINGERPRINT_REF
+    name: "Fingerprint template reference"
+    description: "A reference (file path, URI, or template hash) to a fingerprint biometric template. The template itself never appears in PII text."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-7-FACE_TEMPLATE
+    name: "Face template reference"
+    description: "Reference to a face-recognition biometric template."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-7-IRIS_TEMPLATE
+    name: "Iris template reference"
+    description: "Reference to an iris biometric template."
+    examples: []
+    statute_treatment: "drop"
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-8 — Behavioural and digital footprint
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-8-IP_ADDRESS
+    name: "IP address"
+    description: "IPv4 or IPv6 address. Default arche.policy action is `generalize` (truncate to /24 for IPv4, /48 for IPv6)."
+    examples: ["192.168.1.42", "2001:db8::1"]
+    detected_by: ["arche.detect.presidio"]
+
+  - code: PII-8-DEVICE_ID
+    name: "Device identifier"
+    description: "IMEI, advertising ID, hardware MAC address."
+    examples: []
+
+  - code: PII-8-COOKIE
+    name: "Cookie / session token"
+    description: "Persistent web cookie or session identifier."
+    examples: []
+
+  - code: PII-8-LOGIN
+    name: "Login / username"
+    description: "Account username (distinct from email)."
+    examples: ["adesola_o"]
+
+  - code: PII-8-PASSWORD
+    name: "Password (plaintext)"
+    description: "Plaintext password or password hint. Policy default is `drop` across all statutes (never retain plaintext credentials)."
+    examples: []
+    statute_treatment: "drop"
+
+  - code: PII-8-SESSION_TOKEN
+    name: "Session token"
+    description: "JWT, OAuth bearer token, or other session-bearing credential."
+    examples: []
+    statute_treatment: "drop"
+
+  # ────────────────────────────────────────────────────────────────
+  # PII-9 — Code-mixed and informal identifiers (Stage 2 scope)
+  # ────────────────────────────────────────────────────────────────
+  - code: PII-9-PIDGIN_REFERENCE
+    name: "Nigerian Pidgin re-identifying reference"
+    description: "Pidgin English mentions that re-identify a person via context, often combining a name fragment with a relational marker (e.g., \"my madam Adesola\", \"oga Adekunle\"). Detection requires code-mixed NLP."
+    examples: []
+    detected_by: []
+    notes: "Stage 2 work via the Afro-PII corpus and the arche-core-model-v1 fine-tune."
+
+  - code: PII-9-INFORMAL_ANCHOR
+    name: "Informal kinship anchor"
+    description: "Re-identifying via kinship (\"my cousin\", \"my brother-in-law\") plus context."
+    examples: []
+    detected_by: []
+
+  - code: PII-9-CODE_MIXED_NAME
+    name: "Code-mixed name fragment"
+    description: "Names embedded in mixed-language text (Yoruba-English, Swahili-English, isiZulu-English)."
+    examples: []
+    detected_by: []
+
+# --------------------------------------------------------------------
+# Cross-references
+# --------------------------------------------------------------------
+
+statutes_using_this_taxonomy:
+  - "arche.policy.statutes/NDPA-2023.yaml (Nigeria, v1.0)"
+  - "arche.policy.statutes/POPIA.yaml (South Africa, v0.1-scaffold)"
+  - "arche.policy.statutes/KENYA-DPA.yaml (v0.1-scaffold)"
+  - "arche.policy.statutes/GHANA-DPA.yaml (v0.1-scaffold)"
+
+related_frameworks:
+  - name: "GDPR / Article 4 personal data definition"
+    note: "PII-1..PII-5 map cleanly to GDPR personal data; PII-6 maps to GDPR Article 9 special categories."
+  - name: "ISO/IEC 29100 (privacy framework)"
+    note: "PII-1..PII-8 align with ISO/IEC 29100 personal information categories."
+  - name: "NIST 800-122 (PII confidentiality)"
+    note: "Our identity_class taxonomy is more granular than NIST's PII vs non-PII binary."
+
+# --------------------------------------------------------------------
+# Changelog
+# --------------------------------------------------------------------
+
+changelog:
+  - version: "0.1"
+    date: 2026-06-09
+    notes: "Initial Stage-1 working draft. 9 top-level groups, 40+ categories. Pending DPA consultation per PRD §11.2."

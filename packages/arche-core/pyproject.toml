@@ -1,0 +1,111 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "arche-core"
+version = "0.2.0a1"
+description = "The identity workflow framework. African-first, globally pluggable. Compose detection, resolution, linking, verification, and governance into production identity pipelines. By unpatterned.org."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+authors = [
+    {name = "unpatterned.org"}
+]
+keywords = [
+    "identity-resolution", "entity-resolution", "PII", "DSAR",
+    "digital-public-infrastructure", "Africa", "NDPA", "POPIA",
+    "workflow-framework", "arche", "DPI", "identity-workflows",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# Base install: under 100MB, no mandatory ML or DPI dependencies.
+# Heavy capabilities ship as opt-in extras below per PRD §1 and BP §7.
+dependencies = [
+    "rapidfuzz>=3.0",
+    "jellyfish>=1.0",
+    "networkx>=3.0",
+    "pydantic>=2.0",
+    "h3>=4.0",
+    # libphonenumber Python port (~5MB, pure-Python). Required for PRD
+    # FR-DETECT-9 — country-aware phone number detection and E.164
+    # normalization across all launch jurisdictions plus the 30+ African
+    # countries supported by arche.detect._africa.phones.
+    "phonenumbers>=8.13",
+    # YAML parser for policy/statutes/*.yaml — machine-readable statute
+    # files per PRD §6.4. ~200KB, standard across the ecosystem.
+    "pyyaml>=6.0",
+    # Cryptography stack for arche.sign — Ed25519, did:key, JWS envelope,
+    # and (Stage 2) hybrid PQC signatures. Apache-2.0 + BSD dual-licensed,
+    # ~3MB pure-Python wheels on all platforms. Required for the
+    # sign-share-extract identity workflow (PRD §6.5 in proposal).
+    "cryptography>=43.0",
+    # HTTP client for arche.ingest.from_url (v0.2.0a2). Pure-Python ~500KB,
+    # supports streaming + redirect-following + tight timeout control,
+    # which are all required for the SSRF-guarded web fetch helper.
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+# --- Document ingestion (carried from v0.1, still optional) ----------------
+pdf = ["pymupdf>=1.24"]
+docx = ["python-docx>=1.1"]
+
+# --- v0.2 detector backends (PRD §4) ---------------------------------------
+# GLiNER2-PII via ONNX runtime (~250MB). Multilingual soft-PII detection.
+detect = ["gliner>=0.2.8", "onnxruntime>=1.18"]
+# Microsoft Presidio recognizer plugin (~lightweight).
+presidio = ["presidio-analyzer>=2.2", "presidio-anonymizer>=2.2"]
+# Splink + DuckDB for billion-row entity resolution (~200MB). Stage 2+.
+resolve = ["splink>=4.0", "duckdb>=1.0"]
+
+# --- Per-country detector bundles (PRD §6.1) -------------------------------
+# Currently empty - all African detectors ship in the base install.
+# These bundles exist as forward-compatible namespaces so a Nigerian fintech
+# can `pip install arche-core[ng]` and pin to NG-specific changes without
+# pulling KE/ZA/GH validators it doesn't need (Stage 2+ work).
+ng = []
+ke = []
+za = []
+gh = []
+africa = []
+
+# --- LLM integrations ------------------------------------------------------
+llm = ["openai>=1.0", "anthropic>=0.30"]
+litellm = ["litellm>=1.40"]
+
+# --- Deprecated v0.1 extras (kept for one minor version) -------------------
+# Removed in v0.3. Update your install commands.
+gliner = ["arche-core[detect]"]  # v0.1 name; use [detect]
+pii = ["arche-core[presidio]"]   # v0.1 name; use [presidio]
+splink = ["arche-core[resolve]"] # v0.1 name; use [resolve]
+
+# --- Convenience -----------------------------------------------------------
+all = ["arche-core[pdf,docx,detect,presidio,resolve,llm]"]
+dev = ["pytest>=8.0", "pytest-asyncio", "ruff>=0.4", "mypy>=1.10"]
+
+[project.urls]
+Homepage = "https://unpatterned.org"
+Repository = "https://github.com/unpatterned-labs/arche"
+Documentation = "https://docs.unpatterned.org"
+
+# Note: the v0.1 ``arche`` console script is intentionally NOT shipped in
+# v0.2.0a1. The legacy CLI (``arche resolve``, ``arche extract``,
+# ``arche review``) was built around the v0.1 ``resolve()`` god-function
+# and does not surface the v0.2 framework primitives (Pipeline, sign,
+# verify, dsar). The CLI returns in v0.2.0a2 with v0.2-aware subcommands;
+# until then the Python API (``from arche import Pipeline``) is the
+# entry point for all v0.2 workflows.
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arche"]

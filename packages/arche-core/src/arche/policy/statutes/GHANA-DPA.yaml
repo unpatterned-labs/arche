@@ -1,0 +1,157 @@
+# Ghana Data Protection Act 2012 (Act 843)
+# Stage 1 scaffold — full review with the Data Protection Commission (DPC)
+# scheduled for the Pan-African PII Taxonomy v1.0 consultation cycle.
+#
+# Schema (same across all 4 launch statutes; see NDPA-2023.yaml for the
+# full tier-vs-action explanation):
+#   action — what to DO (mask / tokenize / drop / generalize / audit / retain)
+#   tier   — how SENSITIVE (high / moderate / low; default moderate)
+#
+# Tier assignments below are arche's pre-consultation NIST-800-122-style
+# judgement calls. DPC may adjust them during the v1.0 consultation.
+# See TODOS.md #3.
+
+statute_id: GHANA-DPA
+jurisdiction: GH
+version: v0.1-scaffold
+effective_date: 2012-10-16
+authority: Data Protection Commission (DPC)
+breach_notification_window_hours: 72
+lawful_bases:
+  - consent
+  - performance_of_contract
+  - legal_obligation
+  - protection_of_vital_interests
+  - performance_of_public_task
+  - legitimate_interests
+data_subject_rights:
+  - access
+  - correction
+  - erasure
+  - object
+  - prevent_processing_for_direct_marketing
+
+policy_mappings:
+
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Ghana DPA s.18 (conditions for processing)"
+
+  PII-2-GHANA_CARD:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20, NIA Act"
+    rationale: "Foundational national identifier; NIA Act restricts disclosure."
+
+  PII-2-SSNIT:
+    action: mask
+    tier: moderate
+    statute_reference: "Ghana DPA s.20, National Pensions Act"
+
+  PII-2-TIN:
+    action: mask
+    tier: moderate
+    statute_reference: "Ghana DPA s.20, Revenue Administration Act"
+
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Ghana DPA s.18"
+
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Ghana DPA s.18"
+
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "Ghana DPA s.18"
+
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "Ghana DPA s.18"
+    rationale: "Bare city / region mentions (Accra, Kumasi, Tamale) are public-record; retain for analytics. PII-4-ADDRESS catches full-address cases."
+
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Ghana DPA s.18"
+    rationale: "W3C decentralized identifiers. Tokenize to preserve verification-flow linkage."
+
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20, Bank of Ghana Act"
+
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: moderate
+    statute_reference: "Ghana DPA s.20, BoG Crypto Asset Caution Notice 2018"
+    rationale: "Bitcoin / Ethereum wallet addresses. BoG has issued cautionary guidance on virtual currencies; wallet addresses tied to a customer are functional financial identifiers."
+
+  PII-5-MOMO_REF:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Ghana DPA s.20, BoG E-Money Issuers Guidelines"
+    rationale: "MTN MoMo / Vodafone Cash references — tokenize for analytics."
+
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20 (sensitive personal data)"
+
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-6-RELIGION:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-6-SEXUAL_ORIENTATION:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-6-RACE:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.20"
+
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "Ghana DPA s.18"
+
+  PII-8-PASSWORD:
+    action: drop
+    tier: high
+    statute_reference: "Ghana DPA s.28 (security measures)"
+
+default_action: mask
+default_statute_reference: "Ghana DPA s.18"
+
+retention_limits:
+  default: "Only as long as necessary for the lawful purpose."
+
+cross_border_transfer:
+  permitted_basis:
+    - data_subject_consent
+    - adequacy_assessment
+    - contractual_clauses
+  notes: "Ghana DPA s.47 governs cross-border transfers."

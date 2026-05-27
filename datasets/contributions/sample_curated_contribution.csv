@@ -1,0 +1,3 @@
+source,source_id,source_license,name_raw,name_type,country_iso2,language_tag,evidence_count,fetched_at,canonical,suggested_tradition,reviewer_notes
+manual_csv,curation-001,CC-BY-4.0,Chukwuebuka,given,NG,en,3,2026-01-01T00:00:00+00:00,Chukwu,west_african,Sample entry for schema validation
+manual_csv,curation-002,CC-BY-4.0,N'Diaye,family,SN,fr,2,2026-01-01T00:00:00+00:00,Ndiaye,west_african,Sample family-name variant

@@ -1,0 +1,68 @@
+{
+  "additionalProperties": false,
+  "description": "Raw name evidence from Wikidata or curated CSV sources.",
+  "properties": {
+    "country_iso2": {
+      "maxLength": 2,
+      "minLength": 2,
+      "title": "Country Iso2",
+      "type": "string"
+    },
+    "evidence_count": {
+      "minimum": 1,
+      "title": "Evidence Count",
+      "type": "integer"
+    },
+    "fetched_at": {
+      "format": "date-time",
+      "title": "Fetched At",
+      "type": "string"
+    },
+    "language_tag": {
+      "minLength": 2,
+      "title": "Language Tag",
+      "type": "string"
+    },
+    "name_raw": {
+      "minLength": 1,
+      "title": "Name Raw",
+      "type": "string"
+    },
+    "name_type": {
+      "enum": [
+        "given",
+        "family"
+      ],
+      "title": "Name Type",
+      "type": "string"
+    },
+    "source": {
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "source_id": {
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_license": {
+      "minLength": 1,
+      "title": "Source License",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source",
+    "source_id",
+    "source_license",
+    "name_raw",
+    "name_type",
+    "country_iso2",
+    "language_tag",
+    "evidence_count",
+    "fetched_at"
+  ],
+  "title": "RawNameEvidenceV1",
+  "type": "object"
+}

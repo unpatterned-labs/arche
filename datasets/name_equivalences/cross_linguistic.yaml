@@ -1,0 +1,57 @@
+# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
+tradition: Colonial-era cross-linguistic name adaptations
+groups:
+- canonical: Pierre
+  variants:
+  - Peter
+  - Petros
+  - Pedro
+  - Pita
+- canonical: Jean
+  variants:
+  - John
+  - Yohana
+  - Yahya
+  - Yohannes
+  - Johannes
+  - João
+- canonical: Marie
+  variants:
+  - Mary
+  - Mariya
+  - Maria
+  - Maryamu
+  - Maïmouna
+- canonical: Joseph
+  variants:
+  - Yusuf
+  - José
+  - Yusufu
+  - Josefa
+  - Yussufu
+- canonical: Paul
+  variants:
+  - Paulo
+  - Bulus
+  - Paulu
+  - Pablo
+- canonical: David
+  variants:
+  - Dauda
+  - Dawud
+  - Daouda
+  - Davide
+- canonical: James
+  variants:
+  - Jacques
+  - Yakubu
+  - Jaime
+  - Yaqub
+- canonical: Elizabeth
+  variants:
+  - Élisabeth
+  - Erizabeti
+  - Elisabete
+  - Liz
+  - Beti

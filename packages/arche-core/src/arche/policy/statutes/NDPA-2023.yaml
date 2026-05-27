@@ -1,0 +1,253 @@
+# Nigeria Data Protection Act 2023 — machine-readable statute file
+# Per arche Stage 1 PRD §6.4. Apache-2.0.
+#
+# Each category carries TWO orthogonal fields the policy engine consults:
+#
+#   1. action — what to DO with the detection (PRD §6.3, closed set):
+#        mask       - replace with category-label placeholder ([NIN], [NAME])
+#        tokenize   - replace with deterministic non-reversible token
+#        drop       - remove the span entirely
+#        generalize - replace with a less-specific value (1985-03-14 -> 1985)
+#        audit      - leave in place but record an audit event
+#        retain     - leave in place without an audit event
+#
+#   2. tier — how SENSITIVE the category is (NIST 800-122-style):
+#        high       - foundational gov IDs, biometrics, financial accounts,
+#                     health, special-category demographics. Identity theft
+#                     risk or grave harm if exposed.
+#        moderate   - contact info, employment/education records, less-
+#                     foundational gov IDs (TIN, voter ID, tax reference).
+#                     DEFAULT for unmapped categories.
+#        low        - public information (company registration numbers),
+#                     anonymized or aggregated data.
+#
+# Tier and action axes are independent. A moderate-tier category (PII-1-NAME)
+# can be tokenized (preserve linking utility for analytics) while a high-tier
+# category (PII-2-NIN) gets masked. A moderate-tier government ID like
+# PII-2-TIN is masked because TIN exposure has compliance implications even
+# though TIN itself is less sensitive than NIN. The choice is jurisdiction-
+# and workflow-specific; this YAML is the source of truth.
+#
+# Statute references cite NDPA-2023 section numbers.  Where the action is
+# driven by adjacent regulation (CBN, NIMC), that is noted in the rationale.
+
+statute_id: NDPA-2023
+jurisdiction: NG
+version: v1.0
+effective_date: 2023-06-14
+authority: Nigeria Data Protection Commission (NDPC)
+breach_notification_window_hours: 72
+lawful_bases:
+  - consent
+  - contract
+  - legal_obligation
+  - vital_interests
+  - public_interest
+  - legitimate_interests
+data_subject_rights:
+  - access
+  - rectification
+  - erasure
+  - restrict_processing
+  - data_portability
+  - object
+
+# Per-PII-category action mappings. Categories use the Pan-African PII
+# Taxonomy v0.1 keys (PRD §4.3).
+policy_mappings:
+
+  # ── PII-1 — Direct person identifiers ──────────────────────────────────
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "Direct identifier; tokenization preserves linkage utility for legitimate processing."
+
+  # ── PII-2 — Government-issued identifiers ──────────────────────────────
+  PII-2-NIN:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.30, NIMC Act s.27"
+    rationale: "Foundational identifier; high sensitivity. NIMC Act restricts disclosure."
+
+  PII-2-BVN:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.30, CBN BVN policy 2014"
+    rationale: "Functional identifier tied to banking infrastructure; CBN guidelines require strict handling."
+
+  PII-2-TIN:
+    action: mask
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30, FIRS guidelines"
+    rationale: "Functional identifier for tax compliance; FIRS data sharing is regulated."
+
+  PII-2-PVC:
+    action: mask
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30, Electoral Act"
+    rationale: "Voter registration data; INEC governance applies."
+
+  PII-2-RC:
+    action: retain
+    tier: low
+    statute_reference: "NDPA-2023 s.31 (legitimate interests)"
+    rationale: "Company registration numbers are public per CAC; retain in business directories."
+
+  PII-2-DRIVERS_LICENCE:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.30, FRSC guidelines"
+
+  # ── PII-3 — Contact information ────────────────────────────────────────
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "Direct contact identifier; tokenize to preserve match utility while protecting subjects."
+
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+
+  # ── PII-4 — Locational identifiers (addresses + city/region) ──────────
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "Generalize street-level addresses to city/region level for analytics; preserves utility while reducing re-identification risk."
+
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "NDPA-2023 s.31 (legitimate interests)"
+    rationale: "Bare city / region mentions (Lagos, Abuja, Kano) are routinely published in news and business directories. Retain for analytics; PII-4-ADDRESS catches the full-address case."
+
+  # ── PII-2 — Digital identifiers (DIDs) ─────────────────────────────────
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "W3C decentralized identifiers (did:key, did:web, did:ion). Tokenize to preserve cross-document linkage utility for verification flows while removing the raw key material from log surfaces."
+
+  # ── PII-5 — Financial identifiers ──────────────────────────────────────
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.30, CBN guidelines"
+
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30, CBN Circular on Cryptocurrency (Dec 2023)"
+    rationale: "Bitcoin / Ethereum wallet addresses. CBN treats VASPs as regulated entities; wallet addresses linked to a customer are functional financial identifiers."
+
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.30, PCI-DSS"
+    rationale: "Payment card primary account numbers are dropped (never stored even in audit log)."
+
+  PII-5-MPESA_REF:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30 (cross-border M-Pesa references)"
+    rationale: "Tokenize cross-border mobile money references for analytics; preserves cluster utility."
+
+  # ── PII-6 — Sensitive attributes ───────────────────────────────────────
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+    rationale: "Health data is special category; drop unless explicit consent + medical-necessity lawful basis."
+    requires_lawful_basis:
+      - consent
+      - vital_interests
+      - public_interest
+
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data), NIMC Act"
+    rationale: "Biometric data is special category; drop in default redaction workflows."
+
+  PII-6-RELIGION:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+
+  PII-6-SEXUAL_ORIENTATION:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+    rationale: "Doubly sensitive in Nigerian context (legal environment around LGBTQ+ identity); drop unconditionally."
+
+  PII-6-RACE:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+
+  # ── PII-7 — Biometric data ─────────────────────────────────────────────
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32"
+
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.32"
+
+  # ── PII-8 — Behavioural / digital footprint ────────────────────────────
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "Truncate to /24 (IPv4) or /48 (IPv6) for analytics retention. IP alone is rarely directly identifying — tier remains LOW unless combined with other identifiers downstream."
+
+  PII-8-DEVICE_ID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+
+  PII-8-COOKIE:
+    action: tokenize
+    tier: low
+    statute_reference: "NDPA-2023 s.30"
+
+  PII-8-PASSWORD:
+    action: drop
+    tier: high
+    statute_reference: "NDPA-2023 s.39 (security obligations)"
+    rationale: "Plaintext credentials must never be retained."
+
+  # ── PII-9 — Code-mixed / informal identifiers (Stage 2 scope) ──────────
+  # Reserved category — Stage 2 will add detectors for code-mixed text
+  # (Nigerian Pidgin praise names, informal anchors).
+
+# Defaults for any category not explicitly mapped.
+default_action: mask
+default_statute_reference: "NDPA-2023 s.30"
+
+# Retention limits applied downstream by audit workflows.
+retention_limits:
+  default: "Only as long as necessary for the stated purpose."
+  financial_records_years: 6  # CBN requirement
+  kyc_records_years: 5         # CBN/NDPC
+  health_records: "As required by the National Health Act"
+
+# Cross-border transfer rules.
+cross_border_transfer:
+  permitted_basis:
+    - ndpc_adequacy_assessment
+    - standard_contractual_clauses
+    - binding_corporate_rules
+    - explicit_consent
+  notes: "Transfers to countries without adequate protection require NDPC-approved safeguards."
+
+# Penalty schedule (informational only — not enforced by arche).
+penalties:
+  minor_violation: "Up to NGN 10 million or 2% of annual gross revenue"
+  major_violation: "Up to NGN 10 million or 2% of annual gross revenue"
+  note: "NDPC may also issue enforcement notices and compliance orders."

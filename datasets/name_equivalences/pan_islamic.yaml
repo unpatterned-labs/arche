@@ -1,0 +1,163 @@
+# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
+tradition: Pan-Islamic / Arabic-origin names used across Africa
+groups:
+- canonical: Mohammed
+  variants:
+  - Muhammad
+  - Mohamed
+  - Muhammed
+  - Muhammadu
+  - Mamadou
+  - Mahamadou
+  - Mohammadu
+  - Mohamad
+  - Mouhamed
+  - Mahamed
+  - Mamadu
+  - Mohd
+  - Md
+- canonical: Abdullahi
+  variants:
+  - Abdullah
+  - Abdulahi
+  - Abdoulay
+  - Abdoulaye
+  - Abdulai
+  - Abdallah
+  - Abdellah
+  - Abdalla
+  - Abdoul
+- canonical: Ibrahim
+  variants:
+  - Ibraheem
+  - Ebrahim
+  - Brahim
+  - Ibrahima
+  - Ibraahim
+  - Abraam
+  - Ibra
+- canonical: Fatima
+  variants:
+  - Fatimah
+  - Fatoumata
+  - Fatimatou
+  - Fatouma
+  - Fatma
+  - Fadimata
+  - Fatime
+  - Fatou
+  - Fati
+- canonical: Aisha
+  variants:
+  - Ayesha
+  - Aicha
+  - Aïsha
+  - Aishat
+  - Aissata
+  - Aisatou
+  - Aïssatou
+  - Aysha
+  - Aisatu
+- canonical: Usman
+  variants:
+  - Osman
+  - Uthman
+  - Ousmane
+  - Ousman
+  - Osmane
+  - Usumanu
+- canonical: Yusuf
+  variants:
+  - Youssef
+  - Youssouph
+  - Youssouf
+  - Yusuph
+  - Yousuf
+  - Yussufu
+  - Yussuf
+  - Yousef
+- canonical: Ali
+  variants:
+  - Aly
+  - Aliu
+  - Aliou
+  - Aliy
+- canonical: Hassan
+  variants:
+  - Hasan
+  - Hassane
+  - Assane
+  - Assan
+- canonical: Hussein
+  variants:
+  - Hussain
+  - Husseini
+  - Housseini
+  - Houssein
+  - Hissein
+- canonical: Amina
+  variants:
+  - Aminah
+  - Aminata
+  - Aminatou
+  - Amine
+- canonical: Maryam
+  variants:
+  - Mariam
+  - Mariama
+  - Mariame
+  - Meriem
+  - Meryem
+  - Miriam
+- canonical: Ismail
+  variants:
+  - Ismaila
+  - Ismaël
+  - Ismael
+  - Esmail
+  - Ishmael
+- canonical: Suleiman
+  variants:
+  - Sulaiman
+  - Sulayman
+  - Souleymane
+  - Soulaymane
+  - Sulaimana
+  - Soulaimane
+  - Soliman
+- canonical: Khadija
+  variants:
+  - Khadijah
+  - Kadija
+  - Kadijatou
+  - Dija
+  - Hadja
+  - Hadiatou
+  - Khadidjah
+- canonical: Zainab
+  variants:
+  - Zaynab
+  - Zeinab
+  - Zeynab
+  - Zainaba
+  - Zenab
+- canonical: Safiya
+  variants:
+  - Safiyya
+  - Sofia
+  - Safia
+  - Safiatou
+- canonical: Halima
+  variants:
+  - Halimah
+  - Halimatou
+  - Halimata
+  - Halime
+- canonical: Ruqayya
+  variants:
+  - Ruqayyah
+  - Rukayat
+  - Rokia
+  - Rokiatou
+  - Roukia

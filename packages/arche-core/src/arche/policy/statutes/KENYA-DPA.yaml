@@ -1,0 +1,167 @@
+# Kenya Data Protection Act 2019 (Act No. 24 of 2019)
+# Stage 1 scaffold — full review with the ODPC (Office of the Data Protection
+# Commissioner) scheduled for the Pan-African PII Taxonomy v1.0 consultation
+# cycle (PRD §11.4, Stage 1 month 7).
+#
+# Schema (same across all 4 launch statutes; see NDPA-2023.yaml for the
+# full tier-vs-action explanation):
+#   action — what to DO (mask / tokenize / drop / generalize / audit / retain)
+#   tier   — how SENSITIVE (high / moderate / low; default moderate)
+#
+# Tier assignments below are arche's pre-consultation NIST-800-122-style
+# judgement calls. ODPC may adjust them during the v1.0 consultation.
+# See TODOS.md #3.
+
+statute_id: KENYA-DPA
+jurisdiction: KE
+version: v0.1-scaffold
+effective_date: 2019-11-25
+authority: Office of the Data Protection Commissioner (ODPC)
+breach_notification_window_hours: 72
+lawful_bases:
+  - consent
+  - performance_of_contract
+  - legal_obligation
+  - protection_of_vital_interests
+  - performance_of_public_task
+  - legitimate_interests
+data_subject_rights:
+  - access
+  - rectification
+  - erasure
+  - object
+  - data_portability
+  - withdraw_consent
+
+policy_mappings:
+
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Kenya DPA s.25 (rights of data subject)"
+
+  PII-2-NATIONAL_ID:
+    action: mask
+    tier: high
+    statute_reference: "Kenya DPA s.30, Registration of Persons Act"
+    rationale: "Huduma Namba and the 7-8 digit Kenyan National ID are foundational identifiers."
+
+  PII-2-KRA_PIN:
+    action: mask
+    tier: moderate
+    statute_reference: "Kenya DPA s.30, KRA Act"
+
+  PII-2-NHIF:
+    action: mask
+    tier: moderate
+    statute_reference: "Kenya DPA s.30, NHIF Act"
+
+  PII-2-PASSPORT:
+    action: mask
+    tier: high
+    statute_reference: "Kenya DPA s.30"
+
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Kenya DPA s.25"
+
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Kenya DPA s.25"
+
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "Kenya DPA s.25"
+
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "Kenya DPA s.25"
+    rationale: "Bare city / county mentions (Nairobi, Mombasa, Kisumu) are public-record; retain for analytics. PII-4-ADDRESS catches full-address cases."
+
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Kenya DPA s.25"
+    rationale: "W3C decentralized identifiers. Tokenize to preserve verification-flow linkage."
+
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "Kenya DPA s.30, CBK Prudential Guidelines"
+
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: moderate
+    statute_reference: "Kenya DPA s.30, CBK Digital Asset Guidance 2024"
+    rationale: "Bitcoin / Ethereum wallet addresses. CBK governs VASPs; wallet addresses tied to a customer are functional financial identifiers."
+
+  PII-5-MPESA_REF:
+    action: tokenize
+    tier: moderate
+    statute_reference: "Kenya DPA s.30, CBK NPS Act"
+    rationale: "M-Pesa transaction references — tokenize to preserve cluster utility for fraud analytics."
+
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44 (sensitive personal data)"
+
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44 (sensitive — biometric)"
+
+  PII-6-RELIGION:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44"
+
+  PII-6-SEXUAL_ORIENTATION:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44"
+    rationale: "Doubly sensitive in Kenyan context; drop unconditionally."
+
+  PII-6-RACE:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44"
+
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44"
+
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.44"
+
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "Kenya DPA s.25"
+
+  PII-8-PASSWORD:
+    action: drop
+    tier: high
+    statute_reference: "Kenya DPA s.41 (security safeguards)"
+
+default_action: mask
+default_statute_reference: "Kenya DPA s.25"
+
+retention_limits:
+  default: "Only as long as necessary to achieve the lawful purpose."
+  financial_records_years: 7
+
+cross_border_transfer:
+  permitted_basis:
+    - data_subject_consent
+    - adequacy_decision
+    - appropriate_safeguards
+    - performance_of_contract
+  notes: "Kenya DPA s.48–s.50 govern transfers outside Kenya."
