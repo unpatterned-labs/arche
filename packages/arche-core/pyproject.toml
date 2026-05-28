@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "arche-core"
-version = "0.2.0a1"
+version = "0.2.0a2"
 description = "The identity workflow framework. African-first, globally pluggable. Compose detection, resolution, linking, verification, and governance into production identity pipelines. By unpatterned.org."
 readme = "README.md"
 license = {text = "Apache-2.0"}
