@@ -117,12 +117,6 @@ These ship in the package but are not in the headline pitch — they support spe
 
 These are real tools we depend on internally. They are not the lead pitch.
 
-## Migrating from v0.1
-
-`resolve()` and the v0.1 helpers (`extract`, `resolve_entities`,
-`detect_pii`, `to_html`, etc.) remain importable via PEP 562 lazy attribute access, with a `DeprecationWarning` on first use. Migrate to
-`Pipeline.process()` for statute-aware policy and regulatory citations. The v0.1 surface is removed in v0.3. See the
-[CHANGELOG](./CHANGELOG.md) for per-release migration notes.
 
 ## License
 
