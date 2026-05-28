@@ -1,0 +1,55 @@
+[project]
+name = "arche-workspace"
+version = "0.1.0a2"
+requires-python = ">=3.11"
+description = "arche monorepo — the open-source identity resolution SDK by unpatterned.ai"
+dependencies = [
+    "arche-core[all]",
+    "ipykernel>=7.2.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "packages/arche-core",
+    "packages/arche-mcp",
+    "packages/arche-graph",
+    "packages/arche-live",
+    "api",
+    "demo",
+]
+
+[tool.uv.sources]
+arche-core = { workspace = true }
+arche-adapters = { workspace = true }
+arche-graph = { workspace = true }
+arche-live = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.4",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/arche-core/tests", "packages/arche-graph/tests", "packages/arche-live/tests", "demo/tests", "benchmarks/tests"]
+asyncio_mode = "auto"
+# Silence internal v0.1 → v0.2 migration warnings during tests. The shims still
+# fire for external callers (that's their point); these filters keep test output
+# focused on real issues. Each filter targets a specific shim by message prefix.
+filterwarnings = [
+    # The v0.1 callable arche.resolve() — many tests exercise it as the back-compat contract.
+    "ignore:Calling arche.resolve\\(\\) as a function:DeprecationWarning",
+    # External library deprecations we can't fix without upgrading dependencies.
+    "ignore:builtin type Swig.* has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type swigvarlink:DeprecationWarning",
+    "ignore:`torch.jit.script` is deprecated:DeprecationWarning",
+    "ignore:The `resume_download` argument is deprecated:UserWarning",
+]

@@ -1,0 +1,74 @@
+{
+  "additionalProperties": false,
+  "description": "Unified African name lexicon row for downstream arche models.",
+  "properties": {
+    "countries": {
+      "default": "",
+      "title": "Countries",
+      "type": "string"
+    },
+    "languages": {
+      "default": "",
+      "title": "Languages",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "default": "",
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "name_ascii_key": {
+      "minLength": 1,
+      "title": "Name Ascii Key",
+      "type": "string"
+    },
+    "name_display": {
+      "minLength": 1,
+      "title": "Name Display",
+      "type": "string"
+    },
+    "name_nfc": {
+      "minLength": 1,
+      "title": "Name Nfc",
+      "type": "string"
+    },
+    "name_type": {
+      "enum": [
+        "given",
+        "family"
+      ],
+      "title": "Name Type",
+      "type": "string"
+    },
+    "occurrence_count": {
+      "minimum": 1,
+      "title": "Occurrence Count",
+      "type": "integer"
+    },
+    "source_ids": {
+      "default": "",
+      "title": "Source Ids",
+      "type": "string"
+    },
+    "sources": {
+      "default": "",
+      "title": "Sources",
+      "type": "string"
+    },
+    "total_evidence_count": {
+      "minimum": 1,
+      "title": "Total Evidence Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "name_display",
+    "name_nfc",
+    "name_ascii_key",
+    "name_type",
+    "total_evidence_count",
+    "occurrence_count"
+  ],
+  "title": "AfricanNameLexiconV1",
+  "type": "object"
+}

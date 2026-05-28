@@ -1,0 +1,15 @@
+{
+  "enriched_rows": 454,
+  "generated_at": "2026-04-11T02:07:35.929847+00:00",
+  "legacy_files": [
+    "cross_linguistic",
+    "east_african",
+    "north_african",
+    "pan_islamic",
+    "southern_african",
+    "west_african"
+  ],
+  "legacy_groups": 114,
+  "legacy_rows": 454,
+  "rows_with_provenance": 0
+}

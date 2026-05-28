@@ -1,0 +1,174 @@
+# South Africa Protection of Personal Information Act (POPIA, Act 4 of 2013)
+# Stage 1 scaffold — full review with the Information Regulator scheduled for
+# the Pan-African PII Taxonomy v1.0 consultation cycle (PRD §11.4, Stage 1 month 7).
+#
+# This template ships with conservative defaults so it is *safe* to use today,
+# even as the full per-category mapping work is ongoing.
+#
+# Schema (same across all 4 launch statutes; see NDPA-2023.yaml for the
+# full tier-vs-action explanation):
+#   action — what to DO (mask / tokenize / drop / generalize / audit / retain)
+#   tier   — how SENSITIVE (high / moderate / low; default moderate)
+#
+# Tier assignments below are arche's pre-consultation NIST-800-122-style
+# judgement calls. The Information Regulator may adjust them during the
+# v1.0 consultation. See TODOS.md #3.
+
+statute_id: POPIA
+jurisdiction: ZA
+version: v0.1-scaffold
+effective_date: 2021-07-01  # Section 110 commencement
+authority: Information Regulator (South Africa)
+breach_notification_window_hours: 168  # "as soon as reasonably possible" — 7-day baseline
+lawful_bases:
+  - consent
+  - contract
+  - legal_obligation
+  - protection_of_legitimate_interests
+  - public_interest
+  - performance_of_public_law_duty
+data_subject_rights:
+  - access
+  - correction
+  - deletion
+  - objection
+  - portability  # via the conditions for lawful processing
+
+policy_mappings:
+
+  # ── PII-1 — Direct person identifiers ────────────────────────────────
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "POPIA s.11 (lawful processing)"
+
+  # ── PII-2 — Government-issued identifiers ────────────────────────────
+  PII-2-NATIONAL_ID:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.26 (special personal information — biometric)"
+    rationale: "SA ID number encodes DOB and gender; treat as special category."
+
+  PII-2-TAX_REFERENCE:
+    action: mask
+    tier: moderate
+    statute_reference: "POPIA s.11, SARS confidentiality"
+
+  PII-2-PASSPORT:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.11"
+
+  # ── PII-3 — Contact information ──────────────────────────────────────
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "POPIA s.11"
+
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "POPIA s.11"
+
+  # ── PII-4 — Locational identifiers ───────────────────────────────────
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "POPIA s.11"
+
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "POPIA s.11"
+    rationale: "Bare city / province mentions (Johannesburg, Cape Town, Durban) are public-record; retain for analytics. PII-4-ADDRESS catches full-address cases."
+
+  # ── PII-2 — Digital identifiers (DIDs) ───────────────────────────────
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "POPIA s.11"
+    rationale: "W3C decentralized identifiers. Tokenize to preserve verification-flow linkage."
+
+  # ── PII-5 — Financial ────────────────────────────────────────────────
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.11, FAIS Act"
+
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: moderate
+    statute_reference: "POPIA s.11, FSCA Crypto Asset Declaration 2022"
+    rationale: "Bitcoin / Ethereum wallet addresses. FSCA classifies crypto assets as financial products; wallet addresses tied to a person are functional financial identifiers."
+
+  # ── PII-6 — Special personal information (POPIA s.26) ───────────────
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26 (special), s.32 (health data)"
+    requires_lawful_basis:
+      - consent
+      - vital_interests
+
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26 (biometric)"
+
+  PII-6-RACE:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26 (special)"
+
+  PII-6-RELIGION:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26 (special)"
+
+  PII-6-SEXUAL_ORIENTATION:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26 (sex life), s.51 (POPI prohibits unfair discrimination)"
+
+  PII-6-POLITICAL_AFFILIATION:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26"
+
+  # ── PII-7 — Biometric ────────────────────────────────────────────────
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26"
+
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.26"
+
+  # ── PII-8 — Behavioural ──────────────────────────────────────────────
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "POPIA s.11"
+
+  PII-8-PASSWORD:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.19 (security safeguards)"
+
+default_action: mask
+default_statute_reference: "POPIA s.11 (lawful processing default)"
+
+retention_limits:
+  default: "Only as long as is required to achieve the purpose for which the information was collected."
+  financial_records_years: 5  # FIC Act
+  health_records_years: 6     # National Health Act
+
+cross_border_transfer:
+  permitted_basis:
+    - data_subject_consent
+    - similar_level_of_protection_in_recipient_country
+    - binding_corporate_rules
+    - performance_of_contract
+  notes: "POPIA s.72 governs cross-border transfers."

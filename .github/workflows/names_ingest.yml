@@ -1,0 +1,44 @@
+name: Names Ingest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml pydantic
+
+      - name: Build lexicon (no review gate)
+        run: |
+          python -m datasets.build_african_names --include-csv
+          python -m datasets.names_pipeline generate_schema_docs
+
+      - name: Upload lexicon artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: african-names-lexicon
+          path: |
+            datasets/data/african_names_lexicon_v1.csv
+            datasets/data/african_names_lexicon_v1.jsonl
+            datasets/data/african_names_unique_v1.csv
+            datasets/data/african_names_unique_v1.jsonl
+            datasets/review/raw_name_evidence_v1.jsonl
+            datasets/review/normalized_names_v1.jsonl
+            datasets/review/run_metadata_v1.json

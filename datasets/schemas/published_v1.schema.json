@@ -1,0 +1,66 @@
+{
+  "additionalProperties": false,
+  "description": "Published enriched equivalence row used downstream by models.",
+  "properties": {
+    "canonical": {
+      "minLength": 1,
+      "title": "Canonical",
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "countries": {
+      "default": "",
+      "title": "Countries",
+      "type": "string"
+    },
+    "file": {
+      "minLength": 1,
+      "title": "File",
+      "type": "string"
+    },
+    "languages": {
+      "default": "",
+      "title": "Languages",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "default": "",
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "source": {
+      "default": "",
+      "title": "Source",
+      "type": "string"
+    },
+    "source_ids": {
+      "default": "",
+      "title": "Source Ids",
+      "type": "string"
+    },
+    "tradition": {
+      "minLength": 1,
+      "title": "Tradition",
+      "type": "string"
+    },
+    "variant": {
+      "minLength": 1,
+      "title": "Variant",
+      "type": "string"
+    }
+  },
+  "required": [
+    "canonical",
+    "variant",
+    "tradition",
+    "file",
+    "confidence"
+  ],
+  "title": "PublishedEquivalenceV1",
+  "type": "object"
+}

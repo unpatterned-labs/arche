@@ -1,0 +1,67 @@
+name: arche-core tests
+
+# Runs the arche-core test suite on every push and pull request that
+# touches arche-core source, tests, or its CI configuration. Matrixed
+# across the three supported Python versions and the three host OSes.
+#
+# Pairs with the sibling install-size workflow (arche-core-budget.yml)
+# which audits the wheel rather than the source tree.
+
+on:
+  push:
+    branches: [main, "release/**"]
+    paths:
+      - "packages/arche-core/**"
+      - ".github/workflows/arche-core-tests.yml"
+  pull_request:
+    paths:
+      - "packages/arche-core/**"
+      - ".github/workflows/arche-core-tests.yml"
+
+jobs:
+  tests:
+    name: pytest ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+        include:
+          # Spot-check macOS and Windows on a single Python to catch OS-specific
+          # regressions (filesystem case, cp1252 codec, Ed25519 binding paths)
+          # without paying for the full 3x3 matrix on every PR.
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Sync all workspace packages
+        # Mirrors the local dev command documented in CLAUDE.md.
+        # `--all-packages` installs every workspace member (arche-core,
+        # arche-graph, arche-live, arche-mcp, api, demo). Plain `uv sync`
+        # only installs the workspace root's declared dependency
+        # (arche-core[all]) — sibling packages stay un-installed.
+        # PEP-735 [dependency-groups] dev (pytest, pytest-asyncio, ruff)
+        # is included automatically.
+        run: uv sync --all-packages
+
+      - name: Run tests
+        run: uv run --no-sync pytest packages/arche-core/tests -q --tb=short
+
+      - name: Print summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## arche-core tests — Python ${{ matrix.python-version }} on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY

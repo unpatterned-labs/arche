@@ -1,0 +1,56 @@
+name: Names Publish HF
+
+on:
+  workflow_dispatch:
+    inputs:
+      dataset_repo:
+        description: "Hugging Face dataset repo (owner/name)"
+        required: true
+        default: "unpatterned/african-cultural-naming"
+      dry_run:
+        description: "Only build and validate artifacts (true/false)"
+        required: true
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml pydantic huggingface_hub
+
+      - name: Build lexicon and export publish artifacts
+        run: |
+          python -m datasets.build_african_names --include-csv
+          python -m datasets.names_pipeline export_publish
+
+      - name: Validate published schema
+        run: |
+          python -m datasets.names_pipeline validate_schema --schema lexicon --input datasets/data/african_names_lexicon_v1.csv
+          python -m datasets.names_pipeline validate_schema --schema published --input datasets/data/african_naming_equivalences_enriched.csv
+
+      - name: Upload dataset to Hugging Face
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          DATASET_REPO: ${{ github.event.inputs.dataset_repo }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN secret is required for publish."
+            exit 1
+          fi
+          huggingface-cli login --token "$HF_TOKEN"
+          huggingface-cli upload "$DATASET_REPO" datasets/data data --repo-type dataset

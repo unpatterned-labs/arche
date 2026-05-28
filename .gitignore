@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+web/node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Next.js
+web/.next/
+web/out/
+
+# Build
+dist/
+
+# Built mkdocs output — regenerate with `cd docs-site && mkdocs build`.
+# Source of truth is docs-site/docs/. Built site/ should not be tracked.
+docs-site/site/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.db
+
+
+demo/outputs/
+
+datasets/compliance/
+
+
+/scripts
+
+/docs/*
+
+
+/workbook

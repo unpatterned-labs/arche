@@ -1,0 +1,197 @@
+# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
+tradition: West African names (Yoruba, Igbo, Hausa, Fulani, Akan, Wolof)
+groups:
+- canonical: Diallo
+  variants:
+  - Jallow
+  - Diaw
+  - Jalo
+  - Jalloh
+  - Dialaw
+  - Dyal
+- canonical: Ba
+  variants:
+  - Bah
+  - Bâ
+- canonical: Sow
+  variants:
+  - So
+  - Sao
+- canonical: Koné
+  variants:
+  - Kone
+  - Coney
+  - Konaté
+  - Konate
+- canonical: Coulibaly
+  variants:
+  - Kulibali
+  - Kulibaly
+  - Coulibali
+- canonical: Traoré
+  variants:
+  - Traore
+  - Traoure
+- canonical: Adeyemi
+  variants:
+  - Adeyẹmi
+  - Adéyẹmí
+- canonical: Adekunle
+  variants:
+  - Adékunlé
+  - Adekunle
+- canonical: Oladipo
+  variants:
+  - Oladipọ
+  - Oládípò
+- canonical: Oluwaseun
+  variants:
+  - Olúwáṣeun
+  - Oluseun
+  - Shewn
+- canonical: Adeola
+  variants:
+  - Adéọlá
+  - Adeolá
+- canonical: Babatunde
+  variants:
+  - Babátúndé
+  - Bàbátúndé
+- canonical: Ayodele
+  variants:
+  - Ayọdélé
+  - Ayodélé
+- canonical: Chukwu
+  variants:
+  - Chukwuma
+  - Chukwuemeka
+  - Chuks
+  - Chukwudi
+- canonical: Okafor
+  variants:
+  - Okafo
+  - Ọkafọ
+- canonical: Nneka
+  variants:
+  - Neka
+  - Nnekā
+- canonical: Obiora
+  variants:
+  - Obinna
+  - Obi
+- canonical: Nnamdi
+  variants:
+  - Namdi
+  - Nnámdi
+- canonical: Chimamanda
+  variants:
+  - Chimamandà
+  - Chimama
+- canonical: Emeka
+  variants:
+  - Emeká
+  - Chukwuemeka
+- canonical: Kwame
+  variants:
+  - Kwamena
+  - Kweku
+- canonical: Kofi
+  variants:
+  - Fiifi
+  - Yoofi
+- canonical: Ama
+  variants:
+  - Amba
+- canonical: Akua
+  variants:
+  - Ekua
+  - Akuba
+- canonical: Kwesi
+  variants:
+  - Kwasi
+  - Akwasi
+- canonical: Buhari
+  variants:
+  - Bukhari
+  - Bukar
+- canonical: Sanusi
+  variants:
+  - Sanussi
+  - Sanusy
+- canonical: Abubakar
+  variants:
+  - Aboubacar
+  - Abubakari
+  - Abu Bakr
+  - Aboubaker
+  - Abubaker
+- canonical: Ndiaye
+  variants:
+  - Ndaye
+  - N'Diaye
+  - Njay
+- canonical: Fall
+  variants:
+  - Faal
+  - Fal
+- canonical: Gueye
+  variants:
+  - Gay
+  - Gaye
+  - Guèye
+- canonical: Diop
+  variants:
+  - Joop
+  - Diob
+- canonical: Oluwafemi
+  variants:
+  - Olúwafẹmi
+  - Femi
+- canonical: Temitope
+  variants:
+  - Tẹmitọpẹ
+  - Temi
+- canonical: Olayinka
+  variants:
+  - Ọlayinka
+  - Yinka
+- canonical: Chidinma
+  variants:
+  - Chidinmá
+  - Dinma
+- canonical: Ugochukwu
+  variants:
+  - Ugo
+  - Ugochi
+- canonical: Adaeze
+  variants:
+  - Ada
+  - Adaézé
+- canonical: Yaa
+  variants:
+  - Yaaba
+  - Yawa
+- canonical: Adjoa
+  variants:
+  - Adwoa
+  - Ajua
+- canonical: Akosua
+  variants:
+  - Akosuah
+  - Esi
+- canonical: Binta
+  variants:
+  - Bintu
+  - Bintou
+  - Bint
+- canonical: Hauwa
+  variants:
+  - Hawa
+  - Hawwa
+  - Eve
+- canonical: Musa
+  variants:
+  - Moussa
+  - Mousa
+  - Moses
