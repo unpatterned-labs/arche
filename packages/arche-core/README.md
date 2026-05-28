@@ -2,6 +2,9 @@
 
 **African PII detection that cites the law it enforces.**
 
+> [!WARNING]
+> **Status:** pre-beta (development) -  `arche-core` is under active development. 
+
 `arche-core` detects PII for African jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
 
 > Presidio detects PII. GLiNER does multilingual NER. Splink links records. None of them know that a BVN is sensitive under NDPA §30, or that "Adeyẹmí" and "Adeyemi" are the same Yoruba name with and without tonal marks, or that "behind Total filling station, Madina Junction" is a parseable Ghanaian address. `arche-core` does that one job.
@@ -121,3 +124,5 @@ These are real tools we depend on internally. They are not the lead pitch.
 ## License
 
 Apache 2.0. By [Unpatterned Labs](https://unpatterned.org).
+
+> `arche-core` is under active development. APIs may change between alpha  releases.
