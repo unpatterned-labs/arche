@@ -4,31 +4,39 @@ build-backend = "hatchling.build"
 
 [project]
 name = "arche-core"
-version = "0.2.0a2"
-description = "The identity workflow framework. African-first, globally pluggable. Compose detection, resolution, linking, verification, and governance into production identity pipelines. By unpatterned.org."
+version = "0.2.0a3"
+description = "African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH, grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
 authors = [
-    {name = "unpatterned.org"}
+    {name = "Dennis Irorere", email = "connect@unpatterned.org"}
 ]
 keywords = [
-    "identity-resolution", "entity-resolution", "PII", "DSAR",
-    "digital-public-infrastructure", "Africa", "NDPA", "POPIA",
-    "workflow-framework", "arche", "DPI", "identity-workflows",
+    "PII", "PII-detection", "PII-redaction", "data-protection",
+    "African-PII", "Africa", "Nigeria", "Kenya", "South-Africa", "Ghana",
+    "NDPA", "POPIA", "Kenya-DPA", "Ghana-DPA",
+    "compliance", "audit", "redaction", "NER", "entity-resolution",
+    "arche", "arche-core",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Information Technology",
     "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing :: Linguistic",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
-
 # Base install: under 100MB, no mandatory ML or DPI dependencies.
 # Heavy capabilities ship as opt-in extras below per PRD §1 and BP §7.
 dependencies = [

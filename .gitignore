@@ -62,3 +62,6 @@ datasets/compliance/
 
 
 /workbook
+
+uv.lock
+pyproject.toml

@@ -42,4 +42,4 @@ def test_pipeline_batch():
 
 
 def test_version():
-    assert __version__ == "0.2.0a2"
+    assert __version__ == "0.2.0a3"
