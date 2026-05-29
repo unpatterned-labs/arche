@@ -1,0 +1,106 @@
+site_name: arche
+site_description: African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH — grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
+site_url: https://unpatterned-labs.github.io/arche/
+repo_url: https://github.com/unpatterned-labs/arche
+repo_name: unpatterned-labs/arche
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: custom
+      accent: indigo
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+  - Tutorials:
+    - Fintech KYC (NDPA-compliant intake): tutorials/fintech_kyc.md
+    - Match African names: how-to/match-african-names.md
+    - Extract from invoice: how-to/extract-from-invoice.md
+    - Why arche & when to use it: tutorials/arche_vs_alternatives.md
+    - "Power-user: Sign, share, extract": tutorials/sign_share_extract.md
+    - "Power-user: Citizen DSAR": tutorials/citizen_dsar.md
+    - "Power-user: Entity resolution": tutorials/entity_resolution.md
+  - Concepts:
+    - How arche Works: concepts/how-it-works.md
+    - Architecture: concepts/architecture.md
+    - Roadmap: concepts/roadmap.md
+    - "Power-user: Verifiability": concepts/verifiability.md
+    - "Power-user: The five-substrate lifecycle": concepts/lifecycle.md
+  - How-To:
+    - Extract from Invoice: how-to/extract-from-invoice.md
+    - Match African Names: how-to/match-african-names.md
+  - Cookbooks:
+    - Nigerian fintech KYC intake: cookbooks/fintech-kyc.md
+    - South African POPIA health export: cookbooks/health-export.md
+    - Journalist PII scan on leaked documents: cookbooks/journalist-scan.md
+    - Civil-society audit of a public dataset: cookbooks/civil-society-audit.md
+    - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
+    - Web URL to Detection: cookbooks/web-to-detection.md
+    - GLiNER NER (notebook): https://github.com/unpatterned-labs/arche/blob/main/notebooks/cookbook-gliner-ner.ipynb
+  - API Reference:
+    - Overview: api/index.md
+    - Pipeline: api/resolve.md
+    - detect(): api/detect.md
+  - Guides:
+    - Output Formats: guides/output-formats.md
+    - CLI Reference: guides/cli.md
+  - RFCs:
+    - v0.3 storage architecture: rfcs/0001-v0.3-storage.md
+  - Examples:
+    - Pipeline (NDPA): https://github.com/unpatterned-labs/arche/blob/main/examples/01_pipeline_ndpa.py
+    - Sign-share-extract: https://github.com/unpatterned-labs/arche/blob/main/examples/02_sign_share_extract.py
+    - DSAR workflow: https://github.com/unpatterned-labs/arche/blob/main/examples/03_dsar_workflow.py
+    - SD-JWT-VC: https://github.com/unpatterned-labs/arche/blob/main/examples/04_sd_jwt_credential.py
+    - Audit log: https://github.com/unpatterned-labs/arche/blob/main/examples/05_audit_log.py
+    - Invoice Extraction (v0.1): examples/invoice-extraction.md
+  - Datasets:
+    - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
+  - Blog:
+    - blog/index.md
+    - Introducing arche (v0.2): blog/introducing-arche.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/unpatterned-labs/arche
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/arche-core/
