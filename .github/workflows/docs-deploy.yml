@@ -1,0 +1,102 @@
+name: docs site — deploy to GitHub Pages
+
+# Builds the mkdocs site in docs-site/ with --strict (so broken nav, broken
+# internal links, or missing files fail the deploy instead of silently
+# shipping a degraded site) and publishes it to GitHub Pages on every push
+# to main.
+#
+# Uses the modern actions/deploy-pages flow — no gh-pages branch is created
+# or maintained. The artifact is uploaded once per run and Pages serves it
+# directly. The site_url in mkdocs.yml (https://unpatterned-labs.github.io/arche/)
+# matches what GitHub Pages will serve at, so internal links resolve correctly.
+#
+# One-time setup required in the GitHub repo settings:
+#   Settings → Pages → Source: GitHub Actions
+# After that flip, every push to main that touches docs-site/ deploys
+# automatically.
+#
+# Pairs with docs-build.yml which runs the same --strict build on PRs
+# without deploying — catches breakage before it reaches main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-site/**"
+      - ".github/workflows/docs-deploy.yml"
+  workflow_dispatch:
+
+# Required for the deploy-pages action. `pages: write` lets the runner
+# upload to the Pages service; `id-token: write` is for OIDC attestation
+# of the artifact.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Avoid two concurrent deploys racing; queue them instead of cancelling
+# the in-flight one (cancel-in-progress: false) so a hotfix on top of an
+# in-flight build still gets shipped rather than swallowed.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: mkdocs build --strict
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Build docs-site
+        working-directory: docs-site
+        run: uv run --with mkdocs --with mkdocs-material mkdocs build --strict
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # mkdocs build defaults to site/ inside the config directory.
+          # mkdocs.yml lives at docs-site/mkdocs.yml so the output is
+          # docs-site/site/.
+          path: docs-site/site
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "## docs-site build" >> $GITHUB_STEP_SUMMARY
+          echo "Strict build completed; artifact uploaded for deploy." >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # `environment` ties the deploy to the github-pages environment so
+    # the URL shows up in PR / commit checks as "deploy: <url>" — the
+    # one-click way to verify the live site after a merge.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "## docs-site deploy" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Live at: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY

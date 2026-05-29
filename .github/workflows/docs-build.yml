@@ -1,0 +1,42 @@
+name: docs site — strict build (PR check)
+
+# Runs the same `mkdocs build --strict` the deploy workflow uses, but only
+# on pull requests, and does not deploy. Catches broken nav entries,
+# broken internal links, and missing files before the change reaches main.
+#
+# Pairs with docs-deploy.yml which runs on push to main and ships the
+# build to GitHub Pages. The two share the same build step; the split
+# exists so PRs get a fast pre-merge gate without needing Pages
+# deployment permissions.
+
+on:
+  pull_request:
+    paths:
+      - "docs-site/**"
+      - ".github/workflows/docs-build.yml"
+
+jobs:
+  build:
+    name: mkdocs build --strict
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Build docs-site
+        working-directory: docs-site
+        run: uv run --with mkdocs --with mkdocs-material mkdocs build --strict
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "## docs-site PR build" >> $GITHUB_STEP_SUMMARY
+          echo "Strict build completed. (Deploy runs separately on push to main.)" >> $GITHUB_STEP_SUMMARY
