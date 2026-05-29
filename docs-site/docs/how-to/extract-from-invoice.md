@@ -61,6 +61,5 @@ signed = SignWorkflow(jurisdiction="NG").sign(
 
 ## See also
 
-- [Pipeline API reference](../api/resolve.md)
+- [Pipeline API reference](../api/pipeline.md)
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
-- [HOW-TO single-page walkthrough](https://github.com/unpatterned-labs/archeblob/main/HOW-TO.md)

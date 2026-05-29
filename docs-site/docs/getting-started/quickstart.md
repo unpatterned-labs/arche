@@ -30,10 +30,7 @@ Customer Adesola Okonkwo registered with NIN [NIN] and BVN [BVN].
 Contact phone PHONE_.... RC 245678.
 ```
 
-The `Pipeline` auto-resolves `jurisdiction="NG"` to the NDPA-2023 statute
-YAML, runs the per-country detectors, applies the closed action set, and
-returns a typed `Result` with detections, policy outcomes, redacted text,
-and audit log entries.
+The `Pipeline` auto-resolves `jurisdiction="NG"` to the NDPA-2023 statute YAML, runs the per-country detectors, applies the closed action set, and returns a typed `Result` with detections, policy outcomes, redacted text, and audit log entries.
 
 Inspect the policy decisions:
 
@@ -93,11 +90,7 @@ print(result.statute_at_signing)      # "NDPA-2023@v1.0"
 print(result.redacted_text)           # "... NIN [NIN], BVN [BVN] ..."
 ```
 
-The recipient verifies offline using the `did:key` embedded in the JWS
-header — no infrastructure, no resolver, no network call. The signature
-binds the entire envelope: the recipient can trust the redacted text,
-the detections, and the policy outcomes are exactly what the bank
-processed.
+The recipient verifies offline using the `did:key` embedded in the JWS header — no infrastructure, no resolver, no network call. The signature binds the entire envelope: the recipient can trust the redacted text, the detections, and the policy outcomes are exactly what the bank processed.
 
 [Full sign-share-extract tutorial →](../tutorials/sign_share_extract.md)
 
@@ -139,9 +132,7 @@ Each draft cites the correct statute section per jurisdiction:
 - Kenya DPA s.26(a) (Right of Access)
 - Ghana DPA s.35 (Access to personal data)
 
-Stage 1 ships `dispatch_mode="draft_only"`. The citizen reviews and
-dispatches manually; autonomous dispatch is Stage 4 with explicit consent
-mechanisms (PRD §15.3).
+Stage 1 ships `dispatch_mode="draft_only"`. The citizen reviews and dispatches manually; autonomous dispatch is Stage 4 with explicit consent mechanisms.
 
 [Citizen DSAR tutorial →](../tutorials/citizen_dsar.md)
 
@@ -173,11 +164,7 @@ print(v.disclosed_claims)
 # Verifier cannot see detections, redacted_text, or doc_hash
 ```
 
-SD-JWT-VC is the IETF selective-disclosure credential format that EUDI
-Wallet ARF and MOSIP Inji standardize on. The issuer signs the full
-credential; the holder controls which claims to disclose to each
-verifier; the verifier rejects any disclosure that doesn't match the
-signed `_sd` hashes.
+SD-JWT-VC is the IETF selective-disclosure credential format that EUDI Wallet ARF and MOSIP Inji standardize on. The issuer signs the full credential; the holder controls which claims to disclose to each verifier; the verifier rejects any disclosure that doesn't match the signed `_sd` hashes.
 
 ---
 
@@ -206,16 +193,14 @@ compliance_key = generate_keypair()
 signed_bundle = audit.export_signed(key=compliance_key, purpose="ndpc_audit")
 ```
 
-The audit log is append-only by convention. PII values are never stored —
-only category labels and character spans. Signed exports give the regulator
-cryptographic non-repudiation of what the deployment processed.
+The audit log is append-only by convention. PII values are never stored — only category labels and character spans. Signed exports give the regulator cryptographic non-repudiation of what the deployment processed.
 
 ---
 
 ## What's next
 
-- [How arche Works — the v0.2 thesis](../concepts/how-it-works.md)
-- [Verifiable identity workflows](../concepts/verifiability.md)
+<!-- - [How arche Works — the v0.2 thesis](../concepts/how-it-works.md)
+- [Verifiable identity workflows](../concepts/verifiability.md) -->
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
 - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
 - [API Reference](../api/index.md)

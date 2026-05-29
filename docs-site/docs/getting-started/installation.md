@@ -20,22 +20,15 @@ python -c "import arche; print('arche', arche.__version__, 'ok')"
 - No GPU required — base install runs entirely on CPU
 - No API keys required — works offline
 
-The base install is ~106 MB and includes per-country PII detectors,
-policy engine, four jurisdiction packs (NDPA-2023, POPIA, Kenya DPA,
-Ghana DPA), the `Pipeline` framework primitive, `arche.sign`
-(Ed25519 + did:key + JWS), `arche.credentials.sd_jwt` (SD-JWT-VC), and
-the SQLite audit log.
+The base install is ~106 MB and includes per-country PII detectors, policy engine, four jurisdiction packs (NDPA-2023, POPIA, Kenya DPA, Ghana DPA), the `Pipeline` framework primitive, `arche.sign` (Ed25519 + did:key + JWS), `arche.credentials.sd_jwt` (SD-JWT-VC), and the SQLite audit log.
 
-No heavy ML/DPI dependencies are loaded by `import arche` — enforced by
-CI (see `.github/workflows/arche-core-budget.yml`).
+No heavy ML/DPI dependencies are loaded by `import arche` — enforced by CI (see `.github/workflows/arche-core-budget.yml`).
 
 ---
 
 ## Optional extras
 
-The base install is the framework. Heavy capabilities ship as opt-in
-extras so a Nigerian fintech doesn't pay the cost of an OCR stack
-they'll never use.
+The base install is the framework. Heavy capabilities ship as opt-in extras so a Nigerian fintech doesn't pay the cost of an OCR stack they'll never use.
 
 === "Document ingest"
 
@@ -55,9 +48,7 @@ they'll never use.
     pip install arche-core[resolve]   # Splink + DuckDB for billion-row ER
     ```
 
-    Soft-PII (`detect`), Western-only PII corpus baseline (`presidio`),
-    and probabilistic entity resolution (`resolve`). All optional —
-    arche's African-context detectors live in the base install.
+    Soft-PII (`detect`), Western-only PII corpus baseline (`presidio`), and probabilistic entity resolution (`resolve`). All optional — arche's African-context detectors live in the base install.
 
 === "LLM router"
 
@@ -66,8 +57,7 @@ they'll never use.
     pip install arche-core[litellm]   # LiteLLM proxy router
     ```
 
-    Powers the LLM-anchored extraction path; not required for any of
-    the headline v0.2 workflows.
+    Powers the LLM-anchored extraction path; not required for any of the headline v0.2 workflows.
 
 === "Per-country bundles"
 
@@ -79,9 +69,7 @@ they'll never use.
     pip install arche-core[africa]
     ```
 
-    Forward-compatible namespaces. All launch-country detectors ship
-    in the base install today; these extras exist so a Nigerian fintech
-    can pin to NG-only changes in v0.3+.
+    Forward-compatible namespaces. All launch-country detectors ship in the base install today; these extras exist so a Nigerian fintech can pin to NG-only changes in v0.3+.
 
 === "Everything"
 
@@ -95,8 +83,7 @@ they'll never use.
 
 ## Using uv (recommended)
 
-[uv](https://docs.astral.sh/uv/) is a fast Python package manager.
-Install uv itself first if you haven't:
+[uv](https://docs.astral.sh/uv/) is a fast Python package manager. Install uv itself first if you haven't:
 
 ```bash
 # macOS / Linux
@@ -117,9 +104,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 !!! warning "Shell quoting"
 
-    The `[extra]` syntax must be **quoted** in zsh, bash, and fish —
-    unquoted brackets are interpreted as glob patterns and either
-    silently expand to nothing or error out.
+    The `[extra]` syntax must be **quoted** in zsh, bash, and fish — unquoted brackets are interpreted as glob patterns and either silently expand to nothing or error out.
 
     ```bash
     uv add 'arche-core[detect]'          # ✓ all shells
@@ -131,8 +116,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 ### Installing with extras
 
-The base install (no extras) is the framework only. Each extra layers on
-optional capabilities. Combine multiple in one bracket pair:
+The base install (no extras) is the framework only. Each extra layers on optional capabilities. Combine multiple in one bracket pair:
 
 ```bash
 # One extra
@@ -165,10 +149,7 @@ uv sync --all-packages
 uv run pytest packages/arche-core/tests
 ```
 
-`uv sync --all-packages` resolves the workspace's full dependency graph
-including arche-core, arche-graph, arche-adapters, and the api / demo
-members. Extras defined inside each member's `pyproject.toml` are part
-of the resolve.
+`uv sync --all-packages` resolves the workspace's full dependency graph including arche-core, arche-graph, arche-adapters, and the api / demo members. Extras defined inside each member's `pyproject.toml` are part of the resolve.
 
 To add an extra at sync time without editing pyproject:
 
@@ -204,5 +185,5 @@ uv run --extra detect python -c "from arche.extract import extract; print(extrac
   redacted document.
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md) —
   the headline verifiability workflow.
-- [Citizen DSAR tutorial](../tutorials/citizen_dsar.md) — generate a
-  signed Data Subject Access Request letter.
+<!-- - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md) — generate a
+  signed Data Subject Access Request letter. -->

@@ -1,10 +1,6 @@
 # arche — PII + digital identity detection with statute-aware policy
 
-**African-first, globally pluggable.** Detect PII, digital identifiers,
-phones, addresses, and IPs across African jurisdictions. Every detection
-carries its **sensitivity tier** (high / moderate / low) and the
-**regulatory citation** it was made under. Apply six closed policy
-actions grounded in NDPA-2023, POPIA, Kenya DPA, or Ghana DPA.
+**African-first, globally pluggable.** Detect PII, digital identifiers, phones, addresses, and IPs across African jurisdictions. Every detection carries its **sensitivity tier** (high / moderate / low) and the **regulatory citation** it was made under. Apply six closed policy actions grounded in NDPA-2023, POPIA, Kenya DPA, or Ghana DPA.
 
 ```bash
 pip install arche-core
@@ -29,9 +25,7 @@ print(result.redacted_text)
 # NAME_... NAME_..., NIN [NIN], BVN [BVN].
 ```
 
-Per-country detectors, statute-grounded policy enforcement, PII-tier
-classification, and the regulatory citation surfaced on every detection
-— in one call.
+Per-country detectors, statute-grounded policy enforcement, PII-tier classification, and the regulatory citation surfaced on every detection — in one call.
 
 ---
 
@@ -74,12 +68,7 @@ detection (verify, govern, resolve, link).
 
 ## The thesis
 
-> Small specialized PII models — OpenAI Privacy Filter, GLiNER2-PII,
-> ettin-68m-pii — are commoditizing detection. The differentiating
-> contribution is not better detection; it's the **identity workflow
-> framework** that composes detection with resolution, linking,
-> verification, and governance into a coherent lifecycle. None of those
-> small models do that. Detection is one floor; arche is the building.
+> Small specialized PII models — OpenAI Privacy Filter, GLiNER2-PII, ettin-68m-pii — are commoditizing detection. The differentiating contribution is not better detection; it's the **identity workflow framework** that composes detection with resolution, linking, verification, and governance into a coherent lifecycle. None of those small models do that. Detection is one floor; arche is the building.
 
 [Read the full thesis →](concepts/how-it-works.md)
 
@@ -105,10 +94,7 @@ result = VerifyExtractWorkflow().process(signed)
 # result.policy_outcomes       [(PII-2-NIN, mask), (PII-2-BVN, mask), ...]
 ```
 
-No infrastructure required. `did:key` is self-describing. Verification is
-purely cryptographic. The recipient knows: who signed (cryptographically),
-when, under what statute, what policy was applied — **without seeing the
-original document**.
+No infrastructure required. `did:key` is self-describing. Verification is purely cryptographic. The recipient knows: who signed (cryptographically), then, under what statute, what policy was applied — **without seeing the original document**.
 
 [Sign-share-extract tutorial →](tutorials/sign_share_extract.md)
 
@@ -142,11 +128,7 @@ for draft in result.drafts:
     print(draft.signed_envelope)       # JWS-signed for DPO verification
 ```
 
-African citizens have rights under NDPA, POPIA, Kenya DPA, and Ghana DPA
-that today are practically unexercisable — the bureaucracy is the
-barrier. arche generates compliant draft letters and cryptographic
-provenance so a citizen with a phone can exercise rights that previously
-needed a lawyer.
+African citizens have rights under NDPA, POPIA, Kenya DPA, and Ghana DPA that today are practically unexercisable — the bureaucracy is the barrier. arche generates compliant draft letters and cryptographic provenance so a citizen with a phone can exercise rights that previously needed a lawyer.
 
 [Citizen DSAR tutorial →](tutorials/citizen_dsar.md)
 
@@ -154,8 +136,7 @@ needed a lawyer.
 
 ## Lightweight by default
 
-`pip install arche-core` is under 100 MB. No mandatory ML or DPI
-dependencies. Heavy capabilities are opt-in extras:
+`pip install arche-core` is under 100 MB. No mandatory ML or DPI dependencies. Heavy capabilities are opt-in extras:
 
 | Extra | What you get |
 |---|---|
@@ -165,8 +146,7 @@ dependencies. Heavy capabilities are opt-in extras:
 | `arche-core[doc]` | docling-backed PDF / DOCX / PPTX / XLSX parsing |
 | `arche-core[doc-ocr]` | Adds easyocr for scanned documents |
 
-Cold import: **<700ms** even with everything in v0.2 loaded. Lazy-import
-discipline is enforced by CI — nothing heavy loads from `import arche`.
+Cold import: **<700ms** even with everything in v0.2 loaded. Lazy-import discipline is enforced by CI — nothing heavy loads from `import arche`.
 
 ---
 
@@ -175,13 +155,12 @@ discipline is enforced by CI — nothing heavy loads from `import arche`.
 - [Installation](getting-started/installation.md)
 - [Quick Start — five examples in five minutes](getting-started/quickstart.md)
 - [Why arche & when to use it](tutorials/arche_vs_alternatives.md) — by-persona guide for developers, researchers, DPOs, and journalists, plus the cross-tool benchmark
-- [How arche Works — the v0.2 thesis explained](concepts/how-it-works.md)
-- [Verifiable identity workflows](concepts/verifiability.md)
+<!-- - [How arche Works — the v0.2 thesis explained](concepts/how-it-works.md) -->
+<!-- - [Verifiable identity workflows](concepts/verifiability.md) -->
 - [API Reference](api/index.md)
 
 ---
 
 ## License
 
-Apache-2.0 for the framework. CC-BY-4.0 for the Pan-African PII Taxonomy
-and Africa Address Benchmark datasets. By [Unpatterned Labs CIC](https://unpatterned.ai).
+Apache-2.0 for the framework. CC-BY-4.0 for the Pan-African PII Taxonomy and Africa Address Benchmark datasets. By [Unpatterned Labs](https://unpatterned.org).

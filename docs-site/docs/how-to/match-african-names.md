@@ -171,12 +171,12 @@ Example YAML entry:
   notes: "Arabic origin, variants across West Africa"
 ```
 
-Contributions to the naming dataset are welcome. See the [Contributing guide](https://github.com/unpatterned-labs/archetree/main/datasets) for details.
+Contributions to the naming dataset are welcome. See the [Contributing guide](https://github.com/unpatterned-labs/arche/tree/main/datasets) for details.
 
 ---
 
 ## What's next
 
-- [Architecture](../concepts/architecture.md) -- how resolution uses cultural naming
-- [API: resolve()](../api/resolve.md) -- full function documentation
+<!-- - [Architecture](../concepts/architecture.md) -- how resolution uses cultural naming -->
+- [API: resolve()](../api/pipeline.md) -- full function documentation
 - [Quick Start](../getting-started/quickstart.md) -- more examples
