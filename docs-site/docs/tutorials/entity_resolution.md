@@ -106,5 +106,4 @@ If you need a pluggable graph store for the resolved clusters (embedded, or Post
 ## See also
 
 - [API reference: `arche.resolve`](../api/resolve.md)
-<!-- - [How arche Works](../concepts/how-it-works.md) -->
 - [Splink 4.x documentation](https://moj-analytical-services.github.io/splink/)

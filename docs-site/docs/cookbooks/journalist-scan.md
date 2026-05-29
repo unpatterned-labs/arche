@@ -119,4 +119,3 @@ _Verified against `arche-core` v0.2.0a3 on 2026-05-29 in a clean Python 3.11 ven
 - [Power-user cookbook: Civil-society audit](civil-society-audit.md) — when scanning a public dataset rather than a leaked document
 - [Power-user: Citizen DSAR](../tutorials/citizen_dsar.md) — when the investigation requires filing a Data Subject Access Request
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md)
-- [Roadmap](../concepts/roadmap.md)

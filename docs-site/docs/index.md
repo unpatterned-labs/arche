@@ -60,9 +60,7 @@ Six closed policy actions:
 | **retain** | Public-record categories (company registration numbers) |
 
 The action mapping ships in YAML statute files (`arche/policy/statutes/`)
-that you can read, audit, or extend. See
-[the lifecycle page](concepts/lifecycle.md) for what arche does after
-detection (verify, govern, resolve, link).
+that you can read, audit, or extend.
 
 ---
 
@@ -70,7 +68,6 @@ detection (verify, govern, resolve, link).
 
 > Small specialized PII models — OpenAI Privacy Filter, GLiNER2-PII, ettin-68m-pii — are commoditizing detection. The differentiating contribution is not better detection; it's the **identity workflow framework** that composes detection with resolution, linking, verification, and governance into a coherent lifecycle. None of those small models do that. Detection is one floor; arche is the building.
 
-[Read the full thesis →](concepts/how-it-works.md)
 
 ---
 
@@ -155,8 +152,6 @@ Cold import: **<700ms** even with everything in v0.2 loaded. Lazy-import discipl
 - [Installation](getting-started/installation.md)
 - [Quick Start — five examples in five minutes](getting-started/quickstart.md)
 - [Why arche & when to use it](tutorials/arche_vs_alternatives.md) — by-persona guide for developers, researchers, DPOs, and journalists, plus the cross-tool benchmark
-<!-- - [How arche Works — the v0.2 thesis explained](concepts/how-it-works.md) -->
-<!-- - [Verifiable identity workflows](concepts/verifiability.md) -->
 - [API Reference](api/index.md)
 
 ---

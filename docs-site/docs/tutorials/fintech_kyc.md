@@ -348,7 +348,6 @@ What happens if you use an LLM to extract identities from these documents?
 ## Next Steps
 
 - Work through [Entity Resolution](entity_resolution.md) to link records across multiple documents
-- Read [How arche Works](../concepts/how-it-works.md) for the full architecture and benchmark details
 - See the [arche vs Alternatives](arche_vs_alternatives.md) comparison guide
 - Try [Sign, Share, Extract](sign_share_extract.md) for verifiable, signed redaction envelopes
 

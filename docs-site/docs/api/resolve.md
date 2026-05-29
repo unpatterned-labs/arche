@@ -142,7 +142,5 @@ print(result.summary())
 
 ## See also
 
-- [Architecture](../concepts/architecture.md) — the five substrates
-- [How arche Works](../concepts/how-it-works.md) — substrate-by-substrate walkthrough
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
 - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)

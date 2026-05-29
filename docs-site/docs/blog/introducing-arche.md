@@ -5,7 +5,7 @@
 ---
 
 !!! warning "Status: pre-beta (development) — not for production use yet"
-    `arche-core` v0.2.0a3 is on PyPI for research, prototyping, evaluation, and contribution. APIs may change between alpha releases. Production use against real personal data is not recommended until v0.3 (beta). See [the roadmap](../concepts/roadmap.md) for the named beta criteria.
+    `arche-core` v0.2.0a3 is on PyPI for research, prototyping, evaluation, and contribution. APIs may change between alpha releases. Production use against real personal data is not recommended until v0.3 (beta).
 
 Six months ago we said arche was an *"identity workflow framework"* — a five-step Detect → Resolve → Link → Verify → Govern pipeline that would compose with everything African DPI needed. Six months in, the lesson is sharp: that pitch is too broad, hard to remember, and harder to deliver. **arche v0.2 narrows.**
 

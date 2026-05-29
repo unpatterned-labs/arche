@@ -163,5 +163,3 @@ Autonomous dispatch lands in Stage 4 with explicit consent mechanisms and a sepa
 - [Sign-share-extract tutorial](sign_share_extract.md) — the primitives
   this workflow builds on.
 - [API overview](../api/index.md) — the public workflow surface.
-- [Concepts: Verifiability](../concepts/verifiability.md) — why the JWS
-  + `did:key` model fits the African DPI context.

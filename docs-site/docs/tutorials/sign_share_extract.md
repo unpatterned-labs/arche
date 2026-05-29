@@ -162,7 +162,5 @@ The third party knows the credential was issued by the bank (signature binds the
 
 - [Citizen DSAR tutorial](citizen_dsar.md) — uses the same primitives to
   generate compliant DSAR letters for NDPA / POPIA / Kenya DPA / Ghana DPA.
-<!-- - [Verifiability concepts](../concepts/verifiability.md) — the
-  architectural rationale for JWS, did:key, Ed25519, SD-JWT-VC. -->
 - [`arche.sign` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/sign) — signing primitives.
 - [`arche.credentials` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/credentials) — SD-JWT-VC details.

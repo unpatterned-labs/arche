@@ -160,7 +160,6 @@ _Verified against `arche-core` v0.2.0a3 on 2026-05-29 in a clean Python 3.11 ven
 - [Power-user: Citizen DSAR](../tutorials/citizen_dsar.md) — the individual-rights version of this workflow
 - [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy) — the taxonomy your report cites
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md)
-- [Roadmap](../concepts/roadmap.md)
 
 Sources:
 - [Nigeria Health Facility Registry — official portal](https://hfr.health.gov.ng/)

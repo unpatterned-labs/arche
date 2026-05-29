@@ -53,7 +53,7 @@ Pipeline(jurisdiction="KE")       # auto-loads KENYA-DPA
 Pipeline(jurisdiction="GH")       # auto-loads GHANA-DPA
 ```
 
-That's the whole core workflow. If this is all you need, skip the rest and go to [How arche Works](../concepts/how-it-works.md) or the [API Reference](../api/index.md).
+That's the whole core workflow. If this is all you need, skip the rest and go to the [API Reference](../api/index.md).
 
 ---
 
@@ -199,8 +199,6 @@ The audit log is append-only by convention. PII values are never stored — only
 
 ## What's next
 
-<!-- - [How arche Works — the v0.2 thesis](../concepts/how-it-works.md)
-- [Verifiable identity workflows](../concepts/verifiability.md) -->
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
 - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
 - [API Reference](../api/index.md)

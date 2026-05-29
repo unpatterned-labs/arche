@@ -124,4 +124,3 @@ _Verified against `arche-core` v0.2.0a3 on 2026-05-29 in a clean Python 3.11 ven
 - [Power-user cookbook: Civil-society audit](civil-society-audit.md) — when the auditor is *outside* the organisation
 - [Quick Start example 5 — SQLite audit log](../getting-started/quickstart.md#5-sqlite-audit-log-signed-regulator-export)
 - [Power-user: Sign, share, extract](../tutorials/sign_share_extract.md) — signing exports across organisational boundaries
-- [Roadmap](../concepts/roadmap.md)
