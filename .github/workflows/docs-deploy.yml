@@ -70,7 +70,7 @@ jobs:
           # mkdocs build defaults to site/ inside the config directory.
           # mkdocs.yml lives at docs-site/mkdocs.yml so the output is
           # docs-site/site/.
-          path: docs-site/site
+          path: docs-site/docs
 
       - name: Print summary
         if: always()
