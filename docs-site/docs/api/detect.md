@@ -16,7 +16,7 @@ from arche.detect._africa.ids import detect_african_ids
 from arche.detect._africa.phones import normalize_e164, validate_phone
 ```
 
-Detectors return [`Detection`](resolve.md#detection) objects with category labels from the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/archeblob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml).
+Detectors return [`Detection`](resolve.md#detection) objects with category labels from the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml).
 
 > Most callers don't need this surface directly — `Pipeline(jurisdiction=...)` calls the right detectors automatically. Use these primitives when you're building your own composition.
 

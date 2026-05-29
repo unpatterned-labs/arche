@@ -61,5 +61,5 @@ signed = SignWorkflow(jurisdiction="NG").sign(
 
 ## See also
 
-- [Pipeline API reference](../api/pipeline.md)
+- [Pipeline API reference](../api/resolve.md)
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)

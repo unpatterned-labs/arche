@@ -10,13 +10,13 @@ For the deeper substrate APIs, import from the substrate package directly. For e
 
 ---
 
-## v0.2 surface (PRD §10.1)
+## v0.2 surface 
 
 | Symbol | Purpose | Page |
 |---|---|---|
-| [`Pipeline`](pipeline.md) | The framework primitive — detect + policy + audit in one call | pipeline.md |
-| `Result` | Typed return from `Pipeline.process(...)` | pipeline.md |
-| `Detection` | A single detected PII span with category, span, confidence | pipeline.md |
+| [`Pipeline`](resolve.md#pipeline) | The framework primitive — detect + policy + audit in one call | resolve.md |
+| [`Result`](resolve.md#result) | Typed return from `Pipeline.process(...)` | resolve.md |
+| [`Detection`](resolve.md#detection) | A single detected PII span with category, span, confidence | resolve.md |
 
 Plus `__version__`.
 
@@ -115,6 +115,7 @@ Fuzzy Fellegi-Sunter with African-name equivalence by default. With `arche-core[
 
 ---
 
+```python
 # v0.2
 from arche import Pipeline
 result = Pipeline(jurisdiction="NG").process(text)

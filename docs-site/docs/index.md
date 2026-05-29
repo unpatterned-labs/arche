@@ -41,7 +41,7 @@ Per-country detectors, statute-grounded policy enforcement, PII-tier classificat
 | **Soft PII** *(opt-in)* | `arche-core[detect]` → GLiNER2-PII | Multilingual neural NER for names / orgs / locations. |
 
 Every detection carries:
-- **`category`** per the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/archetree/main/datasets/pan-african-pii-taxonomy) — 51 categories across PII-1..PII-9
+- **`category`** per the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy) — 51 categories across PII-1..PII-9
 - **`sensitivity_tier`** — `high` / `moderate` / `low` (NIST 800-122 framework, per-jurisdiction in YAML)
 - **`regulatory_citation`** — exact statute section the loaded jurisdiction cites
 - **`confidence`** — 1.0 for structurally validated, lower for shape-only

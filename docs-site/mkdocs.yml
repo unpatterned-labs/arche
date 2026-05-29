@@ -74,15 +74,11 @@ nav:
     - Journalist PII scan on leaked documents: cookbooks/journalist-scan.md
     - Civil-society audit of a public dataset: cookbooks/civil-society-audit.md
     - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
-    - Web URL to Detection: cookbooks/web-to-detection.md
     # - GLiNER NER (notebook): https://github.com/unpatterned-labs/arche/blob/main/notebooks/cookbook-gliner-ner.ipynb
   - API Reference:
     - Overview: api/index.md
     - Pipeline: api/resolve.md
     - detect(): api/detect.md
-  - Guides:
-    - Output Formats: guides/output-formats.md
-    - CLI Reference: guides/cli.md
   # - RFCs:
   #   - v0.3 storage architecture: rfcs/0001-v0.3-storage.md
   - Examples:
@@ -91,7 +87,6 @@ nav:
     - DSAR workflow: https://github.com/unpatterned-labs/arche/blob/main/examples/03_dsar_workflow.py
     - SD-JWT-VC: https://github.com/unpatterned-labs/arche/blob/main/examples/04_sd_jwt_credential.py
     - Audit log: https://github.com/unpatterned-labs/arche/blob/main/examples/05_audit_log.py
-    - Invoice Extraction (v0.1): examples/invoice-extraction.md
   - Datasets:
     - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
   - Blog:
