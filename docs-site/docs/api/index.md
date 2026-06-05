@@ -6,7 +6,7 @@ The arche-core v0.2 public surface is intentionally slim. Everything below is im
 from arche import Pipeline, Result, Detection
 ```
 
-For the deeper substrate APIs, import from the substrate package directly. For exhaustive auto-generated reference, see the [source on GitHub](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche) — the v0.2.0a3 release introduces `mkdocstrings`-rendered API pages.
+For the deeper substrate APIs, import from the substrate package directly. For exhaustive auto-generated reference, see the [source on GitHub](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche) - the v0.2.0a3 release introduces `mkdocstrings`-rendered API pages.
 
 ---
 
@@ -14,7 +14,7 @@ For the deeper substrate APIs, import from the substrate package directly. For e
 
 | Symbol | Purpose | Page |
 |---|---|---|
-| [`Pipeline`](resolve.md#pipeline) | The framework primitive — detect + policy + audit in one call | resolve.md |
+| [`Pipeline`](resolve.md#pipeline) | The framework primitive - detect + policy + audit in one call | resolve.md |
 | [`Result`](resolve.md#result) | Typed return from `Pipeline.process(...)` | resolve.md |
 | [`Detection`](resolve.md#detection) | A single detected PII span with category, span, confidence | resolve.md |
 
@@ -24,7 +24,7 @@ Plus `__version__`.
 
 ## Substrate APIs
 
-### Detect — `arche.detect`
+### Detect - `arche.detect`
 
 ```python
 from arche.detect.ng.ids import detect_nigerian_ids
@@ -37,7 +37,7 @@ from arche.detect._africa.phones import normalize_e164, validate_phone
 
 Per-country ID detectors return `list[Detection]`. Phone helpers wrap `phonenumbers` (libphonenumber port) for E.164 normalization.
 
-### Policy — `arche.policy`
+### Policy - `arche.policy`
 
 ```python
 from arche.policy import (
@@ -49,15 +49,15 @@ from arche.policy import (
 
 Statute YAMLs live at `arche/policy/statutes/`. Four launch jurisdictions: NDPA-2023 (NG), POPIA (ZA), KENYA-DPA, GHANA-DPA.
 
-### Address — `arche.addr`
+### Address - `arche.addr`
 
 ```python
 from arche.addr import parse_address
 ```
 
-NG + ZA address parser MVP (Stage 1). KE + GH coverage arrives in v0.3 per FR-ADDR-1..10.
+NG + ZA address parser MVP. Other jurisdictions are not yet included.
 
-### Sign + Credentials — `arche.sign`, `arche.credentials`
+### Sign + Credentials - `arche.sign`, `arche.credentials`
 
 ```python
 from arche.sign import (
@@ -76,24 +76,24 @@ from arche.credentials.sd_jwt import (
 
 Ed25519 + did:key + JWS. SD-JWT-VC for wallet ecosystem interop (EUDI Wallet ARF / MOSIP Inji format).
 
-### Audit — `arche.graph.audit`
+### Audit - `arche.graph.audit`
 
 ```python
 from arche.graph.audit import AuditLog, AuditEvent
 ```
 
-SQLite-backed append-only log. PII values never stored — only category labels, spans, document hashes. Signed export bundles for regulator handoff. See PRD §8.2.
+SQLite-backed append-only log. PII values never stored - only category labels, spans, document hashes. Signed export bundles for regulator handoff. See PRD Section 8.2.
 
-### Workflows — `arche.workflow`
+### Workflows - `arche.workflow`
 
 ```python
 from arche.workflow import Pipeline, Result, Detection
 from arche.workflow.dsar import DSARWorkflow
 ```
 
-`Pipeline` composes Detect → Policy → Audit. `DSARWorkflow` is the citizen-side Data Subject Access Request drafter for NDPA / POPIA / Kenya DPA / Ghana DPA.
+`Pipeline` composes detect, policy, and audit. `DSARWorkflow` is the citizen-side Data Subject Access Request drafter for NDPA / POPIA / Kenya DPA / Ghana DPA.
 
-### Document ingest — `arche.doc` (optional)
+### Document ingest - `arche.doc` (optional)
 
 ```python
 from arche.doc import parse  # requires arche-core[doc]
@@ -101,7 +101,7 @@ from arche.doc import parse  # requires arche-core[doc]
 
 docling-backed PDF/DOCX/PPTX/XLSX/HTML parser. `Pipeline.process_file(path)` delegates to this substrate.
 
-### Entity resolution — `arche.resolve`
+### Entity resolution - `arche.resolve`
 
 ```python
 from arche.resolve import (
@@ -111,7 +111,7 @@ from arche.resolve import (
 )
 ```
 
-Fuzzy Fellegi-Sunter with African-name equivalence by default. With `arche-core[resolve]` installed, transparently engages a Splink+DuckDB backend at sizes >=10 entities. A first-class `SplinkResolver` user class arrives in v0.3. See the [entity resolution tutorial](../tutorials/entity_resolution.md).
+Fuzzy Fellegi-Sunter with African-name equivalence by default. With `arche-core[resolve]` installed, arche can use a Splink+DuckDB backend for larger workloads. See the [entity resolution tutorial](../tutorials/entity_resolution.md).
 
 ---
 
@@ -121,4 +121,4 @@ from arche import Pipeline
 result = Pipeline(jurisdiction="NG").process(text)
 ```
 
-See the [Quick Start](../getting-started/quickstart.md) and [HOW-TO §10](https://github.com/unpatterned-labs/arche/blob/main/HOW-TO.md#10-whats-deferred-to-stage-2) for the full migration walk-through.
+See the [Quick Start](../getting-started/quickstart.md) and [HOW-TO Section 10](https://github.com/unpatterned-labs/arche/blob/main/HOW-TO.md#10-whats-deferred-to-stage-2) for the full migration walk-through.

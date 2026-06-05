@@ -1,6 +1,6 @@
-# Cookbook — Nigerian fintech KYC intake
+# Cookbook - Nigerian fintech KYC intake
 
-You're a backend engineer at a Lagos fintech. Customer onboarding writes a JSON record into your `intakes` table with the full customer profile — name, NIN, BVN, phone, address — and the data warehouse mirror picks it up. The CTO wants the mirror to carry redacted records only; the data team needs the *categories* of PII that were redacted (so they can model fraud risk on profile completeness) but never the values; and the NDPC will ask "show me the rule that decided each redaction" in the next audit.
+You're a backend engineer at a Lagos fintech. Customer onboarding writes a JSON record into your `intakes` table with the full customer profile - name, NIN, BVN, phone, address - and the data warehouse mirror picks it up. The CTO wants the mirror to carry redacted records only; the data team needs the *categories* of PII that were redacted (so they can model fraud risk on profile completeness) but never the values; and the NDPC will ask "show me the rule that decided each redaction" in the next audit.
 
 **Before arche-core:** you wire Presidio (which doesn't know NIN from a US bank account), you write a 400-line `validators/ng.py` module that you'll maintain forever, you add another 200 lines of redaction logic, and you build a separate audit table you hope you remember to populate. Three engineering weeks. Bus factor of one. Auditor unhappy.
 
@@ -50,7 +50,7 @@ async def on_intake_received(intake: IntakeRecord) -> RedactedIntake:
     )
 ```
 
-`audit.emit_pipeline_result` writes every detection and policy decision into the SQLite log. PII values are never stored — only category labels, span offsets, document hashes (PRD §8.2).
+`audit.emit_pipeline_result` writes every detection and policy decision into the SQLite log. PII values are never stored - only category labels, span offsets, document hashes (PRD Section 8.2).
 
 ## What goes to the warehouse, what stays out
 
@@ -87,6 +87,6 @@ The bundle is a JWS envelope binding the audit rows + the statute version + the 
 
 ## See also
 
-- [Quick Start example 1 — Pipeline with NDPA-2023](../getting-started/quickstart.md#1-the-pipeline-primitive-ndpa-2023-enforcement-in-one-call)
-- [Power-user cookbook: South African health export](health-export.md) — same pattern, POPIA instead of NDPA
+- [Quick Start example 1 - Pipeline with NDPA-2023](../getting-started/quickstart.md#1-the-pipeline-primitive-ndpa-2023-enforcement-in-one-call)
+- [Power-user cookbook: South African health export](health-export.md) - same pattern, POPIA instead of NDPA
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md)

@@ -1,6 +1,6 @@
 # Tutorial: Citizen-side DSAR
 
-Generating compliant Data Subject Access Request letters under NDPA, POPIA, Kenya DPA, and Ghana DPA — with cryptographic provenance the receiving DPO can verify offline.
+Generating compliant Data Subject Access Request letters under NDPA, POPIA, Kenya DPA, and Ghana DPA - with cryptographic provenance the receiving DPO can verify offline.
 
 ## Why this matters
 
@@ -23,7 +23,7 @@ Each step is manual. Most citizens never exercise these rights.
 from arche.workflow import DSARWorkflow, DSARRequestor, DSAROrganization
 from arche.sign import generate_keypair
 
-# Citizen-held key — generate once, store locally
+# Citizen-held key - generate once, store locally
 citizen_key = generate_keypair()
 
 workflow = DSARWorkflow(
@@ -74,7 +74,7 @@ The workflow picks the correct statute section automatically:
 | Kenya | Kenya DPA | s.26(a) (Right of Access) |
 | Ghana | Ghana DPA | s.35 (Access to personal data) |
 
-Similar mappings exist for rectification, erasure, portability, and objection — each citation chosen per the locked statute YAML in `arche.policy.statutes/`.
+Similar mappings exist for rectification, erasure, portability, and objection - each citation chosen per the locked statute YAML in `arche.policy.statutes/`.
 
 ## Per-jurisdiction deadlines
 
@@ -154,12 +154,12 @@ The DPO knows:
 
 ## Stage 1 dispatch mode
 
-`dispatch_mode="draft_only"` is the only mode supported in Stage 1. The workflow drafts the letter; the citizen reviews and emails it manually. This is a deliberate conservatism — auto-dispatching legal letters at scale could create real harm if the workflow miscites a statute or mis-identifies a target.
+`dispatch_mode="draft_only"` is the only mode supported in Stage 1. The workflow drafts the letter; the citizen reviews and emails it manually. This is a deliberate conservatism - auto-dispatching legal letters at scale could create real harm if the workflow miscites a statute or mis-identifies a target.
 
 Autonomous dispatch lands in Stage 4 with explicit consent mechanisms and a separate audit trail.
 
 ## What's next
 
-- [Sign-share-extract tutorial](sign_share_extract.md) — the primitives
+- [Sign-share-extract tutorial](sign_share_extract.md) - the primitives
   this workflow builds on.
-- [API overview](../api/index.md) — the public workflow surface.
+- [API overview](../api/index.md) - the public workflow surface.

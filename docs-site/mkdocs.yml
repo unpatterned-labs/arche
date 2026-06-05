@@ -1,5 +1,5 @@
 site_name: arche
-site_description: African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH — grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
+site_description: African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH - grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
@@ -47,34 +47,28 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - Home: index.md
-  - Getting Started:
+  - Overview: index.md
+  - Getting started:
     - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-  - Tutorials:
-    - Fintech KYC (NDPA-compliant intake): tutorials/fintech_kyc.md
+    - Quick start: getting-started/quickstart.md
+  - Guides:
     - Match African names: how-to/match-african-names.md
     - Extract from invoice: how-to/extract-from-invoice.md
-    - Why arche & when to use it: tutorials/arche_vs_alternatives.md
-    - "Power-user: Sign, share, extract": tutorials/sign_share_extract.md
-    - "Power-user: Citizen DSAR": tutorials/citizen_dsar.md
-    - "Power-user: Entity resolution": tutorials/entity_resolution.md
-  - How-To:
-    - Extract from Invoice: how-to/extract-from-invoice.md
-    - Match African Names: how-to/match-african-names.md
+    - Why arche and when to use it: tutorials/arche_vs_alternatives.md
   - Cookbooks:
-    - Nigerian fintech KYC intake: cookbooks/fintech-kyc.md
-    - South African POPIA health export: cookbooks/health-export.md
-    - Journalist PII scan on leaked documents: cookbooks/journalist-scan.md
-    - Civil-society audit of a public dataset: cookbooks/civil-society-audit.md
+    - Nigerian fintech KYC: cookbooks/fintech-kyc.md
+    - South African health export: cookbooks/health-export.md
+    - Journalist PII scan: cookbooks/journalist-scan.md
+    - Civil-society audit: cookbooks/civil-society-audit.md
     - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
-    # - GLiNER NER (notebook): https://github.com/unpatterned-labs/arche/blob/main/notebooks/cookbook-gliner-ner.ipynb
-  - API Reference:
+  - Workflows:
+    - Sign, share, extract: tutorials/sign_share_extract.md
+    - Citizen DSAR: tutorials/citizen_dsar.md
+    - Entity resolution: tutorials/entity_resolution.md
+  - API:
     - Overview: api/index.md
     - Pipeline: api/resolve.md
     - detect(): api/detect.md
-  # - RFCs:
-  #   - v0.3 storage architecture: rfcs/0001-v0.3-storage.md
   - Examples:
     - Pipeline (NDPA): https://github.com/unpatterned-labs/arche/blob/main/examples/01_pipeline_ndpa.py
     - Sign-share-extract: https://github.com/unpatterned-labs/arche/blob/main/examples/02_sign_share_extract.py

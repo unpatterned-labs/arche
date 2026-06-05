@@ -17,12 +17,12 @@ python -c "import arche; print('arche', arche.__version__, 'ok')"
 
 - **Python 3.11+** (3.12 and 3.13 supported)
 - Linux, macOS, and Windows
-- No GPU required — base install runs entirely on CPU
-- No API keys required — works offline
+- No GPU required - base install runs entirely on CPU
+- No API keys required - works offline
 
 The base install is ~106 MB and includes per-country PII detectors, policy engine, four jurisdiction packs (NDPA-2023, POPIA, Kenya DPA, Ghana DPA), the `Pipeline` framework primitive, `arche.sign` (Ed25519 + did:key + JWS), `arche.credentials.sd_jwt` (SD-JWT-VC), and the SQLite audit log.
 
-No heavy ML/DPI dependencies are loaded by `import arche` — enforced by CI (see `.github/workflows/arche-core-budget.yml`).
+No heavy ML/DPI dependencies are loaded by `import arche` - enforced by CI (see `.github/workflows/arche-core-budget.yml`).
 
 ---
 
@@ -33,7 +33,7 @@ The base install is the framework. Heavy capabilities ship as opt-in extras so a
 === "Document ingest"
 
     ```bash
-    pip install arche-core[doc]       # docling — PDF, DOCX, PPTX, XLSX, HTML
+    pip install arche-core[doc]       # docling - PDF, DOCX, PPTX, XLSX, HTML
     pip install arche-core[doc-ocr]   # adds easyocr for scanned PDFs / images
     pip install arche-core[doc-vlm]   # adds transformers for VLM backends
     ```
@@ -48,7 +48,7 @@ The base install is the framework. Heavy capabilities ship as opt-in extras so a
     pip install arche-core[resolve]   # Splink + DuckDB for billion-row ER
     ```
 
-    Soft-PII (`detect`), Western-only PII corpus baseline (`presidio`), and probabilistic entity resolution (`resolve`). All optional — arche's African-context detectors live in the base install.
+    Soft-PII (`detect`), Western-only PII corpus baseline (`presidio`), and probabilistic entity resolution (`resolve`). All optional - arche's African-context detectors live in the base install.
 
 === "LLM router"
 
@@ -69,7 +69,7 @@ The base install is the framework. Heavy capabilities ship as opt-in extras so a
     pip install arche-core[africa]
     ```
 
-    Forward-compatible namespaces. All launch-country detectors ship in the base install today; these extras exist so a Nigerian fintech can pin to NG-only changes in v0.3+.
+    Forward-compatible namespaces. All launch-country detectors ship in the base install today.
 
 === "Everything"
 
@@ -94,7 +94,7 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 ### Pick the right uv command for the job
 
-| You want to… | Use | Result |
+| You want to... | Use | Result |
 |---|---|---|
 | Add arche-core as a **project dependency** (writes `pyproject.toml` + `uv.lock`) | `uv add 'arche-core[detect]'` | Pinned in your project; collaborators get the same version |
 | Install into the **active environment** ad-hoc | `uv pip install 'arche-core[detect]'` | Works inside any active venv / conda env, no project file edits |
@@ -104,12 +104,12 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 !!! warning "Shell quoting"
 
-    The `[extra]` syntax must be **quoted** in zsh, bash, and fish — unquoted brackets are interpreted as glob patterns and either silently expand to nothing or error out.
+    The `[extra]` syntax must be **quoted** in zsh, bash, and fish - unquoted brackets are interpreted as glob patterns and either silently expand to nothing or error out.
 
     ```bash
-    uv add 'arche-core[detect]'          # ✓ all shells
-    uv add "arche-core[detect]"          # ✓ all shells
-    uv add arche-core[detect]            # ✗ zsh: "no matches found"
+    uv add 'arche-core[detect]'          # ok in all shells
+    uv add "arche-core[detect]"          # ok in all shells
+    uv add arche-core[detect]            # zsh: "no matches found"
     ```
 
     PowerShell does not need the quotes but accepts them.
@@ -127,17 +127,17 @@ uv add 'arche-core[resolve]'               # Splink + DuckDB (billion-row ER)
 uv add 'arche-core[llm]'                   # openai + anthropic SDKs
 uv add 'arche-core[litellm]'               # LiteLLM proxy router
 
-# Several at once — single resolve, one transaction
+# Several at once - single resolve, one transaction
 uv add 'arche-core[detect,doc]'
 uv add 'arche-core[detect,doc,llm]'
 
-# The convenience superset — pdf, docx, detect, presidio, resolve, llm
+# The convenience superset - pdf, docx, detect, presidio, resolve, llm
 uv add 'arche-core[all]'
 
 # Deprecated v0.1 names still resolve (with a DeprecationWarning):
-uv add 'arche-core[gliner]'                # → use [detect] in v0.3
-uv add 'arche-core[pii]'                   # → use [presidio] in v0.3
-uv add 'arche-core[splink]'                # → use [resolve] in v0.3
+uv add 'arche-core[gliner]'                # use [detect] instead
+uv add 'arche-core[pii]'                   # use [presidio] instead
+uv add 'arche-core[splink]'                # use [resolve] instead
 ```
 
 ### Workspace development (this monorepo)
@@ -169,7 +169,7 @@ uv run --extra detect python -c "from arche.extract import extract; print(extrac
 
 | Use case | Install |
 |---|---|
-| Resolve names + IDs from text (Pan-African PII Taxonomy) | base install — nothing extra needed |
+| Resolve names + IDs from text (Pan-African PII Taxonomy) | base install - nothing extra needed |
 | Run on PDFs / DOCX / scanned invoices | `uv add 'arche-core[doc]'` (add `[doc-ocr]` for image PDFs) |
 | Soft-PII / job-titles / orgs / unknown places via NER | `uv add 'arche-core[detect]'` |
 | Western PII corpora baseline (US SSN, IBAN, etc.) | `uv add 'arche-core[presidio]'` |
@@ -181,9 +181,9 @@ uv run --extra detect python -c "from arche.extract import extract; print(extrac
 
 ## What's next
 
-- [Quick Start](quickstart.md) — five minutes from install to a signed
+- [Quick Start](quickstart.md) - five minutes from install to a signed
   redacted document.
-- [Sign, share, extract tutorial](../tutorials/sign_share_extract.md) —
+- [Sign, share, extract tutorial](../tutorials/sign_share_extract.md) -
   the headline verifiability workflow.
-<!-- - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md) — generate a
+<!-- - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md) - generate a
   signed Data Subject Access Request letter. -->

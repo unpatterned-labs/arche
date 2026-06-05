@@ -23,7 +23,7 @@ pip install arche-core
 That's the full dependency surface for this tutorial. No extras
 required.
 
-## Step 1 — Process the document
+## Step 1 - Process the document
 
 ```python
 from arche import Pipeline
@@ -49,9 +49,9 @@ Output:
 Customer Adesola Okonkwo registered with NIN [NIN] and BVN [BVN]. Contact phone PHONE_.... Company: RC 245678.
 ```
 
-NIN and BVN are masked (NDPA-2023 s.30); the phone is **tokenized** (s.30) so records stay linkable; RC is retained (s.31, legitimate interests). The name `Adesola Okonkwo` is left untouched here because it isn't in the bundled name lexicon — add GLiNER soft-PII detection via `arche-core[detect]` to tokenize free-form names too.
+NIN and BVN are masked (NDPA-2023 s.30); the phone is **tokenized** (s.30) so records stay linkable; RC is retained (s.31, legitimate interests). The name `Adesola Okonkwo` is left untouched here because it isn't in the bundled name lexicon - add GLiNER soft-PII detection via `arche-core[detect]` to tokenize free-form names too.
 
-## Step 2 — Sign
+## Step 2 - Sign
 
 Generate an Ed25519 keypair for the bank's compliance officer:
 
@@ -63,7 +63,7 @@ print(bank_key.did_key)
 # did:key:z6MkTestSomethingSomethingPublicKey
 ```
 
-`generate_keypair()` produces a `Keypair` carrying the private key (held locally), the public key, and the canonical `did:key` identifier. The public key is *encoded into* the `did:key` string — no separate distribution needed.
+`generate_keypair()` produces a `Keypair` carrying the private key (held locally), the public key, and the canonical `did:key` identifier. The public key is *encoded into* the `did:key` string - no separate distribution needed.
 
 Now sign the document via `SignWorkflow`:
 
@@ -89,13 +89,13 @@ print(signed_envelope[:80] + "..." + signed_envelope[-20:])
 
 The whole thing is around 1000 characters. Email it, ship it in an HTTP body, encode it in a QR code, write it to disk. It's a string.
 
-## Step 3 — Share
+## Step 3 - Share
 
 There's no step 3 in code. The signed envelope is a single string. Send it however you'd send any other string.
 
-The recipient needs nothing in advance — no public key out-of-band, no PKI infrastructure, no resolver. The `did:key` in the JWS `kid` header carries the public key encoded directly. Verification is offline.
+The recipient needs nothing in advance - no public key out-of-band, no PKI infrastructure, no resolver. The `did:key` in the JWS `kid` header carries the public key encoded directly. Verification is offline.
 
-## Step 4 — Verify and extract
+## Step 4 - Verify and extract
 
 At the recipient:
 
@@ -131,7 +131,7 @@ What the recipient cannot do:
 - Reverse the tokens (the salt is held by the bank).
 - Modify any of the above (any change breaks the signature).
 
-## Step 5 — Re-frame as SD-JWT-VC
+## Step 5 - Re-frame as SD-JWT-VC
 
 For wallet-ecosystem consumers (EUDI Wallet, MOSIP Inji), re-frame the envelope as an SD-JWT Verifiable Credential:
 
@@ -156,11 +156,11 @@ print(v.disclosed_claims)
 # {"jurisdiction": "NG", "statute": "NDPA-2023@v1.0"}
 ```
 
-The third party knows the credential was issued by the bank (signature binds the whole credential) under NDPA-2023 jurisdiction — but cannot see which categories of PII were detected, what redacted text was produced, or the document hash.
+The third party knows the credential was issued by the bank (signature binds the whole credential) under NDPA-2023 jurisdiction - but cannot see which categories of PII were detected, what redacted text was produced, or the document hash.
 
 ## What's next
 
-- [Citizen DSAR tutorial](citizen_dsar.md) — uses the same primitives to
+- [Citizen DSAR tutorial](citizen_dsar.md) - uses the same primitives to
   generate compliant DSAR letters for NDPA / POPIA / Kenya DPA / Ghana DPA.
-- [`arche.sign` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/sign) — signing primitives.
-- [`arche.credentials` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/credentials) — SD-JWT-VC details.
+- [`arche.sign` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/sign) - signing primitives.
+- [`arche.credentials` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/credentials) - SD-JWT-VC details.
