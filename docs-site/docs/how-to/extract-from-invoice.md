@@ -54,7 +54,7 @@ signed = SignWorkflow(jurisdiction="NG").sign(
     purpose="invoice_processing",
 )
 # `signed.serialize()` is a compact JWS string the consumer can verify
-# with arche.sign.VerifyExtractWorkflow — no network call required.
+# with arche.sign.VerifyExtractWorkflow - no network call required.
 ```
 
 ---

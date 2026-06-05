@@ -1,9 +1,80 @@
 :root {
-  --md-primary-fg-color: #101828;
+  --md-primary-fg-color: #1f3d36;
   --md-primary-bg-color: #ffffff;
-  --md-accent-fg-color: #1a56db;
+  --md-accent-fg-color: #2f6f63;
+  --md-typeset-a-color: #2f6f63;
 }
 
 .md-header {
-  background-color: #101828;
+  background: #1f3d36;
+  box-shadow: none;
+}
+
+.md-tabs {
+  background: #1f3d36;
+}
+
+.md-main__inner {
+  margin-top: 1.2rem;
+}
+
+.md-content {
+  max-width: 880px;
+}
+
+.md-typeset {
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.md-typeset h1 {
+  color: #18231f;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.md-typeset h2 {
+  color: #20372f;
+  font-weight: 650;
+  margin-top: 2.1rem;
+}
+
+.md-typeset h3 {
+  font-weight: 650;
+}
+
+.md-typeset code {
+  border-radius: 4px;
+}
+
+.md-typeset pre > code {
+  font-size: 0.72rem;
+}
+
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+}
+
+.md-typeset table:not([class]) th {
+  background: #eef5f2;
+  color: #1f3d36;
+  font-weight: 650;
+}
+
+.md-typeset blockquote {
+  border-left-color: #7aa89c;
+}
+
+.md-nav__title {
+  font-weight: 700;
+}
+
+.md-nav__link--active,
+.md-nav__link:is(:focus, :hover) {
+  color: #2f6f63;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 6px;
 }

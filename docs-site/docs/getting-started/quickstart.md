@@ -3,11 +3,11 @@
 Your first NDPA-compliant redaction in five minutes, then four power-user workflows that compose on top. Every example is copy-paste ready.
 
 !!! tip "If you're new to arche-core, start with Example 1 and stop there"
-    Example 1 — the `Pipeline` primitive — is the lead use case and covers ~95% of what most users need. Examples 2 onward are **power-user workflows** that build on the same primitives. Read them when you have a specific use case for signed envelopes, citizen DSAR drafting, wallet credentials, or standalone audit logs.
+    Example 1 - the `Pipeline` primitive - is the lead use case and covers ~95% of what most users need. Examples 2 onward are **power-user workflows** that build on the same primitives. Read them when you have a specific use case for signed envelopes, citizen DSAR drafting, wallet credentials, or standalone audit logs.
 
 ---
 
-## 1. The Pipeline primitive — NDPA-2023 enforcement in one call
+## 1. The Pipeline primitive - NDPA-2023 enforcement in one call
 
 ```python
 from arche import Pipeline
@@ -68,7 +68,7 @@ The four examples below ship in the package and are fully tested, but they are n
 ```python
 from arche.sign import SignWorkflow, VerifyExtractWorkflow, generate_keypair
 
-# Party A — Bank's compliance officer
+# Party A - Bank's compliance officer
 bank_key = generate_keypair()
 signer = SignWorkflow(jurisdiction="NG", tokenize_salt="bank_2026")
 signed = signer.sign(
@@ -80,7 +80,7 @@ signed = signer.sign(
 
 # Wire transit happens here
 
-# Party B — Recipient verifies offline
+# Party B - Recipient verifies offline
 verifier = VerifyExtractWorkflow()
 result = verifier.process(signed)
 
@@ -90,9 +90,9 @@ print(result.statute_at_signing)      # "NDPA-2023@v1.0"
 print(result.redacted_text)           # "... NIN [NIN], BVN [BVN] ..."
 ```
 
-The recipient verifies offline using the `did:key` embedded in the JWS header — no infrastructure, no resolver, no network call. The signature binds the entire envelope: the recipient can trust the redacted text, the detections, and the policy outcomes are exactly what the bank processed.
+The recipient verifies offline using the `did:key` embedded in the JWS header - no infrastructure, no resolver, no network call. The signature binds the entire envelope: the recipient can trust the redacted text, the detections, and the policy outcomes are exactly what the bank processed.
 
-[Full sign-share-extract tutorial →](../tutorials/sign_share_extract.md)
+[Full sign-share-extract tutorial](../tutorials/sign_share_extract.md)
 
 ---
 
@@ -134,7 +134,7 @@ Each draft cites the correct statute section per jurisdiction:
 
 Stage 1 ships `dispatch_mode="draft_only"`. The citizen reviews and dispatches manually; autonomous dispatch is Stage 4 with explicit consent mechanisms.
 
-[Citizen DSAR tutorial →](../tutorials/citizen_dsar.md)
+[Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
 
 ---
 
@@ -193,7 +193,7 @@ compliance_key = generate_keypair()
 signed_bundle = audit.export_signed(key=compliance_key, purpose="ndpc_audit")
 ```
 
-The audit log is append-only by convention. PII values are never stored — only category labels and character spans. Signed exports give the regulator cryptographic non-repudiation of what the deployment processed.
+The audit log is append-only by convention. PII values are never stored - only category labels and character spans. Signed exports give the regulator cryptographic non-repudiation of what the deployment processed.
 
 ---
 

@@ -27,17 +27,17 @@ from arche.african.names import are_names_equivalent
 
 pairs = [
     # Pan-Islamic naming traditions
-    ("Fatima", "Fatoumata"),         # Arabic → Mandinka/Fulani
-    ("Abdullahi", "Abdoulaye"),      # Arabic → French West African
-    ("Ibrahim", "Ibrahima"),         # Arabic → Wolof/Mandinka
-    ("Musa", "Moussa"),             # Arabic → French West African
-    ("Aisha", "Aissatou"),          # Arabic → Fulani
+    ("Fatima", "Fatoumata"),         # Arabic to Mandinka/Fulani
+    ("Abdullahi", "Abdoulaye"),      # Arabic to French West African
+    ("Ibrahim", "Ibrahima"),         # Arabic to Wolof/Mandinka
+    ("Musa", "Moussa"),             # Arabic to French West African
+    ("Aisha", "Aissatou"),          # Arabic to Fulani
     # Fulani cross-ethnic
     ("Diallo", "Jallow"),           # Fulani name, different spellings by country
     # Colonial-era European equivalences
-    ("Pierre", "Peter"),            # French → English (common in Cameroon, DRC)
+    ("Pierre", "Peter"),            # French to English (common in Cameroon, DRC)
     # Yoruba naming
-    ("Oluwaseun", "Seun"),          # Full Yoruba → shortened form
+    ("Oluwaseun", "Seun"),          # Full Yoruba to shortened form
     # Different people (negative case)
     ("Janet Okafor", "David Mensah"),
 ]
@@ -45,21 +45,21 @@ pairs = [
 for name1, name2 in pairs:
     match, conf = are_names_equivalent(name1, name2)
     status = "MATCH" if match else "NO MATCH"
-    print(f"  {name1:20} ~ {name2:20} → {status} ({conf:.0%})")
+    print(f"  {name1:20} ~ {name2:20} -> {status} ({conf:.0%})")
 ```
 
 Output:
 
 ```
-  Fatima               ~ Fatoumata            → MATCH (94%)
-  Abdullahi            ~ Abdoulaye            → MATCH (87%)
-  Ibrahim              ~ Ibrahima             → MATCH (91%)
-  Musa                 ~ Moussa               → MATCH (96%)
-  Aisha                ~ Aissatou             → MATCH (89%)
-  Diallo               ~ Jallow               → MATCH (90%)
-  Pierre               ~ Peter                → MATCH (91%)
-  Oluwaseun            ~ Seun                 → MATCH (85%)
-  Janet Okafor         ~ David Mensah         → NO MATCH (12%)
+  Fatima               ~ Fatoumata            -> MATCH (94%)
+  Abdullahi            ~ Abdoulaye            -> MATCH (87%)
+  Ibrahim              ~ Ibrahima             -> MATCH (91%)
+  Musa                 ~ Moussa               -> MATCH (96%)
+  Aisha                ~ Aissatou             -> MATCH (89%)
+  Diallo               ~ Jallow               -> MATCH (90%)
+  Pierre               ~ Peter                -> MATCH (91%)
+  Oluwaseun            ~ Seun                 -> MATCH (85%)
+  Janet Okafor         ~ David Mensah         -> NO MATCH (12%)
 ```
 
 ---

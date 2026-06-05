@@ -49,7 +49,7 @@ Run the substrate chain on a string. Returns a `Result` with detections, policy 
 
 #### `process_file(path: str | Path) -> Result`
 
-Convenience: parse a file via `arche.doc.parse` (PDF/DOCX/PPTX/XLSX via docling — requires `arche-core[doc]`) then run `process()` on the extracted text.
+Convenience: parse a file via `arche.doc.parse` (PDF/DOCX/PPTX/XLSX via docling - requires `arche-core[doc]`) then run `process()` on the extracted text.
 
 ---
 
@@ -90,7 +90,7 @@ class Detection:
     source: str          # "regex" / "validator" / "gliner" / "_africa" / ...
 ```
 
-`Detection.value_redacted` is the placeholder used in `result.redacted_text`. The original PII value is **not** retained on the Detection — `start`/`end` index into `result.text` if the caller still has it.
+`Detection.value_redacted` is the placeholder used in `result.redacted_text`. The original PII value is **not** retained on the Detection - `start`/`end` index into `result.text` if the caller still has it.
 
 ---
 

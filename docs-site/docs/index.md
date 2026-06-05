@@ -1,161 +1,179 @@
-# arche — PII + digital identity detection with statute-aware policy
+# arche-core
 
-**African-first, globally pluggable.** Detect PII, digital identifiers, phones, addresses, and IPs across African jurisdictions. Every detection carries its **sensitivity tier** (high / moderate / low) and the **regulatory citation** it was made under. Apply six closed policy actions grounded in NDPA-2023, POPIA, Kenya DPA, or Ghana DPA.
+The identity data engine for Africa.
+
+Arche finds identifying data, helps protect it according to the right
+jurisdiction, and prepares it for privacy-preserving resolution.
+
+The public `arche-core` package focuses on three connected jobs:
+
+- **Detect** identifying data in African text and documents.
+- **Protect** it with jurisdiction-aware masking, tokenization, generalization,
+  dropping, retention, and audit actions.
+- **Resolve** more safely by producing normalized, policy-aware signals such as
+  tokenized IDs, names, phones, and addresses.
+
+Today, Detect and Protect are the lead product surface. Resolution support is
+intentionally narrow: name matching, tokenized identifiers, and optional
+Splink-backed workflows for larger linkage tasks.
+
+## Why use this library
+
+- Simple. One `Pipeline.process(...)` call runs detection, policy, redaction,
+  and audit output.
+- African-first. Launch support covers Nigeria, Kenya, South Africa, and Ghana,
+  with wider African identifier, phone, name, and address support.
+- Statute-aware. Detections are grounded in NDPA-2023, POPIA, Kenya DPA, or
+  Ghana DPA policy files.
+- Lightweight by default. Heavy ML, Presidio, Splink, and document parsing
+  dependencies are opt-in extras.
+- Useful for review workflows. You can scan text, PDFs, DOCX files, invoices,
+  DSAR responses, leaked documents, KYC records, and review extracts
+  without building a separate compliance layer first.
+
+## Installation
 
 ```bash
 pip install arche-core
 ```
 
+For document parsing:
+
+```bash
+pip install "arche-core[doc]"
+```
+
+Optional extras include:
+
+| Extra | Adds |
+|---|---|
+| `arche-core[doc]` | docling-backed PDF, DOCX, PPTX, XLSX, and HTML parsing |
+| `arche-core[doc-ocr]` | OCR support for scanned documents |
+| `arche-core[detect]` | GLiNER2-PII soft-PII detection |
+| `arche-core[presidio]` | Microsoft Presidio integration |
+| `arche-core[resolve]` | Splink and DuckDB entity resolution support |
+
+## What does it do?
+
+Given text or a supported document file, arche returns:
+
+- the detected PII spans
+- their taxonomy category
+- a sensitivity tier
+- the statute citation used by the loaded jurisdiction
+- the policy action applied
+- redacted text
+- audit records suitable for later review
+
+These outputs are useful for redaction today and for safer record linkage later:
+tokenized IDs, normalized phones, detected names, and parsed address fragments
+can become privacy-preserving join signals.
+
+Supported launch jurisdictions:
+
+| Jurisdiction | Policy loaded |
+|---|---|
+| `NG` | NDPA-2023 |
+| `ZA` | POPIA |
+| `KE` | Kenya DPA |
+| `GH` | Ghana DPA |
+
+## Example: detect PII in text
+
 ```python
 from arche import Pipeline
 
-pipeline = Pipeline(jurisdiction="NG")   # auto-loads NDPA-2023
+pipeline = Pipeline(jurisdiction="NG")
 result = pipeline.process(
     "Fatima Abdullahi, NIN 12345678901, BVN 22100987654."
 )
 
-for d in result.detections:
-    print(f"{d.category:18} tier={d.sensitivity_tier.value:8} "
-          f"citation={d.regulatory_citation}")
-# PII-2-BVN          tier=high     citation=NDPA-2023 s.30, CBN BVN policy 2014
-# PII-2-NIN          tier=high     citation=NDPA-2023 s.30, NIMC Act s.27
-# PII-1-NAME         tier=moderate citation=NDPA-2023 s.30   (x2 - given + family name)
-
 print(result.redacted_text)
-# NAME_... NAME_..., NIN [NIN], BVN [BVN].
 ```
 
-Per-country detectors, statute-grounded policy enforcement, PII-tier classification, and the regulatory citation surfaced on every detection — in one call.
+Example output:
 
----
+```text
+NAME_... NAME_..., NIN [NIN], BVN [BVN].
+```
 
-## What arche detects
+You can inspect the detections directly:
 
-| Category | Module | Coverage |
+```python
+for detection in result.detections:
+    print(
+        detection.category,
+        detection.sensitivity_tier.value,
+        detection.regulatory_citation,
+    )
+```
+
+Example output:
+
+| Category | Tier | Citation |
 |---|---|---|
-| **Government IDs** | `arche.detect.{ng,ke,za,gh}` + `arche.detect._africa` | NG: NIN, BVN, TIN, RC, voter PVC, drivers licence. KE: National ID + Huduma, KRA PIN, NHIF. ZA: SA ID (Luhn + DOB/gender decode), tax reference, passport. GH: Ghana Card, SSNIT, TIN. Plus 11 non-launch African countries. |
-| **Phones** | `arche.detect._africa.phones` | libphonenumber-backed E.164 normalization across all African networks. |
-| **Addresses** | `arche.addr` | NG + ZA MVP today. Full PRD §5 parser is Stage 2 work. |
-| **IP addresses** | `arche.detect.ip` | IPv4 + IPv6 via stdlib `ipaddress`. RFC1918 / loopback / multicast flagged. False-positive suppression for "v1.2.3.4" version strings. |
-| **Digital identifiers** | `arche.detect.digital_id` | W3C DIDs (`did:key`, `did:web`, `did:ion`, + 5 more known methods). Bitcoin (P2PKH, P2SH, bech32). Ethereum (EIP-55 confidence boost for mixed-case). |
-| **Soft PII** *(opt-in)* | `arche-core[detect]` → GLiNER2-PII | Multilingual neural NER for names / orgs / locations. |
+| `PII-2-NIN` | `high` | `NDPA-2023 s.30, NIMC Act s.27` |
+| `PII-2-BVN` | `high` | `NDPA-2023 s.30, CBN BVN policy 2014` |
+| `PII-1-NAME` | `moderate` | `NDPA-2023 s.30` |
 
-Every detection carries:
-- **`category`** per the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy) — 51 categories across PII-1..PII-9
-- **`sensitivity_tier`** — `high` / `moderate` / `low` (NIST 800-122 framework, per-jurisdiction in YAML)
-- **`regulatory_citation`** — exact statute section the loaded jurisdiction cites
-- **`confidence`** — 1.0 for structurally validated, lower for shape-only
+## Example: scan a document
 
-## What arche does with detections
-
-Six closed policy actions:
-
-| Action | When it's the default |
-|---|---|
-| **mask** | High-tier government IDs (NIN, SA ID, Ghana Card), financial accounts |
-| **tokenize** | Personal names, contact info — preserves linking utility |
-| **drop** | Special-category data (biometric, health, race, religion, passwords, payment cards) |
-| **generalize** | Locational data (DOB → year, street address → city) |
-| **audit** | Categories the statute permits but wants tracked |
-| **retain** | Public-record categories (company registration numbers) |
-
-The action mapping ships in YAML statute files (`arche/policy/statutes/`)
-that you can read, audit, or extend.
-
----
-
-## The thesis
-
-> Small specialized PII models — OpenAI Privacy Filter, GLiNER2-PII, ettin-68m-pii — are commoditizing detection. The differentiating contribution is not better detection; it's the **identity workflow framework** that composes detection with resolution, linking, verification, and governance into a coherent lifecycle. None of those small models do that. Detection is one floor; arche is the building.
-
-
----
-
-## Sign, share, extract — the headline capability
+With `arche-core[doc]` installed, use the same pipeline on files:
 
 ```python
-from arche.sign import SignWorkflow, VerifyExtractWorkflow, generate_keypair
+from arche import Pipeline
 
-# Party A — bank's compliance officer
-bank_key = generate_keypair()
-signer = SignWorkflow(jurisdiction="NG")
-signed = signer.sign(document_text, bank_key, purpose="dsar_response")
+pipeline = Pipeline(jurisdiction="ZA")
+result = pipeline.process_file("dsar_response.pdf")
 
-# Wire transit (signed is a string)
-
-# Party B — recipient verifies offline, recovers structured result
-result = VerifyExtractWorkflow().process(signed)
-# result.signature_valid       True (offline did:key verification)
-# result.statute_at_signing    "NDPA-2023@v1.0"
-# result.redacted_text         "Customer ..., NIN [NIN], BVN [BVN], ..."
-# result.policy_outcomes       [(PII-2-NIN, mask), (PII-2-BVN, mask), ...]
+print(result.summary())
+print(result.redacted_text)
 ```
 
-No infrastructure required. `did:key` is self-describing. Verification is purely cryptographic. The recipient knows: who signed (cryptographically), then, under what statute, what policy was applied — **without seeing the original document**.
+`process_file(...)` delegates parsing to the document substrate, then sends the
+extracted text through the same detection and policy pipeline.
 
-[Sign-share-extract tutorial →](tutorials/sign_share_extract.md)
+## What can it detect?
 
----
+| Area | Current coverage |
+|---|---|
+| Government IDs | NG NIN, BVN, TIN, RC, PVC, drivers licence; KE National ID, Huduma, KRA PIN, NHIF; ZA ID, tax, passport; GH Ghana Card, SSNIT, TIN; plus wider African ID patterns |
+| Names and local NER | African name lexicon and equivalence data, with optional GLiNER soft-PII detection |
+| Phones | libphonenumber-backed E.164 normalization across African networks |
+| Addresses | Nigeria and South Africa parser MVP |
+| Digital identifiers | DIDs, Bitcoin addresses, Ethereum addresses |
+| Network identifiers | IPv4 and IPv6 detection with private and special-range flags |
 
-## Citizen-side DSAR
+## Matching names
 
 ```python
-from arche.workflow import DSARWorkflow, DSARRequestor, DSAROrganization
-from arche.sign import generate_keypair
+from arche.match import match
 
-citizen_key = generate_keypair()
-
-wf = DSARWorkflow(
-    jurisdiction="NG",
-    requestor=DSARRequestor(
-        name="Adesola Okonkwo",
-        identifier_label="NIN",
-        identifier_value="12345678901",
-        email="adesola@example.com",
-    ),
-    request_type="access",          # access | rectification | erasure | portability | objection
-    targets=[
-        DSAROrganization(name="Sterling Bank", dpo_email="dpo@sterlingbank.ng"),
-    ],
-)
-
-result = wf.run(citizen_key)
-for draft in result.drafts:
-    print(draft.letter_text)           # cites NDPA-2023 s.34 (Right of Access)
-    print(draft.signed_envelope)       # JWS-signed for DPO verification
+score = match("Mamadou Diallo", "Muhammad Jallow", jurisdiction="NG")
+print(score.decision, score.score)
 ```
 
-African citizens have rights under NDPA, POPIA, Kenya DPA, and Ghana DPA that today are practically unexercisable — the bureaucracy is the barrier. arche generates compliant draft letters and cryptographic provenance so a citizen with a phone can exercise rights that previously needed a lawyer.
+Use this when you need culturally aware name matching before or after PII
+detection.
 
-[Citizen DSAR tutorial →](tutorials/citizen_dsar.md)
+## Detect, Protect, Resolve
 
----
-
-## Lightweight by default
-
-`pip install arche-core` is under 100 MB. No mandatory ML or DPI dependencies. Heavy capabilities are opt-in extras:
-
-| Extra | What you get |
+| Step | What Arche does today |
 |---|---|
-| `arche-core[detect]` | GLiNER2-PII via ONNX runtime for multilingual soft-PII |
-| `arche-core[presidio]` | Microsoft Presidio recognizer plugin |
-| `arche-core[resolve]` | Splink + DuckDB for billion-row entity resolution |
-| `arche-core[doc]` | docling-backed PDF / DOCX / PPTX / XLSX parsing |
-| `arche-core[doc-ocr]` | Adds easyocr for scanned documents |
+| Detect | Finds PII and identity signals in text and supported document files |
+| Protect | Applies jurisdiction-aware policy actions and emits audit-ready output |
+| Resolve | Prepares normalized, protected signals for matching and linkage workflows |
 
-Cold import: **<700ms** even with everything in v0.2 loaded. Lazy-import discipline is enforced by CI — nothing heavy loads from `import arche`.
+## Next steps
 
----
+- [Getting started](getting-started/quickstart.md)
+- [Match African names](how-to/match-african-names.md)
+- [Extract from an invoice](how-to/extract-from-invoice.md)
+- [Nigerian fintech KYC cookbook](cookbooks/fintech-kyc.md)
+- [Introducing arche v0.2](blog/introducing-arche.md)
+- [Pipeline API reference](api/resolve.md)
 
-## Where to start
+## Licence
 
-- [Installation](getting-started/installation.md)
-- [Quick Start — five examples in five minutes](getting-started/quickstart.md)
-- [Why arche & when to use it](tutorials/arche_vs_alternatives.md) — by-persona guide for developers, researchers, DPOs, and journalists, plus the cross-tool benchmark
-- [API Reference](api/index.md)
-
----
-
-## License
-
-Apache-2.0 for the framework. CC-BY-4.0 for the Pan-African PII Taxonomy and Africa Address Benchmark datasets. By [Unpatterned Labs](https://unpatterned.org).
+The framework is Apache-2.0. Dataset licensing is documented separately in the
+dataset cards and repository licensing files.

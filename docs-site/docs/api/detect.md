@@ -18,7 +18,7 @@ from arche.detect._africa.phones import normalize_e164, validate_phone
 
 Detectors return [`Detection`](resolve.md#detection) objects with category labels from the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml).
 
-> Most callers don't need this surface directly — `Pipeline(jurisdiction=...)` calls the right detectors automatically. Use these primitives when you're building your own composition.
+> Most callers don't need this surface directly - `Pipeline(jurisdiction=...)` calls the right detectors automatically. Use these primitives when you're building your own composition.
 
 ---
 
@@ -37,7 +37,7 @@ Detectors return [`Detection`](resolve.md#detection) objects with category label
 
 `arche.detect._africa.ids.detect_african_ids(text, country=...)` covers: RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ.
 
-Country-specific coverage promotes to a top-level `arche.detect.<cc>` module as Stage 2 work — based on launch-partner deployments.
+Country-specific coverage promotes to a top-level `arche.detect.<cc>` module as Stage 2 work - based on launch-partner deployments.
 
 ---
 
@@ -69,4 +69,4 @@ pip install arche-core[detect]
 from arche.detect.gliner import detect_soft_pii
 ```
 
-Stage 2 grant work delivers `arche-core-model-v1`, a fine-tuned GLiNER2-PII model trained on a synthetic Afro-PII corpus across six anchor languages.
+Future model-backed detectors will be documented when they are ready for public evaluation.

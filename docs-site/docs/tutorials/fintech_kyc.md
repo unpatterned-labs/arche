@@ -190,7 +190,7 @@ print("\n=== Redacted text (safe to store or share) ===")
 print(result.redacted_text)
 ```
 
-Different categories get different statutory treatment automatically: the NIN is **masked**, the name and phone number are **tokenized** (so you can still link records across documents), the city is **retained** under legitimate-interest, and the street address is **generalized**. Four of arche's six policy actions, all driven by one statute YAML file — no hand-written rules.
+Different categories get different statutory treatment automatically: the NIN is **masked**, the name and phone number are **tokenized** (so you can still link records across documents), the city is **retained** under legitimate-interest, and the street address is **generalized**. Four of arche's six policy actions, all driven by one statute YAML file - no hand-written rules.
 
 ## Step 5: Audit-Safe Logging
 
@@ -218,7 +218,7 @@ for event in result.audit_log[:2]:
 # }
 ```
 
-Each audit event stores the **category label**, **character span**, **detector**, and **statute citation** — but never the NIN, name, or phone value itself. You can ship this straight to your logging pipeline and stay compliant: an auditor can reconstruct exactly what was detected and which law applied, with zero PII at rest. (Set `Pipeline(audit=False)` to skip audit-log emission.)
+Each audit event stores the **category label**, **character span**, **detector**, and **statute citation** - but never the NIN, name, or phone value itself. You can ship this straight to your logging pipeline and stay compliant: an auditor can reconstruct exactly what was detected and which law applied, with zero PII at rest. (Set `Pipeline(audit=False)` to skip audit-log emission.)
 ```
 
 ## Step 6: Batch Processing
