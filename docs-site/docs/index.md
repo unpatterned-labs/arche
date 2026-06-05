@@ -1,13 +1,21 @@
 # arche-core
 
-African PII, local NER, and identity-signal detection with statute-aware policy
-in Python.
+The identity data engine for Africa.
 
-`arche-core` finds names, government identifiers, phone numbers, addresses,
-digital identifiers, and other identity signals in African text and documents.
-It then applies jurisdiction-aware policy so every detection can carry a
-sensitivity tier, regulatory citation, and action such as `mask`, `tokenize`,
-`drop`, `generalize`, `audit`, or `retain`.
+Arche finds identifying data, helps protect it according to the right
+jurisdiction, and prepares it for privacy-preserving resolution.
+
+The public `arche-core` package focuses on three connected jobs:
+
+- **Detect** identifying data in African text and documents.
+- **Protect** it with jurisdiction-aware masking, tokenization, generalization,
+  dropping, retention, and audit actions.
+- **Resolve** more safely by producing normalized, policy-aware signals such as
+  tokenized IDs, names, phones, and addresses.
+
+Today, Detect and Protect are the lead product surface. Resolution support is
+intentionally narrow: name matching, tokenized identifiers, and optional
+Splink-backed workflows for larger linkage tasks.
 
 ## Why use this library
 
@@ -56,6 +64,10 @@ Given text or a supported document file, arche returns:
 - the policy action applied
 - redacted text
 - audit records suitable for later review
+
+These outputs are useful for redaction today and for safer record linkage later:
+tokenized IDs, normalized phones, detected names, and parsed address fragments
+can become privacy-preserving join signals.
 
 Supported launch jurisdictions:
 
@@ -143,6 +155,14 @@ print(score.decision, score.score)
 
 Use this when you need culturally aware name matching before or after PII
 detection.
+
+## Detect, Protect, Resolve
+
+| Step | What Arche does today |
+|---|---|
+| Detect | Finds PII and identity signals in text and supported document files |
+| Protect | Applies jurisdiction-aware policy actions and emits audit-ready output |
+| Resolve | Prepares normalized, protected signals for matching and linkage workflows |
 
 ## Next steps
 
