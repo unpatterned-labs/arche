@@ -6,9 +6,90 @@
 from __future__ import annotations
 
 import pytest
+from arche.addr import (
+    extract_anchor,
+    normalize_landmark,
+    parse_address,
+    parse_addresses,
+)
 
-from arche.addr import parse_address, parse_addresses
 
+def test_extract_anchor_landmark_only():
+    # The standalone anchor extractor recovers a landmark + its type from free
+    # text (used by the resolver's address comparison).
+    anchor = extract_anchor("behind the Total filling station, Madina, Accra")
+    assert anchor is not None
+    text, kind = anchor
+    assert "Total filling station" in text
+    assert kind == "commercial"
+
+
+def test_extract_anchor_none_when_no_landmark():
+    assert extract_anchor("7B Allen Avenue, Ikeja, Lagos") is None
+
+
+# ── Landmark-only addresses (emit) ──────────────────────────────────────────
+
+
+def test_landmark_only_address_now_parses():
+    a = parse_address("behind the Total filling station, Madina, Accra")
+    assert a is not None
+    assert a.components.anchor is not None
+    assert "Total" in a.components.anchor
+    assert a.components.anchor_type == "commercial"
+    assert a.components.city == "Accra"
+    assert a.country_inferred == "GH"
+
+
+def test_landmark_without_placetype_or_gazetteer_is_not_address():
+    # Precision gate: no place-type keyword and no known locality → not an
+    # address (otherwise incidental prose becomes a false detection).
+    assert parse_address("standing behind the President during the ceremony") is None
+
+
+def test_address_tokens_yaml_extends_vocabulary():
+    # "plaza" is contributed via address_tokens.yaml, not a built-in default;
+    # its classification as commercial proves the YAML vocabulary is merged.
+    a = parse_address("opposite the Ikeja City Plaza, Lagos")
+    assert a is not None
+    assert a.components.anchor_type == "commercial"
+
+
+def test_street_address_with_anchor_wins_over_landmark_only():
+    # A street address that absorbed its anchor must win the dedup — we should
+    # get the high-confidence street parse, not the low-confidence landmark one.
+    a = parse_address(
+        "behind the Total filling station, 23 Marina Street, Lagos Island, Nigeria"
+    )
+    assert a is not None
+    assert a.components.anchor is not None
+    assert a.confidence >= 0.80
+
+
+def test_landmark_codemixed_relation_words():
+    # Swahili, Pidgin, and French relation words are recognised, not just English.
+    assert parse_address("nyuma ya Total filling station, Nairobi") is not None
+    assert parse_address("for back of the First Bank, Ikeja, Lagos") is not None
+    a = parse_address("derrière la Pharmacie Centrale, Dakar")
+    assert a is not None
+    assert a.components.city == "Dakar"
+
+
+def test_normalize_landmark_strips_relation_words():
+    # Cross-lingual relation words reduce to the same bare landmark.
+    assert normalize_landmark("nyuma ya Total filling station") == "Total filling station"
+    assert normalize_landmark("behind the Total filling station") == "Total filling station"
+    assert normalize_landmark("for back of the First Bank") == "First Bank"
+
+
+def test_landmark_extended_languages():
+    # Igbo, Portuguese (with de/do/da contractions), and Lingala relation words.
+    assert parse_address("n'azụ Shoprite Mall, Enugu") is not None
+    a = parse_address("atrás do Mercado Central, Luanda")
+    assert a is not None
+    assert a.components.anchor_type == "commercial"
+    assert a.country_inferred == "AO"
+    assert parse_address("na sima ya Hotel Memling, Kinshasa") is not None
 
 # ── Nigeria ─────────────────────────────────────────────────────────────────
 

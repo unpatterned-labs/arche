@@ -37,9 +37,9 @@ import logging
 import math
 import re
 import unicodedata
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
-
 
 _log = logging.getLogger("arche")
 
@@ -315,26 +315,182 @@ def compare_emails(email_a: str, email_b: str) -> float:
     return 1.0 if a == b else 0.0
 
 
-def compare_addresses(addr_a: str, addr_b: str) -> float:
-    """Compare two addresses using string similarity.
+# Per-component distinctiveness weights for address comparison.
+#
+# African informal addresses are landmark-based ("behind the Total filling
+# station, Madina") and have no canonical registry, so the operative locators
+# are the landmark ``anchor`` and the ``street`` — weighted highest. A shared
+# ``city``/``region`` is weak evidence (many people share a city), weighted low.
+#
+#     addr A                      addr B                     shared    signal
+#     ----------------------      ----------------------     ------    ------
+#     12 Long St, Cape Town       99 Main Rd, Cape Town      city      weak  → low score
+#     behind Total FS, Madina     opposite Total FS, Madina  anchor    strong→ high score
+#     7B Allen Ave                9B Allen Ave               number    differs→ pulled down
+_ADDR_FIELD_WEIGHTS: dict[str, float] = {
+    "anchor": 3.0,
+    "street": 2.5,
+    "postal_code": 2.0,
+    "plot": 1.5,
+    "street_number": 1.5,
+    "neighborhood": 1.0,
+    "city": 0.6,
+    "region": 0.4,
+}
+# Fields specific enough that a strong match must share at least one of them.
+_ADDR_DISTINCTIVE = {"anchor", "street", "postal_code", "plot", "street_number", "neighborhood"}
+# Fields where a difference is a genuine difference, not a typo (exact-compared).
+_ADDR_EXACT_FIELDS = {"plot", "street_number", "postal_code"}
+# Cap applied when only low-distinctiveness fields (city/region) are shared.
+_ADDR_WEAK_MATCH_CAP = 0.6
 
-    Future: spatial proximity via geocoding, landmark matching.
+# Leading landmark prepositions/articles to strip so "behind the Total filling
+# station" and "opposite Total Filling Station" compare on the landmark itself.
+_ANCHOR_PREP_RE = re.compile(
+    r"^(?:behind|near|opposite|beside|next to|in front of|across from|after|before)\s+(?:the\s+)?",
+    re.IGNORECASE,
+)
+
+
+def _normalise_anchor(anchor: str) -> str:
+    """Normalise a landmark anchor: drop the leading (possibly code-mixed)
+    relation word + article via the shared addr vocabulary, then normalise.
+    Falls back to the built-in English prepositions if addr is unavailable."""
+    try:
+        from ..addr import normalize_landmark
+
+        anchor = normalize_landmark(anchor)
+    except ImportError:
+        anchor = _ANCHOR_PREP_RE.sub("", anchor)
+    return _normalise_text(anchor)
+
+
+# Matchable address component names (also the weight keys above).
+_ADDR_COMPONENT_KEYS = set(_ADDR_FIELD_WEIGHTS)
+
+
+def _coerce_address(addr: Any) -> tuple[str, dict[str, str]]:
+    """Normalise an address input to ``(raw_string, matchable-components)``.
+
+    Accepts a raw ``str`` (parsed on the fly), or a structured address the
+    pipeline already parsed: a mapping (e.g. an address Detection's metadata,
+    ``{"text": ..., "street": ..., "anchor": ...}``) or an
+    :class:`~arche.addr.AddressComponents`. Structured input skips re-parsing
+    and uses the pipeline's landmark ``anchor`` directly.
     """
-    norm_a = _normalise_text(addr_a)
-    norm_b = _normalise_text(addr_b)
-    if not norm_a or not norm_b:
-        return 0.0
+    if isinstance(addr, str):
+        return addr, _address_components(addr)
+    if isinstance(addr, Mapping):
+        source: dict[str, Any] = dict(addr)
+    elif hasattr(addr, "__dict__"):  # AddressComponents / dataclass instance
+        source = dict(vars(addr))
+    else:
+        text = str(addr)
+        return text, _address_components(text)
 
-    if norm_a == norm_b:
+    comps = {
+        key: str(value)
+        for key, value in source.items()
+        if key in _ADDR_COMPONENT_KEYS and value
+    }
+    raw = str(source.get("text") or source.get("raw") or "")
+    if not raw:
+        raw = ", ".join(comps.values())
+    return raw, comps
+
+
+def _address_components(addr: str) -> dict[str, str]:
+    """Parse an address string into a dict of non-empty matchable components.
+
+    Falls back to a standalone landmark-anchor extraction when the full parser
+    recovers no structured address (the common African landmark-only case).
+    ``country`` and ``anchor_type`` are dropped — they are not per-record
+    matching signals. Returns ``{}`` when nothing structured is found.
+    """
+    try:
+        from ..addr import extract_anchor, parse_address
+    except ImportError:
+        return {}
+
+    fields: dict[str, str] = {}
+    parsed = parse_address(addr)
+    if parsed is not None:
+        for key, value in vars(parsed.components).items():
+            if value:
+                fields[key] = value
+    if "anchor" not in fields:
+        anchor = extract_anchor(addr)
+        if anchor is not None:
+            fields["anchor"] = anchor[0]
+    fields.pop("anchor_type", None)
+    fields.pop("country", None)
+    return fields
+
+
+def _component_field_sim(field_name: str, a: str, b: str) -> float:
+    """Similarity for a single address component."""
+    if field_name == "anchor":
+        na, nb = _normalise_anchor(a), _normalise_anchor(b)
+    else:
+        na, nb = _normalise_text(a), _normalise_text(b)
+    if not na or not nb:
+        return 0.0
+    if na == nb:
+        return 1.0
+    if field_name in _ADDR_EXACT_FIELDS:
+        # A different house/plot number or postcode is a real difference.
+        return 0.0
+    return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
+
+
+def compare_addresses(addr_a: Any, addr_b: Any) -> float:
+    """Compare two addresses using their parsed structure.
+
+    Raw-string similarity both over-matches (two unrelated addresses that
+    share "Lagos") and under-matches (the same landmark described two ways),
+    and it discards everything ``arche.addr`` worked to parse. This compares
+    component-by-component, weighting the landmark ``anchor`` and ``street``
+    as high-distinctiveness signals and a shared ``city``/``region`` as weak.
+    Falls back to raw-string similarity only when neither side yields
+    structure (so token-reordering like "Ikeja Lagos" vs "Lagos Ikeja" is
+    still handled).
+
+    Accepts a raw string or a structured address (mapping / AddressComponents)
+    the pipeline already parsed, so the landmark anchor isn't lost to a
+    round-trip through a flattened string.
+
+    Future: spatial proximity via geocoding / gazetteer centroids.
+    """
+    raw_a, comps_a = _coerce_address(addr_a)
+    raw_b, comps_b = _coerce_address(addr_b)
+    norm_a = _normalise_text(raw_a)
+    norm_b = _normalise_text(raw_b)
+    if not (norm_a or comps_a) or not (norm_b or comps_b):
+        return 0.0
+    if norm_a and norm_a == norm_b:
         return 1.0
 
-    # Token-sort handles word reordering ("Ikeja Lagos" vs "Lagos Ikeja")
-    ts = _token_sort_ratio(norm_a, norm_b)
+    shared = set(comps_a) & set(comps_b)
 
-    # Jaro-Winkler for character-level similarity
-    jw = _jaro_winkler(norm_a, norm_b)
+    # Nothing structured in common: fall back to raw fuzzy similarity.
+    if not shared:
+        return max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
 
-    return max(ts, jw)
+    weighted_sum = 0.0
+    weight_total = 0.0
+    for field_name in shared:
+        weight = _ADDR_FIELD_WEIGHTS.get(field_name, 0.5)
+        weighted_sum += weight * _component_field_sim(
+            field_name, comps_a[field_name], comps_b[field_name]
+        )
+        weight_total += weight
+    score = weighted_sum / weight_total if weight_total else 0.0
+
+    # A match resting only on shared city/region is weak — cap it.
+    if not (shared & _ADDR_DISTINCTIVE):
+        score = min(score, _ADDR_WEAK_MATCH_CAP)
+
+    return score
 
 
 def compare_dates(date_a: str, date_b: str) -> float:
@@ -457,8 +613,8 @@ class IdentityMatcher:
         national_id_b: str = "",
         email_a: str = "",
         email_b: str = "",
-        address_a: str = "",
-        address_b: str = "",
+        address_a: Any = "",
+        address_b: Any = "",
         dob_a: str = "",
         dob_b: str = "",
         isbn_a: str = "",
@@ -666,3 +822,44 @@ def match(
         return matcher.compare_fields(isbn_a=a_str, isbn_b=b_str)
     else:
         return matcher.compare_fields(name_a=a_str, name_b=b_str)
+
+
+# Pan-African PII Taxonomy category prefix/keyword → match() field.
+def to_match_record(detections: Any) -> dict[str, Any]:
+    """Build a :func:`match`-ready record dict from pipeline detections.
+
+    Maps the first detection of each kind to the field ``match`` expects. The
+    address field carries the structured detection metadata (landmark ``anchor``
+    included), so a pipeline-detected address feeds resolution without being
+    flattened to a string and re-parsed.
+
+    Accepts a list of :class:`~arche.workflow.Detection`, or a
+    :class:`~arche.workflow.Result` (its ``.detections`` are used).
+
+    Example::
+
+        result = Pipeline(jurisdiction="NG").process(text)
+        record = to_match_record(result)
+        match(record, other_record, jurisdiction="NG")
+    """
+    items = getattr(detections, "detections", detections)
+    record: dict[str, Any] = {}
+    for det in items:
+        category = (getattr(det, "category", "") or "").upper()
+        text = getattr(det, "text", "") or ""
+        meta = getattr(det, "metadata", None) or {}
+        if category.startswith("PII-1") and "name" not in record:
+            record["name"] = text
+        elif category == "PII-4-ADDRESS" and "address" not in record:
+            record["address"] = {"text": text, **meta}
+        elif "EMAIL" in category and "email" not in record:
+            record["email"] = text
+        elif category == "PII-3-PHONE" and "phone" not in record:
+            record["phone"] = text
+        elif "ISBN" in category and "isbn" not in record:
+            record["isbn"] = text
+        elif ("DOB" in category or "BIRTH" in category) and "dob" not in record:
+            record["dob"] = text
+        elif category.startswith("PII-2") and "national_id" not in record:
+            record["national_id"] = text
+    return record

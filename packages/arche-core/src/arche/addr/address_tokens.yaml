@@ -1,0 +1,148 @@
+# African address token vocabulary — what a token means in local address context.
+#
+# Landmark-based addresses ("behind the Total filling station, Madina, Accra")
+# are the norm across much of Africa: no street number, no postcode, no
+# registry. The parser needs to know which words mark a *real place* (a
+# "filling station", a "mosque", a "motor park") versus incidental capitalised
+# words ("behind the President"). These place-type tokens are the
+# high-distinctiveness signal that a landmark is a genuine locator — the same
+# principle uk_address_matcher and the ATRAC address-linkage method use when
+# they weight rare, distinctive tokens over common ones.
+#
+# Contributor-friendly: add local place types and relation words per region.
+# Loaded by parse.py::_merge_address_tokens and UNIONED with the built-in
+# defaults, so this file only needs to carry additions. A missing or invalid
+# file falls back to the defaults, keeping the parser fully offline.
+
+# Relation words that introduce a landmark ("behind the market").
+# Code-mixed African addresses use local-language and Pidgin relation words as
+# freely as English ones, so they live here too. Add regional forms as needed.
+anchor_prepositions:
+  # English
+  - behind
+  - near
+  - opposite
+  - beside
+  - next to
+  - in front of
+  - across from
+  - after
+  - before
+  # Nigerian Pidgin
+  - for back of
+  - for front of
+  - close to
+  # Swahili (East Africa)
+  - nyuma ya
+  - karibu na
+  - mbele ya
+  - kando ya
+  # Hausa (West/Central Africa)
+  - bayan
+  - kusa da
+  - gaban
+  # Yoruba (West Africa)
+  - ẹ̀yìn
+  - lẹ́gbẹ̀ẹ́
+  # Igbo (West Africa)
+  - n'azụ
+  - n'akụkụ
+  - n'ihu
+  # French (Francophone Africa)
+  - derrière
+  - près de
+  - en face de
+  - à côté de
+  - devant
+  # Portuguese (Lusophone Africa: Angola, Mozambique, Cape Verde).
+  # Bare forms; the de/do/da contractions are handled via anchor_articles.
+  - atrás
+  - perto
+  - próximo
+  - em frente
+  - ao lado
+  - defronte
+  # Zulu / Xhosa (Southern Africa)
+  - eduze kwe
+  - ngemuva kwe
+  # Lingala (Central Africa: DRC, Congo)
+  - na sima ya
+  - pene ya
+
+# Articles/determiners stripped between the relation word and the landmark, so
+# "derrière la Pharmacie" and "behind the market" normalise to the landmark.
+anchor_articles:
+  # English / French
+  - the
+  - la
+  - le
+  - les
+  # Portuguese articles + de-contractions (do = de+o, da = de+a, ao = a+o)
+  - de
+  - do
+  - da
+  - dos
+  - das
+  - ao
+  - à
+  - o
+  - a
+  - os
+  - as
+
+# Place-type keywords grouped by anchor_type. Presence of any of these in a
+# landmark marks it as a real locator and sets the anchor_type.
+anchor_types:
+  commercial:
+    - filling station
+    - petrol
+    - gas station
+    - market
+    - shop
+    - mall
+    - supermarket
+    - bank
+    - atm
+    - hotel
+    - restaurant
+    - pharmacy
+    - store
+    - plaza          # common in NG/GH commercial addresses
+    - kiosk
+    - mercado        # market (Portuguese)
+    - loja           # shop (Portuguese)
+    - farmácia       # pharmacy (Portuguese)
+    - posto          # petrol/service post (Portuguese)
+    - banco          # bank (Portuguese)
+    - kasuwa         # market (Hausa)
+    - duka           # shop (Swahili)
+  religious:
+    - church
+    - mosque
+    - cathedral
+    - temple
+    - shrine
+    - chapel
+    - parish
+    - igreja         # church (Portuguese)
+    - kanisa         # church (Swahili)
+    - msikiti        # mosque (Swahili)
+    - masallaci      # mosque (Hausa)
+  infrastructure:
+    - junction
+    - roundabout
+    - bridge
+    - park
+    - stadium
+    - hospital
+    - school
+    - university
+    - airport
+    - station
+    - terminal
+    - flyover        # common overpass landmark in NG cities
+    - motor park     # NG/GH transport hub, a frequent locator
+    - escola         # school (Portuguese)
+    - shule          # school (Swahili)
+    - estádio        # stadium (Portuguese)
+    - hospitali      # hospital (Swahili)

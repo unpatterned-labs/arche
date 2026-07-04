@@ -28,7 +28,9 @@ Ghana addresses parse best-effort via the shared gazetteer.
 from arche.addr.parse import (
     Address,
     AddressComponents,
+    extract_anchor,
     infer_jurisdiction,
+    normalize_landmark,
     parse_address,
     parse_addresses,
 )
@@ -36,7 +38,9 @@ from arche.addr.parse import (
 __all__ = [
     "Address",
     "AddressComponents",
+    "extract_anchor",
     "infer_jurisdiction",
+    "normalize_landmark",
     "parse_address",
     "parse_addresses",
 ]

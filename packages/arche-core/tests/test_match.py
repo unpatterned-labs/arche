@@ -1,11 +1,9 @@
 # Copyright 2026 unpatterned.org
 # Tests for the Level 2 match() API and Fellegi-Sunter matcher.
 
-import pytest
 
 from arche.resolve._matcher import (
     IdentityMatcher,
-    JurisdictionPriors,
     MatchScore,
     compare_addresses,
     compare_emails,
@@ -14,6 +12,7 @@ from arche.resolve._matcher import (
     compare_phones,
     get_priors,
     match,
+    to_match_record,
 )
 
 
@@ -104,6 +103,81 @@ class TestCompareFunctions:
         score = compare_addresses("Paris, France", "Tokyo, Japan")
         assert score < 0.60
 
+    # --- Component-aware behaviour (the "moat fix") ---
+    def test_address_same_city_different_street_is_weak(self):
+        # Raw string similarity over-matches on a shared "Cape Town"; the
+        # component comparison sees the streets differ and scores it low.
+        score = compare_addresses(
+            "12 Long Street, Cape Town", "99 Main Road, Cape Town"
+        )
+        assert score < 0.50
+
+    def test_address_house_number_distinguishes(self):
+        # Same street, different house number: similar but not identical.
+        score = compare_addresses(
+            "7B Allen Avenue, Ikeja, Lagos", "9B Allen Avenue, Ikeja, Lagos"
+        )
+        assert 0.50 < score < 0.90
+        # ...and strictly below the identical-address score.
+        same = compare_addresses(
+            "7B Allen Avenue, Ikeja, Lagos", "7B Allen Avenue, Ikeja, Lagos"
+        )
+        assert score < same
+
+    def test_landmark_anchor_match(self):
+        # Landmark-only addresses (no street/postcode) match on the anchor
+        # even when the relation word differs ("behind" vs "opposite").
+        score = compare_addresses(
+            "behind the Total filling station, Madina, Accra",
+            "opposite the Total filling station, Madina, Accra",
+        )
+        assert score >= 0.80
+
+    def test_landmark_anchor_different(self):
+        score = compare_addresses(
+            "behind the Total filling station, Accra",
+            "near the First Bank, Accra",
+        )
+        assert score < 0.60
+
+    # --- Code-mixed landmarks + structured input ---
+    def test_address_codemixed_landmark_match(self):
+        # A Swahili relation word ("nyuma ya") and an English one describe the
+        # same landmark; normalize_landmark strips both so they still match.
+        score = compare_addresses(
+            "nyuma ya Total filling station, Accra",
+            "behind the Total filling station, Accra",
+        )
+        assert score >= 0.80
+
+    def test_address_codemixed_different_landmark(self):
+        score = compare_addresses(
+            "nyuma ya Total filling station, Accra",
+            "behind the First Bank, Accra",
+        )
+        assert score < 0.80
+
+    def test_address_structured_dict_input(self):
+        # A caller can pass the address the pipeline already parsed (anchor
+        # included) instead of a flattened string.
+        a = {
+            "text": "behind the Total filling station, Madina, Accra",
+            "anchor": "behind the Total filling station",
+            "city": "Accra",
+            "neighborhood": "Madina",
+        }
+        b = {
+            "text": "opposite the Total filling station, Accra",
+            "anchor": "opposite the Total filling station",
+            "city": "Accra",
+        }
+        assert compare_addresses(a, b) >= 0.80
+
+    def test_address_structured_dict_different_street(self):
+        a = {"street": "Long Street", "street_number": "12", "city": "Cape Town"}
+        b = {"street": "Main Road", "street_number": "99", "city": "Cape Town"}
+        assert compare_addresses(a, b) < 0.50
+
 
 class TestJurisdictionPriors:
     def test_default_priors_exist(self):
@@ -186,6 +260,16 @@ class TestMatch:
         )
         assert score.decision == "match"
 
+    def test_dict_records_with_structured_address(self):
+        # Records may carry the pipeline-parsed address (with anchor) directly.
+        a = {"name": "Kofi Mensah",
+             "address": {"anchor": "behind the Total filling station", "city": "Accra"}}
+        b = {"name": "Kofi Mensah",
+             "address": {"anchor": "opposite the Total filling station", "city": "Accra"}}
+        score = match(a, b, jurisdiction="GH")
+        assert score.decision == "match"
+        assert score.factors.get("address") is not None
+
     def test_entity_objects(self):
         from arche.extract import Entity
 
@@ -208,3 +292,42 @@ class TestMatch:
         score = match("Alice Johnson", "Bob Williams")
         assert score.decision in ("no_match", "review")
         assert score.score < 0.80
+
+
+class TestToMatchRecord:
+    """to_match_record() bridges pipeline detections into a match() record."""
+
+    _TEXT_A = (
+        "Fatima Abdullahi, NIN 12345678901, "
+        "behind the Total filling station, Ikeja, Lagos"
+    )
+    _TEXT_B = (
+        "F. Abdullahi, NIN 12345678901, "
+        "opposite the Total filling station, Ikeja, Lagos"
+    )
+
+    def test_builds_record_with_structured_address(self):
+        from arche import Pipeline
+
+        result = Pipeline(jurisdiction="NG").process(self._TEXT_A)
+        rec = to_match_record(result)
+        assert rec.get("name")
+        assert rec.get("national_id")
+        # Address is structured (not a flat string) and keeps the anchor.
+        assert isinstance(rec.get("address"), dict)
+        assert rec["address"].get("anchor")
+
+    def test_record_feeds_match(self):
+        from arche import Pipeline
+
+        a = to_match_record(Pipeline(jurisdiction="NG").process(self._TEXT_A))
+        b = to_match_record(Pipeline(jurisdiction="NG").process(self._TEXT_B))
+        assert match(a, b, jurisdiction="NG").decision == "match"
+
+    def test_accepts_detection_list_and_empty(self):
+        from arche import Pipeline
+
+        result = Pipeline(jurisdiction="NG").process(self._TEXT_A)
+        # A bare list of detections works the same as passing the Result.
+        assert to_match_record(result.detections) == to_match_record(result)
+        assert to_match_record([]) == {}
