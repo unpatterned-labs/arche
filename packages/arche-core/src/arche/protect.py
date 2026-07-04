@@ -371,14 +371,14 @@ def _overlaps_detections(detections: list[PIIDetection], start: int, end: int) -
 
 
 def _luhn_check(number: str) -> bool:
-    """Validate a number string using the Luhn algorithm."""
-    digits = [int(d) for d in number]
-    odd_digits = digits[-1::-2]
-    even_digits = digits[-2::-2]
-    total = sum(odd_digits)
-    for d in even_digits:
-        total += sum(divmod(d * 2, 10))
-    return total % 10 == 0
+    """Validate a number string using the Luhn algorithm.
+
+    Delegates to the canonical implementation in ``arche.detect._checksum``
+    so there is a single Luhn across the package.
+    """
+    from arche.detect._checksum import luhn
+
+    return luhn(number)
 
 
 def _infer_country_from_entity_type(entity_type: str) -> str | None:

@@ -355,6 +355,13 @@ def detect_african_ids(text: str) -> list[NationalID]:
             confidence += _context_boost(text, span[0], span[1], spec["country"])
             confidence = min(confidence, 1.0)
 
+            # Integrity signal (data quality, NOT authenticity): checksum_valid
+            # only where a public check-digit spec actually ran; otherwise
+            # format_valid. We never fabricate a checksum for schemes that
+            # publish none (NIN, BVN, Ghana Card, most TINs).
+            status = "checksum_valid" if spec.get("checksum") else "format_valid"
+            meta = {**meta, "validator_status": status}
+
             results.append(NationalID(
                 text=matched_text,
                 country=spec["country"],

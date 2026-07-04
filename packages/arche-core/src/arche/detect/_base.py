@@ -25,6 +25,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+# Canonical Luhn lives in _checksum; re-exported here because the per-country
+# detector modules import ``_luhn_check`` from _base (see module docstring).
+from arche.detect._checksum import luhn as _luhn_check  # noqa: F401
+
 if TYPE_CHECKING:
     from arche.workflow._primitive import Detection
 
@@ -60,19 +64,6 @@ class NationalID:
     start: int
     end: int
     metadata: dict = field(default_factory=dict)
-
-
-def _luhn_check(digits: str) -> bool:
-    """Validate a digit string using the Luhn algorithm (mod 10)."""
-    total = 0
-    for i, ch in enumerate(reversed(digits)):
-        n = int(ch)
-        if i % 2 == 1:
-            n *= 2
-            if n > 9:
-                n -= 9
-        total += n
-    return total % 10 == 0
 
 
 def _always_valid(text: str) -> tuple[bool, dict]:
