@@ -822,3 +822,44 @@ def match(
         return matcher.compare_fields(isbn_a=a_str, isbn_b=b_str)
     else:
         return matcher.compare_fields(name_a=a_str, name_b=b_str)
+
+
+# Pan-African PII Taxonomy category prefix/keyword → match() field.
+def to_match_record(detections: Any) -> dict[str, Any]:
+    """Build a :func:`match`-ready record dict from pipeline detections.
+
+    Maps the first detection of each kind to the field ``match`` expects. The
+    address field carries the structured detection metadata (landmark ``anchor``
+    included), so a pipeline-detected address feeds resolution without being
+    flattened to a string and re-parsed.
+
+    Accepts a list of :class:`~arche.workflow.Detection`, or a
+    :class:`~arche.workflow.Result` (its ``.detections`` are used).
+
+    Example::
+
+        result = Pipeline(jurisdiction="NG").process(text)
+        record = to_match_record(result)
+        match(record, other_record, jurisdiction="NG")
+    """
+    items = getattr(detections, "detections", detections)
+    record: dict[str, Any] = {}
+    for det in items:
+        category = (getattr(det, "category", "") or "").upper()
+        text = getattr(det, "text", "") or ""
+        meta = getattr(det, "metadata", None) or {}
+        if category.startswith("PII-1") and "name" not in record:
+            record["name"] = text
+        elif category == "PII-4-ADDRESS" and "address" not in record:
+            record["address"] = {"text": text, **meta}
+        elif "EMAIL" in category and "email" not in record:
+            record["email"] = text
+        elif category == "PII-3-PHONE" and "phone" not in record:
+            record["phone"] = text
+        elif "ISBN" in category and "isbn" not in record:
+            record["isbn"] = text
+        elif ("DOB" in category or "BIRTH" in category) and "dob" not in record:
+            record["dob"] = text
+        elif category.startswith("PII-2") and "national_id" not in record:
+            record["national_id"] = text
+    return record

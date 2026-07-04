@@ -44,20 +44,51 @@ anchor_prepositions:
   # Yoruba (West Africa)
   - ẹ̀yìn
   - lẹ́gbẹ̀ẹ́
+  # Igbo (West Africa)
+  - n'azụ
+  - n'akụkụ
+  - n'ihu
   # French (Francophone Africa)
   - derrière
   - près de
   - en face de
   - à côté de
   - devant
+  # Portuguese (Lusophone Africa: Angola, Mozambique, Cape Verde).
+  # Bare forms; the de/do/da contractions are handled via anchor_articles.
+  - atrás
+  - perto
+  - próximo
+  - em frente
+  - ao lado
+  - defronte
+  # Zulu / Xhosa (Southern Africa)
+  - eduze kwe
+  - ngemuva kwe
+  # Lingala (Central Africa: DRC, Congo)
+  - na sima ya
+  - pene ya
 
 # Articles/determiners stripped between the relation word and the landmark, so
 # "derrière la Pharmacie" and "behind the market" normalise to the landmark.
 anchor_articles:
+  # English / French
   - the
   - la
   - le
   - les
+  # Portuguese articles + de-contractions (do = de+o, da = de+a, ao = a+o)
+  - de
+  - do
+  - da
+  - dos
+  - das
+  - ao
+  - à
+  - o
+  - a
+  - os
+  - as
 
 # Place-type keywords grouped by anchor_type. Presence of any of these in a
 # landmark marks it as a real locator and sets the anchor_type.
@@ -78,6 +109,13 @@ anchor_types:
     - store
     - plaza          # common in NG/GH commercial addresses
     - kiosk
+    - mercado        # market (Portuguese)
+    - loja           # shop (Portuguese)
+    - farmácia       # pharmacy (Portuguese)
+    - posto          # petrol/service post (Portuguese)
+    - banco          # bank (Portuguese)
+    - kasuwa         # market (Hausa)
+    - duka           # shop (Swahili)
   religious:
     - church
     - mosque
@@ -86,6 +124,10 @@ anchor_types:
     - shrine
     - chapel
     - parish
+    - igreja         # church (Portuguese)
+    - kanisa         # church (Swahili)
+    - msikiti        # mosque (Swahili)
+    - masallaci      # mosque (Hausa)
   infrastructure:
     - junction
     - roundabout
@@ -100,3 +142,7 @@ anchor_types:
     - terminal
     - flyover        # common overpass landmark in NG cities
     - motor park     # NG/GH transport hub, a frequent locator
+    - escola         # school (Portuguese)
+    - shule          # school (Swahili)
+    - estádio        # stadium (Portuguese)
+    - hospitali      # hospital (Swahili)

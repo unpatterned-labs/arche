@@ -180,6 +180,7 @@ _LAZY: dict[str, tuple[str, str]] = {
     "JurisdictionPriors": (".resolve._matcher", "JurisdictionPriors"),
     "MatchScore": (".resolve._matcher", "MatchScore"),
     "match": (".resolve._matcher", "match"),
+    "to_match_record": (".resolve._matcher", "to_match_record"),
     # --- pipeline (v0.1 callables) ----------------------------------------
     # Retargeted to .workflow.pipeline (real location); see note above.
     # NOTE: `resolve_fhir` was removed in v0.2.0a3 along with the
@@ -205,9 +206,10 @@ _LAZY: dict[str, tuple[str, str]] = {
     "resolve_entities": (".resolve", "resolve_entities"),
     "resolve_identity_records": (".resolve", "resolve_identity_records"),
     # --- review -----------------------------------------------------------
-    # Retargeted to .workflow._review (real location); see note above.
-    "ReviewCandidate": (".workflow._review", "ReviewCandidate"),
-    "ReviewQueue": (".workflow._review", "ReviewQueue"),
+    # ReviewQueue/ReviewCandidate removed from the public surface in v0.2.0a2.
+    # The MPI human-review workflow is internal v0.1 plumbing with no v0.2
+    # consumer (no README, demo/, api/, or web/ usage). Still importable from
+    # the canonical location: ``from arche.workflow._review import ReviewQueue``.
     # --- visualize --------------------------------------------------------
     # Resolves to the real module (.workflow._format); the .visualize shim
     # was removed.
@@ -269,6 +271,7 @@ __all__ = [
     # Level 2 API kept in __all__ because it's the workhorse path
     "detect",
     "match",
+    "to_match_record",
     "link",
     "resolve",
     # v0.2.0a2 — places (spec §5 + §16.3)

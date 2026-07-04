@@ -6,7 +6,12 @@
 from __future__ import annotations
 
 import pytest
-from arche.addr import extract_anchor, parse_address, parse_addresses
+from arche.addr import (
+    extract_anchor,
+    normalize_landmark,
+    parse_address,
+    parse_addresses,
+)
 
 
 def test_extract_anchor_landmark_only():
@@ -60,6 +65,31 @@ def test_street_address_with_anchor_wins_over_landmark_only():
     assert a.components.anchor is not None
     assert a.confidence >= 0.80
 
+
+def test_landmark_codemixed_relation_words():
+    # Swahili, Pidgin, and French relation words are recognised, not just English.
+    assert parse_address("nyuma ya Total filling station, Nairobi") is not None
+    assert parse_address("for back of the First Bank, Ikeja, Lagos") is not None
+    a = parse_address("derrière la Pharmacie Centrale, Dakar")
+    assert a is not None
+    assert a.components.city == "Dakar"
+
+
+def test_normalize_landmark_strips_relation_words():
+    # Cross-lingual relation words reduce to the same bare landmark.
+    assert normalize_landmark("nyuma ya Total filling station") == "Total filling station"
+    assert normalize_landmark("behind the Total filling station") == "Total filling station"
+    assert normalize_landmark("for back of the First Bank") == "First Bank"
+
+
+def test_landmark_extended_languages():
+    # Igbo, Portuguese (with de/do/da contractions), and Lingala relation words.
+    assert parse_address("n'azụ Shoprite Mall, Enugu") is not None
+    a = parse_address("atrás do Mercado Central, Luanda")
+    assert a is not None
+    assert a.components.anchor_type == "commercial"
+    assert a.country_inferred == "AO"
+    assert parse_address("na sima ya Hotel Memling, Kinshasa") is not None
 
 # ── Nigeria ─────────────────────────────────────────────────────────────────
 

@@ -12,6 +12,7 @@ from arche.resolve._matcher import (
     compare_phones,
     get_priors,
     match,
+    to_match_record,
 )
 
 
@@ -291,3 +292,42 @@ class TestMatch:
         score = match("Alice Johnson", "Bob Williams")
         assert score.decision in ("no_match", "review")
         assert score.score < 0.80
+
+
+class TestToMatchRecord:
+    """to_match_record() bridges pipeline detections into a match() record."""
+
+    _TEXT_A = (
+        "Fatima Abdullahi, NIN 12345678901, "
+        "behind the Total filling station, Ikeja, Lagos"
+    )
+    _TEXT_B = (
+        "F. Abdullahi, NIN 12345678901, "
+        "opposite the Total filling station, Ikeja, Lagos"
+    )
+
+    def test_builds_record_with_structured_address(self):
+        from arche import Pipeline
+
+        result = Pipeline(jurisdiction="NG").process(self._TEXT_A)
+        rec = to_match_record(result)
+        assert rec.get("name")
+        assert rec.get("national_id")
+        # Address is structured (not a flat string) and keeps the anchor.
+        assert isinstance(rec.get("address"), dict)
+        assert rec["address"].get("anchor")
+
+    def test_record_feeds_match(self):
+        from arche import Pipeline
+
+        a = to_match_record(Pipeline(jurisdiction="NG").process(self._TEXT_A))
+        b = to_match_record(Pipeline(jurisdiction="NG").process(self._TEXT_B))
+        assert match(a, b, jurisdiction="NG").decision == "match"
+
+    def test_accepts_detection_list_and_empty(self):
+        from arche import Pipeline
+
+        result = Pipeline(jurisdiction="NG").process(self._TEXT_A)
+        # A bare list of detections works the same as passing the Result.
+        assert to_match_record(result.detections) == to_match_record(result)
+        assert to_match_record([]) == {}
