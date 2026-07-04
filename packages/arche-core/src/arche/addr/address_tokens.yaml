@@ -15,7 +15,10 @@
 # file falls back to the defaults, keeping the parser fully offline.
 
 # Relation words that introduce a landmark ("behind the market").
+# Code-mixed African addresses use local-language and Pidgin relation words as
+# freely as English ones, so they live here too. Add regional forms as needed.
 anchor_prepositions:
+  # English
   - behind
   - near
   - opposite
@@ -25,6 +28,36 @@ anchor_prepositions:
   - across from
   - after
   - before
+  # Nigerian Pidgin
+  - for back of
+  - for front of
+  - close to
+  # Swahili (East Africa)
+  - nyuma ya
+  - karibu na
+  - mbele ya
+  - kando ya
+  # Hausa (West/Central Africa)
+  - bayan
+  - kusa da
+  - gaban
+  # Yoruba (West Africa)
+  - ẹ̀yìn
+  - lẹ́gbẹ̀ẹ́
+  # French (Francophone Africa)
+  - derrière
+  - près de
+  - en face de
+  - à côté de
+  - devant
+
+# Articles/determiners stripped between the relation word and the landmark, so
+# "derrière la Pharmacie" and "behind the market" normalise to the landmark.
+anchor_articles:
+  - the
+  - la
+  - le
+  - les
 
 # Place-type keywords grouped by anchor_type. Presence of any of these in a
 # landmark marks it as a real locator and sets the anchor_type.

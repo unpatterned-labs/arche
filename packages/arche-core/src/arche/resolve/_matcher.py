@@ -37,6 +37,7 @@ import logging
 import math
 import re
 import unicodedata
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -352,9 +353,50 @@ _ANCHOR_PREP_RE = re.compile(
 
 
 def _normalise_anchor(anchor: str) -> str:
-    """Normalise a landmark anchor: drop the leading preposition + article,
-    then apply the standard text normalisation."""
-    return _normalise_text(_ANCHOR_PREP_RE.sub("", anchor))
+    """Normalise a landmark anchor: drop the leading (possibly code-mixed)
+    relation word + article via the shared addr vocabulary, then normalise.
+    Falls back to the built-in English prepositions if addr is unavailable."""
+    try:
+        from ..addr import normalize_landmark
+
+        anchor = normalize_landmark(anchor)
+    except ImportError:
+        anchor = _ANCHOR_PREP_RE.sub("", anchor)
+    return _normalise_text(anchor)
+
+
+# Matchable address component names (also the weight keys above).
+_ADDR_COMPONENT_KEYS = set(_ADDR_FIELD_WEIGHTS)
+
+
+def _coerce_address(addr: Any) -> tuple[str, dict[str, str]]:
+    """Normalise an address input to ``(raw_string, matchable-components)``.
+
+    Accepts a raw ``str`` (parsed on the fly), or a structured address the
+    pipeline already parsed: a mapping (e.g. an address Detection's metadata,
+    ``{"text": ..., "street": ..., "anchor": ...}``) or an
+    :class:`~arche.addr.AddressComponents`. Structured input skips re-parsing
+    and uses the pipeline's landmark ``anchor`` directly.
+    """
+    if isinstance(addr, str):
+        return addr, _address_components(addr)
+    if isinstance(addr, Mapping):
+        source: dict[str, Any] = dict(addr)
+    elif hasattr(addr, "__dict__"):  # AddressComponents / dataclass instance
+        source = dict(vars(addr))
+    else:
+        text = str(addr)
+        return text, _address_components(text)
+
+    comps = {
+        key: str(value)
+        for key, value in source.items()
+        if key in _ADDR_COMPONENT_KEYS and value
+    }
+    raw = str(source.get("text") or source.get("raw") or "")
+    if not raw:
+        raw = ", ".join(comps.values())
+    return raw, comps
 
 
 def _address_components(addr: str) -> dict[str, str]:
@@ -401,7 +443,7 @@ def _component_field_sim(field_name: str, a: str, b: str) -> float:
     return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
 
 
-def compare_addresses(addr_a: str, addr_b: str) -> float:
+def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     """Compare two addresses using their parsed structure.
 
     Raw-string similarity both over-matches (two unrelated addresses that
@@ -413,17 +455,21 @@ def compare_addresses(addr_a: str, addr_b: str) -> float:
     structure (so token-reordering like "Ikeja Lagos" vs "Lagos Ikeja" is
     still handled).
 
+    Accepts a raw string or a structured address (mapping / AddressComponents)
+    the pipeline already parsed, so the landmark anchor isn't lost to a
+    round-trip through a flattened string.
+
     Future: spatial proximity via geocoding / gazetteer centroids.
     """
-    norm_a = _normalise_text(addr_a)
-    norm_b = _normalise_text(addr_b)
-    if not norm_a or not norm_b:
+    raw_a, comps_a = _coerce_address(addr_a)
+    raw_b, comps_b = _coerce_address(addr_b)
+    norm_a = _normalise_text(raw_a)
+    norm_b = _normalise_text(raw_b)
+    if not (norm_a or comps_a) or not (norm_b or comps_b):
         return 0.0
-    if norm_a == norm_b:
+    if norm_a and norm_a == norm_b:
         return 1.0
 
-    comps_a = _address_components(addr_a)
-    comps_b = _address_components(addr_b)
     shared = set(comps_a) & set(comps_b)
 
     # Nothing structured in common: fall back to raw fuzzy similarity.
@@ -567,8 +613,8 @@ class IdentityMatcher:
         national_id_b: str = "",
         email_a: str = "",
         email_b: str = "",
-        address_a: str = "",
-        address_b: str = "",
+        address_a: Any = "",
+        address_b: Any = "",
         dob_a: str = "",
         dob_b: str = "",
         isbn_a: str = "",

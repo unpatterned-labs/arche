@@ -30,6 +30,7 @@ from arche.addr.parse import (
     AddressComponents,
     extract_anchor,
     infer_jurisdiction,
+    normalize_landmark,
     parse_address,
     parse_addresses,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "AddressComponents",
     "extract_anchor",
     "infer_jurisdiction",
+    "normalize_landmark",
     "parse_address",
     "parse_addresses",
 ]

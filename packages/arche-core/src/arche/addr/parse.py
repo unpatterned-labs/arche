@@ -121,6 +121,8 @@ _ANCHOR_PREPOSITIONS = [
     "behind", "near", "opposite", "beside", "next to", "in front of",
     "across from", "after", "before",
 ]
+# Articles/determiners stripped between the relation word and the landmark.
+_ANCHOR_ARTICLES = ["the"]
 
 # Anchor type heuristics (commercial / religious / infrastructure).
 _COMMERCIAL_KEYWORDS = {"shop", "mall", "store", "supermarket", "filling station",
@@ -150,6 +152,9 @@ def _merge_address_tokens() -> None:
     for prep in data.get("anchor_prepositions") or []:
         if prep not in _ANCHOR_PREPOSITIONS:
             _ANCHOR_PREPOSITIONS.append(prep)
+    for article in data.get("anchor_articles") or []:
+        if article not in _ANCHOR_ARTICLES:
+            _ANCHOR_ARTICLES.append(article)
     types = data.get("anchor_types") or {}
     _COMMERCIAL_KEYWORDS.update(types.get("commercial") or [])
     _RELIGIOUS_KEYWORDS.update(types.get("religious") or [])
@@ -158,12 +163,14 @@ def _merge_address_tokens() -> None:
 
 _merge_address_tokens()
 
-# Longest prepositions first so multi-word forms ("next to") aren't shadowed.
+# Longest first so multi-word forms ("next to", "en face de") aren't shadowed
+# by a shorter prefix during alternation / prefix stripping.
 _ANCHOR_PREPOSITIONS.sort(key=len, reverse=True)
+_ANCHOR_ARTICLES.sort(key=len, reverse=True)
 _ANCHOR_RE = (
     r"(?P<anchor>"
     r"\b(?:" + "|".join(re.escape(p) for p in _ANCHOR_PREPOSITIONS) + r")\s+"
-    r"(?:the\s+)?"
+    r"(?:(?:" + "|".join(re.escape(a) for a in _ANCHOR_ARTICLES) + r")\s+)?"
     r"[A-Z][\w'\-]+(?:\s+[\w'\-]+){0,5}"  # 1-6 capitalised words
     r")"
 )
@@ -257,6 +264,28 @@ def extract_anchor(text: str) -> tuple[str, str] | None:
         return None
     anchor_text = m.group("anchor")
     return anchor_text, _classify_anchor(anchor_text)
+
+
+def normalize_landmark(text: str) -> str:
+    """Strip the leading relation word + article from a landmark descriptor.
+
+    "behind the Total filling station" and "nyuma ya Total filling station"
+    both reduce to "Total filling station", so a landmark compares the same
+    across the code-mixed relation words used in African addresses. Shared by
+    the parser and the resolver's address comparison so they use one vocabulary.
+    """
+    s = text.strip()
+    low = s.lower()
+    for prep in _ANCHOR_PREPOSITIONS:  # longest-first (sorted at module load)
+        if low.startswith(prep.lower() + " "):
+            s = s[len(prep):].lstrip()
+            low = s.lower()
+            break
+    for article in _ANCHOR_ARTICLES:  # longest-first
+        if low.startswith(article.lower() + " "):
+            s = s[len(article):].lstrip()
+            break
+    return s
 
 
 def parse_address(text: str) -> Address | None:
