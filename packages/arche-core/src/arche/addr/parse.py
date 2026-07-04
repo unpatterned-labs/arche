@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Data model (PRD §5.3)
@@ -112,20 +113,16 @@ _STREET_NAME_RE = (
 _PLOT_RE = r"(?P<plot>(?:Plot|Block|Unit|Suite|Flat|Apt|Apartment|No\.?)\s+\w+)"
 _NUMBER_RE = r"(?P<number>\d{1,4}[A-Za-z]?)"
 
-# Landmark anchor (informal African addresses)
+# Landmark anchor (informal African addresses). The relation words and
+# place-type keywords below are the built-in defaults; ``address_tokens.yaml``
+# (merged by :func:`_merge_address_tokens`) extends them per region without a
+# code change.
 _ANCHOR_PREPOSITIONS = [
     "behind", "near", "opposite", "beside", "next to", "in front of",
     "across from", "after", "before",
 ]
-_ANCHOR_RE = (
-    r"(?P<anchor>"
-    r"\b(?:" + "|".join(_ANCHOR_PREPOSITIONS) + r")\s+"
-    r"(?:the\s+)?"
-    r"[A-Z][\w'\-]+(?:\s+[\w'\-]+){0,5}"  # 1-6 capitalised words
-    r")"
-)
 
-# Anchor type heuristics (commercial / religious / infrastructure)
+# Anchor type heuristics (commercial / religious / infrastructure).
 _COMMERCIAL_KEYWORDS = {"shop", "mall", "store", "supermarket", "filling station",
                         "gas station", "petrol", "market", "bank", "atm",
                         "hotel", "restaurant", "pharmacy"}
@@ -134,6 +131,42 @@ _RELIGIOUS_KEYWORDS = {"church", "mosque", "cathedral", "temple", "shrine",
 _INFRASTRUCTURE_KEYWORDS = {"junction", "roundabout", "bridge", "park",
                             "stadium", "hospital", "school", "university",
                             "airport", "station", "terminal"}
+
+
+def _merge_address_tokens() -> None:
+    """Union contributor-supplied tokens from ``address_tokens.yaml`` into the
+    built-in defaults, so local place types / relation words can be added
+    without editing code. Best-effort: a missing or invalid file leaves the
+    defaults intact, keeping the parser fully offline and dependency-light.
+    """
+    path = Path(__file__).resolve().parent / "address_tokens.yaml"
+    try:
+        import yaml
+
+        with open(path, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+    except Exception:
+        return
+    for prep in data.get("anchor_prepositions") or []:
+        if prep not in _ANCHOR_PREPOSITIONS:
+            _ANCHOR_PREPOSITIONS.append(prep)
+    types = data.get("anchor_types") or {}
+    _COMMERCIAL_KEYWORDS.update(types.get("commercial") or [])
+    _RELIGIOUS_KEYWORDS.update(types.get("religious") or [])
+    _INFRASTRUCTURE_KEYWORDS.update(types.get("infrastructure") or [])
+
+
+_merge_address_tokens()
+
+# Longest prepositions first so multi-word forms ("next to") aren't shadowed.
+_ANCHOR_PREPOSITIONS.sort(key=len, reverse=True)
+_ANCHOR_RE = (
+    r"(?P<anchor>"
+    r"\b(?:" + "|".join(re.escape(p) for p in _ANCHOR_PREPOSITIONS) + r")\s+"
+    r"(?:the\s+)?"
+    r"[A-Z][\w'\-]+(?:\s+[\w'\-]+){0,5}"  # 1-6 capitalised words
+    r")"
+)
 
 # Postal-code patterns per jurisdiction.
 # Added GB in v0.2.0a2 (arche-places-0.1) per docs/ceo-plans/2026-05-24-places-resolver.md §4.6.
@@ -193,10 +226,38 @@ _BOX_RE = re.compile(
     re.IGNORECASE,
 )
 
+# A landmark-only address: an anchor ("behind the Total filling station")
+# followed by an optional locality tail. No street suffix, no postcode, no
+# registry — the informal-address case that dominates in much of Africa.
+_LANDMARK_RE = re.compile(
+    _ANCHOR_RE + r"(?P<tail>(?:\s*,\s*" + _TAIL_SEGMENT + r"){0,4})",
+)
+
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+def extract_anchor(text: str) -> tuple[str, str] | None:
+    """Extract a standalone landmark anchor and its type from free text.
+
+    African addresses are frequently landmark-based ("behind the Total
+    filling station, Madina, Accra") with no street, plot, or postcode.
+    :func:`parse_address` only attaches an anchor when a street/box address
+    is *also* present, so a landmark-only address parses to ``None`` and its
+    anchor is lost. This helper recovers the anchor on its own, so callers
+    (e.g. the resolver's address comparison) can use it as a first-class
+    matching signal for the informal-address case that dominates in Africa.
+
+    Returns ``(anchor_text, anchor_type)`` or ``None``. ``anchor_text``
+    keeps its leading preposition, matching :attr:`AddressComponents.anchor`.
+    """
+    m = re.search(_ANCHOR_RE, text)
+    if not m:
+        return None
+    anchor_text = m.group("anchor")
+    return anchor_text, _classify_anchor(anchor_text)
+
 
 def parse_address(text: str) -> Address | None:
     """Parse the first address-like span found in ``text``.
@@ -225,6 +286,15 @@ def parse_addresses(text: str) -> list[Address]:
     # 2) Run the Box-pattern regex
     for m in _BOX_RE.finditer(text):
         addr = _build_box_address_from_match(m, text)
+        if addr is not None:
+            candidates.append((addr.span, addr))
+
+    # 3) Run the landmark-anchor regex (informal addresses with no street
+    #    suffix, e.g. "behind the Total filling station, Madina, Accra").
+    #    Overlaps with a street/box match are dropped by the dedup below, so a
+    #    street address that already absorbed its anchor still wins.
+    for m in _LANDMARK_RE.finditer(text):
+        addr = _build_landmark_address_from_match(m, text)
         if addr is not None:
             candidates.append((addr.span, addr))
 
@@ -302,6 +372,42 @@ def _build_box_address_from_match(m: re.Match[str], full_text: str) -> Address |
     return Address(
         raw=raw,
         span=span,
+        components=components,
+        country_inferred=country,
+        country_confidence=country_conf,
+        confidence=confidence,
+    )
+
+
+def _build_landmark_address_from_match(m: re.Match[str], full_text: str) -> Address | None:
+    """Build an Address from a landmark-anchored span with no street suffix.
+
+    Precision gate: emit only when the landmark is a recognised place-type
+    (filling station, mosque, junction, ...) OR the tail yields a known
+    locality. Otherwise an incidental phrase like "behind the President" would
+    be mistaken for an address.
+    """
+    anchor_text = m.group("anchor")
+    anchor_type = _classify_anchor(anchor_text)
+
+    components = AddressComponents(anchor=anchor_text, anchor_type=anchor_type)
+    _parse_tail(m.groupdict().get("tail") or "", components)
+
+    has_locality = bool(
+        components.city or components.neighborhood or components.postal_code
+    )
+    if anchor_type == "other" and not has_locality:
+        return None
+
+    country, country_conf = _infer_country(components, full_text)
+    components.country = country
+
+    # Landmark-only addresses are inherently less precise than street/box ones.
+    confidence = min(_score_address(components), 0.6)
+
+    return Address(
+        raw=m.group(0).strip(),
+        span=(m.start(), m.end()),
         components=components,
         country_inferred=country,
         country_confidence=country_conf,

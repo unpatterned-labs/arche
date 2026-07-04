@@ -6,8 +6,59 @@
 from __future__ import annotations
 
 import pytest
+from arche.addr import extract_anchor, parse_address, parse_addresses
 
-from arche.addr import parse_address, parse_addresses
+
+def test_extract_anchor_landmark_only():
+    # The standalone anchor extractor recovers a landmark + its type from free
+    # text (used by the resolver's address comparison).
+    anchor = extract_anchor("behind the Total filling station, Madina, Accra")
+    assert anchor is not None
+    text, kind = anchor
+    assert "Total filling station" in text
+    assert kind == "commercial"
+
+
+def test_extract_anchor_none_when_no_landmark():
+    assert extract_anchor("7B Allen Avenue, Ikeja, Lagos") is None
+
+
+# ── Landmark-only addresses (emit) ──────────────────────────────────────────
+
+
+def test_landmark_only_address_now_parses():
+    a = parse_address("behind the Total filling station, Madina, Accra")
+    assert a is not None
+    assert a.components.anchor is not None
+    assert "Total" in a.components.anchor
+    assert a.components.anchor_type == "commercial"
+    assert a.components.city == "Accra"
+    assert a.country_inferred == "GH"
+
+
+def test_landmark_without_placetype_or_gazetteer_is_not_address():
+    # Precision gate: no place-type keyword and no known locality → not an
+    # address (otherwise incidental prose becomes a false detection).
+    assert parse_address("standing behind the President during the ceremony") is None
+
+
+def test_address_tokens_yaml_extends_vocabulary():
+    # "plaza" is contributed via address_tokens.yaml, not a built-in default;
+    # its classification as commercial proves the YAML vocabulary is merged.
+    a = parse_address("opposite the Ikeja City Plaza, Lagos")
+    assert a is not None
+    assert a.components.anchor_type == "commercial"
+
+
+def test_street_address_with_anchor_wins_over_landmark_only():
+    # A street address that absorbed its anchor must win the dedup — we should
+    # get the high-confidence street parse, not the low-confidence landmark one.
+    a = parse_address(
+        "behind the Total filling station, 23 Marina Street, Lagos Island, Nigeria"
+    )
+    assert a is not None
+    assert a.components.anchor is not None
+    assert a.confidence >= 0.80
 
 
 # ── Nigeria ─────────────────────────────────────────────────────────────────

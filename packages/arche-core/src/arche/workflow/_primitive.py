@@ -386,9 +386,18 @@ class Pipeline:
                     for addr in parse_addresses(text):
                         comp = addr.components
                         meta = {
+                            "plot": comp.plot or None,
+                            "street_number": comp.street_number or None,
                             "street": comp.street or None,
+                            # Landmark anchor is the operative locator in
+                            # informal African addresses — carry it through
+                            # so downstream resolution can match on it.
+                            "anchor": comp.anchor or None,
+                            "anchor_type": comp.anchor_type or None,
+                            "neighborhood": comp.neighborhood or None,
                             "city": comp.city or None,
                             "region": comp.region or None,
+                            "postal_code": comp.postal_code or None,
                             "country": comp.country or addr.country_inferred or None,
                         }
                         results.append(Detection(

@@ -40,7 +40,6 @@ import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _log = logging.getLogger("arche")
 
 
@@ -315,26 +314,137 @@ def compare_emails(email_a: str, email_b: str) -> float:
     return 1.0 if a == b else 0.0
 
 
-def compare_addresses(addr_a: str, addr_b: str) -> float:
-    """Compare two addresses using string similarity.
+# Per-component distinctiveness weights for address comparison.
+#
+# African informal addresses are landmark-based ("behind the Total filling
+# station, Madina") and have no canonical registry, so the operative locators
+# are the landmark ``anchor`` and the ``street`` — weighted highest. A shared
+# ``city``/``region`` is weak evidence (many people share a city), weighted low.
+#
+#     addr A                      addr B                     shared    signal
+#     ----------------------      ----------------------     ------    ------
+#     12 Long St, Cape Town       99 Main Rd, Cape Town      city      weak  → low score
+#     behind Total FS, Madina     opposite Total FS, Madina  anchor    strong→ high score
+#     7B Allen Ave                9B Allen Ave               number    differs→ pulled down
+_ADDR_FIELD_WEIGHTS: dict[str, float] = {
+    "anchor": 3.0,
+    "street": 2.5,
+    "postal_code": 2.0,
+    "plot": 1.5,
+    "street_number": 1.5,
+    "neighborhood": 1.0,
+    "city": 0.6,
+    "region": 0.4,
+}
+# Fields specific enough that a strong match must share at least one of them.
+_ADDR_DISTINCTIVE = {"anchor", "street", "postal_code", "plot", "street_number", "neighborhood"}
+# Fields where a difference is a genuine difference, not a typo (exact-compared).
+_ADDR_EXACT_FIELDS = {"plot", "street_number", "postal_code"}
+# Cap applied when only low-distinctiveness fields (city/region) are shared.
+_ADDR_WEAK_MATCH_CAP = 0.6
 
-    Future: spatial proximity via geocoding, landmark matching.
+# Leading landmark prepositions/articles to strip so "behind the Total filling
+# station" and "opposite Total Filling Station" compare on the landmark itself.
+_ANCHOR_PREP_RE = re.compile(
+    r"^(?:behind|near|opposite|beside|next to|in front of|across from|after|before)\s+(?:the\s+)?",
+    re.IGNORECASE,
+)
+
+
+def _normalise_anchor(anchor: str) -> str:
+    """Normalise a landmark anchor: drop the leading preposition + article,
+    then apply the standard text normalisation."""
+    return _normalise_text(_ANCHOR_PREP_RE.sub("", anchor))
+
+
+def _address_components(addr: str) -> dict[str, str]:
+    """Parse an address string into a dict of non-empty matchable components.
+
+    Falls back to a standalone landmark-anchor extraction when the full parser
+    recovers no structured address (the common African landmark-only case).
+    ``country`` and ``anchor_type`` are dropped — they are not per-record
+    matching signals. Returns ``{}`` when nothing structured is found.
+    """
+    try:
+        from ..addr import extract_anchor, parse_address
+    except ImportError:
+        return {}
+
+    fields: dict[str, str] = {}
+    parsed = parse_address(addr)
+    if parsed is not None:
+        for key, value in vars(parsed.components).items():
+            if value:
+                fields[key] = value
+    if "anchor" not in fields:
+        anchor = extract_anchor(addr)
+        if anchor is not None:
+            fields["anchor"] = anchor[0]
+    fields.pop("anchor_type", None)
+    fields.pop("country", None)
+    return fields
+
+
+def _component_field_sim(field_name: str, a: str, b: str) -> float:
+    """Similarity for a single address component."""
+    if field_name == "anchor":
+        na, nb = _normalise_anchor(a), _normalise_anchor(b)
+    else:
+        na, nb = _normalise_text(a), _normalise_text(b)
+    if not na or not nb:
+        return 0.0
+    if na == nb:
+        return 1.0
+    if field_name in _ADDR_EXACT_FIELDS:
+        # A different house/plot number or postcode is a real difference.
+        return 0.0
+    return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
+
+
+def compare_addresses(addr_a: str, addr_b: str) -> float:
+    """Compare two addresses using their parsed structure.
+
+    Raw-string similarity both over-matches (two unrelated addresses that
+    share "Lagos") and under-matches (the same landmark described two ways),
+    and it discards everything ``arche.addr`` worked to parse. This compares
+    component-by-component, weighting the landmark ``anchor`` and ``street``
+    as high-distinctiveness signals and a shared ``city``/``region`` as weak.
+    Falls back to raw-string similarity only when neither side yields
+    structure (so token-reordering like "Ikeja Lagos" vs "Lagos Ikeja" is
+    still handled).
+
+    Future: spatial proximity via geocoding / gazetteer centroids.
     """
     norm_a = _normalise_text(addr_a)
     norm_b = _normalise_text(addr_b)
     if not norm_a or not norm_b:
         return 0.0
-
     if norm_a == norm_b:
         return 1.0
 
-    # Token-sort handles word reordering ("Ikeja Lagos" vs "Lagos Ikeja")
-    ts = _token_sort_ratio(norm_a, norm_b)
+    comps_a = _address_components(addr_a)
+    comps_b = _address_components(addr_b)
+    shared = set(comps_a) & set(comps_b)
 
-    # Jaro-Winkler for character-level similarity
-    jw = _jaro_winkler(norm_a, norm_b)
+    # Nothing structured in common: fall back to raw fuzzy similarity.
+    if not shared:
+        return max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
 
-    return max(ts, jw)
+    weighted_sum = 0.0
+    weight_total = 0.0
+    for field_name in shared:
+        weight = _ADDR_FIELD_WEIGHTS.get(field_name, 0.5)
+        weighted_sum += weight * _component_field_sim(
+            field_name, comps_a[field_name], comps_b[field_name]
+        )
+        weight_total += weight
+    score = weighted_sum / weight_total if weight_total else 0.0
+
+    # A match resting only on shared city/region is weak — cap it.
+    if not (shared & _ADDR_DISTINCTIVE):
+        score = min(score, _ADDR_WEAK_MATCH_CAP)
+
+    return score
 
 
 def compare_dates(date_a: str, date_b: str) -> float:

@@ -1,0 +1,69 @@
+# African address token vocabulary — what a token means in local address context.
+#
+# Landmark-based addresses ("behind the Total filling station, Madina, Accra")
+# are the norm across much of Africa: no street number, no postcode, no
+# registry. The parser needs to know which words mark a *real place* (a
+# "filling station", a "mosque", a "motor park") versus incidental capitalised
+# words ("behind the President"). These place-type tokens are the
+# high-distinctiveness signal that a landmark is a genuine locator — the same
+# principle uk_address_matcher and the ATRAC address-linkage method use when
+# they weight rare, distinctive tokens over common ones.
+#
+# Contributor-friendly: add local place types and relation words per region.
+# Loaded by parse.py::_merge_address_tokens and UNIONED with the built-in
+# defaults, so this file only needs to carry additions. A missing or invalid
+# file falls back to the defaults, keeping the parser fully offline.
+
+# Relation words that introduce a landmark ("behind the market").
+anchor_prepositions:
+  - behind
+  - near
+  - opposite
+  - beside
+  - next to
+  - in front of
+  - across from
+  - after
+  - before
+
+# Place-type keywords grouped by anchor_type. Presence of any of these in a
+# landmark marks it as a real locator and sets the anchor_type.
+anchor_types:
+  commercial:
+    - filling station
+    - petrol
+    - gas station
+    - market
+    - shop
+    - mall
+    - supermarket
+    - bank
+    - atm
+    - hotel
+    - restaurant
+    - pharmacy
+    - store
+    - plaza          # common in NG/GH commercial addresses
+    - kiosk
+  religious:
+    - church
+    - mosque
+    - cathedral
+    - temple
+    - shrine
+    - chapel
+    - parish
+  infrastructure:
+    - junction
+    - roundabout
+    - bridge
+    - park
+    - stadium
+    - hospital
+    - school
+    - university
+    - airport
+    - station
+    - terminal
+    - flyover        # common overpass landmark in NG cities
+    - motor park     # NG/GH transport hub, a frequent locator
