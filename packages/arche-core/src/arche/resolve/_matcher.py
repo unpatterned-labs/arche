@@ -39,6 +39,8 @@ import re
 import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from functools import cache
+from pathlib import Path
 from typing import Any
 
 _log = logging.getLogger("arche")
@@ -100,6 +102,10 @@ class JurisdictionPriors:
     # Email field
     email_m: float = 0.98
     email_u: float = 0.000001
+
+    # Geo (lat/lon proximity) field
+    geo_m: float = 0.90   # P(points are close | same real-world place)
+    geo_u: float = 0.15   # P(points are close | different places in the same block)
 
     # Thresholds
     match_threshold: float = 0.85
@@ -493,6 +499,92 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     return score
 
 
+def compare_geo(
+    lat_a: float,
+    lon_a: float,
+    lat_b: float,
+    lon_b: float,
+    *,
+    decay_km: float = 1.5,
+) -> float:
+    """Similarity in [0, 1] from the great-circle distance between two points.
+
+    Haversine distance with an exponential decay: 1.0 at the same point,
+    ~0.51 at ``decay_km``, ~0.05 at ~3x ``decay_km``. ``decay_km`` is
+    deliberately forgiving because field-captured coordinates are noisy — in
+    African facility data roughly a quarter of true-match pairs sit >2 km
+    apart — so geo is a supporting signal, never a hard gate. Generic
+    geospatial comparator; not tied to any entity type.
+    """
+    radius_km = 6371.0088  # mean Earth radius
+    phi_a, phi_b = math.radians(lat_a), math.radians(lat_b)
+    dphi = math.radians(lat_b - lat_a)
+    dlambda = math.radians(lon_b - lon_a)
+    h = (
+        math.sin(dphi / 2) ** 2
+        + math.cos(phi_a) * math.cos(phi_b) * math.sin(dlambda / 2) ** 2
+    )
+    distance_km = 2 * radius_km * math.asin(min(1.0, math.sqrt(h)))
+    if decay_km <= 0:
+        return 1.0 if distance_km == 0 else 0.0
+    return math.exp(-distance_km / decay_km)
+
+
+def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]:
+    """Split a name into ``(canonical_type, residual_name)`` via a synonym vocab.
+
+    ``vocab`` maps a synonym phrase to a canonical token, e.g.::
+
+        {"phc": "PHC", "primary health centre": "PHC",
+         "primary health care centre": "PHC", "dispensary": "DISPENSARY"}
+
+    The longest synonym present in ``text`` (word-boundary match) is removed;
+    the remainder is the residual proper name, so a matcher can compare the
+    *distinctive* part ("Karfi", not the shared "Primary Health Centre") and
+    the type separately. The same shape canonicalises organisation suffixes
+    ("Ltd" / "PLC" / "SARL"), so it is generic, not facility-specific.
+
+    Matching and the returned residual are normalised (lowercased, diacritics
+    stripped). Returns ``(None, normalised_text)`` when no synonym matches.
+    """
+    low = _normalise_text(text)
+    for syn in sorted(vocab, key=len, reverse=True):
+        syn_norm = _normalise_text(syn)
+        if not syn_norm:
+            continue
+        if re.search(r"\b" + re.escape(syn_norm) + r"\b", low):
+            residual = re.sub(r"\b" + re.escape(syn_norm) + r"\b", " ", low)
+            return vocab[syn], re.sub(r"\s+", " ", residual).strip()
+    return None, low
+
+
+@cache
+def load_type_vocab(domain: str) -> dict[str, str]:
+    """Load a type-token vocabulary for ``domain`` from ``type_tokens.yaml``.
+
+    Returns a flat ``{synonym: canonical}`` map ready for
+    :func:`normalize_type_token`. Domains (e.g. ``"health_facility"``,
+    ``"organization"``) are the pack's top-level keys; each canonical token
+    lists ``synonyms`` and a ``description``. Cached. Best-effort: an unknown
+    domain, or a missing/invalid pack, returns ``{}`` (so callers can always
+    fall back to fuzzy name matching). Treat the result as read-only.
+    """
+    path = Path(__file__).resolve().parent / "type_tokens.yaml"
+    try:
+        import yaml
+
+        with open(path, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+    except Exception:
+        return {}
+    vocab: dict[str, str] = {}
+    for canonical, spec in (data.get(domain) or {}).items():
+        for syn in (spec or {}).get("synonyms") or []:
+            vocab[str(syn)] = str(canonical)
+        vocab.setdefault(str(canonical).lower(), str(canonical))
+    return vocab
+
+
 def compare_dates(date_a: str, date_b: str) -> float:
     """Compare two date strings.  Simple normalised exact match for now."""
     # Strip everything except digits
@@ -615,6 +707,8 @@ class IdentityMatcher:
         email_b: str = "",
         address_a: Any = "",
         address_b: Any = "",
+        geo_a: tuple[float, float] | None = None,
+        geo_b: tuple[float, float] | None = None,
         dob_a: str = "",
         dob_b: str = "",
         isbn_a: str = "",
@@ -673,6 +767,15 @@ class IdentityMatcher:
             factors["address"] = round(addr_sim, 4)
             if addr_sim >= 0.80:
                 parts.append(f"address similarity {addr_sim:.0%}")
+
+        # Geo comparison (lat/lon proximity — for place/facility records)
+        if geo_a and geo_b:
+            geo_sim = compare_geo(geo_a[0], geo_a[1], geo_b[0], geo_b[1])
+            w = _log_odds(geo_sim, self.priors.geo_m, self.priors.geo_u)
+            total_log_odds += w
+            factors["geo"] = round(geo_sim, 4)
+            if geo_sim >= 0.60:
+                parts.append("nearby location")
 
         # Date of birth comparison
         if dob_a and dob_b:

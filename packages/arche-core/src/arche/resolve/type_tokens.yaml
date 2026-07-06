@@ -1,0 +1,91 @@
+# type_tokens.yaml — canonical entity type-token vocabularies.
+#
+# What it is: for a domain (health_facility, organization, ...), a set of
+# CANONICAL type tokens, each with the SYNONYMS that mean the same thing and a
+# human-readable DESCRIPTION. Loaded by resolve.load_type_vocab(domain) into a
+# flat {synonym: canonical} map that feeds resolve.normalize_type_token(), which
+# strips the type token so a matcher compares the *distinctive* proper name
+# ("Karfi", not the shared "Primary Health Centre") and the type separately.
+#
+# Why it lives here: type vocabularies are African-context calibration data —
+# the same kind of curated asset as the name lexicon and address tokens. Adding
+# a domain or a synonym is a data edit, not a code change. Build on it.
+#
+# Contributor notes:
+#   - Synonyms are matched case-insensitively, diacritics-folded, on word
+#     boundaries; the longest matching synonym wins.
+#   - Keep synonyms specific enough to avoid collisions (prefer "health centre"
+#     over a bare "centre").
+
+health_facility:
+  PHC:
+    description: Primary health centre / primary health care facility (the base tier of Nigerian PHC).
+    synonyms:
+      - primary health centre
+      - primary health center
+      - primary health care centre
+      - primary healthcare centre
+      - comprehensive health centre
+      - phc
+      - health centre
+      - health center
+  DISPENSARY:
+    description: Dispensary — small drug-dispensing / basic-care facility.
+    synonyms:
+      - dispensary
+  HOSPITAL:
+    description: Hospital — general, teaching, specialist, cottage, or referral.
+    synonyms:
+      - general hospital
+      - teaching hospital
+      - specialist hospital
+      - cottage hospital
+      - referral hospital
+      - hospital
+  MATERNITY:
+    description: Maternity home / maternity centre.
+    synonyms:
+      - maternity home
+      - maternity centre
+      - maternity
+  CLINIC:
+    description: Clinic / medical centre (often private).
+    synonyms:
+      - health clinic
+      - medical centre
+      - medical center
+      - clinic
+  HEALTH_POST:
+    description: Health post — the smallest outreach facility.
+    synonyms:
+      - health post
+  PHARMACY:
+    description: Pharmacy / chemist / patent-medicine vendor.
+    synonyms:
+      - pharmacy
+      - chemist
+      - patent medicine
+
+organization:
+  LTD:
+    description: Limited liability company (Anglophone).
+    synonyms:
+      - limited
+      - ltd
+      - plc
+  SARL:
+    description: Société à responsabilité limitée (Francophone West/Central Africa).
+    synonyms:
+      - sarl
+  COOPERATIVE:
+    description: Cooperative society (e.g. cocoa/farmer cooperatives).
+    synonyms:
+      - cooperative society
+      - co-operative
+      - cooperative
+      - coop
+  NGO:
+    description: Non-governmental organisation.
+    synonyms:
+      - non-governmental organisation
+      - ngo
