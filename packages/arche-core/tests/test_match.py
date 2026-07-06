@@ -7,11 +7,14 @@ from arche.resolve._matcher import (
     MatchScore,
     compare_addresses,
     compare_emails,
+    compare_geo,
     compare_ids,
     compare_names,
     compare_phones,
     get_priors,
+    load_type_vocab,
     match,
+    normalize_type_token,
     to_match_record,
 )
 
@@ -331,3 +334,101 @@ class TestToMatchRecord:
         # A bare list of detections works the same as passing the Result.
         assert to_match_record(result.detections) == to_match_record(result)
         assert to_match_record([]) == {}
+
+
+class TestCompareGeo:
+    def test_same_point(self):
+        assert compare_geo(11.99, 8.55, 11.99, 8.55) == 1.0
+
+    def test_close_points_high(self):
+        # ~0.3 km apart → high similarity
+        assert compare_geo(11.990, 8.55, 11.9927, 8.55) >= 0.75
+
+    def test_far_points_low(self):
+        # ~3 km apart → low similarity
+        assert compare_geo(11.99, 8.55, 12.017, 8.55) < 0.30
+
+    def test_tighter_decay_penalises_more(self):
+        d = compare_geo(0.0, 0.0, 0.0, 0.02, decay_km=1.5)
+        tight = compare_geo(0.0, 0.0, 0.0, 0.02, decay_km=0.5)
+        assert tight < d
+
+
+class TestNormalizeTypeToken:
+    VOCAB = {
+        "primary health centre": "PHC",
+        "primary health center": "PHC",
+        "phc": "PHC",
+        "dispensary": "DISPENSARY",
+        "teaching hospital": "HOSPITAL",
+        "health clinic": "CLINIC",
+    }
+
+    def test_strips_type_leaves_name(self):
+        assert normalize_type_token("Karfi Health Clinic", self.VOCAB) == ("CLINIC", "karfi")
+
+    def test_longest_synonym_wins(self):
+        canon, residual = normalize_type_token(
+            "Darmanawa Primary Health Centre", self.VOCAB
+        )
+        assert canon == "PHC"
+        assert residual == "darmanawa"
+
+    def test_no_match_returns_none_and_normalised_text(self):
+        canon, residual = normalize_type_token("Some Random Place", self.VOCAB)
+        assert canon is None
+        assert residual == "some random place"
+
+
+class TestFacilityMatch:
+    """The two generic helpers together resolve a facility spelling-variant +
+    geo pair — the hard-residue case the health-facility spike targets."""
+
+    def test_spelling_variant_plus_geo_matches(self):
+        vocab = {"teaching hospital": "HOSPITAL"}
+        _, a = normalize_type_token("Aminu Kano Teaching Hospital", vocab)
+        _, b = normalize_type_token("Amino Kanu Teaching Hospital", vocab)
+        m = IdentityMatcher("NG")
+        score = m.compare_fields(
+            name_a=a, name_b=b, geo_a=(11.9767, 8.5942), geo_b=(11.9750, 8.5960)
+        )
+        assert score.decision == "match"
+        assert "geo" in score.factors and "name" in score.factors
+
+    def test_geo_distance_lowers_score(self):
+        # Same name, but far-apart coordinates pull the score down.
+        m = IdentityMatcher("NG")
+        near = m.compare_fields(
+            name_a="darmanawa", name_b="darmanawa",
+            geo_a=(11.99, 8.55), geo_b=(11.9927, 8.55),
+        )
+        far = m.compare_fields(
+            name_a="darmanawa", name_b="darmanawa",
+            geo_a=(11.99, 8.55), geo_b=(12.05, 8.55),
+        )
+        assert far.score < near.score
+
+
+class TestLoadTypeVocab:
+    def test_health_facility_domain_loads(self):
+        v = load_type_vocab("health_facility")
+        assert v.get("dispensary") == "DISPENSARY"
+        assert v.get("primary health center") == "PHC"
+        assert v.get("teaching hospital") == "HOSPITAL"
+
+    def test_normalizes_real_facility_names(self):
+        v = load_type_vocab("health_facility")
+        assert normalize_type_token("Darmanawa Primary Health Center", v) == ("PHC", "darmanawa")
+        # A mislabelled OSM "chemist" is classified as PHARMACY.
+        assert normalize_type_token("RAHAMA CHEMIST", v) == ("PHARMACY", "rahama")
+
+    def test_second_domain_organization(self):
+        v = load_type_vocab("organization")
+        assert normalize_type_token("Kaduna Cocoa Cooperative Society", v)[0] == "COOPERATIVE"
+        assert normalize_type_token("Dangote Cement PLC", v)[0] == "LTD"
+
+    def test_unknown_domain_returns_empty(self):
+        assert load_type_vocab("does_not_exist") == {}
+
+    def test_cached(self):
+        assert load_type_vocab("health_facility") is load_type_vocab("health_facility")

@@ -181,6 +181,9 @@ _LAZY: dict[str, tuple[str, str]] = {
     "MatchScore": (".resolve._matcher", "MatchScore"),
     "match": (".resolve._matcher", "match"),
     "to_match_record": (".resolve._matcher", "to_match_record"),
+    "compare_geo": (".resolve._matcher", "compare_geo"),
+    "normalize_type_token": (".resolve._matcher", "normalize_type_token"),
+    "load_type_vocab": (".resolve._matcher", "load_type_vocab"),
     # --- pipeline (v0.1 callables) ----------------------------------------
     # Retargeted to .workflow.pipeline (real location); see note above.
     # NOTE: `resolve_fhir` was removed in v0.2.0a3 along with the
@@ -272,6 +275,9 @@ __all__ = [
     "detect",
     "match",
     "to_match_record",
+    "compare_geo",
+    "normalize_type_token",
+    "load_type_vocab",
     "link",
     "resolve",
     # v0.2.0a2 — places (spec §5 + §16.3)
