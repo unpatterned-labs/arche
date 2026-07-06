@@ -1,0 +1,727 @@
+id,name,amenity,healthcare,lga,lat,lon
+node/2923098159,Tsara Primary Health Centre,hospital,,Rogo,11.4507448,7.7276659
+node/2923263866,Dayaso Health Post,hospital,,Rogo,11.5159251,7.7354815
+node/2923263867,Fulatan Primary Health Centre,hospital,,Rogo,11.400621,7.8588881
+node/2923263868,Gwangwan Primary Health Centre,hospital,,Rogo,11.4870724,7.7472255
+node/2923263869,Hago Primary Health Centre,hospital,,Rogo,11.4799185,7.8311742
+node/2923263870,Ruwan Bago Health Post,hospital,,Rogo,11.4071835,7.7574532
+node/2923263871,Sundu Health Post,hospital,,Rogo,11.3806332,7.7615261
+node/2923263872,Tudun Magaji Health Post,hospital,,Rogo,11.4528744,7.7818216
+node/2923263873,Unguwar Liman Health Post,hospital,,Rogo,11.4050538,7.7436668
+node/2923263874,Unguwar Malam Amadu Health Post,hospital,,Rogo,11.4932289,7.7720426
+node/2923263875,Zarewa Primary Health Centre,hospital,,Rogo,11.3970316,7.8119881
+node/2923366077,Bari Primary Health Centre,hospital,,Rogo,11.5683198,7.7511988
+node/2923366078,Kaleku Health Post,hospital,,Rogo,11.6249586,7.883484
+node/2923366079,Karshi Health Post,hospital,,Rogo,11.54124,7.825976
+node/2923366080,Kauyen Liman Health Post,hospital,,Rogo,11.5426114,7.820641
+node/2923366081,Rogo General Hospital,hospital,,Rogo,11.5526616,7.8308789
+node/2923366082,Tsohuwar Rogo Health Post,hospital,,Rogo,11.574668,7.799462
+node/2923366083,Zoza Health Post,hospital,,Rogo,11.6274485,7.8718061
+node/2923485903,Ba'Awa Health Post,hospital,,Kiru,11.5984067,7.9871577
+node/2923485905,Jajaye Primary Health Centre,hospital,,Rogo,11.5567689,7.9357513
+node/2923485907,Maska Health Post,hospital,,Kiru,11.5945109,8.0809388
+node/2923512474,Sagondare Health Post,hospital,,Rogo,11.4800424,7.9547419
+node/2923512475,Yanoko Primary Health Centre,hospital,,Rogo,11.4558949,7.9180823
+node/2923573774,Dalal Health Post,hospital,,Gwarzo,11.8351422,7.9491289
+node/2923573776,Dambazau Health Post,hospital,,Karaye,11.8114536,8.0292982
+node/2923573777,Daura Health Post,hospital,,Karaye,11.7256288,7.9830086
+node/2923573778,Dederi Health Post,hospital,,Karaye,11.8436645,8.0573574
+node/2923573779,Dutsan Amare Health Post,hospital,,Karaye,11.8273137,7.9908227
+node/2923573780,Kadafa Health Post,hospital,,Karaye,11.7988485,7.941187
+node/2923573781,Kara Primary Health Centre,hospital,,Gwarzo,11.8432876,7.9591133
+node/2923573783,Kurugu Health Post,hospital,,Karaye,11.8328346,8.039604
+node/2923573784,Sabon Birni Primary Health Centre,hospital,,Gwarzo,11.8562137,8.0313367
+node/2923573785,Sabon Fegi Health Post,hospital,,Karaye,11.806303,8.0639555
+node/2923573786,Sabon Layin Kara Health Post,hospital,,Gwarzo,11.8249152,7.9326276
+node/2923573788,Tudun Kaya Health Post,hospital,,Karaye,11.7332488,7.930958
+node/2923573789,Tumfafi Health Post,hospital,,Gwarzo,11.8377453,8.02226
+node/2923573790,Turawa Primary Health Centre,hospital,,Karaye,11.6976912,8.0479644
+node/2923573793,Unguwar Tofa Health Post,hospital,,Karaye,11.785645,7.9596402
+node/2923573794,Yola Primary Health Centre,hospital,,Karaye,11.7198087,7.9490968
+node/2923573795,Zangun Majema Health Post,hospital,,Karaye,11.8161764,8.002074
+node/2923599548,Dadin Kowa Primary Health Centre,hospital,,Doguwa,10.7017877,8.6305712
+node/2923599549,Dariyar Shere Primary Health Centre,hospital,,Doguwa,10.6704612,8.7410562
+node/2923599550,Dokar Sati Health Post,hospital,,Doguwa,10.728985,8.619358
+node/2923599553,Kwando Primary Health Centre,hospital,,Doguwa,10.7083293,8.6821695
+node/2923599554,Mekwandira Health Post,hospital,,Doguwa,10.8088385,8.6301797
+node/2923599555,Ririwai Primary Health Centre,hospital,,Doguwa,10.750129,8.7279186
+node/2925699882,Achilafiya Health Post,hospital,,Kiru,11.7484648,8.1386675
+node/2925699883,Alhazawa Health Post,hospital,,Kiru,11.7093773,8.167287
+node/2925699884,Bargoni Health Post,hospital,,Kiru,11.719051,8.1052227
+node/2925699885,Baskore Health Post,hospital,,Kabo,11.8426972,8.1478795
+node/2925699886,Dashi Health Post,hospital,,Kiru,11.7173406,8.227324
+node/2925699887,Dugabau Primary Health Centre,hospital,,Kabo,11.8027135,8.2070991
+node/2925699889,Gazan Health Post,hospital,,Kiru,11.7108499,8.1974104
+node/2925699890,Hawadin Galadima Primary Health Centre,hospital,,Kabo,11.8657616,8.2355798
+node/2925699891,Husama Health Post,hospital,,Karaye,11.788362,8.113176
+node/2925699893,Kabo Cottage General Hospital,hospital,,Kabo,11.8511893,8.1677976
+node/2925699894,Kafin Dabga Health Post,hospital,,Karaye,11.8318724,8.1230959
+node/2925699895,Kailani Health Post,hospital,,Kiru,11.7301784,8.1820486
+node/2925699896,Kanwa Health Post,hospital,,Kabo,11.8264287,8.1505252
+node/2925699897,Kauyen Mahuta Health Post,hospital,,Kabo,11.8663042,8.1539167
+node/2925699898,Kiru General Hospital,hospital,,Kiru,11.70699,8.1347617
+node/2925699899,Malan Gajere Health Post,hospital,,Kabo,11.8602942,8.1921146
+node/2925699900,Masanawa Health Post,hospital,,Kabo,11.8468936,8.2425612
+node/2925701101,Unguwar Turaki Health Post,hospital,,Kabo,11.8202943,8.2309109
+node/2925701102,Walawa Health Post,hospital,,Kabo,11.786184,8.2231491
+node/2925701103,Yammedi Primary Health Centre,hospital,,Karaye,11.82384,8.0924596
+node/2925701104,Zuwo Health Post,hospital,,Kiru,11.7502925,8.2055225
+node/2925719598,Bauda Health Post,hospital,,Kiru,11.5889314,8.1904451
+node/2925719600,Dangora Primary Health Centre,hospital,,Kiru,11.5360867,8.1572808
+node/2925757201,Durmawa Health Post,hospital,,Bebeji,11.6051805,8.2583199
+node/2925757202,Gwarmai Health Post,hospital,,Bebeji,11.533195,8.2548285
+node/2925757203,Kogo Primary Health Centre,hospital,,Kiru,11.6230036,8.1719701
+node/2925757204,Maraku Health Post,hospital,,Kiru,11.6771402,8.1288908
+node/2925757205,Tsaudawa Health Post,hospital,,Kiru,11.6809365,8.202676
+node/2925757206,Yako Primary Health Centre,hospital,,Kiru,11.6557163,8.1929152
+node/2925787870,Badafi Health Post,hospital,,Kiru,11.3734414,8.1691977
+node/2925787871,Gajale Health Post,hospital,,Kiru,11.4345387,8.2370948
+node/2925787872,Hayin Gwarmai Health Post,hospital,,Bebeji,11.4599134,8.2035506
+node/2925787874,Yalwa Health Post,hospital,,Kiru,11.4865376,8.1866211
+node/2925837269,Maganda Health Post,hospital,,Doguwa,10.6404903,8.7593621
+node/2925837271,Rufai Health Post,hospital,,Doguwa,10.6387049,8.6471287
+node/2925837272,Yalwan Dan Musa Health Post,hospital,,Doguwa,10.5758648,8.7159172
+node/2925849527,Badari Health Post,hospital,,Gwarzo,11.8030905,7.893615
+node/2925849528,Dan Gayaki Health Post,hospital,,Karaye,11.725309,7.903104
+node/2925849529,Gurawa Health Post,hospital,,Karaye,11.7676412,7.888229
+node/2925849530,Jama'A Primary Health Centre,hospital,,Gwarzo,11.8151982,7.8661004
+node/2925849531,Kwanyawa Primary Health Centre,hospital,,Karaye,11.771775,7.867357
+node/2925849532,Malamawa Health Post,hospital,,Gwarzo,11.8352349,7.859759
+node/2925991011,Bauda Health Post,hospital,,Kiru,11.5889756,8.1904439
+node/2925991013,Dangora Primary Health Centre,hospital,,Kiru,11.5360675,8.1572761
+node/2925991014,Durmawa Health Post,hospital,,Bebeji,11.605175,8.2583278
+node/2925991015,Gwarmai Health Post,hospital,,Bebeji,11.5331938,8.2548556
+node/2925991016,Kogo Primary Health Centre,hospital,,Kiru,11.6230025,8.1719512
+node/2925991017,Maraku Health Post,hospital,,Kiru,11.6771255,8.1288835
+node/2925991018,Tsaudawa Health Post,hospital,,Kiru,11.6809406,8.2026737
+node/2925991019,Yako Primary Health Centre,hospital,,Kiru,11.6556987,8.1928273
+node/2929137238,Bankaura Health Post,hospital,,Bichi,12.2707934,8.3813869
+node/2929137239,Belli Health Post,hospital,,Bichi,12.3118982,8.2849823
+node/2929137240,Bum-Bum Health Post,hospital,,Bichi,12.2486915,8.3970018
+node/2929137241,Daddo Health Post,hospital,,Bichi,12.2998701,8.3351345
+node/2929137242,Damargu Primary Health Centre,hospital,,Bichi,12.2658179,8.3215707
+node/2929137243,Damfamin Tofa Health Post,hospital,,Dawakin Tofa,12.2226367,8.4283419
+node/2929137244,Gawon Bature Health Post,hospital,,Bichi,12.2627379,8.4188614
+node/2929137245,Gwarmai Primary Health Centre,hospital,,Kunchi,12.3633923,8.4054439
+node/2929137246,Jinjimawa Health Post,hospital,,Bichi,12.3310091,8.2737713
+node/2929137247,Jodade Health Post,hospital,,Kunchi,12.3720534,8.3057174
+node/2929137248,Kawaji Health Post,hospital,,Bichi,12.2319051,8.3329369
+node/2929137249,Kirya Health Post,hospital,,Dawakin Tofa,12.2126896,8.3888751
+node/2929137250,Kuku Primary Health Centre,hospital,,Kunchi,12.372987,8.2819031
+node/2929137251,Kwamarawa Health Post,hospital,,Bichi,12.3302322,8.3897956
+node/2929137253,Saye Primary Health Centre,hospital,,Bichi,12.275517,8.3961623
+node/2929137254,Taddangari Primary Health Centre,hospital,,Bichi,12.2352404,8.309361
+node/2929137255,Tinki Health Post,hospital,,Bichi,12.303154,8.3925522
+node/2929137256,Tofawa Health Post,hospital,,Kunchi,12.3468822,8.3289016
+node/2929137257,Tukuibi Health Post,hospital,,Bichi,12.2674557,8.3416815
+node/2929137259,Yanbundu Health Post,hospital,,Bichi,12.2691565,8.2931442
+node/2929137260,Yola Health Post,hospital,,Bichi,12.2443931,8.2875943
+node/2929137261,Zangon Mata Health Post,hospital,,Dawakin Tofa,12.2334392,8.4135659
+node/2929399558,Baje Primary Health Centre,hospital,,Kunchi,12.3653887,8.2574267
+node/2929399560,Chiromawa Primary Health Centre,hospital,,Bichi,12.321506,8.1594934
+node/2929399561,Damisa Health Post,hospital,,Bichi,12.309377,8.2164745
+node/2929399562,Danzabua Primary Health Centre,hospital,,Bichi,12.3458238,8.1102497
+node/2929399564,Farsa Health Post,hospital,,Tsanyawa,12.3815387,8.1012747
+node/2929399565,Gidan Nisau Health Post,hospital,,Kunchi,12.3579904,8.192957
+node/2929399566,Hagawa Health Post,hospital,,Bichi,12.2554986,8.1690565
+node/2929399567,Karari Health Post,hospital,,Bichi,12.2428387,8.1744508
+node/2929399568,Lamba Health Post,hospital,,Bichi,12.3400075,8.1480733
+node/2929399569,Malikawa Sarari Health Post,hospital,,Bichi,12.3805223,8.1475524
+node/2929399570,Rigana Primary Health Centre,hospital,,Kunchi,12.3779428,8.2101924
+node/2929399571,Rimaye Health Post,hospital,,Bichi,12.2665799,8.2011596
+node/2929399572,Tatsan Health Post,hospital,,Tsanyawa,12.2885597,8.0928191
+node/2929399574,Tsidau Health Post,hospital,,Bichi,12.3004044,8.1492133
+node/2929399575,Waire Health Post,hospital,,Bichi,12.3455345,8.2209789
+node/2929399577,Yangwarzo Health Post,hospital,,Bichi,12.2743958,8.1558689
+node/2948312513,Mariri Primary Health Centre,hospital,,Kumbotso,11.9498774,8.6091166
+node/2953819019,Kokai Health Post,hospital,hospital,Tsanyawa,12.2187898,8.0221474
+node/2953819027,Yanmamman Health Post,hospital,,Tsanyawa,12.2622436,8.0413869
+node/2954029812,Gwarabjawa Health Post,hospital,,Dambatta,12.4479598,8.5418922
+node/2954277529,Mazan Gudu Health Post,hospital,,Gabasawa,12.1953802,8.9072145
+node/3060720467,Iyayi Dispensary,hospital,,Ningi,11.3082828,9.2498158
+node/3081493774,Model Primary Health Center Rahama,hospital,,Toro,10.4529722,8.7595558
+node/4484741172,Sick Bay,hospital,,,11.1545705,7.6521307
+node/4766946544,Geography Dept Medical Center,hospital,,,11.1528619,7.6484936
+node/5668757228,Kano Emergency Operations Center,hospital,,Kano,11.995892,8.5495487
+node/7909953527,Amino Kanu Teaching Hospital,hospital,hospital,,11.9767135,8.5942116
+node/11830153802,Kujama Gari Primary Health Center,hospital,,,10.4578601,7.6379215
+node/11830153803,General Hospital Kujama Kujama Market Kaduna,hospital,,,10.4762269,7.637448
+node/11830153804,Tundun Wada Primary Health Center,hospital,,,10.4763785,7.6356429
+node/11830153805,Primary Healthcare Tudun Wada No2 Bugai Road Kujama,hospital,,,10.4771988,7.6433676
+node/11830153806,Governor Awan General Hospital No43 Bugai Road Kujama,hospital,,,10.4765183,7.6445961
+node/11830153807,Rural Hospital Kujama,hospital,,,10.4813396,7.6508456
+node/11830153808,Apikobugai Clinic,hospital,,,10.5066292,7.6559861
+node/11830218670,Salvation Health Clinic,hospital,,,10.4803269,7.6334488
+node/11830218671,Sauki Clinic,hospital,,,10.4782169,7.634232
+node/11830218672,Primary Health Center Tudun Wada Opposite New Market Kujama,hospital,,,10.475669,7.6334247
+node/11830269934,Tokache Health Clinic,hospital,,,10.5284911,7.6160225
+node/12282340284,ABU HANNEFA MEDICINE STORE,pharmacy,,,12.0488822,8.570315
+node/12282340285,SALMA MEDICINE STORE,pharmacy,,,12.0440522,8.5643177
+node/12282340286,NAZEE ALBARKA MEDICINE STORE,pharmacy,,,12.049793,8.576876
+node/12282340287,A.Y CHEMIST KARSHEN AIKI,pharmacy,,,12.0544615,8.5835705
+node/12282340288,RIMIN KEBE MEDICINE STORE,pharmacy,,,12.0381121,8.5664664
+node/12282340289,DISCOUNT MEDICINE,pharmacy,,,12.0400256,8.5710698
+node/12282340290,B KABO MEDICINE STORE,pharmacy,,,12.0452327,8.5637335
+node/12282340291,SARIRA 2,pharmacy,,,12.0411135,8.5723149
+node/12282340292,MUHAMMADIYA,hospital,,,12.0415267,8.5633656
+node/12282340293,AFUWA CHEMIST,pharmacy,,,12.04774,8.5790033
+node/12282340294,DAN TAMASHE HOSPITAL,hospital,,,12.0491196,8.5798504
+node/12282340295,DR KHALID TRADITIONAL HERBAL,pharmacy,,,12.0500876,8.5805583
+node/12282340296,ZUMUNTA PROVISION AND MEDICAL STORE,pharmacy,,,12.0555229,8.5837926
+node/12282340297,NGY KORE CHEMIST,pharmacy,,,12.0551924,8.5821882
+node/12282340298,MEDICINE STORE,pharmacy,,,12.0548906,8.5806474
+node/12282340299,DALAL CLINIC,clinic,,,12.0462755,8.5670098
+node/12282340300,J MEDICAL CENTER,clinic,,,12.0524717,8.5759033
+node/12282454144,ABDULFATAH PHARMACY,pharmacy,,,11.9560162,8.4688578
+node/12282454145,GANO MEDICINE STORE,pharmacy,,,11.9593129,8.4710588
+node/12282454146,BILKISU MEDICAL CENTER TINGA,pharmacy,,,11.9652713,8.4689775
+node/12282454147,ATTAUFIQ MEDICINE STORE,pharmacy,,,11.9585426,8.4705178
+node/12282454148,GIDAN MAGANI,pharmacy,,,11.9579772,8.4724427
+node/12282454149,MADADI,clinic,,,11.9589743,8.4731607
+node/12282454150,FIRST CLASS CLINIC AND MATERNITY,clinic,,,11.963053,8.479553
+node/12282454151,GIDAN MAGANI AL-MISBAH MEDICINE STORE,pharmacy,,,11.9629129,8.4666909
+node/12282454152,GANO RAHAMA CHEMIST,pharmacy,,,11.9596639,8.4717941
+node/12282454153,RAHAMA CHEMIST,clinic,,,11.9653732,8.4762515
+node/12282454154,DORAYI KARAMA PRIMARY HEALTH CARE,hospital,,,11.9650158,8.4768162
+node/12282454155,MUBARAKUN MEDICINE,clinic,,,11.9626895,8.4739058
+node/13119419701,Al Ihsan Clinics and Surgery,clinic,birthing_center;blood_donation;clinic;doctor;hospital;laboratory;pharmacy,Kano,11.9458206,8.5577364
+way/185718322,Aminu Kano Teaching Hospital,hospital,,,11.9631635,8.5507152
+way/185718325,National Orthopaedic Hospital,hospital,,Gwammaja,12.0202363,8.5013761
+way/250862182,ABU Zaria Sick Bay,hospital,,,11.1547771,7.6518174
+way/279086588,Fuskar Gabas Primary Health Centre,hospital,hospital,Kano Municipal,12.0051361,8.5183645
+way/282905006,Geza Health Post,hospital,hospital,Minjibir,12.1877567,8.5084508
+way/283101646,Rafin Tsamiya Health Post,hospital,hospital,Tsanyawa,12.1951913,8.0410081
+way/283777077,Kasuwar Kuka Primary Health Centre,hospital,hospital,Kunchi,12.4299014,8.3525347
+way/284838950,Ahmadu Bello Teaching Hospital,hospital,,,11.081105,7.7142872
+way/286269667,Kwarkiya Health Post,hospital,hospital,Minjibir,12.2474585,8.5962942
+way/286271541,Garke Health Post,hospital,hospital,Minjibir,12.2114183,8.5890283
+way/286404144,Kankarawa Health Post,hospital,hospital,Minjibir,12.2230724,8.6240738
+way/286439184,Gasgainu Health Post,hospital,hospital,Minjibir,12.238069,8.6431373
+way/286564662,Mai Aduwa Health Post,hospital,hospital,Makoda,12.2751887,8.5704946
+way/286766935,Danbawa Health Post,hospital,hospital,Minjibir,12.2560031,8.5457591
+way/287495752,Abdullahi Muhammad Wase General Hospital;Kano Emergency Operations Center,hospital,,Nassarawa,11.9971968,8.5483684
+way/287517082,Sarbi Health Post,hospital,hospital,Minjibir,12.2972743,8.6735087
+way/287705340,Kwandarma Health Post,hospital,hospital,Minjibir,12.2170822,8.6629592
+way/287827312,Zango Health Post,hospital,hospital,Minjibir,12.2511581,8.6999294
+way/288288676,Bare Bari Health Post,hospital,hospital,Makoda,12.4932778,8.4980028
+way/288291725,Gaya South Health Post,hospital,hospital,Gaya,11.8577727,9.0047234
+way/288457763,Shawu Health Post,hospital,hospital,Takai,11.4371007,9.1369752
+way/288472000,Baushe Health Post,hospital,hospital,Dambatta,12.5173581,8.6327901
+way/288638730,Ruwantsa Health Post,hospital,hospital,Dambatta,12.4080207,8.7386925
+way/288770804,Falgore Primary Health Centre,hospital,hospital,Rogo,11.5116928,7.6946553
+way/289391536,Bichi General Hospital,hospital,hospital,Bichi,12.2346437,8.2359217
+way/289458618,Murtala Mohammed Specialist Hospital,hospital,hospital,Kano Municipal,11.9990192,8.5222137
+way/289564831,Azore Primary Health Centre,hospital,hospital,Kura,11.7589325,8.3949886
+way/289564871,Akilu Memorial Primary Health Centre,hospital,hospital,Madobi,11.7697344,8.2882225
+way/289763926,Falgore Health Post,hospital,hospital,Doguwa,11.1210426,8.575967
+way/290171092,Baure Health Post,hospital,hospital,Bagwai,12.0814436,8.1897357
+way/290171093,Kauyen Adam Health Post,hospital,hospital,Bagwai,12.1305387,8.2020408
+way/290171096,Yartofa Health Post,hospital,hospital,Bagwai,12.0784641,8.1362051
+way/290171098,Kariya Health Post,hospital,hospital,Bagwai,12.0432733,8.2015228
+way/290171102,Jaube Health Post,hospital,hospital,Dawakin Tofa,12.1574316,8.2086579
+way/290171104,Munsira Health Post,hospital,hospital,Bichi,12.1906528,8.224543
+way/290171105,Tsattawa Health Post,hospital,hospital,Bagwai,12.1287863,8.1378026
+way/290171106,Iyawa Health Post,hospital,hospital,Bichi,12.1767495,8.236149
+way/290171107,Badau Health Post,hospital,hospital,Bagwai,12.1933322,8.1325637
+way/290171109,Badodo Health Post,hospital,hospital,Bagwai,12.0893313,8.2140255
+way/290171110,Rimin-Bai Health Post,hospital,hospital,Bagwai,12.0631599,8.197211
+way/290171113,Tuga Health Post,hospital,hospital,Bagwai,12.0670942,8.2431672
+way/290171114,Dutsen Karya Health Post,hospital,hospital,Bichi,12.2110968,8.1330391
+way/290171115,Rimin Dako Health Post,hospital,hospital,Bagwai,12.0848462,8.2535985
+way/290171116,Gajal Health Post,hospital,hospital,Bagwai,12.0837807,8.1060102
+way/290171118,Romo Health Post,hospital,hospital,Bagwai,12.0733417,8.1704004
+way/290171121,Ba'Awa Health Post,hospital,hospital,Bagwai,12.1226711,8.1882285
+way/290523837,Toranke Primary Health Centre,hospital,hospital,Ajingi,11.9932666,9.1718694
+way/290524041,Kawoni Health Post,hospital,hospital,Ajingi,11.9970191,9.205922
+way/290533455,Biyamusu Health Post,hospital,hospital,Ajingi,12.0803814,9.19175
+way/290640981,Kara-Dagaji Health Post,hospital,hospital,Ajingi,11.9299812,9.1551413
+way/290644504,Dan'Malam Health Post,hospital,hospital,Ajingi,11.9393818,9.1900786
+way/290649986,Gamoji Health Post,hospital,hospital,Gaya,11.8439191,9.1784281
+way/290650580,Jigar Health Post,hospital,hospital,Albasu,11.664249,9.1693467
+way/290651186,Yawurma Health Post,hospital,hospital,Albasu,11.6481219,9.1683384
+way/290673630,Daho Health Post,hospital,hospital,Albasu,11.6645134,9.2071734
+way/290678158,Tsangaya Primary Health Centre,hospital,hospital,Albasu,11.6189168,9.2147201
+way/290680270,Zananne Health Post,hospital,hospital,Albasu,11.6363051,9.2558639
+way/290682238,Jirago Health Post,hospital,hospital,Albasu,11.5758104,9.278836
+way/290825086,Yanchibi Health Post,hospital,hospital,Tsanyawa,12.2404582,7.8916863
+way/290825652,Yanganau Health Post,hospital,hospital,Tsanyawa,12.2544013,7.9580062
+way/290827453,Zarogi Health Post,hospital,hospital,Tsanyawa,12.2485718,7.9915068
+way/290832368,Zakawa Health Post,hospital,hospital,Tsanyawa,12.28691,7.8844224
+way/291322256,Gachi Kedi Health Post,hospital,hospital,Wudil,11.8023114,8.868827
+way/291368176,Panshekara Primary Health Centre,hospital,hospital,Kumbotso,11.8992173,8.4573167
+way/291434863,Gofaro Primary Health Centre,hospital,hospital,Gezawa,12.0196252,8.7478234
+way/291435339,Yartofa Health Post,hospital,hospital,Warawa,11.9296578,8.6875721
+way/291435971,Tamawa Health Post,hospital,hospital,Rimin Gado,11.8980729,8.3427789
+way/291437917,Jili Health Post,hospital,hospital,Rimin Gado,11.8992158,8.2784709
+way/291437919,Jauben Health Post,hospital,hospital,Tofa,12.0258764,8.3169078
+way/291437920,Sakaratsa Health Post,hospital,hospital,Rimin Gado,11.9221131,8.3771727
+way/291437922,Chalawa Primary Health Centre,hospital,hospital,Kumbotso,11.9175701,8.4251114
+way/291437923,Chiromawa Primary Health Centre,hospital,hospital,Ungongo,12.0366284,8.411799
+way/291438250,Agalawa Health Post,hospital,hospital,Madobi,11.8806285,8.3706318
+way/291438406,Jajira Health Post,hospital,hospital,Ungongo,12.033013,8.424855
+way/291438407,Kwami Health Post,hospital,hospital,Tofa,12.0197778,8.3073067
+way/291438408,Jujin Health Post,hospital,hospital,Rimin Gado,11.919998,8.2666463
+way/291438409,Jagaja Health Post,hospital,hospital,Tofa,12.0340528,8.2886383
+way/291438581,Maigari Health Post,hospital,hospital,Rimin Gado,11.919128,8.3320135
+way/291439838,Yarimawa Primary Health Centre,hospital,hospital,Tofa,12.0275387,8.3686198
+way/291440097,Zango II Health Post,hospital,hospital,Rimin Gado,12.0204781,8.2787653
+way/291441969,Maraya Health Post,hospital,hospital,Madobi,11.8919195,8.4108409
+way/291441970,Langel Primary Health Centre,hospital,hospital,Tofa,11.990358,8.3951757
+way/291441971,Doka Health Post,hospital,hospital,Tofa,11.9900987,8.3044901
+way/291442078,Tabanni Health Post,hospital,hospital,Tofa,11.972451,8.3085941
+way/291442540,Hawandawaki Health Post,hospital,hospital,Kumbotso,11.9554192,8.4250129
+way/291442541,Yalwa Primary Health Centre,hospital,hospital,Rimin Gado,11.9530717,8.3100559
+way/291442646,Unguwar Rimi Health Post,hospital,hospital,Tofa,11.9726358,8.3325251
+way/291442888,Maigari Ingila Health Post,hospital,hospital,Rimin Gado,11.9214811,8.3019244
+way/291442889,Zango I Health Post,hospital,hospital,Rimin Gado,11.9843008,8.2831851
+way/291442890,Karofin Yashi Health Post,hospital,hospital,Rimin Gado,11.8835532,8.3501413
+way/291442891,Lambu Primary Health Centre,hospital,hospital,Tofa,11.9927473,8.3597829
+way/291444032,Wari Health Post,hospital,hospital,Kabo,11.9130602,8.1889664
+way/291444189,Godiya Primary Health Centre,hospital,hospital,Kabo,11.9203355,8.1293391
+way/291444190,Indabo Health Post,hospital,hospital,Rimin Gado,11.9634249,8.1796144
+way/291444191,Leni Health Post,hospital,hospital,Shanono,12.007559,8.099422
+way/291444192,Bakwami Health Post,hospital,hospital,Shanono,12.0334519,8.1138893
+way/291444193,Rinji Health Post,hospital,hospital,Kabo,11.8801675,8.1631461
+way/291444194,Kwajale Health Post,hospital,hospital,Bagwai,12.0350361,8.2214812
+way/291444437,Rimin Gado Primary Health Centre,hospital,hospital,Rimin Gado,11.9719427,8.2474826
+way/291444439,Durun Health Post,hospital,hospital,Kabo,11.90434,8.2312197
+way/291444440,Butu Butu Health Post,hospital,hospital,Rimin Gado,11.9659289,8.2086313
+way/291444442,Sarigarin Health Post,hospital,hospital,Kabo,11.9685368,8.1165429
+way/291445698,Ginsawa Health Post,hospital,hospital,Tofa,12.0289463,8.2588403
+way/291445699,Hawadin Bango Primary Health Centre,hospital,hospital,Kabo,11.8890433,8.2571048
+way/291445944,Kanye Health Post,hospital,hospital,Kabo,11.9599558,8.1467938
+way/291445945,Dugurawa Health Post,hospital,hospital,Rimin Gado,12.011057,8.2311677
+way/291445996,Yango Health Post,hospital,hospital,Rimin Gado,11.9960382,8.2281645
+way/291445997,Kafinmaiko Health Post,hospital,hospital,Bagwai,12.0387818,8.1674275
+way/291445998,Balan Health Post,hospital,hospital,Kabo,11.9138121,8.1656237
+way/291446533,Gammo M.P.H.C Primary Health Centre,hospital,hospital,Kabo,11.8928621,8.132025
+way/291446639,Dangada Primary Health Centre,hospital,hospital,Bagwai,12.0105563,8.1320854
+way/291446797,Sule Galadima Garo General Hospital,hospital,hospital,Kabo,11.9555994,8.0981361
+way/291447294,Sharifai Health Post,hospital,hospital,Rimin Gado,11.9243788,8.2461081
+way/291448218,Shadau Health Post,hospital,hospital,Kabo,11.8745919,8.2102547
+way/291448219,Makamauta Primary Health Centre,hospital,hospital,Gwarzo,11.9133282,8.105295
+way/291448220,Kazar Daw Health Post,hospital,hospital,Rimin Gado,11.9673104,8.1953793
+way/291655045,Dorogo Health Post,hospital,hospital,Shanono,12.0022814,7.9730882
+way/291655047,Dan Amale Health Post,hospital,hospital,Kabo,11.945195,8.0301668
+way/291665831,Yarkasuwa Health Post,hospital,hospital,Gwarzo,11.9175023,7.9345477
+way/291665833,Dorogo Health Post,hospital,hospital,Gwarzo,11.9818556,7.988174
+way/291666940,Gude Health Post,hospital,hospital,Kabo,11.9538882,8.0665678
+way/291666941,Dutsen Bakoshi Health Post,hospital,hospital,Shanono,12.0267883,7.9457773
+way/291666943,Getso Primary Health Centre,hospital,hospital,Gwarzo,11.8698087,7.9757211
+way/291732132,Faran Health Post,hospital,hospital,Kibiya,11.5391009,8.6250801
+way/291750086,Kyansha Health Post,hospital,hospital,Takai,11.48744,9.1064918
+way/291751274,Yan Bawa Health Post,hospital,hospital,Sumaila,11.3714512,9.0594448
+way/291752449,Rubun Health Post,hospital,hospital,Albasu,11.6268566,9.0877925
+way/291752871,Hungu Health Post,hospital,hospital,Albasu,11.6135893,9.0016053
+way/291752872,Kafin Sidda Health Post,hospital,hospital,Takai,11.5239227,9.0658866
+way/291752873,Mangari Health Post,hospital,hospital,Albasu,11.6447292,9.009309
+way/291752874,Yauwra Health Post,hospital,hospital,Albasu,11.6102834,8.9686438
+way/291753563,Sanni Health Post,hospital,hospital,Garko,11.5306772,9.0191336
+way/291753564,Sittika Health Post,hospital,hospital,Albasu,11.5738534,8.9821507
+way/291753565,Faragai Health Post,hospital,hospital,Albasu,11.6694032,8.986339
+way/291753566,Duja Health Post,hospital,hospital,Albasu,11.6541923,9.0906672
+way/291753567,Bataiya Primary Health Centre,hospital,hospital,Albasu,11.683573,9.0286336
+way/291753927,Takai Nysc General Hospital,hospital,hospital,Takai,11.5659468,9.1085781
+way/291753928,Fanda Health Post,hospital,hospital,Albasu,11.6040082,9.0477076
+way/291753929,Rinji Health Post,hospital,hospital,Albasu,11.6926152,9.0035337
+way/291753930,Chamarana Health Post,hospital,hospital,Albasu,11.6311754,9.1067628
+way/291753931,Gamawa Health Post,hospital,hospital,Takai,11.5415973,9.1179257
+way/291753932,Baleke Health Post,hospital,hospital,Albasu,11.6533864,9.0503004
+way/291754202,Albasu Cottage Primary Health Centre,hospital,hospital,Albasu,11.6675613,9.1281041
+way/291754203,Umbarum Health Post,hospital,hospital,Albasu,11.5576614,9.058036
+way/291754204,Alfindi Health Post,hospital,hospital,Sumaila,11.5237479,8.9987494
+way/291754243,Kan Iyaka Health Post,hospital,hospital,Takai,11.6115796,9.0859966
+way/291754775,Kogo Health Post,hospital,hospital,Takai,11.5804748,9.1558062
+way/291754777,Gagarame Health Post,hospital,hospital,Albasu,11.5539329,9.1906071
+way/291755115,Durbunde Primary Health Centre,hospital,hospital,Takai,11.5397928,9.2318635
+way/291755116,Sakwaya Health Post,hospital,hospital,Takai,11.5352513,9.1757199
+way/291755117,Kachako Primary Health Centre,hospital,hospital,Takai,11.5380033,9.2492171
+way/291755879,Sayasaya Health Post,hospital,hospital,Albasu,11.7164784,8.9670158
+way/291757019,Hausawa Health Post,hospital,hospital,Gaya,11.7300595,9.0996771
+way/291757020,Jibawa Health Post,hospital,hospital,Gaya,11.782415,8.9786972
+way/291757021,Fanidau Health Post,hospital,hospital,Gaya,11.803344,9.1158738
+way/291757022,Maimakawa Health Post,hospital,hospital,Gaya,11.7964203,9.1315075
+way/291757023,Kazurawa Health Post,hospital,hospital,Gaya,11.771895,9.0171498
+way/291757024,Kalahaddi Health Post,hospital,hospital,Gaya,11.7205459,9.0242697
+way/291757025,Yan Kau Health Post,hospital,hospital,Gaya,11.7595422,8.9785387
+way/291757255,Kullumi Health Post,hospital,hospital,Ajingi,12.0314887,9.030118
+way/291757540,Kawari Health Post,hospital,hospital,Ajingi,12.0075426,9.0060455
+way/291757541,Maigana Health Post,hospital,hospital,Ajingi,11.9426211,9.0009691
+way/291759008,Chula Health Post,hospital,hospital,Ajingi,11.9896603,8.9707143
+way/291759009,Gurduba Health Post,hospital,hospital,Ajingi,12.0218497,9.001387
+way/291759011,Kiroro Health Post,hospital,hospital,Ajingi,11.9616275,9.1181621
+way/291759012,Kara-Makama Health Post,hospital,hospital,Ajingi,11.9569697,9.0741404
+way/291759013,Kunkurawa Health Post,hospital,hospital,Ajingi,11.9748263,9.0638241
+way/291759014,Sakalawa Health Post,hospital,hospital,Ajingi,11.9828764,9.0103441
+way/291759369,Gafasa Health Post,hospital,hospital,Ajingi,11.9846426,9.1330295
+way/291759370,Jiyayya Health Post,hospital,hospital,Ajingi,11.9814017,9.0943566
+way/291759371,Dundun Health Post,hospital,hospital,Ajingi,11.9327521,9.0345936
+way/291759766,Zuwan Hawa Health Post,hospital,hospital,Albasu,11.7294625,9.2235508
+way/291761155,Goron Dutse Health Post,hospital,hospital,Shanono,12.1581474,7.8724502
+way/291761156,Yankwada Health Post,hospital,hospital,Shanono,12.2033687,7.8763869
+way/291761157,Danshado Health Post,hospital,hospital,Shanono,12.043244,7.8893704
+way/291761158,Bakaji Health Post,hospital,hospital,Shanono,12.1253851,7.8753553
+way/291761159,Tsaure Primary Health Centre,hospital,hospital,Shanono,12.094542,7.8799834
+way/291837472,Gagarawa Health Post,hospital,hospital,Ajingi,12.0502071,9.0034006
+way/291841839,Unguwar Bai Health Post,hospital,hospital,Ajingi,12.046742,8.9807329
+way/291869889,Yankamaye Health Post,hospital,hospital,Tsanyawa,12.3144498,7.8971553
+way/291870148,Yaan'Awaki Health Post,hospital,hospital,Tsanyawa,12.3660108,8.0179611
+way/291871749,Dorayi Health Post,hospital,hospital,Tsanyawa,12.3711131,8.0768555
+way/291871751,Kabagiwa Health Post,hospital,hospital,Tsanyawa,12.3109522,8.022435
+way/291871752,Nasarawa Health Post,hospital,hospital,Tsanyawa,12.3695751,7.9918248
+way/291871760,Yankamaye Primary Health Centre,hospital,hospital,Tsanyawa,12.3284193,7.9285854
+way/291871761,Daddarawa Health Post,hospital,hospital,Tsanyawa,12.2365147,8.0746148
+way/291871764,Tafashiya Primary Health Centre,hospital,hospital,Tsanyawa,12.2126951,8.0779713
+way/291876678,Bankamawa Health Post,hospital,hospital,Shanono,12.1265487,7.9362758
+way/291876681,Yakanawa Primary Health Centre,hospital,hospital,Tsanyawa,12.1939826,7.9840785
+way/291876682,Masaurari Health Post,hospital,hospital,Bagwai,12.1243262,8.0775336
+way/291876683,Kundila Health Post,hospital,hospital,Shanono,12.1297302,7.9848378
+way/291876684,Alajawa Health Post,hospital,hospital,Bagwai,12.1023813,7.9940372
+way/291876685,Tudara Health Post,hospital,hospital,Bagwai,12.1052768,8.0653634
+way/291876686,Alajawa Health Post,hospital,,Shanono,12.1147443,7.966011
+way/291876687,Kuraku Health Post,hospital,hospital,Shanono,12.1703985,7.9173397
+way/291876690,Jigilawa Health Post,hospital,hospital,Tsanyawa,12.1941394,8.0637709
+way/291876692,Godarawa Health Post,hospital,hospital,Shanono,12.0516398,8.0761203
+way/291876695,Dumbulum Primary Health Centre,hospital,hospital,Tsanyawa,12.1920262,8.0161893
+way/291876696,Gadanya Health Post,hospital,hospital,Bagwai,12.0904421,8.0388223
+way/291877984,Yan'Amar Health Post,hospital,hospital,Tsanyawa,12.4127254,8.0801065
+way/291877985,Harbau Primary Health Centre,hospital,hospital,Tsanyawa,12.38282,8.0622515
+way/291879247,Shuwaki Primary Health Centre,hospital,hospital,Kunchi,12.4245684,8.1732087
+way/291879248,Dunbule Health Post,hospital,hospital,Kunchi,12.5056836,8.2453599
+way/291879249,Bumai Health Post,hospital,hospital,Kunchi,12.5134238,8.1915353
+way/291879250,Danjaka Health Post,hospital,hospital,Kunchi,12.4076191,8.2223426
+way/291879251,Galadimawa Health Post,hospital,hospital,Kunchi,12.4894431,8.2209066
+way/291879253,Hugungumai Health Post,hospital,hospital,Kunchi,12.435884,8.2223757
+way/291879254,Malikawa Garu Health Post,hospital,hospital,Bichi,12.3979359,8.1536273
+way/291879255,Karofawa Health Post,hospital,hospital,Kunchi,12.486163,8.2381699
+way/291879257,Gadaba Health Post,hospital,hospital,Kunchi,12.5299475,8.226354
+way/291879258,Yandadi Primary Health Centre,hospital,hospital,Kunchi,12.4530077,8.2351963
+way/291879259,Unguwar Gyartai Health Post,hospital,hospital,Kunchi,12.4406959,8.1673678
+way/291880247,Kunchi Primary Health Centre,hospital,hospital,Kunchi,12.502156,8.2747498
+way/291880248,Shamakawa Primary Health Centre,hospital,hospital,Kunchi,12.4331417,8.3096558
+way/291880993,Yankifi Health Post,hospital,hospital,Kunchi,12.4733719,8.269216
+way/291880994,Tabani Health Post,hospital,hospital,Kunchi,12.4137538,8.3298735
+way/291880999,Magawata Health Post,hospital,hospital,Kunchi,12.4232672,8.2766791
+way/291881000,Kaya Health Post,hospital,hospital,Kunchi,12.5503773,8.2676465
+way/291881001,Dankwai Health Post,hospital,hospital,Kunchi,12.4104429,8.3562369
+way/291881002,Ganji Health Post,hospital,hospital,Makoda,12.4219846,8.3952303
+way/291881003,Ridawa Health Post,hospital,hospital,Kunchi,12.4554311,8.3466076
+way/291881005,Makoda Primary Health Centre,hospital,hospital,Makoda,12.4229206,8.4283516
+way/291882073,Danmadaki Health Post,hospital,hospital,Makoda,12.5807926,8.4993115
+way/291882074,Kantudu Health Post,hospital,hospital,Makoda,12.5725998,8.4696808
+way/291884898,Masallachi Health Post,hospital,hospital,Dambatta,12.4731332,8.5378293
+way/291884899,Maiganji Health Post,hospital,hospital,Dambatta,12.4354176,8.5742834
+way/291885766,Jama'Ar Hazo Health Post,hospital,hospital,Makoda,12.5461092,8.5212808
+way/291887061,Koren Tabo Health Post,hospital,hospital,Makoda,12.5015813,8.4395275
+way/291887062,GSS Dambatta Health Post,hospital,hospital,Dambatta,12.4250295,8.5171982
+way/291887063,Yammawa Health Post,hospital,hospital,Dambatta,12.5074801,8.469225
+way/291887296,Koguna Primary Health Centre,hospital,hospital,Makoda,12.3849361,8.4603534
+way/291889757,Yan Bawa Health Post,hospital,hospital,Makoda,12.5339348,8.4967917
+way/291889758,Jibga Fulani Health Post,hospital,hospital,Makoda,12.4010374,8.4882678
+way/291889759,Chasko Health Post,hospital,hospital,Dambatta,12.5540565,8.5913975
+way/291889760,Gwalaida Health Post,hospital,hospital,Dambatta,12.4649545,8.5742903
+way/291889761,Marke Danya Health Post,hospital,hospital,Dambatta,12.4617694,8.4601727
+way/291889763,Kurna Health Post,hospital,hospital,Makoda,12.5454746,8.4798605
+way/291889766,Yammawa Gamji Health Post,hospital,hospital,Dambatta,12.4882199,8.4760497
+way/291889767,Ajumawa Health Post,hospital,hospital,Dambatta,12.4772969,8.5059761
+way/291889768,Diggol Health Post,hospital,hospital,Dambatta,12.5246868,8.5589296
+way/291889769,Balloda Health Post,hospital,hospital,Dambatta,12.404915,8.5947265
+way/291897519,Kwasauri Health Post,hospital,hospital,Dambatta,12.4311123,8.6774855
+way/291897522,Yammawa Wanzari Health Post,hospital,hospital,Dambatta,12.5114551,8.6546936
+way/291897525,Goran Maje Primary Health Centre,hospital,hospital,Dambatta,12.5339145,8.6872727
+way/291897527,Dungurmi Health Post,hospital,hospital,Dambatta,12.4102711,8.6510365
+way/291901211,Kore Primary Health Centre,hospital,hospital,Dambatta,12.3579056,8.7492069
+way/291901212,Laraba Takuya Health Post,hospital,hospital,Dambatta,12.3673746,8.6869322
+way/291901214,Dan Dake Health Post,hospital,hospital,Gabasawa,12.2179473,8.7212874
+way/291901215,Katsarduwa Health Post,hospital,hospital,Dambatta,12.3325502,8.6654005
+way/291901216,Yumbu Health Post,hospital,hospital,Gabasawa,12.2368758,8.7813754
+way/291902257,Fagwalawa Cottage General Hospital,hospital,hospital,Dambatta,12.316513,8.6844835
+way/291902258,Tona Health Post,hospital,hospital,Dambatta,12.3148135,8.7291587
+way/291902259,Shana Health Post,hospital,hospital,Gabasawa,12.2622182,8.7415317
+way/291902260,Saidawa Health Post,hospital,hospital,Dambatta,12.2743545,8.6310049
+way/291902261,Dumma Health Post,hospital,hospital,Dambatta,12.379132,8.7714495
+way/291902262,Koya Health Post,hospital,hospital,Dambatta,12.2641303,8.6199236
+way/291910579,Doga Health Post,hospital,hospital,Gabasawa,12.2231252,8.8096507
+way/291910580,Badawa Health Post,hospital,hospital,Gabasawa,12.2563749,8.8877373
+way/291910581,Gambawa Health Post,hospital,hospital,Gabasawa,12.2449641,8.8262358
+way/291910582,Yama Health Post,hospital,hospital,Gabasawa,12.2708664,8.8115789
+way/291921247,Karmami Primary Health Centre,hospital,hospital,Gabasawa,12.1059446,8.822786
+way/291921248,Zakirai Primary Health Centre,hospital,hospital,Gabasawa,12.1050509,8.8850226
+way/291921249,Tarauni Health Post,hospital,hospital,Gabasawa,12.1134582,8.8970483
+way/291921250,Dadin Duniya Health Post,hospital,hospital,Gabasawa,12.1649002,8.8888115
+way/291921251,Kawo Health Post,hospital,hospital,Gabasawa,12.1622288,8.8544215
+way/291921253,Santsi Health Post,hospital,hospital,Gabasawa,12.0495521,8.8785772
+way/291921255,Chikawa Health Post,hospital,hospital,Gabasawa,12.1359272,8.8934156
+way/291921256,Kumbo Health Post,hospital,hospital,Gabasawa,12.2042834,8.8843527
+way/291921257,Tankarau Health Post,hospital,hospital,Gabasawa,12.083224,8.9070098
+way/291921258,Gumawa Health Post,hospital,hospital,Gabasawa,12.1388966,8.8621888
+way/291921260,Yar Zabaina Health Post,hospital,hospital,Gabasawa,12.1549509,8.7984309
+way/291921263,Garun Danga Primary Health Centre,hospital,hospital,Gabasawa,12.2070643,8.8426497
+way/291921264,Gabasawa Primary Health Centre,hospital,hospital,Gabasawa,12.1758505,8.9063595
+way/291932099,Babawa Primary Health Centre,hospital,hospital,Gezawa,12.0580195,8.660229
+way/291932102,Zango Health Post,hospital,hospital,Gezawa,12.0934201,8.6852524
+way/291932104,Mesaburmi Health Post,hospital,hospital,Gezawa,12.1455534,8.7418159
+way/291932106,Immuali Health Post,hospital,hospital,Gezawa,12.1161515,8.7306389
+way/291932108,Gezawa Health Post,hospital,hospital,Gezawa,12.1006833,8.7509229
+way/291932110,Yaranchi Health Post,hospital,hospital,Gabasawa,12.16606,8.7544189
+way/291932112,Ketawa H.P Health Post,hospital,hospital,Gezawa,12.0683012,8.751025
+way/291932114,Baita Health Post,hospital,hospital,Gezawa,12.132743,8.6495814
+way/291932116,Gandurwawa Primary Health Centre,hospital,hospital,Minjibir,12.1552003,8.6166774
+way/291932117,Wasai Health Post,hospital,hospital,Minjibir,12.1539026,8.6747656
+way/291932119,Daradau Health Post,hospital,hospital,Gezawa,12.0527725,8.7012667
+way/291932120,Mesatud Health Post,hospital,hospital,Gezawa,12.1234193,8.7217062
+way/291932125,Kwadage Health Post,hospital,hospital,Gabasawa,12.1423895,8.7834682
+way/291932130,Garji Health Post,hospital,hospital,Minjibir,12.1963843,8.6263376
+way/291932134,Tsalle Health Post,hospital,hospital,Gezawa,12.0806454,8.7149841
+way/291932136,Zaura Babba Primary Health Centre,hospital,hospital,Ungongo,12.0594672,8.6198441
+way/291932151,Yautar Kudu Primary Health Centre,hospital,hospital,Gabasawa,12.1967099,8.7588917
+way/292037269,Satame Health Post,hospital,hospital,Makoda,12.2902127,8.5301816
+way/292037270,Tashar Basa Health Post,hospital,hospital,Makoda,12.3358147,8.4449942
+way/292037271,Fagwalo Health Post,hospital,hospital,Dambatta,12.3638565,8.4652661
+way/292037272,Jigawa Satame Health Post,hospital,hospital,Makoda,12.3169513,8.5604407
+way/292037273,Zuru Felele Health Post,hospital,hospital,Makoda,12.3466434,8.5386056
+way/292037275,Shantake Health Post,hospital,hospital,Makoda,12.3457344,8.5177873
+way/292037276,Dalal Health Post,hospital,hospital,Makoda,12.3682878,8.5165865
+way/292037277,Kauyen Mai Unguwar Primary Health Centre,hospital,hospital,Dambatta,12.3712822,8.4865821
+way/292037278,Fagwalo Health Post,hospital,hospital,Bichi,12.3009093,8.4432675
+way/292037280,Tangaji Health Post,hospital,hospital,Makoda,12.3052896,8.4875836
+way/292037281,Wailare Health Post,hospital,hospital,Makoda,12.2680536,8.5297134
+way/292037282,Dawon Kaya Health Post,hospital,hospital,Makoda,12.3018921,8.5408387
+way/292037283,Jemomi Health Post,hospital,hospital,Dawakin Tofa,12.2452897,8.4996257
+way/292037284,Takau Health Post,hospital,hospital,Dambatta,12.3680472,8.5939851
+way/292037285,Yatsi Health Post,hospital,hospital,Bichi,12.2547517,8.4706459
+way/292037286,Shiddar Health Post,hospital,hospital,Dambatta,12.3749251,8.5669719
+way/292037287,Bakarari Health Post,hospital,hospital,Makoda,12.2814739,8.4982549
+way/292037288,Kungu Health Post,hospital,hospital,Bichi,12.2705635,8.4451252
+way/292037289,Roba Health Post,hospital,hospital,Dawakin Tofa,12.2354817,8.4801053
+way/292037290,Dalal Mahuta Health Post,hospital,hospital,Dambatta,12.3213357,8.6067635
+way/292037291,Sabon Ruwa Health Post,hospital,hospital,Makoda,12.372223,8.437981
+way/292037292,Maitsidau Primary Health Centre,hospital,hospital,Makoda,12.3549579,8.4962487
+way/292045547,Sabon Gari Doka Health Post,hospital,hospital,Ungongo,12.0875362,8.4483658
+way/292045548,Katsinawa Health Post,hospital,hospital,Ungongo,12.0618109,8.4487744
+way/292045549,Rijiyar Lemo Maternal and Child Health,hospital,hospital,Fagge,12.0547542,8.4773192
+way/292045550,Gyaranya Health Post,hospital,hospital,Minjibir,12.1961826,8.5902637
+way/292045551,Yammata Health Post,hospital,hospital,Fagge,12.0640423,8.4724466
+way/292045552,Galula Health Post,hospital,hospital,Ungongo,12.0425333,8.573529
+way/292045553,Sabon Gari Rangaza Primary Health Centre,hospital,hospital,Ungongo,12.0553649,8.6056258
+way/292045554,Fango Health Post,hospital,hospital,Dawakin Tofa,12.175739,8.446416
+way/292045555,Kurna Primary Health Centre,hospital,hospital,Dala,12.0447931,8.4813454
+way/292045931,Baguja Health Post,hospital,hospital,Ungongo,12.1010154,8.5212102
+way/292045932,Kwuidawa Health Post,hospital,hospital,Dawakin Tofa,12.1642566,8.4750737
+way/292045933,Kuru Health Post,hospital,hospital,Minjibir,12.1694524,8.5296776
+way/292045934,Bachirawa Health Post,hospital,hospital,Ungongo,12.0579555,8.4634804
+way/292045935,Inusawa Primary Health Centre,hospital,hospital,Ungongo,12.0689978,8.5966728
+way/292045936,Danrirmi Health Post,hospital,hospital,Ungongo,12.0582382,8.4889711
+way/292045937,Tudun Bojuwa Health Post,hospital,hospital,Fagge,12.0498562,8.4869715
+way/292046199,Shauni Primary Health Centre,hospital,hospital,Ungongo,12.0479093,8.6089496
+way/292046261,Tsakiya Health Post,hospital,hospital,Minjibir,12.1381189,8.5514347
+way/292047625,Nigerian Air Force Primary Health Centre,hospital,hospital,Fagge,12.045089,8.531647
+way/292047626,Jalli Health Post,hospital,hospital,Dawakin Tofa,12.1842785,8.462431
+way/292047627,Gayawa Primary Health Centre,hospital,hospital,Ungongo,12.0550908,8.5621654
+way/292047628,Sambauna Primary Health Centre,hospital,hospital,Minjibir,12.1247811,8.5986521
+way/292047868,Dalal Primary Health Centre,hospital,hospital,Ungongo,12.0457814,8.5672167
+way/292047869,Dankunkuru Health Post,hospital,hospital,Ungongo,12.0646774,8.5709276
+way/292049015,Yakasai Health Post,hospital,hospital,Dawakin Tofa,12.156498,8.4827418
+way/292049016,Tarda Health Post,hospital,hospital,Ungongo,12.1149996,8.5191037
+way/292050057,Kaura Goje Primary Health Centre,hospital,hospital,Nassarawa,12.0438047,8.5460695
+way/292050058,Fanisau Primary Health Centre,hospital,hospital,Ungongo,12.0787934,8.5352811
+way/292050059,Dausara Primary Health Centre,hospital,hospital,Ungongo,12.0728132,8.5812877
+way/292050060,Rijiyar Lemo Primary Health Centre,hospital,hospital,Fagge,12.0473584,8.4810419
+way/292050061,Zangon Barebari Health Post,hospital,hospital,Ungongo,12.0701844,8.486307
+way/292050062,Jaba Primary Health Centre,hospital,hospital,Fagge,12.05927,8.546297
+way/292051043,Zabainawar Dansudu Health Post,hospital,hospital,Minjibir,12.1595784,8.5104394
+way/292051044,Dan Itache Health Post,hospital,hospital,Dawakin Tofa,12.2080298,8.4971275
+way/292051046,Doka Health Post,hospital,hospital,Ungongo,12.0959152,8.4689309
+way/292051047,Kantama Babba Health Post,hospital,hospital,Minjibir,12.1817523,8.594299
+way/292051048,Gera Health Post,hospital,hospital,Ungongo,12.0887755,8.5522211
+way/292051049,Madaci Health Post,hospital,hospital,Dawakin Tofa,12.1961331,8.4739236
+way/292051050,Kadawa Primary Health Centre,hospital,hospital,Ungongo,12.0756414,8.4565632
+way/292051051,Kwachiri Primary Health Centre,hospital,hospital,Fagge,12.0657672,8.5009239
+way/292065939,Dawanau Primary Health Centre,hospital,hospital,Dawakin Tofa,12.0947249,8.437328
+way/292065941,Tattarawa Primary Health Centre,hospital,hospital,Dawakin Tofa,12.1769551,8.3815914
+way/292065942,Gulbi Health Post,hospital,hospital,Bichi,12.1816867,8.2887627
+way/292065943,Gajida Health Post,hospital,hospital,Tofa,12.0810807,8.2823182
+way/292065945,Romi Health Post,hospital,hospital,Dawakin Tofa,12.1257031,8.368094
+way/292065946,Kaleku Health Post,hospital,hospital,Dawakin Tofa,12.1376631,8.3260782
+way/292065947,Chedi Bubba Ruga Health Post,hospital,hospital,Dawakin Tofa,12.1392562,8.393025
+way/292065948,Yarrutu Health Post,hospital,hospital,Dawakin Tofa,12.1171436,8.2958532
+way/292065949,GSS Gramma Health Post,hospital,hospital,Dawakin Tofa,12.1024398,8.3339945
+way/292065950,Danguguwa Health Post,hospital,hospital,Dawakin Tofa,12.0583397,8.394695
+way/292065951,Dungurawa Health Post,hospital,hospital,Dawakin Tofa,12.1629816,8.3576865
+way/292065953,Chedi Maidala Health Post,hospital,hospital,Dawakin Tofa,12.1353479,8.4221651
+way/292065954,Tsaure Health Post,hospital,hospital,Bichi,12.2066479,8.3196914
+way/292065955,Dogon Marke Health Post,hospital,hospital,Dawakin Tofa,12.154329,8.3203132
+way/292065956,Marke Health Post,hospital,hospital,Dawakin Tofa,12.1287705,8.2715004
+way/292065957,Dindere Health Post,hospital,hospital,Tofa,12.0906689,8.2645812
+way/292065958,Sarkakiya Health Post,hospital,hospital,Dawakin Tofa,12.1274747,8.3376822
+way/292065959,Gudau Health Post,hospital,hospital,Dawakin Tofa,12.1799075,8.3569997
+way/292065960,Badume Health Post,hospital,hospital,Bichi,12.1894002,8.3132718
+way/292065961,Yakasai Health Post,hospital,hospital,Bichi,12.2019309,8.2918651
+way/292065962,Gabari Health Post,hospital,hospital,Dawakin Tofa,12.0465994,8.3947839
+way/292065963,SSS Dawakin Tofa Health Post,hospital,hospital,Dawakin Tofa,12.1183909,8.3389649
+way/292065964,Kwa Health Post,hospital,hospital,Dawakin Tofa,12.1487962,8.3736502
+way/292065965,Kunnawa Health Post,hospital,hospital,Dawakin Tofa,12.174693,8.333185
+way/292065966,Sanakur Health Post,hospital,hospital,Bichi,12.165574,8.2649042
+way/292065967,Kyauta Health Post,hospital,hospital,Bichi,12.1939296,8.339403
+way/292065968,Bagadawa Health Post,hospital,hospital,Dawakin Tofa,12.1206462,8.4025432
+way/292065969,Fagen Kawo Health Post,hospital,hospital,Dawakin Tofa,12.0809345,8.4165873
+way/292065970,Yalwa Karama Health Post,hospital,hospital,Tofa,12.0579117,8.3347273
+way/292065971,Gwamai Health Post,hospital,hospital,Dawakin Tofa,12.1852031,8.3193513
+way/292065972,Gargari Health Post,hospital,hospital,Dawakin Tofa,12.1783432,8.3017751
+way/292065973,Kadawa Health Post,hospital,hospital,Dawakin Tofa,12.0723638,8.3726068
+way/292065974,Dawaki General Hospital,hospital,hospital,Dawakin Tofa,12.108108,8.3314558
+way/292065975,Yanoko Primary Health Centre,hospital,hospital,Tofa,12.0550992,8.2977111
+way/292065976,Bugai Primary Health Centre,hospital,hospital,Tofa,12.0424377,8.3165132
+way/292065978,Buruntumau Health Post,hospital,hospital,Dawakin Tofa,12.1834711,8.421089
+way/292167735,Tudun Wada Health Post,hospital,hospital,Nassarawa,12.0230149,8.5537383
+way/292168265,Mallam Shuaibu Primary Health Centre,hospital,hospital,Nassarawa,12.0215196,8.5568981
+way/293020842,Sheikh Muhammed Jidda General Hospital,hospital,hospital,Fagge,12.0102724,8.5344216
+way/295383220,Lamco Pharmacy,pharmacy,pharmacy,,11.9671011,8.5485351
+way/299040773,Unguwar Uku Primary Health Centre,hospital,hospital,Tarauni,11.9578049,8.5602537
+way/299968723,Hotoro Danmarke Health Post,hospital,hospital,Tarauni,11.9619839,8.5808519
+way/301909213,Ruwan Kanki Dispensary,hospital,hospital,Ningi,11.2793731,9.4663965
+way/301909242,Kawawa Dispensary,hospital,hospital,Ningi,11.0182778,8.8909864
+way/301941450,Ganji Dispensary,hospital,hospital,Ningi,11.1596612,9.1534217
+way/303738320,Matawai Maternity,hospital,hospital,Toro,10.5069647,8.7756125
+way/303738401,Kajala Dispensary,hospital,hospital,Ningi,10.8986789,9.104177
+way/305126184,Mara Dispensary,hospital,hospital,Toro,10.3042037,9.2836649
+way/305126205,Saminakan Gwa Maternity,hospital,hospital,Toro,10.3007217,9.1965977
+way/377468732,Proposed Paediatric Hospital,hospital,,Kano,11.9699465,8.5329545
+way/377484015,An Nur Specialist Hospital,hospital,,Kano,11.9780012,8.5424949
+way/377493645,Dangi Pharmacy,pharmacy,,Gyadi Gyadi Arewa,11.9784324,8.5398033
+way/666644399,Rasheed Shekoni Hospital,hospital,,,11.6790323,9.3360635
+way/791267674,Gulu Primary Health Centre,hospital,hospital,Rimin Gado,11.8660201,8.3008672
+way/791284157,Kudurun Health Post,hospital,hospital,Madobi,11.789685,8.3783668
+way/791307707,Ningawa Health Post,hospital,hospital,Madobi,11.8217966,8.4006862
+way/791308803,Rikadawa Health Post,hospital,hospital,Madobi,11.7337222,8.3089199
+way/791313365,Sani Mashal Primary Health Centre,hospital,hospital,Kura,11.7703328,8.4263687
+way/791322782,Yakun Health Post,hospital,hospital,Madobi,11.7403079,8.2643145
+way/791334185,Burji Primary Health Centre,hospital,hospital,Doguwa,11.1665461,8.5467425
+way/791341738,Rufan Health Post,hospital,hospital,Tudun Wada,11.3178666,8.7181351
+way/791343116,Sitti Primary Health Centre,hospital,hospital,Sumaila,11.2869932,8.7879385
+way/791377515,Masu Primary Health Centre,hospital,hospital,Sumaila,11.2021335,8.8059119
+way/791399305,Yaryasa Health Post,hospital,hospital,Tudun Wada,11.3367525,8.3083487
+way/791399678,Balare Primary Health Centre,hospital,hospital,Ajingi,11.9915369,8.9309293
+way/791751899,Lajawa Primary Health Centre,hospital,hospital,Wudil,11.8701722,8.9220502
+way/791756661,Doguwa General Hospital,hospital,hospital,Doguwa,10.7356718,8.5904821
+way/791760279,Tagwaye Health Post,hospital,hospital,Doguwa,10.7810502,8.5931271
+way/791761831,Bono Health Post,hospital,hospital,Bunkure,11.7044252,8.6322015
+way/791762843,Dawakiji Primary Health Centre,hospital,hospital,Dawakin Kudu,11.8638237,8.7033267
+way/791764257,Fanchan Health Post,hospital,hospital,Dawakin Kudu,11.7796308,8.7218601
+way/791782695,Danhassan Primary Health Centre,hospital,hospital,Kura,11.7944842,8.5164151
+way/791783043,Dawaki General Hospital,hospital,hospital,Dawakin Kudu,11.8397257,8.6015884
+way/791783565,Dukawa Primary Health Centre,hospital,hospital,Kura,11.7757557,8.5882265
+way/791788392,Gundutse Health Post,hospital,hospital,Kura,11.8244468,8.5136262
+way/791788784,Gurjiya Primary Health Centre,hospital,hospital,Bunkure,11.7500774,8.5553088
+way/791789897,Karfi Primary Health Centre,hospital,hospital,Kura,11.8253379,8.497375
+way/791828420,Amarawa Health Post,hospital,hospital,Gaya,11.817766,8.9008779
+way/791828739,Fadi Sonka Health Post,hospital,hospital,Wudil,11.7847628,8.8759436
+way/792054644,Tsaraka Health Post,hospital,hospital,Bichi,12.2146697,8.1818932
+way/792071898,Tudun Gunsau Health Post,hospital,hospital,Wudil,11.7602519,8.8517814
+way/792072374,Utai Primary Health Centre,hospital,hospital,Wudil,11.7439552,8.8819522
+way/792073263,Wudil General Hospital,hospital,hospital,Wudil,11.7987312,8.8459
+way/792081423,Gama Health Post,hospital,hospital,Nassarawa,12.0338252,8.5523586
+way/792081426,Gurungawa Health Post,hospital,hospital,Kumbotso,11.9364675,8.5234277
+way/792081428,Gwale Filin Mushe Maternal and Child Care,hospital,hospital,Gwale,11.9862471,8.5041808
+way/792109508,Bebeji General Hospital,hospital,hospital,Bebeji,11.6708651,8.2682997
+way/792110351,Dorawar Sallau Health Post,hospital,hospital,Garum Mallam,11.6687483,8.4155301
+way/792110964,Kadawa Gate Primary Health Centre,hospital,hospital,Garum Mallam,11.6445787,8.4112427
+way/792111391,Kofa Primary Health Centre,hospital,hospital,Bebeji,11.554887,8.263457
+way/792111701,Tariwa Primary Health Centre,hospital,hospital,Bebeji,11.5986812,8.3149009
+way/792111966,Wak Primary Health Centre,hospital,hospital,Bebeji,11.5921289,8.3579301
+way/792113168,Ahmad Ado Bayero Primary Health Centre,hospital,hospital,Kumbotso,11.9268769,8.5803275
+way/792158132,Aisami Health Post,hospital,hospital,Gwale,11.9949055,8.499778
+way/792159540,Akth Primary Health Centre,hospital,hospital,Kumbotso,11.8929191,8.4997773
+way/792163139,Armed Forces,hospital,hospital,Fagge,12.0329155,8.5174143
+way/792164184,Bakin Ruwa Health Post,hospital,hospital,Dala,11.9991288,8.5033105
+way/792167634,Bechi Health Post,hospital,hospital,Kumbotso,11.9266337,8.4922107
+way/792168070,Bokavo Health Post,hospital,hospital,Fagge,12.0332494,8.5076584
+way/792168229,Chiranchi Health Post,hospital,hospital,Kumbotso,11.9521457,8.4756327
+way/792169792,Dala Health Post,hospital,hospital,Dala,12.0135395,8.5059923
+way/792170026,Dandinshe Primary Health Centre,hospital,hospital,Dala,12.0204019,8.4857536
+way/792170782,Danmaliki Health Post,hospital,hospital,Kumbotso,11.927638,8.513288
+way/792172669,Dausayi Health Post,hospital,hospital,Ungongo,12.013012,8.4441909
+way/792174227,Dorayi Babba Health Post,hospital,hospital,Gwale,11.9759611,8.461819
+way/792181401,Gwarzo General Hospital,hospital,hospital,Gwarzo,11.9260903,7.9372514
+way/792186306,Kokiya Health Post,hospital,hospital,Shanono,12.0062962,8.0537983
+way/792191416,Hotoro Primary Health Centre,hospital,hospital,Nassarawa,11.974492,8.5823695
+way/792191417,Hotoro South Health Post,hospital,hospital,Nassarawa,11.969935,8.5824013
+way/792191421,Kauye Alu Primary Health Centre,hospital,hospital,Tarauni,11.960512,8.5723548
+way/792191422,Kawaji Health Post,hospital,hospital,Nassarawa,12.0101915,8.5772575
+way/792191434,Sani Zubairu Health Post,hospital,hospital,Gwale,11.9861356,8.5103293
+way/792191444,Tokarawa Primary Health Centre,hospital,hospital,Nassarawa,12.0077899,8.6059851
+way/792191448,Turai Yar'Adua Primary Health Centre,hospital,hospital,Kumbotso,11.9530421,8.5150092
+way/792191453,Zawa Chiki Primary Health Centre,hospital,hospital,Kumbotso,11.9196121,8.4658249
+way/792435250,Kutama Primary Health Centre,hospital,hospital,Gwarzo,11.8694593,7.8732128
+way/792470872,Lakwaya Primary Health Centre,hospital,hospital,Gwarzo,11.9831531,7.8669864
+way/792485991,Rahama Primary Health Centre,hospital,hospital,Bebeji,11.4085067,8.2725453
+way/792485996,Warawa Primary Health Centre,hospital,hospital,Warawa,11.8768268,8.7468601
+way/792485998,Burji Primary Health Centre,hospital,hospital,Madobi,11.8942928,8.3952251
+way/792486000,Danshayi Health Post,hospital,hospital,Rimin Gado,11.8947219,8.375652
+way/792486001,Dansudu Health Post,hospital,hospital,Tofa,11.9977647,8.3262937
+way/792520726,Kabagiwa Health Post,hospital,hospital,Tsanyawa,12.3110989,8.0224316
+way/792529346,Tsanyawa Primary Health Centre,hospital,hospital,Tsanyawa,12.2988962,7.9795925
+way/792533849,Dawaki Health Post,hospital,hospital,Rano,11.549813,8.5789207
+way/792538116,Rano General Hospital,hospital,hospital,Rano,11.5601608,8.5747948
+way/792543536,Dundu Health Post,hospital,hospital,Bunkure,11.6659858,8.7123224
+way/792544522,Durba Health Post,hospital,hospital,Kibiya,11.5708557,8.7185505
+way/792546757,Kibiya Primary Health Centre,hospital,hospital,Kibiya,11.5335572,8.6614442
+way/792551527,Gunda Health Post,hospital,hospital,Kibiya,11.506055,8.7130644
+way/792556109,Faruruwa Primary Health Centre,hospital,hospital,Shanono,12.1836713,7.9380285
+way/792560632,Gogori Primary Health Centre,hospital,hospital,Bagwai,12.1476739,8.0706626
+way/792561755,Jauben Yamma Health Post,hospital,hospital,Bagwai,12.0667672,8.0565534
+way/792569700,Tarai Primary Health Centre,hospital,hospital,Kibiya,11.5001107,8.6720499
+way/792569803,Ahip Primary Health Centre,hospital,hospital,Garko,11.6442495,8.8019872
+way/792569958,Darki Primary Health Centre,hospital,hospital,Wudil,11.6598123,8.91825
+way/792570408,Garko Primary Health Centre,hospital,hospital,Garko,11.6425185,8.8006279
+way/792570826,Garko Primary Health Centre,hospital,hospital,Garko,11.6566578,8.8032844
+way/792572449,Kofar Chiri Primary Health Centre,hospital,hospital,Garko,11.6009953,8.862284
+way/792572677,Patricia General Hospital,hospital,hospital,Sumaila,11.5244524,8.9577625
+way/792575214,Janguza Primary Health Centre,hospital,hospital,Tofa,11.9593087,8.3790001
+way/792575215,Lambu Primary Health Centre,hospital,hospital,Tofa,12.0073936,8.3530668
+way/792575216,Runkusawa Health Post,hospital,hospital,Kumbotso,11.8913015,8.4271285
+way/792575217,Dan Isa Health Post,hospital,hospital,Rimin Gado,11.9393528,8.2263119
+way/792575219,Gudan Tuwo Health Post,hospital,hospital,Shanono,11.9977336,8.066486
+way/792577752,Bakin Lahadi Health Post,hospital,hospital,Sumaila,11.3565436,8.9462821
+way/792815833,Dal Primary Health Centre,hospital,hospital,Garko,11.476253,8.8249683
+way/792827150,Kadamu Primary Health Centre,hospital,hospital,Shanono,12.1781735,7.9845023
+way/792829698,Sare-Sare Primary Health Centre,hospital,hospital,Bagwai,12.1237614,8.0496301
+way/792856951,Ungogo Primary Health Centre,hospital,hospital,Ungongo,12.0922137,8.4903557
+way/792856952,Waziri Gidado General Hospital,hospital,hospital,Dala,12.0582887,8.4706594
+way/792856953,Badume Primary Health Centre,hospital,hospital,Bichi,12.1880453,8.3105731
+way/792914592,Danguguwa Primary Health Centre,hospital,hospital,Dawakin Tofa,12.0600103,8.3944171
+way/792914593,Tofa Primary Health Centre,hospital,hospital,Tofa,12.0625665,8.2721411
+way/792914595,Abbas Primary Health Centre,hospital,hospital,Bagwai,12.1531709,8.1370691
+way/792918559,Balan Primary Health Centre,hospital,hospital,Gaya,11.8104907,9.0231387
+way/792921900,Gidan Sarkin Noma Primary Health Centre,hospital,hospital,Gaya,11.8229312,9.1206032
+way/792921901,Ajingi Primary Health Centre,hospital,hospital,Ajingi,11.9703992,9.0420052
+way/792922440,Gaya General Hospital,hospital,hospital,Gaya,11.8686416,8.9888135
+way/792927372,Makarya Primary Health Centre,hospital,hospital,Ajingi,11.9360079,9.1121367
+way/794666440,Agwar Maje Maternity,hospital,hospital,Ningi,11.323075,9.1356558
+way/794666692,Kafin Lemo Health Clinic,hospital,hospital,Ningi,11.2686599,9.0282224
+way/794667023,Shirgiya Health Clinic,hospital,hospital,Ningi,11.3171101,9.1185803
+way/794668306,Fatara Dispensary,hospital,hospital,Toro,10.5434743,9.1322841
+way/794668516,Tulu Dispensary,hospital,hospital,Toro,10.5761031,9.0281087
+way/794668799,Tulu Maternity,hospital,hospital,Toro,10.5766019,9.0295806
+way/794669968,Samanja Dispensary,hospital,hospital,Toro,10.6088491,8.8083601
+way/794670735,Zukku Dispensary,hospital,hospital,Toro,10.5205641,8.8904284
+way/794671345,Primary Health Center Rishi,hospital,hospital,Toro,10.4842419,8.9394734
+way/794674067,Wundi Maternity Health Clinic,hospital,hospital,Toro,10.4785064,8.8979277
+way/794674585,Wurno Dispensary,hospital,hospital,Toro,10.4061763,8.8280747
+way/794675447,Pingel Dispensary,hospital,hospital,Toro,10.3397786,9.0831765
+way/794675741,Rinjin Dispensary,hospital,hospital,Toro,10.3186296,8.9792601
+way/794675835,Zalau Primary Health Center,hospital,hospital,Toro,10.3935312,9.0151244
+way/794676022,Gukka Dispensary,hospital,hospital,Toro,10.3839689,9.2224183
+way/794676704,Shau Dispensary,hospital,hospital,Toro,10.4720417,9.1471169
+way/795559302,Wurobagga Primary Health Centre,hospital,hospital,Bagwai,12.1501535,8.0976071
+way/795601536,Mundu Dispensary,hospital,hospital,Toro,10.435506,9.4138311
+way/802981007,Universal Specialist Hospital,hospital,,Kano,11.9696699,8.5316033
+way/803264502,Zugachi Primary Health Centre,hospital,hospital,Gabasawa,12.0645011,8.8565817
+way/803264506,Walawa Health Post,hospital,hospital,Makoda,12.3435963,8.4773004
+way/803648944,MRS Barracks Primary Health Centre,hospital,hospital,,11.9527993,8.3907891
+way/804262336,PHC Magam,hospital,hospital,,12.3266956,7.7031829
+way/808773731,Yada Gungume Primary Health Center,hospital,hospital,Ningi,10.8654398,9.0576154
+way/818690593,Saidu Dange Railway Hospital,hospital,hospital,,11.1136755,7.7208213
+way/819860020,Sauna Kawaji Health Post,hospital,hospital,Nassarawa,12.019732,8.5991518
+way/972938910,Task Force X Hospital,hospital,hospital,Dala,12.0109314,8.5016084
+way/988008362,red cross hospital,hospital,hospital,Hotoro,11.9565915,8.5868357
