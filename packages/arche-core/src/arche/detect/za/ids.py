@@ -87,6 +87,7 @@ ZA_PATTERNS: dict[str, dict] = {
             r"(?<![0-9])(\d{13})(?![0-9])"
         ),
         "validator": _validate_sa_id,
+        "checksum": "luhn",  # SA ID carries a Luhn check digit → checksum_valid
         "base_confidence": 0.90,
     },
     "ZA_TAX_REF": {

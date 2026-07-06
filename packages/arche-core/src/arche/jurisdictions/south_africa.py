@@ -43,18 +43,12 @@ from .nigeria import ValidationResult
 def _luhn_check(digits: str) -> bool:
     """Validate a digit string using the Luhn algorithm (mod 10).
 
-    This is the same algorithm used in the african/ids.py module,
-    replicated here so the jurisdiction pack is self-contained.
+    Delegates to the canonical implementation in ``arche.detect._checksum``
+    so there is a single Luhn across the package.
     """
-    total = 0
-    for i, ch in enumerate(reversed(digits)):
-        n = int(ch)
-        if i % 2 == 1:
-            n *= 2
-            if n > 9:
-                n -= 9
-        total += n
-    return total % 10 == 0
+    from arche.detect._checksum import luhn
+
+    return luhn(digits)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

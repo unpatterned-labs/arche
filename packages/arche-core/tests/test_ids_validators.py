@@ -75,3 +75,23 @@ def test_detect_ghana_card_in_text():
     assert len(gh) == 1
     assert gh[0].id_type == "GHANA_CARD"
     assert gh[0].confidence >= 0.90
+
+
+# --- Integrity signal: validator_status (checksum_valid vs format_valid) ---
+
+
+def test_sa_id_detection_is_checksum_valid():
+    # SA ID carries a Luhn check digit → checksum_valid.
+    ids = detect_african_ids("ID 8001015009087")
+    za = [i for i in ids if i.country == "ZA" and i.id_type == "NATIONAL_ID"]
+    assert len(za) == 1
+    assert za[0].metadata.get("validator_status") == "checksum_valid"
+
+
+def test_nin_detection_is_format_valid_only():
+    # NIN has no published check-digit algorithm → format_valid, never
+    # checksum_valid (we do not fabricate a checksum).
+    ids = detect_african_ids("NIN 12345678901")
+    ng = [i for i in ids if i.country == "NG" and i.id_type == "NIN"]
+    assert len(ng) == 1
+    assert ng[0].metadata.get("validator_status") == "format_valid"
