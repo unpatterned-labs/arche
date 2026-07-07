@@ -1,0 +1,14 @@
+id,name,amenity,healthcare,lga,lat,lon
+node/11258946337,"BHC, Ilere",hospital,alternative;birthing_center;blood_donation;clinic;doctor;hospital;pharmacy,Ilere,7.3186157,5.1673816
+node/11258951837,Aaye Primary Health Clinic,clinic,clinic,Ikota,7.3401375,5.1798284
+node/11934291536,Will Of God Medicine & Supermarket,pharmacy,pharmacy,,7.291875,5.1502656
+node/11934296154,Olyros Hospital,hospital,hospital,,7.2925929,5.1502071
+node/11938897152,Obaby Clinic,clinic,clinic,,7.2863722,5.1527784
+node/11938975201,Christ Bay Consultant Hospital,hospital,hospital,,7.2905852,5.1525532
+node/11938989612,PX Pharmacy,pharmacy,pharmacy,,7.2895143,5.1526755
+node/11940012011,God Save Patient Medicine & Provision,clinic,clinic,,7.2886539,5.1482822
+way/581983942,36.6,pharmacy,pharmacy,,7.2976114,5.1670068
+way/992712620,University Health Centre,,clinic,,7.1689292,5.5859109
+way/1169558004,New FUTA Clinic,hospital,hospital,,7.2975687,5.1451494
+way/1244224733,General Hospital Idanre,hospital,hospital,,7.1331067,5.0997636
+way/1296015365,First Mercy Specialist Hospital,hospital,hospital,,7.2536556,5.1827604

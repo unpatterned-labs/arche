@@ -1,0 +1,686 @@
+osm_id,osm_name,osm_type,hfr_id,hfr_name,hfr_type,hfr_lga,probability,decision,factor_name,factor_geo,distance_km,type_agree,explanation
+node/2923098159,Tsara Primary Health Centre,PHC,f42a333a-456f-4ec6-a505-535a166d38d2,Tsara Primary Health Center,PHC,Rogo,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+node/2923263866,Dayaso Health Post,HEALTH_POST,e71963b3-e30d-41af-ad2f-ea261d205416,Dayaso Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+node/2923263868,Gwangwan Primary Health Centre,PHC,04c311af-bd0a-4805-8d39-5b0a046d5104,Gwangwan Health Clinic,CLINIC,Rogo,0.9824,match,1.0,0.9979,0.003,False,name 100%; 0.0 km apart; type differs
+node/2923263869,Hago Primary Health Centre,PHC,88fea611-bd5d-42aa-a269-a8a6b37643bc,Hago Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9978,0.003,False,name 100%; 0.0 km apart; type differs
+node/2923263870,Ruwan Bago Health Post,HEALTH_POST,f71de7ca-edf6-4618-9c08-57ce46852a7c,Ruwan Bago Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+node/2923263871,Sundu Health Post,HEALTH_POST,02af41ec-4d81-4371-b94c-fa3fb3c33481,Sundu Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9923,0.012,True,name 100%; 0.0 km apart; type match
+node/2923263872,Tudun Magaji Health Post,HEALTH_POST,c91fc72b-14af-4287-9922-3d9e728b5027,Tudun Magaji Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+node/2923263873,Unguwar Liman Health Post,HEALTH_POST,0d65d4d3-7a63-4c41-8c43-95808dd5f752,Unguwar Liman Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+node/2923263874,Unguwar Malam Amadu Health Post,HEALTH_POST,1bb9e7eb-1729-4e03-86e9-5893c928c043,Unguwar Mallam Amadu Health Post,HEALTH_POST,Rogo,0.9824,match,0.99,0.9982,0.003,True,name 99%; 0.0 km apart; type match
+node/2923366080,Kauyen Liman Health Post,HEALTH_POST,9c8186d4-5f7e-463a-8a1a-e61d20c28bc3,Kauyen Liman Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+node/2923366082,Tsohuwar Rogo Health Post,HEALTH_POST,7e19dd21-2088-48a0-a011-27c0f43d8e45,Tsohuwar Rogo Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9949,0.008,True,name 100%; 0.0 km apart; type match
+node/2923366083,Zoza Health Post,HEALTH_POST,4ecd3514-717f-4389-b32c-1679fc4c6df9,Zoza Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9971,0.004,True,name 100%; 0.0 km apart; type match
+node/2923485905,Jajaye Primary Health Centre,PHC,f5775af9-3c06-4b4a-bcca-65c76e194c1d,Jajaye Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9909,0.014,False,name 100%; 0.0 km apart; type differs
+node/2923485907,Maska Health Post,HEALTH_POST,8cdfeefc-310b-46b2-90c8-05363bb3c956,Maska Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9974,0.004,True,name 100%; 0.0 km apart; type match
+node/2923512474,Sagondare Health Post,HEALTH_POST,c64e442b-af5b-4f56-a36a-27f191f7c95d,Sagondare Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9983,0.003,True,name 100%; 0.0 km apart; type match
+node/2923512475,Yanoko Primary Health Centre,PHC,9ebe1bcc-0a97-4389-ac0a-92b335ab2332,Yanoko Health Post,HEALTH_POST,Rogo,0.9824,match,1.0,0.9992,0.001,False,name 100%; 0.0 km apart; type differs
+node/2923573777,Daura Health Post,HEALTH_POST,c0886de9-aa23-436b-a898-78162a0662ed,Daura Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9967,0.005,True,name 100%; 0.0 km apart; type match
+node/2923573778,Dederi Health Post,HEALTH_POST,45431af6-d943-4ae5-97db-4228b63ad365,Dederi Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9982,0.003,True,name 100%; 0.0 km apart; type match
+node/2923573780,Kadafa Health Post,HEALTH_POST,febac108-3ee9-45f9-b9b8-1660977f28d7,Kadafa Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2923573783,Kurugu Health Post,HEALTH_POST,a79383f9-0f19-4c24-8ca3-e10875894e44,Kurugu Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9985,0.002,True,name 100%; 0.0 km apart; type match
+node/2923573784,Sabon Birni Primary Health Centre,PHC,ff7c30a5-7779-44a4-ae22-ac61667228c4,Sabon Birni Health Post,HEALTH_POST,Gwarzo,0.9824,match,1.0,0.9977,0.003,False,name 100%; 0.0 km apart; type differs
+node/2923573785,Sabon Fegi Health Post,HEALTH_POST,2aa8f29f-39fd-4fe2-8c6f-e32e1b5e1c07,Sabon Fegi Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9982,0.003,True,name 100%; 0.0 km apart; type match
+node/2923573789,Tumfafi Health Post,HEALTH_POST,d3b185dc-e387-45b6-95ba-19671864c74b,Tumfafi Health Post,HEALTH_POST,Gwarzo,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2923573793,Unguwar Tofa Health Post,HEALTH_POST,6a4db786-fc04-4bd8-85ad-74091a02db9b,Unguwar Tofa Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9964,0.005,True,name 100%; 0.0 km apart; type match
+node/2923599549,Dariyar Shere Primary Health Centre,PHC,0cd5e232-b12a-4b26-88ff-bb6b7129c908,Dariyar Shere Health Post,HEALTH_POST,Doguwa,0.9824,match,1.0,0.9986,0.002,False,name 100%; 0.0 km apart; type differs
+node/2923599550,Dokar Sati Health Post,HEALTH_POST,3a01308b-c958-4b01-af3d-f6edb5e7e745,Dokar Sati Health Post,HEALTH_POST,Doguwa,0.9824,match,1.0,0.9948,0.008,True,name 100%; 0.0 km apart; type match
+node/2923599554,Mekwandira Health Post,HEALTH_POST,3fba42d9-b000-47b8-9f25-9cf793a0e9fb,Mekwandira Health Post,HEALTH_POST,Doguwa,0.9824,match,1.0,0.9961,0.006,True,name 100%; 0.0 km apart; type match
+node/2925699883,Alhazawa Health Post,HEALTH_POST,ea655d77-4445-48cc-9289-d45e088b7827,Alhazawa Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2925699884,Bargoni Health Post,HEALTH_POST,7d592a2e-9161-45be-81bf-217e7702d5e1,Bargoni Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+node/2925699885,Baskore Health Post,HEALTH_POST,718036b1-4859-4052-b745-38f2870a1d55,Baskore Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+node/2925699886,Dashi Health Post,HEALTH_POST,06d2e8b4-afd0-4b5c-84a1-e9b3425a9742,Dashi Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2925699887,Dugabau Primary Health Centre,PHC,a4df570b-3847-4804-b003-76b63118d3d3,Dugabau Health Clinic,CLINIC,Kabo,0.9824,match,1.0,0.9989,0.002,False,name 100%; 0.0 km apart; type differs
+node/2925699889,Gazan Health Post,HEALTH_POST,c55365fd-5de9-475d-8afd-035ad8b636cd,Gazan Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+node/2925699891,Husama Health Post,HEALTH_POST,b2e73261-3785-48c4-acf0-b6a43fd17799,Husama Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,1.0,0.0,True,name 100%; 0.0 km apart; type match
+node/2925699896,Kanwa Health Post,HEALTH_POST,7ed2e218-2aac-4b88-b5e1-89a0a8028c6d,Kanwa Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+node/2925699900,Masanawa Health Post,HEALTH_POST,7530ba55-91bc-42ca-bfd1-0c73a75247ff,Masanawa Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+node/2925701101,Unguwar Turaki Health Post,HEALTH_POST,b07b3c08-c99b-439f-83df-577e96592937,Unguwar Turaki Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+node/2925701102,Walawa Health Post,HEALTH_POST,76ac85eb-ee50-43c1-8068-9da648fc3c9f,Walawa Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+node/2925719598,Bauda Health Post,HEALTH_POST,c314cdb6-63a5-4ee2-852e-8911a09aae66,Bauda Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+node/2925757201,Durmawa Health Post,HEALTH_POST,9bc680ca-bbf1-4d54-85eb-f975879a6211,Durmawa Health Post,HEALTH_POST,Bebeji,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2925757204,Maraku Health Post,HEALTH_POST,386a5381-d0d4-4e6b-a0ac-60119966e0fa,Maraku Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2925757205,Tsaudawa Health Post,HEALTH_POST,7cee3870-56e8-44cb-b5a8-2280757a865e,Tsaudawa Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+node/2925787870,Badafi Health Post,HEALTH_POST,58fd87ec-f653-45a8-891f-23e7d5dde150,Badafi Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.991,0.014,True,name 100%; 0.0 km apart; type match
+node/2925787872,Hayin Gwarmai Health Post,HEALTH_POST,5241fd44-24c5-4b3e-a183-0f4898cbbc01,Hayin Gwarmai Health Post,HEALTH_POST,Bebeji,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+node/2925837271,Rufai Health Post,HEALTH_POST,ee2a47af-440a-433b-9ee1-3baa2b6670dd,Rufai Health Post,HEALTH_POST,Doguwa,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2925849528,Dan Gayaki Health Post,HEALTH_POST,f2f90c77-f699-47aa-89c1-eb665e62f854,Dan Gayaki Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9964,0.005,True,name 100%; 0.0 km apart; type match
+node/2925849529,Gurawa Health Post,HEALTH_POST,855869cd-70e4-4ef2-97c3-9bd2c6fdb70c,Gurawa Health Post,HEALTH_POST,Karaye,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+node/2925849532,Malamawa Health Post,HEALTH_POST,7ea46aa8-a0da-48ce-9abb-1532e51dce94,Malamawa Health Post,HEALTH_POST,Gwarzo,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+node/2925991011,Bauda Health Post,HEALTH_POST,c314cdb6-63a5-4ee2-852e-8911a09aae66,Bauda Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9968,0.005,True,name 100%; 0.0 km apart; type match
+node/2925991014,Durmawa Health Post,HEALTH_POST,9bc680ca-bbf1-4d54-85eb-f975879a6211,Durmawa Health Post,HEALTH_POST,Bebeji,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2925991017,Maraku Health Post,HEALTH_POST,386a5381-d0d4-4e6b-a0ac-60119966e0fa,Maraku Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+node/2925991018,Tsaudawa Health Post,HEALTH_POST,7cee3870-56e8-44cb-b5a8-2280757a865e,Tsaudawa Health Post,HEALTH_POST,Kiru,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2925991019,Yako Primary Health Centre,PHC,a7bcc6c6-f910-4a75-80d2-a8fc1acf3e4f,Yako Primary Health Center,PHC,Kiru,0.9824,match,1.0,0.9961,0.006,True,name 100%; 0.0 km apart; type match
+node/2929137238,Bankaura Health Post,HEALTH_POST,fbbd5398-8e4f-41f0-a99c-1cb9b3b2bd3d,Bankaura Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137239,Belli Health Post,HEALTH_POST,2b7dcfb4-8e8f-4e0c-99ac-03dde7980727,Belli Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137243,Damfamin Tofa Health Post,HEALTH_POST,503dc4f7-a478-4d95-83ef-8d2d4fc699d5,Damfamin Tofa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137246,Jinjimawa Health Post,HEALTH_POST,01d70a08-1343-48d7-9654-fca56949a61b,Jinjimawa Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137247,Jodade Health Post,HEALTH_POST,6cf4fa4f-d747-462c-9de8-1101e9877fc6,Jodade Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137248,Kawaji Health Post,HEALTH_POST,f00adc9b-21e0-439a-be9a-e4ee156b6b00,Kawaji Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9968,0.005,True,name 100%; 0.0 km apart; type match
+node/2929137250,Kuku Primary Health Centre,PHC,e3734c50-9efe-433a-8811-0bc1abcf63e5,Kuku Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9993,0.001,False,name 100%; 0.0 km apart; type differs
+node/2929137251,Kwamarawa Health Post,HEALTH_POST,6ea5381b-7d69-4a98-9c3b-e3148b3a6fb2,Kwamarawa Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137254,Taddangari Primary Health Centre,PHC,4477ea54-310f-43f0-8241-5ff97549fe0d,Taddangari Primary Health Center,PHC,Bichi,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+node/2929137255,Tinki Health Post,HEALTH_POST,6ffc453c-79e5-481a-b02f-253b97a53d4c,Tinki Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+node/2929137256,Tofawa Health Post,HEALTH_POST,b8c442ad-9f4e-45b9-97e2-fc3938fed665,Tofawa Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+node/2929137257,Tukuibi Health Post,HEALTH_POST,5c37a274-b3d6-47f0-8048-6eeda86ad6a4,Tukuibi Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9934,0.01,True,name 100%; 0.0 km apart; type match
+node/2929137259,Yanbundu Health Post,HEALTH_POST,fe278beb-e7ad-406a-87c1-1823c79c0078,Yanbundu Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2929137260,Yola Health Post,HEALTH_POST,e0de1cfc-7994-4182-a8bc-4621fbbd675c,Yola Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+node/2929399558,Baje Primary Health Centre,PHC,0cbc226d-face-4978-985a-23e0f941bcd5,Baje Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9983,0.003,False,name 100%; 0.0 km apart; type differs
+node/2929399564,Farsa Health Post,HEALTH_POST,aad58dce-e8bc-4323-8870-9522301efe3c,Farsa Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+node/2929399565,Gidan Nisau Health Post,HEALTH_POST,a4b00931-ede4-400c-8c46-6caa89a7e1be,Gidan Nisau Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+node/2929399566,Hagawa Health Post,HEALTH_POST,887a61f8-833e-44c2-8d2c-1e85fe1859b5,Hagawa Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+node/2929399567,Karari Health Post,HEALTH_POST,966d0589-a90f-49ca-baee-3b64d3666c05,Karari Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2929399568,Lamba Health Post,HEALTH_POST,977eb5ae-4659-4843-bdda-c03c14d58a36,Lamba Health Center,PHC,Bichi,0.9824,match,1.0,0.9957,0.007,False,name 100%; 0.0 km apart; type differs
+node/2929399570,Rigana Primary Health Centre,PHC,1ca3f7e8-82c3-44ac-8254-86db7d61540b,Rigana Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9994,0.001,False,name 100%; 0.0 km apart; type differs
+node/2929399572,Tatsan Health Post,HEALTH_POST,ce6d6960-20c4-419e-b9f7-ef1d84c69b6e,Tatsan Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9975,0.004,True,name 100%; 0.0 km apart; type match
+node/2929399574,Tsidau Health Post,HEALTH_POST,4897c1a4-688e-4fd6-b67c-75f156e0c184,Tsidau Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9969,0.005,True,name 100%; 0.0 km apart; type match
+node/2929399575,Waire Health Post,HEALTH_POST,053bd3f5-1252-43b7-b988-8d2eeb01062c,Waire Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+node/2929399577,Yangwarzo Health Post,HEALTH_POST,7dc7a681-b64c-4133-9877-f778a2510496,Yangwarzo Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9975,0.004,True,name 100%; 0.0 km apart; type match
+node/2953819019,Kokai Health Post,HEALTH_POST,54cf5e96-b39c-4144-a411-2f29158e0700,Kokai Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+node/2954029812,Gwarabjawa Health Post,HEALTH_POST,dcd75f26-2251-4413-942b-0d73b6d957df,Gwarabjawa Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+node/2954277529,Mazan Gudu Health Post,HEALTH_POST,afe720f5-d8b1-48af-a2b4-66fd8d6390fa,Mazan Gudu Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/279086588,Fuskar Gabas Primary Health Centre,PHC,bfbdcd39-525a-4378-86e2-3f3eb7370e72,Fuskar Gabas Health Clinic,CLINIC,Kano Municipal,0.9824,match,1.0,0.9957,0.007,False,name 100%; 0.0 km apart; type differs
+way/282905006,Geza Health Post,HEALTH_POST,43bae462-256c-4dcc-ae10-07921ab166c4,Geza Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/283101646,Rafin Tsamiya Health Post,HEALTH_POST,30f1c797-c6f5-4fa2-9735-ff4a34e5ac35,Rafin Tsamiya Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/286269667,Kwarkiya Health Post,HEALTH_POST,996d130b-e6b3-4ff9-844c-b7a2581c172b,Kwarkiya Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/286271541,Garke Health Post,HEALTH_POST,37ee6e61-6650-4edb-9cfe-9a32fb09a71e,Garke Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+way/286439184,Gasgainu Health Post,HEALTH_POST,9c1e294d-8d00-4213-859d-9da4f2886d29,Gasgainu Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9997,0.001,True,name 100%; 0.0 km apart; type match
+way/286766935,Danbawa Health Post,HEALTH_POST,5e5024e5-fb17-4bf3-bba1-99b4d2be5d85,Danbawa Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/287517082,Sarbi Health Post,HEALTH_POST,c385ca0e-d474-413a-a128-2f6c826ab8ae,Sarbi Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/287827312,Zango Health Post,HEALTH_POST,e4c36609-af24-46e9-ba7b-8dad50c39685,Zango Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/288288676,Bare Bari Health Post,HEALTH_POST,e1e39893-d05d-4027-bc30-57576ae3253f,Bare Bari Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/288457763,Shawu Health Post,HEALTH_POST,64119ce9-5aa6-4951-9611-060929223618,Shawu Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/288472000,Baushe Health Post,HEALTH_POST,7d260b0a-b963-47bd-a92e-2ad655979a29,Baushe Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+way/288638730,Ruwantsa Health Post,HEALTH_POST,01fe4796-01c1-4cfe-87a7-288f4599765d,Ruwantsa Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/289763926,Falgore Health Post,HEALTH_POST,f405904d-44ef-470c-bc26-b3e5f62ad3a8,Falgore Health Post,HEALTH_POST,Doguwa,0.9824,match,1.0,0.9975,0.004,True,name 100%; 0.0 km apart; type match
+way/290171092,Baure Health Post,HEALTH_POST,64de5fd3-b198-42eb-84f8-a00a4149e45b,Baure Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9949,0.008,True,name 100%; 0.0 km apart; type match
+way/290171093,Kauyen Adam Health Post,HEALTH_POST,4c3d9d9b-33fe-41ec-813a-fd4cda6ab032,Kauyen Adam Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/290171096,Yartofa Health Post,HEALTH_POST,7079e1ed-f604-43ea-a887-f8244b3ec781,Yartofa Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/290171098,Kariya Health Post,HEALTH_POST,4f183c46-00d8-41ef-8e11-0ea3674138a1,Kariya Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/290171105,Tsattawa Health Post,HEALTH_POST,5bdefb70-19d1-4339-90e3-e1e489b99ff9,Tsattawa Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9965,0.005,True,name 100%; 0.0 km apart; type match
+way/290171106,Iyawa Health Post,HEALTH_POST,94e97f9d-db67-48b0-a33b-d17dbaf043f4,Iyawa Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/290171107,Badau Health Post,HEALTH_POST,b86ebd10-a292-4d4d-90a4-fc74b3552c44,Badau Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9968,0.005,True,name 100%; 0.0 km apart; type match
+way/290171109,Badodo Health Post,HEALTH_POST,db4b3227-5f27-4b00-8c45-a17b0cbe46b8,Badodo Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/290171113,Tuga Health Post,HEALTH_POST,6b114c6c-113b-4bbb-9775-b3a0f35159f3,Tuga Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9936,0.01,True,name 100%; 0.0 km apart; type match
+way/290171114,Dutsen Karya Health Post,HEALTH_POST,656038a5-b2be-40e6-a766-43e0400868fc,Dutsen Karya Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/290171115,Rimin Dako Health Post,HEALTH_POST,9c7e13b9-5ede-4ef9-8c57-88120bff55fe,Rimin Dako Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9983,0.003,True,name 100%; 0.0 km apart; type match
+way/290171116,Gajal Health Post,HEALTH_POST,6c81597d-4158-48a3-8d48-b719de27a799,Gajal Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+way/290171118,Romo Health Post,HEALTH_POST,403d5c9c-8340-4d7d-9b80-58a500a2c7c5,Romo Health Clinic,CLINIC,Bagwai,0.9824,match,1.0,0.9977,0.003,False,name 100%; 0.0 km apart; type differs
+way/290533455,Biyamusu Health Post,HEALTH_POST,55651117-2830-400f-bebc-0b859f151a12,Biyamusu Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/290649986,Gamoji Health Post,HEALTH_POST,f16251b2-4215-45ec-8d73-69980a758a9a,Gamoji Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.996,0.006,True,name 100%; 0.0 km apart; type match
+way/290650580,Jigar Health Post,HEALTH_POST,e823f8ae-2280-4b7b-a149-d1689512534d,Jigar Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/290651186,Yawurma Health Post,HEALTH_POST,ce54c137-3843-44db-a0f1-e1f5cf6c2a9b,Yawurma Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/290673630,Daho Health Post,HEALTH_POST,fbd8bbe0-d976-4b03-8e10-5de7aac6b2fc,Daho Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/290680270,Zananne Health Post,HEALTH_POST,bdc8818f-d993-4b6e-af6d-0328d9f347db,Zananne Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/290682238,Jirago Health Post,HEALTH_POST,efbf97c9-420c-425e-a47b-11101610c40c,Jirago Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9962,0.006,True,name 100%; 0.0 km apart; type match
+way/290825652,Yanganau Health Post,HEALTH_POST,fad1aeec-61aa-4b1c-abc5-924ec2c6275f,Yanganau Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+way/290832368,Zakawa Health Post,HEALTH_POST,375b9e1e-2a12-4700-9977-10ae598bc281,Zakawa Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,1.0,0.0,True,name 100%; 0.0 km apart; type match
+way/291322256,Gachi Kedi Health Post,HEALTH_POST,92b963da-b47a-4cbe-8436-298e62045dc5,Gachi Kedi Health Post,HEALTH_POST,Wudil,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/291435971,Tamawa Health Post,HEALTH_POST,658dce8c-3a5e-4475-b686-9e1c545fe6c7,Tamawa Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/291437917,Jili Health Post,HEALTH_POST,1c92d639-d71a-42a8-8cc8-3624981d9319,Jili Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291437920,Sakaratsa Health Post,HEALTH_POST,3473d2bb-d9cf-454f-956d-7355fff97943,Sakaratsa Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291437923,Chiromawa Primary Health Centre,PHC,5685fbea-0d4d-4dba-a5e2-f36ad6192339,Chiromawa Primary Health Center,PHC,Ungogo,0.9824,match,1.0,0.9953,0.007,True,name 100%; 0.0 km apart; type match
+way/291438250,Agalawa Health Post,HEALTH_POST,4008ba88-b3bb-47da-99d3-52cecb9ecda6,Agalawa Health Post,HEALTH_POST,Madobi,0.9824,match,1.0,0.9943,0.009,True,name 100%; 0.0 km apart; type match
+way/291438406,Jajira Health Post,HEALTH_POST,ce7eb496-19c1-4ba4-9b1e-492e18ffed3f,Jajira Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.99,0.015,True,name 100%; 0.0 km apart; type match
+way/291438407,Kwami Health Post,HEALTH_POST,6d97ad81-8b75-44cb-a478-eced1ecff62b,Kwami Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291438409,Jagaja Health Post,HEALTH_POST,264597f6-8e2a-475c-8262-9ab6d5561e7f,Jagaja Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9974,0.004,True,name 100%; 0.0 km apart; type match
+way/291438581,Maigari Health Post,HEALTH_POST,fbbae7d1-3da8-4d06-8b69-04db0f2ae3f0,Maigari Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9965,0.005,True,name 100%; 0.0 km apart; type match
+way/291439838,Yarimawa Primary Health Centre,PHC,bab11cf7-c4d1-4b27-a2e7-bb36229c0730,Yarimawa Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9965,0.005,False,name 100%; 0.0 km apart; type differs
+way/291441969,Maraya Health Post,HEALTH_POST,2ef62824-4fea-41e6-be73-c59b5f2eccfa,Maraya Health Post,HEALTH_POST,Madobi,0.9824,match,1.0,0.997,0.005,True,name 100%; 0.0 km apart; type match
+way/291441970,Langel Primary Health Centre,PHC,f96bee74-3c02-4578-b20d-691b843be3bf,Langel Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9972,0.004,False,name 100%; 0.0 km apart; type differs
+way/291442078,Tabanni Health Post,HEALTH_POST,f7e9cbd5-375d-4a5e-bb82-b92c0376debc,Tabanni Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9918,0.012,True,name 100%; 0.0 km apart; type match
+way/291442646,Unguwar Rimi Health Post,HEALTH_POST,191361cc-82c0-462b-bfc5-c5fd52ac59be,Unguwar Rimi Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+way/291442888,Maigari Ingila Health Post,HEALTH_POST,f07e34b3-baa3-4e97-a58e-0d3e225caa2c,Maigari Ingila Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/291442890,Karofin Yashi Health Post,HEALTH_POST,17e3344d-2342-4efb-a704-541d136ca3c8,Karofin Yashi Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/291444032,Wari Health Post,HEALTH_POST,28b21967-8beb-47b0-940c-50dfa7dc3822,Wari Dispensary,DISPENSARY,Kabo,0.9824,match,1.0,0.9959,0.006,False,name 100%; 0.0 km apart; type differs
+way/291444190,Indabo Health Post,HEALTH_POST,1ed28c90-4ced-4b42-a52b-2517e8b5d601,Indabo Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+way/291444192,Bakwami Health Post,HEALTH_POST,6d186f18-a063-4d52-8bd3-6e72d2373589,Bakwami Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.996,0.006,True,name 100%; 0.0 km apart; type match
+way/291444194,Kwajale Health Post,HEALTH_POST,bbfc6ce7-5dfc-4d61-961f-28c9ac3e01d8,Kwajale Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9974,0.004,True,name 100%; 0.0 km apart; type match
+way/291445698,Ginsawa Health Post,HEALTH_POST,0a92d0b2-feaf-4e42-8eee-20d5ddab5b23,Ginsawa Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9956,0.007,True,name 100%; 0.0 km apart; type match
+way/291445699,Hawadin Bango Primary Health Centre,PHC,7e269139-2304-4787-b718-22b1f6c775a6,Hawadin Bango Primary Health Center,PHC,Kabo,0.9824,match,1.0,0.9968,0.005,True,name 100%; 0.0 km apart; type match
+way/291445944,Kanye Health Post,HEALTH_POST,d07a3ae7-628d-48f1-8ae9-7018710fa6ce,Kanye Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9997,0.001,True,name 100%; 0.0 km apart; type match
+way/291445945,Dugurawa Health Post,HEALTH_POST,df40ace6-415a-403c-8e2d-7b24d9ee7dd8,Dugurawa Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/291445996,Yango Health Post,HEALTH_POST,5cce32cf-b294-4545-9b80-1dbefcee3292,Yango Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291445998,Balan Health Post,HEALTH_POST,a13ba98b-8776-44b0-9bed-aef5c48f8d0c,Balan Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9975,0.004,True,name 100%; 0.0 km apart; type match
+way/291448218,Shadau Health Post,HEALTH_POST,e947b141-2eed-4717-a37d-de736708067d,Shadau Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291655045,Dorogo Health Post,HEALTH_POST,6e6c2f92-cb79-47bb-bc44-dd49f4f355d4,Dorogo Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9959,0.006,True,name 100%; 0.0 km apart; type match
+way/291655047,Dan Amale Health Post,HEALTH_POST,7bf188cd-2469-4cb6-9d1a-eadf91d67fd1,Dan Amale Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291665833,Dorogo Health Post,HEALTH_POST,f695413d-aef9-4eab-954d-1aef85eb6f49,Dorogo Health Post,HEALTH_POST,Gwarzo,0.9824,match,1.0,0.9952,0.007,True,name 100%; 0.0 km apart; type match
+way/291666940,Gude Health Post,HEALTH_POST,151959a1-c648-400c-9e70-c25e3ba988df,Gude Health Post,HEALTH_POST,Kabo,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/291666941,Dutsen Bakoshi Health Post,HEALTH_POST,177d459c-3c16-4c15-8b37-e008ba637cae,Dutsen Bakoshi Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9949,0.008,True,name 100%; 0.0 km apart; type match
+way/291732132,Faran Health Post,HEALTH_POST,882acf30-b6b4-46d9-bba3-ae51cd615a80,Faran Health Post,HEALTH_POST,Kibiya,0.9824,match,1.0,0.9985,0.002,True,name 100%; 0.0 km apart; type match
+way/291750086,Kyansha Health Post,HEALTH_POST,0e253757-c4cb-4a21-b4f4-659c88baaf76,Kyansha Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/291751274,Yan Bawa Health Post,HEALTH_POST,43f25992-725a-4727-9c35-51ac0f3815a4,Yan Bawa Health Post,HEALTH_POST,Sumaila,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291752449,Rubun Health Post,HEALTH_POST,66fc822a-5282-4a9b-ae82-a34ec4d6016a,Rubun Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291752871,Hungu Health Post,HEALTH_POST,bd9f40a8-5849-464b-b98c-8fd991499ff5,Hungu Primary Health Center,PHC,Albasu,0.9824,match,1.0,0.9936,0.01,False,name 100%; 0.0 km apart; type differs
+way/291752872,Kafin Sidda Health Post,HEALTH_POST,ea087b5d-9c51-46ed-8a12-291a2c6db1ca,Kafin Sidda Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291752873,Mangari Health Post,HEALTH_POST,1542c1a7-5bfc-4acf-8ee3-ecdad56a7f59,Mangari Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291753564,Sittika Health Post,HEALTH_POST,89af1b5c-8d18-4e0d-9884-47e7c0caf74f,Sittika Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291753565,Faragai Health Post,HEALTH_POST,ad8c553c-20f5-4b29-b594-cf5a26ba2620,Faragai Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9999,0.0,True,name 100%; 0.0 km apart; type match
+way/291753566,Duja Health Post,HEALTH_POST,3f33c791-e194-4bf3-b4d3-a0ccb53d48aa,Duja Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291753929,Rinji Health Post,HEALTH_POST,f38e60a2-1b7e-4d8a-8ebe-f0553971bcdc,Rinji Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291753930,Chamarana Health Post,HEALTH_POST,7bd03c5c-d07c-4814-b91a-ebf9a09bfda5,Chamarana Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9967,0.005,True,name 100%; 0.0 km apart; type match
+way/291753931,Gamawa Health Post,HEALTH_POST,7faebcbf-793d-4164-8d46-1bd5e582641a,Gamawa Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291753932,Baleke Health Post,HEALTH_POST,475e76ce-5865-42f9-bbed-d1e6b163d2f6,Baleke Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+way/291754204,Alfindi Health Post,HEALTH_POST,97ece6cc-79f8-4452-86a1-e0e71e9851c4,Alfindi Health Post,HEALTH_POST,Sumaila,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291754243,Kan Iyaka Health Post,HEALTH_POST,c078220d-fe85-4603-9715-c738ebd3abb8,Kan Iyaka Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291754775,Kogo Health Post,HEALTH_POST,bb019a48-1c2e-4d1a-916c-9da9d9ebcc62,Kogo Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9915,0.013,True,name 100%; 0.0 km apart; type match
+way/291754777,Gagarame Health Post,HEALTH_POST,4113d7b7-4283-4645-ad0f-8d3b66b1da1f,Gagarame Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9965,0.005,True,name 100%; 0.0 km apart; type match
+way/291755115,Durbunde Primary Health Centre,PHC,f1a5f71b-873a-4528-9cac-69f89266e15d,Durbunde Primary Health Center,PHC,Takai,0.9824,match,1.0,0.9943,0.009,True,name 100%; 0.0 km apart; type match
+way/291755116,Sakwaya Health Post,HEALTH_POST,717fc165-40f9-4218-89d7-413297bf3047,Sakwaya Health Post,HEALTH_POST,Takai,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291755117,Kachako Primary Health Centre,PHC,1c1b3967-ba48-4338-9857-d2db60edcc01,Kachako Primary Health Center,PHC,Takai,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/291757019,Hausawa Health Post,HEALTH_POST,5837d276-25ce-40ea-8114-3e78dddfd950,Hausawa Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/291757020,Jibawa Health Post,HEALTH_POST,f0944f55-75f8-47ee-a793-deded367df15,Jibawa Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291757021,Fanidau Health Post,HEALTH_POST,a5aaea78-0b3f-48a2-ad52-cdead9a9e3e3,Fanidau Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/291757022,Maimakawa Health Post,HEALTH_POST,f25281f1-d30d-49fa-8a79-0405ccfaee36,Maimakawa Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/291757023,Kazurawa Health Post,HEALTH_POST,809e2197-4ce2-4d1e-b773-3be9cc4280ef,Kazurawa Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.9997,0.001,True,name 100%; 0.0 km apart; type match
+way/291757024,Kalahaddi Health Post,HEALTH_POST,991a7d97-8e7b-4c64-9869-d811e7d9f3c5,Kalahaddi Health Post,HEALTH_POST,Gaya,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291757540,Kawari Health Post,HEALTH_POST,173f04b8-69c9-4daf-bbd3-082dd840680b,Kawari Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9982,0.003,True,name 100%; 0.0 km apart; type match
+way/291757541,Maigana Health Post,HEALTH_POST,b36c79f3-c55c-4e0f-ad4b-ecb036c0d34e,Maigana Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/291759008,Chula Health Post,HEALTH_POST,a328cc65-bd61-4617-821c-ade1ef08d1bf,Chula Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+way/291759009,Gurduba Health Post,HEALTH_POST,3698206c-9012-4447-a218-0c503ff2a74e,Gurduba Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+way/291759011,Kiroro Health Post,HEALTH_POST,c4550091-657c-40de-9430-838a87cf283d,Kiroro Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291759013,Kunkurawa Health Post,HEALTH_POST,d80f31ee-109e-4539-855f-176ad5a700c0,Kunkurawa Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/291759014,Sakalawa Health Post,HEALTH_POST,58162b17-d136-4bb2-9488-2a28b42f6de9,Sakalawa Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9982,0.003,True,name 100%; 0.0 km apart; type match
+way/291759369,Gafasa Health Post,HEALTH_POST,4863165e-a0fd-4ff2-a20e-5c764777e944,Gafasa Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291759370,Jiyayya Health Post,HEALTH_POST,3c4e15d0-5dcb-4558-a193-08c0cc824303,Jiyayya Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291759371,Dundun Health Post,HEALTH_POST,dfc1c8e4-8c1e-4ee2-b3f5-3fad9b8adeec,Dundun Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291759766,Zuwan Hawa Health Post,HEALTH_POST,348184a1-b280-4eec-b05d-b8cc18f900ca,Zuwan Hawa Health Post,HEALTH_POST,Albasu,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/291761155,Goron Dutse Health Post,HEALTH_POST,9c849e3f-37e1-4f30-af7a-354e408a7865,Goron Dutse Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9983,0.002,True,name 100%; 0.0 km apart; type match
+way/291761156,Yankwada Health Post,HEALTH_POST,aac8eb84-5d09-4fcc-bd06-7fbc8aa927c1,Yankwada Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291761158,Bakaji Health Post,HEALTH_POST,7e8758a1-424c-4abe-8b19-4838c0902055,Bakaji Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+way/291837472,Gagarawa Health Post,HEALTH_POST,1ebdec5a-6cb5-42ae-a07c-cdc7bea1f137,Gagarawa Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/291841839,Unguwar Bai Health Post,HEALTH_POST,c9c53dd6-08fa-43f6-a216-547fa985a497,Unguwar Bai Health Post,HEALTH_POST,Ajingi,0.9824,match,1.0,0.9997,0.001,True,name 100%; 0.0 km apart; type match
+way/291869889,Yankamaye Health Post,HEALTH_POST,b05daeaa-dc3e-4fd4-a618-8041583bd46d,Yankamaye Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291871749,Dorayi Health Post,HEALTH_POST,ea3a2e56-f9cc-4b91-bf57-aeaa4c2ac08c,Dorayi Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+way/291871764,Tafashiya Primary Health Centre,PHC,8b98fc6e-08ac-4747-bfe5-caeed6c1039d,Tafashiya Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9958,0.006,False,name 100%; 0.0 km apart; type differs
+way/291876678,Bankamawa Health Post,HEALTH_POST,7ec35bbc-cc91-4305-8cfd-cb0afe6d3708,Bankamawa Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9983,0.003,True,name 100%; 0.0 km apart; type match
+way/291876681,Yakanawa Primary Health Centre,PHC,f8c6ef1b-9336-4de4-906d-cd0c43875362,Yakanawa Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9989,0.002,False,name 100%; 0.0 km apart; type differs
+way/291876683,Kundila Health Post,HEALTH_POST,c70b46dc-e9e6-401f-8465-40dcbc4a98c3,Kundila Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/291876684,Alajawa Health Post,HEALTH_POST,133162e5-8d52-4d23-aca6-44a47825822c,Alajawa Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291876685,Tudara Health Post,HEALTH_POST,52ccc02a-a06d-42f1-8b5c-66d860bb1b22,Tudara Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/291876686,Alajawa Health Post,HEALTH_POST,f3ff66f8-b19e-4f2f-98c1-1eff61ccfbdd,Alajawa Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/291876690,Jigilawa Health Post,HEALTH_POST,c097b811-af4c-4b7a-a5a8-8f735f0688be,Jigilawa Health Post,HEALTH_POST,Tsanyawa,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+way/291876692,Godarawa Health Post,HEALTH_POST,cb507561-2019-4ef7-8ac0-7d0eb8f4b44f,Godarawa Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291879249,Bumai Health Post,HEALTH_POST,cd2a3960-3753-4c14-854e-64566119d3cb,Bumai Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/291879250,Danjaka Health Post,HEALTH_POST,3ea4320a-1248-4423-978f-f3a0ca2eb9b8,Danjaka Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9972,0.004,True,name 100%; 0.0 km apart; type match
+way/291879253,Hugungumai Health Post,HEALTH_POST,79cf9cc2-df23-45a6-9031-f1f844df5a44,Hugungumai Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291879255,Karofawa Health Post,HEALTH_POST,85359c0e-876b-4efe-9378-455762e70ed6,Karofawa Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291879257,Gadaba Health Post,HEALTH_POST,e20a8f76-7566-422d-a323-695a03696379,Gadaba Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/291880247,Kunchi Primary Health Centre,PHC,c68019b2-e590-4bd2-829c-2e66eefde57a,Kunchi Primary Health Center,PHC,Kunchi,0.9824,match,1.0,0.9918,0.012,True,name 100%; 0.0 km apart; type match
+way/291880994,Tabani Health Post,HEALTH_POST,2eda0177-180b-4d84-8f23-42a7b2971388,Tabani Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291881000,Kaya Health Post,HEALTH_POST,83314311-e30d-4397-9e70-7b39fee8fcaa,Kaya Health Post,HEALTH_POST,Kunchi,0.9824,match,1.0,0.9975,0.004,True,name 100%; 0.0 km apart; type match
+way/291881002,Ganji Health Post,HEALTH_POST,dda7bbdc-2e13-4873-81fb-c163f9e6e2ef,Ganji Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9974,0.004,True,name 100%; 0.0 km apart; type match
+way/291882074,Kantudu Health Post,HEALTH_POST,6115dba5-e9bd-43e7-85db-1e01d66488f1,Kantudu Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291887061,Koren Tabo Health Post,HEALTH_POST,88293d8f-3bc4-4a38-8798-53b0f0381ff4,Koren Tabo Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/291889757,Yan Bawa Health Post,HEALTH_POST,85c84c48-f82c-4732-a2bb-09399b9cc5a5,Yan Bawa Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9979,0.003,True,name 100%; 0.0 km apart; type match
+way/291889758,Jibga Fulani Health Post,HEALTH_POST,87184442-6ebd-46e6-9ff6-e61efd84a7c7,Jibga Fulani Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9951,0.007,True,name 100%; 0.0 km apart; type match
+way/291889759,Chasko Health Post,HEALTH_POST,4f5197d5-9636-44be-a868-bc2ccc542b8a,Chasko Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291889760,Gwalaida Health Post,HEALTH_POST,c1981527-9135-4ef7-9634-786106f2c9bc,Gwalaida Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,1.0,0.0,True,name 100%; 0.0 km apart; type match
+way/291889761,Marke Danya Health Post,HEALTH_POST,a114663d-ef65-427d-bd52-b3a1d5b396f1,Marke Danya Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291889763,Kurna Health Post,HEALTH_POST,590e5ab9-1789-470d-881b-be10261bdf3f,Kurna Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/291889767,Ajumawa Health Post,HEALTH_POST,ba213d03-222d-4104-a1fd-c8a4a293a09e,Ajumawa Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+way/291889768,Diggol Health Post,HEALTH_POST,013a899a-3f5e-4953-9749-8647b2cd0f22,Diggol Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291889769,Balloda Health Post,HEALTH_POST,a624103c-d363-4eb8-bb0c-db0bfdd22409,Balloda Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291897519,Kwasauri Health Post,HEALTH_POST,9e923016-9d34-40c1-ad78-7154fc04f28d,Kwasauri Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9969,0.005,True,name 100%; 0.0 km apart; type match
+way/291897522,Yammawa Wanzari Health Post,HEALTH_POST,146bec38-57b9-419c-be45-e5f0b41ef54b,Yammawa Wanzari Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+way/291897527,Dungurmi Health Post,HEALTH_POST,71f47517-f39e-42c7-ac6e-ba04af465688,Dungurmi Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/291901212,Laraba Takuya Health Post,HEALTH_POST,9445488b-5e6e-44c0-8e50-61010925e180,Laraba Takuya Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/291901215,Katsarduwa Health Post,HEALTH_POST,47e7aa38-69b5-4726-bf64-120b1d514d32,Katsarduwa Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9942,0.009,True,name 100%; 0.0 km apart; type match
+way/291901216,Yumbu Health Post,HEALTH_POST,0d3fa683-5b44-4272-8fae-3f87b9e884a5,Yumbu Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291902258,Tona Health Post,HEALTH_POST,7ca9e186-209b-4fda-ac0f-392637f71e89,Tona Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/291902259,Shana Health Post,HEALTH_POST,5c3692c6-8c7b-46e3-acab-a5c6e8a0b836,Shana Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/291902260,Saidawa Health Post,HEALTH_POST,9854cedd-f4b4-49fa-a9cd-18abed3fbffc,Saidawa Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/291902261,Dumma Health Post,HEALTH_POST,c91ad009-044c-4a77-bf17-203d766a4562,Dumma Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291902262,Koya Health Post,HEALTH_POST,7135bf0a-0950-4462-8fba-02d93d9ed911,Koya Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/291910579,Doga Health Post,HEALTH_POST,34be18f7-af3c-4328-81bd-b75168a4d3ea,Doga Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9972,0.004,True,name 100%; 0.0 km apart; type match
+way/291910580,Badawa Health Post,HEALTH_POST,1a3b1b53-8862-4ff5-a66e-eb4a0148a82e,Badawa Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/291910581,Gambawa Health Post,HEALTH_POST,b39eb2db-23da-4a79-ad3b-a9b79729be3a,Gambawa Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/291910582,Yama Health Post,HEALTH_POST,2fdd5285-2d9a-4ad7-b4bb-4fb160ada5ac,Yama Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/291921248,Zakirai Primary Health Centre,PHC,a7f41812-147a-4cb0-a242-3e1526b60b33,Zakirai Primary Health Center,PHC,Gabasawa,0.9824,match,1.0,0.9916,0.013,True,name 100%; 0.0 km apart; type match
+way/291921249,Tarauni Health Post,HEALTH_POST,01971e47-3ced-44bc-8c89-da45bd7cb033,Tarauni Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/291921250,Dadin Duniya Health Post,HEALTH_POST,0270a79b-2be5-49ea-a0e6-23b67389b44a,Dadin Duniya Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291921251,Kawo Health Post,HEALTH_POST,259c743c-98cf-4074-985d-7957b32aa432,Kawo Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.998,0.003,True,name 100%; 0.0 km apart; type match
+way/291921253,Santsi Health Post,HEALTH_POST,9e8ee632-3214-40c2-bb2f-cb4d2957b9cd,Santsi Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9972,0.004,True,name 100%; 0.0 km apart; type match
+way/291921255,Chikawa Health Post,HEALTH_POST,1ceb03fa-c75e-4c27-adcb-2f7a936ed17c,Chikawa Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/291921256,Kumbo Health Post,HEALTH_POST,cc02b133-d90d-4ef0-8e3b-1308816cca37,Kumbo Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/291921257,Tankarau Health Post,HEALTH_POST,db40db25-dcee-4d7c-b88d-993128b94c59,Tankarau Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/291921258,Gumawa Health Post,HEALTH_POST,f4799a80-bf0a-4fd4-8d35-8e09f17f91a5,Gumawa Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291932102,Zango Health Post,HEALTH_POST,d9ec675f-ad7f-4f15-8a1d-841ec046f82f,Zango Health Post,HEALTH_POST,Gezawa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291932110,Yaranchi Health Post,HEALTH_POST,72c79ed8-2ff2-4221-9b4f-217b105904b0,Yaranchi Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/291932114,Baita Health Post,HEALTH_POST,fe1a5e51-7ae2-4b05-9e73-1e4629f6582f,Baita Health Post,HEALTH_POST,Gezawa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291932116,Gandurwawa Primary Health Centre,PHC,e36bab7a-39f7-423e-9e9a-9d7ef122ab16,Gandurwawa Primary Health Center,PHC,Minjibir,0.9824,match,1.0,0.9964,0.005,True,name 100%; 0.0 km apart; type match
+way/291932117,Wasai Health Post,HEALTH_POST,8e2a2e50-065d-4df3-b5ef-1aa4e1a05839,Wasai Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/291932119,Daradau Health Post,HEALTH_POST,181166e3-ea42-4541-a71c-a8e249e62f92,Daradau Health Post,HEALTH_POST,Gezawa,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/291932125,Kwadage Health Post,HEALTH_POST,1a828516-ef15-4554-9893-920c675c4b1d,Kwadage Health Post,HEALTH_POST,Gabasawa,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291932130,Garji Health Post,HEALTH_POST,38d92199-b471-45c6-a86e-cb4870deaf9e,Garji Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/291932134,Tsalle Health Post,HEALTH_POST,2d9fffea-860c-403b-8efb-a50a5991bbaf,Tsalle Health Post,HEALTH_POST,Gezawa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/291932136,Zaura Babba Primary Health Centre,PHC,dff6eaa1-c82b-4107-bf69-ae5ee9839fa7,Zaura Babba Primary Health Center,PHC,Ungogo,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/292037269,Satame Health Post,HEALTH_POST,b2e43817-216f-4d9b-bd86-f1d912af9f1f,Satame Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+way/292037270,Tashar Basa Health Post,HEALTH_POST,a35998f3-5d57-4fc5-9150-6fe87d19ecb9,Tashar Basa Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/292037271,Fagwalo Health Post,HEALTH_POST,a7174c54-84c2-4d04-9f8f-7fc6f4c68cdb,Fagwalo Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/292037272,Jigawa Satame Health Post,HEALTH_POST,f13fc1d0-3f1e-41fc-a34f-45d5d102feb2,Jigawa Satame Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9991,0.001,True,name 100%; 0.0 km apart; type match
+way/292037275,Shantake Health Post,HEALTH_POST,7e880c2e-f5a3-412f-895d-89d66baa2651,Shantake Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/292037276,Dalal Health Post,HEALTH_POST,372a0149-2d6a-48eb-afef-6f5acc700aab,Dalal Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/292037280,Tangaji Health Post,HEALTH_POST,16f489e5-29e0-4aa5-bd69-cc22fee054be,Tangaji Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/292037281,Wailare Health Post,HEALTH_POST,b9d78f88-b78a-4f04-8af5-24e1f523a6b0,Wailare Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/292037283,Jemomi Health Post,HEALTH_POST,7056e3f8-a6ef-4d1d-8cf0-67b7063084ee,Jemomi Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/292037286,Shiddar Health Post,HEALTH_POST,daefea06-0646-4956-bf72-2fc59935a1fa,Shiddar Health Post,HEALTH_POST,Dambatta,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/292037287,Bakarari Health Post,HEALTH_POST,61bab1e0-c8ac-4f7d-a902-8e367cb6d6b2,Bakarari Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/292037288,Kungu Health Post,HEALTH_POST,3329119d-67b9-4200-a857-4797f681bcec,Kungu Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/292037289,Roba Health Post,HEALTH_POST,0ccb494d-71fe-4819-93ff-a9b855b8c28c,Roba Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/292037290,Dalal Mahuta Health Post,HEALTH_POST,6abc951d-8c19-4e18-9c9c-56b48b5bfaeb,Dalal Mahuta Health Center,PHC,Dambatta,0.9824,match,1.0,0.9963,0.006,False,name 100%; 0.0 km apart; type differs
+way/292045548,Katsinawa Health Post,HEALTH_POST,7189527f-cb47-4f6c-b929-64249c8e82a9,Katsinawa Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/292045554,Fango Health Post,HEALTH_POST,3b88ca5a-f51b-4fbc-bd41-cbb6de074b0b,Fango Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9982,0.003,True,name 100%; 0.0 km apart; type match
+way/292045555,Kurna Primary Health Centre,PHC,676c2770-8ede-47dd-84c8-3c1a79db7b4b,Kurna Primary Health Center,PHC,Dala,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/292045933,Kuru Health Post,HEALTH_POST,86349039-1e37-4e2d-b812-6706eab13623,Kuru Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+way/292045934,Bachirawa Health Post,HEALTH_POST,a920fc81-32bb-4905-9a7f-c964f623e9e7,Bachirawa Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/292045935,Inusawa Primary Health Centre,PHC,54ad45dd-779f-40f8-94af-cbe9ebee7a14,Inusawa Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.9905,0.014,False,name 100%; 0.0 km apart; type differs
+way/292046261,Tsakiya Health Post,HEALTH_POST,0f3ee349-b903-4c23-9993-a6c8be2ad44c,Tsakiya Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/292047626,Jalli Health Post,HEALTH_POST,8f694f14-52c3-4fa9-afc6-6e3315475ff9,Jalli Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.993,0.011,True,name 100%; 0.0 km apart; type match
+way/292049016,Tarda Health Post,HEALTH_POST,05ff18b4-a977-425b-afd4-0c31de6336c9,Tarda Primary Health Center,PHC,Ungogo,0.9824,match,1.0,0.9988,0.002,False,name 100%; 0.0 km apart; type differs
+way/292050057,Kaura Goje Primary Health Centre,PHC,9ac56c3f-5fbd-424f-bff1-ea619b6d98eb,Kaura Goje Primary Health Center,PHC,Nassarawa,0.9824,match,1.0,0.9974,0.004,True,name 100%; 0.0 km apart; type match
+way/292051044,Dan Itache Health Post,HEALTH_POST,aebc962c-9a36-4e4b-af39-cda7ccae5e7f,Dan Itache Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9985,0.002,True,name 100%; 0.0 km apart; type match
+way/292051046,Doka Health Post,HEALTH_POST,7e01b4a6-c474-47a5-9ca1-5821c0cb5d7c,Doka Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+way/292051047,Kantama Babba Health Post,HEALTH_POST,8dc48a38-e582-4e95-848c-510691595c57,Kantama Babba Health Post,HEALTH_POST,Minjibir,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/292051048,Gera Health Post,HEALTH_POST,b7ddfad7-5137-4f35-8d1d-04e51016d41f,Gera Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.9961,0.006,True,name 100%; 0.0 km apart; type match
+way/292051049,Madaci Health Post,HEALTH_POST,86e1bf57-d3ba-4707-9b85-4d941ae45fc6,Madaci Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/292065941,Tattarawa Primary Health Centre,PHC,37fe66a5-d9fe-465b-a34f-e7ff2b8e9b60,Tattarawa Primary Health Center,PHC,Dawakin Tofa,0.9824,match,1.0,0.9953,0.007,True,name 100%; 0.0 km apart; type match
+way/292065942,Gulbi Health Post,HEALTH_POST,e7ae0928-d9cd-4d99-b08a-bbb8ec22c9e9,Gulbi Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/292065943,Gajida Health Post,HEALTH_POST,4003a824-07fc-424b-ba22-af3e82a79d08,Gajida Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9984,0.002,True,name 100%; 0.0 km apart; type match
+way/292065945,Romi Health Post,HEALTH_POST,76219fd7-8f29-441a-a977-30ac97106d69,Romi Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/292065946,Kaleku Health Post,HEALTH_POST,25658780-5e35-4612-994a-fdc5b28d6960,Kaleku Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+way/292065947,Chedi Bubba Ruga Health Post,HEALTH_POST,76841434-3025-4fa3-a5f8-17f186835df1,Chedi Bubba Ruga Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9986,0.002,True,name 100%; 0.0 km apart; type match
+way/292065951,Dungurawa Health Post,HEALTH_POST,d79ff389-5b4c-40af-a609-e134c155f6b4,Dungurawa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/292065953,Chedi Maidala Health Post,HEALTH_POST,f78105c4-75bc-4ce1-b46e-979c89053cbb,Chedi Maidala Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9983,0.002,True,name 100%; 0.0 km apart; type match
+way/292065954,Tsaure Health Post,HEALTH_POST,c5ea372e-e418-434c-bbb0-4709a6419f97,Tsaure Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9988,0.002,True,name 100%; 0.0 km apart; type match
+way/292065955,Dogon Marke Health Post,HEALTH_POST,2c5d538e-0181-4217-95e7-e9466f36930d,Dogon Marke Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9998,0.0,True,name 100%; 0.0 km apart; type match
+way/292065956,Marke Health Post,HEALTH_POST,02102e63-ebac-4924-b449-df3aa19cbea5,Marke Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/292065957,Dindere Health Post,HEALTH_POST,dbe71c0c-53cc-4acd-8e51-196251e9e6b1,Dindere Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.999,0.001,True,name 100%; 0.0 km apart; type match
+way/292065958,Sarkakiya Health Post,HEALTH_POST,bc64270b-a3f8-4e14-aa8d-a310c4de9397,Sarkakiya Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/292065959,Gudau Health Post,HEALTH_POST,4e587aa3-bb4c-4972-a669-200e0aaddcd5,Gudau Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/292065960,Badume Health Post,HEALTH_POST,eddd3005-6271-4d45-905b-3f43c43d19e9,Badume Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9985,0.002,True,name 100%; 0.0 km apart; type match
+way/292065961,Yakasai Health Post,HEALTH_POST,6a822658-79d8-40f6-9bba-fe4350f43307,Yakasai Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9995,0.001,True,name 100%; 0.0 km apart; type match
+way/292065962,Gabari Health Post,HEALTH_POST,75ac93b5-4a92-4766-b90a-5ff9e20442f4,Gabari Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/292065964,Kwa Health Post,HEALTH_POST,65e0cca5-4ff3-4572-812b-77a29eae371f,Kwa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9992,0.001,True,name 100%; 0.0 km apart; type match
+way/292065965,Kunnawa Health Post,HEALTH_POST,e4660b8e-ea19-4689-bc7d-f82219c91682,Kunnawa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/292065966,Sanakur Health Post,HEALTH_POST,9769f4ee-1516-43ef-8532-83118fbfd6f6,Sanakur Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/292065967,Kyauta Health Post,HEALTH_POST,89a7cea4-1b27-4bcb-b679-ebd7e9c511ed,Kyauta Health Post,HEALTH_POST,Bichi,0.9824,match,1.0,0.9996,0.001,True,name 100%; 0.0 km apart; type match
+way/292065968,Bagadawa Health Post,HEALTH_POST,f2fc7dcb-dec9-4ba8-b2ca-ec3541c24f2b,Bagadawa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.999,0.002,True,name 100%; 0.0 km apart; type match
+way/292065969,Fagen Kawo Health Post,HEALTH_POST,2145e89e-a34e-41bb-b86c-e37494dc0af8,Fagen Kawo Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/292065970,Yalwa Karama Health Post,HEALTH_POST,7accf2c2-49aa-44a2-bb78-7e05bcf6b117,Yalwa Karama Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9987,0.002,True,name 100%; 0.0 km apart; type match
+way/292065971,Gwamai Health Post,HEALTH_POST,96917ef9-0068-4529-9339-c42b1c77adfd,Gwamai Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9994,0.001,True,name 100%; 0.0 km apart; type match
+way/292065972,Gargari Health Post,HEALTH_POST,c8832058-65c3-42cc-b2fd-430981e9d7a9,Gargari Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9989,0.002,True,name 100%; 0.0 km apart; type match
+way/292065973,Kadawa Health Post,HEALTH_POST,890e46d9-2874-4a30-99d2-6bb12c5dc3a0,Kadawa Health Post,HEALTH_POST,Dawakin Tofa,0.9824,match,1.0,0.9997,0.0,True,name 100%; 0.0 km apart; type match
+way/791307707,Ningawa Health Post,HEALTH_POST,4168e60f-47f9-4f00-bec5-21b70f645627,Ningawa Health Post,HEALTH_POST,Madobi,0.9824,match,1.0,0.9902,0.015,True,name 100%; 0.0 km apart; type match
+way/791308803,Rikadawa Health Post,HEALTH_POST,79912918-11ad-449f-9e69-d8a36c960c9b,Rikadawa Health Post,HEALTH_POST,Madobi,0.9824,match,1.0,0.9938,0.009,True,name 100%; 0.0 km apart; type match
+way/791399305,Yaryasa Health Post,HEALTH_POST,a9221a97-7944-49d6-8b2e-ed06436a29c5,Yaryasa Health Post,HEALTH_POST,Tudun Wada,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/791761831,Bono Health Post,HEALTH_POST,581a8a72-e51d-41ff-a918-7da3ac625a81,Bono Primary Health Center,PHC,Bunkure,0.9824,match,1.0,0.9927,0.011,False,name 100%; 0.0 km apart; type differs
+way/791764257,Fanchan Health Post,HEALTH_POST,6381c773-1d1e-4a59-a9be-626e1f122127,Fanchan Health Post,HEALTH_POST,Dawakin Kudu,0.9824,match,1.0,0.9928,0.011,True,name 100%; 0.0 km apart; type match
+way/791788784,Gurjiya Primary Health Centre,PHC,55acd726-fc99-4794-9ab1-6c9f7f8a9605,Gurjiya Primary Health Center,PHC,Bunkure,0.9824,match,1.0,0.9966,0.005,True,name 100%; 0.0 km apart; type match
+way/791828739,Fadi Sonka Health Post,HEALTH_POST,ebf651d6-4311-47ee-a1bd-a1c16983487b,Fadi Sonka Health Post,HEALTH_POST,Wudil,0.9824,match,1.0,0.9954,0.007,True,name 100%; 0.0 km apart; type match
+way/792110351,Dorawar Sallau Health Post,HEALTH_POST,b517a175-249a-4dd3-869e-33ef05aa2a6f,Dorawar Sallau Health Post,HEALTH_POST,Garun Malam,0.9824,match,1.0,0.9933,0.01,True,name 100%; 0.0 km apart; type match
+way/792111391,Kofa Primary Health Centre,PHC,8771016d-c8d0-4504-a7af-e415cbbd0de3,Kofa Health Post,HEALTH_POST,Bebeji,0.9824,match,1.0,0.9922,0.012,False,name 100%; 0.0 km apart; type differs
+way/792172669,Dausayi Health Post,HEALTH_POST,c903002a-8b05-4791-b43b-69f575214528,Dausayi Health Post,HEALTH_POST,Ungogo,0.9824,match,1.0,0.997,0.005,True,name 100%; 0.0 km apart; type match
+way/792186306,Kokiya Health Post,HEALTH_POST,e7d6cdf7-1a6b-4456-98ea-0c466a4c5044,Kokiya Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9976,0.004,True,name 100%; 0.0 km apart; type match
+way/792191453,Zawa Chiki Primary Health Centre,PHC,202bb240-081c-4e2f-b7b6-363a204dc6a6,Zawa Chiki Health Post,HEALTH_POST,Kumbotso,0.9824,match,1.0,0.9943,0.009,False,name 100%; 0.0 km apart; type differs
+way/792486000,Danshayi Health Post,HEALTH_POST,604d9f03-55ca-46fe-bba8-092e9645f236,Danshayi Health Post,HEALTH_POST,Rimin Gado,0.9824,match,1.0,0.9954,0.007,True,name 100%; 0.0 km apart; type match
+way/792486001,Dansudu Health Post,HEALTH_POST,8e3d9f72-3c75-4b5f-a6dc-a6cfce8020b5,Dansudu Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9964,0.005,True,name 100%; 0.0 km apart; type match
+way/792561755,Jauben Yamma Health Post,HEALTH_POST,d93a6f08-eeb7-46fe-bca8-5450662e3a84,Jauben Yamma Health Post,HEALTH_POST,Bagwai,0.9824,match,1.0,0.9993,0.001,True,name 100%; 0.0 km apart; type match
+way/792569700,Tarai Primary Health Centre,PHC,8c006899-a024-413b-8980-737a651ff771,Tarai Primary Health Center,PHC,Kibiya,0.9824,match,1.0,0.9931,0.01,True,name 100%; 0.0 km apart; type match
+way/792569958,Darki Primary Health Centre,PHC,3f8f3dc6-55c2-45f6-92b5-30d020315424,Darki Primary Health Center,PHC,Wudil,0.9824,match,1.0,0.9936,0.01,True,name 100%; 0.0 km apart; type match
+way/792575214,Janguza Primary Health Centre,PHC,df1769f7-dd8f-40d2-96f6-c5e21751ff3f,Janguza Health Post,HEALTH_POST,Tofa,0.9824,match,1.0,0.9956,0.007,False,name 100%; 0.0 km apart; type differs
+way/792575216,Runkusawa Health Post,HEALTH_POST,ee0365e1-cbcd-4d08-b404-853ee941b6f4,Runkusawa Health Post,HEALTH_POST,Kumbotso,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/792575219,Gudan Tuwo Health Post,HEALTH_POST,c4403fa3-224d-4c6d-be40-78a53b04de57,Gudan Tuwo Health Post,HEALTH_POST,Shanono,0.9824,match,1.0,0.9967,0.005,True,name 100%; 0.0 km apart; type match
+way/792914592,Danguguwa Primary Health Centre,PHC,c2412b88-8cd5-41a1-a583-9e8ca5efe689,Danguguwa Primary Health Center,PHC,Dawakin Tofa,0.9824,match,1.0,0.9957,0.006,True,name 100%; 0.0 km apart; type match
+way/792914595,Abbas Primary Health Centre,PHC,6cb242ee-ce77-4c68-8962-1d307f7d7759,Abbas Primary Health Center,PHC,Bagwai,0.9824,match,1.0,0.9914,0.013,True,name 100%; 0.0 km apart; type match
+way/792927372,Makarya Primary Health Centre,PHC,1b5f6ed0-d709-4576-b7e6-09431ff01eeb,Makarya Primary Health Center,PHC,Ajingi,0.9824,match,1.0,0.9973,0.004,True,name 100%; 0.0 km apart; type match
+way/803264506,Walawa Health Post,HEALTH_POST,96ee5928-9191-49e9-8a41-bc7a5e5547cc,Walawa Health Post,HEALTH_POST,Makoda,0.9824,match,1.0,0.9981,0.003,True,name 100%; 0.0 km apart; type match
+node/2923573781,Kara Primary Health Centre,PHC,7f6f6d66-1283-4837-b4b4-20c85710810b,Kara Health Post,HEALTH_POST,Gwarzo,0.982,match,1.0,0.9896,0.016,False,name 100%; 0.0 km apart; type differs
+node/2925757206,Yako Primary Health Centre,PHC,a7bcc6c6-f910-4a75-80d2-a8fc1acf3e4f,Yako Primary Health Center,PHC,Kiru,0.982,match,1.0,0.9896,0.016,True,name 100%; 0.0 km apart; type match
+way/289564871,Akilu Memorial Primary Health Centre,PHC,8379133c-eccd-456b-9407-6edfae1fa3e5,Akilu Memorial Primary Health Center,PHC,Madobi,0.982,match,1.0,0.9891,0.016,True,name 100%; 0.0 km apart; type match
+way/292045552,Galula Health Post,HEALTH_POST,b4a16e6a-1501-410f-a71a-10aa3e50097f,Galula Health Center,PHC,Ungogo,0.982,match,1.0,0.99,0.015,False,name 100%; 0.0 km apart; type differs
+way/292047868,Dalal Primary Health Centre,PHC,b57afa1a-4ca9-432b-bab8-eea474fbc107,Dalal Health Clinic,CLINIC,Ungogo,0.982,match,1.0,0.9899,0.015,False,name 100%; 0.0 km apart; type differs
+way/292050059,Dausara Primary Health Centre,PHC,a2a44073-4a3c-497e-a11e-070b547fe271,Dausara Health Post,HEALTH_POST,Ungogo,0.982,match,1.0,0.9895,0.016,False,name 100%; 0.0 km apart; type differs
+way/299968723,Hotoro Danmarke Health Post,HEALTH_POST,28b301b6-a7ca-444d-9432-ff6945ce1c58,Hotoro Danmarke Health Clinic,CLINIC,Tarauni,0.982,match,1.0,0.9898,0.015,False,name 100%; 0.0 km apart; type differs
+way/791334185,Burji Primary Health Centre,PHC,14e48d03-2684-4f3b-beea-04a56365fabf,Burji Primary Health Center,PHC,Doguwa,0.982,match,1.0,0.9894,0.016,True,name 100%; 0.0 km apart; type match
+way/792191444,Tokarawa Primary Health Centre,PHC,09f24b0d-2e35-4dfd-a3d5-6930350e7b9e,Tokarawa Primary Health Center,PHC,Nassarawa,0.982,match,1.0,0.9895,0.016,True,name 100%; 0.0 km apart; type match
+node/2925837269,Maganda Health Post,HEALTH_POST,2a763d2a-ef31-41ed-b990-a7b17ca403fd,Maganda Health Post,HEALTH_POST,Doguwa,0.9819,match,1.0,0.9881,0.018,True,name 100%; 0.0 km apart; type match
+node/2925849527,Badari Health Post,HEALTH_POST,fbf08f4c-f16f-4f40-95eb-7604f50e1970,Badari Health Post,HEALTH_POST,Gwarzo,0.9819,match,1.0,0.9885,0.017,True,name 100%; 0.0 km apart; type match
+way/289458618,Murtala Mohammed Specialist Hospital,HOSPITAL,410392dc-5f02-46ff-b045-c80682caa366,Murtala Mohammed Specialist Hospital,HOSPITAL,Kano Municipal,0.9819,match,1.0,0.9868,0.02,True,name 100%; 0.0 km apart; type match
+way/289564831,Azore Primary Health Centre,PHC,661c4826-7545-4e53-a55c-fd22f14bb439,Azore Health Clinic,CLINIC,Kura,0.9819,match,1.0,0.9882,0.018,False,name 100%; 0.0 km apart; type differs
+way/291753927,Takai Nysc General Hospital,HOSPITAL,9f4d5480-eb4f-4e72-8b70-feb5a83f403a,Takai Nysc Primary Health Center,PHC,Takai,0.9819,match,1.0,0.9878,0.018,False,name 100%; 0.0 km apart; type differs
+way/292045547,Sabon Gari Doka Health Post,HEALTH_POST,c7129159-11ab-415b-a417-78bfca048c3f,Sabon Gari Doka Health Post,HEALTH_POST,Ungogo,0.9819,match,1.0,0.9872,0.019,True,name 100%; 0.0 km apart; type match
+way/292167735,Tudun Wada Health Post,HEALTH_POST,1bace88e-dc73-4379-ad7a-dd3ae65edefd,Tudun Wada Health Post,HEALTH_POST,Nassarawa,0.9819,match,1.0,0.9876,0.019,True,name 100%; 0.0 km apart; type match
+way/791341738,Rufan Health Post,HEALTH_POST,d0d050ab-2268-4614-870b-e001b2989e3a,Rufan Health Post,HEALTH_POST,Tudun Wada,0.9819,match,1.0,0.9878,0.018,True,name 100%; 0.0 km apart; type match
+way/792191417,Hotoro South Health Post,HEALTH_POST,a6c95f1b-ef24-4acf-bb42-b2bb86d3cc1c,Hotoro South Health Post,HEALTH_POST,Nassarawa,0.9819,match,1.0,0.9866,0.02,True,name 100%; 0.0 km apart; type match
+way/792485996,Warawa Primary Health Centre,PHC,64ea67c7-a5f6-4dd7-91de-4f4d796bb7e2,Warawa Primary Health Center,PHC,Warawa,0.9819,match,1.0,0.9865,0.02,True,name 100%; 0.0 km apart; type match
+way/792572677,Patricia General Hospital,HOSPITAL,fcf5fb67-d6c7-45cb-b903-a05479343c16,Patricia Health Post,HEALTH_POST,Sumaila,0.9819,match,1.0,0.9864,0.02,False,name 100%; 0.0 km apart; type differs
+way/792856951,Ungogo Primary Health Centre,PHC,82b48ce7-2f0f-444f-a861-6da9719b72bc,Ungogo Primary Health Center,PHC,Ungogo,0.9819,match,1.0,0.9871,0.019,True,name 100%; 0.0 km apart; type match
+node/2923573786,Sabon Layin Kara Health Post,HEALTH_POST,276762ad-7c6e-43f3-b047-310ba7fda417,Sabon Layin Kara Health Post,HEALTH_POST,Gwarzo,0.9818,match,1.0,0.9846,0.023,True,name 100%; 0.0 km apart; type match
+way/291871751,Kabagiwa Health Post,HEALTH_POST,216043a3-ed72-434a-95b1-69c7115b5285,Kabagiwa Health Post,HEALTH_POST,Tsanyawa,0.9818,match,1.0,0.9853,0.022,True,name 100%; 0.0 km apart; type match
+way/291876687,Kuraku Health Post,HEALTH_POST,faed35aa-905b-4771-aea4-b1f025fe353e,Kuraku Health Post,HEALTH_POST,Shanono,0.9818,match,1.0,0.9856,0.022,True,name 100%; 0.0 km apart; type match
+way/291879259,Unguwar Gyartai Health Post,HEALTH_POST,61a2ae8f-d45d-4baa-94b1-d698387f0797,Unguwar Gyartai Health Post,HEALTH_POST,Kunchi,0.9818,match,1.0,0.986,0.021,True,name 100%; 0.0 km apart; type match
+way/292045937,Tudun Bojuwa Health Post,HEALTH_POST,0ac19236-9ca3-4e9f-a5a1-c2960661730d,Tudun Bojuwa Health Post,HEALTH_POST,Fagge,0.9818,match,1.0,0.9845,0.023,True,name 100%; 0.0 km apart; type match
+way/792551527,Gunda Health Post,HEALTH_POST,4617f179-bee3-45b1-8172-33cf20c0f1ce,Gunda Health Post,HEALTH_POST,Kibiya,0.9818,match,1.0,0.9863,0.021,True,name 100%; 0.0 km apart; type match
+way/286404144,Kankarawa Health Post,HEALTH_POST,0062baa3-d813-4d2b-aa64-11ee2520e21d,Kankarawa Health Post,HEALTH_POST,Minjibir,0.9817,match,1.0,0.9831,0.026,True,name 100%; 0.0 km apart; type match
+way/291368176,Panshekara Primary Health Centre,PHC,bf1b4e54-bdb1-4cdb-b00d-e1e04d4b5992,Panshekara Primary Health Center,PHC,Kumbotso,0.9817,match,1.0,0.9838,0.025,True,name 100%; 0.0 km apart; type match
+way/291932108,Gezawa Health Post,HEALTH_POST,13a51cb4-36d0-4b25-bd90-e511c54b7f82,Gezawa Health Post,HEALTH_POST,Gezawa,0.9817,match,1.0,0.9834,0.025,True,name 100%; 0.0 km apart; type match
+way/792054644,Tsaraka Health Post,HEALTH_POST,61f0374f-0588-4913-9d37-488f668115b1,Tsaraka Health Post,HEALTH_POST,Bichi,0.9817,match,1.0,0.9826,0.026,True,name 100%; 0.0 km apart; type match
+node/2925787871,Gajale Health Post,HEALTH_POST,b44dd5f0-f75d-466e-a64f-e8296984b9ef,Gajale Health Post,HEALTH_POST,Kiru,0.9816,match,1.0,0.9814,0.028,True,name 100%; 0.0 km apart; type match
+way/792072374,Utai Primary Health Centre,PHC,d6e882ba-a2ee-4343-88fb-ad01e44ace63,Utai Primary Health Center,PHC,Wudil,0.9816,match,1.0,0.9816,0.028,True,name 100%; 0.0 km apart; type match
+way/792081423,Gama Health Post,HEALTH_POST,327b3c95-c96c-4146-bc7c-e9bee3f7efed,Gama Health Post,HEALTH_POST,Nassarawa,0.9816,match,1.0,0.9794,0.031,True,name 100%; 0.0 km apart; type match
+way/792167634,Bechi Health Post,HEALTH_POST,3fc7ade4-deaf-4c9f-b36b-fd185fcddcdf,Bechi Health Post,HEALTH_POST,Kumbotso,0.9816,match,1.0,0.9796,0.031,True,name 100%; 0.0 km apart; type match
+way/792543536,Dundu Health Post,HEALTH_POST,47d2cec1-8c9c-4c7d-90b9-f8c278bc1439,Dundu Health Post,HEALTH_POST,Bunkure,0.9816,match,1.0,0.9808,0.029,True,name 100%; 0.0 km apart; type match
+node/2923573788,Tudun Kaya Health Post,HEALTH_POST,3c5fe50e-b92e-45d4-a02c-ce8d2cfc9520,Tudun Kaya Health Post,HEALTH_POST,Karaye,0.9815,match,1.0,0.9783,0.033,True,name 100%; 0.0 km apart; type match
+way/291665831,Yarkasuwa Health Post,HEALTH_POST,e90d7504-5c49-4221-a204-1f00e00e1890,Yarkasuwa Health Post,HEALTH_POST,Gwarzo,0.9815,match,1.0,0.9773,0.035,True,name 100%; 0.0 km apart; type match
+way/291757255,Kullumi Health Post,HEALTH_POST,0d609ae0-62ad-48cd-8fce-c094840d991c,Kullumi Health Post,HEALTH_POST,Ajingi,0.9815,match,1.0,0.9774,0.034,True,name 100%; 0.0 km apart; type match
+way/289391536,Bichi General Hospital,HOSPITAL,638a36f5-811b-4be2-a031-a58fcfb223f9,Bichi General Hospital,HOSPITAL,Bichi,0.9814,match,1.0,0.9747,0.038,True,name 100%; 0.0 km apart; type match
+way/291880999,Magawata Health Post,HEALTH_POST,33d7b87b-c659-4f36-8c04-d261fa0d46c8,Magawata Health Post,HEALTH_POST,Kunchi,0.9814,match,1.0,0.9749,0.038,True,name 100%; 0.0 km apart; type match
+way/292050061,Zangon Barebari Health Post,HEALTH_POST,958f2cd5-9fae-49bf-82d5-59e026caece7,Zangon Barebari Health Post,HEALTH_POST,Ungogo,0.9814,match,1.0,0.9762,0.036,True,name 100%; 0.0 km apart; type match
+way/791322782,Yakun Health Post,HEALTH_POST,d8ac0e64-1944-4c0d-80d1-518f72bf2166,Yakun Health Post,HEALTH_POST,Madobi,0.9814,match,1.0,0.975,0.038,True,name 100%; 0.0 km apart; type match
+way/792520726,Kabagiwa Health Post,HEALTH_POST,216043a3-ed72-434a-95b1-69c7115b5285,Kabagiwa Health Post,HEALTH_POST,Tsanyawa,0.9814,match,1.0,0.9746,0.039,True,name 100%; 0.0 km apart; type match
+node/2925701104,Zuwo Health Post,HEALTH_POST,99d4d3eb-f76f-421a-ab2d-70865f8ed122,Zuwo Health Post,HEALTH_POST,Kiru,0.9813,match,1.0,0.9733,0.041,True,name 100%; 0.0 km apart; type match
+way/290827453,Zarogi Health Post,HEALTH_POST,c7eb561a-af06-4631-b56e-99a106b83029,Zarogi Health Post,HEALTH_POST,Tsanyawa,0.9813,match,1.0,0.9735,0.04,True,name 100%; 0.0 km apart; type match
+way/292037277,Kauyen Mai Unguwar Primary Health Centre,PHC,9db3aa5c-cc3f-4a93-a6f4-747b3f0e3536,Kauyen Mai Unguwa Health Post,HEALTH_POST,Dambatta,0.9813,match,0.9889,0.999,0.002,False,name 99%; 0.0 km apart; type differs
+way/791284157,Kudurun Health Post,HEALTH_POST,81c1e144-9d09-4e90-a7da-67bc7b2ab6a1,Kudurun Health Post,HEALTH_POST,Madobi,0.9813,match,1.0,0.9741,0.039,True,name 100%; 0.0 km apart; type match
+way/791760279,Tagwaye Health Post,HEALTH_POST,c900bd5c-fd66-42bb-8d9c-544b7b53e04a,Tagwaye Health Post,HEALTH_POST,Doguwa,0.9813,match,1.0,0.9743,0.039,True,name 100%; 0.0 km apart; type match
+way/792168070,Bokavo Health Post,HEALTH_POST,8b131457-9ebb-4793-9ce5-19003b73fbd4,Bokavo Health Center,PHC,Fagge,0.9813,match,1.0,0.9728,0.041,False,name 100%; 0.0 km apart; type differs
+node/2923366081,Rogo General Hospital,HOSPITAL,072ae5e4-d96e-4310-a9c3-4f534265f72c,Rogo General Hospital,HOSPITAL,Rogo,0.9812,match,1.0,0.9708,0.044,True,name 100%; 0.0 km apart; type match
+node/2923573774,Dalal Health Post,HEALTH_POST,6ed1fa7b-1271-4b60-bdee-2bc4080b5d0e,Dalal Health Post,HEALTH_POST,Gwarzo,0.9812,match,1.0,0.9707,0.045,True,name 100%; 0.0 km apart; type match
+way/290524041,Kawoni Health Post,HEALTH_POST,ad094ae3-706e-42f1-a229-35b983e9c5fe,Kawoni Health Post,HEALTH_POST,Ajingi,0.9812,match,1.0,0.9709,0.044,True,name 100%; 0.0 km apart; type match
+way/291435339,Yartofa Health Post,HEALTH_POST,fcac51f2-25cc-46e3-aa5d-52002dae2be5,Yartofa Health Post,HEALTH_POST,Warawa,0.9812,match,1.0,0.9704,0.045,True,name 100%; 0.0 km apart; type match
+way/292046199,Shauni Primary Health Centre,PHC,c31ef7b1-f301-40c4-afe3-621b02bfeb0b,Shauni Health Post,HEALTH_POST,Ungogo,0.9812,match,1.0,0.9715,0.043,False,name 100%; 0.0 km apart; type differs
+way/791788392,Gundutse Health Post,HEALTH_POST,17bf6b25-3e72-4f24-bcfe-2dc783bff060,Gundutse Health Post,HEALTH_POST,Kura,0.9812,match,1.0,0.9723,0.042,True,name 100%; 0.0 km apart; type match
+way/791828420,Amarawa Health Post,HEALTH_POST,5ecd4bda-30bf-4a64-aa8c-08b99decaa43,Amarawa Health Post,HEALTH_POST,Gaya,0.9812,match,1.0,0.9712,0.044,True,name 100%; 0.0 km apart; type match
+way/792163139,Armed Forces,HOSPITAL,f0ed4de8-c5b9-4c10-9f9d-38f67fcefe7c,Armed Forces Specialist Hospital,HOSPITAL,Fagge,0.9812,match,1.0,0.9715,0.043,True,name 100%; 0.0 km apart; type match
+node/12282340299,DALAL CLINIC,CLINIC,b57afa1a-4ca9-432b-bab8-eea474fbc107,Dalal Health Clinic,CLINIC,Ungogo,0.9811,match,1.0,0.9683,0.048,True,name 100%; 0.0 km apart; type match
+way/185718322,Aminu Kano Teaching Hospital,HOSPITAL,98a6b181-dd19-40c6-b373-993ed479a6da,Aminu Kano Teaching Hospital,HOSPITAL,Tarauni,0.9811,match,1.0,0.9685,0.048,True,name 100%; 0.0 km apart; type match
+way/291444189,Godiya Primary Health Centre,PHC,8a24ee7d-b0bf-4c27-a6b4-f5707bf4b576,Godiya Primary Health Center,PHC,Kabo,0.9811,match,1.0,0.9681,0.049,True,name 100%; 0.0 km apart; type match
+way/791751899,Lajawa Primary Health Centre,PHC,461bfe19-bbe0-43cd-b796-8522a7dd7518,Lajawa Primary Health Center,PHC,Wudil,0.9811,match,1.0,0.9691,0.047,True,name 100%; 0.0 km apart; type match
+node/2929399561,Damisa Health Post,HEALTH_POST,536ce4f8-c306-4ea7-8825-7dba3de9487f,Damisa Health Post,HEALTH_POST,Bichi,0.981,match,1.0,0.9671,0.05,True,name 100%; 0.1 km apart; type match
+way/292065975,Yanoko Primary Health Centre,PHC,5b5a2434-426c-4534-be39-09a5e774f904,Yanoko Health Post,HEALTH_POST,Tofa,0.981,match,1.0,0.966,0.052,False,name 100%; 0.1 km apart; type differs
+way/791756661,Doguwa General Hospital,HOSPITAL,af9d6580-753d-42e9-bfb1-265e164e48b6,Doguwa General Hospital,HOSPITAL,Doguwa,0.981,match,1.0,0.9665,0.051,True,name 100%; 0.1 km apart; type match
+way/792921901,Ajingi Primary Health Centre,PHC,ea906255-1c14-465f-8bf7-3cb01acbac1a,Ajingi Primary Health Center,PHC,Ajingi,0.981,match,1.0,0.9657,0.052,True,name 100%; 0.1 km apart; type match
+node/2923599548,Dadin Kowa Primary Health Centre,PHC,a702ffb2-b77b-4ce4-94ad-06f9a2f675f9,Dadin Kowa Health Post,HEALTH_POST,Doguwa,0.9809,match,1.0,0.9642,0.055,False,name 100%; 0.1 km apart; type differs
+way/792570826,Garko Primary Health Centre,PHC,3b8a8436-13cf-4cc2-b651-2cfa8d9fb6c2,Garko Primary Health Center,PHC,Garko,0.9809,match,1.0,0.9646,0.054,True,name 100%; 0.1 km apart; type match
+way/792181401,Gwarzo General Hospital,HOSPITAL,9364c002-314b-4c9e-9d14-0fda1b32f368,Gwarzo General Hospital,HOSPITAL,Gwarzo,0.9808,match,1.0,0.9612,0.059,True,name 100%; 0.1 km apart; type match
+node/2923599553,Kwando Primary Health Centre,PHC,2ea8be84-d094-4918-8bf4-511c98bfeab6,Kwando Health Post,HEALTH_POST,Doguwa,0.9807,match,1.0,0.9594,0.062,False,name 100%; 0.1 km apart; type differs
+way/291885766,Jama'Ar Hazo Health Post,HEALTH_POST,a3129f6b-ec27-4d41-9ae2-d4dac39943ce,Jamaar Hazo Health Post,HEALTH_POST,Makoda,0.9807,match,0.9833,0.9992,0.001,True,name 98%; 0.0 km apart; type match
+way/792071898,Tudun Gunsau Health Post,HEALTH_POST,ca8f482e-a958-418a-ac83-c4c01c151925,Tudun Gusau Health Post,HEALTH_POST,Wudil,0.9807,match,0.9833,0.9939,0.009,True,name 98%; 0.0 km apart; type match
+way/792191422,Kawaji Health Post,HEALTH_POST,f220bce6-450c-4440-ba74-cb8173b3d1aa,Kawaji Health Post,HEALTH_POST,Nassarawa,0.9807,match,1.0,0.9594,0.062,True,name 100%; 0.1 km apart; type match
+node/2925699882,Achilafiya Health Post,HEALTH_POST,2a7ed70d-9981-418c-8814-e7e76c3ad87f,Achilaffiya Health Post,HEALTH_POST,Kiru,0.9806,match,0.9818,0.9947,0.008,True,name 98%; 0.0 km apart; type match
+node/2929137261,Zangon Mata Health Post,HEALTH_POST,433f7e05-b194-482a-a63f-b84730fc099b,Zango Mata Health Post,HEALTH_POST,Dawakin Tofa,0.9806,match,0.9818,0.9992,0.001,True,name 98%; 0.0 km apart; type match
+way/291445997,Kafinmaiko Health Post,HEALTH_POST,603950b1-b788-413e-ab34-7f650e5a4cc9,Kafin Maiko Health Post,HEALTH_POST,Bagwai,0.9806,match,0.9818,0.9994,0.001,True,name 98%; 0.0 km apart; type match
+way/299040773,Unguwar Uku Primary Health Centre,PHC,9a04b431-4c14-4942-9b78-f9719410f27c,Unguwa Uku Primary Health Center,PHC,Tarauni,0.9806,match,0.9818,0.9977,0.003,True,name 98%; 0.0 km apart; type match
+way/792174227,Dorayi Babba Health Post,HEALTH_POST,6e6e809b-ee2e-4fa4-b620-9cc3c219c38d,Dorrayi Babba Primary Health Center,PHC,Gwale,0.9806,match,0.9821,0.9962,0.006,False,name 98%; 0.0 km apart; type differs
+way/291879251,Galadimawa Health Post,HEALTH_POST,9abfc368-3758-42d4-a2d2-4dd3808c702d,Galadimawa Health Post,HEALTH_POST,Kunchi,0.9805,match,1.0,0.955,0.069,True,name 100%; 0.1 km apart; type match
+way/291880993,Yankifi Health Post,HEALTH_POST,28eb9274-057b-44a6-bead-1356af8f5689,Yankifi Health Post,HEALTH_POST,Kunchi,0.9805,match,1.0,0.9547,0.07,True,name 100%; 0.1 km apart; type match
+way/291880248,Shamakawa Primary Health Centre,PHC,35237b2d-3bf2-4f26-a2e4-8e93cbeeb898,Shamakawa Health Post,HEALTH_POST,Kunchi,0.9804,match,1.0,0.9542,0.07,False,name 100%; 0.1 km apart; type differs
+way/291884898,Masallachi Health Post,HEALTH_POST,42d38750-8809-4e32-b9bf-cd47f3d2d383,Masallaci Health Post,HEALTH_POST,Dambatta,0.9804,match,0.98,0.999,0.002,True,name 98%; 0.0 km apart; type match
+way/292037291,Sabon Ruwa Health Post,HEALTH_POST,43bf73db-4668-4365-9b51-c04571e952bd,Sabo Ruwa Health Post,HEALTH_POST,Makoda,0.9804,match,0.98,0.9992,0.001,True,name 98%; 0.0 km apart; type match
+way/291921260,Yar Zabaina Health Post,HEALTH_POST,3185155a-4062-49e9-a37a-0fc9bf6c1b11,Yarzabaina Health Post,HEALTH_POST,Gabasawa,0.9802,match,0.9788,0.9993,0.001,True,name 98%; 0.0 km apart; type match
+way/792538116,Rano General Hospital,HOSPITAL,61388d8b-95ed-401a-a750-424c86ce8d9e,Rano General Hospital,HOSPITAL,Rano,0.98,match,1.0,0.9442,0.086,True,name 100%; 0.1 km apart; type match
+way/792073263,Wudil General Hospital,HOSPITAL,f6d81f2b-c51b-4446-91aa-de90fd52eb92,Wudil General Hospital,HOSPITAL,Wudil,0.9799,match,1.0,0.9428,0.088,True,name 100%; 0.1 km apart; type match
+way/792081426,Gurungawa Health Post,HEALTH_POST,4ff33209-82d5-44dd-8116-5b59247889e0,Gurun Gawa Health Post,HEALTH_POST,Kumbotso,0.9799,match,0.98,0.9897,0.016,True,name 98%; 0.0 km apart; type match
+way/792109508,Bebeji General Hospital,HOSPITAL,0aa58a4c-60a3-4182-944e-6d68d7d42142,Bebeji General Hospital,HOSPITAL,Bebeji,0.9799,match,1.0,0.9417,0.09,True,name 100%; 0.1 km apart; type match
+way/792575217,Dan Isa Health Post,HEALTH_POST,a8836820-b73e-47c5-81cc-7bdba4304fec,Dan Isah Health Post,HEALTH_POST,Rimin Gado,0.9798,match,0.975,0.9996,0.001,True,name 98%; 0.0 km apart; type match
+node/2929137245,Gwarmai Primary Health Centre,PHC,30bda840-9235-42a2-b835-6513113f4aa0,Gwarmai Primary Health Center,PHC,Kunchi,0.9797,match,1.0,0.9385,0.095,True,name 100%; 0.1 km apart; type match
+way/291871752,Nasarawa Health Post,HEALTH_POST,e3a7feb3-3190-49ce-a613-641fa6e9d56f,Nassarawa Health Post,HEALTH_POST,Tsanyawa,0.9797,match,0.9741,0.9981,0.003,True,name 97%; 0.0 km apart; type match
+way/792546757,Kibiya Primary Health Centre,PHC,e4dd2805-ee5d-496f-b715-c980c11a1a55,Kibiya Primary Health Center,PHC,Kibiya,0.9796,match,1.0,0.9353,0.1,True,name 100%; 0.1 km apart; type match
+node/12282340294,DAN TAMASHE HOSPITAL,HOSPITAL,fa3a7abd-38f4-4c58-9196-e65c3dba35a6,Dantamashe Primary Health Center,PHC,Ungogo,0.9794,match,0.9788,0.9812,0.029,False,name 98%; 0.0 km apart; type differs
+node/2925699897,Kauyen Mahuta Health Post,HEALTH_POST,ad78ab6a-d2a9-4176-a75e-2729db7cd944,Kauyen Mahauta Health Post,HEALTH_POST,Kabo,0.9793,match,0.9703,0.9987,0.002,True,name 97%; 0.0 km apart; type match
+way/290171104,Munsira Health Post,HEALTH_POST,f8218ee8-5e98-443c-a8c4-8d09f5344d7c,Muntsira Health Post,HEALTH_POST,Bichi,0.9793,match,0.9708,0.9999,0.0,True,name 97%; 0.0 km apart; type match
+way/291881001,Dankwai Health Post,HEALTH_POST,846d6037-d164-48e6-83e7-94ed580368cc,Dan Kwai Health Post,HEALTH_POST,Kunchi,0.9793,match,0.9708,0.9996,0.001,True,name 97%; 0.0 km apart; type match
+way/292065948,Yarrutu Health Post,HEALTH_POST,c36cd73d-fef3-4f9b-a154-9b8bb3861ea5,Yar Rutu Health Post,HEALTH_POST,Dawakin Tofa,0.9793,match,0.9708,0.9928,0.011,True,name 97%; 0.0 km apart; type match
+way/792170782,Danmaliki Health Post,HEALTH_POST,87891f89-0a91-4cd5-9963-b095a1d90f78,Dan Maliki Health Post,HEALTH_POST,Kumbotso,0.9793,match,0.9767,0.9846,0.023,True,name 98%; 0.0 km apart; type match
+way/792922440,Gaya General Hospital,HOSPITAL,a64954c8-ebf4-42d5-ba51-fe00dbef88e4,Gaya General Hospital,HOSPITAL,Gaya,0.9793,match,1.0,0.9293,0.11,True,name 100%; 0.1 km apart; type match
+node/2923573795,Zangun Majema Health Post,HEALTH_POST,d53e0925-9c4b-4f6a-ad12-c0d290bf088e,Zangon Majema Health Post,HEALTH_POST,Karaye,0.9792,match,0.9692,0.9992,0.001,True,name 97%; 0.0 km apart; type match
+node/2929399569,Malikawa Sarari Health Post,HEALTH_POST,9e84976a-356f-4f0e-8d12-d7a66e3ac51c,Malikawar Sarari Health Post,HEALTH_POST,Bichi,0.979,match,0.9677,0.9997,0.0,True,name 97%; 0.0 km apart; type match
+node/2923366079,Karshi Health Post,HEALTH_POST,ff845992-233e-4c9f-b0fe-afb13a390817,Karshi Health Clinic,CLINIC,Rogo,0.9789,match,1.0,0.9202,0.125,False,name 100%; 0.1 km apart; type differs
+node/2925699899,Malan Gajere Health Post,HEALTH_POST,db147a24-0c24-499c-817e-df7ec25722fa,Malam Gajere Health Post,HEALTH_POST,Kabo,0.9789,match,0.9667,0.999,0.001,True,name 97%; 0.0 km apart; type match
+way/290825086,Yanchibi Health Post,HEALTH_POST,f3bffe67-4d17-4606-9c6e-eb889c66aecd,Yan Chibi Health Post,HEALTH_POST,Tsanyawa,0.9789,match,0.9741,0.9837,0.025,True,name 97%; 0.0 km apart; type match
+way/291437919,Jauben Health Post,HEALTH_POST,c9086f6d-4118-4463-a76f-748ef1d237b8,Jaube Health Post,HEALTH_POST,Tofa,0.9789,match,0.9667,0.9955,0.007,True,name 97%; 0.0 km apart; type match
+way/791782695,Danhassan Primary Health Centre,PHC,d7416eba-c0b5-4248-aa17-42f15f2ce73f,Dan Hassan Primary Health Center,PHC,Kura,0.9788,match,0.9767,0.9743,0.039,True,name 98%; 0.0 km apart; type match
+way/292045932,Kwuidawa Health Post,HEALTH_POST,8248477a-b039-4e44-8135-e440d8e153cb,Kuidawa Health Post,HEALTH_POST,Dawakin Tofa,0.9784,match,0.9625,0.9988,0.002,True,name 96%; 0.0 km apart; type match
+way/819860020,Sauna Kawaji Health Post,HEALTH_POST,770573e6-4457-428d-b097-80de9307e212,Sauna Kawaji Primary Health Center,PHC,Nassarawa,0.9784,match,1.0,0.9119,0.138,False,name 100%; 0.1 km apart; type differs
+way/291752874,Yauwra Health Post,HEALTH_POST,0208472c-1e64-4948-a050-f19828e1b458,Yaura Health Post,HEALTH_POST,Albasu,0.9782,match,0.9611,0.9964,0.005,True,name 96%; 0.0 km apart; type match
+way/291438408,Jujin Health Post,HEALTH_POST,afa65d13-d757-413f-8963-087cd716463d,Juji Health Post,HEALTH_POST,Rimin Gado,0.9781,match,0.96,0.9987,0.002,True,name 96%; 0.0 km apart; type match
+way/290171110,Rimin-Bai Health Post,HEALTH_POST,61b01f97-ebc1-40b6-ac15-d0646817d6b5,Rimin Bai Health Post,HEALTH_POST,Bagwai,0.9775,match,0.9556,0.9991,0.001,True,name 96%; 0.0 km apart; type match
+way/291448220,Kazar Daw Health Post,HEALTH_POST,2e3f22f2-cb5a-4c47-825d-f641438cbdb6,Kazardawa Health Post,HEALTH_POST,Rimin Gado,0.9775,match,0.9556,0.9987,0.002,True,name 96%; 0.0 km apart; type match
+way/291932120,Mesatud Health Post,HEALTH_POST,1a763a07-3810-4835-91a2-29a302e003cb,Mesa Tudu Health Post,HEALTH_POST,Gezawa,0.9775,match,0.9556,0.999,0.002,True,name 96%; 0.0 km apart; type match
+way/292168265,Mallam Shuaibu Primary Health Centre,PHC,75af680a-73ec-4b71-ac88-8db082babdea,Mallam Shaibu Medical Center,CLINIC,Nassarawa,0.9775,match,0.963,0.9822,0.027,False,name 96%; 0.0 km apart; type differs
+node/2925699890,Hawadin Galadima Primary Health Centre,PHC,db745496-1ae3-4745-b7f8-555908c962c9,Hauwaden Galadima Health Post,HEALTH_POST,Kabo,0.9771,match,0.952,0.9978,0.003,False,name 95%; 0.0 km apart; type differs
+way/292065950,Danguguwa Health Post,HEALTH_POST,c2412b88-8cd5-41a1-a583-9e8ca5efe689,Danguguwa Primary Health Center,PHC,Dawakin Tofa,0.9769,match,1.0,0.8818,0.189,False,name 100%; 0.2 km apart; type differs
+way/291884899,Maiganji Health Post,HEALTH_POST,433eab5c-7381-402f-bf38-000f878cce7b,Maigamji Health Post,HEALTH_POST,Dambatta,0.9768,match,0.95,0.9993,0.001,True,name 95%; 0.0 km apart; type match
+way/290640981,Kara-Dagaji Health Post,HEALTH_POST,c1dbea11-df3d-4e0a-a918-09dc12ec8166,Karar Dagaji Health Clinic,CLINIC,Ajingi,0.9766,match,0.9485,0.9982,0.003,False,name 95%; 0.0 km apart; type differs
+way/290644504,Dan'Malam Health Post,HEALTH_POST,1ba48be8-d211-4a2d-9f37-40d5f0ab879b,Dan Malam Health Post,HEALTH_POST,Ajingi,0.9766,match,0.9481,0.9992,0.001,True,name 95%; 0.0 km apart; type match
+way/291759012,Kara-Makama Health Post,HEALTH_POST,5e700712-7b7e-46ad-bf59-df3d23221bc1,Karar Makama Health Post,HEALTH_POST,Ajingi,0.9766,match,0.9485,0.9986,0.002,True,name 95%; 0.0 km apart; type match
+way/792921900,Gidan Sarkin Noma Primary Health Centre,PHC,997d5a6d-7461-4538-b67e-2ab266e6ff9e,Gidan Sarkin Noma Model Primary Health Center,PHC,Gaya,0.9766,match,0.9478,0.9985,0.002,True,name 95%; 0.0 km apart; type match
+way/292045553,Sabon Gari Rangaza Primary Health Centre,PHC,2771e4f9-1eb7-4646-a10b-1bde5bd008d7,Sabon Garin Rangaza Health Post,HEALTH_POST,Ungogo,0.9763,match,0.973,0.9347,0.101,False,name 97%; 0.1 km apart; type differs
+way/792113168,Ahmad Ado Bayero Primary Health Centre,PHC,3c8e0fd7-b37a-4947-88be-9bcbc8542ac4,Ahmad Ado Bayero Model Primary Health Center,PHC,Kumbotso,0.9763,match,0.9455,0.9957,0.007,True,name 95%; 0.0 km apart; type match
+node/2925837272,Yalwan Dan Musa Health Post,HEALTH_POST,a47d598d-8107-408a-8581-ca8d8582744d,Yalwan Danmusa Health Post,HEALTH_POST,Doguwa,0.9762,match,0.9867,0.8998,0.158,True,name 99%; 0.2 km apart; type match
+way/291442889,Zango I Health Post,HEALTH_POST,325b2b7b-76fd-40a1-a604-756cc56251fc,Zango 1 Health Post,HEALTH_POST,Rimin Gado,0.9759,match,0.9429,0.9978,0.003,True,name 94%; 0.0 km apart; type match
+way/291877984,Yan'Amar Health Post,HEALTH_POST,379d6f9e-5a0b-466c-a019-af4a5c441679,Yan Amar Health Post,HEALTH_POST,Tsanyawa,0.9758,match,0.9417,0.994,0.009,True,name 94%; 0.0 km apart; type match
+way/292065978,Buruntumau Health Post,HEALTH_POST,20b8982b-8b4d-40d4-9d99-1744f26476b7,Burumtumau Health Post,HEALTH_POST,Dawakin Tofa,0.9752,match,0.9378,0.998,0.003,True,name 94%; 0.0 km apart; type match
+way/792856952,Waziri Gidado General Hospital,HOSPITAL,b5796461-5a23-4ee1-8f4f-9ff06005c70e,Waziri Shehu Gidado General Hospital,HOSPITAL,Dala,0.9751,match,0.9368,0.9946,0.008,True,name 94%; 0.0 km apart; type match
+way/292045936,Danrirmi Health Post,HEALTH_POST,db6989c9-f77e-44f0-b109-a37644a7f2e7,Dan Rimi Health Post,HEALTH_POST,Ungogo,0.9749,match,0.9417,0.9854,0.022,True,name 94%; 0.0 km apart; type match
+way/291932104,Mesaburmi Health Post,HEALTH_POST,28395c5c-3539-4097-9624-d94151918ba1,Mesar Burmi Health Post,HEALTH_POST,Gezawa,0.9748,match,0.9414,0.9832,0.025,True,name 94%; 0.0 km apart; type match
+node/2923573776,Dambazau Health Post,HEALTH_POST,c22053ce-3d32-48fc-a184-9c810bea329b,Danbazau Health Post,HEALTH_POST,Karaye,0.9746,match,0.9333,0.9993,0.001,True,name 93%; 0.0 km apart; type match
+node/2929137240,Bum-Bum Health Post,HEALTH_POST,56ed4cbc-5469-4eaf-b56c-7cd7e1c65b0c,Bum Bum Health Post,HEALTH_POST,Bichi,0.9746,match,0.9333,0.9984,0.002,True,name 93%; 0.0 km apart; type match
+way/283777077,Kasuwar Kuka Primary Health Centre,PHC,961cde9b-9640-4f29-a3a9-dcde63803a4e,Kasuwar Kuka Model Primary Health Center,PHC,Kunchi,0.9746,match,0.9333,0.9987,0.002,True,name 93%; 0.0 km apart; type match
+way/291444442,Sarigarin Health Post,HEALTH_POST,855f3062-b8d0-4a0c-8545-4f39c29fdd63,Sarigirin Health Post,HEALTH_POST,Kabo,0.9742,match,0.9306,0.9991,0.001,True,name 93%; 0.0 km apart; type match
+way/291932151,Yautar Kudu Primary Health Centre,PHC,967c9596-8d39-4623-a965-5345fbd978b0,Yautar Kudu Model Primary Health Center,PHC,Gabasawa,0.9741,match,0.9294,0.998,0.003,True,name 93%; 0.0 km apart; type match
+way/792577752,Bakin Lahadi Health Post,HEALTH_POST,f608b54b-9638-4353-b5bd-3952bedc4f2d,Bakin Lahadi Model Primary Health Center,PHC,Sumaila,0.9739,match,0.9333,0.987,0.02,False,name 93%; 0.0 km apart; type differs
+way/185718325,National Orthopaedic Hospital,HOSPITAL,f0d160fa-43a3-4614-880c-a2283d1f1af4,National Orthopaedic Hospital Dala,HOSPITAL,Dala,0.9736,match,0.96,0.9184,0.128,True,name 96%; 0.1 km apart; type match
+way/291897525,Goran Maje Primary Health Centre,PHC,c033ea48-0fac-465b-a5b8-a733946a909c,Goran Maje Basic Health Center,PHC,Dambatta,0.9734,match,0.925,0.9984,0.002,True,name 92%; 0.0 km apart; type match
+way/291879248,Dunbule Health Post,HEALTH_POST,c3f7e3e3-2065-4616-be00-59840e656770,Dumbule Health Post,HEALTH_POST,Kunchi,0.9733,match,0.9238,0.998,0.003,True,name 92%; 0.0 km apart; type match
+way/292050060,Rijiyar Lemo Primary Health Centre,PHC,63646f34-e599-49d5-b2ab-3235b26ed956,Rijiyar Lemo Model Primary Health Center,PHC,Fagge,0.9733,match,0.9333,0.9786,0.032,True,name 93%; 0.0 km apart; type match
+way/292037273,Zuru Felele Health Post,HEALTH_POST,bcbb5ae2-c821-435f-95f3-9ab800e6ddf3,Zuru Falele Health Post,HEALTH_POST,Makoda,0.9732,match,0.9236,0.9997,0.0,True,name 92%; 0.0 km apart; type match
+way/792191448,Turai Yar'Adua Primary Health Centre,PHC,aa423b87-94e0-48c0-ba6d-975b5bfb40aa,Turai Yaradua Model Primary Health Center,PHC,Kumbotso,0.9731,match,0.9226,0.9935,0.01,True,name 92%; 0.0 km apart; type match
+way/291440097,Zango II Health Post,HEALTH_POST,0536a6b0-5b04-4d86-bfb2-9fa79ea4a461,Zango 2 Health Post,HEALTH_POST,Rimin Gado,0.9729,match,0.9214,0.9978,0.003,True,name 92%; 0.0 km apart; type match
+way/291876682,Masaurari Health Post,HEALTH_POST,3735974a-95f3-43c6-bbbd-7d49ca8c10ee,Masaurari Health Post,HEALTH_POST,Bagwai,0.9729,match,1.0,0.812,0.312,True,name 100%; 0.3 km apart; type match
+way/792110964,Kadawa Gate Primary Health Centre,PHC,e2f3b0c5-33e4-48af-8114-de7b567b7cd2,Kadawa Gate Basic Health Center,PHC,Garun Malam,0.9729,match,0.9294,0.9815,0.028,True,name 93%; 0.0 km apart; type match
+node/2929399560,Chiromawa Primary Health Centre,PHC,d60a6b14-d60c-4c34-8d31-36e4b40a860b,Chiromawa Basic Health Center,PHC,Bichi,0.9727,match,0.92,0.9955,0.007,True,name 92%; 0.0 km apart; type match
+way/291444440,Butu Butu Health Post,HEALTH_POST,7b6cfa62-8575-496f-bff4-d2631dab438a,Butu Butu Model Primary Health Center,PHC,Rimin Gado,0.9727,match,0.92,0.9984,0.002,False,name 92%; 0.0 km apart; type differs
+way/291753563,Sanni Health Post,HEALTH_POST,17f7996a-c35b-4f56-a993-65d1535d6950,Sanna Health Post,HEALTH_POST,Garko,0.9727,match,0.92,0.9979,0.003,True,name 92%; 0.0 km apart; type match
+way/291871761,Daddarawa Health Post,HEALTH_POST,62fb3d36-8480-4bf4-88ec-664a7c9191c2,Daddarawa Basic Health Center,PHC,Tsanyawa,0.9727,match,0.92,0.9967,0.005,False,name 92%; 0.0 km apart; type differs
+way/292037284,Takau Health Post,HEALTH_POST,9476bd1c-6f36-4d49-b964-1089ae6f5c0a,Takai Health Post,HEALTH_POST,Dambatta,0.9727,match,0.92,0.9976,0.004,True,name 92%; 0.0 km apart; type match
+way/292037292,Maitsidau Primary Health Centre,PHC,c48267e9-a643-4310-969f-487a4cdb6469,Maitsidau Basic Health Center,PHC,Makoda,0.9727,match,0.92,0.9998,0.0,True,name 92%; 0.0 km apart; type match
+way/792170026,Dandinshe Primary Health Centre,PHC,13b52b10-8958-4d85-af9b-a58bb4b6cc62,Dandinshe Model Primary Health Center,PHC,Dala,0.9727,match,0.92,0.9943,0.009,True,name 92%; 0.0 km apart; type match
+way/792856953,Badume Primary Health Centre,PHC,eddd3005-6271-4d45-905b-3f43c43d19e9,Badume Health Post,HEALTH_POST,Bichi,0.9723,match,1.0,0.8025,0.33,False,name 100%; 0.3 km apart; type differs
+way/291761157,Danshado Health Post,HEALTH_POST,bcdb7906-d92f-410e-a0cf-af16cb0dbdce,Yanshado Health Post,HEALTH_POST,Shanono,0.9722,match,0.9167,0.9991,0.001,True,name 92%; 0.0 km apart; type match
+node/2925849531,Kwanyawa Primary Health Centre,PHC,a45893ec-4ff0-4ab7-823b-5d490eacc630,Kwanyawa Model Primary Health Center,PHC,Karaye,0.9718,match,0.9143,0.9961,0.006,True,name 91%; 0.0 km apart; type match
+way/291876695,Dumbulum Primary Health Centre,PHC,49876205-8470-41f7-b37d-c0f4aeb5cd29,Dumbulum Basic Health Center,PHC,Tsanyawa,0.9718,match,0.9143,0.9926,0.011,True,name 91%; 0.0 km apart; type match
+way/792191421,Kauye Alu Primary Health Centre,PHC,959a1b2f-30d6-449f-a1b4-5c648c83d8da,Kauyen Alu Basic Health Center,PHC,Tarauni,0.9716,match,0.9125,0.9967,0.005,True,name 91%; 0.0 km apart; type match
+way/795559302,Wurobagga Primary Health Centre,PHC,0231c389-2edf-4efa-a87f-3c94eb518eb4,Wuro Bagga Model Primary Health Center,PHC,Bagwai,0.9716,match,0.9125,0.9962,0.006,True,name 91%; 0.0 km apart; type match
+way/291932112,Ketawa H.P Health Post,HEALTH_POST,50a9fa1c-47e9-4de2-b7d6-22f2101e6391,Ketawa Health Post,HEALTH_POST,Gezawa,0.9715,match,0.92,0.9819,0.027,True,name 92%; 0.0 km apart; type match
+way/291448219,Makamauta Primary Health Centre,PHC,19b3e76c-b559-4982-94af-ab02c6b38969,Makanwata Health Post,HEALTH_POST,Gwarzo,0.9713,match,0.9111,0.9972,0.004,False,name 91%; 0.0 km apart; type differs
+way/291754203,Umbarum Health Post,HEALTH_POST,90cbc570-6874-4b24-a32e-24ca6e03d9eb,Umbara Health Post,HEALTH_POST,Albasu,0.9711,match,0.9095,0.9987,0.002,True,name 91%; 0.0 km apart; type match
+way/292045931,Baguja Health Post,HEALTH_POST,e08a24f4-e241-45d0-a916-4a874e2c894d,Bagujen Health Post,HEALTH_POST,Ungogo,0.9711,match,0.9095,0.9993,0.001,True,name 91%; 0.0 km apart; type match
+way/292047869,Dankunkuru Health Post,HEALTH_POST,e3903429-1128-4ad4-ad85-1797a2de9479,Dan Kurkuru Health Post,HEALTH_POST,Ungogo,0.9709,match,0.9083,0.9987,0.002,True,name 91%; 0.0 km apart; type match
+node/2923263867,Fulatan Primary Health Centre,PHC,9add2189-b3b5-4e32-9aeb-f4df470451fa,Fulatan Basic Health Center,PHC,Rogo,0.9708,match,0.9077,0.9982,0.003,True,name 91%; 0.0 km apart; type match
+node/2923599555,Ririwai Primary Health Centre,PHC,b720c761-b5ee-4adc-ad2e-034ae24c800c,Ririwai Basic Health Center,PHC,Doguwa,0.9708,match,0.9077,0.9979,0.003,True,name 91%; 0.0 km apart; type match
+node/2925701103,Yammedi Primary Health Centre,PHC,40ec3192-fec2-4ddb-b112-95240239db94,Yammedi Model Primary Health Center,PHC,Karaye,0.9708,match,0.9077,0.9977,0.003,True,name 91%; 0.0 km apart; type match
+node/2925719600,Dangora Primary Health Centre,PHC,ff4d78fb-e1ee-4c54-bbe0-5193afb7e12a,Dangora Basic Health Center,PHC,Kiru,0.9708,match,0.9077,0.9988,0.002,True,name 91%; 0.0 km apart; type match
+node/2925991013,Dangora Primary Health Centre,PHC,ff4d78fb-e1ee-4c54-bbe0-5193afb7e12a,Dangora Basic Health Center,PHC,Kiru,0.9708,match,0.9077,0.9994,0.001,True,name 91%; 0.0 km apart; type match
+node/2929137242,Damargu Primary Health Centre,PHC,7b08ef47-38a3-49e9-9f67-0371cfaa46d7,Damargu Basic Health Center,PHC,Bichi,0.9708,match,0.9077,0.9966,0.005,True,name 91%; 0.0 km apart; type match
+way/288770804,Falgore Primary Health Centre,PHC,99c6a816-8294-44e0-8f49-5032cccb21c6,Falgore Model Primary Health Center,PHC,Rogo,0.9708,match,0.9077,0.9989,0.002,True,name 91%; 0.0 km apart; type match
+way/291446639,Dangada Primary Health Centre,PHC,59f918dd-6826-46fc-9f23-dfd6200796db,Dangada Model Primary Health Center,PHC,Bagwai,0.9708,match,0.9077,0.9957,0.007,True,name 91%; 0.0 km apart; type match
+way/291876696,Gadanya Health Post,HEALTH_POST,1bc4b180-269e-4a64-af01-43c1d6b41be6,Gadanya Basic Health Center,PHC,Bagwai,0.9708,match,0.9077,0.9993,0.001,False,name 91%; 0.0 km apart; type differs
+way/291879247,Shuwaki Primary Health Centre,PHC,9b7ef4ac-551c-40c6-9917-2c648952e632,Shuwaki Model Primary Health Center,PHC,Kunchi,0.9708,match,0.9077,0.9967,0.005,True,name 91%; 0.0 km apart; type match
+way/291887063,Yammawa Health Post,HEALTH_POST,8a2a5cc8-0fb1-4cc8-af97-316738240564,Yammawa Gamji Health Post,HEALTH_POST,Dambatta,0.9708,match,0.9077,0.999,0.002,True,name 91%; 0.0 km apart; type match
+way/792470872,Lakwaya Primary Health Centre,PHC,4749992d-c424-4102-a004-d7f64f5a5017,Lakwaya Model Primary Health Center,PHC,Gwarzo,0.9708,match,0.9077,0.9966,0.005,True,name 91%; 0.0 km apart; type match
+node/2929137241,Daddo Health Post,HEALTH_POST,8cd864ad-accf-4649-84ed-0d351e81766d,Daddu Health Post,HEALTH_POST,Bichi,0.9707,match,0.92,0.9696,0.046,True,name 92%; 0.0 km apart; type match
+node/2929399562,Danzabua Primary Health Centre,PHC,44be9f2e-71ee-44b7-97de-b16228a786d5,Danzabuwa Model Primary Health Center,PHC,Bichi,0.9706,match,0.9067,0.9973,0.004,True,name 91%; 0.0 km apart; type match
+way/291889766,Yammawa Gamji Health Post,HEALTH_POST,cf7d7666-b78c-4197-a432-0bf03c655049,Yammawa Wanzamai Health Post,HEALTH_POST,Dambatta,0.9706,match,0.9067,0.9979,0.003,True,name 91%; 0.0 km apart; type match
+way/291882073,Danmadaki Health Post,HEALTH_POST,0b0ed7ee-5e80-445b-8bcc-8f591fdb80a1,Dan Maidaki Health Post,HEALTH_POST,Makoda,0.9705,match,0.9057,0.9989,0.002,True,name 91%; 0.0 km apart; type match
+way/792556109,Faruruwa Primary Health Centre,PHC,cdfdecdb-61a6-4e65-93dc-8cd03d901b42,Faruruwa Basic Health Center,PHC,Shanono,0.9704,match,0.9143,0.979,0.032,True,name 91%; 0.0 km apart; type match
+way/792191434,Sani Zubairu Health Post,HEALTH_POST,25aa4092-6c04-47eb-a6c2-eb8e5a3eff37,Sani Zubairu Primary Health Clinic,CLINIC,Gwale,0.9702,match,0.92,0.9622,0.058,False,name 92%; 0.1 km apart; type differs
+node/2925991015,Gwarmai Health Post,HEALTH_POST,db1e493b-f001-46d0-840c-0c5cb68fd2ff,Gwarmai Basic Health Center,PHC,Bebeji,0.9699,match,0.9077,0.9862,0.021,False,name 91%; 0.0 km apart; type differs
+way/292065939,Dawanau Primary Health Centre,PHC,717870a2-fce7-4689-a5dc-95424a4d69ed,Dawanau Basic Health Center,PHC,Dawakin Tofa,0.9699,match,0.9077,0.9871,0.02,True,name 91%; 0.0 km apart; type match
+way/791762843,Dawakiji Primary Health Centre,PHC,1024e053-e8c0-4606-ab76-fd99dd211316,Dawakiji Basic Health Center,PHC,Dawakin Kudu,0.9699,match,0.9143,0.9706,0.045,True,name 91%; 0.0 km apart; type match
+node/2925757202,Gwarmai Health Post,HEALTH_POST,db1e493b-f001-46d0-840c-0c5cb68fd2ff,Gwarmai Basic Health Center,PHC,Bebeji,0.9698,match,0.9077,0.9855,0.022,False,name 91%; 0.0 km apart; type differs
+node/2923263875,Zarewa Primary Health Centre,PHC,7366ded5-5dbf-4b57-9810-57a4c69f33ac,Zarewa Basic Health Center,PHC,Rogo,0.9696,match,0.9,0.9907,0.014,True,name 90%; 0.0 km apart; type match
+node/2929399571,Rimaye Health Post,HEALTH_POST,de975229-f584-49af-9135-4d37c390d503,Rimayen Rake Health Post,HEALTH_POST,Bichi,0.9696,match,0.9,0.9988,0.002,True,name 90%; 0.0 km apart; type match
+node/2948312513,Mariri Primary Health Centre,PHC,62f47238-4a9a-4cf7-b18c-08ed6b229e27,Mariri Model Primary Health Center,PHC,Kumbotso,0.9696,match,0.9,0.9958,0.006,True,name 90%; 0.0 km apart; type match
+way/290678158,Tsangaya Primary Health Centre,PHC,a81eb636-7940-4f8e-9a43-a5a40c6a5711,Tsangaya Primary Health Clinic,CLINIC,Albasu,0.9696,match,0.9,0.9961,0.006,False,name 90%; 0.0 km apart; type differs
+way/291437922,Chalawa Primary Health Centre,PHC,3da22f07-922d-4cc7-ae53-a3eab79f0c6f,Challawa Basic Health Center,PHC,Kumbotso,0.9696,match,0.9,0.9969,0.005,True,name 90%; 0.0 km apart; type match
+way/291761159,Tsaure Primary Health Centre,PHC,66bb1dea-1ca0-4bac-9ddf-9b4a19786715,Tsaure Basic Health Center,PHC,Shanono,0.9696,match,0.9,0.9992,0.001,True,name 90%; 0.0 km apart; type match
+way/291877985,Harbau Primary Health Centre,PHC,00d57568-0bd4-4de5-b4be-4ebfb32600e8,Harbau Basic Health Center,PHC,Tsanyawa,0.9696,match,0.9,0.9946,0.008,True,name 90%; 0.0 km apart; type match
+way/291887296,Koguna Primary Health Centre,PHC,25252c28-aa77-4f10-9e7a-8ac096f24f81,Koguna Basic Health Center,PHC,Makoda,0.9696,match,0.9,0.9981,0.003,True,name 90%; 0.0 km apart; type match
+way/291902257,Fagwalawa Cottage General Hospital,HOSPITAL,5b3a3f2d-7f02-4efd-9291-03c6789566fa,Fagwalawa Cottage Hospital,HOSPITAL,Dambatta,0.9696,match,0.9059,0.9872,0.019,True,name 91%; 0.0 km apart; type match
+way/292037282,Dawon Kaya Health Post,HEALTH_POST,6eca321d-bb16-43e7-9aa3-d875fd3affb9,Dawan Kaya Health Post,HEALTH_POST,Makoda,0.9696,match,0.9,0.9988,0.002,True,name 90%; 0.0 km apart; type match
+way/292051050,Kadawa Primary Health Centre,PHC,ac5428e1-12aa-46ad-97df-5f5389dbaf86,Kadawa Basic Health Center,PHC,Ungogo,0.9696,match,0.9,0.9985,0.002,True,name 90%; 0.0 km apart; type match
+way/791399678,Balare Primary Health Centre,PHC,e204a501-a815-4f04-8bf8-d3501fc0b66a,Balare Model Primary Health Center,PHC,Ajingi,0.9696,match,0.9,0.9968,0.005,True,name 90%; 0.0 km apart; type match
+way/791783565,Dukawa Primary Health Centre,PHC,8ea7b8ed-e437-4c4c-b228-858a99e2a6d1,Dukawa Basic Health Center,PHC,Kura,0.9696,match,0.9,0.9964,0.005,True,name 90%; 0.0 km apart; type match
+way/792111701,Tariwa Primary Health Centre,PHC,7d269d9c-5e83-42eb-b173-a44417ce87dc,Tariwa Basic Health Center,PHC,Bebeji,0.9696,match,0.9,0.9944,0.008,True,name 90%; 0.0 km apart; type match
+way/792191416,Hotoro Primary Health Centre,PHC,99543ed4-ea24-4b0b-9249-593326c1200e,Hotoro North Primary Health Center,PHC,Nassarawa,0.9696,match,0.9,0.999,0.002,True,name 90%; 0.0 km apart; type match
+way/792435250,Kutama Primary Health Centre,PHC,5d48edf1-c75d-4f1f-ada8-1605d6321c2b,Kutama Model Primary Health Center,PHC,Gwarzo,0.9696,match,0.9,0.9934,0.01,True,name 90%; 0.0 km apart; type match
+way/792827150,Kadamu Primary Health Centre,PHC,406c0d27-0177-43a2-b3ee-0194ae6c084e,Kadamu Model Primary Health Center,PHC,Shanono,0.9696,match,0.9,0.9964,0.005,True,name 90%; 0.0 km apart; type match
+way/292050058,Fanisau Primary Health Centre,PHC,2a43eba7-9958-48fb-b4d3-2a617e537369,Panisau Health Clinic,CLINIC,Ungogo,0.9689,match,0.9048,0.98,0.03,False,name 90%; 0.0 km apart; type differs
+way/292047627,Gayawa Primary Health Centre,PHC,5345f9c0-5910-4d68-bd30-6dab795d2bf7,Gayawa Basic Health Center,PHC,Ungogo,0.9688,match,0.9,0.9888,0.017,True,name 90%; 0.0 km apart; type match
+way/791783043,Dawaki General Hospital,HOSPITAL,766187df-bda8-4e13-a9a5-76f6de3faad8,Dawakin Kudu General Hospital,HOSPITAL,Dawakin Kudu,0.9687,match,0.9,0.9879,0.018,True,name 90%; 0.0 km apart; type match
+way/291755879,Sayasaya Health Post,HEALTH_POST,3ac27814-3bc6-4e53-ad0d-d38ac4f4f0ef,Saya Saya Primary Health Clinic,CLINIC,Albasu,0.9686,match,0.8941,0.9995,0.001,False,name 89%; 0.0 km apart; type differs
+way/292037278,Fagwalo Health Post,HEALTH_POST,c919b715-c212-4255-bf34-bf9464639816,Fagolo Health Post,HEALTH_POST,Bichi,0.9686,match,0.8944,0.9993,0.001,True,name 89%; 0.0 km apart; type match
+way/291753567,Bataiya Primary Health Centre,PHC,482a448e-725b-4c54-a13c-3cdf0980c6f0,Bataiya Primary Health Clinic,CLINIC,Albasu,0.9684,match,0.8933,0.9957,0.006,False,name 89%; 0.0 km apart; type differs
+way/291757025,Yan Kau Health Post,HEALTH_POST,43d44e06-f698-4ddf-9b83-57dc71e71d95,Yan Kau Primary Health Clinic,CLINIC,Gaya,0.9684,match,0.8933,0.9983,0.003,False,name 89%; 0.0 km apart; type differs
+way/291434863,Gofaro Primary Health Centre,PHC,94e138c1-276e-4d43-9a92-144f53ed29f1,Gofaro Model Primary Health Center,PHC,Gezawa,0.9682,match,0.9,0.9816,0.028,True,name 90%; 0.0 km apart; type match
+way/291881003,Ridawa Health Post,HEALTH_POST,8aa7d1c6-8eb8-42eb-bdec-f5ca9d25c7e1,Ridawar Kwari Health Post,HEALTH_POST,Kunchi,0.9682,match,0.8923,0.9988,0.002,True,name 89%; 0.0 km apart; type match
+way/792168229,Chiranchi Health Post,HEALTH_POST,ebb33b5c-2761-45c5-b942-5e4d0e94a38a,Chiranci Basic Health Center,PHC,Kumbotso,0.9682,match,0.8921,0.9934,0.01,False,name 89%; 0.0 km apart; type differs
+way/290171102,Jaube Health Post,HEALTH_POST,bd48bcd0-9f76-4658-8f6c-0bf5faeb9b56,Jaube Marke Health Post,HEALTH_POST,Dawakin Tofa,0.968,match,0.8909,0.9999,0.0,True,name 89%; 0.0 km apart; type match
+way/291442891,Lambu Primary Health Centre,PHC,d268c60f-1a7e-4df5-887b-36bd88b8c185,Lambu Model Primary Health Center,PHC,Tofa,0.968,match,0.8909,0.9974,0.004,True,name 89%; 0.0 km apart; type match
+way/292065976,Bugai Primary Health Centre,PHC,9e02b04d-9932-4cc1-9932-cc75ff61bcc6,Bugai Model Primary Health Center,PHC,Tofa,0.968,match,0.8909,0.9922,0.012,True,name 89%; 0.0 km apart; type match
+way/792485998,Burji Primary Health Centre,PHC,cad4e6cd-3378-4786-bdf9-192ee25a5789,Burji Model Primary Health Center,PHC,Madobi,0.968,match,0.8909,0.9982,0.003,True,name 89%; 0.0 km apart; type match
+way/792570408,Garko Primary Health Centre,PHC,2af3ff56-e3fc-4796-9672-67c7fe0b6da1,Garko Model Primary Health Center,PHC,Garko,0.968,match,0.8909,0.997,0.005,True,name 89%; 0.0 km apart; type match
+way/792918559,Balan Primary Health Centre,PHC,b13e9a51-f58a-4455-abcb-7522865c57aa,Balan Model Primary Health Center,PHC,Gaya,0.968,match,0.8909,0.9967,0.005,True,name 89%; 0.0 km apart; type match
+way/792485991,Rahama Primary Health Centre,PHC,046403e3-56d3-4eee-a342-6779bb7dd582,Rahama Basic Health Center,PHC,Bebeji,0.9679,match,0.9,0.9773,0.034,True,name 90%; 0.0 km apart; type match
+node/2923573790,Turawa Primary Health Centre,PHC,70bb5de1-b596-4ad0-b822-0287874e8e31,Turawa Model Primary Health Center,PHC,Karaye,0.9676,match,0.9,0.9727,0.042,True,name 90%; 0.0 km apart; type match
+way/792560632,Gogori Primary Health Centre,PHC,0ecf8b48-348d-4b05-8c28-341c0ac6f76e,Gogori Basic Health Center,PHC,Bagwai,0.9675,match,0.9,0.9715,0.043,True,name 90%; 0.0 km apart; type match
+way/292065974,Dawaki General Hospital,HOSPITAL,026630f3-6992-4b76-88cd-1ddbd62c3f31,Dawakin Tofa General Hospital,HOSPITAL,Dawakin Tofa,0.9671,match,0.9,0.9664,0.051,True,name 90%; 0.1 km apart; type match
+way/792829698,Sare-Sare Primary Health Centre,PHC,e07b0267-d593-4764-bbd5-c5c20c886bc1,Sare Sare Model Primary Health Center,PHC,Bagwai,0.9669,match,0.8844,0.9939,0.009,True,name 88%; 0.0 km apart; type match
+way/791343116,Sitti Primary Health Centre,PHC,0a60ffcb-c887-4bb0-9f0c-ce0b1e1e2e57,Sitti Basic Health Center,PHC,Sumaila,0.9668,match,0.8909,0.9839,0.024,True,name 89%; 0.0 km apart; type match
+way/291444437,Rimin Gado Primary Health Centre,PHC,9872504e-340a-4e43-a217-5cc5e1f65795,Rimin Gado Comprehensive Health Center,PHC,Rimin Gado,0.9667,match,0.8833,0.9928,0.011,True,name 88%; 0.0 km apart; type match
+way/291921263,Garun Danga Primary Health Centre,PHC,605a07f0-f665-4923-95dc-916a38f874a6,Garin Danga Model Primary Health Center,PHC,Gabasawa,0.9665,match,0.8827,0.9968,0.005,True,name 88%; 0.0 km apart; type match
+way/292049015,Yakasai Health Post,HEALTH_POST,6abfe984-4804-4374-95af-71a25fa526d4,Yakasai Dandalama Health Post,HEALTH_POST,Dawakin Tofa,0.9665,match,0.8824,0.9992,0.001,True,name 88%; 0.0 km apart; type match
+way/292051051,Kwachiri Primary Health Centre,PHC,a253a096-73ae-486f-8d1f-ecd61145e7a4,Kwaciri Model Primary Health Center,PHC,Fagge,0.9665,match,0.8827,0.9976,0.004,True,name 88%; 0.0 km apart; type match
+way/291932106,Immuali Health Post,HEALTH_POST,04990132-fc1d-4a13-bd9b-b79c8b64f07a,Imamu Wali Primary Health Center,PHC,Gezawa,0.9664,match,0.8819,0.9971,0.004,False,name 88%; 0.0 km apart; type differs
+node/2923573794,Yola Primary Health Centre,PHC,8dade8e0-6a6d-4d51-89cd-972df0bc470f,Yola Model Primary Health Center,PHC,Karaye,0.9661,match,0.88,0.9979,0.003,True,name 88%; 0.0 km apart; type match
+node/2925757203,Kogo Primary Health Centre,PHC,6513af3a-e628-4ecc-8abd-f0244919378d,Kogo Model Primary Health Center,PHC,Kiru,0.9661,match,0.88,0.9988,0.002,True,name 88%; 0.0 km apart; type match
+node/2925991016,Kogo Primary Health Centre,PHC,6513af3a-e628-4ecc-8abd-f0244919378d,Kogo Model Primary Health Center,PHC,Kiru,0.9661,match,0.88,0.999,0.001,True,name 88%; 0.0 km apart; type match
+node/2929137253,Saye Primary Health Centre,PHC,379f1446-d090-4960-948e-b651d5c3ec93,Saye Model Primary Health Center,PHC,Bichi,0.9661,match,0.88,0.9975,0.004,True,name 88%; 0.0 km apart; type match
+way/291444191,Leni Health Post,HEALTH_POST,460b703b-8f76-4986-a0e6-b52c3b60c7d1,Leni Basic Health Center,PHC,Shanono,0.9661,match,0.88,0.9975,0.004,False,name 88%; 0.0 km apart; type differs
+way/291901211,Kore Primary Health Centre,PHC,0c75c87c-50ea-487c-840f-285a06a86397,Kore Model Primary Health Center,PHC,Dambatta,0.9661,match,0.88,0.9985,0.002,True,name 88%; 0.0 km apart; type match
+way/791267674,Gulu Primary Health Centre,PHC,b80ed345-e72c-42c2-acec-2937e08d1db4,Gulu Model Primary Health Center,PHC,Rimin Gado,0.9661,match,0.88,0.998,0.003,True,name 88%; 0.0 km apart; type match
+way/792575215,Lambu Primary Health Centre,PHC,3c865975-38fc-4404-8ffb-5e539b52059e,Lambu Basic Health Center,PHC,Tofa,0.9661,match,0.8909,0.9741,0.039,True,name 89%; 0.0 km apart; type match
+way/792158132,Aisami Health Post,HEALTH_POST,1bfbe284-529d-4c90-9794-a4226257be6e,Aisami Primary Health Clinic,CLINIC,Gwale,0.9659,match,0.8857,0.9841,0.024,False,name 89%; 0.0 km apart; type differs
+way/792544522,Durba Health Post,HEALTH_POST,437b4ca6-0464-4616-a4ca-794550666c82,Durba Basic Health Center,PHC,Kibiya,0.9658,match,0.8909,0.971,0.044,False,name 89%; 0.0 km apart; type differs
+node/2925787874,Yalwa Health Post,HEALTH_POST,f4f877a5-5f59-4775-9efe-45c8810ed8dc,Yalwa Kantudu Health Post,HEALTH_POST,Kiru,0.9655,match,0.8769,0.9981,0.003,True,name 88%; 0.0 km apart; type match
+node/12282454154,DORAYI KARAMA PRIMARY HEALTH CARE,HOSPITAL,2128c323-e326-4be0-b47a-080d3a615b1d,Dorayi Karama Primary Health Center,PHC,Gwale,0.965,match,0.8788,0.9894,0.016,False,name 88%; 0.0 km apart; type differs
+way/791313365,Sani Mashal Primary Health Centre,PHC,7a2a39e4-db5d-4be2-a779-70e0665e9a11,Sani Marshal Maternity Memorial Center,MATERNITY,Kura,0.9647,match,0.8786,0.9867,0.02,False,name 88%; 0.0 km apart; type differs
+way/792569803,Ahip Primary Health Centre,PHC,a1e02858-0b6b-4f6a-91a4-f5cd49f8f414,Ahip Family Health Center,PHC,Garko,0.9647,match,0.8727,0.9956,0.007,True,name 87%; 0.0 km apart; type match
+node/2923366078,Kaleku Health Post,HEALTH_POST,baabd7e5-a6bf-4615-97a9-64d2a6bb5de2,Kaleku Primary Health Clinic,CLINIC,Rogo,0.9645,match,0.8857,0.9662,0.052,False,name 89%; 0.1 km apart; type differs
+way/291879254,Malikawa Garu Health Post,HEALTH_POST,9eeb2606-e7ec-426c-90f3-e288f0cfb42b,Malikawar Garu Model Primary Health Center,PHC,Bichi,0.9644,match,0.8992,0.9331,0.104,False,name 90%; 0.1 km apart; type differs
+way/291871760,Yankamaye Primary Health Centre,PHC,e65efbf4-6d21-4b78-9411-c11e40aa65af,Yankamaye Sabon Gari Basic Health Center,PHC,Tsanyawa,0.964,match,0.8692,0.9982,0.003,True,name 87%; 0.0 km apart; type match
+way/291879258,Yandadi Primary Health Centre,PHC,e16e4ac3-8eac-4a39-8972-8355e527fd77,Yandadi Model Primary Health Clinic,CLINIC,Kunchi,0.9635,match,0.8667,0.9947,0.008,False,name 87%; 0.0 km apart; type differs
+way/803264502,Zugachi Primary Health Centre,PHC,3cf7f30e-c5f8-46e9-841b-4b8e539d7d63,Zugaci Model Primary Health Center,PHC,Gabasawa,0.9634,match,0.8714,0.9868,0.02,True,name 87%; 0.0 km apart; type match
+node/2925699893,Kabo Cottage General Hospital,HOSPITAL,dd4c1584-895f-4218-9bae-96d8f02cdaac,Kabo Cottage Hospital,HOSPITAL,Kabo,0.9624,match,0.8667,0.9873,0.019,True,name 87%; 0.0 km apart; type match
+way/792529346,Tsanyawa Primary Health Centre,PHC,cf9bb673-d790-41b1-9335-789d93b7d71b,Tsanyawa Comprehensive Health Center,PHC,Tsanyawa,0.9619,match,0.8727,0.9671,0.05,True,name 87%; 0.1 km apart; type match
+node/2925849530,Jama'A Primary Health Centre,PHC,5c3a7551-cf95-4645-9ae2-7345717bab2a,Jamaa Basic Health Center,PHC,Gwarzo,0.9617,match,0.8576,0.9975,0.004,True,name 86%; 0.0 km apart; type match
+way/791789897,Karfi Primary Health Centre,PHC,e33e1c1c-8423-49ed-b35c-686fca49abd8,Karfi Health Post,HEALTH_POST,Kura,0.9614,match,1.0,0.6566,0.631,False,name 100%; 0.6 km apart; type differs
+way/291921247,Karmami Primary Health Centre,PHC,62840099-df03-4d46-b6fd-073f4f413c0a,Karmami Maternal and Child Health Clinic,CLINIC,Gabasawa,0.9609,match,0.8538,0.9961,0.006,False,name 85%; 0.0 km apart; type differs
+way/290523837,Toranke Primary Health Centre,PHC,55b86f8e-2e11-491a-a950-461940dde10e,Toranke Primary Health Care,PHC,Ajingi,0.9605,match,0.8519,0.9996,0.001,True,name 85%; 0.0 km apart; type match
+way/292045549,Rijiyar Lemo Maternal and Child Health,HOSPITAL,e8e2203c-4e4f-41e8-bbe8-ae8a361aedfe,Rijiyar Lemo Maternity Clinic,MATERNITY,Fagge,0.9603,match,0.8567,0.9868,0.02,False,name 86%; 0.0 km apart; type differs
+way/291442541,Yalwa Primary Health Centre,PHC,d5758286-6181-4dd1-aa46-1229d9a26e7a,Yalwa Danziyal Model Primary Health Center,PHC,Rimin Gado,0.9601,match,0.85,0.9955,0.007,True,name 85%; 0.0 km apart; type match
+way/291870148,Yaan'Awaki Health Post,HEALTH_POST,55ddfac6-a58e-4f18-8764-e65bf35269ed,Yan Awaki Health Post,HEALTH_POST,Tsanyawa,0.9601,match,0.8504,0.9995,0.001,True,name 85%; 0.0 km apart; type match
+way/291921264,Gabasawa Primary Health Centre,PHC,693b705c-36d5-406f-a0f6-ca9e412d1428,Gabasawa Model Primary Health Care,PHC,Gabasawa,0.9594,match,0.8471,0.9973,0.004,True,name 85%; 0.0 km apart; type match
+way/791377515,Masu Primary Health Centre,PHC,08a54e6a-ce59-458c-9bfd-5c0d475c1b8c,Massu Basic Health Center,PHC,Sumaila,0.9592,match,0.8515,0.9867,0.02,True,name 85%; 0.0 km apart; type match
+way/792815833,Dal Primary Health Centre,PHC,26e25a42-7d95-4b38-87fb-466874dc2cb0,Dal Model Primary Health Center,PHC,Garko,0.9589,match,0.8444,0.9972,0.004,True,name 84%; 0.0 km apart; type match
+way/291666943,Getso Primary Health Centre,PHC,6e2f095c-c6ff-4df7-8088-736b13c39056,Getso Maternal and Child Health Clinic,CLINIC,Gwarzo,0.9582,match,0.8417,0.9965,0.005,False,name 84%; 0.0 km apart; type differs
+way/291881005,Makoda Primary Health Centre,PHC,24189f3b-6ef0-41c6-a1e9-fe730639f5d6,Makoda Model Primary Health Care,PHC,Makoda,0.9573,match,0.8375,0.9965,0.005,True,name 84%; 0.0 km apart; type match
+way/291932099,Babawa Primary Health Centre,PHC,80e0ee82-7293-4ede-ad34-89dd5b2ba553,Babawa Model Primary Health Care,PHC,Gezawa,0.9573,match,0.8375,0.9963,0.006,True,name 84%; 0.0 km apart; type match
+way/792111966,Wak Primary Health Centre,PHC,66764495-0f8d-4de6-9e32-d106c069af63,Wak Basic Health Center,PHC,Bebeji,0.9573,match,0.8444,0.9833,0.025,True,name 84%; 0.0 km apart; type match
+node/2925699898,Kiru General Hospital,HOSPITAL,df81b5b2-be76-4ac4-836d-ba90636ee626,Kiru Comprehensive Health Center,PHC,Kiru,0.9571,match,0.8444,0.9814,0.028,False,name 84%; 0.0 km apart; type differs
+way/792169792,Dala Health Post,HEALTH_POST,56f015d7-f41a-49a1-b803-ab09c8c4ab78,Dala Maternity and Child Primary Health Center,PHC,Dala,0.9563,match,0.8333,0.9967,0.005,False,name 83%; 0.0 km apart; type differs
+way/291444439,Durun Health Post,HEALTH_POST,d8c7c274-0e23-4932-8f18-4fb8a612f98e,Durun Maternity and Child Primary Health Clinic,CLINIC,Kabo,0.9556,match,0.8303,0.9983,0.003,False,name 83%; 0.0 km apart; type differs
+node/2953819027,Yanmamman Health Post,HEALTH_POST,bfad14cb-ecb9-47c5-b997-97624af6eb19,Yammammam Health Post,HEALTH_POST,Tsanyawa,0.9549,match,0.8434,0.9614,0.059,True,name 84%; 0.1 km apart; type match
+way/292050062,Jaba Primary Health Centre,PHC,0278cd84-5a73-44c7-a056-a56c7be96c8f,Jaba Model Primary Health Care,PHC,Fagge,0.9547,match,0.8267,0.9967,0.005,True,name 83%; 0.0 km apart; type match
+way/792081428,Gwale Filin Mushe Maternal and Child Care,HOSPITAL,531e9a0e-ffba-4f5f-9eea-cb4f62457b6a,Gwale Maternity and Child Primary Health Center,PHC,Gwale,0.9547,match,0.8266,0.9993,0.001,False,name 83%; 0.0 km apart; type differs
+way/792914593,Tofa Primary Health Centre,PHC,9b8dd736-d1e7-4c6d-aaba-d577621bb6d6,Tofa Comprehensive Health Center,PHC,Tofa,0.9537,match,0.8444,0.9473,0.081,True,name 84%; 0.1 km apart; type match
+node/2923366077,Bari Primary Health Centre,PHC,5b4a0e8a-eacc-4c15-a91e-beba22d0f4b9,Bari Model Primary Health Care,PHC,Rogo,0.9536,match,0.8267,0.989,0.017,True,name 83%; 0.0 km apart; type match
+way/292045551,Yammata Health Post,HEALTH_POST,cf309098-a3ba-4e48-961a-6d81f237965b,Yanmata Gabas Health Post,HEALTH_POST,Fagge,0.9526,match,0.8183,0.9991,0.001,True,name 82%; 0.0 km apart; type match
+way/291901214,Dan Dake Health Post,HEALTH_POST,f4a5e86f-8d7e-4397-9c6b-914fe7cea95b,Yandake Health Post,HEALTH_POST,Gabasawa,0.9514,match,0.8135,0.9989,0.002,True,name 81%; 0.0 km apart; type match
+node/2923485903,Ba'Awa Health Post,HEALTH_POST,c877335e-9c48-4b76-91ac-63914727f7fe,Baawa Basic Health Center,PHC,Kiru,0.9505,match,0.8101,0.9994,0.001,False,name 81%; 0.0 km apart; type differs
+way/293020842,Sheikh Muhammed Jidda General Hospital,HOSPITAL,6c9a3849-1baf-4dc7-a2d3-e3196ae94073,Sheik Jiddah General Hospital,HOSPITAL,Fagge,0.9494,match,0.8219,0.9618,0.058,True,name 82%; 0.1 km apart; type match
+way/292045550,Gyaranya Health Post,HEALTH_POST,05c783af-4fc8-4861-9003-d3bbfbc152ee,Geranya Health Post,HEALTH_POST,Minjibir,0.9478,match,0.8,0.9992,0.001,True,name 80%; 0.0 km apart; type match
+way/292047625,Nigerian Air Force Primary Health Centre,PHC,135e4498-b661-410c-b650-5de2ce1851a5,349 Nigerian Airforce Base Hospital,HOSPITAL,Fagge,0.9438,match,0.7863,0.9924,0.011,False,name 79%; 0.0 km apart; type differs
+way/291441971,Doka Health Post,HEALTH_POST,41392a12-a854-4244-a190-9e1e9ac70df5,Doka Primary Health Care,PHC,Tofa,0.9424,match,0.8333,0.8762,0.198,False,name 83%; 0.2 km apart; type differs
+way/377484015,An Nur Specialist Hospital,HOSPITAL,f48efa7e-1c9c-4862-a885-d180f73a44b4,Al Noury Specialist Hospital,HOSPITAL,Tarauni,0.9379,match,0.7775,0.9757,0.037,True,name 78%; 0.0 km apart; type match
+way/291887062,GSS Dambatta Health Post,HEALTH_POST,28236288-9c77-49e1-9ea2-47dacc5e842c,Dambatta General Hospital,HOSPITAL,Dambatta,0.9328,match,0.8889,0.6739,0.592,False,name 89%; 0.6 km apart; type differs
+way/288291725,Gaya South Health Post,HEALTH_POST,8ed65024-48dc-46ae-90bd-777d144998a8,Gaya Primary Health Center,PHC,Gaya,0.9284,match,0.88,0.6658,0.61,False,name 88%; 0.6 km apart; type differs
+node/2925699895,Kailani Health Post,HEALTH_POST,c9acebca-e691-4e25-b3df-6aaf45774485,Achilafiya Health Post,HEALTH_POST,Kiru,0.9276,review,0.7381,0.9983,0.003,True,name 74%; 0.0 km apart; type match
+way/291753928,Fanda Health Post,HEALTH_POST,7581fa9b-3f30-4e16-a075-d1cfed24de96,Panda Model Primary Health Center,PHC,Albasu,0.921,review,0.7212,0.9989,0.002,False,name 72%; 0.0 km apart; type differs
+way/792533849,Dawaki Health Post,HEALTH_POST,308e1c26-c100-4998-95c2-45515b181071,Rano Dawaki Health Clinic,CLINIC,Rano,0.9123,review,0.7059,0.9883,0.018,False,name 71%; 0.0 km apart; type differs
+way/792572449,Kofar Chiri Primary Health Centre,PHC,f5cdf4de-5114-405c-be1e-14ab38753636,Kafir Chiri Basic Health Center,PHC,Garko,0.9115,review,0.6991,0.9906,0.014,True,name 70%; 0.0 km apart; type match
+way/292047628,Sambauna Primary Health Centre,PHC,9a834e9f-cf19-43f1-a0bd-a968b43ad199,Sanbauna Basic Health Center,PHC,Minjibir,0.9102,review,0.6964,0.9975,0.004,True,name 70%; 0.0 km apart; type match
+way/377468732,Proposed Paediatric Hospital,HOSPITAL,1a4c4c56-824b-4840-9427-319907b013b1,New H B Paediatric Hospital,HOSPITAL,Tarauni,0.9038,review,0.6827,0.9969,0.005,True,name 68%; 0.0 km apart; type match
+way/286564662,Mai Aduwa Health Post,HEALTH_POST,216f8a16-89d7-4c88-8de7-f1fcb4d222a5,Yanlada Health Post,HEALTH_POST,Makoda,0.8984,review,0.672,0.9994,0.001,True,name 67%; 0.0 km apart; type match
+way/794666692,Kafin Lemo Health Clinic,CLINIC,13746c65-c4ee-41b4-8650-da4baf257934,Kafin Lemu Health Clinic,CLINIC,Sumaila,0.898,match,0.96,0.3107,1.753,True,name 96%; 1.8 km apart; type match
+way/291446533,Gammo M.P.H.C Primary Health Centre,PHC,45b4c014-eb1b-42fb-828f-33ff51bdb34c,Gammo Model Primary Care Center,PHC,Kabo,0.8925,review,0.6609,0.9976,0.004,True,name 66%; 0.0 km apart; type match
+way/291447294,Sharifai Health Post,HEALTH_POST,c7fdbce9-0c8d-4523-b015-4d0c4e932077,Sharifai Health Post,HEALTH_POST,Kabo,0.888,match,1.0,0.1703,2.655,True,name 100%; 2.7 km apart; type match
+way/287495752,Abdullahi Muhammad Wase General Hospital;Kano Emergency Operations Center,HOSPITAL,f96a13e7-07f3-47e6-b2d2-e8c577df392f,Mohammed Abdullahi Wase General Hospital,HOSPITAL,Nassarawa,0.8852,review,0.6562,0.9797,0.031,True,name 66%; 0.0 km apart; type match
+way/292037285,Yatsi Health Post,HEALTH_POST,1c1627fe-4265-432f-b9af-0ae98e8e6695,Yatsi Health Post,HEALTH_POST,Bichi,0.8806,match,1.0,0.1399,2.95,True,name 100%; 3.0 km apart; type match
+node/12282454153,RAHAMA CHEMIST,PHARMACY,2128c323-e326-4be0-b47a-080d3a615b1d,Dorayi Karama Primary Health Center,PHC,Gwale,0.8774,review,0.6581,0.9435,0.087,False,name 66%; 0.1 km apart; type differs
+way/803648944,MRS Barracks Primary Health Centre,PHC,d370cd68-c1e8-458a-b93a-165e23c07004,Janguza Barrack Clinic,CLINIC,Tofa,0.8674,review,0.65,0.9247,0.117,False,name 65%; 0.1 km apart; type differs
+node/5668757228,Kano Emergency Operations Center,HOSPITAL,9945237d-520a-403e-966f-850465803f4d,Kano Primary Health Center,PHC,Nassarawa,0.8645,match,0.825,0.4959,1.052,False,name 82%; 1.1 km apart; type differs
+way/292065963,SSS Dawakin Tofa Health Post,HEALTH_POST,d8308029-fd28-4d4c-8318-a02f5f5248a9,Science Secondary School Health Clinic Dawakin Tofa,CLINIC,Dawakin Tofa,0.8576,review,0.6038,0.999,0.002,False,name 60%; 0.0 km apart; type differs
+node/2929137249,Kirya Health Post,HEALTH_POST,4140ad79-d793-45fa-8c4c-c3b734bd854d,Zaura Health Post,HEALTH_POST,Dawakin Tofa,0.855,review,0.6,0.9941,0.009,True,name 60%; 0.0 km apart; type match
+way/290171121,Ba'Awa Health Post,HEALTH_POST,45567d1b-47c8-4e3f-ad40-6c494238159f,Kiyawa Basic Health Center,PHC,Bagwai,0.843,review,0.5833,0.9973,0.004,False,name 58%; 0.0 km apart; type differs
+way/291754202,Albasu Cottage Primary Health Centre,PHC,43324c24-77f7-42ac-9172-a8a464d5b9e3,Umar Faragai Health Center,PHC,Albasu,0.8417,review,0.5873,0.9862,0.021,True,name 59%; 0.0 km apart; type match
+way/792164184,Bakin Ruwa Health Post,HEALTH_POST,81f309c7-067c-455f-8b7b-cbeeee5f05b8,Sheikh Abubakar Mujin Yawa Health Care,PHC,Dala,0.8413,review,0.5877,0.9841,0.024,False,name 59%; 0.0 km apart; type differs
+way/292051043,Zabainawar Dansudu Health Post,HEALTH_POST,898e7b58-c6c1-420e-a1cc-1ca4219d8008,Dansudu Health Post,HEALTH_POST,Minjibir,0.8249,review,0.56,0.9975,0.004,True,name 56%; 0.0 km apart; type match
+node/2923573779,Dutsan Amare Health Post,HEALTH_POST,0f74efa5-5827-4483-ac64-924c43d4b39d,Dutsen Amare Health Post,HEALTH_POST,Karaye,0.8199,review,0.9303,0.1013,3.435,True,name 93%; 3.4 km apart; type match
+way/287705340,Kwandarma Health Post,HEALTH_POST,e4cddc6d-c92b-4edc-91ae-2674fd24f3c2,Tunkunawa Health Post,HEALTH_POST,Minjibir,0.8135,review,0.5463,0.9987,0.002,True,name 55%; 0.0 km apart; type match
+way/291444193,Rinji Health Post,HEALTH_POST,f28ebc43-9b0f-499c-92de-ce38f4864d3b,Danmaliki Health Post,HEALTH_POST,Kabo,0.8087,review,0.5407,0.9923,0.012,True,name 54%; 0.0 km apart; type match
+way/291446797,Sule Galadima Garo General Hospital,HOSPITAL,43075e34-149d-4146-bc02-cfae20595fdf,Garo Primary Health Center,PHC,Kabo,0.8055,review,0.537,0.9993,0.001,False,name 54%; 0.0 km apart; type differs
+way/295383220,Lamco Pharmacy,PHARMACY,20b77ff6-292f-44db-b140-ec6f8bae5802,Almu Memorial Hospital,HOSPITAL,Tarauni,0.8047,review,0.6192,0.8017,0.332,False,name 62%; 0.3 km apart; type differs
+way/377493645,Dangi Pharmacy,PHARMACY,533272d4-33a8-4a85-8131-d3f16be699dc,Jaoji Primary Health Center,PHC,Tarauni,0.7946,review,0.6,0.8209,0.296,False,name 60%; 0.3 km apart; type differs
+node/12282340293,AFUWA CHEMIST,PHARMACY,b4a16e6a-1501-410f-a71a-10aa3e50097f,Galula Health Center,PHC,Ungogo,0.7941,review,0.7,0.5807,0.815,False,name 70%; 0.8 km apart; type differs
+node/12282454152,GANO RAHAMA CHEMIST,PHARMACY,2128c323-e326-4be0-b47a-080d3a615b1d,Dorayi Karama Primary Health Center,PHC,Gwale,0.7938,review,0.6976,0.5859,0.802,False,name 70%; 0.8 km apart; type differs
+node/7909953527,Amino Kanu Teaching Hospital,HOSPITAL,98a6b181-dd19-40c6-b373-993ed479a6da,Aminu Kano Teaching Hospital,HOSPITAL,Tarauni,0.7869,review,0.92,0.0369,4.951,True,name 92%; 5.0 km apart; type match
+node/12282454148,GIDAN MAGANI,PHARMACY,b4440aa9-b260-49f7-a2fd-161fb2c8b3ef,Dorayi Charity Health Post,HEALTH_POST,Gwale,0.7831,review,0.5873,0.8217,0.295,False,name 59%; 0.3 km apart; type differs
+way/792159540,Akth Primary Health Centre,PHC,2a59c1e1-e87d-4e5a-aa39-6dfbfd675c0d,Mallam Mohammed Abdullahi Wase Comprehensive Health Center,PHC,Kumbotso,0.7795,review,0.5152,0.9852,0.022,True,name 52%; 0.0 km apart; type match
+way/292065949,GSS Gramma Health Post,HEALTH_POST,4276024c-0131-4261-aa7f-dd858338dc05,Goverment Secondary School Health Clinic,CLINIC,Dawakin Tofa,0.7699,review,0.4991,0.9985,0.002,False,name 50%; 0.0 km apart; type differs
+node/12282454145,GANO MEDICINE STORE,PHARMACY,b4440aa9-b260-49f7-a2fd-161fb2c8b3ef,Dorayi Charity Health Post,HEALTH_POST,Gwale,0.7598,review,0.5944,0.7485,0.434,False,name 59%; 0.4 km apart; type differs
+node/2925699894,Kafin Dabga Health Post,HEALTH_POST,84451115-6162-42e5-836c-db4fcae62987,Zungurau Health Post,HEALTH_POST,Karaye,0.7474,review,0.4773,0.9992,0.001,True,name 48%; 0.0 km apart; type match
+node/12282340291,SARIRA 2,PHARMACY,b4a16e6a-1501-410f-a71a-10aa3e50097f,Galula Health Center,PHC,Ungogo,0.7401,review,0.5278,0.8631,0.221,False,name 53%; 0.2 km apart; type differs
+way/802981007,Universal Specialist Hospital,HOSPITAL,1a4c4c56-824b-4840-9427-319907b013b1,New H B Paediatric Hospital,HOSPITAL,Tarauni,0.7299,review,0.5,0.9071,0.146,True,name 50%; 0.1 km apart; type match
+way/291442540,Hawandawaki Health Post,HEALTH_POST,a4a51596-7284-4ce0-b607-2801d92b6ffe,Danbare Health Post,HEALTH_POST,Kumbotso,0.7242,review,0.456,0.9966,0.005,True,name 46%; 0.0 km apart; type match
+node/12282340295,DR KHALID TRADITIONAL HERBAL,PHARMACY,fa3a7abd-38f4-4c58-9196-e65c3dba35a6,Dantamashe Primary Health Center,PHC,Ungogo,0.721,review,0.4937,0.9034,0.152,False,name 49%; 0.2 km apart; type differs
+way/972938910,Task Force X Hospital,HOSPITAL,13003846-4f30-469c-a07a-be67ceccd7cc,Danlashi Model Health Center,PHC,Dala,0.7112,review,0.5913,0.6497,0.647,False,name 59%; 0.6 km apart; type differs
+node/2929137244,Gawon Bature Health Post,HEALTH_POST,c5d6850e-22be-4032-8e03-3a0d2e6327d6,Saye Health Post,HEALTH_POST,Bichi,0.711,review,0.4444,0.9987,0.002,True,name 44%; 0.0 km apart; type match
+node/12282454149,MADADI,CLINIC,014c1c22-97ab-4e74-b154-d3454fb69fdd,Madakin Gini Health Clinic,CLINIC,Dala,0.7045,review,0.85,0.0182,6.006,True,name 85%; 6.0 km apart; type match
+node/12282340285,SALMA MEDICINE STORE,PHARMACY,8239af78-d35d-4738-85de-03265470bf16,Gama Primary Health Center,PHC,Nassarawa,0.7037,review,0.6333,0.534,0.941,False,name 63%; 0.9 km apart; type differs
+node/12282454147,ATTAUFIQ MEDICINE STORE,PHARMACY,b4440aa9-b260-49f7-a2fd-161fb2c8b3ef,Dorayi Charity Health Post,HEALTH_POST,Gwale,0.6768,review,0.5062,0.784,0.365,False,name 51%; 0.4 km apart; type differs
+node/12282340292,MUHAMMADIYA,HOSPITAL,8239af78-d35d-4738-85de-03265470bf16,Gama Primary Health Center,PHC,Nassarawa,0.6759,review,0.5631,0.6463,0.655,False,name 56%; 0.7 km apart; type differs
+node/12282454144,ABDULFATAH PHARMACY,PHARMACY,b4440aa9-b260-49f7-a2fd-161fb2c8b3ef,Dorayi Charity Health Post,HEALTH_POST,Gwale,0.6669,review,0.4857,0.8138,0.309,False,name 49%; 0.3 km apart; type differs
+node/12282340286,NAZEE ALBARKA MEDICINE STORE,PHARMACY,fa3a7abd-38f4-4c58-9196-e65c3dba35a6,Dantamashe Primary Health Center,PHC,Ungogo,0.6664,review,0.4937,0.794,0.346,False,name 49%; 0.3 km apart; type differs
+node/12282340296,ZUMUNTA PROVISION AND MEDICAL STORE,PHARMACY,fa3a7abd-38f4-4c58-9196-e65c3dba35a6,Dantamashe Primary Health Center,PHC,Ungogo,0.6626,review,0.5857,0.5669,0.851,False,name 59%; 0.9 km apart; type differs
+node/12282454155,MUBARAKUN MEDICINE,CLINIC,2128c323-e326-4be0-b47a-080d3a615b1d,Dorayi Karama Primary Health Center,PHC,Gwale,0.6577,review,0.4996,0.7632,0.405,False,name 50%; 0.4 km apart; type differs
+node/13119419701,Al Ihsan Clinics and Surgery,CLINIC,a1b57e73-37f4-4b77-b88c-8d5755881fda,Yar Akwa Health Post,HEALTH_POST,Tarauni,0.6521,review,0.5476,0.6381,0.674,False,name 55%; 0.7 km apart; type differs
+node/12282454150,FIRST CLASS CLINIC AND MATERNITY,MATERNITY,ebb33b5c-2761-45c5-b942-5e4d0e94a38a,Chiranci Basic Health Center,PHC,Kumbotso,0.6472,review,0.6342,0.4221,1.294,False,name 63%; 1.3 km apart; type differs
+node/12282340287,A.Y CHEMIST KARSHEN AIKI,PHARMACY,fa3a7abd-38f4-4c58-9196-e65c3dba35a6,Dantamashe Primary Health Center,PHC,Ungogo,0.6373,review,0.5472,0.6115,0.738,False,name 55%; 0.7 km apart; type differs
+node/12282340284,ABU HANNEFA MEDICINE STORE,PHARMACY,b57afa1a-4ca9-432b-bab8-eea474fbc107,Dalal Health Clinic,CLINIC,Ungogo,0.6266,review,0.4923,0.7232,0.486,False,name 49%; 0.5 km apart; type differs
+node/12282340298,MEDICINE STORE,PHARMACY,90d771ec-9580-4300-bcd4-d138b99eb825,Mecure Diagnostic Center,,Fagge,0.6247,review,0.7937,0.0074,7.354,False,name 79%; 7.4 km apart
+way/794666440,Agwar Maje Maternity,MATERNITY,3f67a9f0-6d5f-405a-8a18-ec57578d1fd5,Bango Health Post,HEALTH_POST,Takai,0.6145,review,0.5333,0.6033,0.758,False,name 53%; 0.8 km apart; type differs
+node/12282340300,J MEDICAL CENTER,CLINIC,07ae4afd-7c01-4fe5-84ed-82acf61def83,Jaafaru Health Clinic,CLINIC,Nassarawa,0.6049,review,0.7429,0.0859,3.683,True,name 74%; 3.7 km apart; type match
+way/988008362,red cross hospital,HOSPITAL,4289e93a-daa3-409c-ae34-732c76abc285,Medicare Clinic,CLINIC,Tarauni,0.5995,review,0.6481,0.3025,1.794,False,name 65%; 1.8 km apart; type differs
+node/12282340297,NGY KORE CHEMIST,PHARMACY,e3903429-1128-4ad4-ad85-1797a2de9479,Dan Kurkuru Health Post,HEALTH_POST,Ungogo,0.5843,review,0.6212,0.3401,1.618,False,name 62%; 1.6 km apart; type differs
+way/794669968,Samanja Dispensary,DISPENSARY,3201fe91-86e9-4004-8036-a23a95a6ba53,Maganda Health Clinic,CLINIC,Doguwa,0.564,review,0.7429,0.0142,6.377,False,name 74%; 6.4 km apart; type differs
+node/12282454151,GIDAN MAGANI AL-MISBAH MEDICINE STORE,PHARMACY,ebb33b5c-2761-45c5-b942-5e4d0e94a38a,Chiranci Basic Health Center,PHC,Kumbotso,0.5582,review,0.5949,0.3577,1.542,False,name 59%; 1.5 km apart; type differs
+node/12282340290,B KABO MEDICINE STORE,PHARMACY,8239af78-d35d-4738-85de-03265470bf16,Gama Primary Health Center,PHC,Nassarawa,0.5569,review,0.5317,0.5061,1.021,False,name 53%; 1.0 km apart; type differs
+node/12282340289,DISCOUNT MEDICINE,PHARMACY,b4a16e6a-1501-410f-a71a-10aa3e50097f,Galula Health Center,PHC,Ungogo,0.5364,no_match,0.4085,0.7652,0.401,False,name 41%; 0.4 km apart; type differs
+node/12282454146,BILKISU MEDICAL CENTER TINGA,CLINIC,ebb33b5c-2761-45c5-b942-5e4d0e94a38a,Chiranci Basic Health Center,PHC,Kumbotso,0.5315,no_match,0.5842,0.3371,1.631,False,name 58%; 1.6 km apart; type differs
+node/12282340288,RIMIN KEBE MEDICINE STORE,PHARMACY,90d771ec-9580-4300-bcd4-d138b99eb825,Mecure Diagnostic Center,,Fagge,0.4828,no_match,0.6752,0.0373,4.935,False,name 68%; 4.9 km apart
+way/794667023,Shirgiya Health Clinic,CLINIC,29c86ec3-ac3f-4d63-aa0f-bc509b8c7a1b,Birnin Bako Health Post,HEALTH_POST,Takai,0.471,no_match,0.6212,0.146,2.886,False,name 62%; 2.9 km apart; type differs

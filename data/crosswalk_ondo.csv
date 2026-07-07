@@ -1,0 +1,14 @@
+osm_id,osm_name,osm_type,hfr_id,hfr_name,hfr_type,hfr_lga,probability,decision,factor_name,factor_geo,distance_km,type_agree,explanation
+way/1296015365,First Mercy Specialist Hospital,HOSPITAL,15a26a1c-1c23-4e62-945e-9d98383b0599,First Mercy Specialist Hospital,HOSPITAL,Akure South,0.9809,match,1.0,0.9654,0.053,True,name 100%; 0.1 km apart; type match
+node/11258951837,Aaye Primary Health Clinic,CLINIC,c905181b-f552-43cf-8e22-5a004acb7ae5,Aaye Basic Health Center,PHC,Ifedore,0.9551,match,0.8281,0.992,0.012,False,name 83%; 0.0 km apart; type differs
+node/11258946337,"BHC, Ilere",HOSPITAL,1cc92112-ab94-4e37-b34e-5f06049c0697,Ilere Basic Health Center,PHC,Ifedore,0.9303,match,0.7619,0.9604,0.061,False,name 76%; 0.1 km apart; type differs
+way/1244224733,General Hospital Idanre,HOSPITAL,fd8f28f0-d705-4825-9dab-21a92c9dfb97,Alade Idanre General Hospital,HOSPITAL,Idanre,0.8956,review,0.6667,0.9919,0.012,True,name 67%; 0.0 km apart; type match
+way/1169558004,New FUTA Clinic,CLINIC,a1e7816a-c5e6-481e-9127-6f21775a760f,New Day Clinic,CLINIC,Ifedore,0.8542,match,0.8679,0.3574,1.543,True,name 87%; 1.5 km apart; type match
+node/11938975201,Christ Bay Consultant Hospital,HOSPITAL,19e44223-c074-4142-8990-a82b58c391d7,Orita Obele Basic Health Center,PHC,Ifedore,0.7277,review,0.648,0.549,0.899,False,name 65%; 0.9 km apart; type differs
+node/11934296154,Olyros Hospital,HOSPITAL,4156e0ab-0fa8-4b72-b22e-6274b0777dfd,Molayo Hospital,HOSPITAL,Ifedore,0.6108,review,0.7778,0.013,6.512,True,name 78%; 6.5 km apart; type match
+node/11934291536,Will Of God Medicine & Supermarket,PHARMACY,19e44223-c074-4142-8990-a82b58c391d7,Orita Obele Basic Health Center,PHC,Ifedore,0.5958,review,0.5752,0.4701,1.132,False,name 58%; 1.1 km apart; type differs
+node/11940012011,God Save Patient Medicine & Provision,CLINIC,19e44223-c074-4142-8990-a82b58c391d7,Orita Obele Basic Health Center,PHC,Ifedore,0.5368,no_match,0.5656,0.3907,1.41,False,name 57%; 1.4 km apart; type differs
+way/992712620,University Health Centre,PHC,9c8aebf2-e7b4-4bf1-88f4-916aee3c13fb,Idasen Primary Health Center,PHC,Owo,0.5364,no_match,0.6056,0.2947,1.833,True,name 61%; 1.8 km apart; type match
+node/11938897152,Obaby Clinic,CLINIC,14f0eccf-6fbf-49a8-bca9-a7f1edd8215a,Igoba Basic Health Center,PHC,Akure North,0.5255,no_match,0.7212,0.0055,7.793,False,name 72%; 7.8 km apart; type differs
+node/11938989612,PX Pharmacy,PHARMACY,19c44c6d-f0c4-4abe-9fb0-87016cfc52b6,Ipinsa Health Center,PHC,Ifedore,0.3627,no_match,0.5556,0.1126,3.276,False,name 56%; 3.3 km apart; type differs
+way/581983942,36.6,PHARMACY,a3a691b2-ce3d-4d0a-b84a-41b5b1c91ec1,32 Brigade Medical Center,CLINIC,Akure South,0.2029,no_match,0.45,0.0227,5.675,False,name 45%; 5.7 km apart; type differs
