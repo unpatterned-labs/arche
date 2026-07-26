@@ -1,0 +1,103 @@
+osm_id,osm_name,osm_type,hfr_id,hfr_name,hfr_type,hfr_lga,probability,decision,factor_name,factor_geo,distance_km,type_agree,explanation
+node/2154481142,Ayolik Medical Center,CLINIC,74ebcd03-8a47-4357-a5fc-1fd962a4c8e9,Ayolik Medical Center,CLINIC,Oredo,0.9824,match,1.0,0.9955,0.007,True,name 100%; 0.0 km apart; type match
+node/2161111314,Urban Health Center,PHC,08fcb2c6-7d4b-4404-862d-c23b4be6137a,Urban Primary Health Center,PHC,Oredo,0.9824,match,1.0,0.9946,0.008,True,name 100%; 0.0 km apart; type match
+way/84169534,NNPC Medical Centre,CLINIC,a415679a-12fe-4ef3-84c9-92973f67e5c1,Nnpc Medical Center,CLINIC,Oredo,0.9824,match,1.0,0.9922,0.012,True,name 100%; 0.0 km apart; type match
+way/85516068,Shalom Dental Clinic,CLINIC,77825328-dbfd-43c8-a7a6-e16e0fe619a8,Shalom Dental Clinic,CLINIC,Oredo,0.9824,match,1.0,0.9929,0.011,True,name 100%; 0.0 km apart; type match
+way/189364697,OSASIMA NURSING AND MATERNITY HOME,MATERNITY,3f93d72b-2f9a-4e4a-a350-db7f3db11036,Osasima Nursing and Maternity,MATERNITY,Egor,0.9824,match,1.0,0.9962,0.006,True,name 100%; 0.0 km apart; type match
+way/283791637,UKHIRI HEALTH CENTRE,PHC,5015a5cc-d1f6-4d7f-93ed-bd6d56fdfb66,Ukhiri Primary Health Center,PHC,Ikpoba-Okha,0.9824,match,1.0,0.9914,0.013,True,name 100%; 0.0 km apart; type match
+way/791290846,ST James Clinic and Maternity,MATERNITY,bd45e4e9-548e-4bf3-9dc0-0d3e6251c8af,St James Clinic and Maternity,MATERNITY,Egor,0.9824,match,1.0,0.996,0.006,True,name 100%; 0.0 km apart; type match
+way/791453138,Bupa Medical Centre,CLINIC,bbc42b47-8d7b-429c-b0c3-ab4d1c76bcb7,Bupa Medical Center,CLINIC,Oredo,0.9824,match,1.0,0.9925,0.011,True,name 100%; 0.0 km apart; type match
+way/791453142,Azuwa Hospital,HOSPITAL,a4471527-57a3-406b-abe9-b59e7ab57752,Azuwa Hospital,HOSPITAL,Oredo,0.9824,match,1.0,0.9978,0.003,True,name 100%; 0.0 km apart; type match
+way/188794645,BETHSAIDA MISSIONARY CLINIC,CLINIC,a96abfab-e550-48e2-a79b-e656b2504024,Bethsaida Missionary Clinic,CLINIC,Egor,0.9819,match,1.0,0.9882,0.018,True,name 100%; 0.0 km apart; type match
+way/791290848,Lella Specialist Hospital,HOSPITAL,714b63eb-a419-4d00-9703-c246c49c3735,Lella Specialist Hospital,HOSPITAL,Oredo,0.9819,match,1.0,0.9867,0.02,True,name 100%; 0.0 km apart; type match
+way/791290853,Irowa Medical Center,CLINIC,9a5e800d-602e-4ee1-a518-8502442cb95c,Irowa Medical Center,CLINIC,Oredo,0.9818,match,1.0,0.9843,0.024,True,name 100%; 0.0 km apart; type match
+way/791453147,Christ Medical Center,CLINIC,6fcf8400-e302-4956-940e-5fae5a2c3d17,Christ Medical Center,CLINIC,Oredo,0.9818,match,1.0,0.9844,0.024,True,name 100%; 0.0 km apart; type match
+way/791290840,Quality Medical Centre,CLINIC,3bcfca11-31cd-4a4c-94eb-3cf2f37a068f,Quality Medical Center,CLINIC,Egor,0.9816,match,1.0,0.9807,0.029,True,name 100%; 0.0 km apart; type match
+way/803644032,Udo Primary Health Center,PHC,83f9130b-cea5-4665-9af5-cedbe6ab7f97,Udo Primary Health Center,PHC,Ovia South-West,0.9811,match,1.0,0.9695,0.046,True,name 100%; 0.0 km apart; type match
+way/791453146,NAF Medical Centre,CLINIC,c389bb5c-4a33-4ac3-a3b6-e723ab4ff168,Naf Medical Center,CLINIC,Oredo,0.9794,match,1.0,0.9324,0.105,True,name 100%; 0.1 km apart; type match
+way/791453130,Fouintain Of Life Hospital,HOSPITAL,cc6b1c57-a5a8-4a46-98bd-2ae736d4d7a9,Fountain of Life Hospital,HOSPITAL,Oredo,0.9792,match,0.9697,0.9933,0.01,True,name 97%; 0.0 km apart; type match
+way/862592003,Military Hospital,HOSPITAL,72bf2d52-e540-40fd-9f26-c23d5147fc14,Military Hospital,HOSPITAL,Oredo,0.979,match,1.0,0.9241,0.118,True,name 100%; 0.1 km apart; type match
+way/47380654,Time Medical Clinic & Maternity,MATERNITY,eae4c253-3417-47de-bc4c-a2f5f803e3d5,Time Medical Clinic and Maternity,MATERNITY,Oredo,0.9779,match,0.9644,0.9855,0.022,True,name 96%; 0.0 km apart; type match
+way/84169502,Prime Optical Eye Clinic,CLINIC,cf73311e-bc1c-465f-ac76-c959cf7913db,Prime Optical and Eye Clinic,CLINIC,Oredo,0.9774,match,0.9619,0.983,0.026,True,name 96%; 0.0 km apart; type match
+way/791453150,Itual Medical centre,CLINIC,54aee2d3-0ef4-42ab-bb33-75a88456f953,Itua Medical Center,CLINIC,Oredo,0.9766,match,0.96,0.9711,0.044,True,name 96%; 0.0 km apart; type match
+node/2154559295,Horatio Dential Clinic,CLINIC,f9bf0b7a-5dba-4627-8c73-99698edb5b56,Horation Dental,PHC,Oredo,0.9762,match,0.9448,0.9914,0.013,False,name 94%; 0.0 km apart; type differs
+way/124707662,Ihenhen medical centre,CLINIC,0e4fdf8e-f182-410c-9481-80cb4fa319d6,Ihenyen Medical Center,CLINIC,Oredo,0.975,match,0.9429,0.9837,0.025,True,name 94%; 0.0 km apart; type match
+way/85704339,Edi International Hospital,HOSPITAL,e2d79569-7610-429c-bf48-8cdd0b88453f,Edi Inetrnational Limited,PHC,Oredo,0.9725,match,0.9242,0.9867,0.02,False,name 92%; 0.0 km apart; type differs
+way/790442217,Aljumah Maternity and Nursing Home,MATERNITY,d16463a4-f103-4e62-97a8-3b8e638c2052,Aljumah Nursing and Maternity Home,MATERNITY,Egor,0.9698,match,0.9057,0.9897,0.015,True,name 91%; 0.0 km apart; type match
+node/2154223853,Abe Medical Clinic and Maternity,MATERNITY,da7a466d-bc66-4b1a-9841-87449996fb59,Medical Clinic and Maternity,MATERNITY,Oredo,0.9696,match,0.9,0.9975,0.004,True,name 90%; 0.0 km apart; type match
+way/124707617,Bethel faith medical centre and maternity,CLINIC,6286ff43-1527-437e-bac6-af36db3f2a2c,Bethel Faith Medical Center,CLINIC,Oredo,0.9672,match,0.8923,0.986,0.021,True,name 89%; 0.0 km apart; type match
+way/791290842,The Lord Maternity and Nursing Home,MATERNITY,68b35cc0-b929-4248-8df8-4f9f2dab26ad,The Lords Maternityand Nursing Home,MATERNITY,Egor,0.9658,match,0.8789,0.9908,0.014,True,name 88%; 0.0 km apart; type match
+way/47395584,Amuiuwu Hospital,HOSPITAL,9929d41a-b4ba-46d1-87ec-67026d748e5b,Aimiuwu Hospital,HOSPITAL,Oredo,0.9616,match,0.8571,0.9975,0.004,True,name 86%; 0.0 km apart; type match
+way/84169707,Syncamore HHospital,HOSPITAL,d447eb70-2a32-4bed-b233-c47c67ed8e21,Sycamore Hospital,HOSPITAL,Oredo,0.9591,match,0.8456,0.9987,0.002,True,name 85%; 0.0 km apart; type match
+way/790442215,A1 Winnes Maternity and Nursing Home,MATERNITY,1f42c7df-5d03-4fc0-89cb-b8a9561edb8d,A1 Winner Clinic and Maternity,MATERNITY,Egor,0.9573,match,0.8456,0.9804,0.03,True,name 85%; 0.0 km apart; type match
+way/791290851,Ayuko hospital,HOSPITAL,15694716-9a22-4fd3-86d1-6543fef51420,Ayunko Clinic and Maternity Home,MATERNITY,Akoko-Edo,0.9546,match,0.8353,0.978,0.033,False,name 84%; 0.0 km apart; type differs
+way/803663095,PRIMARY HEALTH CARE,HOSPITAL,e1b7b358-503f-40b3-a03d-20cae067f91e,Utagban Primary Health Care,PHC,Oredo,0.9546,match,0.8261,0.9922,0.012,False,name 83%; 0.0 km apart; type differs
+way/791453151,Chisi Cottage Clinic,CLINIC,ff829fe4-16cf-455e-9240-97ac4e74e9d7,Christ Cottage Clinic and Maternity,MATERNITY,Egor,0.9444,match,0.7964,0.9809,0.029,False,name 80%; 0.0 km apart; type differs
+node/2161111550,Valif Pharmacy,PHARMACY,74ebcd03-8a47-4357-a5fc-1fd962a4c8e9,Ayolik Medical Center,CLINIC,Oredo,0.8938,review,0.7,0.912,0.138,False,name 70%; 0.1 km apart; type differs
+node/2154569173,Itohan Chemist,PHARMACY,49e0e37d-b287-4db9-b9b8-ecaa070272f9,Itohan Medical Center,CLINIC,Egor,0.8801,match,1.0,0.1376,2.975,False,name 100%; 3.0 km apart; type differs
+way/160171778,Itidiare Care,HOSPITAL,10fdacc1-42c8-418a-b60d-a2877107e3f4,Divine Care Health Center,PHC,Egor,0.8782,review,0.7257,0.7851,0.363,False,name 73%; 0.4 km apart; type differs
+node/2154571096,Life Line Medicare Clinic,CLINIC,0c0524bc-372f-4770-adc4-ce8de25f847b,Efe Medical Clinic,CLINIC,Oredo,0.8572,match,0.7795,0.5788,0.82,True,name 78%; 0.8 km apart; type match
+node/2161071405,Nasi Pharmacy,PHARMACY,cc6b1c57-a5a8-4a46-98bd-2ae736d4d7a9,Fountain of Life Hospital,HOSPITAL,Oredo,0.8521,review,0.6458,0.8807,0.191,False,name 65%; 0.2 km apart; type differs
+way/791453129,Aronsaye Maternity,MATERNITY,2cec0252-bd47-43fe-a906-b13d977c03e4,Ariowa Clinic,CLINIC,Oredo,0.8509,match,0.7778,0.5613,0.866,False,name 78%; 0.9 km apart; type differs
+way/499729830,Central Hospital,HOSPITAL,e2d79569-7610-429c-bf48-8cdd0b88453f,Edi Inetrnational Limited,PHC,Oredo,0.8442,review,0.699,0.7274,0.477,False,name 70%; 0.5 km apart; type differs
+way/803283404,Federal Neuro-Psychiatric Hospital,HOSPITAL,2910179d-ec4e-43df-b780-8e3b4aa3c771,Psychiatric Hospital,HOSPITAL,Egor,0.8434,review,0.6111,0.9348,0.101,True,name 61%; 0.1 km apart; type match
+node/1994159677,Conic Patent Medical Store,PHARMACY,1f42c7df-5d03-4fc0-89cb-b8a9561edb8d,A1 Winner Clinic and Maternity,MATERNITY,Egor,0.8429,review,0.6033,0.9519,0.074,False,name 60%; 0.1 km apart; type differs
+node/2161111257,Union Diagnostics,PHARMACY,9a5e800d-602e-4ee1-a518-8502442cb95c,Irowa Medical Center,CLINIC,Oredo,0.8416,review,0.5922,0.9743,0.039,False,name 59%; 0.0 km apart; type differs
+node/2000020871,reliance medical laboratary,PHARMACY,ae515d32-c1d6-405d-b798-601dc8195bdf,Mega Clinic and Maternity,MATERNITY,Egor,0.8382,review,0.6289,0.8759,0.199,False,name 63%; 0.2 km apart; type differs
+way/791453152,Ewaen Clinic&Maternity,MATERNITY,3b529b09-cc2d-4163-bba9-1e6d6a7d4ec4,Edo Maternity and Child Clinic,MATERNITY,Oredo,0.8358,review,0.6564,0.8028,0.329,True,name 66%; 0.3 km apart; type match
+way/84169520,St. Robina Hospitle,HOSPITAL,bbdb4e40-7d2a-4e21-8e46-161ad6cd3849,Alpha Specialist,HOSPITAL,Oredo,0.8342,review,0.5838,0.9713,0.044,True,name 58%; 0.0 km apart; type match
+way/84169606,Children Clinic,CLINIC,a4baca67-efbf-4192-9da4-b66fd20561af,Modic Children Hospital,HOSPITAL,Oredo,0.8327,review,0.7738,0.5129,1.001,False,name 77%; 1.0 km apart; type differs
+node/2161074868,Royal end pharmancy,PHARMACY,0f159374-1a65-4110-8689-c172759cb276,St Maternityhais Anglican Hospital,HOSPITAL,Oredo,0.8324,review,0.6578,0.789,0.355,False,name 66%; 0.4 km apart; type differs
+node/2344590784,Gods Care Mortuary,HOSPITAL,054c8033-9a47-4d14-a813-67cf47363766,Godscare Clinic,CLINIC,Egor,0.8273,review,0.8889,0.2219,2.258,False,name 89%; 2.3 km apart; type differs
+node/2161071550,New Smile Dental Clinic,CLINIC,0c0524bc-372f-4770-adc4-ce8de25f847b,Efe Medical Clinic,CLINIC,Oredo,0.8244,review,0.6454,0.7945,0.345,True,name 65%; 0.3 km apart; type match
+node/2072621420,"Pharmacist Council, Edo State Medical Store",PHARMACY,b1513d9f-452c-47ca-82a8-d52bfcabe33e,Oviasu Medical Center,CLINIC,Egor,0.8227,review,0.5832,0.9383,0.096,False,name 58%; 0.1 km apart; type differs
+node/2154559627,IK Pharmacy,PHARMACY,5b771110-2676-4311-b202-b2b15a7eddb3,Ikpema Health Certer,PHC,Oredo,0.8214,review,0.76,0.5121,1.004,False,name 76%; 1.0 km apart; type differs
+node/2344596628,Toni Care Pharmacy,PHARMACY,0746fcbc-ab52-4b70-9aae-88924a9038b5,God Is Care Hospital,HOSPITAL,Oredo,0.8196,review,0.7571,0.5139,0.999,False,name 76%; 1.0 km apart; type differs
+node/2152941179,Airen Pharmacy,PHARMACY,9a5e800d-602e-4ee1-a518-8502442cb95c,Irowa Medical Center,CLINIC,Oredo,0.8186,review,0.6,0.8862,0.181,False,name 60%; 0.2 km apart; type differs
+node/2155787295,Ladith centre pharmacy,PHARMACY,e2d79569-7610-429c-bf48-8cdd0b88453f,Edi Inetrnational Limited,PHC,Oredo,0.8158,review,0.6231,0.8231,0.292,False,name 62%; 0.3 km apart; type differs
+node/2153205858,Flowell Pharmacy,PHARMACY,9a5e800d-602e-4ee1-a518-8502442cb95c,Irowa Medical Center,CLINIC,Oredo,0.8123,review,0.5619,0.9593,0.062,False,name 56%; 0.1 km apart; type differs
+node/2072662184,Medicine Store,PHARMACY,715dc1b4-223f-4efc-a2e3-3dd1f38947b3,Redeem Nursing and Meternity,PHC,Egor,0.807,review,0.605,0.8419,0.258,False,name 60%; 0.3 km apart; type differs
+way/84257882,Shepherd's Lab,HOSPITAL,77041830-a88b-4596-bfb9-d22778062db4,Ekpen Hospital,HOSPITAL,Oredo,0.8059,review,0.6048,0.8394,0.263,True,name 60%; 0.3 km apart; type match
+way/803314853,Lily Hospitals Limited,HOSPITAL,767b4044-63fc-48e9-aa71-a898b747dbfe,Ropheka Specialist Clinic and Maternity,MATERNITY,Egor,0.8055,review,0.6687,0.6857,0.566,False,name 67%; 0.6 km apart; type differs
+way/84396919,ALF Pharmacy and Stores,PHARMACY,5b771110-2676-4311-b202-b2b15a7eddb3,Ikpema Health Certer,PHC,Oredo,0.8035,review,0.5738,0.9068,0.147,False,name 57%; 0.1 km apart; type differs
+node/2344554585,Jofeg health and life pharmacy,PHARMACY,e2d79569-7610-429c-bf48-8cdd0b88453f,Edi Inetrnational Limited,PHC,Oredo,0.8018,review,0.6105,0.8148,0.307,False,name 61%; 0.3 km apart; type differs
+node/2344596615,Service Pharmacetical,PHARMACY,b3e18a0b-f13e-45da-9158-bc0b11c03473,Safe Heaven Medical Center,CLINIC,Oredo,0.7981,review,0.6378,0.7397,0.452,False,name 64%; 0.5 km apart; type differs
+node/1995055581,Royal Okhia Pharmacy,PHARMACY,ae515d32-c1d6-405d-b798-601dc8195bdf,Mega Clinic and Maternity,MATERNITY,Egor,0.7896,review,0.5293,0.9768,0.035,False,name 53%; 0.0 km apart; type differs
+node/2160629703,Assurance Medical Lab,,da7a466d-bc66-4b1a-9841-87449996fb59,Medical Clinic and Maternity,MATERNITY,Oredo,0.7846,review,0.6154,0.7584,0.415,False,name 62%; 0.4 km apart
+way/188794646,Blue Cross Clinic,CLINIC,0fa22e16-d57b-4196-b6be-c90400bfe861,St Johns Hospital,HOSPITAL,Egor,0.7824,review,0.5583,0.8893,0.176,False,name 56%; 0.2 km apart; type differs
+node/2072662363,Okungbowa Medical Store,PHARMACY,715dc1b4-223f-4efc-a2e3-3dd1f38947b3,Redeem Nursing and Meternity,PHC,Egor,0.7813,review,0.56,0.8824,0.188,False,name 56%; 0.2 km apart; type differs
+node/2344543050,Newgate Trust Pharmacy,PHARMACY,cf91738c-4143-4610-b92d-de902a75941b,Universal Medical Center,CLINIC,Oredo,0.7724,review,0.5801,0.8127,0.311,False,name 58%; 0.3 km apart; type differs
+way/791453141,Okorare Clinic and Maternity,MATERNITY,eae4c253-3417-47de-bc4c-a2f5f803e3d5,Time Medical Clinic and Maternity,MATERNITY,Oredo,0.7722,review,0.6343,0.6827,0.573,True,name 63%; 0.6 km apart; type match
+node/1995054549,Kelvin Medical Store,PHARMACY,24f65cbe-82af-4ceb-85a2-a457b33f581a,Ogida Primary Health Clinic,CLINIC,Egor,0.7657,review,0.5342,0.9061,0.148,False,name 53%; 0.1 km apart; type differs
+way/791290857,Oretse Medical Centre,CLINIC,f9bf0b7a-5dba-4627-8c73-99698edb5b56,Horation Dental,PHC,Oredo,0.7654,review,0.6444,0.6423,0.664,False,name 64%; 0.7 km apart; type differs
+node/2161060443,Josaf Pharm,PHARMACY,0c0524bc-372f-4770-adc4-ce8de25f847b,Efe Medical Clinic,CLINIC,Oredo,0.76,review,0.5152,0.9384,0.095,False,name 52%; 0.1 km apart; type differs
+node/2344280071,Calvary Medical Centre,CLINIC,eae4c253-3417-47de-bc4c-a2f5f803e3d5,Time Medical Clinic and Maternity,MATERNITY,Oredo,0.7551,review,0.5197,0.9162,0.131,False,name 52%; 0.1 km apart; type differs
+way/47419701,Calvary Medical Centre,CLINIC,eae4c253-3417-47de-bc4c-a2f5f803e3d5,Time Medical Clinic and Maternity,MATERNITY,Oredo,0.7541,review,0.5197,0.914,0.135,False,name 52%; 0.1 km apart; type differs
+node/2154570763,Korban Pharmacy & Stores,PHARMACY,48b7b73d-53e2-4b03-8048-1bd740225072,Oredo,PHC,Oredo,0.7511,review,0.5111,0.9276,0.113,False,name 51%; 0.1 km apart; type differs
+way/84435530,Globa Medical Clinic,CLINIC,40a33756-3913-40c1-bc0f-a6168ff6db94,Orakx Medical,PHC,Egor,0.742,review,0.8462,0.107,3.352,False,name 85%; 3.4 km apart; type differs
+way/791290850,University Of Benin Teaching Hospital,HOSPITAL,cf91738c-4143-4610-b92d-de902a75941b,Universal Medical Center,CLINIC,Oredo,0.7409,review,0.8292,0.1451,2.896,False,name 83%; 2.9 km apart; type differs
+node/1994159685,Recall Life Pharmacy,PHARMACY,1f42c7df-5d03-4fc0-89cb-b8a9561edb8d,A1 Winner Clinic and Maternity,MATERNITY,Egor,0.7383,review,0.5193,0.8795,0.193,False,name 52%; 0.2 km apart; type differs
+node/2350849577,Ehibass Pharmacy Store,PHARMACY,1da8c96d-830a-4cb9-b8d1-1f6a851b50ab,St Angelas Royal Nursing and Maternity Home,MATERNITY,Oredo,0.7354,review,0.5601,0.7754,0.381,False,name 56%; 0.4 km apart; type differs
+node/2075846072,Doctors Quarters,CLINIC,cc6b1c57-a5a8-4a46-98bd-2ae736d4d7a9,Fountain of Life Hospital,HOSPITAL,Oredo,0.7315,review,0.5298,0.8395,0.262,False,name 53%; 0.3 km apart; type differs
+node/2153205718,Flowell Pharnacy,PHARMACY,0c0524bc-372f-4770-adc4-ce8de25f847b,Efe Medical Clinic,CLINIC,Oredo,0.7312,review,0.529,0.8406,0.26,False,name 53%; 0.3 km apart; type differs
+way/804230170,Maviscope Hospital & Fertility Centre,HOSPITAL,766ac1b3-2872-4799-a0de-8800cbe88072,Ekae Primary Health Care,PHC,Oredo,0.721,review,0.6346,0.5669,0.851,False,name 63%; 0.9 km apart; type differs
+way/791453132,Westend Clinic,CLINIC,77041830-a88b-4596-bfb9-d22778062db4,Ekpen Hospital,HOSPITAL,Oredo,0.7207,review,0.6762,0.4669,1.142,False,name 68%; 1.1 km apart; type differs
+node/1994157404,Medicine Store,PHARMACY,d16463a4-f103-4e62-97a8-3b8e638c2052,Aljumah Nursing and Maternity Home,MATERNITY,Egor,0.7156,review,0.5259,0.815,0.307,False,name 53%; 0.3 km apart; type differs
+node/2154550310,Golden Berries,PHARMACY,67964731-f305-45b3-8ca9-578f40feb907,Igbinedion School Medical Center,CLINIC,Ikpoba-Okha,0.7152,review,0.613,0.6063,0.751,False,name 61%; 0.8 km apart; type differs
+way/44962191,Center for Research and Preventive Health Care,HOSPITAL,54aee2d3-0ef4-42ab-bb33-75a88456f953,Itua Medical Center,CLINIC,Oredo,0.7093,review,0.5145,0.8292,0.281,False,name 51%; 0.3 km apart; type differs
+node/2344590802,Time Mortuary,HOSPITAL,ff829fe4-16cf-455e-9240-97ac4e74e9d7,Christ Cottage Clinic and Maternity,MATERNITY,Egor,0.7062,review,0.5618,0.7099,0.514,False,name 56%; 0.5 km apart; type differs
+way/791453133,Igbinobaro Medical center,CLINIC,67964731-f305-45b3-8ca9-578f40feb907,Igbinedion School Medical Center,CLINIC,Ikpoba-Okha,0.7051,review,0.8224,0.0854,3.691,True,name 82%; 3.7 km apart; type match
+node/2161108211,Sumel Optomentry,,0f159374-1a65-4110-8689-c172759cb276,St Maternityhais Anglican Hospital,HOSPITAL,Oredo,0.7015,review,0.5297,0.7768,0.379,False,name 53%; 0.4 km apart
+way/188794680,OSIMIKE HEALTH SERVICE,HOSPITAL,fa8e8bc5-6fc2-4de3-b8ec-1c26cc83f916,Concordia Medical Center,CLINIC,Egor,0.6995,review,0.4899,0.8678,0.213,False,name 49%; 0.2 km apart; type differs
+node/2072621416,Osimike Health Service,HOSPITAL,fa8e8bc5-6fc2-4de3-b8ec-1c26cc83f916,Concordia Medical Center,CLINIC,Egor,0.6921,review,0.4899,0.853,0.239,False,name 49%; 0.2 km apart; type differs
+node/2161078992,Society for Family Health,CLINIC,2c9dd00f-2606-4363-bdee-616047674da0,Memorial Hospital Ajayi Oriaito,HOSPITAL,Oredo,0.6822,review,0.5754,0.6293,0.695,False,name 58%; 0.7 km apart; type differs
+node/2350899870,Julsam Pharmacy,PHARMACY,d34d3eec-fc5c-465f-93f3-2fb1cdbf65bf,Wilbon First Care Clinic,CLINIC,Oredo,0.6743,review,0.4837,0.833,0.274,False,name 48%; 0.3 km apart; type differs
+node/2075846061,Coka Pharmarcy,PHARMACY,70ff773b-6593-4882-9bcb-92ca6c68b644,The Rock Hospital,HOSPITAL,Oredo,0.6738,review,0.5595,0.6509,0.644,False,name 56%; 0.6 km apart; type differs
+node/2350815002,Ladith Pharmacy,PHARMACY,9fe66ef5-5fd4-4d0f-ac6d-9ca982f84407,Partland Clinic and Maternity,MATERNITY,Egor,0.6689,review,0.5655,0.6271,0.7,False,name 57%; 0.7 km apart; type differs
+way/47161450,Benoni Hospital,HOSPITAL,a415679a-12fe-4ef3-84c9-92973f67e5c1,Nnpc Medical Center,CLINIC,Oredo,0.6645,review,0.4722,0.8414,0.259,False,name 47%; 0.3 km apart; type differs
+node/2161097166,Spring Oak Pharmacy,PHARMACY,b56f271c-7aea-43cd-8c46-63cd90156c1f,Nigeria Airforce Hospital,HOSPITAL,Oredo,0.6373,review,0.5696,0.5579,0.875,False,name 57%; 0.9 km apart; type differs
+way/791290838,Excellent Medical Centre,CLINIC,d16463a4-f103-4e62-97a8-3b8e638c2052,Aljumah Nursing and Maternity Home,MATERNITY,Egor,0.637,review,0.4425,0.8611,0.224,False,name 44%; 0.2 km apart; type differs
+way/791453134,Hanora Clinic,CLINIC,54aee2d3-0ef4-42ab-bb33-75a88456f953,Itua Medical Center,CLINIC,Oredo,0.6321,review,0.4722,0.7811,0.371,True,name 47%; 0.4 km apart; type match
+node/4987528630,EDMARK,PHARMACY,c472c069-62fa-4e67-a5f1-622c43f47631,Na Health Center,PHC,Oredo,0.628,review,0.5556,0.5746,0.831,False,name 56%; 0.8 km apart; type differs
+node/4987528631,COKA Pharmarcy,PHARMACY,d5ccc3b0-f935-4111-bc5a-54004e38c992,Oko Primary Health Center,PHC,Oredo,0.5996,review,0.6032,0.41,1.337,False,name 60%; 1.3 km apart; type differs
+node/2344332416,Pharmacy,PHARMACY,ff829fe4-16cf-455e-9240-97ac4e74e9d7,Christ Cottage Clinic and Maternity,MATERNITY,Egor,0.1138,no_match,0.0,0.8068,0.322,False,name 0%; 0.3 km apart; type differs

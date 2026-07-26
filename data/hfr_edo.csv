@@ -1,0 +1,973 @@
+id,name,alternate_name,category,lga,ward_code,lon,lat
+619cc234-1efd-4132-ac66-74db3597f339,Abudu General Hospital,,General Hospital,Orhionmwon,EDSABD11,6.02039000000002,6.29418000000004
+4a7af38f-8136-4114-88f5-6b0347c5f065,Aigbodun Clinic and Maternity,,Maternity Home,Orhionmwon,EDSABD11,6.0266900000000305,6.28973000000002
+b558ef20-1263-4280-a3f8-0c9e326b0a7e,Abudu Hospital,Abudu 1st Care And Medical Center,Private Non Profit,Orhionmwon,EDSABD11,6.031650578234496,6.294533465398371
+9b559192-5162-46fe-9eb7-c451d83eb5d7,Oloten Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD11,6.038736080356632,6.2898847850409885
+ca82fd83-f6ee-4018-babf-72d8a4cc01c5,Oheze Naka Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD12,6.0210597590689945,6.203153457404107
+3c071c98-1fad-4b7a-9663-2d31576b02aa,Dekins First Trinity Clinic,,Primary Health Center,Orhionmwon,EDSABD11,6.0283203130000516,6.295715332000043
+ff0f35dc-116a-491f-a3ee-91647e2cedfe,Evbobanosa Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD11,5.98327636700003,6.292907714000023
+205afd7b-d9c6-44bb-bd4f-2ab69b890a73,Ebudin Primary Health Center,,Primary Health Center,Esan Central,EDSRRU05,6.16997354458597,6.58958424276198
+fc3d0748-19a8-4b9e-8ddb-781e34518023,Imiegba Primary Health Center,,Primary Health Center,Etsako West,EDSAUC08,6.306492,7.098046999999999
+27bda8b8-e2e4-48b6-bcef-7149add34339,Okokhuo Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA05,5.603252999999999,6.584305
+47cf7e05-a409-4e84-9980-ae03f0948235,Osas Nursing and Maternity Home,Osasu Nursing And Maternity Home Ugbekun,Maternity Home,Ikpoba-Okha,EDSDGE01,5.69171142600004,6.348693848000039
+b7b31a4e-71be-443d-8b27-e3fcd33fe2d0,Okalo Primary Health Center,,Primary Health Center,Iguegben,EDSGUE06,6.2329101560000595,6.509704590000069
+054c8033-9a47-4d14-a813-67cf47363766,Godscare Clinic,,Primary Health Center,Egor,EDSUSL09,5.584211000000001,6.348271
+d2450482-cecb-4145-9490-42c8def8ec14,Eror Primary Health Center,,Primary Health Center,Esan North-East,EDSURM08,6.31883032860026,6.723875390461141
+bad0652c-cb2d-4c14-bec0-0cafe7a7805d,Okhashie Primary Health Center,Primary Health Center Okhashie,Primary Health Center,Etsako East,EDSAGD03,6.324097000000001,7.290938000000001
+d9ab1a63-42f1-4e02-96f4-b2475b4afe3e,Evbas Oghogho Nursing Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.65710449200003,6.32647705100004
+bd45e4e9-548e-4bf3-9dc0-0d3e6251c8af,St James Clinic and Maternity,,Maternity Home,Egor,EDSUSL09,5.58288574200003,6.36627197200005
+60e4bbbc-9055-4244-b7be-b41b3f610fb0,Regina Memorial Maternityuromi,,Maternity Home,Esan North-East,EDSURM03,6.331115723000039,6.7075195310000595
+c6398d72-f98a-46da-bc7a-12ba99ce2b4b,Ohize Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE04,5.644470215000069,6.34069824200003
+5ccd6710-1e77-4dde-857a-33f62c81dd32,Universal Medical Laboratories,,Primary Health Center,Oredo,EDSBEN01,5.63452148500005,6.342102050000051
+f22cec0e-6c98-481b-92a0-9fa52f7f24a0,Idiakor Midical Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.65069580100004,6.29968261700003
+40a33756-3913-40c1-bc0f-a6168ff6db94,Orakx Medical,Nosuyi Maternity,Primary Health Center,Egor,EDSUSL06,5.59851074200003,6.370300293000071
+6e574872-6fe9-492d-b1f5-ab7233cb624c,Odighi Health Center,,Primary Health Center,Ovia North-East,EDSAKA04,5.762878418000071,6.63647461000005
+f8a75736-71ff-4144-bbb4-524235c92ca6,Winners Medical Center,,Medical Center,Etsako West,EDSAUC02,6.26452636700003,7.069519043000071
+f0a67c69-04ca-489c-8c66-e281804b81dd,Erhuru Uneme Primary Health Centen,Primary Health Center Eruhurun,Primary Health Center,Akoko-Edo,EDSGAR08,6.25671386700003,7.282287598000039
+09371eb1-655f-46ee-9ee7-19d16ef33333,Ikran Ile Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,6.017744385447671,7.414591817927809
+df7e5d4d-eafa-4647-8a34-0b509e80859d,Christway Medical Center,,Private Non Profit,Ikpoba-Okha,EDSDGE06,5.6336656304494905,6.3215561463166505
+d3f957b6-a426-49d4-a8a2-687fa41b7fae,Agua Primary Health Center,,Primary Health Center,Esan Central,EDSRRU10,6.23227,6.75877
+3c11bd80-fb53-4a8a-a5a5-acfa75685394,Boboroku Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD05,5.897031666999999,5.799511667
+e0485e7f-ea11-4282-bd73-0ba7e45abdf3,Iguefole Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ06,5.337274999999999,6.446011666999999
+a4b9d87f-18d0-4a39-a3be-3186d2c1e3c4,Epid Unit,,Primary Health Center,Oredo,EDSBEN04,5.620773333,6.3334716669999995
+ffb24a03-b6a8-4d0d-af15-ed4fc2247966,Ukpenu Primary Health Center,,Primary Health Center,Esan West,EDSEKP10,6.133744299999999,6.742435699999999
+ef91db21-bbae-4b15-9a2d-597a9f16c25e,Army Barracks,,Primary Health Center,Etsako East,EDSAGD02,6.670216667,7.101515
+1b55dc55-0874-4610-8cc8-e6def411b7a5,Ekosodin Health Center,,Primary Health Center,Egor,EDSUSL10,5.62786142,6.412632089999999
+5f09aa94-d1dc-4068-b882-db8e9b70d4f4,Ovbiogie,,Primary Health Center,Ovia North-East,EDSAKA11,5.586803949999999,6.4769612599999995
+68810de1-adf6-4471-862d-92189f4a25ef,Uniben Health Center,,Primary Health Center,Oredo,EDSBEN04,5.599115,6.333983332999999
+9085d6e6-2a6a-4419-8b31-a6c9b59ade53,Obagie Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.607486667,6.207918333
+2330a070-6dc9-464e-9bb1-9001986c7e71,Amofi Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.7232199999999995,6.357645
+72bf2d52-e540-40fd-9f26-c23d5147fc14,Military Hospital,,Primary Health Center,Oredo,EDSBEN07,5.609474999999999,6.31718
+d5ccc3b0-f935-4111-bc5a-54004e38c992,Oko Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.588199999999999,6.293679999999999
+123afc81-df8b-409a-8b31-d175db803602,Ogiriga Primary Health Center,,Primary Health Center,Etsako East,EDSAGD09,6.39882,7.280785
+698ef85e-5bee-4aec-9bba-868341024856,Ibhiolulu Health Center,,Primary Health Center,Esan North-East,EDSURM05,6.3495918,6.7210926
+074848b4-1a20-48bb-88ad-61745786cfd4,Eguare Primary Health Center 1,,Primary Health Center,Esan South-East,EDSUBJ07,6.455658333,6.734891667
+a420d19a-d7d2-468e-a515-f6580bd42b1a,Iguiye Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA06,5.500094,6.56451565
+8b84c827-99b5-49f7-8c84-c0ffc8b5d001,Ebudin Primary Health Center,,Primary Health Center,Esan West,EDSEKP01,6.2206131,6.5182887
+1c471269-f865-45de-a867-4cc126e6270b,Okoro Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ09,5.328158333,6.704208333
+7bb432d5-e246-45e6-ace4-44f153ddefaf,Iguatakpa,,Primary Health Center,Ovia South-West,EDSGBZ03,5.286281667,6.59274
+e7b054a9-fe62-4d0d-8c47-f1ef35992719,Odighi Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA04,5.765731489999999,6.644068329999999
+832d03f4-71d5-499d-8fe0-5d47fb2465f5,Unogbo Primary Health Care Center,,Primary Health Center,Esan Central,EDSRRU10,6.2582701,6.7623099
+520bc2b9-ff2a-4228-be80-65ef6d564286,Iguogie Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA13,5.52656054,6.34730425
+c9029870-802f-4d56-bfee-ef84bba8d4af,Central Hospital Auchi,,Primary Health Center,Etsako West,EDSAUC05,6.258586667,7.073253333
+190234fa-48d6-4282-81bc-d37f31998981,Ogida 1 Primary Health Center,,Primary Health Center,Egor,EDSUSL09,5.59402,6.358538332999999
+0aff4623-9080-4de8-9843-8ef54c108948,Egbeghre Out Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR03,6.181761399999999,7.1445208
+47049f0a-49cc-4862-959b-e5c05ced562a,Ubiaja Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ04,6.38448,6.65573
+cdae2303-852d-4c8f-8495-6356aae0f09e,Ake Primary Health Center,,Primary Health Center,Owan East,EDSAFZ06,6.02352,7.15808
+7832e2ee-0c99-4fab-9297-f33dfe8b1694,Uhen Primary Health Care Center,,Primary Health Center,Ovia North-East,EDSAKA07,5.54036,6.76727
+5466d0a4-e05b-4166-b3b4-e9982b8fe94c,Iddo Primary Health Center,,Primary Health Center,Etsako East,EDSAGD06,6.34188,7.25959
+e74bc206-aa86-406c-81e8-72aadaf0c927,Odame Primary Health Center Odame,,Primary Health Center,Etsako Central,EDSFUG06,6.37217,6.98319
+7ef7cffd-fdb0-4955-a5ea-3fc8b55a8b12,Opoji Primary Health Center,,Primary Health Center,Esan Central,EDSRRU02,6.19674,6.69693
+5201c76a-8ef6-4760-9003-d9d951b90882,Illushi Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ09,6.61832,6.67
+100a6309-c9a4-473b-9af2-ef83b43184e4,Ewato Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ02,6.35423,6.51634
+7204dd1d-670a-407f-98ad-00c0c21b5434,Okpekpe Primary Health Center,,Primary Health Center,Etsako East,EDSAGD07,6.46672,7.19826
+6e7f9c04-d5a3-4874-b2be-d74ba42d7164,Ididigba Health Center,,Primary Health Center,Esan Central,EDSRRU03,6.23822,6.70479
+f2deb8a9-924c-4eff-b76c-93ead14cc112,Arua Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG03,6.49464,7.09842
+dfbeac3e-871a-48f2-88ca-f81e500c2e20,Aforbakhire Primary Health Center,,Primary Health Center,Owan East,EDSAFZ03,6.17081,7.00129
+a2dcf7b8-12f6-4cbb-81cb-98b6c8557e0f,Ehidenu Primary Health Care,,Primary Health Center,Esan Central,EDSRRU10,6.2571,6.76596
+b5fa9242-28b5-4370-ab45-1415ef1e8baf,Omokweme Primary Health Center,,Primary Health Center,Etsako East,EDSAGD06,6.34312,7.27044
+699f9348-cc08-4e60-af53-1d0f96be8078,Iguovbmhanmwen Primary Health Care Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.84941,6.49526
+487632f2-b277-48d0-9a42-868b1848efa5,Okomu Village Health Center,Okomu Clinic,Primary Health Center,Ovia South-West,EDSGBZ07,5.10896,6.26765
+f78e5f94-7755-4713-9ca8-8d092d0038e4,New Opoji Health Center,,Primary Health Center,Esan Central,EDSRRU02,6.20169,6.69478
+919d2728-0309-4af0-9bb9-147e27e8f5d4,Igogogin Primary Health Care,,Primary Health Center,Oredo,EDSBEN07,5.54622,6.16479
+1ca1c743-50e7-41a3-9354-0160e29c677e,Uhiere Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA04,5.78635,6.72993
+e1b7b358-503f-40b3-a03d-20cae067f91e,Utagban Primary Health Care,,Primary Health Center,Oredo,EDSBEN07,5.56485,6.29375
+81af18b0-dd08-44fb-88b1-a6c20f1e5a76,Etete Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE09,5.63218,6.29439
+5a8cfdf4-8d99-4c38-a41b-a0adaee53ff5,Oduna Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA03,5.43872,6.21579
+4fac170b-c489-4b5b-8013-a37bb14ba223,Umokpe Health Center,Umokpe Primary Health Center,Primary Health Center,Uhunmwonde,EDSEHR04,5.95308,6.74305
+12f3337b-f85b-418a-a7a4-f87ec1264563,The Rigth Nursing Maternity,,Maternity Home,Uhunmwonde,EDSEHR03,5.661315918000071,6.378112793000071
+832ea764-8dd9-4f80-b57b-d181eb34c75e,Obanakhoro Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD05,5.90850830100004,5.7915039060000595
+d11122c9-103d-40f7-980a-f3bf89d8bbee,Ute Oheze Primary Health Center,Ute Ohize,Primary Health Center,Orhionmwon,EDSABD07,6.06671142600004,6.239318848000039
+6879fd5d-b713-476a-b3bb-51d5d2949bd4,Graceland Hospital Aviele,,Primary Health Center,Etsako West,EDSAUC10,6.27743,7.00569
+1b209353-2d21-43ab-af7c-a58cf5a93bd3,Unique Medical Center,,Medical Center,Etsako West,EDSAUC05,6.2556,7.0613
+a0eec302-209e-4db6-9690-00e9e02a6c4b,Sametu Medical Center,,Medical Center,Etsako West,EDSAUC05,6.25113,7.07977
+f518d0f2-5669-42fa-8a29-c24b6e558d3a,Fate Medical Center,,Medical Center,Etsako West,EDSAUC05,6.27319,7.07618
+56113aa2-e21c-487a-89f7-1bdd5a2f8b10,Osomi Maternity Home,,Maternity Home,Etsako Central,EDSFUG02,6.49688,7.08838
+b2dc1a7a-73e5-44dc-a9d6-8cd6a2dd662a,Ogar Maternity Home,,Maternity Home,Etsako Central,EDSFUG02,6.50527,7.08369
+4916ec99-4c8d-4a48-9dbc-92084b3e4d22,Auchi Polytechnic Cottage Hospital,,Educational Clinic,Etsako West,EDSAUC12,6.27317,7.06282
+5098544c-ba2a-47f1-a25b-f47abe96d2af,Hope Clinic and Maternity Jattu,,Maternity Home,Etsako West,EDSAUC12,6.28273,7.08102
+eb709af3-839a-44d4-a490-58f3357a682f,Sabo General Hospital,,General Hospital,Owan West,EDSSGD08,5.93472505884655,6.89286958021875
+a9880d3a-fcfb-44de-8d1a-dee6c99c6156,Aau Primary Health Care,,Primary Health Center,Esan Central,EDSRRU07,6.23984367739551,6.711640752973189
+4d6dadd8-a48e-4389-9e5f-ef24a321acfc,Living Spring Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.63495000000006,6.328420000000051
+0746fcbc-ab52-4b70-9aae-88924a9038b5,God Is Care Hospital,Gods Care Hospital,Primary Health Center,Oredo,EDSBEN04,5.6064400000000205,6.334170000000029
+3ddf4a5d-7c6e-4819-a189-fd00d8c6a8da,Blessed Maternity Home,,Maternity Home,Egor,EDSUSL07,5.617870000000039,6.35492000000005
+9e72cff1-f1c7-422b-add7-72b41064bff2,Divine Nursing and Maternity,,Maternity Home,Egor,EDSUSL07,5.610180000000071,6.356150000000071
+c48d0f89-5c4d-40f8-8bf6-d7ea3811bd2d,Egbe Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE03,5.65796000000006,6.322720000000061
+4b4929ea-7033-4a2c-ae00-c5232a072ba9,Morrow Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE08,5.675150000000031,6.36465000000004
+db3e0e84-3c6f-4427-93e4-3c37b39fc36c,Hope Medical Center,,Medical Center,Iguegben,EDSGUE07,6.234760000000051,6.606800000000021
+4b937e95-d99c-4c52-806a-13d4187aae90,Maldonal Clinic Ibillo,,Primary Health Center,Akoko-Edo,EDSGAR06,6.06161000000003,7.44193000000007
+65b993cf-9601-4864-89c2-f72b9add10cd,Uromi Central Hospital,,Primary Health Center,Esan North-East,EDSURM08,6.317670000000021,6.716430000000059
+761b5337-bf70-4518-9a65-6f840b780c83,Mercy Family Hospital Amoya,,Primary Health Center,Owan East,EDSAFZ08,6.00198000000006,7.180760000000021
+c175d365-64a5-4136-ba76-ecd16fdb1782,Egba District Hospital,,District Hospital,Uhunmwonde,EDSEHR03,5.75031000000007,6.4961000000000695
+2878b65b-5aff-4b1c-ac64-e0047ecd79e8,Med Center Faith Dome,,Primary Health Center,Esan West,EDSEKP06,6.143600000000049,6.738010000000031
+1b8b216f-784e-440b-a1a1-e8a994213122,Egua Edaiken Primary Health Center,,Primary Health Center,Egor,EDSUSL07,5.617426667,6.370304999999999
+b1ef7d0e-55cc-48fe-a5c7-0e5b1f3ac233,Imafun Osi Primary Health Center,,Primary Health Center,Owan East,EDSAFZ08,6.007458332999999,7.188518333
+dd2e673f-9b13-4853-8c2a-a8cd8916f556,Igue Oke Primary Health Center,,Primary Health Center,Owan West,EDSSGD05,5.968560000000001,6.839846667000001
+f1fd4c7f-4e10-4fdc-9aee-55559dbec646,Akpe Ikao Primary Health Center,,Primary Health Center,Owan West,EDSSGD05,6.0070116669999996,6.808341666999999
+47d91c93-1e67-43bb-b1e0-3cf050279a01,Urhue Ikao Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR04,6.024388333,6.718771667
+049fa736-75f9-4fae-88f6-654d63bfef26,Inneh Ugbogui,,Primary Health Center,Ovia South-West,EDSGBZ02,5.261461666999999,6.7180349999999995
+a9da9b50-a207-4f9b-8fdd-8a6dbb7bfed4,Apana Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.400221667,7.139828333
+458bb3c9-db02-4072-bf10-1d5b9c7a68e1,Ikpoba Health Post,,Dispensary,Ovia South-West,EDSGBZ08,5.383588333,6.483966666999999
+4f55fb28-94c6-4aa2-9878-a31a6687c96b,Ogan Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD06,6.066909999999999,6.2797733330000005
+591410c2-6597-48cf-9bb5-f3df7cf58709,Ihumudumu Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.111930100000001,6.7431291
+dbbf3d6f-04dc-4845-bdea-661bd6557b23,Idumebo Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.103840099999999,6.743557599999999
+38986c58-d56f-4d5f-8787-20b2fac226e3,Aau Clinic,,Primary Health Center,Uhunmwonde,EDSEHR06,5.983094199999999,6.635780900000001
+90a06884-6056-4be3-aa88-0b43e33896c1,Uria Primary Health Center 1,,Primary Health Center,Esan South-East,EDSUBJ08,6.469335000000001,6.652728333000001
+19904318-3d70-4cf4-ae24-fc11f567cbec,Uholor Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.547790000000001,6.27546
+2120a6fc-eea4-4ce5-a56e-a9d48097e619,Ujiogba Primary Health Center,,Primary Health Center,Esan West,EDSEKP06,6.139812299999999,6.738797600000001
+4b57fa5d-749f-4680-82ac-3938b03df3aa,Siluko Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ10,5.160456667,6.534738333000001
+5ad84ceb-0edf-45b2-bc67-006ea9fdf7f3,Iguomon Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.734758333000001,6.346823333000001
+56e972c4-000c-4909-bc12-4a71a0cb74d6,Iguosa Health Post,,Dispensary,Ovia North-East,EDSAKA08,5.60233476,6.447639800000001
+8bb390e8-faa6-4664-bd30-c18bf52f61f7,Uroe Primary Health Center,,Primary Health Center,Owan East,EDSAFZ10,5.936521667000001,7.114243332999999
+4a8531eb-47a0-4723-98ee-44aa94f36ae1,Awoyemi Primary Health Center,,Primary Health Center,Etsako East,EDSAGD03,6.327710000000001,7.286525000000001
+ddd609e2-2e6f-4c7f-a5a9-367b9470e524,Ibienafe Primary Health Center,,Primary Health Center,Etsako West,EDSAUC03,6.306606667,7.0504683329999995
+185a4c72-7cba-4d30-b9ae-6d0d301c9884,Ehor Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR06,5.9836027000000005,6.616750299999999
+55504cd9-c2e2-494f-a98e-6cdbd3fe71b3,Ewu District Hospital,,District Hospital,Esan Central,EDSRRU06,6.252111900000001,6.8024456
+236c8a53-ebc7-47db-8e80-ee44b315fa1a,Ukho Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG01,6.490418990000001,7.09501901
+6c8aa416-cba2-4b27-8b5c-d7f63b60d5cd,Obagie Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD06,6.037183333000001,6.263271667000001
+eac81006-0d30-4656-886b-bfa78cf4206e,Igbekhue Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD03,5.900291667000001,6.154878333000001
+df654d26-50f6-42d6-8104-638133f87881,Iguomo Maternity,,Maternity Home,Ovia North-East,EDSAKA10,5.421714030000001,6.748064160000001
+b56f271c-7aea-43cd-8c46-63cd90156c1f,Nigeria Airforce Hospital,,Primary Health Center,Oredo,EDSBEN07,5.606108333000001,6.313306667000001
+1ed2652d-f893-443d-bd10-6e087602f247,Isiuwa Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.417975539999999,6.607769050000001
+3612c90c-e78e-4f2c-bf0f-95da1c4bfb56,Atuagbo Primary Health Care Center,,Primary Health Center,Esan Central,EDSRRU01,6.3305313,6.768965000000001
+fbc12d76-7c9c-4bd8-ad54-0d3115d94306,Eidenu Primary Health Center,,Primary Health Center,Esan Central,EDSRRU10,6.255432100000001,6.7584657
+ea8d9034-60d7-4eaf-bf75-86bd6c0eb540,Ayogwiri Primary Health Center,,Primary Health Center,Etsako West,EDSAUC08,6.396153332999999,7.11218
+3fc5ea23-39a8-4095-b606-1f4a19541433,Uzebu Health Center,,Primary Health Center,Esan South-East,EDSUBJ02,6.356333333000001,6.471321667
+059626f8-200f-420b-9506-65d46555800f,Ewatto 2,,Primary Health Center,Esan South-East,EDSUBJ02,6.350385000000001,6.510833332999999
+ba5ed8c1-4bf8-4bd5-867b-51602ce671d2,Enwan 1 Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR03,6.139507000000001,7.2799839
+02afe274-343e-4c9e-8860-153a341faa88,Iyamho Comprehensive Health Center,,Comprehensive Health Center,Etsako West,EDSAUC11,6.310411667,7.1417466670000005
+83c5fada-557e-434a-aa78-48d9185db5f6,Sella Obasenjo Hospital,,Primary Health Center,Oredo,EDSBEN07,5.629840000000001,6.275315000000001
+92dca190-e21f-4486-b4c1-567be0124b9d,Okhuokhuo Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR01,6.063249999999999,6.414053333000001
+1b5816f0-088c-4ab4-a67d-ded82434b2c5,Iguogbe Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR09,5.951303333,6.364713333000001
+bcd40f39-6392-4183-a7d3-b106bdf533de,Eme Primary Health Center,,Primary Health Center,Owan West,EDSSGD04,5.97106,6.906791667000001
+8674d187-c3f2-4282-8530-f4533841b843,Ewora Otteh Primary Health Center,,Primary Health Center,Etsako West,EDSAUC09,6.354356667000001,6.892550000000001
+7a523bbf-dd32-4a36-b504-ecb4b0917c62,Ugbigbhoko Primary Health Center,,Primary Health Center,Egor,EDSUSL01,5.562763333000001,6.318895
+7a4a7dba-5231-483c-a527-ec9b0e3beaae,Ayua Primary Health Center,,Primary Health Center,Etsako West,EDSAUC01,6.283886667,7.119941666999999
+1a2eec4f-b714-4709-8943-08689a59a233,Gpc University of Benin Teaching Hospital,,Primary Health Center,Egor,EDSUSL10,5.6139149999999995,6.38814
+40a0006f-1dd3-46a7-b7d0-01f2b2ed1f8c,Iguosula Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.708015,6.509365
+7309c6f3-8bd0-4267-9e35-577c0f7edde7,Akpama Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR09,6.142175300000001,7.343271
+29126a9e-db0b-4163-a986-c0562d1379f7,Ewere Primary Health Center,,Primary Health Center,Owan West,EDSSGD11,5.937473333000001,7.054400000000001
+c92799ce-b1b9-41c7-b54e-e3add5db06f7,Sobe Model Primary Health Center,,Primary Health Center,Owan West,EDSSGD02,5.78491,6.838088333000001
+2970678f-93cc-43d9-841b-11b3927610a9,Queen Medina Specialist Hospital,,Specialist Hospital,Etsako West,EDSAUC03,6.27891,7.05882
+9d9e754c-d15a-490d-9cbe-e79ddf80d6b4,Eghoghon Maternity,,Maternity Home,Esan South-East,EDSUBJ02,6.35285,6.51775
+b0779c2c-51d3-49a9-a654-d8a1cb0ff5df,Iyanomon Health Center,,Primary Health Center,Ovia North-East,EDSAKA06,5.48372,6.60724
+79ff1589-9705-4dd1-b3f4-d7d5421744d1,Ikoha Health Post,,Dispensary,Ovia South-West,EDSGBZ02,5.2061,6.63605
+a6a0151d-dbb6-4198-bc89-1a42fa8dc69b,Nddc Primary Health Center Ologbo,,Primary Health Center,Ikpoba-Okha,EDSDGE05,5.65491,6.06443
+e08ed194-abd0-461e-84f0-ca385994b082,Fugar Comprehensive Health Center,,Comprehensive Health Center,Etsako Central,EDSFUG02,6.49842,7.08467
+6c743ca8-b970-4970-be4e-9b2030964eea,Iviavia Fugar Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG02,6.51375,7.08579
+8e478b86-b533-4e85-be4e-0b30a07237dc,Adachi Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG01,6.48746,7.09096
+f4087451-7bd7-4615-b6a7-8205e5ef6749,Iyakhara Primary Health Center,,Primary Health Center,Owan East,EDSAFZ03,6.18585,6.99161
+6d535866-be6d-4d56-8447-1e3f2e84a5e7,Jattu Uzairue Primary Health Center,,Primary Health Center,Etsako West,EDSAUC07,6.29095,7.09025
+b7fe1a0f-45c3-4167-9730-d7d06d923c3e,Mg Specialist Hospital,,Specialist Hospital,Etsako West,EDSAUC03,6.27886,7.05954
+5003bc8a-c878-4c32-b59d-7cd6c7aeeb13,Auchi General Hospital,,General Hospital,Etsako West,EDSAUC05,6.26037,7.07322
+67d6a681-d2b2-4bb9-9a7a-2b9bd79ba4b4,Geodix Medical Laboratory,,Laboratory,Ikpoba-Okha,EDSDGE05,5.66045,6.06094
+4e892c8b-a2d0-4512-a71e-2b82f6e4b56c,God Is Able Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE05,5.66006,6.06476
+d90c1f30-62ad-4f8d-b06c-dddef8069741,Isda Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.71511,6.26964
+d7d7009d-c66e-43d1-bac5-9c801eb9645a,Irua Specialist Teaching Hospital,,Specialist Hospital,Esan South-East,EDSUBJ04,6.38821,6.64594
+c8372edf-db9c-4eaa-a9f0-241c31afa051,Iwogbam Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE08,5.65981000000005,6.366380000000049
+766ac1b3-2872-4799-a0de-8800cbe88072,Ekae Primary Health Care,,Primary Health Center,Oredo,EDSBEN07,5.630350000000021,6.26556000000005
+3f9289e1-0678-4504-9d1f-e38943809428,Ugbogobo Health Center,,Primary Health Center,Ovia North-East,EDSAKA02,5.64247000000006,6.53254000000004
+fb627710-a6ba-452b-95c0-c7a9e1b87e59,Iguobazuwa Health Center,,Primary Health Center,Ovia South-West,EDSGBZ04,5.354060000000061,6.565340000000049
+2ca23c1b-4c92-43c0-a75b-b74a0659fe6d,Ii Ewatto Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ02,6.356710000000021,6.50383000000005
+3d92740e-a289-44b5-82c4-016989dda8bf,Michael Imoudu Community Health Care,,Primary Health Center,Owan West,EDSSGD08,5.93679000000003,6.90596000000005
+e07e9db9-a6ec-43ea-bb9c-6b4681fa2c03,Otte Primary Health Center,,Primary Health Center,Etsako West,EDSAUC09,6.35361000000006,6.89405000000005
+12f077b7-28ac-4db7-93a8-7b2900c3c325,Uokha Primary Health Center,,Primary Health Center,Owan East,EDSAFZ06,6.04741000000007,7.07472000000007
+53d79cb0-4530-4920-a353-7a41421dc353,Uzebba Primary Health Center,,Primary Health Center,Owan West,EDSSGD01,5.903840000000059,6.995050000000049
+338f38d9-8773-4a2b-b5c1-ee4249051d10,Inuji Okene Primary Health Care,,Primary Health Center,Akoko-Edo,EDSGAR10,6.376440000000059,7.36859000000004
+c8641934-d805-4dbe-b486-23906149868f,Evbiamen Primary Health Center,,Primary Health Center,Owan East,EDSAFZ01,6.00899000000004,6.952340000000049
+7bb37cdf-e26d-4367-8e09-35d39a626feb,Ikhin Primary Health Center,,Primary Health Center,Owan East,EDSAFZ10,5.93948000000006,7.14799000000005
+cd740ae0-1607-455b-88f4-54a072a3d1d4,Ogwa Comprehensive Health Center,,Comprehensive Health Center,Esan West,EDSEKP01,6.21285000000006,6.50443000000007
+110cb798-9215-4f88-9f0e-6234ff252b4a,Ewaudo Comprehensive Health Center,,Comprehensive Health Center,Esan West,EDSEKP06,6.133550000000071,6.755290000000059
+67ae7999-807e-435f-b81a-d22def43695a,Ugiechudu Primary Health Center,Igieghudu Primary Health Center,Primary Health Center,Uhunmwonde,EDSEHR02,6.032390000000021,6.53788000000003
+ed237d8a-0a37-49a1-8712-f77d1d7a3ccb,Eguaehaloe Primary Health Center,Eguaholor Primary Health Center,Primary Health Center,Uhunmwonde,EDSEHR01,6.0289600000000405,6.4241700000000606
+396b4936-5ac6-4fdd-ade7-b8105b70b44a,Uteh Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.647930000000031,6.385720000000049
+ec553f07-9a4a-4720-abea-3a54adaea5d9,Ekpoma General Hospital,,General Hospital,Esan West,EDSEKP06,6.145550000000071,6.7427900000000704
+44fd0893-62eb-4d1e-a878-721e99eab7ab,Agenebode Primary Health Care,,Primary Health Center,Etsako East,EDSAGD02,6.69127,7.10848
+bd0464cf-990c-4294-86d0-e3eef61cc063,Oghomere Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG06,6.50826,6.96253
+6cb1fcd9-390c-41a4-9720-50288a8f3afc,Joy Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE08,5.666687012000068,6.362121582000043
+2cb6415e-9b8d-4b4f-87a7-e2c4362fdd9f,Uloshi Primary Health Care,,Primary Health Center,Esan South-East,EDSUBJ03,6.60886,6.55338
+9bb34552-6d8b-4d06-b7b4-bfe5fab09ffa,Gods Mercy Maternity Home,,Maternity Home,Oredo,EDSBEN06,5.619323731000065,6.344909668000071
+648fcba2-6d9c-48e4-9b1e-d9ef006a6c1c,Gods Finger Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE02,5.682312012000068,6.35968017600004
+f2cbc7ae-43a1-4b97-aed7-fb84726d0332,Gods Will Maternity,,Maternity Home,Etsako West,EDSAUC12,6.262329102000024,7.063110351000034
+fa044402-8ef8-4b0d-835d-4e096af5e1cf,Gods Banner Maternity and Nursing Home,,Maternity Home,Etsako Central,EDSFUG02,6.505126953000058,7.086730957000043
+95d080ae-bbc6-4616-ba45-b1723a1a4782,Gods Children Medical Center,,Medical Center,Egor,EDSUSL09,5.590515137000068,6.341125488000046
+4f6d2086-53ea-4163-8f02-bbd94e0e3874,Gods Divine Clinic,,Primary Health Center,Esan Central,EDSRRU05,6.241882325000063,6.645690918000071
+3e8e363b-202c-492c-b009-93f254d616b5,Gods Glory Clinic and Maternity,,Maternity Home,Uhunmwonde,EDSEHR03,5.708496094000054,6.382080078000058
+8ada27cc-c8cc-4a76-b2a9-d3ce0acb1080,Adolor Health Clinic,,Primary Health Center,Egor,EDSUSL10,5.600949469951815,6.390639900335675
+380dee04-b5e4-4125-b49b-9d3653cfa1d1,Conviction Maternity Home,Conviction Nursing Maternity,Maternity Home,Ikpoba-Okha,EDSDGE06,5.655883789000029,6.326904296000066
+5284580b-0e69-4001-9156-2a48c601236e,Omosefe Maternity Home,Omosele Maternity Home,Maternity Home,Ikpoba-Okha,EDSDGE09,5.645507812000062,6.305908203000058
+e7e4206a-22d9-4199-8fd7-62f8ef6f2ef3,Osa Amadin Maternity and Orphanage Home,,Maternity Home,Oredo,EDSBEN06,5.625995350577871,6.344332158282015
+30fb6209-894e-4f3e-b00d-6faba38d1ee7,Nikorowa Primary Health Center,Nikrogha Primary Health Center,Primary Health Center,Ovia South-West,EDSGBZ05,5.354309082000043,6.256530762000068
+aeb20ee1-e2a7-4077-8808-f333367f5bb4,Egua Okun Maternity Home,Equa Okun Nursingand Maternity Home,Maternity Home,Iguegben,EDSGUE06,6.223083496000072,6.507873535000044
+840d4c8f-127d-4ace-a28d-4b4321e5c3f1,Emmanuel Nursing Maternity,St Emmanuel Nursing Maternity,Maternity Home,Ikpoba-Okha,EDSDGE01,5.693298340000069,6.349487305000025
+990e6612-77ec-4a75-8214-0cde004c552b,Ipiran Ifira Basic Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,6.026758624973514,7.45569596390017
+3140eb6d-09a2-47d1-a368-9ade20c7e68d,Lampese Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,6.071404663940059,7.440485480394735
+0bb2badf-07fa-43e5-a92d-db2db7a3a22e,Evbogida Primary Health Center,,Primary Health Center,Egor,EDSUSL09,5.5876825964862435,6.355212022196112
+41570a69-f1cf-4b56-95e2-72c18bd8a3e8,Egor Primary Health Center,,Primary Health Center,Egor,EDSUSL07,5.612421144289322,6.37496027240795
+82ad277a-c6a0-45c2-b6d9-ea65721807b9,Eguare Primary Health Center,,Primary Health Center,Esan Central,EDSRRU05,6.239830273598108,6.648989702324386
+c20cc42c-eea2-430d-8c7e-5fcf2ce902af,Uwalor Oke Primary Health Center,,Primary Health Center,Esan North-East,EDSURM02,6.325719747955044,6.704393795374945
+c6181dcb-ccdd-457c-a251-bcbc7a6718a0,Awo Primary Health Center,,Primary Health Center,Esan North-East,EDSURM05,6.367084352822632,6.719664489207486
+bb01398f-c3f5-4aad-87fd-37c7a1e57c41,Okuesan Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ09,6.61933285671102,6.778647678777787
+0828cfa5-94e2-4b75-9f29-20f97add84f6,Osomegbe Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG10,6.428351901669416,7.027514692355098
+5b309fba-5a23-420a-b534-3fc8798fd925,Okpekpe Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG03,6.490027747753518,7.106251859474639
+df1640ea-bb1c-401e-ade9-ac3bf6da4dad,Iviebua Health Center,,Primary Health Center,Etsako East,EDSAGD01,6.623814782488051,7.126694503780567
+244c2987-f736-4644-ab94-ae9b21d7a15e,Kem Maternity Auchi,,Maternity Home,Etsako West,EDSAUC02,6.260714020069152,7.065870691877507
+32cf4930-aa54-423d-84e9-6b417aea0431,Aghiele Primary Health Center,,Primary Health Center,Etsako West,EDSAUC10,6.276260178536053,7.019096991344982
+90acfbc6-54b8-42ae-84dd-8a3959041d1d,Imiakebu Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.326619606278261,7.153761695385754
+74781ff1-5bbc-4895-8172-d2af31fce434,Itsukwi Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.3986052444688974,7.149931255750364
+d9d5dcee-5804-4c82-b597-aa16547a977e,Eguare Ebelle Primary Health Center,,Primary Health Center,Iguegben,EDSGUE03,6.2245714637864635,6.500181029488215
+339e0d6f-5271-449c-bfb8-0a7c09f246fa,Okpujie Primary Health Center,,Primary Health Center,Iguegben,EDSGUE06,6.224598421082549,6.516844821042986
+64f9854a-7b72-4cf1-aade-3dcadfbb3846,Igueben Eguare Primary Health Center,,Primary Health Center,Iguegben,EDSGUE10,6.240223755731818,6.595330195486789
+81fad171-2498-400d-92e6-6f0f7c788529,New Ekpon Primary Health Center,,Primary Health Center,Iguegben,EDSGUE04,6.2635376050691125,6.414019254974317
+01c2aa53-25fd-4ea1-b3f9-99a92f47484a,Eguare Ekpon Primary Health Center,,Primary Health Center,Iguegben,EDSGUE04,6.267107626178697,6.4083469815962975
+7e97f852-41e6-4836-9f24-ab5c8ecfce84,Welfare Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE03,5.647184864286267,6.313572939383506
+ea2f5e91-5660-485a-8815-704d89d1a466,Aiwuyor Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE03,5.648018042007495,6.324896597349272
+33d632a8-9737-4d99-be16-0b70a11ede71,Eyaen Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE04,5.661261631144747,6.351913002002036
+ec03235c-10d4-4bd1-932c-5dc9d354118f,Ikhueniro Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE02,5.682939773582825,6.366902442143574
+7da2d594-3fcf-4b38-a379-bd42a1729554,Avbiama Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.691037999999999,6.300518000000002
+5b771110-2676-4311-b202-b2b15a7eddb3,Ikpema Health Certer,,Primary Health Center,Oredo,EDSBEN03,5.630509861766186,6.337769633097719
+efc272c2-4329-45c7-9294-e6307e10ba56,New Benin Primary Health Center,,Primary Health Center,Oredo,EDSBEN02,5.633078000000002,6.353287999999999
+653bc778-893d-4c21-8836-ee2963c36e51,Ogie Nursing and Maternity,,Maternity Home,Egor,EDSUSL01,5.568725586000028,6.34991455100004
+d3228096-9aaf-41fd-ad36-114be0b4121e,Okada Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA10,5.386171498073752,6.730764735637607
+f213db0c-2917-486c-9bf9-5f9cd1fe69d4,Iguiye Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA10,5.3965612690091715,6.729162267981892
+26e37f59-d933-4bbd-bbe9-b2423497c6d2,Uhen Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA08,5.607361573155926,6.409775390777205
+3b521875-e109-4dd4-b58d-9564f1f70fb5,Isiuwa Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA02,5.626010151569563,6.538336372137591
+f69cae13-527a-4fcb-b0ae-988a5ad30e85,Sule Camp Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.207000999999999,6.772191999999999
+fe119fd8-e238-44bc-b807-b09ac60247b8,Ilorin Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ09,5.292565093000905,6.772781978849748
+203b3247-5010-40ad-ae83-9a5b45d6a303,St Patrick Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE10,5.654113769000048,6.296081543000071
+cf8aceaf-1a17-4142-b8e7-748ca4b56bd3,Binez Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.644287109000061,6.322082519000048
+0e14e55c-ba3d-4bc9-a84c-e160f0ac8bf6,Etinosa Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE03,5.646301270000038,6.305114746000072
+01f921e7-2513-4b8b-a2b9-57ff94de0880,Auntie Robin Maternity,Aunty Robin Maternity,Maternity Home,Oredo,EDSBEN05,5.602478028000064,6.351074219000054
+a78ac982-d740-49ea-8285-f2e485ff003e,Ekiuwa Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.645080567000036,6.326904296000066
+895c5820-c952-4428-9ab8-28bdd195edcb,Joepie Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE02,5.678283691000047,6.35772705100004
+b54b59a0-1710-4bd7-b0a0-0903d04a5243,Niger Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE01,5.677307129000042,6.34851074200003
+0043fc70-95ab-485b-9342-f0f894850b7c,Owen Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE01,5.682312012000068,6.347290039000029
+abc03129-0d78-4b89-b06a-1fe905470994,Satelite Medical Clinic Maternity,,Maternity Home,Egor,EDSUSL10,5.608520508000026,6.3958740240000225
+4de30d6c-550e-41f8-8e9d-5fd3b8962612,Royal Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE03,5.654479980000076,6.315124511000022
+55bc3729-e97a-4e6c-a249-197c2e90b82a,Godswill Nursing Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.662109375000057,6.326293946000021
+96742429-b636-44c3-be7a-3484f55a297e,Trinity Clinic and Maternity,Partland Clinic And Maternity,Maternity Home,Egor,EDSUSL05,5.618896484000061,6.357482910000044
+a5ca8af5-72af-4c6e-bfa9-8374f0d20cf7,Blessed Maternity Nursing Home,,Maternity Home,Ikpoba-Okha,EDSDGE04,5.644897461000028,6.339111328000058
+9a23c8e0-b5ac-4604-95fc-1b79701c0b13,Living Spring Clinic and Maternity,,Maternity Home,Oredo,EDSBEN12,5.626525878000052,6.3322753900000635
+a1ac0bfb-2a61-4b6e-851f-3d95cecd2ab5,Amazing Grace Specialist and Maternity,,Maternity Home,Oredo,EDSBEN02,5.642089843000065,6.360900879000042
+bbdb4e40-7d2a-4e21-8e46-161ad6cd3849,Alpha Specialist,,Specialist Hospital,Oredo,EDSBEN07,5.6179199220000555,6.307922364000035
+d0c306ee-fed9-43af-9a1e-d8196db5ff42,Aburime Changsu Oriental Diagnostic Hospital,,Laboratory,Oredo,EDSBEN02,5.633911133000026,6.347473144000048
+fe053d79-c27e-49b2-a6f2-6a3579f65c1d,Uyiosa Maternity Home,Onome Nursing And Maternity,Maternity Home,Ikpoba-Okha,EDSDGE03,5.6489257810000595,6.307312012000068
+a415679a-12fe-4ef3-84c9-92973f67e5c1,Nnpc Medical Center,,Federal Staff Clinic,Oredo,EDSBEN07,5.603088379000042,6.311889648000033
+06056e54-0736-4b6f-a772-4526b800f8f7,Hosanna Nursing and Maternity Home,St Mary Maghalel Hospital,Maternity Home,Ikpoba-Okha,EDSDGE09,5.6333007810000595,6.316101074000073
+27b0c8de-52b7-4c62-9191-24d11706b14c,Iyare Clinic and Maternity,,Maternity Home,Egor,EDSUSL05,5.623474121000072,6.365722657000049
+714b63eb-a419-4d00-9703-c246c49c3735,Lella Specialist Hospital,,Specialist Hospital,Oredo,EDSBEN07,5.618713379000042,6.307678223000039
+9c17989d-4488-4084-8ae1-08a2ba5e7b39,Udo Comprehensive Health Center,Comprehensive Health Center,Comprehensive Health Center,Ovia South-West,EDSGBZ06,5.354309082000043,6.472717285000044
+f37e608e-1297-44fa-9a29-61ab84f2ea66,Standard Medical Clinic and Maternity,,Maternity Home,Egor,EDSUSL10,5.608703613000046,6.384521484000061
+11335da0-3779-4b0c-b741-a6b856c51d70,Eseigbe Eigbe Specialist Clinic,,Specialist Hospital,Oredo,EDSBEN12,5.628112793000071,6.333679199000073
+e402d496-833a-4b0e-b50d-935858afe22a,Felano Clinic and Maternity,,Maternity Home,Oredo,EDSBEN02,5.636901855000076,6.3557128900000635
+83c1f76b-63fa-41c4-944a-f06e92e2e56d,Igushodin Negbemaba Maternity,,Maternity Home,Ovia North-East,EDSAKA13,5.529296875000057,6.393493652000075
+f56fbb7c-ac73-493e-9c36-dca5490a2b5c,Nekpen Nursing and Maternity Home,,Maternity Home,Ikpoba-Okha,EDSDGE10,5.6643066400000635,6.290710449000073
+fc983d15-ec90-4f6c-8979-7b5d61ff2e36,Otasowie Clinic and Maternitye,,Maternity Home,Ikpoba-Okha,EDSDGE09,5.640686035000044,6.315917969000054
+ba00aeef-a225-47e3-8889-ebb47555233b,Esosa Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE10,5.656921387000068,6.292907714000023
+57d0bf0f-5a96-46cf-85be-5ac6f2972660,God First Maternity and Nursing Home,,Maternity Home,Egor,EDSUSL06,5.601074218000065,6.37530517600004
+767b4044-63fc-48e9-aa71-a898b747dbfe,Ropheka Specialist Clinic and Maternity,,Maternity Home,Egor,EDSUSL01,5.568481446000021,6.316284180000025
+a7d9f407-8b06-40eb-a8d2-236922011274,Onuwabhagbe Primary Health Center,,Primary Health Center,Esan Central,EDSRRU02,6.201481281473056,6.684567159480218
+1da8c96d-830a-4cb9-b8d1-1f6a851b50ab,St Angelas Royal Nursing and Maternity Home,Edo Maternity And Child Clinic,Maternity Home,Oredo,EDSBEN05,5.615905762000068,6.341674805000025
+c48ae6c6-46cf-461b-b0f4-d02a49c27739,Ehijane Clinic and Maternity,,Maternity Home,Egor,EDSUSL10,5.607482910000044,6.378723145000038
+0440ab81-6de7-4c25-81b3-2a483e91e297,Nuel Specialist Clinic,,Specialist Hospital,Ikpoba-Okha,EDSDGE03,5.649902344000054,6.305725098000039
+77eba5bd-d269-4b1d-94d8-7035ab1393c3,Brigom Nursing and Maternity Home,,Maternity Home,Egor,EDSUSL01,5.5844726560000595,6.342712402000075
+ae515d32-c1d6-405d-b798-601dc8195bdf,Mega Clinic and Maternity,,Maternity Home,Egor,EDSUSL09,5.589477539000029,6.363098144000048
+c8c1709a-c59b-421c-9b4c-8dc65327b127,Bims Maternity Home,,Maternity Home,Egor,EDSUSL07,5.616088868000077,6.37530517600004
+5516e6f3-1412-4ebf-85b2-f4207bec3c9a,Citizens Clinic and Maternity,,Maternity Home,Egor,EDSUSL02,5.636718750000057,6.35772705100004
+254a169d-59d6-4dae-804d-361bd815ec0d,The Excellent Clinic and Maternity,,Maternity Home,Egor,EDSUSL07,5.614501954000048,6.364929199000073
+10fdacc1-42c8-418a-b60d-a2877107e3f4,Divine Care Health Center,,Primary Health Center,Egor,EDSUSL10,5.601318359000061,6.388671875000057
+a608898f-6592-4392-b4d3-5cba5a002dd0,City of Hope Hospital and Maternity,,Maternity Home,Ovia North-East,EDSAKA07,5.502075195000032,6.79187011700003
+9051ff95-d905-4301-8fbf-19683e686795,Mount Zion Clinic and Maternity,,Maternity Home,Esan South-East,EDSUBJ08,6.398681641000053,6.652526855000076
+7ef36a88-6aad-4bc6-9305-0148228a1fb6,Embassy Clinic and Maternity,,Maternity Home,Esan South-East,EDSUBJ08,6.394104004000042,6.658874512000068
+4021ab6d-512d-4989-90f4-d4ad3b0d490d,Imeri Basic Health Center,,Primary Health Center,Akoko-Edo,EDSGAR05,5.9619140630000516,7.323486328000058
+05019401-096f-4147-9b9b-1ff0f3b4eeb8,St Barnabas Primary Health Center,,Primary Health Center,Owan West,EDSSGD04,5.926330567000036,6.908081055000025
+7ce1a137-db53-418d-888f-d7ab23a7dbb6,Afeb Nursing and Maternity,,Maternity Home,Owan East,EDSAFZ06,6.047912598000039,7.072509766000053
+0cbf2a04-5255-46a3-8751-47d30a26d888,Faith Maternity Home,,Maternity Home,Owan West,EDSSGD04,5.925292968000065,6.910705566000047
+33b21676-13ef-46a2-b53b-8ddd42829481,Bj Nursing and Maternity Home,,Maternity Home,Owan East,EDSAFZ05,6.048095703000058,6.978698730000076
+e2863e03-2f65-4852-a809-f0d3b44b0eaa,Vera Nursing and Maternity,,Maternity Home,Esan North-East,EDSURM10,6.41632080100004,6.806701660000044
+a164f15c-4c18-4f77-a787-793e670e1673,Maxwell Clinic and Maternityuromi,,Maternity Home,Esan North-East,EDSURM03,6.335083008000026,6.7097167970000555
+c488bcc5-696b-450c-8d77-90a77bf2fd06,Tessy Maternity,,Maternity Home,Esan Central,EDSRRU06,6.24908447200005,6.8015136720000555
+cd60db35-1137-4f2e-a461-a388ebbcb24a,Oseni Mediplex Clinic N Maternity,,Maternity Home,Etsako West,EDSAUC12,6.268127441000047,7.0717163080000205
+a129e5cb-8cb8-476c-9d65-b86e49cc592d,Ugboha Comprehensive Health Center,Health Center,Comprehensive Health Center,Esan South-East,EDSUBJ07,6.468872071000021,6.745910644000048
+de64d412-44c0-491e-8873-b0642a9ba68b,Itsukwi Basic Health Center,,Primary Health Center,Etsako East,EDSAGD04,6.447815687882793,7.212167294429413
+89286235-fdc8-4be3-a757-0f03dec00051,St Augustine Clinic and Maternity,,Maternity Home,Egor,EDSUSL10,5.603540000000066,6.380020000000059
+180ca896-c033-432e-965e-0a611a5e5247,Ugbor Model Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.607570000000067,6.267060000000072
+aa2df8e9-f5ea-46d1-9729-3567f67d2331,Iguhoro Health Center,,Primary Health Center,Ovia North-East,EDSAKA05,5.5747070310000595,6.6552734380000516
+b8a89bc1-f80a-4b50-bc9e-6247dbcbb46a,Fred Okhomina Hospital,,Private Non Profit,Oredo,EDSBEN04,5.593078613000046,6.333496094000054
+c472c069-62fa-4e67-a5f1-622c43f47631,Na Health Center,,Primary Health Center,Oredo,EDSBEN07,5.5990967469770805,6.298883129801634
+7042aa36-ed94-4348-9db0-6a77c02f713d,Okpe Health Center,,Primary Health Center,Akoko-Edo,EDSGAR05,6.0524969327908655,7.268691646656302
+3786eb74-be8a-4a62-832d-4a5804b8cc33,Umegbe Health Center,,Primary Health Center,Oredo,EDSBEN07,5.5562096648331245,6.232041513484665
+633a152d-41ce-4c18-a14d-6744fc52454d,Aduwawa Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE02,5.683122610368277,6.357744186664338
+1a44be5e-4194-465c-b8b3-ec3fd0b8c950,Eware Primary Health Center,,Primary Health Center,Etsako West,EDSAUC09,6.4463284237039895,6.923242660743695
+385bc7e7-8d8f-4cc3-9d55-9c1cb716691c,Udo Eguare Primary Health Center,,Primary Health Center,Iguegben,EDSGUE08,6.3357500000000755,6.628620000000069
+bae5e40f-23fb-4432-bf87-c46ac9eed916,Okhuesan Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ05,6.40411000000006,6.609270000000038
+5c5684b7-65b9-4fc5-9b33-32420198c274,St Godwin Medical Center,,Medical Center,Egor,EDSUSL06,5.58111572200005,6.374328613000046
+1d4d4ece-f75f-40ec-beb6-54b6a0a9b1a4,Obagie Primary Health Center,Ovbiogie Primary Health Center,Primary Health Center,Ovia North-East,EDSAKA01,5.537109375000057,6.414123535000044
+f10defdd-39b7-43cc-9551-14d2a00100b6,Obazuwa Primary Health Center,Obazua Primary Health Center,Primary Health Center,Ovia North-East,EDSAKA03,5.488281250000057,6.277526856000065
+592ed42e-1661-4d9b-a423-f65cad1110f6,Evbabogun Primary Health Center,Evbuabogun Primary Health Center,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.652893066000047,6.261108398000033
+ad36dc7c-4d69-446b-b194-e5301a74f040,Madagbayo Health Center,,Primary Health Center,Ovia South-West,EDSGBZ10,5.113281250000057,6.4108886720000555
+d40a4779-601b-4747-86ad-fa39fc3fb431,Ugun Primary Health Center,Ugun New Primary Health Center,Primary Health Center,Iguegben,EDSGUE02,6.17468261700003,6.4772949220000555
+dd67e5a4-9a3a-4610-8807-77e0fc985eb7,Ewohimi Primary Health Center,Equare Ewohimi Primary Health Center,Primary Health Center,Esan South-East,EDSUBJ10,6.322326660000044,6.484313965000069
+9c01a566-094e-4c69-a085-f9dccd6fbbfb,Idumodin Primary Health Center,Idumogin Primary Health Center,Primary Health Center,Iguegben,EDSGUE02,6.213928223000039,6.429687500000057
+b125316b-26a3-4a04-806e-1595d170b6a6,Egbiki Primary Health Center,Egbeiki Primary Health Center,Primary Health Center,Iguegben,EDSGUE07,6.225891113000046,6.542907715000069
+28e36fd5-1a6b-45c5-ab18-094ebb01033f,Abiosi Primary Health Center,Avbiosi Primary Health Center,Primary Health Center,Owan West,EDSSGD09,5.9135131830000205,6.961730957000043
+cd98ea84-31a2-41dc-8041-f3c4e7372535,Ogute Primary Health Center,Ogute Oke Health Center,Primary Health Center,Etsako East,EDSAGD05,6.291320800000051,7.279907226000034
+c65e9173-a0c8-4fff-a3db-ec4747e8625c,Irekpai Primary Health Center,Irekhai Primary Health Center,Primary Health Center,Etsako West,EDSAUC08,6.371520996000072,7.102478027000075
+c70143fe-f6bc-4965-93f5-d011115291fb,Itsukwi District Hospital,Apana District Hospital,District Hospital,Etsako West,EDSAUC11,6.394897461000028,7.1478881830000205
+9813ac63-0957-41d9-9b78-9a148e1cdd75,Iviukhua Primary Health Center,Iviukwe Primary Health Center,Primary Health Center,Etsako East,EDSAGD01,6.591491699000073,7.134887695000032
+5d9df58a-3624-45ea-8eb2-99f2ca7552e5,Udochi New Health Cent,Ava Primary Health Center,Primary Health Center,Etsako Central,EDSFUG07,6.6552734380000516,6.953308105000076
+254d90bf-2178-449a-995d-f1328aecf538,Zion City Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.639099121000072,6.235473633000026
+0edeb5b9-42a2-41b8-be6e-7a46933dd7ad,Ogbinbiri Community Health Center,,Primary Health Center,Ovia South-West,EDSGBZ07,5.202697754000042,6.146118164000029
+25035d69-ff10-4ce4-8a07-247a6b5a9d44,Eghudu Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA03,5.395080566000047,6.243286133000026
+06184549-874a-4667-9778-794f31785acf,Rapha Faith Medical Center,,Medical Center,Esan North-East,EDSURM06,6.337097168000071,6.705688477000024
+6ecaaa99-214b-45e8-b5e5-c282aee5d168,Tona Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE04,5.669921875000057,6.349121093000065
+495036aa-6dd9-44a0-ac7b-ac23882550d5,Cici Gyde Medical Center,,Medical Center,Oredo,EDSBEN07,5.6254882810000595,6.309692383000026
+70ff773b-6593-4882-9bcb-92ca6c68b644,The Rock Hospital,,Primary Health Center,Oredo,EDSBEN07,5.621093750000057,6.306274414000029
+889f0e2b-abbf-4766-9956-c9263620635c,Quick Recovery Hospital,,Primary Health Center,Oredo,EDSBEN04,5.600524903000064,6.325073243000077
+54aee2d3-0ef4-42ab-bb33-75a88456f953,Itua Medical Center,,Medical Center,Oredo,EDSBEN11,5.596679687000062,6.341491699000073
+bbc42b47-8d7b-429c-b0c3-ab4d1c76bcb7,Bupa Medical Center,,Medical Center,Oredo,EDSBEN04,5.606689453000058,6.3322753900000635
+b36aaab4-6f33-4810-a643-6c48e6d74dd0,Solution Nursing and Mayernity Home,,Primary Health Center,Ikpoba-Okha,EDSDGE02,5.679504394000048,6.363098144000048
+e3d40852-7487-42b0-8501-51d81e110d01,Berta Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE02,5.680908203000058,6.3704833990000225
+38bf4721-f606-4907-9bcd-39d201c64b75,Irele Ifijeh Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE08,5.660522461000028,6.353881836000028
+2f12e254-779f-485f-b8b6-42cc8dca15ac,Our Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE04,5.654296875000057,6.348083496000072
+9929d41a-b4ba-46d1-87ec-67026d748e5b,Aimiuwu Hospital,,Primary Health Center,Oredo,EDSBEN11,5.599121094000054,6.346923828000058
+38a91efa-1b95-4341-8a05-7b51fc37a5fe,St Gabriel Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE09,5.63452148500005,6.2683105470000555
+9ee7f79a-3ae6-4407-8068-73e7c68a333e,Aihuobabekun Health Center,,Primary Health Center,Ovia North-East,EDSAKA04,5.674926758000026,6.538879394000048
+a6f8b6c4-0576-4cb0-ab13-997cd34b3aab,Supreme Nursing Home,,Primary Health Center,Ikpoba-Okha,EDSDGE03,5.65991211000005,6.317321777000075
+cea4bef6-a7d1-47c2-82e3-821b3b2f98c1,National Medical Center,,Medical Center,Egor,EDSUSL02,5.64288330100004,6.374694824000073
+be37cfa8-a084-4e88-8327-7343cba8420f,Umegbe 2 Community Health Center,,Primary Health Center,Oredo,EDSBEN07,5.551330567000036,6.22827148500005
+0fa22e16-d57b-4196-b6be-c90400bfe861,St Johns Hospital,Itohan Medical Center,Primary Health Center,Egor,EDSUSL02,5.625671387000068,6.358886719000054
+0f9d9b5c-b576-4aab-8237-710f1c54c1df,Gbelebu Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ10,5.100524903000064,6.3900756830000205
+5cf16497-2132-4b68-b0cb-898bc9ff94d9,Galex Medical Center,Ogbeide General Practice Clinic,Medical Center,Ikpoba-Okha,EDSDGE06,5.642089843000065,6.327087402000075
+b3e636d9-cba4-4d0b-9897-de0b153b3bdb,Murtala Mohammed Way,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.644897461000028,6.331298828000058
+f748c518-5eb8-4702-b986-166989f705e0,Kings Care Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE03,5.653686523000033,6.300720215000069
+0c0524bc-372f-4770-adc4-ce8de25f847b,Efe Medical Clinic,,Primary Health Center,Oredo,EDSBEN10,5.627075195000032,6.324096680000025
+00154765-b545-40e2-9d0a-3d49ca2581a7,Nikorowa Maternity and Dispensary,,Maternity Home,Ovia South-West,EDSGBZ05,5.358520508000026,6.249511719000054
+77825328-dbfd-43c8-a7a6-e16e0fe619a8,Shalom Dental Clinic,Police Lottage Hospital,Specialist Hospital,Oredo,EDSBEN07,5.621887207000043,6.317321777000075
+cf73311e-bc1c-465f-ac76-c959cf7913db,Prime Optical and Eye Clinic,,Specialist Hospital,Oredo,EDSBEN04,5.6157226560000595,6.325500488000046
+cf91738c-4143-4610-b92d-de902a75941b,Universal Medical Center,,Medical Center,Oredo,EDSBEN04,5.612487793000071,6.336486817000036
+70a1273e-3d8e-4b76-9c2b-576d17991df4,Beehive Dental Services,,Specialist Hospital,Oredo,EDSBEN11,5.60827636700003,6.345886230000076
+67964731-f305-45b3-8ca9-578f40feb907,Igbinedion School Medical Center,,Educational Clinic,Ikpoba-Okha,EDSDGE09,5.6303100580000205,6.314514160000044
+f3e3804e-31cb-4119-b59f-2ecb32c8a698,Ikoha Ii Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.166687012000068,6.626098633000026
+0586ecf8-1e6d-482c-99a6-508e3f90ff7e,Obobaifo Primary Health Center,Primary Health Center,Primary Health Center,Ovia South-West,EDSGBZ01,5.244079590000069,6.567687988000046
+64afa267-43fe-43c3-ad21-95cad56a7924,Ugbokua Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ01,5.259277344000054,6.501525879000042
+3350f3cd-d12f-43c4-8bdb-5ee7c14479b0,Izide Water Side Health Post,,Dispensary,Ovia South-West,EDSGBZ10,5.142089844000054,6.4622802740000225
+5e944f88-0d0f-4f54-a01c-fc180aa5dcb8,Iguadolor Health Post,,Dispensary,Ovia North-East,EDSAKA01,5.553100586000028,6.428894043000071
+300ef5b8-f0d9-4d87-9dd5-af4682084e7f,Ogua Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA09,5.538879394000048,6.52569580100004
+0483be0e-57fe-43b6-9c96-1ac400ca27e0,Ese Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.6433105470000555,6.331115723000039
+976e5916-53a9-4104-afdd-a2fb6dba80bd,Fortune Physiotherapy Hospital,Osula Royal Hsopital,Primary Health Center,Oredo,EDSBEN06,5.625915527000075,6.3425292970000555
+7155b1e2-f58c-4367-a564-79bd36691685,Tomsek Dental Clinic,,Specialist Hospital,Oredo,EDSBEN12,5.629699707000043,6.327514648000033
+f9bf0b7a-5dba-4627-8c73-99698edb5b56,Horation Dental,,Primary Health Center,Oredo,EDSBEN04,5.614501954000048,6.334106445000032
+407c9538-ce03-41b4-bd06-c9ccda0b4e54,Aibieyi Health Post,,Dispensary,Ovia South-West,EDSGBZ01,5.214721679000036,6.592712403000064
+a11806a0-4567-4fc8-bc20-584ef9da165d,Umelu Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.6765136720000555,6.314697266000053
+b13410d9-6948-47bd-8b31-1ee705b96ba8,Itohan Nursing Home,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.655883789000029,6.2802734380000516
+a4471527-57a3-406b-abe9-b59e7ab57752,Azuwa Hospital,,Primary Health Center,Oredo,EDSBEN05,5.6107177740000225,6.351074219000054
+bd62473f-e015-4ce8-ad93-17a8a8410df5,Ugbokunu 2 Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA06,5.457702637000068,6.620727539000029
+f174ea38-5529-4163-a993-443a3358ac12,Lida Hok Medical Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.635314941000047,6.322326660000044
+d447eb70-2a32-4bed-b233-c47c67ed8e21,Sycamore Hospital,,Primary Health Center,Oredo,EDSBEN07,5.616699218000065,6.312683106000065
+0a2a4112-c65f-4e5c-8354-4dea8421ff97,Safe Hands Medical Center,,Medical Center,Egor,EDSUSL01,5.578918457000043,6.330871582000043
+fa8e8bc5-6fc2-4de3-b8ec-1c26cc83f916,Concordia Medical Center,,Medical Center,Egor,EDSUSL03,5.633728027000075,6.376098632000037
+9e62c507-7796-4305-b416-2ff7c881da4e,Alpha Medical Center,,Medical Center,Egor,EDSUSL05,5.618896484000061,6.363281250000057
+ec6e8e1d-9d40-4bf2-aae9-2e7821468d9a,Tino Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE06,5.63952636700003,6.3212890630000516
+a4baca67-efbf-4192-9da4-b66fd20561af,Modic Children Hospital,,Primary Health Center,Oredo,EDSBEN04,5.6146850580000205,6.331481934000067
+7555e45c-5ce8-4bc6-b788-6aa769e29056,Redemption Medical Center,,Medical Center,Egor,EDSUSL06,5.591918945000032,6.373718262000068
+2aa81b5a-f346-4730-ad2f-9cb60124bf6b,Urhezen Health Post,,Dispensary,Ovia South-West,EDSGBZ06,5.250915527000075,6.48132324200003
+43bee971-1230-44e4-97d7-eac0830a36c2,Farmily Solution Medical Complex,Ihenyen Medical Center,Primary Health Center,Oredo,EDSBEN04,5.596923828000058,6.327270508000026
+c095f424-fefa-4d6b-9ba8-0ac6bd599131,Unity Medical Center,,Medical Center,Oredo,EDSBEN02,5.629089355000076,6.34851074200003
+565f77c8-9ab7-48db-9da6-434a759b5396,Aden 2 Health Post,,Dispensary,Ovia South-West,EDSGBZ02,5.287719726000034,6.687927246000072
+0d59a78d-55cd-4f27-bf1f-216a72e9f102,Utekon Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA08,5.630676269000048,6.451110840000069
+8454b5d6-ed09-4bfb-b589-2791e797fb88,Ovbioise Hospital,Primary Health Center Iwogbam,Primary Health Center,Ikpoba-Okha,EDSDGE08,5.6608886720000555,6.3676757810000595
+bdca7057-1482-4e8b-8d07-9fc74373aa43,University of Benin Teaching Hospital,,Teaching Hospital,Egor,EDSUSL10,5.613098144000048,6.390686035000044
+715dc1b4-223f-4efc-a2e3-3dd1f38947b3,Redeem Nursing and Meternity,,Primary Health Center,Egor,EDSUSL09,5.581726074000073,6.36627197200005
+8452595a-a0cc-4c13-86eb-3acbb28dfa7b,Akugbe Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE10,5.664489746000072,6.291320800000051
+196fe21b-2d26-4c11-bf27-6159199d975a,Olumoye Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA07,5.5490722650000635,6.703674316000047
+1a44ed44-243f-49ec-bd3a-e2e6afe54bac,Usen Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ09,5.338317871000072,6.738098145000038
+b1d63e46-13d4-40e2-9a5a-5521b6ef8b4c,Egberter Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA07,5.516723633000026,6.785278320000032
+341c13e9-2467-40bb-b073-16c66836050e,Orobosa Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE01,5.690124512000068,6.348693848000039
+6c1e315c-edf9-4a2c-9fb8-db584f3c1448,Presco Industrial Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.714904785000044,6.139892578000058
+2954f9cd-b63b-4eeb-9786-e12a454aeba3,Odiguetue Health Center,,Primary Health Center,Ovia North-East,EDSAKA04,5.7661132810000595,6.669921875000057
+b1d923c2-6f19-4ca8-b17d-34fe7554b8b3,Enoma Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE01,5.692871093000065,6.34350586000005
+ef7ad1a3-d846-4a0e-b47b-a05f489ab65b,Utesi Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.692077637000068,6.212707520000038
+e9478469-d496-41f0-b4c0-025e4eaea239,Guobadia Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE02,5.690124512000068,6.371704102000024
+e2cabddd-72b9-4c44-92cd-a5282c38d729,The Shepherd Medical Center,,Medical Center,Iguegben,EDSGUE05,6.241882325000063,6.602478027000075
+91092105-609a-4b37-9b8a-a2c9103248a6,Ekekhen Primary Health Center,,Primary Health Center,Iguegben,EDSGUE07,6.246276855000076,6.625915527000075
+ea147aba-461b-49ec-a96b-6f5ca890a401,Udo Neria Primary Health Center,,Primary Health Center,Iguegben,EDSGUE08,6.301330567000036,6.580505371000072
+1eb47390-0c80-4345-861f-35d6272277dd,Idumeka Primary Health Center,,Primary Health Center,Iguegben,EDSGUE09,6.2548828130000516,6.595092773000033
+90b41aea-d1be-4387-9585-9d9eee392b2b,Mt Zion Clinic,,Primary Health Center,Esan South-East,EDSUBJ10,6.322509766000053,6.489074707000043
+03db12e6-5426-449e-a139-714188722967,Uhe Primary Health Center,,Primary Health Center,Iguegben,EDSGUE10,6.251892090000069,6.587707520000038
+3fabccd8-27bf-4b08-b4ce-4f888e93027c,Mother Theresa Medcenter,,Primary Health Center,Esan South-East,EDSUBJ04,6.374877930000025,6.659301757000037
+68a0e88a-2b90-4304-985f-5a582755f640,Zion Heritage Hospital,,Primary Health Center,Esan South-East,EDSUBJ10,6.3325195310000595,6.494689941000047
+db60e80c-baee-418e-bf78-232291b6420d,Ewohimi District Hospital,District Hospital,District Hospital,Esan South-East,EDSUBJ10,6.331298828000058,6.485473633000026
+ac203596-6a24-4352-96b8-a502c70d8e25,Izumen Health Center,,Primary Health Center,Esan South-East,EDSUBJ01,6.315490723000039,6.494689941000047
+3f4d4488-dfb3-48a1-b49c-d92beb0b0ece,Orowa Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ05,6.539489746000072,6.50671386700003
+c70ca729-ec81-4857-b6f0-a241c9ae9cf5,Ikeken Health Post,,Dispensary,Esan South-East,EDSUBJ05,6.471923828000058,6.626892089000023
+34dd1e9f-0cc4-4874-9195-36d4f1992f17,Bode Primary Health Center,,Primary Health Center,Etsako East,EDSAGD02,6.699279785000044,7.116699219000054
+968b9855-17e7-4c57-acb5-2026eb2bd163,Ivbiughuru Health Center,,Primary Health Center,Owan West,EDSSGD07,5.917114258000026,7.0139160150000635
+212fc581-e242-42c3-a356-8bb36d842711,Ugboshi Afe Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.056274414000029,7.401489258000026
+63ea9693-605b-4a7d-a68d-53ef928299fe,Pn Nursing Home,,Primary Health Center,Etsako West,EDSAUC12,6.262512207000043,7.069274903000064
+9ebaff22-ccc4-4e64-9cc7-802e8563e3e2,Okpe Primary Health Center,Primary Health Center,Primary Health Center,Akoko-Edo,EDSGAR05,6.024902344000054,7.28350830100004
+cf1b8308-131f-40e5-9116-639cbf16baa6,Atoruru Primary Health Care Center,,Primary Health Center,Owan West,EDSSGD08,5.857482910000044,6.861877441000047
+5cee3a4d-58e6-4914-88f2-18f2f0a8e60a,Afowa Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.3015136720000555,7.09869384700005
+9907e6a0-3392-47f2-80bb-e7061ed08454,Divine Medical Center,,Medical Center,Etsako West,EDSAUC07,6.291687012000068,7.09851074200003
+59195193-6ba1-4fd7-a180-a12803b29960,Crown Clinic,,Primary Health Center,Etsako West,EDSAUC12,6.264282226000034,7.057312012000068
+bc677e28-ac06-414e-857d-c36c41943f60,Ovughu Primary Health Center,,Primary Health Center,Etsako West,EDSAUC09,6.365478516000053,6.894714356000065
+2e61d259-fb73-46c6-8560-07f2b6ad641a,Odigie Primary Health Center,,Primary Health Center,Etsako West,EDSAUC10,6.284484863000046,6.868713379000042
+76552cb0-79fe-4066-bedd-7f5e7ceb3e28,St Jude Specislist Medical Center,,Medical Center,Etsako West,EDSAUC12,6.281921387000068,7.086914062000062
+09d9b744-ef1f-433b-a065-9d8da9b6c11a,Idinateke Primary Health Center,,Primary Health Center,Etsako West,EDSAUC12,6.263488770000038,7.050476075000063
+f7385ce3-87d7-4e59-8fde-5136b25182ee,Igarra General Hospital,Primary Health Center Igara,General Hospital,Akoko-Edo,EDSGAR01,6.1044921880000516,7.280700684000067
+1de140df-2e30-418b-ad19-ae6c78b5100c,Ozalla Primary Health Center,,Primary Health Center,Owan West,EDSSGD05,6.020690918000071,6.800476074000073
+f9e2be01-9005-4a78-a00a-2420c5e80366,Uroe Primary Health Care Center,Primary Health Center Uroe,Primary Health Center,Owan East,EDSAFZ10,5.935119628000052,7.114501953000058
+777964b9-2582-47b5-973a-03271a69a335,Idesa Primary Health Center,,Primary Health Center,Owan East,EDSAFZ09,6.005126953000058,7.2075195310000595
+765ba679-6839-4776-9d75-dff4e3358595,Osho Medical Center,,Medical Center,Etsako West,EDSAUC11,6.29968261700003,7.097900391000053
+6b334048-9eac-476d-9e46-77d719536b3c,Imeke Primary Health Center,,Primary Health Center,Etsako West,EDSAUC01,6.261108398000033,7.128112793000071
+c7597e72-ad7d-4cc6-ab64-0a781ef53705,Iyora Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.344116211000028,7.124877930000025
+8e324188-3e97-4c93-aa2f-a264eeb5b614,Iyarekhu Primary Health Center,,Primary Health Center,Etsako West,EDSAUC03,6.335876465000069,7.025512695000032
+09b732f7-42d5-4041-9db3-e3c95a4b2427,Ayua Primary Health Care,,Primary Health Center,Etsako West,EDSAUC01,6.285522461000028,7.121093750000057
+a729ac04-722c-411d-afd4-a53fca0da356,Owan Health Center,,Primary Health Center,Ovia North-East,EDSAKA04,5.769714355000076,6.75811767600004
+0737beea-5a4c-4bc6-8ade-f5284b9c7d01,His Glory Medical Center,,Medical Center,Esan Central,EDSRRU08,6.237915039000029,6.792480469000054
+b2302940-b3f2-493d-b4f8-6c68fb62550f,Ubiane Primary Health Center,,Primary Health Center,Etsako West,EDSAUC10,6.285705567000036,7.010925293000071
+81397b52-4601-427b-8586-726df6b37610,Messiah Medical Center,,Medical Center,Esan Central,EDSRRU06,6.2504882810000595,6.795715332000043
+03035da4-a004-4c1e-b9f3-8adb5fd34732,Joe Alufohai Medical Center,Joe Alufohai Medical Center Sabo,Medical Center,Owan West,EDSSGD08,5.942077636000022,6.899108887000068
+76549689-41ec-4cb3-8133-a596467b9f70,Egbigere 2 Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR03,6.178894043000071,7.215515136000022
+9a927cc1-4469-4aef-8ebc-b1409de7d223,Egbetua Primary Health Care,,Primary Health Center,Akoko-Edo,EDSGAR10,6.267089844000054,7.3776855470000555
+5aa4ce90-766b-4f5c-be08-b38d3fd331e8,Ekpedo Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR07,6.169677734000061,7.417297363000046
+d5588f40-b611-4863-a73a-ca41ff743d00,Uneme Nekhua Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.08111572200005,7.3479003900000635
+16e17b21-b1ad-4f0a-a46c-180a2851124c,Osigbemhe Hospitals,Aimimenogbene Mat Home,Primary Health Center,Etsako West,EDSAUC12,6.2761230470000555,7.067504883000026
+e4a79c50-d9e9-4d4a-9a8f-1695459a00f2,Ughiole Primary Health Center,,Primary Health Center,Etsako West,EDSAUC10,6.279479980000076,7.009887696000021
+69a2e42e-0b99-46c4-b476-4fe63cc690ff,Oah Primary Health Center,Oah Primary Health Center Center Oah Okpuje,Primary Health Center,Owan West,EDSSGD10,5.892883300000051,7.0380859380000516
+f216ee04-095d-4db0-883e-16e61b82b56a,Ugbosihele Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.057312011000022,7.338928223000039
+ced4f180-d726-4f5c-9824-622f364b40a1,Ogah Medical Center,Health Center,Medical Center,Etsako Central,EDSFUG02,6.499511719000054,7.086120606000065
+5852a1c6-eabd-40f9-8ab6-27c4c0b98c1d,Aganibode General Hospital,,General Hospital,Etsako East,EDSAGD02,6.665893554000036,7.114074707000043
+b2751431-06eb-43aa-a788-ae1643c28194,Ekweosor Primary Health Center,,Primary Health Center,Etsako East,EDSAGD10,6.5944824220000555,7.061889648000033
+928a1596-6a1a-4e2c-a12f-0743992dc016,Ukpeko Orle Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG04,6.526306153000064,6.899902343000065
+447b14c5-cbd6-4cb8-99e9-aadc3a401612,Imiava Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG08,6.490295410000044,7.1354980470000555
+f3b62e04-8dea-42f6-a661-2cd6ebfc8b34,Ifeku Island Health Center,,Primary Health Center,Esan South-East,EDSUBJ09,6.616882324000073,6.74908447200005
+b459dac6-2bea-4306-a8f5-d44a8bb2d7b3,Eguare Oria Primary Health Care Center 11,,Primary Health Center,Esan South-East,EDSUBJ03,6.515502930000025,6.679870605000076
+d4b0977d-1e77-4414-af0a-3b2142cdf400,Omorodion Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ03,5.298889160000044,6.620727539000029
+4d256381-4214-4ca4-b849-95a766fe7ae2,Edaiken Primary Care Clinic,,Primary Health Center,Egor,EDSUSL05,5.624511719000054,6.3754882810000595
+1a244c1a-b472-42f5-abc7-6c1aed7f357e,Eguari Ohordua Primary Health Care,Comprehensive Health Clinicc,Primary Health Center,Esan South-East,EDSUBJ06,6.40850830100004,6.515686035000044
+c80acb8c-8c69-46d6-948d-77abfd0fa141,Inyenlen Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ05,6.567687988000046,6.506286621000072
+c87956c9-8724-4c4c-abaf-23132a2d1681,Uka Imeri Basic Health Center,,Primary Health Center,Akoko-Edo,EDSGAR05,5.93389892600004,7.3115234380000516
+6a8e47ec-921f-4c34-ad37-a0914c163d6f,Igue Oke Primary Health Center,,Primary Health Center,Owan East,EDSAFZ07,6.075683594000054,7.193298340000069
+57ad99d6-34d4-41a4-b2b2-ec706c94e070,Utoka Health Center,,Primary Health Center,Ovia North-East,EDSAKA13,5.529907226000034,6.374694824000073
+b13d686f-5ebe-408c-bff9-871b14d27fa0,Iguoshodin Nebudin Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA09,5.531494141000053,6.461730957000043
+24f65cbe-82af-4ceb-85a2-a457b33f581a,Ogida Primary Health Clinic,,Primary Health Center,Egor,EDSUSL06,5.588073730000076,6.3676757810000595
+47014865-4af5-4892-9ce2-b61106a4e82c,Ibhoze Emunekhua Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ06,6.472473145000038,6.505126953000058
+4e0992cf-bacb-442a-9e24-31fe0d93a6da,Ohanmi Primary Health Center,,Primary Health Center,Owan East,EDSAFZ10,6.002319336000028,7.095886231000065
+d18fea90-424f-469a-a0f0-88428831194c,Ugbogbo Primary Health Center,Divine Victory Med Center,Primary Health Center,Akoko-Edo,EDSGAR01,6.096923828000058,7.287902832000043
+fcaf2f4a-60d6-45df-b3b5-a5694cb587be,Ihilame Jagbe Primary Health Center,,Primary Health Center,Etsako West,EDSAUC06,6.282897949000073,6.822692871000072
+c4effefc-3993-4ea3-8d1d-221791cc8dc3,Elele Primary Health Center,,Primary Health Center,Etsako West,EDSAUC01,6.296081543000071,7.115295410000044
+49cd5726-057d-4054-a400-541337659ec4,Ikabigbo Primary Health Center,,Primary Health Center,Etsako West,EDSAUC08,6.346313477000024,7.0971069330000205
+cc01427b-f85a-4c50-8c9d-bfd2e8797c05,Ugboha Primary Health Center,Primary Health Center Ugboha,Primary Health Center,Esan South-East,EDSUBJ07,6.460083008000026,6.755493164000029
+cc6b1c57-a5a8-4a46-98bd-2ae736d4d7a9,Fountain of Life Hospital,,Primary Health Center,Oredo,EDSBEN04,5.625008190556369,6.327950768847144
+9c6bddb9-656c-4cdf-9f82-272fdd76ad84,Oghede Primary Health Center,Basic Maternity Care,Primary Health Center,Egor,EDSUSL01,5.545471191000047,6.294128418000071
+54d9e780-424f-4f5c-aac9-26dcefbcdb51,Imiakebu Primary Health Center,,Primary Health Center,Etsako East,EDSAGD04,6.443908691000047,7.229492187000062
+48b7b73d-53e2-4b03-8048-1bd740225072,Oredo,,Primary Health Center,Oredo,EDSBEN07,5.627155975997771,6.3170167862305515
+93df06f8-b939-40d2-808d-968e4198ce63,Ekehuan Primary Health Center,Ekenwan Primary Health Center,Primary Health Center,Ovia North-East,EDSAKA03,5.37408447200005,6.188476562000062
+5372a496-7783-4fa5-83a2-d51c49e226aa,Ogbeide Medical Center,,Medical Center,Egor,EDSUSL07,5.609680175000051,6.3720703130000516
+bd2c22bb-2d30-49fb-b127-7571cf3bf319,Urhonigbe Primary Health Center,Urhorugbe Primary Health Center,Primary Health Center,Orhionmwon,EDSABD01,6.177811232434388,5.983625686479807
+f96302d6-03af-485b-9326-1d959c9b0783,Evbozigbo Primary Health Center,Evbuozegbe Primary Health Center,Primary Health Center,Uhunmwonde,EDSEHR05,5.959516198140283,6.337346851672245
+c96b826c-c236-4227-8f05-a43422eae818,Ihumudumu Primary Health Center,,Primary Health Center,Esan West,EDSEKP06,6.136840987888983,6.738216079258363
+e4eeb8ad-7571-499b-a0d0-b588da1869ad,Ogwa Primary Health Center,,Primary Health Center,Esan West,EDSEKP06,6.149595420510014,6.737121720759755
+ddfee6b2-50c9-4251-86e8-a6be43c1f867,Ugieghudu Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR10,5.861412520046504,6.524625520487329
+0cc5c9f2-95f7-4a37-9cce-07180bf44b6c,Ehor Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.707320734175336,6.3849369303546055
+694400bf-2cbf-4bd7-8faa-45f727c4c1c4,Ehor Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.738724076077786,6.388913189347082
+7ea7d1b1-0b9f-44c1-90be-c3e848b397a7,Evbuarhue Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.75225056800589,6.323873714298474
+ecedaa60-f27e-48b6-a902-2478fbd12489,Ark of Grace Nursing and Maternity Home,,Maternity Home,Uhunmwonde,EDSEHR03,5.681701660000044,6.397521973000039
+2d6ebd54-7744-4a05-a6d7-e9169297477a,Fidnuel Nursing and Maternity Home,,Maternity Home,Uhunmwonde,EDSEHR03,5.698303223000039,6.380676270000038
+aaa82968-fef1-4116-8904-665aea32b386,Ogo Quarters Maternity,,Maternity Home,Orhionmwon,EDSABD01,6.175720215000069,5.986694336000028
+ce9c650d-ccc3-44c9-929b-9b7608a3bda3,Ugiamwen Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR06,6.085896216928788,6.679940020018346
+4d621513-999a-4742-a73e-979f4f509ef0,Uhunmwonde Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.8787300000000755,6.302190000000053
+6e738d71-7435-47fa-9446-0b02a7d5d3b1,Evabou Kabua Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD10,6.079436939721902,6.117416741831542
+29829e30-cd51-4fc0-87a8-cd8b9044f0f1,Oza Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD06,6.056399469951801,6.342843368822393
+6a98aa00-848e-4c31-83e4-08df0e0fc4a6,Uvbenisi Health Clinic,,Primary Health Center,Uhunmwonde,EDSEHR01,6.046931302696977,6.3894654946467195
+49bf6e73-b2cd-4f20-b9f2-e5c80f048708,Ugbiyokho Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR06,6.087381708126474,6.650103837828265
+e8c6b648-cf67-4755-b337-99d7deee5fce,Orhionmwon Health Center,,Primary Health Center,Orhionmwon,EDSABD06,6.057286743671475,6.284299642263553
+d5ab41fe-a94c-4493-b66f-3b8abf58ef84,Igueuwangue Primary Health Center,Iguwangue Primary Health Center,Primary Health Center,Uhunmwonde,EDSEHR07,5.828674316000047,6.390686035000044
+3dc90f7b-904f-47bc-8002-29e3d7ceb756,Orior Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.675476075000063,6.411315918000071
+51e8654e-d8e4-4456-8c95-25b1ed491213,Umoghun Nokhua Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD05,5.966674805000025,5.947326660000044
+6842c9fb-7f65-411c-9cb6-346b4947a570,Par Excellence Medical Center,Primary Health Center Ehor,Medical Center,Uhunmwonde,EDSEHR06,5.982482911000034,6.613708496000072
+ce29222b-b841-4103-bfb7-63910273a2f2,Aduhanhan Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.796081543000071,6.322082519000048
+27cf9101-faf3-4bce-b408-6cdd12aeca1a,Enofe Medical Center,,Medical Center,Uhunmwonde,EDSEHR03,5.715515137000068,6.382507325000063
+ee3b0fae-38fe-4965-a1e1-c15dbd5f8538,Iguehana Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR05,5.907287598000039,6.326721192000036
+241f14fa-5fe1-4522-82e6-f3f6a62fc0ab,Urhomehe Model Health Center,,Primary Health Center,Orhionmwon,EDSABD08,6.142517090000069,6.048522950000063
+3234ab4b-63a9-4fc3-a33e-89e0b9209f9e,Ogo Quarters Dispensary,,Dispensary,Orhionmwon,EDSABD08,6.178527832000043,5.986877441000047
+1514a109-2d47-45c8-9199-93a852145bc7,Urehue Primary Healthcare,,Primary Health Center,Orhionmwon,EDSABD05,5.998474121000072,5.969909668000071
+2153560b-e598-40ed-8311-978ce3945bd1,Uvbe Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.952087402000075,6.291687012000068
+6f54fb26-adf2-48e9-a12b-085c6f9af08a,Zion Heritage Hospital,,Primary Health Center,Esan West,EDSEKP01,6.222473145000038,6.4982910150000635
+c9c754a0-c6dd-45f7-95ea-df1bb9cd34a6,Okhuaihe Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.769104004000042,6.322509766000053
+bf7224c5-3637-429d-838c-4395d0e4cabb,Irru Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD06,6.031311035000044,6.323913574000073
+1e16e70c-7b41-41a3-8408-f19186e9adf7,Idoa Primary Health Center,Ukhun Primary Health Center,Primary Health Center,Esan West,EDSEKP09,6.217712403000064,6.812500000000057
+704fd48c-bdb1-4b75-b0b8-a9d6eb856cc6,Eromosele Medical Center,,Medical Center,Esan West,EDSEKP10,6.1303100580000205,6.741882325000063
+dd169ead-21db-48f2-b9fe-c63a5a06f399,Private Dental Clinic,,Primary Health Center,Esan West,EDSEKP06,6.142089843000065,6.743286133000026
+240260a4-8919-4f65-8352-ecbba2a77112,Orhua Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR04,5.98413086000005,6.771301269000048
+403b65b2-4a34-430c-8899-c97a47a09e18,Oriaifo Memorial Clinic,,Primary Health Center,Esan West,EDSEKP06,6.149108886000022,6.746093750000057
+9d587827-548e-4ff9-b4b1-8b7665537d3f,Iruekpen General Hospital,General Hospital Iruekpen,General Hospital,Esan West,EDSEKP05,6.062072754000042,6.759887695000032
+d4f5f4eb-e15a-46aa-bcf8-f35ecf66a055,Izikhiri Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR09,5.9970703130000516,6.389099121000072
+50075a5c-9a3f-4a36-a975-3475d3ef7c4c,Ebueneki Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR05,5.896118164000029,6.362121582000043
+18ed72bf-b4c4-4572-b977-315d357fc2f1,Ugomoson Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.916304054023032,6.295018420691486
+4071d358-486b-4e15-822a-80c32b866e3d,Okhokhugbo Primary Health Center,,Primary Health Center,Egor,EDSUSL04,5.565625120308199,6.350791335300733
+8f83e09a-77da-4ef5-85c6-f6c6ff1a4871,Shalom Clinic and Maternity,,Maternity Home,Egor,EDSUSL04,5.577514648000033,6.355285645000038
+5d3a15dd-f7d1-4c6c-8fb3-498419687b15,Fremmase Nursing and Maternity Center,,Maternity Home,Egor,EDSUSL04,5.57312011700003,6.360717773000033
+e6b74696-a706-4723-8d64-eb98acbc2b3f,Emabu Model Primary Health Center,,Primary Health Center,Owan East,EDSAFZ11,6.132324219000054,7.044311523000033
+5cd059b8-2276-423d-ab34-e2e4f64d5583,Menax Clinic and Maternity Center,Ugo Menax Clinic,Maternity Home,Orhionmwon,EDSABD12,5.998718262000068,6.0872802740000225
+043ed6cf-9ae4-402f-9ce3-5cf6a639e0dc,Abudi Health Center,,Primary Health Center,Orhionmwon,EDSABD12,6.006630814602766,6.093644055948274
+555fe7e5-10d2-492f-9ba7-b605720d2d12,Idumwenke Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD12,5.979309082000043,6.168884278000064
+64a097bd-98ff-48ef-b214-cf3f1964a1fb,Evbonogbon Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD10,6.083129883000026,6.046691895000038
+ea4e1b43-776d-4e6c-ac79-98934ce72503,Iguododo Primary Health Center,1 Guododo,Primary Health Center,Orhionmwon,EDSABD12,6.001892090000069,6.221679687000062
+4710032d-953d-4f28-b4d2-6fe32e3cb2c7,South Ibie Maternity,,Maternity Home,Etsako West,EDSAUC05,6.235248379987904,7.070362592216657
+40eddcc1-8f25-42d0-a732-e3dfe0fd294d,Gods Victor Hospital,,Primary Health Center,Egor,EDSUSL09,5.597690000000057,6.357140000000072
+f33cf667-56ba-48c9-83d2-5308e507295d,St Marys Hospital,,Primary Health Center,Egor,EDSUSL07,5.6099700000000325,6.359260000000063
+7936c028-56d5-4c19-b1b8-c7a5e9ebdfd7,Gods Glory Maternity,,Maternity Home,Iguegben,EDSGUE09,6.246500000000026,6.59791000000007
+e4d06a71-7a36-4dc9-b832-991245e4e5b4,St Lukes Clinic and Maternity,,Maternity Home,Esan West,EDSEKP10,6.127920000000074,6.744410000000073
+35a8ec4e-eff7-4870-bbc4-e180b6dcdb04,Agirie Primary Health Center,,District Hospital,Etsako East,EDSAGD10,6.5688810682213905,7.05435589857162
+4c08bf38-6bd5-4a95-8ca3-f97a89cad6f5,Uniben Teaching Hospital,,Teaching Hospital,Etsako Central,EDSFUG05,6.45324831129012,7.117397801689124
+154a1029-bae9-4147-b3e3-4c8a6cb4d194,Ubierumuoke Primary Health Center,,Primary Health Center,Esan North-East,EDSURM07,6.288219295320759,6.675184840660461
+10826828-7736-4d1d-b2d8-2f6a3604acf4,Afuze Primary Health Care,,Primary Health Center,Owan West,EDSSGD04,5.9395540542324285,6.973069986937624
+18e62eee-b41e-40b0-a6a8-b1815574997f,Christabel Maternity Home,,Maternity Home,Owan West,EDSSGD04,5.936980000000062,6.918520000000058
+d61a11c5-cb1a-4cbe-8c0e-9d60b4fb928e,Agbede General Hospital,General Hospital Agbede,General Hospital,Etsako West,EDSAUC10,6.266704992981836,6.871690179851467
+92a6865d-2b3d-453e-888e-50b172839dee,Ekiedolor Hospital,,District Hospital,Ovia North-East,EDSAKA11,5.584132971090535,6.493223494757956
+7bf8d2fc-e5ef-4280-ac8a-878a871c488f,Ugbogui Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.245545413156789,6.690136398992925
+83f9130b-cea5-4665-9af5-cedbe6ab7f97,Udo Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ06,5.369748632064742,6.481005906750519
+f818c351-687f-4e6a-88f6-1b77f946b173,Warrake Primary Health Care,,Primary Health Center,Owan East,EDSAFZ03,6.185529678688527,6.991402735601611
+767bb534-e92f-4827-acae-86848b93c374,Iguobazuwa General Hospital,,General Hospital,Ovia South-West,EDSGBZ04,5.3524680996504825,6.568873556975021
+2a71c26e-cbd1-4ef2-8a24-c9404a7c92ca,Ibillo General Hospital,,General Hospital,Akoko-Edo,EDSGAR06,6.071130446316441,7.441299771912982
+1ac6f34f-27a0-4b98-87fb-0944d2c5cafe,Ewossa Primary Health Care,,Primary Health Center,Iguegben,EDSGUE01,6.273297450141083,6.465344595327091
+cb0fe56c-854b-448d-af59-4e27573bf880,Ebele Primary Health Care,,Primary Health Center,Iguegben,EDSGUE02,6.223650459416224,6.488659122193252
+83c54b3c-00f7-4eb3-98cc-49fcfcc06091,Okhuesan Primary Health Care,,Primary Health Center,Esan South-East,EDSUBJ05,6.403486906150048,6.613718837456843
+8a8d3b6d-5ccf-44de-be20-76b10a502f7f,Emu Maternity,,Maternity Home,Esan South-East,EDSUBJ05,6.465843778124409,6.559724842871222
+20602989-14d1-4542-97b4-8a7ab328f931,Oria Primary Health Care,,Primary Health Center,Esan South-East,EDSUBJ03,6.520341077288321,6.686043083998736
+e438e0fc-7e41-4d74-9dc7-0e1175c9d9cb,Okpujie Fsp Cottage Hospital,,Cottage Hospital,Owan West,EDSSGD10,5.892663301281296,7.037127523976956
+4ca0e788-1a65-4451-97e3-111e85d9fe0f,Ofunmwengbe Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.334670000000074,6.63969000000003
+5d3ee217-c698-460a-ae6a-b1c67de7f481,Erah Ekeke Primary Health Center,,Primary Health Center,Owan East,EDSAFZ02,6.117510000000038,6.838000000000022
+9f5905e1-362b-4931-8b9c-64dc42023b73,Aniso Specialist Hospital,,Specialist Hospital,Egor,EDSUSL10,5.621440000000064,6.3786700000000565
+df3e8d09-330a-4f36-85d0-9eb97a0f6a52,Osunde Specialist Hospital,,Specialist Hospital,Egor,EDSUSL02,5.633000000000038,6.356520000000046
+0f159374-1a65-4110-8689-c172759cb276,St Maternityhais Anglican Hospital,,Maternity Home,Oredo,EDSBEN10,5.629440000000045,6.323690000000056
+ff829fe4-16cf-455e-9240-97ac4e74e9d7,Christ Cottage Clinic and Maternity,,Maternity Home,Egor,EDSUSL01,5.580530000000067,6.326940000000036
+bc3d6933-7915-48c5-869a-1c1e388386a2,St Tude Specialist Hospital,,Specialist Hospital,Etsako East,EDSAGD08,6.5818400000000565,7.0871400000000335
+a5be743a-5b57-4be4-b4a0-52c19a409ad5,Divine Faith Nursing and Maternity Ho,Divine Faith Nursingand Maternity Home,Maternity Home,Egor,EDSUSL09,5.586890000000039,6.356270000000052
+4687d544-cebd-4457-bc72-e21c9a7ab70b,Nosuyi Maternity,Nosuyi Clinic And Maternity,Maternity Home,Egor,EDSUSL06,5.5996900000000664,6.369860000000074
+9c6dec9e-c16f-4491-81d2-3843222a26c6,Uwa Clinic and Maternity,Oka1 Uwa Clinicand Maternity,Maternity Home,Ikpoba-Okha,EDSDGE10,5.6708000000000425,6.288550000000043
+a94374fc-6e70-42ca-b9ab-a1eb86d6a6bb,Raphiah Nursing and Maternity,Rephahiah Nursing And Maternity Home,Maternity Home,Ikpoba-Okha,EDSDGE03,5.645440000000065,6.30758000000003
+8e76aa19-8d6e-460d-be4d-22ec1e0e9ac5,St Mary Maghalel Hospital,St Mary Magdalene Hospital,Primary Health Center,Ikpoba-Okha,EDSDGE09,5.632270000000062,6.315250000000049
+6fcf8400-e302-4956-940e-5fae5a2c3d17,Christ Medical Center,Christ Way Medical Center,Private Non Profit,Oredo,EDSBEN12,5.626120000000071,6.3295400000000654
+da7a466d-bc66-4b1a-9841-87449996fb59,Medical Clinic and Maternity,Abe Medical Clinic And Maternity,Maternity Home,Oredo,EDSBEN12,5.629850000000033,6.331020000000024
+f4111a85-5636-4014-aea3-72e4c01a6c75,Suru Med Center,Suru Medical Center,Primary Health Center,Esan South-East,EDSUBJ04,6.377670000000023,6.651130000000023
+38578333-feaa-4435-9ab5-890d650d0a20,Amanfoh Nsa and Maternity Home,Amanfoh Nsa Maternity Home,Maternity Home,Esan North-East,EDSURM03,6.336700000000064,6.714140000000043
+4526442f-c813-4a9d-beb0-140e3efd7bcf,Referral Medical Center,Afuze Referral Center,Medical Center,Owan East,EDSAFZ05,6.0417600000000675,6.9715700000000425
+1584ce5c-281f-494a-9060-b5011ee6edc3,Forturne Tyare Clinic,,Primary Health Center,Egor,EDSUSL08,5.577320000000043,6.376320000000021
+580ce00b-4f93-4ebd-be4a-e1b68e3f54a7,Bamby Hospital,,Primary Health Center,Oredo,EDSBEN05,5.601270000000056,6.352810000000034
+9fe66ef5-5fd4-4d0f-ac6d-9ca982f84407,Partland Clinic and Maternity,,Maternity Home,Egor,EDSUSL05,5.618510000000072,6.359070000000031
+4bfac810-39c5-4408-8b5a-c0866c826413,Beulahand Maternity and Nursing Home,,Maternity Home,Egor,EDSUSL10,5.61892000000006,6.380440000000021
+95db47df-5fd1-4287-86a3-8741ea299729,Uwelu Maternity,,Maternity Home,Egor,EDSUSL06,5.596340000000055,6.3761800000000335
+d16463a4-f103-4e62-97a8-3b8e638c2052,Aljumah Nursing and Maternity Home,,Maternity Home,Egor,EDSUSL02,5.634360000000072,6.370570000000043
+68b35cc0-b929-4248-8df8-4f9f2dab26ad,The Lords Maternityand Nursing Home,,Maternity Home,Egor,EDSUSL09,5.583930000000066,6.372070000000065
+cc3326d6-2d8d-4737-add0-37209edaef1b,Ugbowo Mediacl Clinic and Maternity,,Maternity Home,Egor,EDSUSL10,5.6029700000000275,6.38775000000004
+3f93d72b-2f9a-4e4a-a350-db7f3db11036,Osasima Nursing and Maternity,,Maternity Home,Egor,EDSUSL09,5.580840000000023,6.361110000000053
+a482f9e1-4caa-4f6b-baac-c2e358f46950,Destiny Nursing and Maternity,,Maternity Home,Egor,EDSUSL07,5.603880000000061,6.358850000000075
+a03cfe29-2a06-435d-97e5-04be7514b7f1,Excutive Clinic and Maternity,,Maternity Home,Egor,EDSUSL05,5.6192400000000475,6.367280000000051
+a4e8a984-51c8-406e-8af7-b603a31b5a04,Tega Maternity,,Maternity Home,Egor,EDSUSL09,5.592960000000062,6.3566900000000714
+00fc6e19-be55-4dd6-8299-00fcfeddcb17,St Godwin Mediacl Center,,Primary Health Center,Egor,EDSUSL06,5.584070000000054,6.3781000000000745
+31674abe-6180-4883-8509-6d7cf15d2d86,Domiminum Maternity,,Maternity Home,Egor,EDSUSL06,5.594650000000058,6.366690000000062
+ceff2934-4194-45ba-abe6-7601ac9ca698,Evangel Model Hospital,,Primary Health Center,Egor,EDSUSL02,5.621740000000045,6.358590000000049
+49e0e37d-b287-4db9-b9b8-ecaa070272f9,Itohan Medical Center,,Medical Center,Egor,EDSUSL02,5.625410000000045,6.360430000000065
+3bcfca11-31cd-4a4c-94eb-3cf2f37a068f,Quality Medical Center,,Medical Center,Egor,EDSUSL03,5.631930000000068,6.379830000000027
+8f6bb194-9938-449d-be79-25aa88a6c2a0,Theilia Medical Clinic,,Primary Health Center,Egor,EDSUSL10,5.610610000000065,6.383490000000052
+d3ec0f55-5243-40a6-93f7-d2e28ddf3db6,Osaide Maternity,,Maternity Home,Oredo,EDSBEN11,5.594830000000059,6.336850000000027
+1f42c7df-5d03-4fc0-89cb-b8a9561edb8d,A1 Winner Clinic and Maternity,,Maternity Home,Egor,EDSUSL05,5.62569000000002,6.366400000000056
+fbfe9e91-8068-43f0-880c-59b1e3239ed4,Ebony Clinic and Maternity,,Maternity Home,Egor,EDSUSL10,5.602420000000052,6.3796500000000265
+c0302d33-d715-48de-9971-37562a3c0ba1,Oviasuyi Medical Center,,Medical Center,Egor,EDSUSL06,5.59486000000004,6.3707200000000626
+aef2c580-938c-4548-b50d-e5443d767aa3,Graceland Maternity,,Maternity Home,Egor,EDSUSL10,5.607060000000047,6.380930000000035
+3a4ce32c-6886-47fc-884b-917c0dfecdbe,Cornerstone Medical Center,,Medical Center,Egor,EDSUSL07,5.611860000000036,6.359160000000031
+1d6aeddc-c85f-4e64-bd6b-e90f9eee5965,New Life Clinic,,Primary Health Center,Egor,EDSUSL06,5.599170000000072,6.363330000000076
+fcb73e38-3e8e-4aa1-a78e-89d8718caafd,Morat Hospital,,Primary Health Center,Egor,EDSUSL09,5.5781200000000695,6.372280000000046
+b1513d9f-452c-47ca-82a8-d52bfcabe33e,Oviasu Medical Center,,Medical Center,Egor,EDSUSL05,5.622330000000034,6.362610000000075
+61122431-d46a-46f4-af32-2de208ea528e,Mt Gilead Hospital,,Primary Health Center,Egor,EDSUSL07,5.614340000000027,6.372280000000046
+7281b5bc-1f55-4775-b5f2-a15acf33abbf,Ise Clinic and Maternity,,Maternity Home,Egor,EDSUSL07,5.613290000000063,6.358800000000031
+015ef207-e58d-49e9-b702-2553fe34c7f8,Echos Hospital Limited,,Primary Health Center,Egor,EDSUSL10,5.613520000000051,6.379180000000076
+b4e9ce3a-5cf4-421d-9026-0d5c439a48eb,Shalom Clinic and Maternity,,Maternity Home,Oredo,EDSBEN11,5.601030000000037,6.347440000000063
+5e7d6a2c-1c8d-4ea9-bc55-8f60f46d2d43,Omosete Clinic and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE09,5.640410000000031,6.305860000000052
+4de673cb-86a4-48b2-b090-ee78985a2ddc,Zion Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.679810000000032,6.28305000000006
+c4874c8d-3380-406a-8765-e46efbf1c988,Onome Nursing and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE03,5.648850000000039,6.307870000000037
+43b4803e-60c7-4bae-a8fd-13fc291722bf,St David Ngs and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE06,5.641480000000058,6.321920000000034
+dbec9334-6416-42c5-b5b8-896ff57261d8,Hossana Msg and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE10,5.647670000000062,6.2979100000000585
+55c86ae6-5afb-4f28-9fb0-1bb58d800a1a,Ovbiose Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE02,5.680250000000058,6.367110000000025
+633f8a07-dcd5-45aa-8176-f78cea952707,Iyore Nursing and Maternity,,Maternity Home,Ikpoba-Okha,EDSDGE10,5.683530000000076,6.279350000000022
+57fa6f6e-4001-44f7-b35d-092cfd7a2140,Ukponmwan Foundation Hospital,,Primary Health Center,Oredo,EDSBEN02,5.6276000000000295,6.3449900000000525
+e2d79569-7610-429c-bf48-8cdd0b88453f,Edi Inetrnational Limited,,Primary Health Center,Oredo,EDSBEN04,5.619700000000023,6.326750000000061
+6d33ee43-6d24-4e0a-b563-8eb683225ef0,Bazuaye Hospital and Maternity,,Maternity Home,Oredo,EDSBEN02,5.6350700000000415,6.351290000000063
+794ce840-2bbd-4e4a-a44d-2e7e5368d408,Hope Hospital,,Primary Health Center,Oredo,EDSBEN02,5.634130000000027,6.351840000000038
+9a02ff5b-630e-445a-ad41-204676a40090,Stella Obasanjo Women and Child Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE09,5.630370000000028,6.274120000000039
+3fd738ab-7be4-471f-9bf6-ed931b9a00cd,St Philomena Catholic Church Hospital,,Private Non Profit,Oredo,EDSBEN02,5.630160000000046,6.345160000000021
+3fb2f913-0bad-4a3a-a2b3-d0b39d442941,St Jude Medical Center,,Medical Center,Oredo,EDSBEN07,5.627380000000073,6.297150000000045
+f87e1be1-9d33-4816-9fd1-5beeb64f77e2,Esohe Hospital and Maternity,,Maternity Home,Oredo,EDSBEN08,5.621940000000052,6.349450000000047
+d34d3eec-fc5c-465f-93f3-2fb1cdbf65bf,Wilbon First Care Clinic,,Primary Health Center,Oredo,EDSBEN08,5.62068000000005,6.351020000000062
+04ecaa07-2d7d-4c99-b384-b8ead3147061,Owen Clinic,,Primary Health Center,Oredo,EDSBEN02,5.632940000000076,6.352250000000026
+9a5e800d-602e-4ee1-a518-8502442cb95c,Irowa Medical Center,,Medical Center,Oredo,EDSBEN10,5.6276000000000295,6.320730000000026
+9a7db61e-2bd8-470e-a163-611e443551a1,Gift Medical Center,,Medical Center,Oredo,EDSBEN06,5.620690000000025,6.342080000000067
+a96abfab-e550-48e2-a79b-e656b2504024,Bethsaida Missionary Clinic,,Private Non Profit,Egor,EDSUSL02,5.631040000000041,6.361110000000053
+b3e18a0b-f13e-45da-9158-bc0b11c03473,Safe Heaven Medical Center,,Medical Center,Oredo,EDSBEN11,5.606870000000072,6.339640000000031
+77041830-a88b-4596-bfb9-d22778062db4,Ekpen Hospital,,Primary Health Center,Oredo,EDSBEN04,5.595960000000048,6.331580000000031
+c9f6d7a3-c105-4ebd-85cc-26b2763e0ead,Osula Royal Hsopital,,Primary Health Center,Oredo,EDSBEN06,5.625800000000027,6.34170000000006
+eae4c253-3417-47de-bc4c-a2f5f803e3d5,Time Medical Clinic and Maternity,,Maternity Home,Oredo,EDSBEN11,5.605090000000075,6.335370000000069
+01e17e29-ee13-42de-a834-0a15123ea996,Ogbeide General Practice Clinic,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.642580000000066,6.328440000000057
+6286ff43-1527-437e-bac6-af36db3f2a2c,Bethel Faith Medical Center,,Medical Center,Oredo,EDSBEN04,5.593850000000032,6.328280000000063
+0e4fdf8e-f182-410c-9481-80cb4fa319d6,Ihenyen Medical Center,,Medical Center,Oredo,EDSBEN04,5.595660000000066,6.32603000000006
+fde73810-dacd-4b06-be70-bed436636636,Suyi Medical Center,,Medical Center,Ikpoba-Okha,EDSDGE04,5.6441200000000435,6.335740000000044
+1f618367-9d9f-4a0e-bb1b-5c18388d71bc,Compassion Clinic,,Primary Health Center,Oredo,EDSBEN02,5.63092000000006,6.3546100000000365
+baf76e2b-5c19-4d11-99a1-9604e590a4a2,Emose Maternity Nsg Home,,Maternity Home,Egor,EDSUSL02,5.622600000000034,6.355780000000038
+7b43ca1b-93ec-4b22-873d-1e001493f5be,Benin City Central Hospital,,Primary Health Center,Oredo,EDSBEN04,5.622720000000072,6.3293200000000525
+ea3f5444-7b5f-49fb-813a-c4f55be50bb6,Rodo Hospital,,Primary Health Center,Oredo,EDSBEN07,5.6126800000000685,6.307050000000061
+2cec0252-bd47-43fe-a906-b13d977c03e4,Ariowa Clinic,,Primary Health Center,Oredo,EDSBEN06,5.625900000000058,6.343220000000031
+efc311f2-5c8d-46d6-8039-58042371349c,Lio La Cross Hospital,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.638610000000028,6.330510000000061
+2c9dd00f-2606-4363-bdee-616047674da0,Memorial Hospital Ajayi Oriaito,,Primary Health Center,Oredo,EDSBEN07,5.6060300000000325,6.302440000000047
+74ebcd03-8a47-4357-a5fc-1fd962a4c8e9,Ayolik Medical Center,Medical Center Redemption,Medical Center,Oredo,EDSBEN12,5.626490000000047,6.331250000000068
+38e199ff-5472-4157-964f-91272a08d824,Wisdom Medical Center,,Medical Center,Oredo,EDSBEN12,5.632220000000075,6.330780000000061
+1b1ef252-cf0f-41ba-b22b-77b4c82c9a07,Specilaist Clinic Edo Ose,,Primary Health Center,Ikpoba-Okha,EDSDGE06,5.634060000000034,6.329910000000041
+86e2125c-8194-46f1-97f3-fe30be7075dc,Ekiadolor District Hospital,,District Hospital,Ovia North-East,EDSAKA11,5.585360000000037,6.49428000000006
+09609c15-24e1-4e0b-a12d-48d748edda1a,Emiloju Medical Center,,Medical Center,Ovia South-West,EDSGBZ02,5.334780000000023,6.640790000000038
+1d45de46-7f96-4d49-9685-e96a6c47034b,Hope Medical Nursing Home,,Primary Health Center,Ovia South-West,EDSGBZ06,5.363950000000045,6.482210000000066
+924a7b31-1b36-49b7-95c8-358a7b318645,Mount Zion Med Center,,Primary Health Center,Esan South-East,EDSUBJ08,6.397130000000061,6.642120000000034
+005763ba-176d-4f6e-9c5a-06735f410d18,Ogbeide Med Center,,Primary Health Center,Esan South-East,EDSUBJ04,6.386210000000062,6.663270000000068
+07be3c1a-7f19-46aa-8446-30ec3bc4ca51,Ugbo Clinic,,Primary Health Center,Esan South-East,EDSUBJ10,6.322960000000023,6.48589000000004
+ca399a57-27a1-468c-869d-acbf806ff181,St Like Clinic Auchi,,Primary Health Center,Etsako West,EDSAUC12,6.267020000000059,7.065670000000068
+8fa3b741-f770-4f19-a90d-1854a2665fd8,Smith Beecham Vaccination Prosabo,,Primary Health Center,Owan West,EDSSGD08,5.936670000000049,6.902910000000077
+15694716-9a22-4fd3-86d1-6543fef51420,Ayunko Clinic and Maternity Home,,Maternity Home,Akoko-Edo,EDSGAR06,6.062190000000044,7.446060000000045
+4e403b42-1100-463d-9e20-e41c45766f71,Poly Clinic Ososo,,Educational Clinic,Akoko-Edo,EDSGAR10,6.241040000000055,7.402000000000044
+bdac9efa-9c4f-4227-9cef-b000da42f235,Uneme Osu District Hospital,,District Hospital,Akoko-Edo,EDSGAR08,6.235340000000065,7.353940000000023
+d1bde5fb-c531-46dd-ab5b-e1b875f5666d,Ifejola Hospital Igarra,,Primary Health Center,Akoko-Edo,EDSGAR01,6.1256100000000515,7.275100000000066
+7e5efb9c-2677-4f00-adf4-55d1bca2f3a8,Alaifa Hospital Igara,,Primary Health Center,Akoko-Edo,EDSGAR01,6.128030000000024,7.26941000000005
+f639d07f-9eec-4b6c-a844-81786c185e0d,Divine Victory Med Center,,Primary Health Center,Akoko-Edo,EDSGAR01,6.0970400000000495,7.286200000000065
+f1397a67-ebc1-49c2-9f58-2670961d8620,Sahalon Med Hospital,,Primary Health Center,Akoko-Edo,EDSGAR04,6.100600000000043,7.29024000000004
+1ff49862-a37c-4a2a-b667-c8de44082e71,Usugbenni District Hospital,,District Hospital,Esan Central,EDSRRU07,6.240420000000029,6.711870000000033
+4ba80d53-06e3-4573-a92a-99caf514f796,Asemota Medical Center,,Medical Center,Esan North-East,EDSURM08,6.317940000000021,6.721690000000024
+3d486ca0-a66a-4ffc-8d3a-303d413884e6,St Joseph Medcenter,,Primary Health Center,Esan North-East,EDSURM03,6.331740000000025,6.699310000000025
+20e96f66-adc6-4551-b7c6-ea47a17a240c,Inno Clinic and Maternity,,Maternity Home,Esan North-East,EDSURM08,6.311830000000043,6.730540000000076
+2a0e2a22-cbe4-466d-a520-9c268f77b239,Oriaifo Med Center Uromi,,Primary Health Center,Esan North-East,EDSURM05,6.339590000000044,6.719500000000039
+4617c0ee-be6f-4fad-b131-b62451f7897d,Aimimenogbene Maternity Home,,Maternity Home,Etsako West,EDSAUC12,6.2762800000000425,7.066880000000026
+2782a959-6ced-4048-8b30-09c9bf1a2a45,Sancta Maria Catholic Hospital,,Private Non Profit,Etsako West,EDSAUC11,6.300740000000076,7.094600000000071
+563f068b-4019-42d0-adfc-9dd60df028b4,Al Kudi Maternity Home,,Maternity Home,Etsako West,EDSAUC03,6.336530000000039,7.022250000000042
+87eff281-22ea-4e82-a04e-d903bfd28221,New Grace Land Medical Center,,Medical Center,Etsako West,EDSAUC10,6.277900000000045,7.0170700000000465
+4ab5f27b-9f72-4a98-9d4a-1aaff1f3bc90,Akemikhai Medical Center,,Medical Center,Etsako West,EDSAUC05,6.275390000000073,7.076550000000054
+a26b130f-f873-4537-8c39-2bc63fb888b9,The New Era Clinic Auchi,,Primary Health Center,Etsako West,EDSAUC12,6.269640000000038,7.069170000000042
+f4974fac-e844-4c9d-bff0-7322ddcacad3,Jey M Jey Hospital,,Primary Health Center,Etsako West,EDSAUC12,6.273990000000026,7.074230000000057
+a569b54f-141a-4ed7-9092-b03c29c656f4,St Theresa Nursing and Maternity Home,,Maternity Home,Owan East,EDSAFZ01,6.025010000000066,6.959350000000029
+912900df-43f3-4c6d-8213-992fd4ab9269,Mercy Hospital,,Primary Health Center,Owan East,EDSAFZ05,6.036740000000066,6.964160000000049
+4927ac40-ea2e-4e41-88d9-2cf84332b714,Bt Nursing Maternity Home,,Maternity Home,Owan East,EDSAFZ01,6.052320000000066,7.064180000000022
+6a4ff929-756a-4aec-84e4-ba8532d79e3e,Nwani Medical Center,,Medical Center,Owan East,EDSAFZ05,6.04278000000005,6.972560000000044
+d05bc83f-cb89-4e6b-9374-9c4bb2cb6417,Idonije Blissbenes Medical Center,,Medical Center,Owan East,EDSAFZ08,6.003020000000049,7.192980000000034
+4f632213-177a-4feb-b8d1-b26be7feb90d,Okougha Medical Center,,Medical Center,Owan West,EDSSGD06,5.916270000000054,7.003280000000075
+375403f9-f7fc-4cd1-a295-877cf852790e,St Pauls Maternity Home,,Maternity Home,Owan West,EDSSGD08,5.927530000000047,6.900760000000048
+7b5a0de1-536e-4b3d-a619-8bdce033998b,Osamaye Maternity Home,,Maternity Home,Owan West,EDSSGD08,5.9273600000000215,6.907180000000039
+f6b5ddad-e570-4774-b141-09b28d2825e5,Grace Maternity Home,,Maternity Home,Owan West,EDSSGD03,5.947840000000042,6.8675700000000575
+ec18c914-7143-4cee-b3e9-9ea41ebd7044,Anointed Nursing and Maternity Clinic,,Maternity Home,Owan West,EDSSGD03,5.952440000000024,6.871080000000063
+7411eff9-9c40-434e-bec7-a8367e0ae15a,Odion Medical Center,,Medical Center,Owan West,EDSSGD03,5.950580000000059,6.865310000000022
+e13441f8-a130-4b2f-855a-43d03c8726cf,Mich Grace Meternity Home Sobe,,Primary Health Center,Owan West,EDSSGD02,5.777780000000064,6.847210000000075
+38c94c83-de50-42f1-98b6-a0f571e67f18,Oc Nursing and Maternity Home,,Maternity Home,Owan West,EDSSGD01,5.903060000000039,6.992080000000044
+9cfc8a2f-a1f1-4547-9abf-2e52f5a7694f,Hebrew Ann Nurand Maternity Home,,Maternity Home,Owan West,EDSSGD01,5.900750000000073,6.996310000000051
+dfe8c47c-a35d-4553-a1c3-ca9e99e9d4cd,Iuleha Maternityternity Home Uzebba,,Maternity Home,Owan West,EDSSGD01,5.906250000000057,7.0008300000000645
+6a9646ce-671f-4603-9388-03fe427a04fd,Gods Will Lydia Memorial Nursing,,Primary Health Center,Owan West,EDSSGD01,5.899020000000064,7.001420000000053
+d3674688-3255-431d-8491-2de99668cfb1,Safe Way Medical Clinic Sobe,,Primary Health Center,Owan West,EDSSGD02,5.775920000000042,6.852160000000026
+3d6bdf9b-b0c5-418b-80f8-e40d51976d14,Universal Medical Clinic Sobe,,Primary Health Center,Owan West,EDSSGD02,5.780570000000068,6.853470000000073
+a8068a2e-00ec-4869-a93a-5c99fa4428dc,Moms Clinic,,Primary Health Center,Etsako West,EDSAUC12,6.263670000000047,7.071710000000053
+633e0872-754d-474b-bd46-5736fb3be9f3,Ossiomo Specialist Hosital,,Specialist Hospital,Orhionmwon,EDSABD06,6.055810000000065,6.285620000000051
+a015045b-1a99-4d35-8928-f537da196fce,Oligie Maternity,,Maternity Home,Orhionmwon,EDSABD09,6.20643979157483,6.328343328729756
+a74b6801-3dbd-4ada-8a60-daa5f1663769,Eronosele Medical Center,,Medical Center,Esan West,EDSEKP10,6.124010000000055,6.742330000000038
+3bed71fa-e8ae-4907-a90f-f110cd6bacc8,St Regions Hospital Ebelle,,Primary Health Center,Esan West,EDSEKP01,6.223060000000032,6.498250000000041
+ad5a85ed-b528-4131-aab9-a9d996f877ac,Dominin Nursing and Maternity,,Maternity Home,Uhunmwonde,EDSEHR06,5.975460000000055,6.613020000000063
+6b2264f1-5c24-4545-8e80-2ae4b04237b7,Oziegbe Maternity Home,,Maternity Home,Uhunmwonde,EDSEHR06,5.986780000000067,6.61823000000004
+81b2a0b1-d30d-424a-95e2-7c9b10220a59,Ane Clinic,,Primary Health Center,Esan West,EDSEKP06,6.1346000000000345,6.749430000000075
+8319db48-947c-4f27-a3a3-1bdb7949cc77,Oseghale Oriaifo Medical Center,,Medical Center,Esan West,EDSEKP02,6.094390000000033,6.746540000000039
+423c1403-990a-4410-bd34-aad07fa1385e,Okpebho Clinic and Maternity Home,,Maternity Home,Esan West,EDSEKP10,6.113630000000057,6.736070000000041
+437c85de-86db-4f3f-9596-207df91c8ec4,Eguavon Medical Center,,Medical Center,Esan West,EDSEKP05,6.071520000000021,6.752490000000023
+4e791009-7816-4443-a16d-720bf7881bc9,Ofure Clinic and Maternity Home,,Maternity Home,Esan West,EDSEKP06,6.136430000000075,6.739660000000072
+56edeb1f-7580-414c-974a-c0342022c62b,Ese Clinic,,Primary Health Center,Esan West,EDSEKP06,6.147610000000043,6.7397300000000655
+d8d84a20-810d-4a92-bb83-0be38d7076cf,Esan Medical Center,,Medical Center,Esan West,EDSEKP10,6.125090000000057,6.738930000000039
+6cdc238e-6d52-40de-a188-f1e85410d6f4,Eseohe Medical Center,,Medical Center,Esan West,EDSEKP06,6.144840000000045,6.737040000000036
+909a9132-7c28-4b16-b37a-07d89fec5255,Okaima Maternity Home,,Maternity Home,Esan West,EDSEKP06,6.142600000000073,6.745180000000062
+9cbefc14-83b0-49f8-bacc-79603926f8ae,Blessed Medical Center,,Medical Center,Esan West,EDSEKP06,6.148540000000025,6.73177000000004
+e7bdcf1f-aad0-4336-aa48-b2f52a054377,Calvary Medical Center,,Medical Center,Esan West,EDSEKP10,6.126450000000034,6.743160000000046
+353ebfbc-0056-4474-b2ad-87c834de098a,Atiti Clinic,,Primary Health Center,Esan West,EDSEKP02,6.080550000000073,6.749610000000075
+64faafa6-d727-4951-b0b7-f50ae4248f2a,Zenith Hospital Limited,,Primary Health Center,Esan West,EDSEKP06,6.146120000000053,6.747330000000034
+226233d3-58d7-4edc-8390-d0d925ddfce3,Ugboko Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD12,5.957940000000065,6.141050000000064
+44d138b8-bfab-4081-be62-20d9964c32e7,Ogoro Primary Health Center,,Primary Health Center,Esan West,EDSEKP06,6.146450000000002,6.732725000000001
+2910179d-ec4e-43df-b780-8e3b4aa3c771,Psychiatric Hospital,Benin Psychiatric Hospital,Primary Health Center,Egor,EDSUSL05,5.62035000000003,6.360810000000072
+fd15abee-f730-40b8-9fc0-108475ab68ef,Uwelu Primary Health Center,,Primary Health Center,Egor,EDSUSL06,5.583150000000046,6.385760000000062
+08fcb2c6-7d4b-4404-862d-c23b4be6137a,Urban Primary Health Center,,Primary Health Center,Oredo,EDSBEN09,5.6307200000000535,6.335810000000038
+e1f01094-e55c-4c6e-8c61-1626fd880c40,Obeidu Primary Health Center,,Primary Health Center,Esan North-East,EDSURM11,6.269890000000032,6.736370000000022
+d89730ad-0495-4510-8afc-604432981739,Igieduma Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR10,5.9469400000000405,6.590530000000058
+7b942477-767e-41f7-a7d5-aa2bdb09baf4,Ubiaja Health Center,,Primary Health Center,Esan South-East,EDSUBJ04,6.390853333000001,6.645683332999998
+51e8eebe-cf44-46a4-809f-80638db3c326,Ikhideu Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.085681599999999,6.747443800000002
+e18c033c-2685-4b2e-aec6-0c792d501847,Okpujiehealthfacility,,Primary Health Center,Iguegben,EDSGUE06,6.227355000000002,6.507056667
+70f301dd-057d-4585-a7a3-2f102f523716,Emwinyomwanru Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.513518332999999,6.231636666999999
+513b098e-01e9-481e-ad5b-062134a5a6a6,Ogua Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.682581666999998,6.2563949999999995
+fa1165ef-90f5-49c9-a8a2-a3a51b82a6fe,Obeh Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.628529999999999,6.245246666999998
+669e9d66-30e4-48b2-81c5-d83da32ef4f0,Evbuodia Primary Health Center,,Primary Health Center,Oredo,EDSBEN07,5.567918332999998,6.283138333000001
+9bc47a16-80de-4231-a87d-0e3da6cc7307,Ogbago Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG06,6.50342686,6.974324200000002
+d79dde7d-295f-419a-924c-2c115b23c472,Otua Primary Health Center,,Primary Health Center,Owan East,EDSAFZ11,6.124081667000001,7.049493333
+80955a4d-b608-48f8-9865-cf4a160e788c,Ogbona Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG05,6.44466318,7.118903040000002
+7565327b-426c-48ff-995a-2d6421dabf00,Ugbokhare Primary Health Center,,Primary Health Center,Esan Central,EDSRRU10,6.278208700000002,6.7728689
+a2c1f47b-ee61-461a-b425-b3ef418db2aa,Ugbegun Primary Health Center,,Primary Health Center,Esan Central,EDSRRU05,6.2455699000000005,6.638940399999999
+5481777f-5329-4451-814d-f3229ca413c7,Agadaga Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ01,6.310249999999998,6.519631667000001
+7309e404-b1ce-4c15-a6a0-b250bb593550,Ikeken Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ01,6.330995,6.504711666999998
+732f1a75-4b09-4f8e-bae0-4fbdfa47d3f8,Uffa Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR01,6.103834799999998,7.282178400000001
+c593fdc6-c84f-40f4-b4ae-e60441cdd22b,Ohe Primary Health Care Center,,Primary Health Center,Uhunmwonde,EDSEHR06,5.981415600000002,6.6295837
+beebe04d-0208-44ab-8851-dd26dc9f2f31,Iguerahon Health Post,,Dispensary,Ovia South-West,EDSGBZ01,5.1707933330000015,6.448865
+09db5bb5-7d5c-4c5c-a919-de7a7fd7dccb,Nutrition Unit Ubth,,Primary Health Center,Egor,EDSUSL10,5.612713333000002,6.392828333
+b7d3c1cc-6860-4bd9-8a85-071e531e10a0,Ukhuse Osi Primary Health Center,,Primary Health Center,Owan West,EDSSGD07,5.923340000000001,7.030923332999999
+5f36a7f0-af44-4eea-a591-ef6d6cadaa7d,Igbinedion Teaching Hospital,,Teaching Hospital,Ovia South-West,EDSGBZ09,5.380460000000028,6.720710000000054
+eaac51f1-7fc2-4bad-859e-933c13d2f6d9,Umaza Health Post,,Dispensary,Ovia South-West,EDSGBZ01,5.265760000000057,6.549140000000023
+f808aa8f-8183-4926-b8e8-ce8c62a14299,Familugba Basic Health Center,,Primary Health Center,Ovia North-East,EDSAKA07,5.549640000000068,6.881430000000023
+73908bb2-5750-4181-9dea-02a4b32d7e73,Ogbona Comprehensive Health Center,,Comprehensive Health Center,Etsako Central,EDSFUG05,6.439490000000035,7.113450000000057
+6868ce38-b580-4395-854b-b9d87ae82920,Dental Clinic Gilgal,,Primary Health Center,Oredo,EDSBEN07,5.611740000000054,6.312970000000064
+59fca733-6638-4f5d-9bc9-a4a4a2b38f57,Ubiaja General Hospital,Ewohimi General Hospital,General Hospital,Esan South-East,EDSUBJ04,6.393600000000049,6.640780000000063
+80563e73-195d-4e3e-9a8d-0a53a0d87d8a,Egbigere Primary Health Center,Egbigere Ii Primary Health Center,Primary Health Center,Akoko-Edo,EDSGAR02,6.151530000000037,7.203780000000052
+96888757-36b5-4ccc-a323-7d7073ceb754,Enwan 2 Primary Health Center,Enwan Iprimary Health Center,Primary Health Center,Akoko-Edo,EDSGAR03,6.136220000000037,7.279550000000029
+0622532c-c931-44d0-9fa5-b4a2ef9783bb,Dagbala Primary Health Center,Dagnala Primary Health Center,Primary Health Center,Akoko-Edo,EDSGAR09,6.2228300000000445,7.338760000000036
+20f82acb-742d-4b28-bbb7-2b6cd02060a9,Afokpella Primary Health Center,Imiamuneafokpella Primary Health Center,Primary Health Center,Etsako East,EDSAGD09,6.368220000000065,7.289310000000057
+5015a5cc-d1f6-4d7f-93ed-bd6d56fdfb66,Ukhiri Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.7240900000000465,6.255100000000027
+606b658c-6565-4547-81fc-17e9ad431dcb,Ibie Nafe Primary Health Center,Ibienefe Primary Health Center,Primary Health Center,Etsako West,EDSAUC03,6.304760000000044,7.052770000000066
+e8115652-0b02-414b-b628-6e6e1bbb3029,Sabo Iyakoi Primary Health Center,Sabo Iyakpi Primary Health Center,Primary Health Center,Etsako West,EDSAUC03,6.279760000000067,7.054860000000076
+077097d7-c1e5-4871-9931-69bb561b7528,Urhuere Primary Health Center Ikao,Urhurere Primary Health Center,Primary Health Center,Owan East,EDSAFZ07,6.031180000000063,7.205130000000054
+38d955ad-7d31-47e1-9149-148ee78d72c0,Ihiebe Ogben Primary Health Center,Ihievbe Ogben Primary Health Center,Primary Health Center,Owan East,EDSAFZ04,6.159660000000031,7.169840000000022
+8bb7916b-6911-4c69-849b-a46f750c73ef,Olelo Erah Primary Health Center,Olelo Primary Health Center,Primary Health Center,Owan East,EDSAFZ02,6.085860000000025,6.824070000000063
+b2c048ac-4cc0-4634-8791-c695ad053523,Osomegbe Ekperi Primary Health Center,Osomegbe Primary Health Center,Primary Health Center,Etsako Central,EDSFUG07,6.621710000000064,6.95279000000005
+e9176dd3-e7a8-4e6e-ac52-8fa4929447c4,Ivianake Ekperi Primary Health Center,Ivianake Primary Health Center,Primary Health Center,Etsako Central,EDSFUG10,6.441250000000025,7.037310000000048
+8c546a2a-b9a1-4ce0-a659-0cffffe6bd32,Itsukwi Health Clinic,Itsukwi Primary Health Center,Primary Health Center,Etsako East,EDSAGD04,6.448040000000049,7.218930000000057
+fc743b59-e252-4cda-9ea7-495237ca01ed,Iviari Primary Health Center,Iviari Weppa Primary Health Center,Primary Health Center,Etsako East,EDSAGD10,6.540200000000027,7.036090000000058
+cf008037-39f8-4b4e-a291-6c25383f3fec,Uzanu Health Clinic,Uzanu Primary Health Center,Primary Health Center,Etsako East,EDSAGD08,6.633170000000064,7.1951100000000565
+6fab7417-c011-4f6f-a44c-49244c285a9b,Olgbo Primary Health Center,Ologbo Primary Health Center,Primary Health Center,Ikpoba-Okha,EDSDGE05,5.66032000000007,6.069030000000055
+448863c6-1f6f-44e6-8265-a1e14f303deb,Arue Primary Health Center,Uzemena Model Health Center,Primary Health Center,Esan North-East,EDSURM04,6.298910000000035,6.736920000000055
+460a7096-1808-4f6d-b621-eb050d8018ce,Ebese Primary Health Center Ivbiaro,Model Primary Health Center Ivbiaro,Primary Health Center,Owan East,EDSAFZ03,6.168780000000027,7.042590000000075
+17dfda76-8ec7-4aad-878d-9d777c4711e8,Sobe Primary Health Center,Sobe Modern Primary Health Center,Primary Health Center,Owan West,EDSSGD02,5.782580000000053,6.83865000000003
+8188a2f0-eca5-48cc-bc73-8effa99d308c,Ayanran Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,5.962870000000066,7.478830000000073
+35d929cf-28eb-4aa0-86ff-1fe9389d5c06,Useh Primary Health Center,,Primary Health Center,Egor,EDSUSL09,5.578050000000076,6.3671300000000315
+738a653c-3d58-4ff6-aca7-711c386330c2,Oghogbobi Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.636000000000024,6.226830000000064
+7846031f-6211-4c04-b8bc-d48ac3f1631b,Ogheghe Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.636590000000069,6.208600000000047
+ed93b3ba-c46f-4423-9849-ddb10cf38a34,Obagienvbola Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE07,5.596880000000056,6.194530000000043
+d1ba8ff8-9637-45c6-a142-640db4e80dfc,Ogbeson Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE01,5.688690000000065,6.343930000000057
+38eabfd9-4cee-4af6-82ce-6d03d21f5185,Okabere Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.657330000000059,6.272550000000024
+3b529b09-cc2d-4163-bba9-1e6d6a7d4ec4,Edo Maternity and Child Clinic,,Maternity Home,Oredo,EDSBEN05,5.615970000000061,6.339910000000032
+847ff5d7-6bf1-4b0d-b085-dbc7f56b3840,New Benin Primary Health Center,,Primary Health Center,Egor,EDSUSL02,5.6290200000000254,6.355550000000051
+bbe7182f-e120-48c9-aba9-9f95ef411349,Arougba Primary Health Care,,Primary Health Center,Oredo,EDSBEN07,5.581020000000024,6.26580000000007
+3187cea7-f1ed-4a54-a3d1-5f93d69e348a,Military Base Hospital,,Military and Paramilitary Clinic,Oredo,EDSBEN07,5.6075100000000475,6.3180000000000405
+b5608d3c-d862-449f-8729-93465594440a,Police Lottage Hospital,,Military and Paramilitary Clinic,Oredo,EDSBEN07,5.6228700000000345,6.316090000000031
+ac45091c-108e-4bdc-a465-a2c181d2f6ae,Total Medical Health Care,,Primary Health Center,Ovia North-East,EDSAKA08,5.6083600000000615,6.411580000000072
+11ed9fe5-744d-4893-84e1-b99d135e505c,Evboneka Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA11,5.621090000000038,6.511460000000056
+f3a712a7-baf9-4da0-8f12-592b0f57ffc1,Ugbinen Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA03,5.46819000000005,6.223200000000077
+a5eea85d-1cc0-43ea-9da6-383de935dabe,Siluko Health Center,,Primary Health Center,Ovia South-West,EDSGBZ10,5.158860000000061,6.535180000000025
+813d067a-db91-420c-b60d-1896fb55aac3,Essi Health Post,,Dispensary,Ovia South-West,EDSGBZ01,5.222950000000026,6.562400000000025
+c12fb4b0-6cf0-4614-8f68-25b17ef3a171,Okokpon Health Post,,Dispensary,Ovia South-West,EDSGBZ04,5.328420000000051,6.606070000000045
+9c9cf427-8835-4a7e-9875-02cfe33bcd78,Iguoriakhi Health Post,,Dispensary,Ovia South-West,EDSGBZ08,5.435740000000067,6.487390000000062
+db545871-d278-42c3-bc02-30d3b2905f50,Ofunama Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ07,5.2164600000000405,6.151830000000075
+9d021a94-240f-48b0-a8e9-5fe3c89dcda9,Iguogun Health Center,,Primary Health Center,Ovia South-West,EDSGBZ03,5.314790000000073,6.56337000000002
+c9d717a7-d34c-4654-bcaf-5fdd94a478a2,Iguelaiho Primary Health Clinic,,Primary Health Center,Ovia South-West,EDSGBZ01,5.227250000000026,6.492670000000032
+05a503f2-44d7-4816-a650-b7578043d015,Ozalla Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA11,5.571960000000047,6.518760000000043
+8aa25e89-c59d-4206-8238-3d1992ee99f0,Utese Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA07,5.504910000000052,6.788090000000068
+e173a81d-94ff-4ca7-a4a0-f300c4cb8101,Ogbesse Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA07,5.557680000000062,6.763100000000065
+fa731520-269e-44ff-bcce-3ce3fefa1fe8,Egbeta Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA07,5.510460000000023,6.79051000000004
+2fc0a2ef-6787-4fc2-803d-da52a0c23a50,Okha Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ09,5.378240000000062,6.705290000000048
+596a6d39-e64e-4c8d-a123-4404e32734ac,Usen Government Hospital,,Primary Health Center,Ovia South-West,EDSGBZ09,5.344910000000027,6.748760000000061
+69ff2dab-7bd7-45a5-96ac-5c4b6ca809a6,Evbonogbon Primary Health Center,,Primary Health Center,Ovia South-West,EDSGBZ02,5.162930000000074,6.741570000000024
+3e1415b6-98a2-4809-a8b1-3216b22e419d,Opoti Primary Health Care Center,,Primary Health Center,Esan Central,EDSRRU05,6.174950000000024,6.593010000000049
+d76ce584-88e5-4aba-ba8a-02422b895ce4,Ohordua Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ06,6.414500000000032,6.4900800000000345
+fa22d6d2-2d8b-44e5-b792-d60ad3e8a57e,Okede Comprehensive Health Clinic,,Primary Health Center,Esan South-East,EDSUBJ01,6.312590000000057,6.508230000000026
+f4f75d04-9c9f-46b5-b82e-9a408227f7e0,Igueben General Hospital,,General Hospital,Iguegben,EDSGUE05,6.247500000000059,6.612780000000043
+9ec7a69d-2830-4e02-b09f-8b0eb864b6f0,Amenhor Primary Health Center,,Primary Health Center,Iguegben,EDSGUE02,6.216150000000027,6.460980000000063
+563b5cbd-0bad-4151-ba27-02be33e900d1,Udoh Model Primary Health Center,,Primary Health Center,Iguegben,EDSGUE08,6.337220000000059,6.630690000000072
+bfd3aee4-a880-47b2-a061-f510c1f30658,Ewossa Primary Health Center,,Primary Health Center,Iguegben,EDSGUE01,6.275010000000066,6.46267000000006
+4feb85eb-e3dd-47bf-875a-95bae8cecdde,Iguben Primary Health Center,,Primary Health Center,Iguegben,EDSGUE05,6.2441800000000285,6.605590000000063
+9212126c-0f83-4da0-87e2-a0a0ea6bef34,Ebelle Primary Health Center,,Primary Health Center,Iguegben,EDSGUE03,6.228470000000073,6.491310000000055
+554a7c7d-0d38-498d-a5bb-8b61c27f2d17,Egba Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE10,5.703500000000076,6.274380000000065
+b73c642c-c49c-4ab0-9cef-dd315f21f75f,Ahia Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ08,6.455680000000029,6.642210000000034
+e3720436-236d-4d9e-b9fc-6be167f56eb8,Ikpeshi Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR03,6.186640000000068,7.142250000000047
+382b2ad3-8bbb-4f55-a985-b8ffde2cf5bf,Sasaro Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.147980000000075,7.210710000000063
+a1999bc5-0e99-45e3-9233-a0757ddc9d33,Atte Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR03,6.232540000000029,7.21127000000007
+b0776f75-626b-4832-bf0c-576358d384d0,Ijaja Primary Health Center,,Primary Health Center,Owan East,EDSAFZ08,5.9390900000000215,7.255430000000047
+f0162f95-c846-4301-a37a-7775595ee416,Aiyegunle Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.076640000000054,7.3515200000000505
+6283c4c1-1bc9-4ad8-9422-c16de8892c3d,Ekpesa Primary,,Primary Health Center,Akoko-Edo,EDSGAR06,6.075660000000028,7.426130000000057
+3065566d-24c9-40f0-86b2-cd575ae3a576,Ikakumo Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,6.016500000000065,7.527250000000038
+50f2ba24-996c-4ce2-a094-d58f94364684,Imoga Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR07,6.084610000000055,7.506970000000024
+7019028c-509e-4f7d-9295-2a3a7039c011,Ibillo Government Hospital,,Primary Health Center,Akoko-Edo,EDSGAR06,6.08271000000002,7.437780000000032
+13e228d5-d08c-4e70-928e-1e4e2732aa79,Akuku Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR01,6.147170000000074,7.290730000000053
+62087f0c-9643-4d29-955f-0d2d5b30fafc,Onumu Sale Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.139100000000042,7.3556200000000445
+3ff10e0a-0c4e-416f-a300-ebf578c99091,Ogugu Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.108880000000056,7.380680000000041
+14dab753-a602-4c2f-b2c3-4651a185ad8d,Ogbe Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.110010000000045,7.3375500000000216
+8bcc87de-7f95-4f18-b23d-5ea08838615f,Ekpe Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR07,6.176010000000076,7.415560000000028
+2128f885-a765-4de1-a47e-50bc80bc40b7,Makeke Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR09,6.220520000000022,7.407140000000027
+c91e774c-0f97-4a6f-9adb-b44b03810aeb,Ojah Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR09,6.236370000000022,7.377760000000023
+ac0c2c29-5445-4c16-88e6-08ce33a63a53,Somorika Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR02,6.127490000000023,7.3186900000000605
+73961034-0b94-43e5-a940-b767a0c82671,Atuagbo Primary Health Center,,Primary Health Center,Esan Central,EDSRRU09,6.329440000000034,6.802490000000034
+fd689ce4-9937-4773-bf46-9ffb984b5a71,Ohe Primary Health Center,,Primary Health Center,Esan North-East,EDSURM10,6.39336000000003,6.787670000000048
+066f684c-ba92-4de2-94e2-377b563f7f23,Uroh Primary Health Center Uzea,,Primary Health Center,Esan North-East,EDSURM10,6.4317400000000475,6.7993900000000735
+aa21df1f-8378-4331-bd03-354f71b72b30,Awo Primary Health Center Uromi,,Primary Health Center,Esan North-East,EDSURM05,6.369530000000054,6.7296400000000745
+03cb9b8e-231c-4e8c-8215-0ad0a22374cc,Uwalor Oke Model Primary Health Center,,Primary Health Center,Esan North-East,EDSURM09,6.321280000000058,6.682060000000035
+0ebfe96c-51e7-4a2b-ae28-04bf91bbbb97,Idumoza Primary Health Clinic,,Primary Health Center,Esan North-East,EDSURM07,6.290740000000028,6.71670000000006
+af9bedc1-e568-4cf6-964a-dbd882d8b8f3,Uzenema Primary Health Center,,Primary Health Center,Esan North-East,EDSURM08,6.315330000000074,6.742780000000039
+f2d63d6b-154b-4fac-806c-db857bbb4e26,Olinlin Primary Health Center,,Primary Health Center,Esan North-East,EDSURM10,6.4097600000000625,6.811930000000075
+d3013439-ec0c-4ec1-8b25-636099bd6348,Imiekuri Health Clinic,,Primary Health Center,Etsako East,EDSAGD05,6.277360000000044,7.248550000000023
+7639bf07-eb4b-4ee4-9b2a-26304ff55110,Auchi Primary Health Center,,Primary Health Center,Etsako West,EDSAUC05,6.270530000000065,7.076820000000055
+ffb0acb9-ab9f-4c5c-ad2b-09613cac40df,Ayogwiri Primary Health Clinic,,Primary Health Center,Etsako West,EDSAUC08,6.400960000000055,7.112850000000037
+1b0d3aa3-d936-4e4c-b29e-b19832d2e43b,Idegun Primary Health Clinic,,Primary Health Center,Etsako West,EDSAUC09,6.411110000000065,6.904320000000041
+c8c5457f-40d4-4019-b926-a44d55a1fb71,Jagbe Primary Health Clinic,,Primary Health Center,Etsako West,EDSAUC06,6.282760000000053,6.833660000000066
+3d1e5782-13dd-4729-87e2-2c5d4bd8567d,Iyuku Primary Health Clinic,,Primary Health Center,Etsako West,EDSAUC01,6.242200000000025,7.159970000000044
+a47bbb88-596a-4103-8140-e7afd51f1572,Uluoke Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.3275200000000495,7.1582800000000475
+060ae8dd-16c5-459d-b490-bf24dc6527f8,Okpokhumi Primary Health Center,,Primary Health Center,Owan East,EDSAFZ01,5.992020000000025,6.94876000000005
+d63207f7-8b46-43d1-ab8e-205a4e546830,Uankhumi Primary Health Center,,Primary Health Center,Owan East,EDSAFZ01,6.032250000000033,6.95891000000006
+4f25471f-aa5e-4d17-b577-03d372c55692,Afuze General Hospital,,General Hospital,Owan East,EDSAFZ05,6.036610000000053,6.973140000000058
+da6e8622-1425-475f-8519-df9c8cb95f4f,Ohami Primary Health Center,,Primary Health Center,Owan East,EDSAFZ10,6.004170000000045,7.0943000000000325
+a90ccec1-7f54-4930-9d73-dc772d396fdc,Arokho Primary Health Center,,Primary Health Center,Owan East,EDSAFZ10,5.985670000000027,7.143730000000062
+d85a7dc6-f685-4b46-92be-7e4690566013,Amoya Primary Health Center,,Primary Health Center,Owan East,EDSAFZ08,5.995980000000031,7.173240000000021
+9e51a5f5-86b1-44a8-a7d3-5038bc4139c5,Oria Health Center,,Primary Health Center,Esan South-East,EDSUBJ03,6.49953000000005,6.672540000000026
+498db3e8-1885-4d2a-b7a3-79907161f42f,Akpe Ikao Primary Health Center,,Primary Health Center,Owan East,EDSAFZ07,6.016060000000039,7.20622000000003
+e3b4b2ba-ff80-48d1-aef6-a34100f078f9,Ugbovbighan Primary Health Center,,Primary Health Center,Owan East,EDSAFZ02,6.090780000000052,6.814740000000029
+5757a627-dfea-4b4b-8d54-961ede820011,Ekhueye Primary Health Center Ihievbe,,Primary Health Center,Owan East,EDSAFZ04,6.140500000000031,7.069100000000049
+ab4b12f4-fb28-48a4-a0fe-f99778528d9d,Ubuneken Irbiaro Primary Health Center,,Primary Health Center,Owan East,EDSAFZ03,6.173940000000073,7.050690000000031
+47596037-2f79-450e-a4e3-ac07f08bcef6,Ubuneken Primary Health Center Ivbiaro,,Primary Health Center,Owan East,EDSAFZ03,6.179780000000051,7.057620000000043
+5186afa8-60b2-4560-88b7-ce85b3ece641,Uzebba General Hospital,,General Hospital,Owan West,EDSSGD06,5.91315000000003,7.001730000000066
+62294bcc-ac03-4965-ac80-59fe389dae78,Uhonmora Prim Health Care Center,,Primary Health Center,Owan West,EDSSGD03,5.953350000000057,6.864570000000072
+1c7a6e32-f733-409e-ae0d-c99fdc503943,Oromen Primary Health Center,,Primary Health Center,Owan West,EDSSGD10,5.879350000000045,7.023650000000032
+f9b9c9f4-39e5-47f3-84d8-20dc75c39ada,Oke Primary Health Center,,Primary Health Center,Owan West,EDSSGD04,5.939440000000047,6.932410000000061
+04792d1a-c9db-443a-a8b6-2685b5b3515f,Eme Prim Health Care Center,,Primary Health Center,Owan West,EDSSGD04,5.970480000000066,6.909690000000069
+870933d2-f5c2-4ed6-941e-5839ff6a50c7,Iloje Primary Health Center,,Primary Health Center,Owan West,EDSSGD07,5.895640000000071,7.039810000000045
+71410802-e6bd-4cc6-ad53-b066a18ab1a8,Ohia Primary Health Center,,Primary Health Center,Owan West,EDSSGD07,5.92232000000007,7.035380000000032
+81dc2cec-e8b9-4503-b2bb-ed1eaf320b13,Ukhuse Primary Health Center,,Primary Health Center,Owan West,EDSSGD07,5.924460000000067,7.018230000000074
+cba9531f-7b6f-4334-9e84-8c60dc6a2563,Achoze Okene Primary Health Care,,Primary Health Center,Akoko-Edo,EDSGAR10,6.325270000000046,7.449140000000057
+eec6a9f8-3cec-46d1-87a6-8ddbef3a1ef4,Ebun Primary Health Center Uzea,,Primary Health Center,Esan North-East,EDSURM10,6.466560000000072,6.861650000000054
+82637f5c-814c-47c0-a2da-882f15579b52,Ofukpo Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG07,6.622540000000072,6.877390000000048
+f1e7f5ad-a95f-4e92-9685-f2ea4bb31492,Oghomere Ekperi Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG06,6.511390000000063,6.957730000000026
+b7d8dbde-3120-47d9-8312-495ef5afe8bf,Udaba Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG07,6.580920000000049,6.858700000000056
+932f6ad7-2ed3-466f-a4f4-45964c39aa6c,Udochi Oseseameh Health Center,,Primary Health Center,Etsako Central,EDSFUG07,6.650450000000035,6.950870000000066
+9d7b475e-ac6f-4aeb-a9d1-eeedd0e18194,Ogochi Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG06,6.503680000000031,6.9788200000000415
+e8179f40-2c3d-47ed-84f7-ca689f439834,Azuhala Ekperi Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG10,6.450880000000041,7.033150000000035
+58b00e6c-879a-4b66-8c37-d554a02a2f37,Iviukwe Agenebode Primary Health Center,,Primary Health Center,Etsako East,EDSAGD08,6.591810000000066,7.102690000000052
+4e274655-b543-45ce-9bf6-f475a6b59f5a,Iviebua Health Care,,Primary Health Center,Etsako East,EDSAGD01,6.622820000000047,7.1320400000000745
+568054c2-9d7a-4b59-82de-491050fe5e36,Emokweme Primary Health Center,,Primary Health Center,Etsako East,EDSAGD02,6.6689700000000585,7.083100000000059
+23454b58-9bcb-4612-b5b2-c597426d6338,Ivioghe Primary Health Center,,Primary Health Center,Etsako East,EDSAGD08,6.637380000000064,7.127990000000068
+d2b604dd-606f-4baf-985c-846a433b291d,Ekwotsor Primary Health Center,,Primary Health Center,Etsako East,EDSAGD10,6.591450000000066,7.0606200000000285
+4bd76231-c319-465f-b23e-06314ce345ea,Agenebode General Hospital,,General Hospital,Etsako East,EDSAGD08,6.649260000000027,7.146920000000023
+d7e85fd3-21d5-449c-8dae-d5807ba7e966,Ivianokpodi Health Clinic,,Primary Health Center,Etsako East,EDSAGD01,6.5996900000000664,7.1397700000000555
+da3f1d51-39e5-41dd-b304-f7b8ed9a00b1,Iviegbepui Health Clinic,,Primary Health Center,Etsako East,EDSAGD01,6.5884300000000735,7.130290000000059
+b8659f1c-63d6-4282-9cf7-18294313270c,Ughiole Primary Health Clinic,,Primary Health Center,Etsako Central,EDSFUG06,6.479190000000074,7.009940000000029
+be2e5057-3260-4388-b4f5-4ef5f17694cc,Obangede Primary Health Center,,Primary Health Center,Etsako East,EDSAGD07,6.601970000000051,7.280300000000068
+e49b81af-1ead-45b1-a80e-dd871c8bb74e,Eruere Primary Health Center Eruere,,Primary Health Center,Owan West,EDSSGD11,5.924540000000036,7.063950000000034
+9c517981-dd10-4c8e-a37d-96b54843097e,Egor Primary Health Center,,Primary Health Center,Egor,EDSUSL08,5.570260000000076,6.381080000000054
+64f8715a-5f54-46e8-aeac-713cdc9417e7,Evbuotubu Primary Health Center,,Primary Health Center,Egor,EDSUSL01,5.575500000000034,6.338250000000073
+014a197e-c215-4a9e-8528-480a90334198,Egor Staff Clinic,,Federal Staff Clinic,Egor,EDSUSL07,5.612130000000036,6.37375000000003
+c401e193-63a8-4240-97d4-1e9df0cdc672,Evbomodu Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE02,5.68763000000007,6.369200000000035
+790cb936-4476-469a-bae6-91e47b472025,Ugbekun Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE03,5.65360000000004,6.304340000000025
+bddf4879-839f-4986-a621-df835fddd6c8,Oregbemi Primary Health Center,,Primary Health Center,Ikpoba-Okha,EDSDGE04,5.657920000000047,6.3455900000000725
+c389bb5c-4a33-4ac3-a3b6-e723ab4ff168,Naf Medical Center,,Military and Paramilitary Clinic,Oredo,EDSBEN07,5.606630000000052,6.31564000000003
+83ffbcc0-8d65-4f0a-ae8d-a340bc8630c4,Oluku Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA08,5.592960000000062,6.4514500000000226
+358adfee-d12c-4410-8d7f-4228d17282b2,Ekiadolor Primary Health Center,,Primary Health Center,Ovia North-East,EDSAKA11,5.581190000000049,6.489130000000046
+c21ca1cc-4924-4d89-8cf3-aafa369d58ad,Ora Health Center,,Primary Health Center,Ovia South-West,EDSGBZ08,5.407590000000027,6.497220000000027
+89d79622-1964-458a-abe1-afb4133c67da,Emu Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ05,6.433190000000025,6.554940000000045
+23742293-b81d-4e7b-bee3-be549b189e6d,Ewohimmi Primary Health Center,,Primary Health Center,Esan South-East,EDSUBJ10,6.3227300000000355,6.481300000000033
+dd4dfe83-19c0-4ff8-81a2-a729d95eeaf0,Ibillo Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR06,6.068670000000054,7.440390000000036
+1218714a-84ec-4d2b-8ab1-6d5e0c071d9f,Ososo Primary Health Center,,Primary Health Center,Akoko-Edo,EDSGAR10,6.244520000000023,7.405510000000049
+85f2ec86-d708-4e8b-ac61-a7a5da6f3e54,Ojirami Peteshi Primary Health Clinic,,Primary Health Center,Akoko-Edo,EDSGAR09,6.1849900000000275,7.318030000000022
+a91b0c2a-a65f-45d8-bde2-07e9cb10629b,Ibore Primary Health Center,,Primary Health Center,Esan Central,EDSRRU09,6.296090000000049,6.781980000000033
+7939c91e-fb96-4abe-bb72-3bdafcdf38c4,Unogbo Primary Health Center,,Primary Health Center,Esan Central,EDSRRU01,6.3414000000000215,6.769220000000075
+24a67c66-436a-4d66-ba73-60ac8d45821e,Ibhiolulu Primary Health Center,,Primary Health Center,Esan Central,EDSRRU04,6.358320000000049,6.774940000000072
+428a359e-7adb-40b8-9508-517a060d3e00,Obiyon Primary Health Center,,Primary Health Center,Esan North-East,EDSURM05,6.363170000000025,6.717520000000036
+fea9b58b-bd9e-45f4-aa1d-fcc90590b7f9,Efandion Primary Health Center,,Primary Health Center,Esan North-East,EDSURM06,6.335590000000025,6.6994300000000635
+b6ba611a-d7b0-42c8-947c-bce8d5711bfa,Egbele Primary Health Center,,Primary Health Center,Esan North-East,EDSURM08,6.322150000000022,6.7310900000000515
+4e7ec9eb-d04a-4b8f-94e2-fddc3628c9ea,Ogbido Primary Health Center,,Primary Health Center,Etsako West,EDSAUC11,6.3262600000000475,7.145240000000058
+e7d449ca-34ee-4fe2-a87e-fb0771cab7e9,Oluma Primary Health Center,,Primary Health Center,Owan East,EDSAFZ09,6.001510000000053,7.20357000000007
+49e55405-b2cb-4818-b4de-463a7b0b9bb7,Igue Sale Primary Health Center,,Primary Health Center,Owan East,EDSAFZ07,6.051310000000058,7.149590000000046
+dcc8f5f3-248e-4770-95c4-3b6175f72479,Ivbiodohen Primary Health Center Ivbiodohen,,Primary Health Center,Owan West,EDSSGD10,5.887300000000039,7.031770000000051
+5a99e85e-4bef-45d5-af4d-3582203c10ce,Iraokhor Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG09,6.435860000000048,7.124430000000075
+d2e98441-2eec-4ae1-a830-4096f471c828,Anegbette Primary Health Center,,Primary Health Center,Etsako Central,EDSFUG04,6.585050000000024,6.834570000000042
+dd0553f2-9884-4061-bd0d-d054dea016a7,Umiegba Primary Health Center,,Primary Health Center,Etsako East,EDSAGD04,6.451160000000073,7.208600000000047
+2470347d-2d45-4940-baf3-05979572fb80,Urohi Nysc Primary Health Center,,Primary Health Center,Esan West,EDSEKP04,6.10686000000004,6.626360000000034
+2058546e-03d1-40bc-a3f3-eb6187ed8c0a,Iruekpe Comprehensive Health Center,,Comprehensive Health Center,Esan West,EDSEKP05,6.047080000000051,6.764710000000036
+966cf449-014a-4ccd-8394-b261297555f2,Evbarue Primary Health Center,Evbuarhue Health Center,Primary Health Center,Orhionmwon,EDSABD03,5.769580000000076,6.200080000000071
+637ac68b-3aa0-4618-8046-66e4f1a3838d,Okukor Primary Health Center,Okhuor Health Center,Primary Health Center,Orhionmwon,EDSABD07,6.087060000000065,6.203560000000039
+fc2c1cc1-acec-481a-8c73-410c9658e6e3,Tgbenke Primary Health Center,Igbanke Primary Health Center,Primary Health Center,Orhionmwon,EDSABD02,6.205540000000042,6.346500000000049
+05ac3b3d-f683-494b-b401-93f54c714cd4,Ii Iruekpen Primary Health Center,Abia Iruekpen Health Clinic,Primary Health Center,Esan West,EDSEKP05,6.047190000000057,6.747120000000052
+af2f83cc-be06-4339-adee-0739a8ca795b,Ujiogba Primary Health Clinic,Eguare Ujiogba Ukhun Primary Health Center,Primary Health Center,Esan West,EDSEKP03,6.1447200000000635,6.5302200000000425
+8558ca76-1d46-4ff9-83f2-22b8b6edb346,Uniele Primary Health Center,Ughiole Primary Health Center,Primary Health Center,Esan West,EDSEKP08,6.152690000000064,6.709700000000055
+aa60ee34-6c8d-4d45-b90b-ed545c4073b6,Egoro Ona Oka Primary Health Center,,Primary Health Center,Esan West,EDSEKP09,6.158170000000041,6.616040000000055
+8c6d13a5-9eca-4f05-8200-b609241478dd,Upper Izogen Primary Health Center,,Primary Health Center,Esan West,EDSEKP01,6.154070000000047,6.5709600000000705
+44894599-52b6-4c5c-b20f-f816166e8db7,Egbokor Cottage Hospital,,Cottage Hospital,Orhionmwon,EDSABD10,6.025480000000073,6.114710000000059
+341a7071-5831-4f04-bd0e-ef42af359413,Urhonigbe Government Hospital,,Primary Health Center,Orhionmwon,EDSABD01,6.181820000000073,5.974630000000047
+2fa39099-564e-454f-a636-7e81c1f6e53f,Oben Cottage Hospital,,Cottage Hospital,Orhionmwon,EDSABD05,5.895680000000027,5.990090000000066
+d76c3093-8436-46f0-9801-e63b06854b38,Evboe Si Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD04,6.024710000000027,5.966170000000034
+7c90c465-3a9f-48e2-93ac-39e32f7fcaa6,Oligie Primary Health Clinic,,Primary Health Center,Orhionmwon,EDSABD09,6.216920000000073,6.322350000000029
+97b8bc5c-7206-4abd-bbef-128519d36c3e,Evbaiobgwa Health Center,,Primary Health Center,Orhionmwon,EDSABD10,6.057170000000042,6.121080000000063
+1c82b6b0-efdc-4b80-aaf0-ab4d7e2547a1,Oloten Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD07,6.086040000000025,6.220990000000029
+7bbfdc68-1b5b-468d-be03-67d59173e09a,Igbanre Government Hospital,,Primary Health Center,Orhionmwon,EDSABD02,6.192610000000059,6.353660000000048
+91445bae-e496-4272-ac92-ade490fe0f99,Orhogho Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD05,5.951090000000022,5.882460000000037
+5724a380-8ef8-4659-9636-c51e306534d6,Evboowe Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.95822000000004,6.436920000000043
+fd601fbb-7b35-43a0-a8b6-57933b422666,Ahor Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.718120000000056,6.42205000000007
+dc5edaad-f73b-49f1-b143-a00d26bc06a4,Azagba Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.7403000000000475,6.376640000000066
+2481e0f0-b9be-46aa-8dfd-3bd3ac928c4a,Evbohuan Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.899300000000039,6.428070000000048
+75acebaf-efd2-427c-8ccb-9487edfa1332,Urokhousa Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.804550000000063,6.453930000000071
+94478244-addf-4a65-af72-bec8ae71abc0,Obadan Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.904220000000066,6.476090000000056
+94242f17-e23a-46a5-a483-2846176e5fb5,Ugonoba Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR08,5.8509500000000685,6.3136800000000335
+e6abba2d-c7d7-4cf9-aaee-3284bdbf5a1c,Ogbada Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR01,6.104800000000068,6.377180000000067
+28914f5a-77e0-4af0-9587-1904a660a2dd,Idunmugha Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.757510000000025,6.407550000000072
+4231e62c-fd0c-4b9f-b25f-06e185a8b00f,Ambrose Alli Universi Health Center,,Primary Health Center,Esan West,EDSEKP02,6.088380000000029,6.740630000000067
+490c612d-90cc-487a-8136-09a59a2c34d5,Ikidue Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.088810000000024,6.756880000000024
+e6e516a8-fd6f-4b8e-959b-80f594e1b3fe,Egoro Eguare Primary Health Center,,Primary Health Center,Esan West,EDSEKP09,6.080340000000035,6.771420000000035
+dcb81c38-f827-4daf-a685-46799a5eb872,Ukhun Primary Health Center,,Primary Health Center,Esan West,EDSEKP09,6.17530000000005,6.804190000000062
+a943cd4f-1920-4e96-b20f-924a0e7fe358,Emuhi Primary Health Center,,Primary Health Center,Esan West,EDSEKP10,6.101560000000063,6.683500000000038
+81a641dd-5db7-4dc7-b439-eacaf586ffcc,Ihunudumu Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.109930000000077,6.7448400000000674
+4056aa8a-c1d7-4cd8-975c-ed330ca69b9c,Uke Primary Health Center,,Primary Health Center,Esan West,EDSEKP02,6.100460000000055,6.73246000000006
+3a34aac8-693c-4ac8-be0f-5fa3874b0268,Oke Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR04,5.9031100000000265,6.699570000000051
+a8631816-701c-4107-b772-01da84c73d24,Ogwa Primary Health Center,,Primary Health Center,Esan West,EDSEKP01,6.209650000000067,6.506800000000055
+86bcbdb7-42e1-4f94-bd82-8f8b2e5c995b,Urohi Primary Health Center,,Primary Health Center,Esan West,EDSEKP04,6.100330000000042,6.6085200000000555
+021c0455-bfc6-4281-9bed-89f209b66864,Evbuoghae Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD07,6.063730000000021,6.152990000000045
+f785b370-7f5c-4ec3-9069-accdf72cc2c0,Okogbo Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD03,5.869140000000073,6.202350000000024
+e9702fe9-6623-4447-8fb1-a085dc8e0a82,Eyaen Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR03,5.712040000000059,6.383630000000039
+298de92a-fa0b-4c32-9d66-4add26a53e88,Ugha Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR10,5.876580000000047,6.5464300000000435
+b1499563-70ba-41f1-95ba-2b4122b1700d,Ikhueniro Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR07,5.733890000000031,6.333450000000028
+53b822bb-ab9d-41ca-a50d-c2c3dd19d371,Illeh Primary Health Clinic,,Primary Health Center,Esan West,EDSEKP07,6.200590000000034,6.757180000000062
+4a1e7732-83ad-4d05-a968-8f8881cc9fa4,Ekpoma Central Primary Health Center,,Primary Health Center,Esan West,EDSEKP06,6.1360200000000304,6.7420000000000755
+bf7182fa-ccec-47b2-8ac9-eb7156e7b3ff,Ujoelen Primary Health Center,,Primary Health Center,Esan West,EDSEKP10,6.12155000000007,6.742200000000025
+344088ca-2617-4ba3-ad03-0ebb0754c1cd,Ihievbe Primary Health Clinic,,Primary Health Center,Owan East,EDSAFZ11,6.123370000000023,7.039810000000045
+03a6520f-c8e7-44e5-bd4f-e010fffd1a82,Ugbugo Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD12,6.007310000000075,6.130470000000059
+4b29973e-7331-4f62-ac84-5ad428cc433a,Ugo Primary Health Center,,Primary Health Center,Orhionmwon,EDSABD12,6.004800000000046,6.092340000000036
+4b3d4a15-98d3-46c8-bdec-2436a2a35ce4,Ugbekpe Ekperi Primary Health Center,Ugbekep Maternity,Primary Health Center,Etsako Central,EDSFUG10,6.434279891200286,7.026184182050938
+4d4c0c6d-5c88-4159-af50-55bcb43eac6e,Obasinmwinosa Primary Health Care,,Primary Health Center,Ovia North-East,EDSAKA04,5.727917034319526,6.555144657988166
+f5be1125-e761-4770-ba0b-bbedd7955a41,Afuda Health Post,,Dispensary,Iguegben,EDSGUE10,6.240169787988631,6.591505574721392
+2be457bf-e1f2-42c5-8a81-0a3db9a87910,Bode Medical Center,Agenebode Bode Medical Center,Medical Center,Etsako East,EDSAGD02,6.679893938468685,7.108583528259598
+eb35bf90-f52a-4c91-bf28-71e91e59b212,Notre Dame Hospital Bode,,Primary Health Center,Etsako East,EDSAGD02,6.679155753874584,7.111606851414533
+967d6fc6-81a2-49aa-8ce4-a60fdc51cbf5,Usugbenu,,Primary Health Center,Esan Central,EDSRRU07,6.231916310578054,6.720031227019185
+f6b8f006-46ab-49aa-903b-bd9b60b0a9df,Eko Ekpon Primary Health Center,,Primary Health Center,Iguegben,EDSGUE04,6.281581839605838,6.418369164411375
+2623e0f3-f53e-442c-b8c8-76f036758b68,Agama Primary Health Care,,Primary Health Center,Etsako East,EDSAGD09,6.377604837433478,7.36570373989352
+9185ef6d-d8e7-43a0-b653-9662f9530c1b,Ebelle Primary Health Center,,Primary Health Center,Etsako East,EDSAGD07,6.5343923521730165,7.184864830904036
+c5924de8-1e27-4d4d-9981-5a64d51df52e,Ugba Primary Health Center,Okhuamen Primary Health Center,Primary Health Center,Owan East,EDSAFZ04,6.128723144000048,7.061523437000062
+60d5d550-222f-4147-a4bb-60fd448dbf36,Erua Primary Health Center,,Primary Health Center,Uhunmwonde,EDSEHR10,5.910522461000028,6.573303223000039
+fd15abee-f730-40a8-9fc0-108475ab68ef,Ewu Primary Health Center,,Primary Health Center,Esan Central,EDSRRU08,6.240860000000055,6.802140000000065
+7dfc4755-d4e1-4696-8469-c86ae9785543,Ikpeyan Health Center,,Primary Health Center,Owan West,EDSSGD10,5.884219999999998,7.019899999999999
+93923c65-bed5-4d1c-b3c2-9e6d36784e92,Ibhiolulu Primary Health Center,,Primary Health Center,Esan Central,EDSRRU07,6.195689567399287,6.733607163878536
+ca53ea73-a2f4-4030-8730-46b1a2f208d3,Uwalor Oke Modern Primary Health Center,Egoro Naoka Primary Health Center,Primary Health Center,Esan West,EDSEKP06,6.1442265295969625,6.737604463232885
+2aee4352-149e-496a-9a5f-29e198f631a4,Imafun Osi Primary Health Center,,Primary Health Center,Owan East,EDSAFZ08,5.974914551,7.198730469
+5f0081f7-be00-4a6a-947a-949b8f26e6a4,Ugbegun Primary Health Center,,Primary Health Center,Esan Central,EDSRRU05,6.23948,6.6449
+40224f97-c4be-4c2c-ab7f-a0fbb74b4b90,Ugbokhare Primary Health Center,,Primary Health Center,Esan Central,EDSRRU10,6.28158,6.77598
+576ff428-8705-42a1-a4d0-b8e7eb611c77,Olinlin Primary Health Center,,Primary Health Center,Esan North-East,EDSURM04,6.281841667,6.73182
+0242fe6f-cac3-4b2b-84ea-86ce9c7aea9c,Eko Ewu Primary Health Center,,Primary Health Center,Esan Central,EDSRRU06,6.239827499999999,6.7664591
+b93103a2-6227-4827-9991-3f855d27fb46,Eko Ewu Primary Health Care,,Primary Health Center,Esan Central,EDSRRU06,6.23926,6.76793
+8b24869f-4ec3-40be-a98c-a089d1314ca8,Modern Primary Health Center Irrua,,Primary Health Center,Esan Central,EDSRRU03,6.21677,6.73189
+86043b56-2353-4ea7-9af4-9e40cdfbeb11,Irrua Specialist Teaching Hospital,,Specialist Hospital,Esan Central,EDSRRU07,6.18951,6.73142
+ad7ab024-8b44-4887-b9e0-0dd619ad3925,All Saint Medical Center,,Medical Center,Esan Central,EDSRRU03,6.22055,6.73783
+17ad2ca4-9a07-4d8c-a726-058a0e74d594,Divine Clinic and Maternity,,Maternity Home,Esan Central,EDSRRU03,6.21412,6.73739
+70d50a64-3e99-41cc-8edc-41400e74dbf0,Peace Clinic,,Primary Health Center,Esan Central,EDSRRU03,6.21887,6.73021
+011b14cc-0b96-4481-9755-f6f75a7c1180,Rhema Clinic,,Primary Health Center,Esan Central,EDSRRU03,6.22606,6.74457
+c4379d51-5cb8-434a-9b5c-1df9316bba35,Oyeribhor Hospital Uromi,,Primary Health Center,Esan North-East,EDSURM09,6.328330000000051,6.695950000000039
+644a9bc4-4fc9-4afe-80d9-e0e2ec386b4e,Ebun Primary Health Center,,Primary Health Center,Esan North-East,EDSURM01,6.3232775000000006,6.716323899999999
+85a026ff-f545-47d9-93b9-809161ab83d1,Ogute Oke Health Center,,Primary Health Center,Etsako East,EDSAGD05,6.266729999999999,7.278168333
+d5064076-e9a5-4dcc-b7f4-05e577bffbea,Usugbenu District Hospital,,District Hospital,Esan Central,EDSRRU07,6.23648,6.71029
+d9d9fe7c-67e5-4a11-9018-37da93353c9f,Zuma Memorial Hospital,,Primary Health Center,Esan Central,EDSRRU03,6.22193,6.73947
+37a9736f-1296-4246-8577-502951ece131,Fugar General Hospital,,General Hospital,Etsako Central,EDSFUG03,6.50792,7.09665
+a4c71cb0-e736-4b99-87a6-ba5660c30cc2,Ehanlen Primary Health Center,,Primary Health Center,Esan Central,EDSRRU06,6.238635719280867,6.7781443115228885
+65d4b746-68d7-4a5e-8544-6c4e5f24385a,Ibore Primary Health Center,,Primary Health Center,Esan North-East,EDSURM07,6.298698802738908,6.733326883714305
+2598b20a-057d-4e8b-b3ca-0528fcb8203e,Osetale Nursing and Maternity Home,,Maternity Home,Esan North-East,EDSURM01,6.326904296000066,6.709899903000064
+065f4d5a-20a6-435d-96a9-40498de88dc3,St Camillus Hospitaluromi,St Camillus Hospital Uromi,Primary Health Center,Esan North-East,EDSURM01,6.326721192000036,6.713684082000043
+393dc78f-aea6-44af-b436-4b3f5c6b6817,Udaba District Hospital,,District Hospital,Etsako Central,EDSFUG04,6.582275391000053,6.838317871000072
+853b286b-d7e2-4a09-b378-5794628d3757,Udegbe Clinic,,Primary Health Center,Esan North-East,EDSURM09,6.317950000000053,6.7029600000000755
+d6f24c29-a611-42cd-8e42-deb5cea0e846,Chigeri Hospital Uromi,,Primary Health Center,Esan North-East,EDSURM07,6.303570000000036,6.731980000000021
+25ae55f6-229c-44d2-b35b-68eebaa20b9f,Model Primary Health Care Center Irrua,,Primary Health Center,Esan Central,EDSRRU03,6.219910900000001,6.739127400000002
+a87ebc3b-01c2-46aa-9d01-42f5319af6ad,Ewoyi Primary Health Clinic,,Primary Health Center,Esan North-East,EDSURM02,6.309710000000052,6.702920000000063
+5aa14225-c103-4c7c-8e62-0255efc14bde,Okpella Community Maternity and Clinic,,Maternity Home,Etsako East,EDSAGD06,6.342380000000048,7.280520000000024

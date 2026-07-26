@@ -138,23 +138,8 @@ node/2953819019,Kokai Health Post,hospital,hospital,Tsanyawa,12.2187898,8.022147
 node/2953819027,Yanmamman Health Post,hospital,,Tsanyawa,12.2622436,8.0413869
 node/2954029812,Gwarabjawa Health Post,hospital,,Dambatta,12.4479598,8.5418922
 node/2954277529,Mazan Gudu Health Post,hospital,,Gabasawa,12.1953802,8.9072145
-node/3060720467,Iyayi Dispensary,hospital,,Ningi,11.3082828,9.2498158
-node/3081493774,Model Primary Health Center Rahama,hospital,,Toro,10.4529722,8.7595558
-node/4484741172,Sick Bay,hospital,,,11.1545705,7.6521307
-node/4766946544,Geography Dept Medical Center,hospital,,,11.1528619,7.6484936
 node/5668757228,Kano Emergency Operations Center,hospital,,Kano,11.995892,8.5495487
 node/7909953527,Amino Kanu Teaching Hospital,hospital,hospital,,11.9767135,8.5942116
-node/11830153802,Kujama Gari Primary Health Center,hospital,,,10.4578601,7.6379215
-node/11830153803,General Hospital Kujama Kujama Market Kaduna,hospital,,,10.4762269,7.637448
-node/11830153804,Tundun Wada Primary Health Center,hospital,,,10.4763785,7.6356429
-node/11830153805,Primary Healthcare Tudun Wada No2 Bugai Road Kujama,hospital,,,10.4771988,7.6433676
-node/11830153806,Governor Awan General Hospital No43 Bugai Road Kujama,hospital,,,10.4765183,7.6445961
-node/11830153807,Rural Hospital Kujama,hospital,,,10.4813396,7.6508456
-node/11830153808,Apikobugai Clinic,hospital,,,10.5066292,7.6559861
-node/11830218670,Salvation Health Clinic,hospital,,,10.4803269,7.6334488
-node/11830218671,Sauki Clinic,hospital,,,10.4782169,7.634232
-node/11830218672,Primary Health Center Tudun Wada Opposite New Market Kujama,hospital,,,10.475669,7.6334247
-node/11830269934,Tokache Health Clinic,hospital,,,10.5284911,7.6160225
 node/12282340284,ABU HANNEFA MEDICINE STORE,pharmacy,,,12.0488822,8.570315
 node/12282340285,SALMA MEDICINE STORE,pharmacy,,,12.0440522,8.5643177
 node/12282340286,NAZEE ALBARKA MEDICINE STORE,pharmacy,,,12.049793,8.576876
@@ -187,12 +172,10 @@ node/12282454155,MUBARAKUN MEDICINE,clinic,,,11.9626895,8.4739058
 node/13119419701,Al Ihsan Clinics and Surgery,clinic,birthing_center;blood_donation;clinic;doctor;hospital;laboratory;pharmacy,Kano,11.9458206,8.5577364
 way/185718322,Aminu Kano Teaching Hospital,hospital,,,11.9631635,8.5507152
 way/185718325,National Orthopaedic Hospital,hospital,,Gwammaja,12.0202363,8.5013761
-way/250862182,ABU Zaria Sick Bay,hospital,,,11.1547771,7.6518174
 way/279086588,Fuskar Gabas Primary Health Centre,hospital,hospital,Kano Municipal,12.0051361,8.5183645
 way/282905006,Geza Health Post,hospital,hospital,Minjibir,12.1877567,8.5084508
 way/283101646,Rafin Tsamiya Health Post,hospital,hospital,Tsanyawa,12.1951913,8.0410081
 way/283777077,Kasuwar Kuka Primary Health Centre,hospital,hospital,Kunchi,12.4299014,8.3525347
-way/284838950,Ahmadu Bello Teaching Hospital,hospital,,,11.081105,7.7142872
 way/286269667,Kwarkiya Health Post,hospital,hospital,Minjibir,12.2474585,8.5962942
 way/286271541,Garke Health Post,hospital,hospital,Minjibir,12.2114183,8.5890283
 way/286404144,Kankarawa Health Post,hospital,hospital,Minjibir,12.2230724,8.6240738
@@ -579,17 +562,9 @@ way/293020842,Sheikh Muhammed Jidda General Hospital,hospital,hospital,Fagge,12.
 way/295383220,Lamco Pharmacy,pharmacy,pharmacy,,11.9671011,8.5485351
 way/299040773,Unguwar Uku Primary Health Centre,hospital,hospital,Tarauni,11.9578049,8.5602537
 way/299968723,Hotoro Danmarke Health Post,hospital,hospital,Tarauni,11.9619839,8.5808519
-way/301909213,Ruwan Kanki Dispensary,hospital,hospital,Ningi,11.2793731,9.4663965
-way/301909242,Kawawa Dispensary,hospital,hospital,Ningi,11.0182778,8.8909864
-way/301941450,Ganji Dispensary,hospital,hospital,Ningi,11.1596612,9.1534217
-way/303738320,Matawai Maternity,hospital,hospital,Toro,10.5069647,8.7756125
-way/303738401,Kajala Dispensary,hospital,hospital,Ningi,10.8986789,9.104177
-way/305126184,Mara Dispensary,hospital,hospital,Toro,10.3042037,9.2836649
-way/305126205,Saminakan Gwa Maternity,hospital,hospital,Toro,10.3007217,9.1965977
 way/377468732,Proposed Paediatric Hospital,hospital,,Kano,11.9699465,8.5329545
 way/377484015,An Nur Specialist Hospital,hospital,,Kano,11.9780012,8.5424949
 way/377493645,Dangi Pharmacy,pharmacy,,Gyadi Gyadi Arewa,11.9784324,8.5398033
-way/666644399,Rasheed Shekoni Hospital,hospital,,,11.6790323,9.3360635
 way/791267674,Gulu Primary Health Centre,hospital,hospital,Rimin Gado,11.8660201,8.3008672
 way/791284157,Kudurun Health Post,hospital,hospital,Madobi,11.789685,8.3783668
 way/791307707,Ningawa Health Post,hospital,hospital,Madobi,11.8217966,8.4006862
@@ -700,28 +675,12 @@ way/792927372,Makarya Primary Health Centre,hospital,hospital,Ajingi,11.9360079,
 way/794666440,Agwar Maje Maternity,hospital,hospital,Ningi,11.323075,9.1356558
 way/794666692,Kafin Lemo Health Clinic,hospital,hospital,Ningi,11.2686599,9.0282224
 way/794667023,Shirgiya Health Clinic,hospital,hospital,Ningi,11.3171101,9.1185803
-way/794668306,Fatara Dispensary,hospital,hospital,Toro,10.5434743,9.1322841
-way/794668516,Tulu Dispensary,hospital,hospital,Toro,10.5761031,9.0281087
-way/794668799,Tulu Maternity,hospital,hospital,Toro,10.5766019,9.0295806
 way/794669968,Samanja Dispensary,hospital,hospital,Toro,10.6088491,8.8083601
-way/794670735,Zukku Dispensary,hospital,hospital,Toro,10.5205641,8.8904284
-way/794671345,Primary Health Center Rishi,hospital,hospital,Toro,10.4842419,8.9394734
-way/794674067,Wundi Maternity Health Clinic,hospital,hospital,Toro,10.4785064,8.8979277
-way/794674585,Wurno Dispensary,hospital,hospital,Toro,10.4061763,8.8280747
-way/794675447,Pingel Dispensary,hospital,hospital,Toro,10.3397786,9.0831765
-way/794675741,Rinjin Dispensary,hospital,hospital,Toro,10.3186296,8.9792601
-way/794675835,Zalau Primary Health Center,hospital,hospital,Toro,10.3935312,9.0151244
-way/794676022,Gukka Dispensary,hospital,hospital,Toro,10.3839689,9.2224183
-way/794676704,Shau Dispensary,hospital,hospital,Toro,10.4720417,9.1471169
 way/795559302,Wurobagga Primary Health Centre,hospital,hospital,Bagwai,12.1501535,8.0976071
-way/795601536,Mundu Dispensary,hospital,hospital,Toro,10.435506,9.4138311
 way/802981007,Universal Specialist Hospital,hospital,,Kano,11.9696699,8.5316033
 way/803264502,Zugachi Primary Health Centre,hospital,hospital,Gabasawa,12.0645011,8.8565817
 way/803264506,Walawa Health Post,hospital,hospital,Makoda,12.3435963,8.4773004
 way/803648944,MRS Barracks Primary Health Centre,hospital,hospital,,11.9527993,8.3907891
-way/804262336,PHC Magam,hospital,hospital,,12.3266956,7.7031829
-way/808773731,Yada Gungume Primary Health Center,hospital,hospital,Ningi,10.8654398,9.0576154
-way/818690593,Saidu Dange Railway Hospital,hospital,hospital,,11.1136755,7.7208213
 way/819860020,Sauna Kawaji Health Post,hospital,hospital,Nassarawa,12.019732,8.5991518
 way/972938910,Task Force X Hospital,hospital,hospital,Dala,12.0109314,8.5016084
 way/988008362,red cross hospital,hospital,hospital,Hotoro,11.9565915,8.5868357

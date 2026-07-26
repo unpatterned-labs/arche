@@ -1,0 +1,103 @@
+id,name,amenity,healthcare,lga,lat,lon
+node/1994157404,Medicine Store,pharmacy,,,6.3729748,5.6357221
+node/1994159677,Conic Patent Medical Store,pharmacy,,,6.3667352,5.6262686
+node/1994159685,Recall Life Pharmacy,pharmacy,,,6.3674798,5.6270527
+node/1995054549,Kelvin Medical Store,pharmacy,,,6.3689088,5.587573
+node/1995055581,Royal Okhia Pharmacy,pharmacy,,,6.3628725,5.5897005
+node/2000020871,reliance medical laboratary,pharmacy,,,6.3638667,5.5878529
+node/2072621416,Osimike Health Service,hospital,,,6.3775271,5.6353388
+node/2072621420,"Pharmacist Council, Edo State Medical Store",pharmacy,,,6.3621207,5.6230412
+node/2072662184,Medicine Store,pharmacy,,,6.3657613,5.5840048
+node/2072662363,Okungbowa Medical Store,pharmacy,,,6.3674497,5.5829417
+node/2075846061,Coka Pharmarcy,pharmacy,pharmacy,,6.3049454,5.6267665
+node/2075846072,Doctors Quarters,doctors,doctor,,6.3281091,5.6226394
+node/2152941179,Airen Pharmacy,pharmacy,pharmacy,,6.3191075,5.6274424
+node/2153205718,Flowell Pharnacy,pharmacy,pharmacy,,6.3258164,5.625476
+node/2153205858,Flowell Pharmacy,pharmacy,pharmacy,,6.321158,5.6272356
+node/2154223853,Abe Medical Clinic and Maternity,clinic,clinic,,6.3309984,5.6298245
+node/2154481142,Ayolik Medical Center,clinic,clinic,,6.331202,5.626527
+node/2154550310,Golden Berries,pharmacy,pharmacy,,6.3205693,5.6273101
+node/2154559295,Horatio Dential Clinic,dentist,dentist,,6.3340814,5.6143876
+node/2154559627,IK Pharmacy,pharmacy,pharmacy,,6.3294953,5.6268802
+node/2154569173,Itohan Chemist,pharmacy,pharmacy,,6.3349736,5.6337064
+node/2154570763,Korban Pharmacy & Stores,pharmacy,pharmacy,,6.3179519,5.6275495
+node/2154571096,Life Line Medicare Clinic,clinic,clinic,,6.3314667,5.6267477
+node/2155787295,Ladith centre pharmacy,pharmacy,pharmacy,,6.329308,5.6191046
+node/2160629703,Assurance Medical Lab,,laboratory,,6.3307076,5.6261102
+node/2161060443,Josaf Pharm,pharmacy,pharmacy,,6.3245091,5.6263194
+node/2161071405,Nasi Pharmacy,pharmacy,pharmacy,,6.3262624,5.6253009
+node/2161071550,New Smile Dental Clinic,dentist,dentist,,6.3266028,5.6252333
+node/2161074868,Royal end pharmancy,pharmacy,pharmacy,,6.3267503,5.6303674
+node/2161078992,Society for Family Health,doctors,,,6.3070709,5.6018107
+node/2161097166,Spring Oak Pharmacy,pharmacy,,,6.3117789,5.5983393
+node/2161108211,Sumel Optomentry,,optometrist,,6.320509,5.6282101
+node/2161111257,Union Diagnostics,pharmacy,pharmacy,,6.3208621,5.6272727
+node/2161111314,Urban Health Center,clinic,clinic,,6.3358449,5.6307845
+node/2161111550,Valif Pharmacy,pharmacy,pharmacy,,6.3310291,5.6252603
+node/2344280071,Calvary Medical Centre,hospital,,,6.3343039,5.6045789
+node/2344332416,Pharmacy,pharmacy,,,6.3257442,5.5778757
+node/2344543050,Newgate Trust Pharmacy,pharmacy,pharmacy,,6.336216,5.6096868
+node/2344554585,Jofeg health and life pharmacy,pharmacy,pharmacy,,6.3293745,5.620571
+node/2344590784,Gods Care Mortuary,hospital,,,6.327971,5.5848446
+node/2344590802,Time Mortuary,hospital,,,6.3288183,5.5847782
+node/2344596615,Service Pharmacetical,pharmacy,pharmacy,,6.3423479,5.6099239
+node/2344596628,Toni Care Pharmacy,pharmacy,pharmacy,,6.3428393,5.6087966
+node/2350815002,Ladith Pharmacy,pharmacy,,,6.3529911,5.616868
+node/2350849577,Ehibass Pharmacy Store,pharmacy,pharmacy,,6.3397699,5.6187768
+node/2350899870,Julsam Pharmacy,pharmacy,,,6.3490212,5.6192296
+node/4987528630,EDMARK,pharmacy,,Benin City,6.3043897,5.5940109
+node/4987528631,COKA Pharmarcy,pharmacy,,Benin City,6.3042523,5.5939703
+way/44962191,Center for Research and Preventive Health Care,hospital,,,6.3392473,5.5978467
+way/47161450,Benoni Hospital,hospital,hospital,,6.3096329,5.6025081
+way/47380654,Time Medical Clinic & Maternity,hospital,,,6.3355524,5.6051658
+way/47395584,Amuiuwu Hospital,hospital,,,6.3469074,5.599151
+way/47419701,Calvary Medical Centre,hospital,,,6.3344115,5.6043423
+way/84169502,Prime Optical Eye Clinic,clinic,clinic,,6.3252703,5.6156975
+way/84169520,St. Robina Hospitle,hospital,hospital,,6.3083061,5.6178371
+way/84169534,NNPC Medical Centre,hospital,hospital,,6.3118797,5.6031943
+way/84169606,Children Clinic,clinic,clinic,,6.3304237,5.623684
+way/84169707,Syncamore HHospital,hospital,hospital,,6.3126652,5.6167011
+way/84257882,Shepherd's Lab,hospital,,,6.3323415,5.5982098
+way/84396919,ALF Pharmacy and Stores,pharmacy,pharmacy,,6.3386095,5.6294861
+way/84435530,Globa Medical Clinic,hospital,hospital,,6.3420365,5.6090691
+way/85516068,Shalom Dental Clinic,dentist,dentist,,6.3172342,5.6219271
+way/85704339,Edi International Hospital,hospital,hospital,,6.3269255,5.6196578
+way/124707617,Bethel faith medical centre and maternity,hospital,,,6.3282654,5.5936586
+way/124707662,Ihenhen medical centre,hospital,,,6.3258823,5.5954942
+way/160171778,Itidiare Care,hospital,,,6.391769,5.6023553
+way/188794645,BETHSAIDA MISSIONARY CLINIC,hospital,,,6.3611176,5.6308795
+way/188794646,Blue Cross Clinic,hospital,,,6.36033,5.6250168
+way/188794680,OSIMIKE HEALTH SERVICE,hospital,,,6.3774836,5.6350551
+way/189364697,OSASIMA NURSING AND MATERNITY HOME,hospital,,,6.3611405,5.580882
+way/283791637,UKHIRI HEALTH CENTRE,hospital,,,6.2551929,5.7241618
+way/499729830,Central Hospital,hospital,hospital,,6.3301702,5.6223111
+way/790442215,A1 Winnes Maternity and Nursing Home,hospital,hospital,,6.3666426,5.6258023
+way/790442217,Aljumah Maternity and Nursing Home,hospital,hospital,,6.3705194,5.6342296
+way/791290838,Excellent Medical Centre,hospital,hospital,,6.3722793,5.6354371
+way/791290840,Quality Medical Centre,hospital,hospital,,6.3797018,5.6316989
+way/791290842,The Lord Maternity and Nursing Home,hospital,hospital,,6.3721855,5.5838837
+way/791290846,ST James Clinic and Maternity,hospital,hospital,,6.3662962,5.5828369
+way/791290848,Lella Specialist Hospital,hospital,hospital,,6.3075101,5.6187812
+way/791290850,University Of Benin Teaching Hospital,hospital,hospital,,6.3139332,5.6255876
+way/791290851,Ayuko hospital,hospital,hospital,,7.4457837,6.0620731
+way/791290853,Irowa Medical Center,hospital,hospital,,6.3205677,5.6277405
+way/791290857,Oretse Medical Centre,hospital,hospital,,6.3284932,5.6124523
+way/791453129,Aronsaye Maternity,hospital,hospital,,6.3370098,5.6306313
+way/791453130,Fouintain Of Life Hospital,hospital,hospital,,6.3278822,5.6249478
+way/791453132,Westend Clinic,hospital,hospital,,6.341758,5.5973745
+way/791453133,Igbinobaro Medical center,hospital,hospital,,6.34103,5.6102161
+way/791453134,Hanora Clinic,hospital,hospital,,6.3384363,5.5980173
+way/791453138,Bupa Medical Centre,hospital,hospital,,6.3323542,5.6066251
+way/791453141,Okorare Clinic and Maternity,hospital,hospital,,6.33029,5.6042461
+way/791453142,Azuwa Hospital,hospital,hospital,,6.3511041,5.6107217
+way/791453146,NAF Medical Centre,hospital,hospital,,6.3149094,5.6060273
+way/791453147,Christ Medical Center,hospital,hospital,,6.3295099,5.6263312
+way/791453150,Itual Medical centre,hospital,hospital,,6.3411829,5.5964298
+way/791453151,Chisi Cottage Clinic,hospital,hospital,,6.3268209,5.5802966
+way/791453152,Ewaen Clinic&Maternity,hospital,hospital,,6.3369492,5.6158716
+way/803283404,Federal Neuro-Psychiatric Hospital,hospital,hospital,Benin City,6.3616667,5.6206568
+way/803314853,Lily Hospitals Limited,hospital,hospital,,6.3205732,5.5712377
+way/803644032,Udo Primary Health Center,hospital,,,6.4807396,5.3700721
+way/803663095,PRIMARY HEALTH CARE,hospital,hospital,,6.2938538,5.5648729
+way/804230170,Maviscope Hospital & Fertility Centre,hospital,hospital,Benin,6.2725361,5.6335235
+way/862592003,Military Hospital,hospital,hospital,,6.316129,5.609305
