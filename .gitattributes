@@ -1,0 +1,42 @@
+# Normalize line endings.
+#
+# Without this, a Windows clone with core.autocrlf=true checks out CRLF while
+# Linux and macOS clones use LF, and the same file then diffs as entirely
+# changed depending on who touched it last. Pinning the repository to LF keeps
+# diffs and blame readable across platforms.
+#
+# The committed blobs were already LF when this was added, so it changed no
+# history — it only guarantees future checkouts stay consistent.
+
+* text=auto eol=lf
+
+# Explicit text types.
+*.py    text eol=lf
+*.md    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.toml  text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.csv   text eol=lf
+*.jsonl text eol=lf
+*.txt   text eol=lf
+*.cfg   text eol=lf
+*.lock  text eol=lf
+
+# Shell scripts must stay LF even on Windows, or they will not run.
+*.sh    text eol=lf
+
+# Binary — never touch, never diff as text.
+*.parquet binary
+*.pdf     binary
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.woff    binary
+*.woff2   binary
+*.whl     binary
+*.gz      binary
+*.zip     binary

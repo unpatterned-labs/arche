@@ -69,3 +69,8 @@ pyproject.toml
 /docs-site/docs/concepts/
 
 /notebooks
+
+# Local AI assistant configuration and scratch notes. Not part of the project;
+# contributors are free to use any tooling they like without it landing here.
+.claude/
+CLAUDE.md

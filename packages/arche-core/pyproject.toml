@@ -16,7 +16,7 @@ keywords = [
     "PII", "PII-detection", "PII-redaction", "data-protection",
     "African-PII", "Africa", "Nigeria", "Kenya", "South-Africa", "Ghana",
     "NDPA", "POPIA", "Kenya-DPA", "Ghana-DPA",
-    "compliance", "audit", "redaction", "NER", "entity-resolution",
+    "compliance", "audit", "redaction", "NER",
     "arche", "arche-core",
 ]
 classifiers = [
