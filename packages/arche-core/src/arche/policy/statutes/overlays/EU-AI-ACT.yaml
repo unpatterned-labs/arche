@@ -1,0 +1,37 @@
+# EU AI Act (Regulation 2024/1689) — obligation OVERLAY, not a statute pack.
+# Apache-2.0.
+#
+# The EU AI Act governs the AI SYSTEM, not personal-data fields, so it is NOT a
+# per-PII statute like GDPR/NDPA. It is applied AS AN OVERLAY on top of a base
+# statute run: it asserts, at the document level, whether the run met a
+# logging / transparency / minimisation obligation, and records the Article.
+#
+# HONEST BOUNDARY: arche asserts whether the run's EXISTING behaviour meets each
+# obligation and records the citation. It is evidence the operator presents — NOT
+# a compliance certificate, NOT legal advice. Each obligation cites its real
+# framework: Art 12 / Art 50 are EU AI Act; data minimisation is GDPR.
+
+overlay_id: EU-AI-ACT
+framework: "EU AI Act (Reg. 2024/1689), with GDPR data-minimisation by design"
+version: v1.0
+in_force: 2024-08-01
+
+obligations:
+  - article: "EU AI Act Art 12"
+    name: "record-keeping / automatic logging"
+    kind: log_exists
+    rationale: "High-risk systems must record events; satisfied when a machine-readable decision log exists for the run."
+
+  - article: "EU AI Act Art 50"
+    name: "transparency — AI-interaction disclosure"
+    kind: transparency_notice
+    rationale: "Natural persons must be informed they interact with an AI system; satisfied when the operator supplies a transparency notice."
+
+  - article: "GDPR Art 5(1)(c) / Art 25"
+    name: "data minimisation by design"
+    kind: minimisation
+    rationale: "Personal data minimised to what is necessary; satisfied when every detected field was minimised (mask / tokenize / generalize / drop) rather than retained."
+
+notes: >
+  Document-level obligations layered onto a base statute run (stage 4 of the
+  compliance flow). arche produces machine-readable evidence, not a certificate.
