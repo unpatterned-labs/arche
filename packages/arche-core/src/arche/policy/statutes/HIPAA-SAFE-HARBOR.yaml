@@ -1,0 +1,148 @@
+# HIPAA Safe Harbor de-identification (45 CFR §164.514(b)(2)) — statute pack.
+# Apache-2.0.
+#
+# Safe Harbor lists 18 identifiers that must be removed to de-identify PHI. This
+# pack maps the identifiers arche's detectors ACTUALLY emit to de-identifying
+# actions. It is NOT full Safe Harbor de-identification: Safe Harbor requires all
+# 18 handled AND no actual knowledge of residual re-identifiability. arche covers
+# the subset it can detect and states the rest openly below.
+#
+# ── 18-IDENTIFIER COVERAGE (detected / partial / not-detected) ────────────────
+#  1  Names ..................... detected   PII-1-NAME            -> mask
+#  2  Geo < state ............... partial    PII-4-ADDRESS/LOCATION-> generalize
+#                                            (generalised to city/region, not the
+#                                             3-digit-ZIP rule)
+#  3  Dates except year ......... partial    engine _generalize collapses
+#                                            YYYY-MM-DD -> YYYY, but there is no
+#                                            date PII CATEGORY detector; ages>89
+#                                            aggregation is NOT handled.
+#  4  Telephone numbers ......... detected   PII-3-PHONE           -> mask
+#  5  Fax numbers ............... not-detected (no fax detector)
+#  6  Email addresses ........... detected   PII-3-EMAIL           -> mask
+#  7  Social Security numbers ... not-detected (US SSN detector not shipped)
+#  8  Medical record numbers .... not-detected (detector-pending: PII-2-MRN)
+#  9  Health-plan beneficiary ... not-detected (detector-pending)
+# 10  Account numbers ........... partial    PII-5-BANK_ACCOUNT    -> mask
+# 11  Certificate/licence nums .. partial    PII-2-DRIVERS_LICENCE -> mask
+# 12  Vehicle identifiers ....... not-detected
+# 13  Device identifiers ........ partial    PII-8-DEVICE_ID       -> mask
+# 14  URLs ...................... detector-pending PII-8-URL       -> mask
+# 15  IP addresses .............. detected   PII-8-IP_ADDRESS      -> mask (removed,
+#                                            NOT merely generalised, per Safe Harbor)
+# 16  Biometric identifiers ..... detected   PII-6-BIOMETRIC /
+#                                            PII-7-FINGERPRINT_REF -> drop
+# 17  Full-face photos .......... detected   PII-7-FACE_TEMPLATE   -> drop
+# 18  Any other unique id ....... partial    PII-2-* national IDs  -> mask
+#
+# Detected/partial for ~10 of 18; the not-detected rows are the honest gap.
+# Source: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html#safeharbor
+# Reference: https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164/subpart-E/section-164.514 
+
+statute_id: HIPAA-SAFE-HARBOR
+jurisdiction: US
+version: v1.0
+effective_date: 2003-04-14
+authority: "US HHS — HIPAA Privacy Rule, 45 CFR §164.514(b)(2)"
+breach_notification_window_hours: 1440  # Breach Notification Rule: no later than 60 days
+
+policy_mappings:
+
+  PII-1-NAME:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(A)"
+    rationale: "Safe Harbor identifier #1 (names) — removed."
+
+  # Geo smaller than state — generalised (partial: not the 3-digit-ZIP rule).
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(B)"
+    rationale: "Identifier #2 (geographic subdivisions < state); generalised to city/region. PARTIAL vs the 3-digit-ZIP rule."
+  PII-4-LOCATION:
+    action: generalize
+    tier: low
+    statute_reference: "45 CFR §164.514(b)(2)(i)(B)"
+
+  PII-3-PHONE:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(D)"
+    rationale: "Identifier #4 (telephone numbers)."
+  PII-3-EMAIL:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(F)"
+    rationale: "Identifier #6 (email addresses)."
+
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(J)"
+    rationale: "Identifier #10 (account numbers)."
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(J); PCI-DSS"
+  PII-2-DRIVERS_LICENCE:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(K)"
+    rationale: "Identifier #11 (certificate/licence numbers)."
+
+  PII-8-DEVICE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(M)"
+    rationale: "Identifier #13 (device identifiers/serial numbers)."
+  PII-8-URL:
+    action: mask
+    tier: low
+    statute_reference: "45 CFR §164.514(b)(2)(i)(N)"
+    rationale: "Identifier #14 (URLs). Detector-pending category."
+  PII-8-IP_ADDRESS:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(O)"
+    rationale: "Identifier #15 (IP addresses) — Safe Harbor requires REMOVAL, so mask (not generalise)."
+
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(P)"
+    rationale: "Identifier #16 (biometric identifiers)."
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(P)"
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(Q)"
+    rationale: "Identifier #17 (full-face photographs and comparable images)."
+
+  # National IDs treated as identifier #18 (any other unique identifying number).
+  PII-2-NIN:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(R)"
+  PII-2-BVN:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(R)"
+
+  # Health data itself is PHI — dropped in a de-identification workflow.
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "45 CFR §164.514(b) (PHI de-identification)"
+
+# Any category not mapped is masked by default (safe for de-identification).
+default_action: mask
+default_statute_reference: "45 CFR §164.514(b)(2)"
+
+retention_limits:
+  default: "De-identified data is out of HIPAA scope; identifiers are removed, not retained."
+
+penalties:
+  note: "HIPAA civil penalties tiered up to ~$1.9M per identical violation per year (informational only)."
