@@ -112,6 +112,10 @@ class IdentityRecord:
     evidence: list[IdentityEvidence] = field(default_factory=list)
     confidence: float = 0.0
     match_reasons: list[str] = field(default_factory=list)
+    # Per-field legal citations carried up from the resolved mentions (C3-T3).
+    regulatory_citations: list[str] = field(default_factory=list)
+    statute_id: str = ""
+    statute_version: str = ""
 
     def __repr__(self) -> str:
         return (
@@ -133,6 +137,10 @@ class MatchDecision:
     blocking_keys: list[str] = field(default_factory=list)
     evidence_summary: list[str] = field(default_factory=list)
     reviewer_explanation: str = ""  # Human-readable "why" for audit
+    # Legal citations behind this resolution decision (C3-T3).
+    regulatory_citations: list[str] = field(default_factory=list)
+    statute_id: str = ""
+    statute_version: str = ""
 
     def __repr__(self) -> str:
         return f"MatchDecision(cluster={self.cluster_id!r}, confidence={self.confidence:.2f})"
@@ -232,4 +240,5 @@ def resolved_to_identity_record(resolved: ResolvedEntity) -> IdentityRecord:
         evidence=[entity_to_evidence(e) for e in resolved.entities],
         confidence=resolved.confidence,
         match_reasons=resolved.match_reasons,
+        regulatory_citations=resolved.regulatory_citations,
     )
