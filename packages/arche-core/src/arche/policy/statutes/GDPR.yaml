@@ -1,0 +1,201 @@
+# EU General Data Protection Regulation (2016/679) — machine-readable statute file.
+# Apache-2.0. Mirrors the NDPA-2023 structure (arche Stage 1 PRD §6.4): each
+# category carries an `action` (closed set: mask/tokenize/drop/generalize/audit/
+# retain) and a `tier` (high/moderate/low). Statute references cite GDPR Article
+# numbers; where an adjacent instrument governs (ePrivacy, PCI-DSS) that is noted.
+#
+# HONEST BOUNDARY: this pack maps the categories arche's detectors actually emit
+# to lawful actions with an Article citation. It is the data-governance substrate
+# GDPR requires — it does NOT certify GDPR compliance, and it is not legal advice.
+# Special categories arche does not yet detect (political opinion, trade-union
+# membership, genetic data — Art 9(1)) are detector-pending (see the taxonomy
+# superset ticket C1-T3) and fall back to the safe default (mask) until detected.
+
+statute_id: GDPR
+jurisdiction: EU
+version: v1.0
+effective_date: 2018-05-25
+authority: European Data Protection Board (EDPB) and national supervisory authorities
+breach_notification_window_hours: 72  # Art 33
+
+lawful_bases:  # Art 6(1)
+  - consent
+  - contract
+  - legal_obligation
+  - vital_interests
+  - public_task
+  - legitimate_interests
+
+data_subject_rights:  # Art 12–22
+  - access
+  - rectification
+  - erasure
+  - restrict_processing
+  - data_portability
+  - object
+  - no_automated_decision  # Art 22
+
+policy_mappings:
+
+  # ── PII-1 — Direct person identifiers ──────────────────────────────────
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1), Art 6"
+    rationale: "Personal data; tokenize preserves linkage utility for lawful processing."
+
+  # ── PII-2 — Government-issued identifiers ──────────────────────────────
+  PII-2-NIN:
+    action: mask
+    tier: high
+    statute_reference: "GDPR Art 87 (national identification numbers)"
+    rationale: "Member-state-regulated national identifier; high sensitivity."
+  PII-2-BVN:
+    action: mask
+    tier: high
+    statute_reference: "GDPR Art 6, Art 87"
+  PII-2-TIN:
+    action: mask
+    tier: moderate
+    statute_reference: "GDPR Art 87"
+  PII-2-PVC:
+    action: mask
+    tier: moderate
+    statute_reference: "GDPR Art 9 (political context)"
+  PII-2-RC:
+    action: retain
+    tier: low
+    statute_reference: "GDPR Art 6(1)(f) (legitimate interests)"
+    rationale: "Company registration numbers are public-register data; retain for business directories."
+  PII-2-DRIVERS_LICENCE:
+    action: mask
+    tier: high
+    statute_reference: "GDPR Art 87"
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1)"
+    rationale: "Decentralized identifiers; tokenize to preserve cross-document linkage while removing key material from logs."
+
+  # ── PII-3 — Contact information ────────────────────────────────────────
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1); ePrivacy Directive 2002/58/EC"
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1); ePrivacy Directive 2002/58/EC"
+
+  # ── PII-4 — Locational identifiers ────────────────────────────────────
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "GDPR Art 5(1)(c) (data minimisation)"
+    rationale: "Generalise street-level addresses to city/region for analytics; minimises re-identification risk."
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "GDPR Art 6"
+    rationale: "Bare city/region mentions are routinely published; PII-4-ADDRESS catches the full-address case."
+
+  # ── PII-5 — Financial identifiers ─────────────────────────────────────
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "GDPR Art 6"
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: moderate
+    statute_reference: "GDPR Art 4(1)"
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 5(1)(f) (integrity/confidentiality); PCI-DSS"
+    rationale: "Payment card numbers are dropped, never stored even in the audit log."
+  PII-5-MPESA_REF:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1)"
+
+  # ── PII-6 — Special categories (Art 9) ────────────────────────────────
+  PII-6-HEALTH:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1) (special category)"
+    rationale: "Health data is special category; drop unless an Art 9(2) exception applies."
+    requires_lawful_basis:
+      - explicit_consent
+      - vital_interests
+      - public_interest_health
+  PII-6-BIOMETRIC:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1) (biometric data for unique identification)"
+  PII-6-RELIGION:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1)"
+  PII-6-SEXUAL_ORIENTATION:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1)"
+  PII-6-RACE:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1) (racial or ethnic origin)"
+
+  # ── PII-7 — Biometric templates ───────────────────────────────────────
+  PII-7-FINGERPRINT_REF:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1)"
+  PII-7-FACE_TEMPLATE:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 9(1)"
+
+  # ── PII-8 — Behavioural / digital footprint ───────────────────────────
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "GDPR Art 4(1) (personal data — CJEU C-582/14 Breyer)"
+    rationale: "Dynamic IPs are personal data; truncate to /24 (IPv4) or /48 (IPv6) for analytics retention."
+  PII-8-DEVICE_ID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "GDPR Art 4(1); ePrivacy Directive"
+  PII-8-COOKIE:
+    action: tokenize
+    tier: low
+    statute_reference: "ePrivacy Directive 2002/58/EC Art 5(3)"
+  PII-8-PASSWORD:
+    action: drop
+    tier: high
+    statute_reference: "GDPR Art 32 (security of processing)"
+    rationale: "Plaintext credentials must never be retained."
+
+# Defaults for any category not explicitly mapped (incl. detector-pending Art 9
+# special categories: political opinion, trade-union membership, genetic data).
+default_action: mask
+default_statute_reference: "GDPR Art 6"
+
+# Retention (Art 5(1)(e) storage limitation).
+retention_limits:
+  default: "No longer than necessary for the purposes processed (Art 5(1)(e))."
+
+# Cross-border transfer (Chapter V, Art 44–49). The egress guard reads
+# permitted_basis to allow/refuse a transfer out of the EEA.
+cross_border_transfer:
+  permitted_basis:
+    - adequacy_decision            # Art 45
+    - standard_contractual_clauses # Art 46(2)(c)
+    - binding_corporate_rules      # Art 47
+    - explicit_consent             # Art 49(1)(a)
+    - derogations_art_49
+  notes: "Transfers of personal data outside the EEA require an Art 45–49 basis."
+
+# Penalties (informational only — not enforced by arche).
+penalties:
+  major_violation: "Up to EUR 20 million or 4% of total worldwide annual turnover, whichever is higher (Art 83(5))."
+  minor_violation: "Up to EUR 10 million or 2% of total worldwide annual turnover, whichever is higher (Art 83(4))."
