@@ -30,7 +30,7 @@ from __future__ import annotations
 import logging
 import unicodedata
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from ..extract import Entity
@@ -39,6 +39,21 @@ if TYPE_CHECKING:
     from ..types import IdentityEvidence, IdentityRecord
 
 _log = logging.getLogger("arche")
+
+
+def _citations_from_entities(entities: list[Entity]) -> list[str]:
+    """Ordered, de-duplicated legal citations carried on entity metadata.
+
+    Detection-level citation lives on ``Detection.regulatory_citation`` and is
+    threaded onto ``Entity.metadata["regulatory_citation"]`` by the Pipeline;
+    this lifts it onto the resolved record so a resolved identity attributes cites the law it enforces.
+    """
+    seen: list[str] = []
+    for e in entities:
+        cite = (getattr(e, "metadata", None) or {}).get("regulatory_citation")
+        if cite and cite not in seen:
+            seen.append(cite)
+    return seen
 
 
 @dataclass
@@ -52,6 +67,15 @@ class ResolvedEntity:
     sources: int  # number of distinct mentions / records merged
     match_reasons: list[str]  # e.g. ["name_similarity:0.92", "phone_match"]
     entities: list[Entity]  # original Entity objects that were merged
+    # Per-field legal citations carried up from the merged mentions (C3-T3).
+    regulatory_citations: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        # Surface citations from the merged mentions unless set explicitly, so
+        # every construction site (Splink, fuzzy, singleton) gets them for free
+        # while callers can still override.
+        if not self.regulatory_citations:
+            self.regulatory_citations = _citations_from_entities(self.entities)
 
     def __repr__(self) -> str:
         return (
