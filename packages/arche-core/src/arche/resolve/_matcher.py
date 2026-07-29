@@ -530,6 +530,40 @@ def compare_geo(
     return math.exp(-distance_km / decay_km)
 
 
+def compare_containment(
+    path_a: Mapping[str, Any] | None,
+    path_b: Mapping[str, Any] | None,
+    *,
+    levels: tuple[str, ...] = ("admin1", "admin2", "settlement"),
+) -> float | None:
+    """Admin-containment agreement between two points' admin paths.
+
+    Each ``path`` maps an admin level (coarse -> fine: ``admin1`` state,
+    ``admin2`` LGA, ``settlement``) to its name — the output of a point-in-polygon
+    spatial join (``annotate_admin``, an ``arche-core[geo]`` extra). Returns a
+    similarity in [0, 1], or ``None`` when neither side carries any admin level.
+
+    Used as a coarse GATE, not a fine matcher: a disagreement at the coarsest
+    level (different ``admin1``/state) returns 0.0 — strong evidence two nearby
+    points are different places. The near-boundary case (GPS noise flipping the
+    unit) is handled by the CALLER with a soft buffer / route-to-review, never a
+    hard veto here. Agreement returns the score of the FINEST shared level: same
+    settlement is near-proof of co-location; same state is weak.
+    """
+    if not path_a or not path_b:
+        return None
+    finest_score = {"settlement": 1.0, "admin2": 0.6, "admin1": 0.3}
+    coarsest = levels[0]
+    a0, b0 = path_a.get(coarsest), path_b.get(coarsest)
+    if a0 and b0 and _normalise_text(str(a0)) != _normalise_text(str(b0)):
+        return 0.0  # different coarsest unit -> disagreement
+    for level in reversed(levels):  # finest -> coarsest
+        na, nb = path_a.get(level), path_b.get(level)
+        if na and nb and _normalise_text(str(na)) == _normalise_text(str(nb)):
+            return finest_score.get(level, 0.3)
+    return 0.2  # no level agrees but no coarse conflict -> weak
+
+
 def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]:
     """Split a name into ``(canonical_type, residual_name)`` via a synonym vocab.
 
