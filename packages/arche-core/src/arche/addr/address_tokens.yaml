@@ -28,6 +28,9 @@ anchor_prepositions:
   - across from
   - after
   - before
+  - "off"        # quoted: bare `off` is a YAML boolean. "off Awolowo Road".
+  - along        # "along Airport Road"
+  - adjacent to
   # Nigerian Pidgin
   - for back of
   - for front of
