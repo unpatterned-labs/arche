@@ -3,7 +3,7 @@
 
 """Resolve layer - link mentions across documents to canonical entities.
 
-Per Stage 1 PRD §8.1. Ships a fuzzy/Fellegi-Sunter probabilistic record
+Ships a fuzzy/Fellegi-Sunter probabilistic record
 linkage implementation in ``arche.resolve.classical`` suitable for
 in-memory operation up to ~100K records. African-context comparator
 functions handle Yoruba/Hausa/Swahili name variants, patronymics, and
@@ -45,6 +45,8 @@ import sys as _sys
 import warnings as _warnings
 from types import ModuleType as _ModuleType
 
+from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
+
 # Re-export the v0.2 classical resolver surface so existing
 # ``from arche.resolve import X`` calls keep working.
 # Private symbols used internally by pipeline.py and other modules.
@@ -55,6 +57,10 @@ from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
     resolve_entities,
     resolve_identity_records,
 )
+
+# Place/entity crosswalk engine (list-to-list reconciliation) and the
+# term-frequency table its ``tftoken`` comparator + reranker consume.
+from arche.resolve.reconcile import reconcile  # noqa: E402,F401
 
 
 class _CallableResolveModule(_ModuleType):

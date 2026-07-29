@@ -3,7 +3,7 @@
 
 """Nigerian identifier detectors - NIN, BVN, PVC (Stage 1 base).
 
-Per PRD §4.2 FR-DETECT-1..3. Future expansion (Day 9 / Week 2): TIN, RC,
+ FR-DETECT-1..3. Future expansion (Day 9 / Week 2): TIN, RC,
 driver's licence + check-digit validators per the NIMC / NIBSS specs.
 
 Public API::
@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import re
 
-from arche.detect._base import NationalID, _always_valid
+from arche.detect._base import NationalID, _always_valid, _status_meta
 
 
 def _validate_bvn(text: str) -> tuple[bool, dict]:
@@ -46,6 +46,12 @@ def _validate_nin(text: str) -> tuple[bool, dict]:
     """
     digits = re.sub(r"\s+", "", text)
     if len(digits) != 11 or not digits.isdigit():
+        return False, {}
+    # An 11-digit number in Nigerian mobile form (a leading 0 followed by 7/8/9,
+    # e.g. 08031234567) is a phone number, not a NIN. Bare-digit NIN detection
+    # must not swallow phones — let the phone detector claim it instead. NIN
+    # detection is already low-confidence, so this is a precision win.
+    if digits[0] == "0" and digits[1] in "789":
         return False, {}
     return True, {}
 
@@ -193,7 +199,7 @@ def detect_nigerian_ids(text: str) -> list[NationalID]:
                 confidence=round(confidence, 4),
                 start=span[0],
                 end=span[1],
-                metadata=meta,
+                metadata=_status_meta(spec, meta),
             ))
             seen_spans.add(span)
 
