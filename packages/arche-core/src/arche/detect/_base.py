@@ -71,6 +71,18 @@ def _always_valid(text: str) -> tuple[bool, dict]:
     return True, {}
 
 
+def _status_meta(spec: dict, meta: dict) -> dict:
+    """Attach the integrity signal to a detection's metadata.
+
+    ``checksum_valid`` where the ID scheme carries a public check digit (the
+    pattern ``spec`` declares a ``checksum`` key); otherwise ``format_valid``.
+    We never fabricate a checksum for schemes that publish none (NIN, BVN,
+    Ghana Card, most TINs). Integrity, not authenticity.
+    """
+    status = "checksum_valid" if spec.get("checksum") else "format_valid"
+    return {**meta, "validator_status": status}
+
+
 def _compile_lexicon(terms: list[str], *, case_insensitive: bool = True) -> re.Pattern[str]:
     """Compile a list of lexicon terms into a single word-boundary alternation regex.
 
