@@ -22,6 +22,15 @@ with added provenance, jurisdiction, and validator status.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # v1 types referenced only in the v1->v2 adapter annotations below. Imported
+    # under TYPE_CHECKING to keep them resolvable for type checkers without a
+    # runtime import cycle (extract/protect/resolve import this module).
+    from .extract import Entity
+    from .protect import PIIDetection
+    from .resolve import ResolvedEntity
 
 # ── PII-sensitive labels (masked in repr/logs) ───────────────────────────────
 PII_LABELS = {

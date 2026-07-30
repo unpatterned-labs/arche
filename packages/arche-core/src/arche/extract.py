@@ -38,7 +38,6 @@ from __future__ import annotations
 import logging
 import re
 import warnings
-from dataclasses import dataclass, field
 
 _log = logging.getLogger("arche")
 
@@ -52,24 +51,25 @@ def _mask_text(text: str, entity_type: str) -> str:
     return text
 
 
-@dataclass
-class Entity:
-    """A single extracted entity."""
+# ── Entity: a MENTION (surface form) — canonical name is EntityReference ──────
+# The canonical M2 vocabulary (docs/new/arche-compliance-flow.md §1) names a
+# mention an :class:`~arche.canonical.EntityReference`; ``Entity`` here has
+# always meant a mention (an inverted name — the *resolved* thing is the
+# canonical ``arche.canonical.Entity``). To fix the vocabulary without a
+# breaking rename, ``extract.Entity`` is an alias of ``EntityReference``: both
+# names keep working and keep meaning "a reference". ``EntityReference`` is
+# structurally identical to the historical ``Entity`` dataclass (same fields,
+# defaults, and PII-masking repr), so all existing construction and
+# ``isinstance`` sites are unaffected.
+#
+# DEPRECATION (soft, no runtime warning): new code should import
+# ``EntityReference`` from ``arche.canonical``. ``extract.Entity`` stays
+# supported through the v0.2.x series. No warning is emitted on use because
+# ``Entity`` is constructed on every hot detection path internally; a
+# per-construction warning would be noise and would break ``-W error`` runs.
+from .canonical import EntityReference  # noqa: E402
 
-    text: str
-    entity_type: str  # PERSON, ORGANIZATION, LOCATION, MONEY, DATE, PHONE, EMAIL, NATIONAL_ID, etc.
-    confidence: float
-    start: int
-    end: int
-    source: str = "regex"  # "gliner", "spacy", "regex", "african"
-    metadata: dict = field(default_factory=dict)
-
-    def __repr__(self) -> str:
-        display = _mask_text(self.text, self.entity_type)
-        return (
-            f"Entity(text={display!r}, type={self.entity_type!r}, "
-            f"confidence={self.confidence:.2f}, source={self.source!r})"
-        )
+Entity = EntityReference
 
 
 # ===================================================================

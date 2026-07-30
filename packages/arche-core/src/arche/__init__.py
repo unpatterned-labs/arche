@@ -28,13 +28,9 @@ Quickstart (v0.2, PRD §10.1)::
     print(result.redacted_text)
     # -> "Customer NAME_..., NIN [NIN], phone PHONE_..."
 
-Per-country detectors (PRD §6.1)::
-
     from arche.detect.ng.ids import detect_nigerian_ids
     from arche.detect.za.ids import detect_south_african_ids
     from arche.detect.ng.phones import normalize_ng_phone, validate_ng_phone
-
-Statute files (PRD §6.4)::
 
     from arche.policy import load_statute, apply_policy, list_available_statutes
     statute = load_statute("NDPA-2023")  # or POPIA, KENYA-DPA, GHANA-DPA
@@ -162,6 +158,14 @@ _LAZY: dict[str, tuple[str, str]] = {
     "Entity": (".extract", "Entity"),
     "extract": (".extract", "extract"),
     "extract_text": (".workflow._ingest", "extract_text"),
+    # Additive canonical vocabulary. ``Entity`` above stays the *reference*
+    # (mention) for back-compat; the canonical *resolved* Entity is reached
+    # via ``from arche.canonical import Entity`` and is intentionally NOT
+    # exported here as ``Entity`` so it never clobbers ``extract.Entity``.
+    "EntityReference": (".canonical", "EntityReference"),
+    "Attribute": (".canonical", "Attribute"),
+    "IdentityAttribute": (".canonical", "IdentityAttribute"),
+    "ProvenanceCitation": (".canonical", "ProvenanceCitation"),
     # --- llm + locate -----------------------------------------------------
     "LLMConfig": (".llm", "LLMConfig"),
     "Location": (".locate", "Location"),
