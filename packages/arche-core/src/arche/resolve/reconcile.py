@@ -103,7 +103,7 @@ def _field_sim(
             raise ValueError(
                 "comparator kind 'tftoken' requires a TokenFrequencyTable "
                 "passed as tf=; build one with "
-                "TokenFrequencyTable.from_corpus(...)"
+                "TokenFrequencyTable.from_corpus(...) or pass tf=\"default\""
             )
         field = spec["field"]
         if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
@@ -174,7 +174,7 @@ def reconcile(
     id_field: str = "id",
     distinctive_kinds: tuple[str, ...] = _DISTINCTIVE_KINDS,
     distinctive_floor: float = 0.75,
-    tf: TokenFrequencyTable | None = None,
+    tf: TokenFrequencyTable | str | None = None,
     block: str | None = "h3",
     rerank: bool = False,
 ) -> dict[str, Any]:
@@ -209,7 +209,9 @@ def reconcile(
         gate that stops a shared location from manufacturing a merge.
     tf:
         A :class:`TokenFrequencyTable` (required iff a ``tftoken`` comparator
-        or ``rerank`` is used).
+        or ``rerank`` is used). Pass ``tf="default"`` to use the population-scale
+        name-frequency table shipped with arche (US Census surnames + African
+        names), so distinctiveness weighting works without building one.
     block:
         ``"h3"`` (default) restricts scoring to spatial neighbours when records
         carry lat/lon — O(n·k) not O(n·m). ``None`` scores the full
@@ -226,8 +228,14 @@ def reconcile(
         "reduction_ratio": float}}`` — ids and numeric evidence only, never raw
         PII. ``matches`` is sorted by descending score.
     """
+    if isinstance(tf, str):
+        if tf != "default":
+            raise ValueError(f"tf={tf!r} not understood; pass a TokenFrequencyTable "
+                             'or the string "default".')
+        tf = TokenFrequencyTable.default()
     if rerank and tf is None:
-        raise ValueError("rerank=True requires a TokenFrequencyTable passed as tf=")
+        raise ValueError("rerank=True requires a TokenFrequencyTable passed as tf= "
+                         '(or tf="default")')
 
     n_a, n_b = len(list_a), len(list_b)
     full = n_a * n_b
