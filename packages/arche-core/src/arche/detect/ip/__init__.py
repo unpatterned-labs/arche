@@ -148,7 +148,7 @@ def detect_ipv4(text: str, *, suppress_version_strings: bool = True) -> list[Det
             continue
 
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:ip:{match.start()}:{match.end()}",
             category="PII-8-IP_ADDRESS",
             text=raw,
             start=match.start(),
@@ -188,7 +188,7 @@ def detect_ipv6(text: str) -> list[Detection]:
             continue
 
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:ip:{match.start()}:{match.end()}",
             category="PII-8-IP_ADDRESS",
             text=raw_with_zone,
             start=match.start(),

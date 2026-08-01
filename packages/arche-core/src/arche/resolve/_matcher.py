@@ -193,7 +193,13 @@ def _normalise_text(text: str) -> str:
     """Lowercase, strip diacritics, collapse whitespace."""
     text = text.strip().lower()
     nfkd = unicodedata.normalize("NFKD", text)
-    stripped = "".join(c for c in nfkd if not unicodedata.combining(c))
+    # Drop combining marks AND format/control codepoints (zero-width spaces,
+    # RTL overrides, control chars) so they can't split one name into two
+    # (match evasion) or spoof rendered output.
+    stripped = "".join(
+        c for c in nfkd
+        if not unicodedata.combining(c) and unicodedata.category(c) not in ("Cf", "Cc")
+    )
     return re.sub(r"\s+", " ", stripped)
 
 
@@ -998,5 +1004,12 @@ def to_match_record(detections: Any) -> dict[str, Any]:
         elif ("DOB" in category or "BIRTH" in category) and "dob" not in record:
             record["dob"] = text
         elif category.startswith("PII-2") and "national_id" not in record:
-            record["national_id"] = text
+            # Category-precise: only PERSON identifier subtypes may enter
+            # person-id matching. A company registration number (PII-2-RC),
+            # an ambiguous tax id (TIN/KRA_PIN/TAX_REFERENCE), or an
+            # unverified DID must never become `national_id` — that produced
+            # false merges and person entity_ids minted from public data.
+            from arche.canonical import PERSON_ID_CATEGORIES
+            if category in PERSON_ID_CATEGORIES:
+                record["national_id"] = text
     return record

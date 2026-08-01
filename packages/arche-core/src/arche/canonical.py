@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""M2 — arche's canonical object model.
+"""arche's canonical object model.
 
-This module fixes the entity-resolution vocabulary (see
-``docs/new/arche-compliance-flow.md`` §1) so the object model is the pluggable
+This module fixes the entity-resolution vocabulary so the object model is the pluggable
 spine the whole engine hangs off. It is **additive**: the legacy ``Entity`` /
 ``ResolvedEntity`` types keep working unchanged. New code should prefer the
 names here.
@@ -144,6 +143,78 @@ def is_identity_attribute_name(name: str) -> bool:
     return name.lower() in IDENTITY_ATTRIBUTE_NAMES
 
 
+# Attributes known to be non-PII descriptors — shown by default. Everything not
+# here is treated as PII (an allowlist / fail-safe default: an unrecognised
+# attribute is masked, never leaked). This is the SINGLE source of truth for the
+# PII decision used by ``render`` and ``attest``.
+SAFE_DESCRIPTOR_NAMES: frozenset[str] = frozenset({
+    # NB: no "nationality" — it is a quasi-identifier in migration/refugee
+    # contexts, so it is masked by default like other PII.
+    "country", "source_system", "entity_type", "category",
+    "jurisdiction", "type", "id_type",
+})
+
+
+def is_pii_attribute(name: str) -> bool:
+    """True unless *name* is a known non-PII descriptor (fail-safe allowlist).
+
+    Unlike :func:`is_identity_attribute_name` (only the strong identifiers), this
+    also covers quasi-identifiers (name, address, DOB, gender, city, …) and —
+    because it is an allowlist — any *unrecognised* attribute, so a field the
+    detector doesn't know can never render in the clear by default.
+    """
+    return name.lower() not in SAFE_DESCRIPTOR_NAMES
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Detection-category ↔ attribute vocabulary — the single mapping table shared by
+# the Pipeline→Reference bridge and the masking layers.
+# ═════════════════════════════════════════════════════════════════════════════
+
+# PII-2 subtypes that identify a PERSON. Only these may feed person-identity
+# matching. Category-precise on purpose: the legacy `PII-2-* -> national_id`
+# prefix rule would have turned a company registration number (PII-2-RC — a
+# public-register value under GDPR) into a person identifier, producing false
+# merges and a person entity_id minted from public data.
+PERSON_ID_CATEGORIES: frozenset[str] = frozenset({
+    "PII-2-NIN", "PII-2-BVN", "PII-2-PVC", "PII-2-DRIVERS_LICENCE",
+    "PII-2-GHANA_CARD", "PII-2-NATIONAL_ID", "PII-2-PASSPORT",
+    "PII-2-SA_ID", "PII-2-KENYA_ID",
+    "PII-2-NID", "PII-2-NIDA", "PII-2-CNI", "PII-2-CNIE", "PII-2-BI",
+    "PII-2-KEBELE_ID", "PII-2-SSNIT", "PII-2-NHIF",
+})
+
+# NON-person PII-2 subtypes (companies, ambiguous tax ids, unverified digital
+# ids). They become plain attributes under their own names — never a person
+# identifier, never binding-eligible.
+_NON_PERSON_PII2: frozenset[str] = frozenset({
+    "PII-2-RC", "PII-2-TIN", "PII-2-KRA_PIN", "PII-2-TAX_REFERENCE", "PII-2-DID",
+})
+
+# Explicit category -> canonical attribute name. Categories NOT in this table do
+# not enter a resolution Reference at all (special-category PII-6 data, PII-7
+# biometric refs, PII-8 device/network identifiers, passwords): they are either
+# non-identity or must never ride in a resolution record.
+CATEGORY_TO_ATTRIBUTE: dict[str, str] = {
+    "PII-1-NAME": "full_name",
+    "PII-3-PHONE": "phone",
+    "PII-3-EMAIL": "email",
+    "PII-4-ADDRESS": "address",
+    "PII-4-LOCATION": "location",
+    "PII-5-BANK_ACCOUNT": "account_number",
+    # person-id subtypes -> their own lowercase attribute name
+    **{c: c.rsplit("-", 1)[-1].lower() for c in PERSON_ID_CATEGORIES},
+    # non-person subtypes -> their own names (plain attributes, never person ids)
+    **{c: c.rsplit("-", 1)[-1].lower() for c in _NON_PERSON_PII2},
+}
+
+
+def attribute_for_category(category: str) -> str | None:
+    """Canonical attribute name for a detection ``category`` — or ``None`` when
+    the category must not enter a resolution reference."""
+    return CATEGORY_TO_ATTRIBUTE.get(category)
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 # ProvenanceCitation — per-field source + governing law
 # ═════════════════════════════════════════════════════════════════════════════
@@ -214,13 +285,22 @@ class Attribute:
     confidence: float = 0.0
     provenance: list[ProvenanceCitation] = field(default_factory=list)
     identifying: bool = False
+    # Structured components (e.g. a parsed address's street/city/anchor dict) so
+    # bridging from a detector never flattens structure a comparator depends on.
+    components: dict | None = None
+    # True when the governing statute's policy action for this value was `drop`:
+    # the value stays USABLE for matching inside the trust boundary, but must
+    # NEVER be disclosed (attest subject claims, SD-JWT disclosures, or
+    # render(reveal=...) all refuse it — enforced at those boundaries).
+    restricted: bool = False
 
     def __repr__(self) -> str:
         display = _mask(self.value, self.name.upper())
         kind = "IdentityAttribute" if self.identifying else "Attribute"
+        flag = ", restricted=True" if self.restricted else ""
         return (
             f"{kind}(name={self.name!r}, value={display!r}, "
-            f"confidence={self.confidence:.2f})"
+            f"confidence={self.confidence:.2f}{flag})"
         )
 
     @property
@@ -406,11 +486,27 @@ class Reference:
                 return a.value
         return None
 
-    def as_record(self) -> dict[str, str]:
+    def as_record(self, *, include_restricted: bool = False) -> dict:
         """Flatten to the ``{field: value}`` record that
         :func:`arche.resolve.reconcile` consumes. The ``record_id`` (if any) is
-        emitted under the ``id`` key."""
-        record = {a.name: a.value for a in self.attributes}
+        emitted under the ``id`` key.
+
+        **Fails closed on restricted values**: a plain dict carries no
+        restriction metadata, so once flattened a statute-``drop``ped value
+        could reach any renderer or egress unguarded. Restricted attributes are
+        therefore EXCLUDED by default; pass ``include_restricted=True`` only
+        when the record stays inside the trust boundary (matching). An address
+        attribute with structured :attr:`Attribute.components` is emitted as a
+        ``{"text": ..., **components}`` dict so the landmark anchor survives.
+        """
+        record: dict = {}
+        for a in self.attributes:
+            if a.restricted and not include_restricted:
+                continue
+            if a.name == "address" and a.components:
+                record[a.name] = {"text": a.value, **a.components}
+            else:
+                record[a.name] = a.value
         if self.record_id:
             record.setdefault("id", self.record_id)
         return record
@@ -477,6 +573,119 @@ class Reference:
         return cls(
             attributes=list(by_key.values()),
             record_id=record_id,
+            source_system=source_system,
+        )
+
+    @classmethod
+    def from_detections(
+        cls,
+        result: object,
+        *,
+        record_id: str = "",
+        source_system: str = "",
+    ) -> Reference:
+        """Bridge a Pipeline ``Result`` into a canonical reference — the
+        compliance-aware structured path (recon plan §3.2).
+
+        Consumes ``result.detections`` (raw values, **pre-egress, inside the
+        trust boundary**) with the compliance provenance attached, under four
+        hard rules:
+
+        1. **The drop rule (two-boundary model).** A detection whose statute
+           policy action was ``drop`` becomes a **``restricted``** attribute:
+           still usable for matching (so a true match is never lost to it), but
+           never disclosable — ``attest`` and ``render`` refuse it regardless of
+           caller flags.
+        2. **Category-precise mapping** via :data:`CATEGORY_TO_ATTRIBUTE` — a
+           company registration number is never a person identifier; unmapped
+           categories (special-category data, device ids, passwords) never
+           enter the reference at all.
+        3. **Structure survives**: a parsed address's components (landmark
+           anchor included) ride on ``Attribute.components``.
+        4. **Single-subject contract**: >1 distinct ``PII-1-NAME`` triggers a
+           ``UserWarning`` — one reference refers to one entity; a multi-person
+           document must be segmented first.
+        """
+        detections = getattr(result, "detections", None) or []
+        outcomes = getattr(result, "policy_outcomes", None) or []
+        dropped_ids = {
+            o.detection_id for o in outcomes
+            if getattr(o, "action", "") == "drop"
+        }
+        meta = getattr(result, "metadata", None) or {}
+        statute_id = meta.get("statute_id") or ""
+        statute_version = meta.get("statute_version") or ""
+        document_id = getattr(result, "document_hash", "") or ""
+
+        name_spans: list[tuple[int, int, str]] = []
+        by_key: dict[tuple[str, str], Attribute] = {}
+        for det in detections:
+            attr_name = attribute_for_category(det.category)
+            if attr_name is None:
+                continue  # never rides in a resolution reference
+            if det.category == "PII-1-NAME":
+                name_spans.append((det.start, det.end, det.text.strip().lower()))
+            citation = ProvenanceCitation(
+                source=getattr(det, "detector", "") or "pipeline",
+                regulatory_citation=getattr(det, "regulatory_citation", None) or "",
+                statute_id=statute_id,
+                statute_version=str(statute_version or ""),
+                span=(det.start, det.end),
+                document_id=document_id,
+            )
+            key = (attr_name, det.text)
+            existing = by_key.get(key)
+            if existing is None:
+                attr = make_attribute(
+                    name=attr_name,
+                    value=det.text,
+                    confidence=float(getattr(det, "confidence", 0.0) or 0.0),
+                    provenance=[citation],
+                )
+                if attr_name == "address" and getattr(det, "metadata", None):
+                    attr.components = dict(det.metadata)
+                if det.id in dropped_ids:
+                    attr.restricted = True
+                by_key[key] = attr
+            else:
+                existing.provenance.append(citation)
+                existing.confidence = max(
+                    existing.confidence, float(getattr(det, "confidence", 0.0) or 0.0)
+                )
+                if det.id in dropped_ids:
+                    existing.restricted = True
+
+        # Distinct-person heuristic. Detectors split one person's name into
+        # adjacent/overlapping detections ("Fatima" + "Abdullahi") and re-detect
+        # sub-forms ("Fatima" inside "Fatima Abdullahi") — so first cluster
+        # spans with a gap <= 1 char (a space), then merge token-subset repeats.
+        name_spans.sort()
+        clusters: list[tuple[int, int, set[str]]] = []
+        for start, end, text in name_spans:
+            toks = set(text.split())
+            if clusters and start <= clusters[-1][1] + 1:
+                cs, ce, ctoks = clusters[-1]
+                clusters[-1] = (cs, max(ce, end), ctoks | toks)
+            else:
+                clusters.append((start, end, toks))
+        distinct: list[set[str]] = []
+        for _s, _e, toks in clusters:
+            if any(toks <= d or d <= toks for d in distinct):
+                continue
+            distinct.append(toks)
+        if len(distinct) > 1:
+            import warnings
+            warnings.warn(
+                f"from_detections: {len(distinct)} distinct person names in one "
+                "document — a Reference refers to ONE entity (unique-reference "
+                "assumption); segment multi-person documents before bridging.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        return cls(
+            attributes=list(by_key.values()),
+            record_id=record_id or document_id,
             source_system=source_system,
         )
 
@@ -608,5 +817,10 @@ __all__ = [
     "make_attribute",
     "canonical_entity_type",
     "is_identity_attribute_name",
+    "is_pii_attribute",
+    "attribute_for_category",
+    "CATEGORY_TO_ATTRIBUTE",
+    "PERSON_ID_CATEGORIES",
+    "SAFE_DESCRIPTOR_NAMES",
     "IDENTITY_ATTRIBUTE_NAMES",
 ]

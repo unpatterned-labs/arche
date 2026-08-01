@@ -3,13 +3,13 @@
 
 """The v0.2 framework primitive: `Pipeline` and `Result`.
 
-Per PRD §7.3. A slim composition class that wires together detection,
+A slim composition class that wires together detection,
 address parsing, jurisdiction-aware policy, and audit into a single
 `process(text)` call. Replaces the v0.1 monolithic `resolve()` god-function
 without breaking it (the legacy function lives on via the deprecation
 shim on `arche.resolve` / `arche.pipeline`).
 
-Public API per PRD §10:
+
 
     from arche import Pipeline, Result
 
@@ -137,7 +137,28 @@ class Pipeline:
         "ZA": "POPIA",
         "KE": "KENYA-DPA",
         "GH": "GHANA-DPA",
+        # EU / EEA member states -> GDPR. Sectoral or stricter-national regimes
+        # use the explicit escape hatch instead, e.g.
+        # Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR").
+        **dict.fromkeys(
+            (
+                "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
+                "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
+                "PL", "PT", "RO", "SK", "SI", "ES", "SE",  # EU-27
+                "IS", "LI", "NO",                            # EEA
+            ),
+            "GDPR",
+        ),
     }
+
+    # Jurisdictions the African detector inventory is calibrated for. Any OTHER
+    # explicit jurisdiction gets cross-cutting detectors ONLY: running African
+    # ID regexes on e.g. German text risks confident mislabels (a Steuer-ID is
+    # 11 digits — the same shape as a NIN) entering a signed audit log.
+    _AFRICAN_JURISDICTIONS = frozenset({
+        "NG", "KE", "ZA", "GH", "RW", "TZ", "UG", "ET", "CI", "SN", "CM",
+        "EG", "MA", "AO", "MZ",
+    })
 
     def __init__(
         self,
@@ -147,6 +168,8 @@ class Pipeline:
         address_parsing: bool = False,
         audit: bool = True,
         tokenize_salt: str = "",
+        overlays: list[str] | None = None,
+        transparency_notice: str | None = None,
     ):
         self.jurisdiction = jurisdiction.upper() if jurisdiction else None
         self.statute_id = statute or (
@@ -157,6 +180,13 @@ class Pipeline:
         self.address_parsing = address_parsing
         self.audit = audit
         self.tokenize_salt = tokenize_salt
+        # Regulatory overlays (e.g. "EU-AI-ACT") evaluated as the LAST step of
+        # process() — they read the assembled policy outcomes + audit log and
+        # stamp an obligations block into Result.metadata. transparency_notice
+        # feeds the Art 50 transparency obligation; without one that obligation
+        # reads unsatisfied (by design — it is operator-supplied evidence).
+        self.overlays = list(overlays) if overlays else []
+        self.transparency_notice = transparency_notice
 
         # Lazy-load the statute so importing `Pipeline` doesn't read YAML
         # at module load time. Loaded on first `process()` call.
@@ -176,7 +206,15 @@ class Pipeline:
         cross_cutting = ["names", "locations", "ip", "digital_id", "addr", "core"]
         if self.jurisdiction in {"NG", "KE", "ZA", "GH"}:
             return [self.jurisdiction.lower(), *cross_cutting]
-        return ["africa", *cross_cutting]  # multi-country fallback
+        if self.jurisdiction is None or self.jurisdiction in self._AFRICAN_JURISDICTIONS:
+            # Unspecified (back-compat) or another African jurisdiction: the
+            # multi-country African ID pack + cross-cutting.
+            return ["africa", *cross_cutting]
+        # Explicit NON-African jurisdiction: cross-cutting ONLY. The African ID
+        # pack must not run here — an 11-digit EU identifier would confidently
+        # mislabel as PII-2-NIN in a signed audit log. (EU/US ID detector packs
+        # are future work; add "emails" or other packs via detectors=.)
+        return list(cross_cutting)
 
     def _ensure_statute(self) -> Any | None:
         if self._statute is None and self.statute_id:
@@ -224,11 +262,10 @@ class Pipeline:
         # 3. Address parsing (Week 3 delivery - placeholder hook)
         addresses: list[Any] = []
         if self.address_parsing:
-            try:
+            import contextlib
+            with contextlib.suppress(ImportError):
                 from arche.addr import parse_address  # noqa: F401
-                # Stage 1 address parser not yet implemented; placeholder for hook.
-            except ImportError:
-                pass
+                # Stage 1 address parser not yet implemented; placeholder hook.
 
         # 4. Policy enforcement
         if statute and detections:
@@ -271,7 +308,7 @@ class Pipeline:
                     "statute_reference": out.statute_reference,
                 })
 
-        return Result(
+        result = Result(
             document_hash=doc_hash,
             detections=detections,
             addresses=addresses,
@@ -288,6 +325,20 @@ class Pipeline:
                 "pipeline_version": "v0.2",
             },
         )
+
+        # 6. Regulatory overlays — LAST, because they evaluate the assembled
+        # policy outcomes + audit log (e.g. EU AI Act Art 12 logging /
+        # Art 50 transparency) and stamp their obligations block into metadata.
+        if self.overlays:
+            from arche.policy.overlay import apply_overlay, load_overlay
+            for overlay_id in self.overlays:
+                apply_overlay(
+                    result,
+                    load_overlay(overlay_id),
+                    transparency_notice=self.transparency_notice,
+                )
+
+        return result
 
     # -----------------------------------------------------------------------
     # File-aware entry point (delegates to arche.doc)
@@ -324,6 +375,7 @@ class Pipeline:
             "detectors": list(self.detector_packages),
             "address_parsing": self.address_parsing,
             "audit": self.audit,
+            "overlays": list(self.overlays),
         }
 
     # -----------------------------------------------------------------------
@@ -340,7 +392,31 @@ class Pipeline:
         """
         results: list[Any] = []
 
-        for pkg in self.detector_packages:
+        # ENFORCED (not just a default): African ID detectors must not run for
+        # an explicit non-African jurisdiction — an 11-digit EU identifier
+        # would confidently mislabel as PII-2-NIN in a signed audit log. This
+        # holds even when the caller passes detectors= explicitly.
+        packages = list(self.detector_packages)
+        if (
+            self.jurisdiction is not None
+            and self.jurisdiction not in self._AFRICAN_JURISDICTIONS
+        ):
+            african_pkgs = {"ng", "ke", "za", "gh", "africa"}
+            blocked = [p for p in packages if p in african_pkgs]
+            if blocked:
+                import warnings
+                warnings.warn(
+                    f"African ID detector packages {blocked} skipped for "
+                    f"jurisdiction {self.jurisdiction!r}: cross-region ID "
+                    "regexes mislabel foreign identifiers (e.g. a German "
+                    "Steuer-ID as PII-2-NIN). Use an African jurisdiction or "
+                    "jurisdiction=None to run them.",
+                    UserWarning,
+                    stacklevel=3,
+                )
+                packages = [p for p in packages if p not in african_pkgs]
+
+        for pkg in packages:
             if pkg == "ng":
                 from arche.detect.ng.ids import detect_nigerian_ids
                 results.extend(detect_nigerian_ids(text))
@@ -369,6 +445,13 @@ class Pipeline:
                 # category PII-4-LOCATION (Pan-African PII Taxonomy v0.1.1).
                 from arche.detect.locations import detect_locations
                 results.extend(detect_locations(text))
+            elif pkg == "emails":
+                # Cross-cutting email detector (PII-3-EMAIL). Opt-in: NOT in
+                # the default set — adding it there would change existing
+                # callers' detections/policy outcomes/redacted text. The
+                # resolution path (coref_from_pipeline) includes it by default.
+                from arche.detect.emails import detect_emails
+                results.extend(detect_emails(text))
             elif pkg == "ip":
                 from arche.detect.ip import detect_ip
                 results.extend(detect_ip(text))
@@ -401,7 +484,7 @@ class Pipeline:
                             "country": comp.country or addr.country_inferred or None,
                         }
                         results.append(Detection(
-                            id=f"det:{addr.span[0]}:{addr.span[1]}",
+                            id=f"det:address:{addr.span[0]}:{addr.span[1]}",
                             category="PII-4-ADDRESS",
                             text=addr.raw,
                             start=addr.span[0],
@@ -458,7 +541,9 @@ class Pipeline:
             "NIN", "NATIONAL_ID", "GHANA_CARD"
         } else "functional"
         return Detection(
-            id=f"det:{raw.start}:{raw.end}",
+            # Detector-qualified id: span-only ids collide when two detectors
+            # fire on one span, making policy-outcome lookup ambiguous.
+            id=f"det:{category_id.lower()}:{raw.start}:{raw.end}",
             category=f"PII-2-{category_id}",
             text=raw.text,
             start=raw.start,
@@ -483,10 +568,8 @@ class Pipeline:
         to MODERATE and the citation remains None — consistent with the
         standalone-detector contract documented on :class:`Detection`.
 
-        Per the 2026-05-22 detection-first reposition (Lane A 1B). The
-        enrichment exposes the regulatory citation at detection time, not
-        just policy time — the unique differentiator vs Presidio
-        (CEO + eng review §1 issue 2, locked decision).
+        The enrichment exposes the regulatory citation at detection time, not
+        just policy time — the unique differentiator vs Presidio.
         """
         for det in detections:
             det.sensitivity_tier = statute.tier_for(det.category)

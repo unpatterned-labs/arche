@@ -62,6 +62,111 @@ from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
 # term-frequency table its ``tftoken`` comparator + reranker consume.
 from arche.resolve.reconcile import reconcile  # noqa: E402,F401
 
+# ---------------------------------------------------------------------------
+# The resolve facade (recon plan §3.3) — ONE documented front door.
+#
+# Two entry points by USE-SHAPE, sharing primitives but deliberately distinct
+# combination laws (plan §8 H1):
+#   pairwise(a, b)            -> "are these two the same?" (Fellegi-Sunter +
+#                                gate, signable CoReferenceDecision)
+#   crosswalk(list_a, list_b) -> "link two lists at scale" (weighted-mean +
+#                                gate + blocking, id-only candidates)
+# The scores are NOT comparable across the two (different math, on purpose).
+# `coref_*` and `reconcile` remain importable, but the facade is the documented
+# surface. (`compare_lists` on main: wrapper-or-deprecate at merge, plan §7.5.)
+# ---------------------------------------------------------------------------
+
+# Canned comparator specs per entity type — the "entity pack" axis. A pack is
+# CONFIG over the same engine, never a fork. Records use these field names;
+# bring your own comparators= for a different schema.
+ENTITY_PACKS: dict[str, list[dict]] = {
+    "person": [
+        {"field": "name", "kind": "name", "weight": 2.0},
+        {"field": "name", "kind": "tftoken", "weight": 2.0},
+        {"field": "national_id", "kind": "id", "weight": 3.0},
+        {"field": "phone", "kind": "phone", "weight": 1.5},
+        {"field": "email", "kind": "email", "weight": 1.5},
+        {"field": "address", "kind": "address", "weight": 1.0},
+    ],
+    "place": [
+        {"field": "name", "kind": "name", "weight": 2.0},
+        {"field": "name", "kind": "tftoken", "weight": 2.0},
+        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0},
+        {"kind": "containment", "field": "admin_path", "weight": 1.0},
+        {"field": "address", "kind": "address", "weight": 1.0},
+    ],
+    # "product": roadmap — numeric-tolerance + colour-set comparators.
+}
+
+
+def pairwise(a, b, *, entity: str = "person", **kwargs):
+    """Decide whether two records/documents/results refer to the same entity.
+
+    Dispatches on input shape:
+
+    * two Pipeline ``Result``s -> ``coref_from_pipeline`` (the compliance-aware
+      path: statute citations travel; drop-actioned values are restricted);
+    * two canonical ``Reference``s -> ``coref_references`` (the deterministic,
+      reproducible core);
+    * two strings -> ``coref_documents`` (extract-then-resolve).
+
+    Returns a signable ``CoReferenceDecision``. Currently ``entity="person"``
+    only — pairwise place/product decisions are roadmap.
+    """
+    if entity != "person":
+        raise NotImplementedError(
+            f"pairwise entity={entity!r} is not available yet; person only. "
+            "Use crosswalk(...) for place lists."
+        )
+    from arche.resolve.coreference import (
+        coref_documents,
+        coref_from_pipeline,
+        coref_references,
+    )
+
+    if hasattr(a, "detections") and hasattr(b, "detections"):
+        return coref_from_pipeline(a, b, **kwargs)
+    if hasattr(a, "attributes") and hasattr(b, "attributes"):
+        return coref_references(a, b, **kwargs)
+    if isinstance(a, str) and isinstance(b, str):
+        return coref_documents(a, b, **kwargs)
+    raise TypeError(
+        f"pairwise expects two Results, two References, or two strings; "
+        f"got {type(a).__name__} and {type(b).__name__}"
+    )
+
+
+def crosswalk(list_a, list_b, *, entity: str | None = None,
+              comparators: list[dict] | None = None, tf=None, **kwargs):
+    """Link/dedupe two record lists at scale (blocking + gate + evidence).
+
+    Pass ``entity=`` to use a canned comparator pack (:data:`ENTITY_PACKS`),
+    or bring explicit ``comparators=`` for your own schema. When the pack uses
+    a ``tftoken`` comparator and no ``tf`` is given, a term-frequency table is
+    self-calibrated over both lists' text (the population-scale shipped table
+    is available via ``tf="default"``). Delegates to
+    :func:`~arche.resolve.reconcile.reconcile`.
+    """
+    if comparators is None:
+        if entity is None:
+            raise ValueError(
+                f"pass entity= (one of {sorted(ENTITY_PACKS)}) or explicit "
+                "comparators="
+            )
+        try:
+            comparators = ENTITY_PACKS[entity]
+        except KeyError:
+            raise ValueError(
+                f"unknown entity pack {entity!r}; available: {sorted(ENTITY_PACKS)}"
+            ) from None
+    if tf is None and any(c.get("kind") == "tftoken" for c in comparators):
+        # Self-calibrate distinctiveness over the lists being linked — the
+        # designed reconcile path for a corpus-specific vocabulary.
+        fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
+        texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
+        tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
+    return reconcile(list_a, list_b, comparators, tf=tf, **kwargs)
+
 
 class _CallableResolveModule(_ModuleType):
     """``arche.resolve`` is both a package (for v0.2 PRD §6.1 imports) and
