@@ -154,7 +154,7 @@ def _lexicon_detect(
     for match in pattern.finditer(text):
         meta = metadata_factory(match) if metadata_factory else {}
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:{category.rsplit('-', 1)[-1].lower()}:{match.start()}:{match.end()}",
             category=category,
             text=match.group(0),
             start=match.start(),

@@ -55,6 +55,8 @@ nav:
     - Match African names: how-to/match-african-names.md
     - Extract from invoice: how-to/extract-from-invoice.md
     - Why arche and when to use it: tutorials/arche_vs_alternatives.md
+    - Place resolution at scale (NG + UK): tutorials/place_resolution_at_scale.md
+    - Person resolution at scale (scored): tutorials/person_resolution_at_scale.md
   - Cookbooks:
     - Nigerian fintech KYC: cookbooks/fintech-kyc.md
     - South African health export: cookbooks/health-export.md

@@ -65,7 +65,7 @@ def detect_phones(text: str, *, default_country: str = "NG") -> list[Detection]:
 
     detections = [
         Detection(
-            id=f"det:{hit['start']}:{hit['end']}",
+            id=f"det:phone:{hit['start']}:{hit['end']}",
             category="PII-3-PHONE",
             text=hit["raw"],
             start=hit["start"],

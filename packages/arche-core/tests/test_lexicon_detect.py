@@ -130,11 +130,11 @@ def test_lexicon_detect_offsets_are_correct() -> None:
 
 
 def test_lexicon_detect_id_format() -> None:
-    """Detection.id follows the det:{start}:{end} convention."""
+    """Detection.id is detector-qualified: det:{category-leaf}:{start}:{end}."""
     pat = _compile_lexicon(["Adesola"])
     d = _lexicon_detect("Met Adesola today", pat,
                          category="PII-1-NAME", detector_name="x")[0]
-    assert d.id == f"det:{d.start}:{d.end}"
+    assert d.id == f"det:name:{d.start}:{d.end}"
 
 
 def test_lexicon_detect_returns_empty_on_no_match() -> None:

@@ -44,6 +44,7 @@ from __future__ import annotations
 from typing import Any
 
 from arche.resolve._block import candidate_pairs as _h3_candidate_pairs
+from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._matcher import (
     compare_addresses,
     compare_containment,
@@ -141,7 +142,13 @@ def _score_pair(
         weight = float(spec.get("weight", 1.0))
         num += weight * sim
         den += weight
-        evidence[spec.get("field", spec["kind"])] = round(sim, 3)
+        # Unique evidence keys: two comparators on one field (e.g. name +
+        # tftoken) must not overwrite each other — that hid the fuzzy name
+        # similarity behind the tftoken value in place-pack output.
+        key = spec.get("field", spec["kind"])
+        if key in evidence:
+            key = f"{key}_{spec['kind']}"
+        evidence[key] = round(sim, 3)
         if spec["kind"] in distinctive_kinds:
             distinctive_max = max(distinctive_max, sim)
         if spec["kind"] == "containment" and sim == 0.0:
@@ -173,7 +180,7 @@ def reconcile(
     review_margin: float = 0.15,
     id_field: str = "id",
     distinctive_kinds: tuple[str, ...] = _DISTINCTIVE_KINDS,
-    distinctive_floor: float = 0.75,
+    distinctive_floor: float = DISTINCTIVE_FLOOR,
     tf: TokenFrequencyTable | str | None = None,
     block: str | None = "h3",
     rerank: bool = False,

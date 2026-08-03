@@ -3,8 +3,7 @@
 
 """SD-JWT-VC (Selective Disclosure JWT Verifiable Credentials) for arche.
 
-Per the locked verifiability roadmap (2026-06-02): arche emits SD-JWT-VC
-as the v0.2 Verifiable Credential format, NOT JSON-LD VC 1.1. This is
+arche emits SD-JWT-VC as the v0.2 Verifiable Credential format, NOT JSON-LD VC 1.1. This is
 the format EUDI Wallet ARF and MOSIP Inji standardize on. JSON-LD VC 1.1
 via ``didkit`` is deferred to Stage 3 as the ``arche-core[didkit]`` extra.
 
@@ -39,13 +38,16 @@ References:
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import secrets
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Callable
+from datetime import UTC, datetime
+from typing import Any
 
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
@@ -57,6 +59,41 @@ from arche.sign.keys import Keypair, encode_did_key
 
 SD_JWT_TYP = "vc+sd-jwt"
 SD_HASH_ALG = "sha-256"
+# Key-Binding JWT: signed by the *holder* at presentation to prove possession of
+# the key the issuer bound the credential to (the ``cnf`` claim). Defeats replay
+# and forwarding of a disclosed-PII presentation.
+KB_JWT_TYP = "kb+jwt"
+# Clock-skew leeway (seconds) for a KB-JWT ``iat`` in the future.
+_KB_IAT_FUTURE_SKEW = 60
+
+
+def _public_jwk(public_key: Ed25519PublicKey) -> dict[str, str]:
+    """An Ed25519 public key as an OKP JWK (for the ``cnf`` confirmation claim)."""
+    raw = public_key.public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw,
+    )
+    return {"kty": "OKP", "crv": "Ed25519", "x": _b64url_encode(raw)}
+
+
+def _jwk_to_public(jwk: Any) -> Ed25519PublicKey:
+    """Recover the holder public key from a ``cnf.jwk`` OKP JWK."""
+    if (
+        not isinstance(jwk, dict)
+        or jwk.get("kty") != "OKP"
+        or jwk.get("crv") != "Ed25519"
+        or "x" not in jwk
+    ):
+        raise ValueError("cnf.jwk is not an Ed25519 OKP JWK")
+    raw = _b64url_decode(jwk["x"])
+    if len(raw) != 32:
+        raise ValueError("cnf.jwk.x is not a 32-byte Ed25519 key")
+    return Ed25519PublicKey.from_public_bytes(raw)
+
+
+def _presentation_sd_hash(presentation_prefix: str) -> str:
+    """base64url(sha256(...)) over ``<JWS>~<d1>~...~`` — binds a KB-JWT to the
+    exact set of disclosures presented (no mix-and-match)."""
+    return _b64url_encode(hashlib.sha256(presentation_prefix.encode("ascii")).digest())
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +162,7 @@ def issue_sd_jwt(
     vc_type: str = "ArcheDetectionCredential",
     issued_at: datetime | None = None,
     expires_at: datetime | None = None,
+    holder_key: Keypair | Ed25519PublicKey | None = None,
 ) -> SDJWTResult:
     """Issue an SD-JWT-VC.
 
@@ -184,6 +222,15 @@ def issue_sd_jwt(
         payload["iat"] = int(issued_at.timestamp())
     if expires_at:
         payload["exp"] = int(expires_at.timestamp())
+    if holder_key is not None:
+        # Bind the credential to a holder key: the ``cnf`` (confirmation) claim
+        # holds the holder's public JWK. Only that key can produce a valid
+        # KB-JWT at presentation, so a disclosed-PII presentation can't be
+        # replayed or forwarded by anyone else.
+        holder_pub = (
+            holder_key.public_key if isinstance(holder_key, Keypair) else holder_key
+        )
+        payload["cnf"] = {"jwk": _public_jwk(holder_pub)}
 
     # Sign as a JWS with the SD-JWT-VC typ header.
     jws = sign(payload, private_key, kid=did, typ=SD_JWT_TYP)
@@ -209,6 +256,8 @@ class SDJWTVerifyResult:
     issued_at: int | None = None
     expires_at: int | None = None
     expired: bool = False
+    key_bound: bool = False
+    holder_did: str | None = None
     error: str | None = None
 
     @property
@@ -225,6 +274,10 @@ def verify_sd_jwt(
     expected_vc_type: str | None = None,
     check_expiry: bool = True,
     now: datetime | None = None,
+    require_key_binding: bool = False,
+    expected_aud: str | None = None,
+    expected_nonce: str | None = None,
+    max_age_seconds: int | None = None,
 ) -> SDJWTVerifyResult:
     """Verify an SD-JWT-VC presentation.
 
@@ -244,7 +297,13 @@ def verify_sd_jwt(
     # element which we drop)
     segments = compact.split("~")
     jws_compact = segments[0]
-    presented_disclosures = [s for s in segments[1:] if s]
+    # A KB-JWT (if present) is the last, dotted segment; disclosures have no dots.
+    body = segments[1:]
+    kb_jwt: str | None = None
+    if body and body[-1].count(".") == 2:
+        kb_jwt = body[-1]
+        body = body[:-1]
+    presented_disclosures = [s for s in body if s]
 
     # Verify the JWS
     v = verify(jws_compact, public_key=public_key, resolver=resolver)
@@ -321,14 +380,14 @@ def verify_sd_jwt(
     # Visible (non-disclosable) claims = payload minus SD-JWT machinery
     visible = {
         k: v_ for k, v_ in payload.items()
-        if k not in {"_sd", "_sd_alg", "iat", "exp"}
+        if k not in {"_sd", "_sd_alg", "iat", "exp", "cnf"}
     }
 
     iat = payload.get("iat")
     exp = payload.get("exp")
     expired = False
     if check_expiry and exp is not None:
-        when = now or datetime.now(timezone.utc)
+        when = now or datetime.now(UTC)
         if when.timestamp() > exp:
             expired = True
             return SDJWTVerifyResult(
@@ -337,6 +396,74 @@ def verify_sd_jwt(
                 issued_at=iat, expires_at=exp, expired=True,
                 error=f"Credential expired at {exp} (unix ts)",
             )
+
+    # ── Key binding (KB-JWT): prove the presenter holds the bound key ──
+    def _fail(err: str) -> SDJWTVerifyResult:
+        return SDJWTVerifyResult(
+            valid=False, issuer_did=payload.get("iss"), issuer_kid=v.kid,
+            vc_type=vc_type, disclosed_claims=disclosed, visible_claims=visible,
+            issued_at=iat, expires_at=exp, error=err,
+        )
+
+    key_bound = False
+    holder_did: str | None = None
+    # A credential that carries ``cnf`` cryptographically DEMANDS holder binding;
+    # enforce it whether or not the caller set the flag (fail closed — a bound
+    # credential must not be silently downgraded to a bearer token).
+    cnf = payload.get("cnf")
+    cnf_present = isinstance(cnf, dict) and "jwk" in cnf
+    enforce_kb = require_key_binding or cnf_present
+
+    if enforce_kb and kb_jwt is None:
+        return _fail(
+            "key binding required (credential carries cnf, or require_key_binding "
+            "was set) but no KB-JWT was presented"
+        )
+    if kb_jwt is not None:
+        if not cnf_present:
+            return _fail("KB-JWT present but credential carries no cnf key binding")
+        # When binding is enforced, the anti-replay nonce is mandatory — a KB-JWT
+        # whose nonce is never checked is not replay-proof.
+        if enforce_kb and expected_nonce is None:
+            return _fail(
+                "key binding enforced but no expected_nonce supplied — cannot "
+                "verify anti-replay; pass the fresh challenge nonce"
+            )
+        if enforce_kb and expected_aud is None:
+            return _fail(
+                "key binding enforced but no expected_aud supplied — pass this "
+                "verifier's audience identifier"
+            )
+        try:
+            holder_pub = _jwk_to_public(cnf["jwk"])
+        except ValueError as exc:
+            return _fail(f"invalid cnf.jwk: {exc}")
+        kv = verify(kb_jwt, public_key=holder_pub)
+        if not kv.valid:
+            return _fail(f"KB-JWT signature invalid: {kv.error}")
+        if kv.header.get("typ") != KB_JWT_TYP:
+            return _fail(f"KB-JWT typ must be {KB_JWT_TYP!r}, got {kv.header.get('typ')!r}")
+        kb = kv.payload if isinstance(kv.payload, dict) else {}
+        # Bind to THIS presentation (exact bytes before the KB-JWT).
+        prefix = compact[: len(compact) - len(kb_jwt)]
+        if kb.get("sd_hash") != _presentation_sd_hash(prefix):
+            return _fail("KB-JWT sd_hash does not match the presented disclosures")
+        if expected_aud is not None and kb.get("aud") != expected_aud:
+            return _fail("KB-JWT aud mismatch")
+        if expected_nonce is not None and kb.get("nonce") != expected_nonce:
+            return _fail("KB-JWT nonce mismatch (possible replay)")
+        # Freshness: a KB-JWT must carry an int iat that is not in the future;
+        # ``max_age_seconds`` optionally also bounds how old it may be.
+        kb_iat = kb.get("iat")
+        when = now or datetime.now(UTC)
+        if not isinstance(kb_iat, int):
+            return _fail("KB-JWT missing or non-integer iat")
+        if kb_iat > when.timestamp() + _KB_IAT_FUTURE_SKEW:
+            return _fail("KB-JWT iat is in the future")
+        if max_age_seconds is not None and when.timestamp() - kb_iat > max_age_seconds:
+            return _fail("KB-JWT is stale")
+        holder_did = encode_did_key(holder_pub)
+        key_bound = True
 
     return SDJWTVerifyResult(
         valid=True,
@@ -348,6 +475,8 @@ def verify_sd_jwt(
         issued_at=iat,
         expires_at=exp,
         expired=expired,
+        key_bound=key_bound,
+        holder_did=holder_did,
     )
 
 
@@ -359,6 +488,10 @@ def present(
     compact: str,
     *,
     disclose: list[str] | None = None,
+    holder_key: Keypair | Ed25519PrivateKey | None = None,
+    aud: str | None = None,
+    nonce: str | None = None,
+    issued_at: datetime | None = None,
 ) -> str:
     """Holder-side: build a presentation by selecting which disclosures to forward.
 
@@ -369,10 +502,24 @@ def present(
     disclose:
         Claim names to include in the presentation. If ``None``, all
         original disclosures are forwarded.
+    holder_key:
+        The holder's key. When supplied, a **Key-Binding JWT** is appended,
+        proving possession of the key the issuer bound via ``cnf`` and binding
+        this presentation to ``aud`` + ``nonce`` (both then **required**) so the
+        verifier can reject replays. Without it the presentation is a bearer token.
+    aud, nonce:
+        The verifier's audience identifier and fresh challenge nonce. Required
+        with ``holder_key``.
+    issued_at:
+        KB-JWT ``iat`` (defaults to now).
     """
     segments = compact.split("~")
     jws_compact = segments[0]
-    all_disclosures = [s for s in segments[1:] if s]
+    # A KB-JWT (if present) is the last, dotted segment; disclosures have no dots.
+    body = segments[1:]
+    if body and body[-1].count(".") == 2:
+        body = body[:-1]  # strip an existing KB-JWT before re-presenting
+    all_disclosures = [s for s in body if s]
 
     if disclose is None:
         kept = all_disclosures
@@ -386,7 +533,26 @@ def present(
             if claim_name in disclose:
                 kept.append(d)
 
-    return jws_compact + "~" + "~".join(kept) + "~"
+    prefix = jws_compact + "~" + "~".join(kept) + "~"
+    if holder_key is None:
+        return prefix
+
+    if aud is None or nonce is None:
+        raise ValueError("holder_key requires aud and nonce for key binding")
+    if isinstance(holder_key, Keypair):
+        holder_priv, holder_did = holder_key.private_key, holder_key.did_key
+    else:
+        holder_priv = holder_key
+        holder_did = encode_did_key(holder_key.public_key())
+    when = issued_at or datetime.now(UTC)
+    kb_payload = {
+        "iat": int(when.timestamp()),
+        "aud": aud,
+        "nonce": nonce,
+        "sd_hash": _presentation_sd_hash(prefix),
+    }
+    kb_jwt = sign(kb_payload, holder_priv, kid=holder_did, typ=KB_JWT_TYP)
+    return prefix + kb_jwt
 
 
 # ---------------------------------------------------------------------------
@@ -424,17 +590,13 @@ def envelope_to_sd_jwt(
 
     issued_at = None
     if envelope.issued_at:
-        try:
+        with contextlib.suppress(ValueError):
             issued_at = datetime.fromisoformat(envelope.issued_at)
-        except ValueError:
-            pass
 
     expires_at = None
     if envelope.expires_at:
-        try:
+        with contextlib.suppress(ValueError):
             expires_at = datetime.fromisoformat(envelope.expires_at)
-        except ValueError:
-            pass
 
     return issue_sd_jwt(
         claims=claims,

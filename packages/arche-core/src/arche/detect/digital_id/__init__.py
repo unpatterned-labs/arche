@@ -16,8 +16,6 @@ Public API per the 2026-05-22 detection-first reposition::
         "controlled by did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSrnQ..."
     )
 
-Cross-cutting (not country-specific). Public module name per the
-eng review §1 issue 1 decision — matches ``arche.detect.ip``.
 
 Returns :class:`arche.workflow._primitive.Detection` directly.
 
@@ -107,7 +105,7 @@ def detect_did(text: str) -> list[Detection]:
         confidence = 1.0 if method in _KNOWN_DID_METHODS else 0.7
 
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:did:{match.start()}:{match.end()}",
             category="PII-2-DID",
             text=full,
             start=match.start(),
@@ -173,7 +171,7 @@ def detect_crypto_wallet(text: str) -> list[Detection]:
     for match in _BTC_BASE58_RE.finditer(text):
         addr = match.group(1)
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:crypto_wallet:{match.start()}:{match.end()}",
             category="PII-5-CRYPTO_WALLET",
             text=addr,
             start=match.start(),
@@ -192,7 +190,7 @@ def detect_crypto_wallet(text: str) -> list[Detection]:
     for match in _BTC_BECH32_RE.finditer(text):
         addr = match.group(1)
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:crypto_wallet:{match.start()}:{match.end()}",
             category="PII-5-CRYPTO_WALLET",
             text=addr,
             start=match.start(),
@@ -212,7 +210,7 @@ def detect_crypto_wallet(text: str) -> list[Detection]:
     for match in _ETH_RE.finditer(text):
         addr = match.group(1)
         detections.append(Detection(
-            id=f"det:{match.start()}:{match.end()}",
+            id=f"det:crypto_wallet:{match.start()}:{match.end()}",
             category="PII-5-CRYPTO_WALLET",
             text=addr,
             start=match.start(),
