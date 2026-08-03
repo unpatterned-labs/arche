@@ -2,7 +2,7 @@
 
 *A royalty statement says "Ayodeji Balogun". A catalog says "Wizkid". A press release says "Starboy". Same person, three systems — and money moves (or doesn't) on whether software can tell.*
 
-This tutorial resolves **Afrobeats, hip-hop, and pop artists** across name forms, links them through their real collaborations, and signs one identity decision — on live [MusicBrainz](https://musicbrainz.org) data (CC0). The runnable version is `notebooks/artist_resolution.ipynb`. The equivalence packs are organised by **genre** (`afrobeats.yaml`, `hiphop.yaml`, `pop.yaml`) — one engine for everyone's names, wherever they're from.
+This tutorial resolves **Afrobeats, hip-hop, and pop artists** across name forms, links them through their real collaborations, and signs one identity decision — on live [MusicBrainz](https://musicbrainz.org) data (CC0). The equivalence packs are organised by **genre** (`afrobeats.yaml`, `hiphop.yaml`, `pop.yaml`) — one engine for everyone's names, wherever they're from.
 
 It's also the proof of arche's central claim — **match, don't guess** — and of the sentence under it: *a new entity type is a data pack, not new code*. That sentence is only true if the data actually ships. For artists it does, as the same two-layer recipe as African person names:
 
@@ -118,4 +118,4 @@ On a *resolved* catalog these edges are where royalty attribution actually lives
 - **Equivalence buys recall, population frequency buys precision** — the toy-corpus measurement in §3 is the difference, made visible.
 - **Names describe; identifiers distinguish** — the wrong-Tyla failure (which the pack honestly *amplifies*) is the cautionary tale; the MBID-anchored signed decision is the remedy.
 
-**Siblings:** [places at scale](place_resolution_at_scale.md) · [persons at scale, scored](person_resolution_at_scale.md) · [read crosswalk output](../how-to/read-crosswalk-output.md) · [the data packs](../data-packs.md).
+**Siblings:** [places at scale](place_resolution_at_scale.md) · [persons at scale, scored](person_resolution_at_scale.md) · [read crosswalk output](../how-to/read-crosswalk-output.md)

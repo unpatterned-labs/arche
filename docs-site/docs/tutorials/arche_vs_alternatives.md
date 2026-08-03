@@ -2,8 +2,8 @@
 
 A practical guide for developers, researchers, DPOs, and civil society choosing between `arche-core` and the other tools in the PII landscape. Honest about what arche is, what it isn't, and where the alternatives are the better pick.
 
-!!! warning "Status: pre-beta (development) — not for production use yet"
-    See the [roadmap](../concepts/roadmap.md) for the named beta criteria. Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
+- !!! warning "Status: pre-beta (development) — not for production use yet"
+- Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
 
 ---
 
@@ -346,13 +346,8 @@ result = Pipeline(jurisdiction="NG").process("your text here")
 
 ## See also
 
-- **[Entity resolution tools compared](../comparison/entity-resolution.md)** — the matching/linkage side of this page: arche vs Splink, dedupe, Senzing, recordlinkage, Zingg.
-- **[Live demo: demo.unpatterned.org](https://demo.unpatterned.org)** — the 30-second tour: paste text, see detections + tier + citation, copy a JWS receipt.
-- **[Cross-tool benchmark v0.2](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.2.md)** — reproducible 48-case comparison across six anchor languages.
 - **[Case study A: NG invoice PDF, end to end](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-invoice.ipynb)** — docling-parsed invoice through Pipeline + sign + verify roundtrip.
 - **[Case study B: BusinessDay article, the honest wedge boundary](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-web-article.ipynb)** — what arche does and doesn't surface on free-text journalism.
 - **[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy)** — the ground truth the benchmark uses, published CC-BY-4.0.
-- [Roadmap](../concepts/roadmap.md) — what's shipped today, what gates beta, where the project goes next.
-- [How arche Works](../concepts/how-it-works.md) — the substrate-by-substrate walkthrough.
 - [Power-user: Sign, share, extract tutorial](sign_share_extract.md)
 - [Power-user: Citizen DSAR tutorial](citizen_dsar.md)
