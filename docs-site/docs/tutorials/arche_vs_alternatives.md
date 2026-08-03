@@ -322,7 +322,6 @@ You probably do NOT use arche if you just want to scrub PII from a single docume
 | Statute YAMLs v1.0 | NDPA-2023 v1.0; others v0.1 scaffold | Beta criterion: all four DPA-consulted to v1.0. |
 | MOSIP / OpenCRVS / DHIS2 / OpenG2P production adapters | **Not in scope** — adapter stubs were deleted in v0.2.0a2 | Ships when there's a real partner deployment in flight, not as scaffolding. |
 
-If your need falls in the *roadmap* column, today you write the missing piece yourself; the public roadmap names the criteria that gate each one. See the [roadmap page](../concepts/roadmap.md) for the explicit beta criteria and the two post-beta expansion paths.
 
 ---
 
