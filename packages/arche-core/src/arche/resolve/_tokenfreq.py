@@ -51,11 +51,19 @@ _TOKEN_RE = re.compile(r"[a-z0-9]+")
 # Relative-frequency floor for a token never seen in the corpus. A brand-new
 # token is treated as rare-but-not-impossible (uk_address_matcher uses 5e-5).
 _UNKNOWN_FLOOR = 5e-5
-# Serialization tag + the name of the frequency table shipped in the wheel.
+# Serialization tag + the frequency tables shipped in the wheel, one per
+# entity domain (each with the builder script that regenerates it).
 _FORMAT = "arche-tf/1"
-_DEFAULT_RESOURCE = "name_frequencies.json.gz"
-# Process-wide cache for the packaged default table (it is immutable).
-_DEFAULT_CACHE: TokenFrequencyTable | None = None
+_DEFAULT_RESOURCES = {
+    "person": "name_frequencies.json.gz",
+    "artist": "artist_frequencies.json.gz",
+}
+_DEFAULT_BUILDERS = {
+    "person": "datasets/names_dataops/build_name_frequencies.py",
+    "artist": "datasets/artists_dataops/build_artist_frequencies.py",
+}
+# Process-wide cache for the packaged default tables (they are immutable).
+_DEFAULT_CACHE: dict[str, TokenFrequencyTable] = {}
 
 
 def _tokens(text: str) -> list[str]:
@@ -145,28 +153,37 @@ class TokenFrequencyTable:
         return cls(counts=agg, unknown_floor=unknown_floor)
 
     @classmethod
-    def default(cls) -> TokenFrequencyTable:
-        """The population-scale name-frequency table shipped in the wheel.
+    def default(cls, domain: str = "person") -> TokenFrequencyTable:
+        """A population-scale frequency table shipped in the wheel.
 
-        Cached process-wide. Raises :class:`FileNotFoundError` with build
-        guidance if the data asset is absent (e.g. an editable checkout that has
-        not run the builder).
+        ``domain`` selects the entity population: ``"person"`` (US Census
+        surnames + African names lexicon) or ``"artist"`` (MusicBrainz artist
+        catalog sample). Cached process-wide. Raises :class:`ValueError` for an
+        unknown domain, and :class:`FileNotFoundError` with build guidance if
+        the data asset is absent (e.g. an editable checkout that has not run
+        the builder).
         """
-        global _DEFAULT_CACHE
-        if _DEFAULT_CACHE is None:
+        try:
+            resource_name = _DEFAULT_RESOURCES[domain]
+        except KeyError:
+            raise ValueError(
+                f"unknown frequency-table domain {domain!r}; available: "
+                f"{sorted(_DEFAULT_RESOURCES)}"
+            ) from None
+        if domain not in _DEFAULT_CACHE:
             from importlib.resources import as_file, files
 
-            resource = files("arche.resolve").joinpath("_data", _DEFAULT_RESOURCE)
+            resource = files("arche.resolve").joinpath("_data", resource_name)
             try:
                 with as_file(resource) as path:
-                    _DEFAULT_CACHE = cls.load(path)
+                    _DEFAULT_CACHE[domain] = cls.load(path)
             except (FileNotFoundError, ModuleNotFoundError) as exc:
                 raise FileNotFoundError(
-                    "The default name-frequency table is not present. Build it "
-                    "with:\n    python datasets/names_dataops/build_name_frequencies.py\n"
+                    f"The default {domain} frequency table is not present. "
+                    f"Build it with:\n    python {_DEFAULT_BUILDERS[domain]}\n"
                     "or pass an explicit table via tf=."
                 ) from exc
-        return _DEFAULT_CACHE
+        return _DEFAULT_CACHE[domain]
 
     # ── queries (unchanged R1 surface) ─────────────────────────────────────────
     def rel_freq(self, token: str) -> float:

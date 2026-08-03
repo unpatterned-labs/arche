@@ -46,6 +46,7 @@ import warnings as _warnings
 from types import ModuleType as _ModuleType
 
 from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
+from arche.resolve.artists import artist_aliases  # noqa: E402,F401
 
 # Re-export the v0.2 classical resolver surface so existing
 # ``from arche.resolve import X`` calls keep working.
@@ -63,17 +64,16 @@ from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
 from arche.resolve.reconcile import reconcile  # noqa: E402,F401
 
 # ---------------------------------------------------------------------------
-# The resolve facade (recon plan §3.3) — ONE documented front door.
 #
 # Two entry points by USE-SHAPE, sharing primitives but deliberately distinct
-# combination laws (plan §8 H1):
+# combination laws:
 #   pairwise(a, b)            -> "are these two the same?" (Fellegi-Sunter +
 #                                gate, signable CoReferenceDecision)
 #   crosswalk(list_a, list_b) -> "link two lists at scale" (weighted-mean +
 #                                gate + blocking, id-only candidates)
 # The scores are NOT comparable across the two (different math, on purpose).
 # `coref_*` and `reconcile` remain importable, but the facade is the documented
-# surface. (`compare_lists` on main: wrapper-or-deprecate at merge, plan §7.5.)
+# surface. (`compare_lists` on main: wrapper-or-deprecate at merge)
 # ---------------------------------------------------------------------------
 
 # Canned comparator specs per entity type — the "entity pack" axis. A pack is
@@ -95,8 +95,21 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"kind": "containment", "field": "admin_path", "weight": 1.0},
         {"field": "address", "kind": "address", "weight": 1.0},
     ],
+    # Artists: MBID/ISNI are the registry identifiers (a national-ID analogue);
+    # alias-expand the catalog with resolve.artist_aliases() for recall.
+    "artist": [
+        {"field": "name", "kind": "name", "weight": 2.0},
+        {"field": "name", "kind": "tftoken", "weight": 2.0},
+        {"field": "mbid", "kind": "id", "weight": 3.0},
+        {"field": "isni", "kind": "id", "weight": 2.0},
+    ],
     # "product": roadmap — numeric-tolerance + colour-set comparators.
 }
+
+# Packs whose tftoken comparator defaults to a SHIPPED population table rather
+# than self-calibration (small artist catalogs mislead a self-calibrated table
+# — the toy-corpus trap the place tutorials document).
+_PACK_TF_DOMAIN: dict[str, str] = {"artist": "artist"}
 
 
 def pairwise(a, b, *, entity: str = "person", **kwargs):
@@ -142,9 +155,10 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
 
     Pass ``entity=`` to use a canned comparator pack (:data:`ENTITY_PACKS`),
     or bring explicit ``comparators=`` for your own schema. When the pack uses
-    a ``tftoken`` comparator and no ``tf`` is given, a term-frequency table is
-    self-calibrated over both lists' text (the population-scale shipped table
-    is available via ``tf="default"``). Delegates to
+    a ``tftoken`` comparator and no ``tf`` is given: packs with a shipped
+    population table (``artist``) load it; other packs self-calibrate a table
+    over both lists' text. Pass ``tf="default"`` (person table) or a domain
+    name (``tf="artist"``) to choose explicitly. Delegates to
     :func:`~arche.resolve.reconcile.reconcile`.
     """
     if comparators is None:
@@ -160,16 +174,31 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
                 f"unknown entity pack {entity!r}; available: {sorted(ENTITY_PACKS)}"
             ) from None
     if tf is None and any(c.get("kind") == "tftoken" for c in comparators):
-        # Self-calibrate distinctiveness over the lists being linked — the
-        # designed reconcile path for a corpus-specific vocabulary.
-        fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
-        texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
-        tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
+        domain = _PACK_TF_DOMAIN.get(entity or "")
+        if domain is not None:
+            # This pack's population is not the lists being linked (a small
+            # artist catalog miscalibrates itself) — use the shipped table,
+            # falling back loudly if the data asset is absent.
+            try:
+                tf = TokenFrequencyTable.default(domain=domain)
+            except FileNotFoundError as exc:
+                _warnings.warn(
+                    f"shipped {domain!r} frequency table unavailable ({exc}); "
+                    "self-calibrating over the two lists instead",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+        if tf is None:
+            # Self-calibrate distinctiveness over the lists being linked — the
+            # designed reconcile path for a corpus-specific vocabulary.
+            fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
+            texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
+            tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
     return reconcile(list_a, list_b, comparators, tf=tf, **kwargs)
 
 
 class _CallableResolveModule(_ModuleType):
-    """``arche.resolve`` is both a package (for v0.2 PRD §6.1 imports) and
+    """``arche.resolve`` is both a package (for v0.2 imports) and
     callable (for v0.1 ``from arche import resolve`` backward compat).
 
     Removed in v0.3 once the v0.1 ``resolve()`` function is renamed.
