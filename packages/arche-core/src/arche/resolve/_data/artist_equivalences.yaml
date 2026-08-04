@@ -1,0 +1,154 @@
+# GENERATED from datasets/artist_equivalences/*.yaml — edit there, not here.
+# Regenerate: the merge snippet in datasets/artists_dataops/ (see git history).
+# Licence: CC-BY-4.0 (data: MusicBrainz CC0 + curated public-record legal names).
+groups:
+- canonical: Wizkid
+  variants:
+  - Ayodeji Ibrahim Balogun
+  - Ayodeji Balogun
+  - DJ WizKid
+  - StarBoy
+  - Wiz Kid
+  - Wizzy
+- canonical: Burna Boy
+  variants:
+  - Damini Ebunoluwa Ogulu
+  - Damini Ogulu
+- canonical: Rema
+  variants:
+  - Divine Ikubor
+  - Divine Joshua Ikubor
+- canonical: Tems
+  variants:
+  - Temilade Openiyi
+- canonical: Davido
+  variants:
+  - David Adedeji Adeleke
+  - David Adeleke
+- canonical: Ayra Starr
+  variants:
+  - Oyinkansola Sarah Aderibigbe
+- canonical: Asake
+  variants:
+  - Ahmed Ololade
+- canonical: CKay
+  variants:
+  - Chukwuka Chukwuma Ekweani
+- canonical: Amaarae
+  variants:
+  - Ama Serwah Genfi
+- canonical: Tyla
+  variants:
+  - Tyla Laura Seethal
+  - Tyla Seethal
+- canonical: Fireboy DML
+  variants:
+  - Adedamola Adefolahan
+- canonical: Omah Lay
+  variants:
+  - Stanley Omah Didia
+- canonical: Joeboy
+  variants:
+  - Joseph Akinwale Akinfenwa-Donus
+- canonical: Kizz Daniel
+  variants:
+  - Kiss Daniel
+  - Oluwatobiloba Daniel Anidugbe
+- canonical: Olamide
+  variants:
+  - Olamide Gbenga Adedeji
+  - Baddo
+- canonical: Yemi Alade
+  variants:
+  - Yemi Eberechi Alade
+- canonical: Tiwa Savage
+  variants:
+  - Tiwatope Savage
+- canonical: Mr Eazi
+  variants:
+  - Oluwatosin Oluwole Ajibade
+- canonical: 2Baba
+  variants:
+  - 2face Idibia
+  - 2Face
+  - Innocent Ujah Idibia
+- canonical: Fela Kuti
+  variants:
+  - Fela Anikulapo Kuti
+  - Olufela Olusegun Oludotun Ransome-Kuti
+- canonical: Stonebwoy
+  variants:
+  - Livingstone Etse Satekla
+- canonical: Sarkodie
+  variants:
+  - Michael Owusu Addo
+- canonical: Black Sherif
+  variants:
+  - Mohammed Ismail Sherif
+- canonical: Diamond Platnumz
+  variants:
+  - Naseeb Abdul Juma Issack
+- canonical: Master KG
+  variants:
+  - Kgaogelo Moagi
+- canonical: Nasty C
+  variants:
+  - Nsikayesizwe David Junior Ngcobo
+- canonical: Focalistic
+  variants:
+  - Lethabo Sebetso
+- canonical: Angelique Kidjo
+  variants:
+  - Angélique Kidjo
+- canonical: Drake
+  variants:
+  - Aubrey Drake Graham
+  - Aubrey Graham
+  - Champagne Papi
+  - C. Papi
+- canonical: Future
+  variants:
+  - Nayvadius Cash
+  - Nayvadius D. Wilburn
+  - Nayvadius DeMun Cash
+  - Nayvadius Wilburn
+- canonical: Chris Brown
+  variants:
+  - Breezy
+  - C Breezy
+  - Christopher Maurice Brown
+- canonical: Travis Scott
+  variants:
+  - Jacques Berman Webster II
+  - Jacques Webster
+  - Travi$ Scott
+  - Travis $cott
+- canonical: Nicki Minaj
+  variants:
+  - Nicki Maraj
+  - Nikki Minaj
+  - Onika Maraj
+  - Onika Tanya Maraj
+  - Onika Tanya Maraj-Petty
+- canonical: Ed Sheeran
+  variants:
+  - Edward Christopher Sheeran
+- canonical: Selena Gomez
+  variants:
+  - Selena Marie Gomez
+- canonical: Justin Bieber
+  variants:
+  - Justin Drew Bieber
+  - Justin Beiber
+- canonical: Beyoncé
+  variants:
+  - Beyonce
+  - Beyoncé Giselle Knowles
+  - Beyoncé Giselle Knowles-Carter
+  - Beyoncé Knowles
+  - Beyoncé Knowles-Carter
+  - Queen Bey
+- canonical: Coldplay
+  variants:
+  - Cold Play
+  - The Coldplay

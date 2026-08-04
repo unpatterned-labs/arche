@@ -1,0 +1,114 @@
+# Copyright 2026 Unpatterned Labs CIC — Licensed under CC-BY-4.0
+# https://creativecommons.org/licenses/by/4.0/
+# Full licence text: https://github.com/unpatterned-labs/arche/blob/main/datasets/DATASET_LICENSE.md
+#
+# Stage-name ↔ legal-name ↔ catalog-alias equivalences for African popular
+# music (Afrobeats, amapiano, highlife, hiplife, bongo flava, Afrobeat).
+# The artist counterpart of datasets/name_equivalences/: equivalence data buys
+# recall, the frequency table buys precision, the gate keeps merges safe.
+#
+# Sources: MusicBrainz alias sets (CC0) plus curated public-record legal names.
+# Note: the "Tyla" group is hand-corrected — a name-only MusicBrainz search
+# returns a UK artist of the same name; this group is the South African artist
+# (the wrong-Tyla lesson: names describe, identifiers distinguish).
+tradition: African popular music — stage names, legal names, catalog alias forms
+source: MusicBrainz (CC0) + curated public-record legal names
+groups:
+- canonical: Wizkid
+  variants:
+  - Ayodeji Ibrahim Balogun
+  - Ayodeji Balogun
+  - DJ WizKid
+  - StarBoy
+  - Wiz Kid
+  - Wizzy
+- canonical: Burna Boy
+  variants:
+  - Damini Ebunoluwa Ogulu
+  - Damini Ogulu
+- canonical: Rema
+  variants:
+  - Divine Ikubor
+  - Divine Joshua Ikubor
+- canonical: Tems
+  variants:
+  - Temilade Openiyi
+- canonical: Davido
+  variants:
+  - David Adedeji Adeleke
+  - David Adeleke
+- canonical: Ayra Starr
+  variants:
+  - Oyinkansola Sarah Aderibigbe
+- canonical: Asake
+  variants:
+  - Ahmed Ololade
+- canonical: CKay
+  variants:
+  - Chukwuka Chukwuma Ekweani
+- canonical: Amaarae
+  variants:
+  - Ama Serwah Genfi
+- canonical: Tyla
+  variants:
+  - Tyla Laura Seethal
+  - Tyla Seethal
+- canonical: Fireboy DML
+  variants:
+  - Adedamola Adefolahan
+- canonical: Omah Lay
+  variants:
+  - Stanley Omah Didia
+- canonical: Joeboy
+  variants:
+  - Joseph Akinwale Akinfenwa-Donus
+- canonical: Kizz Daniel
+  variants:
+  - Kiss Daniel
+  - Oluwatobiloba Daniel Anidugbe
+- canonical: Olamide
+  variants:
+  - Olamide Gbenga Adedeji
+  - Baddo
+- canonical: Yemi Alade
+  variants:
+  - Yemi Eberechi Alade
+- canonical: Tiwa Savage
+  variants:
+  - Tiwatope Savage
+- canonical: Mr Eazi
+  variants:
+  - Oluwatosin Oluwole Ajibade
+- canonical: 2Baba
+  variants:
+  - 2face Idibia
+  - 2Face
+  - Innocent Ujah Idibia
+- canonical: Fela Kuti
+  variants:
+  - Fela Anikulapo Kuti
+  - Olufela Olusegun Oludotun Ransome-Kuti
+- canonical: Stonebwoy
+  variants:
+  - Livingstone Etse Satekla
+- canonical: Sarkodie
+  variants:
+  - Michael Owusu Addo
+- canonical: Black Sherif
+  variants:
+  - Mohammed Ismail Sherif
+- canonical: Diamond Platnumz
+  variants:
+  - Naseeb Abdul Juma Issack
+- canonical: Master KG
+  variants:
+  - Kgaogelo Moagi
+- canonical: Nasty C
+  variants:
+  - Nsikayesizwe David Junior Ngcobo
+- canonical: Focalistic
+  variants:
+  - Lethabo Sebetso
+- canonical: Angelique Kidjo
+  variants:
+  - Angélique Kidjo

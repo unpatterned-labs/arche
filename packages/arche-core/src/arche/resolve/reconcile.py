@@ -216,9 +216,11 @@ def reconcile(
         gate that stops a shared location from manufacturing a merge.
     tf:
         A :class:`TokenFrequencyTable` (required iff a ``tftoken`` comparator
-        or ``rerank`` is used). Pass ``tf="default"`` to use the population-scale
-        name-frequency table shipped with arche (US Census surnames + African
-        names), so distinctiveness weighting works without building one.
+        or ``rerank`` is used). Pass ``tf="default"`` for the population-scale
+        person name table shipped with arche (US Census surnames + African
+        names), or a shipped domain name (e.g. ``tf="artist"`` for the
+        MusicBrainz catalog table), so distinctiveness weighting works without
+        building one.
     block:
         ``"h3"`` (default) restricts scoring to spatial neighbours when records
         carry lat/lon — O(n·k) not O(n·m). ``None`` scores the full
@@ -236,10 +238,12 @@ def reconcile(
         PII. ``matches`` is sorted by descending score.
     """
     if isinstance(tf, str):
-        if tf != "default":
-            raise ValueError(f"tf={tf!r} not understood; pass a TokenFrequencyTable "
-                             'or the string "default".')
-        tf = TokenFrequencyTable.default()
+        # "default" keeps its historical meaning (the person table); any other
+        # string names a shipped domain ("artist", ...) — unknown domains raise
+        # a ValueError listing what is available.
+        tf = TokenFrequencyTable.default(
+            domain="person" if tf == "default" else tf
+        )
     if rerank and tf is None:
         raise ValueError("rerank=True requires a TokenFrequencyTable passed as tf= "
                          '(or tf="default")')

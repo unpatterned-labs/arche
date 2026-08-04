@@ -2,29 +2,30 @@
 
 A practical guide for developers, researchers, DPOs, and civil society choosing between `arche-core` and the other tools in the PII landscape. Honest about what arche is, what it isn't, and where the alternatives are the better pick.
 
-!!! warning "Status: pre-beta (development) - not for production use yet"
-    Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
+- !!! warning "Status: pre-beta (development) — not for production use yet"
+- Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
 
 ---
 
 ## The setup
 
-You're building something that handles African data - a Nigerian fintech onboarding flow, a Kenyan health-tech intake screen, a journalist's PII scanner for leaked emails, a South African civil-society audit of a public dataset. You need to detect PII. You install [Microsoft Presidio](https://microsoft.github.io/presidio/) (the obvious choice). You feed it a sample customer record:
+You're building something that handles African data — a Nigerian fintech onboarding flow, a Kenyan health-tech intake screen, a journalist's PII scanner for leaked emails, a South African civil-society audit of a public dataset. You need to detect PII. You install [Microsoft Presidio](https://microsoft.github.io/presidio/) (the obvious choice). You feed it a sample customer record:
 
 ```
-Customer Fatima Abdullahi, NIN 12345678901, BVN 22156789012, phone 0803 555 7890, RC 245678.
+Customer Fatima Abdullahi, NIN 12345678901, BVN 22156789012,
+phone 0803 555 7890, RC 245678.
 ```
 
 Presidio confidently returns:
 
 ```
-NIN 12345678901  -> US_BANK_NUMBER  (wrong)
-BVN 22156789012  -> US_BANK_NUMBER  (wrong)
-0803 555 7890   -> US_PHONE_NUMBER  (wrong; it is a Nigerian network)
-RC 245678        -> not detected
+NIN 12345678901  → US_BANK_NUMBER  ✗
+BVN 22156789012  → US_BANK_NUMBER  ✗
+0803 555 7890   → US_PHONE_NUMBER  ✗ (it's a Nigerian network)
+RC 245678        → (not detected)  ✗
 ```
 
-That's not a typo. Presidio's default recognizers literally label Nigerian customers as having US bank accounts. Same story for Ghana Card (gets called `US_PASSPORT`), South African ID, Kenyan KRA PIN. The Presidio team isn't wrong - they built recognizers for the data their users had. Your data isn't their data.
+That's not a typo. Presidio's default recognizers literally label Nigerian customers as having US bank accounts. Same story for Ghana Card (gets called `US_PASSPORT`), South African ID, Kenyan KRA PIN. The Presidio team isn't wrong — they built recognizers for the data their users had. Your data isn't their data.
 
 **Same input, `arche-core`:**
 
@@ -51,18 +52,18 @@ That's the gap in one example. The rest of this page is the proof, the personas,
 
 ---
 
-## The proof - cross-tool benchmark
+## The proof — cross-tool benchmark
 
 From [`benchmarks/lingua-africa-eval-v0.2`](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.2.md): **48 synthetic test cases across six anchor languages** (English, Nigerian Pidgin, Yoruba, Hausa, Swahili, Amharic) covering NG / KE / ZA / GH government identifiers, IPs, DIDs, and crypto wallets. CC-BY-4.0. Reproducible from `pip install arche-core[presidio]` plus one script.
 
 | Tool | Cases matching expected categories | Notes |
 |---|---|---|
-| **arche-core v0.2.0a3** | **47 / 48** | All African IDs detected across all six anchor languages. Luhn validators correctly reject negative-control invalid SA ID. Cross-cutting detectors (IP, DID, crypto wallet) work irrespective of surrounding script. The one gap is PVC (NG voter card) detection - documented post-beta work. |
-| **Microsoft Presidio** (default, generous "any non-empty" scoring) | **37 / 48** | On generous scoring, passes negative tests and IP / crypto cases. On per-category matching the picture inverts: Presidio scores **2 / 25** on cases where the expected label is a specific PII-2 / PII-5 / PII-8 category - and confidently mislabels NG NIN / BVN, SA ID, and Ghana Card as US-default types. Even Amharic text with an embedded NG NIN gets labeled `US_BANK_NUMBER`. |
-| **GLiNER2-PII** (Fastino) | Not run standalone | Install pulls ~2.5 GB of torch + transformers. Public schema covers 42 PII categories - **none are African government IDs**. Composed via `arche-core[detect]` extra for soft-PII coverage. |
-| **OpenAI Privacy Filter** | Not run | API-only. No published per-category breakdown. Closed-weight model - auditability question open. |
+| **arche-core v0.2.0a3** | **47 / 48** | All African IDs detected across all six anchor languages. Luhn validators correctly reject negative-control invalid SA ID. Cross-cutting detectors (IP, DID, crypto wallet) work irrespective of surrounding script. The one gap is PVC (NG voter card) detection — documented post-beta work. |
+| **Microsoft Presidio** (default, generous "any non-empty" scoring) | **37 / 48** | On generous scoring, passes negative tests and IP / crypto cases. On per-category matching the picture inverts: Presidio scores **2 / 25** on cases where the expected label is a specific PII-2 / PII-5 / PII-8 category — and confidently mislabels NG NIN / BVN, SA ID, and Ghana Card as US-default types. Even Amharic text with an embedded NG NIN gets labeled `US_BANK_NUMBER`. |
+| **GLiNER2-PII** (Fastino) | Not run standalone | Install pulls ~2.5 GB of torch + transformers. Public schema covers 42 PII categories — **none are African government IDs**. Composed via `arche-core[detect]` extra for soft-PII coverage. |
+| **OpenAI Privacy Filter** | Not run | API-only. No published per-category breakdown. Closed-weight model — auditability question open. |
 
-The headline: **Presidio's default recognizers actively harm African DPI compliance work** by labelling Nigerian customers as having US bank accounts. arche-core ships the African recognizers that close this gap - and the regexes that drive them are script-agnostic for ASCII identifier shapes, so Yoruba / Hausa / Amharic narratives wrapped around an NIN or KRA PIN still detect correctly.
+The headline: **Presidio's default recognizers actively harm African DPI compliance work** by labelling Nigerian customers as having US bank accounts. arche-core ships the African recognizers that close this gap — and the regexes that drive them are script-agnostic for ASCII identifier shapes, so Yoruba / Hausa / Amharic narratives wrapped around an NIN or KRA PIN still detect correctly.
 
 Per-language breakdown (arche, 48 total cases):
 
@@ -75,13 +76,13 @@ Per-language breakdown (arche, 48 total cases):
 | Swahili | 8 | 8 / 8 |
 | Amharic | 8 | 8 / 8 |
 
-A v0.1 baseline (15 cases, English-only) is preserved as [`lingua-africa-eval-v0.1`](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.1.md) for historical comparison. Future benchmark expansions will be published as separate, versioned releases.
+A v0.1 baseline (15 cases, English-only) is preserved as [`lingua-africa-eval-v0.1`](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.1.md) for historical comparison. The grant-period expansion is **1000+ examples per language across six anchor languages** with arche-core, arche-core + GLiNER2-PII, Presidio + custom African recognizers (we contribute upstream), GLiNER2-PII alone, and OpenAI Privacy Filter via API.
 
 ---
 
 ## Try it before you read the rest
 
-The fastest way to internalise the difference is to paste your own text into the [live demo](https://demo.unpatterned.org). Pick a jurisdiction, paste any text (synthetic only - never real PII), see the detection set with tier and citation, see the policy decisions, see the PII-free audit log, walk away with a JWS receipt that verifies offline. Four preloaded samples cover NG / ZA / KE / GH so you can see the surface in 30 seconds.
+The fastest way to internalise the difference is to paste your own text into the [live demo](https://demo.unpatterned.org). Pick a jurisdiction, paste any text (synthetic only — never real PII), see the detection set with tier and citation, see the policy decisions, see the PII-free audit log, walk away with a JWS receipt that verifies offline. Four preloaded samples cover NG / ZA / KE / GH so you can see the surface in 30 seconds.
 
 The demo runs on Streamlit Cloud and proxies the same `pip install arche-core` you'd install locally. No telemetry, no PII storage. Source: [`demo/app.py`](https://github.com/unpatterned-labs/arche/blob/main/demo/app.py).
 
@@ -93,15 +94,15 @@ Three concrete gaps no other tool in the PII landscape closes:
 
 ### 1. Per-country African identifier coverage with check-digit validation
 
-The Pan-African PII Taxonomy v0.1 covers 51 categories across NDPA-2023 (Nigeria), POPIA (South Africa), Kenya DPA, and Ghana DPA. The shipped detectors include **NIN, BVN, RC, TIN, voter PVC, driver's licence (NG); national ID, KRA PIN, NHIF (KE); SA ID with full Luhn + structural decode, tax reference, passport (ZA); Ghana Card, SSNIT, TIN (GH)** - plus 11 non-launch African country patterns (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ). Every detector validates check-digits where the underlying spec supports it; structural validators drop false positives at detection time, before policy applies.
+The Pan-African PII Taxonomy v0.1 covers 51 categories across NDPA-2023 (Nigeria), POPIA (South Africa), Kenya DPA, and Ghana DPA. The shipped detectors include **NIN, BVN, RC, TIN, voter PVC, driver's licence (NG); national ID, KRA PIN, NHIF (KE); SA ID with full Luhn + structural decode, tax reference, passport (ZA); Ghana Card, SSNIT, TIN (GH)** — plus 11 non-launch African country patterns (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ). Every detector validates check-digits where the underlying spec supports it; structural validators drop false positives at detection time, before policy applies.
 
 Presidio's default recognizers ship **none** of these. You'd write each one yourself, maintain the regex against ID-scheme amendments, and integrate with your audit layer. Multiply by four jurisdictions and you have a quarter of an engineer's time wired to a problem that arche solves at `pip install` time.
 
 ### 2. Sensitivity tier and statute citation on every Detection
 
-Detection is one floor. Every `Detection` arche emits carries `sensitivity_tier` (`HIGH` / `MODERATE` / `LOW` per the loaded statute) and `regulatory_citation` (the exact statute section) - populated from the statute YAML at detection time, before the policy engine fires. Tier-aware dashboards, per-citation compliance reports, and HIGH-tier routing become properties of the data structure, not a downstream join you have to build.
+Detection is one floor. Every `Detection` arche emits carries `sensitivity_tier` (`HIGH` / `MODERATE` / `LOW` per the loaded statute) and `regulatory_citation` (the exact statute section) — populated from the statute YAML at detection time, before the policy engine fires. Tier-aware dashboards, per-citation compliance reports, and HIGH-tier routing become properties of the data structure, not a downstream join you have to build.
 
-The statute YAMLs live in `arche/policy/statutes/`: **NDPA-2023.yaml** at v1.0 with Section 24 / Section 26 / Section 29 / Section 34-38 cited inline; **POPIA.yaml, KENYA-DPA.yaml, GHANA-DPA.yaml** are under review. Statute amendments are YAML changes, not code changes - you can read them, audit them, fork them, version them in git.
+The statute YAMLs live in `arche/policy/statutes/`: **NDPA-2023.yaml** at v1.0 with §24 / §26 / §29 / §34-38 cited inline; **POPIA.yaml, KENYA-DPA.yaml, GHANA-DPA.yaml** at v0.1 scaffold pending DPA consultation. Statute amendments are YAML changes, not code changes — you can read them, audit them, fork them, version them in git.
 
 ```python
 from arche.policy import load_statute
@@ -111,24 +112,24 @@ print(statute.categories["PII-2-NIN"].citation)
 # "NDPA-2023 s.30, NIMC Act s.27"
 ```
 
-No other open-source PII library produces this - *here is the rule the redaction enforced* - as a property of every detection. Combined with the audit log below it gives you regulator-ready evidence at the SDK level.
+No other open-source PII library produces this — *here is the rule the redaction enforced* — as a property of every detection. Combined with the audit log below it gives you regulator-ready evidence at the SDK level.
 
-### 3. Cultural naming intelligence - 114 equivalence groups
+### 3. Cultural naming intelligence — 114 equivalence groups
 
 ```python
 from arche.detect._names.lexicon import are_names_equivalent
 
-are_names_equivalent("Adeyemi", "Adeyemi")
-# (True, 0.96) - Yoruba tonal mark equivalence
+are_names_equivalent("Adeyẹmí", "Adeyemi")
+# (True, 0.96) — Yoruba tonal mark equivalence
 
 are_names_equivalent("Mamadou Diallo", "Mohamed Diallo")
-# (True, 0.92) - Fulani / Arabic Pan-Islamic equivalence
+# (True, 0.92) — Fulani / Arabic Pan-Islamic equivalence
 
 are_names_equivalent("Chukwuemeka Okafor", "Emeka Okafor")
-# (True, 0.95) - Igbo prefix-elision
+# (True, 0.95) — Igbo prefix-elision
 
 are_names_equivalent("Fatima Abdullahi", "Fatoumata Abdoulaye")
-# (True, 0.89) - Hausa / Wolof cognates
+# (True, 0.89) — Hausa / Wolof cognates
 ```
 
 114 equivalence groups, 454 name variants, 50+ ethnic traditions. Tested against a Jaro-Winkler baseline:
@@ -139,7 +140,7 @@ are_names_equivalent("Fatima Abdullahi", "Fatoumata Abdoulaye")
 | Precision | 1.000 | 1.000 | 0.0% |
 | Recall | 0.738 | 0.976 | +23.8% |
 
-Zero false positives - the lexicon is conservative by design. arche never claims equivalence between *Mamadou* and *Mary*; only between genuinely co-referential variants documented by African linguists.
+Zero false positives — the lexicon is conservative by design. arche never claims equivalence between *Mamadou* and *Mary*; only between genuinely co-referential variants documented by African linguists.
 
 ---
 
@@ -181,7 +182,7 @@ You use arche when:
 - You ship records to downstream consumers and want each redacted output **cryptographically signed** so the consumer trusts it offline.
 - You want **one `pip install`** instead of stitching Presidio + custom recognizers + signing + audit from scratch.
 
-You probably do NOT use arche if your data is purely Western (US / EU) and you have no African footprint - Presidio + custom validators is more direct.
+You probably do NOT use arche if your data is purely Western (US / EU) and you have no African footprint — Presidio + custom validators is more direct.
 
 ### Researcher in African NLP / responsible AI / PII benchmarking
 
@@ -202,9 +203,9 @@ You use arche when:
 
 - You're building a **Pan-African PII benchmark** and want versioned ground-truth labels grounded in the published taxonomy.
 - You're benchmarking GLiNER2-PII / Presidio / OpenAI Privacy Filter against jurisdiction-aware ground truth and need a baseline that's *not* Western-default.
-- You want to ship a citable **digital public good** alongside your paper - the [Pan-African PII Taxonomy v0.1 (CC-BY-4.0)](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
+- You want to ship a citable **digital public good** alongside your paper — the [Pan-African PII Taxonomy v0.1 (CC-BY-4.0)](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
 
-You probably do NOT use arche if your research target is state-of-the-art neural NER on English / EU corpora - `gliner-large-v2.5` or `dslim/bert-base-NER` is more direct.
+You probably do NOT use arche if your research target is state-of-the-art neural NER on English / EU corpora — `gliner-large-v2.5` or `dslim/bert-base-NER` is more direct.
 
 ### Compliance officer / DPO / regulator
 
@@ -223,12 +224,12 @@ bundle = audit.export_signed(key=officer_key, purpose="ndpc_quarterly_audit")
 
 You use arche when:
 
-- The regulator wants an **append-only audit log** that proves PII was never stored - only category labels, character spans, document hashes.
+- The regulator wants an **append-only audit log** that proves PII was never stored — only category labels, character spans, document hashes.
 - You need **JWS-signed export bundles** for periodic regulator handoff, verifiable offline by the regulator's tooling.
 - Your organisation processes multi-jurisdictional data and needs a **single policy engine** that honours the right statute per record.
 - You're preparing for an NDPC / Information Regulator / ODPC audit and need a regulator-ready compliance report on demand (`audit.compliance_report_markdown()`).
 
-You probably do NOT use arche if your compliance regime is purely GDPR and your data has no African footprint - OneTrust / Privitar / commercial suites have richer GDPR-specific tooling.
+You probably do NOT use arche if your compliance regime is purely GDPR and your data has no African footprint — OneTrust / Privitar / commercial suites have richer GDPR-specific tooling.
 
 ### Journalist / civil society / data subject
 
@@ -244,7 +245,7 @@ draft = DSARWorkflow(
     targets=[DSAROrganization(name="Sterling Bank", dpo_email="dpo@sterlingbank.ng")],
 ).run(citizen_key)
 
-# draft.letter_text cites NDPA-2023 Section 34. draft.signed_envelope is JWS-signed.
+# draft.letter_text cites NDPA-2023 §34. draft.signed_envelope is JWS-signed.
 # Email it. Two weeks later, the DPO is on the clock.
 ```
 
@@ -252,9 +253,9 @@ You use arche when:
 
 - You're investigating how a Nigerian bank / health system / telco handles personal data and need to file a **statute-grounded DSAR**.
 - You're a civil-society organisation training citizens to exercise data protection rights they have on paper but can't operationally use today.
-- You're a journalist publishing a **PII audit** of public records, government data, court filings, or the official gazette - and need a reproducible detection set.
+- You're a journalist publishing a **PII audit** of public records, government data, court filings, or the official gazette — and need a reproducible detection set.
 
-You probably do NOT use arche if you just want to scrub PII from a single document - a one-line regex is more direct.
+You probably do NOT use arche if you just want to scrub PII from a single document — a one-line regex is more direct.
 
 ---
 
@@ -311,15 +312,15 @@ You probably do NOT use arche if you just want to scrub PII from a single docume
 
 | Gap | Today | Where it goes |
 |---|---|---|
-| Full address parsing across all four launch jurisdictions | NG + ZA MVP today | Other jurisdictions are not yet included. |
-| Multilingual soft-PII | GLiNER2-PII via `[detect]` extra | Optional and experimental. |
-| PVC, GhanaPost GPS, M-Pesa references | Not detected | Not currently supported. |
-| PQC signatures | Ed25519 only | Not currently supported. |
-| W3C VC 1.1 JSON-LD emission | SD-JWT-VC only today | Not currently supported. |
-| DSAR organisation-side workflow | Citizen-side only | Not currently supported. |
-| Hash-chained audit log | Schema ready, not populated | Not currently supported. |
-| Statute YAMLs v1.0 | NDPA-2023 v1.0; others v0.1 scaffold | Still under review. |
-| MOSIP / OpenCRVS / DHIS2 / OpenG2P production adapters | Not in scope | Use arche outputs at your integration boundary. |
+| Full address parsing across all four launch jurisdictions | NG + ZA MVP today | Beta (v0.3): KE and GH coverage. Stage 2: full PRD §5 parser with GERS / Placekey emission. |
+| Multilingual soft-PII | GLiNER2-PII via `[detect]` extra | Post-beta: optional fine-tuned model if demonstrated adoption justifies the training run. |
+| PVC, GhanaPost GPS, M-Pesa references | Not detected | Per-detector beta-period work; documented in `lingua-africa-eval-v0.2.md`. |
+| PQC signatures | Ed25519 only | `arche-core[pqc]` hybrid Ed25519 + ML-DSA (NIST FIPS 204) is roadmap, not committed. |
+| W3C VC 1.1 JSON-LD emission | SD-JWT-VC only today | `arche-core[didkit]` extra is roadmap. |
+| DSAR organisation-side workflow | Citizen-side only | Beta-period or later. |
+| Hash-chained audit log | Schema ready, not populated | Beta-period work. |
+| Statute YAMLs v1.0 | NDPA-2023 v1.0; others v0.1 scaffold | Beta criterion: all four DPA-consulted to v1.0. |
+| MOSIP / OpenCRVS / DHIS2 / OpenG2P production adapters | **Not in scope** — adapter stubs were deleted in v0.2.0a2 | Ships when there's a real partner deployment in flight, not as scaffolding. |
 
 
 ---
@@ -327,7 +328,7 @@ You probably do NOT use arche if you just want to scrub PII from a single docume
 ## Install
 
 ```bash
-pip install arche-core                     # Base - every persona above
+pip install arche-core                     # Base — every persona above
 pip install arche-core[detect]             # + GLiNER2-PII for multilingual soft-PII
 pip install arche-core[presidio]           # + Presidio for Western PII overlap
 pip install arche-core[resolve]            # + Splink + DuckDB for billion-row dedup
@@ -344,9 +345,8 @@ result = Pipeline(jurisdiction="NG").process("your text here")
 
 ## See also
 
-- **[Cross-tool benchmark v0.2](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.2.md)** - reproducible 48-case comparison across six anchor languages.
-- **[Case study A: NG invoice PDF, end to end](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-invoice.ipynb)** - docling-parsed invoice through Pipeline + sign + verify roundtrip.
-- **[Case study B: BusinessDay article, the honest wedge boundary](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-web-article.ipynb)** - what arche does and doesn't surface on free-text journalism.
-- **[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy)** - the ground truth the benchmark uses, published CC-BY-4.0.
+- **[Case study A: NG invoice PDF, end to end](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-invoice.ipynb)** — docling-parsed invoice through Pipeline + sign + verify roundtrip.
+- **[Case study B: BusinessDay article, the honest wedge boundary](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-web-article.ipynb)** — what arche does and doesn't surface on free-text journalism.
+- **[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy)** — the ground truth the benchmark uses, published CC-BY-4.0.
 - [Power-user: Sign, share, extract tutorial](sign_share_extract.md)
 - [Power-user: Citizen DSAR tutorial](citizen_dsar.md)

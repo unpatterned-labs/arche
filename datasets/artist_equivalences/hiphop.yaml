@@ -1,0 +1,42 @@
+# Copyright 2026 Unpatterned Labs CIC — Licensed under CC-BY-4.0
+# https://creativecommons.org/licenses/by/4.0/
+# Full licence text: https://github.com/unpatterned-labs/arche/blob/main/datasets/DATASET_LICENSE.md
+#
+# Hip-hop and R&B — stage ↔ legal ↔ catalog alias equivalences.
+# Packs are organised by GENRE, like the rest of the catalog world: the point
+# of arche is one engine for everyone's names, wherever they're from.
+# Alias sets are taken verbatim from MusicBrainz (CC0), including misspelt
+# catalog forms: those are the forms real royalty statements actually contain.
+tradition: Hip-hop / R&B — stage names, legal names, catalog alias forms
+source: MusicBrainz (CC0)
+groups:
+- canonical: Drake
+  variants:
+  - Aubrey Drake Graham
+  - Aubrey Graham
+  - Champagne Papi
+  - C. Papi
+- canonical: Future
+  variants:
+  - Nayvadius Cash
+  - Nayvadius D. Wilburn
+  - Nayvadius DeMun Cash
+  - Nayvadius Wilburn
+- canonical: Chris Brown
+  variants:
+  - Breezy
+  - C Breezy
+  - Christopher Maurice Brown
+- canonical: Travis Scott
+  variants:
+  - Jacques Berman Webster II
+  - Jacques Webster
+  - Travi$ Scott
+  - Travis $cott
+- canonical: Nicki Minaj
+  variants:
+  - Nicki Maraj
+  - Nikki Minaj
+  - Onika Maraj
+  - Onika Tanya Maraj
+  - Onika Tanya Maraj-Petty

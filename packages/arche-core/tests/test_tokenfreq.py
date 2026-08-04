@@ -227,7 +227,7 @@ def test_reconcile_rejects_unknown_tf_string():
 
     from arche.resolve import reconcile
 
-    with pytest.raises(ValueError, match="not understood"):
+    with pytest.raises(ValueError, match="unknown frequency-table domain"):
         reconcile(
             [{"id": "A", "name": "x"}], [{"id": "B", "name": "y"}],
             [{"field": "name", "kind": "tftoken", "weight": 1.0}],
