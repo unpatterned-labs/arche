@@ -119,13 +119,12 @@ Homepage = "https://unpatterned.org"
 Repository = "https://github.com/unpatterned-labs/arche"
 Documentation = "https://docs.unpatterned.org"
 
-# Note: the v0.1 ``arche`` console script is intentionally NOT shipped in
-# v0.2.0a1. The legacy CLI (``arche resolve``, ``arche extract``,
-# ``arche review``) was built around the v0.1 ``resolve()`` god-function
-# and does not surface the v0.2 framework primitives (Pipeline, sign,
-# verify, dsar). The CLI returns in v0.2.0a2 with v0.2-aware subcommands;
-# until then the Python API (``from arche import Pipeline``) is the
-# entry point for all v0.2 workflows.
+# The v0.2-aware CLI. One subcommand for now: ``arche compare`` — the
+# 30-seconds-to-artifact front door (masked-by-default HTML report +
+# decisions.json sidecar; ``--demo`` needs no data). The legacy v0.1 CLI
+# (``arche resolve/extract/review``) stays retired.
+[project.scripts]
+arche = "arche.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/arche"]
