@@ -74,4 +74,3 @@ The MCP `compare_files` tool accepts your declaration too — `schema="fisheries
 
 The model never becomes the decider. Its knowledge is real where you need it least (famous entities) and a guess where identity actually lives (the tail); its decisions can't be replayed once the model version retires. So arche gives it the two jobs it is genuinely best at — reading messy text into your schema, and proposing judgments the engine then grades — and keeps the gate, the veto, and the signature deterministic. If the model is good, the harness will show it, with numbers. If it isn't, the harness will show that too.
 
-**Siblings:** [Declare your schema](declare-your-schema.md) · [the signature on the decision](../blog/the-signature-on-the-decision.md) · [the representation engine](../concepts/representation-engine.md) (§"Can an LLM be the representation?").
