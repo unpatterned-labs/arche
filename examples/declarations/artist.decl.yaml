@@ -1,0 +1,7 @@
+# ENTITY_PACKS["artist"] expressed as a declaration.
+arche_declaration: 1
+name: artist
+fields:
+  name: {role: identifies, kind: [name, tftoken], weight: 2.0}
+  mbid: {role: identifies, kind: id, weight: 3.0}
+  isni: {role: identifies, kind: id, weight: 2.0}

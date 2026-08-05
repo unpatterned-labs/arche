@@ -48,6 +48,7 @@ from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._matcher import (
     compare_addresses,
     compare_containment,
+    compare_dates,
     compare_emails,
     compare_geo,
     compare_ids,
@@ -64,6 +65,10 @@ _FIELD_COMPARATORS = {
     "id": compare_ids,
     "email": compare_emails,
     "address": compare_addresses,
+    # Same comparator pairwise and in crosswalk — a kind vocabulary that means
+    # different things on two paths is exactly the confusion the declaration
+    # layer exists to remove.
+    "date": compare_dates,
 }
 
 # Comparator kinds whose fields carry free text worth reranking on.

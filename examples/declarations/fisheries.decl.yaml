@@ -1,0 +1,46 @@
+# The worked example from docs/ARCHE_DECLARATION_LAYER_DESIGN.md:
+# a schema arche has never heard of, resolved and governed anyway.
+arche_declaration: 1
+name: fisheries-landings
+version: "1.2.0"
+entity: catch_lot
+id_field: lot_id
+statute: NDPA-2023
+geo:
+  lat: landing_lat
+  lon: landing_lon
+  weight: 1.0
+fields:
+  supplier_name:
+    role: identifies
+    kind: [name, tftoken]
+    weight: 2.0
+    description: Trading name of the landing supplier.
+  vessel_id:
+    role: identifies
+    kind: id
+    id_family: imo
+    weight: 3.0
+    description: IMO vessel number, e.g. IMO-9074729.
+  skipper_phone:
+    role: identifies
+    kind: phone
+    statute_class: PII-3-PHONE
+    weight: 1.5
+  quota_licence:
+    role: identifies
+    kind: id
+    id_family: ng_quota
+    restricted: true
+    weight: 2.0
+  port:
+    role: describes
+    kind: name
+    pii: false
+  landing_date:
+    role: describes
+    kind: date
+  landed_kg:
+    role: ignore
+  observer_notes:
+    role: ignore

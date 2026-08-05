@@ -150,7 +150,7 @@ def pairwise(a, b, *, entity: str = "person", **kwargs):
 
 
 def crosswalk(list_a, list_b, *, entity: str | None = None,
-              comparators: list[dict] | None = None, tf=None, **kwargs):
+              comparators: list[dict] | None = None, tf=None, decl=None, **kwargs):
     """Link/dedupe two record lists at scale (blocking + gate + evidence).
 
     Pass ``entity=`` to use a canned comparator pack (:data:`ENTITY_PACKS`),
@@ -161,11 +161,21 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     name (``tf="artist"``) to choose explicitly. Delegates to
     :func:`~arche.resolve.reconcile.reconcile`.
     """
+    if decl is not None:
+        # A declaration IS a user-defined entity pack: generated comparators,
+        # its own id_field and tf defaults. Explicit args still win.
+        if entity is not None:
+            raise ValueError("pass either decl= or entity=, not both")
+        if comparators is None:
+            comparators = decl.comparators()
+        kwargs.setdefault("id_field", decl.id_field)
+        if tf is None and decl.tf is not None:
+            tf = decl.tf
     if comparators is None:
         if entity is None:
             raise ValueError(
-                f"pass entity= (one of {sorted(ENTITY_PACKS)}) or explicit "
-                "comparators="
+                f"pass entity= (one of {sorted(ENTITY_PACKS)}), decl=, or "
+                "explicit comparators="
             )
         try:
             comparators = ENTITY_PACKS[entity]
