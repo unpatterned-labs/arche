@@ -20,13 +20,6 @@ The method:
   gate. This is why two records both named "Ibrahim Musa" land at ``review``.
 * **Veto** on a hard identifier conflict: two different national IDs -> ``different``.
 
-**Two axes** (plan §4). *Identity* is the epistemic claim
-(``same_entity`` / ``review`` / ``different``); *action* is the operational
-recommendation (``merge`` / ``hold`` / ``no_op``). ``merge`` requires
-``same_entity`` **and** a policy gate — never the reverse. A lone exact
-identifier with no corroboration yields ``same_entity`` + ``hold``
-(``basis="single_identifier"``), never a silent merge (H4).
-
 The reproducibility guarantee holds **from ``Reference`` onward** (H2):
 :func:`coref_references` is deterministic; :func:`coref_documents` adds a
 GliNER/regex extraction hop that is *provenance, not reproduction* — the document
@@ -70,9 +63,7 @@ from arche.resolve._tokenfreq import TokenFrequencyTable
 
 if TYPE_CHECKING:
     from arche.canonical import Reference
-
-# The floor a distinctive signal must clear to permit a merge (plan §4 / C4) —
-# shared with reconcile via the gate toolkit; surfaced in pins.
+    
 from arche.resolve._gate import (  # noqa: E402
     DISTINCTIVE_FLOOR as _DISTINCTIVE_FLOOR,
 )
@@ -134,7 +125,7 @@ _COMPARATORS: dict[str, Callable[[Any, Any], float]] = {
 
 
 # ── record adaptation ────────────────────────────────────────────────────────
-def _reference_to_match_record(ref: Reference) -> dict[str, Any]:
+def _reference_to_match_record(ref: Reference, decl=None) -> dict[str, Any]:
     """Map a canonical :class:`Reference`'s attributes to matcher record fields.
 
     ``full_name``/``name`` -> ``name``; ``phone``/``phone_number`` -> ``phone``;
@@ -143,10 +134,25 @@ def _reference_to_match_record(ref: Reference) -> dict[str, Any]:
     plus ``lat``/``lon`` when present. The **first** value seen per target field
     is kept (a reference obeys the unique-reference assumption, but may carry
     several surface forms of one attribute).
+
+    With ``decl`` (a user declaration), the slot is chosen by the *declared
+    kind* instead of the field name — so a ``vessel_id`` declared ``kind: id``
+    lands in the ``national_id`` slot and inherits the exact-identifier gate
+    and conflict veto. The slot is a slot, not a claim about the data; the
+    user's field names survive untouched on the Reference itself.
     """
     record: dict[str, Any] = {}
     for attr in ref.attributes:
-        field_name = _FIELD_MAP.get(attr.name)
+        if decl is not None:
+            if decl.geo and attr.name == decl.geo.get("lat"):
+                record.setdefault("lat", attr.value)
+                continue
+            if decl.geo and attr.name == decl.geo.get("lon"):
+                record.setdefault("lon", attr.value)
+                continue
+            field_name = decl.slot_for(attr.name) or _FIELD_MAP.get(attr.name)
+        else:
+            field_name = _FIELD_MAP.get(attr.name)
         if field_name and field_name not in record and attr.value:
             if field_name == "address" and getattr(attr, "components", None):
                 # Preserve parsed-address structure (landmark anchor included) —
@@ -427,6 +433,7 @@ def coref_references(
     jurisdiction: str = "default",
     issuer_key: bytes | None = None,
     extra_pins: dict[str, Any] | None = None,
+    decl=None,
 ) -> CoReferenceDecision:
     """Decide whether two structured references co-refer (deterministic path).
 
@@ -449,11 +456,13 @@ def coref_references(
         keyless — reproducible locally, but pseudonymous personal data, not safe
         to share openly.
     """
+    if decl is not None and jurisdiction == "default":
+        jurisdiction = decl.jurisdiction
     priors = get_priors(jurisdiction)
     tf = TokenFrequencyTable.default()
 
-    rec_a = _drop_placeholder_dob(_reference_to_match_record(ref_a))
-    rec_b = _drop_placeholder_dob(_reference_to_match_record(ref_b))
+    rec_a = _drop_placeholder_dob(_reference_to_match_record(ref_a, decl=decl))
+    rec_b = _drop_placeholder_dob(_reference_to_match_record(ref_b, decl=decl))
     result = _score(rec_a, rec_b, priors, tf)
     factors = result.factors
 
@@ -509,6 +518,11 @@ def coref_references(
     reference_id_a = ids.reference_id(ref_a, key=issuer_key)
     reference_id_b = ids.reference_id(ref_b, key=issuer_key)
     pins = _build_pins(jurisdiction, priors)
+    if decl is not None:
+        # The declaration is representation: it decided what these records
+        # looked like when compared, so it belongs INSIDE the decision hash.
+        # Same records under a different declaration => different decision_id.
+        pins["declaration"] = decl.pin()
     if extra_pins:
         # Caller-supplied provenance (source jurisdictions, document content
         # ids) enters the pins BEFORE decision_id is computed — an attested

@@ -32,10 +32,10 @@ _SENSITIVE_ID = re.compile(r"^\d{9,}$")
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$")
 
 
-def _sensitive_ids(records: list[dict]) -> int:
+def _sensitive_ids(records: list[dict], id_field: str = "id") -> int:
     n = 0
     for r in records:
-        rid = re.sub(r"[\s-]", "", str(r.get("id", "")))
+        rid = re.sub(r"[\s-]", "", str(r.get(id_field, "")))
         if _SENSITIVE_ID.match(rid):
             n += 1
     return n
@@ -60,13 +60,14 @@ def _version() -> str:
         return "unknown"
 
 
-def _record_cell(rec: dict | None, reveal: bool) -> str:
+def _record_cell(rec: dict | None, reveal: bool, decl=None,
+                 id_field: str = "id") -> str:
     if rec is None:
         return '<span class="mute">record not found</span>'
-    shown = render(rec, reveal=True if reveal else ["id"])
+    shown = render(rec, reveal=True if reveal else [id_field], decl=decl)
     parts = []
     for k, v in shown.items():
-        if k == "id":
+        if k == id_field:
             continue
         parts.append(f'<span class="kv"><b>{_esc(k)}</b> {_esc(v)}</span>')
     return " ".join(parts) or '<span class="mute">no fields</span>'
@@ -97,6 +98,8 @@ def crosswalk_report(
     entity: str | None = None,
     meta: dict[str, Any] | None = None,
     brand_color: str | None = None,
+    decl=None,
+    id_field: str = "id",
 ) -> str:
     """Render a crosswalk ``result`` into one self-contained HTML report.
 
@@ -115,8 +118,10 @@ def crosswalk_report(
             f"brand_color must be a hex color like #1a56db, got {brand_color!r}"
         )
     accent = brand_color or _BLUE
+    if decl is not None and id_field == "id":
+        id_field = decl.id_field
     if not reveal:
-        hot = _sensitive_ids(records_a) + _sensitive_ids(records_b)
+        hot = _sensitive_ids(records_a, id_field) + _sensitive_ids(records_b, id_field)
         if hot:
             raise ValueError(
                 f"{hot} record id(s) look like sensitive identifiers "
@@ -124,8 +129,8 @@ def crosswalk_report(
                 "displays row ids, so this would leak them. Use a surrogate "
                 "row id column, or generate a revealed working copy locally."
             )
-    by_a = {str(r.get("id")): r for r in records_a}
-    by_b = {str(r.get("id")): r for r in records_b}
+    by_a = {str(r.get(id_field)): r for r in records_a}
+    by_b = {str(r.get(id_field)): r for r in records_b}
     matches = [m for m in result.get("matches", []) if m.get("decision") == "match"]
     review = [m for m in result.get("matches", []) if m.get("decision") != "match"]
     blocking = result.get("blocking") or {}
@@ -139,10 +144,10 @@ def crosswalk_report(
         return (
             "<tr>"
             f'<td class="idcol">{_esc(m.get("a_id"))}<div class="rec">'
-            f'{_record_cell(by_a.get(str(m.get("a_id"))), reveal)}</div></td>'
+            f'{_record_cell(by_a.get(str(m.get("a_id"))), reveal, decl, id_field)}</div></td>'
             f'<td class="arrow">&#8596;</td>'
             f'<td class="idcol">{_esc(m.get("b_id"))}<div class="rec">'
-            f'{_record_cell(by_b.get(str(m.get("b_id"))), reveal)}</div></td>'
+            f'{_record_cell(by_b.get(str(m.get("b_id"))), reveal, decl, id_field)}</div></td>'
             f'<td><span class="chip {chip_cls}">{_esc(chip)}</span>'
             f'<div class="score">{float(m.get("score", 0)):.3f}</div></td>'
             f'<td class="evcol">{_evidence_bars(m.get("evidence"))}</td>'

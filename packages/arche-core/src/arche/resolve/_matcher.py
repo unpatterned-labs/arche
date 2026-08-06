@@ -516,7 +516,7 @@ def compare_geo(
     """Similarity in [0, 1] from the great-circle distance between two points.
 
     Haversine distance with an exponential decay: 1.0 at the same point,
-    ~0.51 at ``decay_km``, ~0.05 at ~3x ``decay_km``. ``decay_km`` is
+    ~0.37 at ``decay_km``, ~0.05 at ~3x ``decay_km``. ``decay_km`` is
     deliberately forgiving because field-captured coordinates are noisy — in
     African facility data roughly a quarter of true-match pairs sit >2 km
     apart — so geo is a supporting signal, never a hard gate. Generic

@@ -1,0 +1,8 @@
+# ENTITY_PACKS["place"] expressed as a declaration.
+arche_declaration: 1
+name: place
+geo: {lat: lat, lon: lon, weight: 1.0}
+fields:
+  name:       {role: identifies, kind: [name, tftoken], weight: 2.0}
+  admin_path: {role: describes, kind: containment, weight: 1.0}
+  address:    {role: identifies, kind: address, weight: 1.0}

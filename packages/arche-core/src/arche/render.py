@@ -31,7 +31,15 @@ _ID_LIKE = frozenset({
 })
 
 
-def _token_id_type(name: str) -> str:
+_KIND_TO_ID_TYPE = {"id": "id", "phone": "phone", "email": "email",
+                    "name": "name"}
+
+
+def _token_id_type(name: str, decl=None) -> str:
+    if decl is not None:
+        kind = decl.kind_for(name)
+        if kind in _KIND_TO_ID_TYPE:
+            return _KIND_TO_ID_TYPE[kind]
     if name in _ID_LIKE:
         return "id"
     return _TOKEN_ID_TYPE.get(name, "text")
@@ -53,7 +61,8 @@ def _attributes(obj: Any) -> tuple[dict[str, str], set[str]]:
     raise TypeError(f"cannot render {type(obj).__name__!r}; pass a Reference/Entity/dict")
 
 
-def _mask(name: str, value: str, style: str, key: str | bytes | None) -> str:
+def _mask(name: str, value: str, style: str, key: str | bytes | None,
+          decl=None) -> str:
     if style == "label":
         return f"[{name.upper()}]"
     if style == "truncate":
@@ -62,7 +71,7 @@ def _mask(name: str, value: str, style: str, key: str | bytes | None) -> str:
         if not key:
             raise ValueError("style='token' requires a key (keyed masking)")
         from arche._tokens import token
-        return token(value, _token_id_type(name), key)
+        return token(value, _token_id_type(name, decl), key)
     raise ValueError(f"unknown mask style {style!r}; use 'label', 'truncate', or 'token'")
 
 
@@ -72,6 +81,7 @@ def render(
     reveal: bool | list[str] = False,
     style: str = "label",
     key: str | bytes | None = None,
+    decl=None,
 ) -> dict[str, str]:
     """Render a record with PII masked by default.
 
@@ -95,16 +105,18 @@ def render(
     values, restricted = _attributes(obj)
     out: dict[str, str] = {}
     for name, value in values.items():
-        if name in restricted:
-            # Statute-`drop`ped value: NEVER revealed, no matter the flags
-            # (the two-boundary rule — usable for matching, not for display).
+        if name in restricted or (decl is not None and decl.restricted_for(name)):
+            # Statute-`drop`ped or declared-restricted value: NEVER revealed,
+            # no matter the flags (usable for matching, not for display).
             out[name] = f"[RESTRICTED:{name.upper()}]"
             continue
-        if not is_pii_attribute(name):
+        declared_pii = decl.pii_for(name) if decl is not None else None
+        is_pii = is_pii_attribute(name) if declared_pii is None else declared_pii
+        if not is_pii:
             out[name] = value
             continue
         shown = reveal_all or (revealed is not None and name.lower() in revealed)
-        out[name] = value if shown else _mask(name, value, style, key)
+        out[name] = value if shown else _mask(name, value, style, key, decl)
     return out
 
 

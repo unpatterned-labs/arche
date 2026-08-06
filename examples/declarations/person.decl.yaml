@@ -1,0 +1,9 @@
+# ENTITY_PACKS["person"] expressed as a declaration (round-trip tested).
+arche_declaration: 1
+name: person
+fields:
+  name:        {role: identifies, kind: [name, tftoken], weight: 2.0}
+  national_id: {role: identifies, kind: id, weight: 3.0}
+  phone:       {role: identifies, kind: phone, weight: 1.5}
+  email:       {role: identifies, kind: email, weight: 1.5}
+  address:     {role: identifies, kind: address, weight: 1.0}

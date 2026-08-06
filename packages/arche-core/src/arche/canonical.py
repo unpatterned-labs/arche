@@ -330,18 +330,27 @@ def make_attribute(
     value: str,
     confidence: float = 0.0,
     provenance: list[ProvenanceCitation] | None = None,
+    identifying: bool | None = None,
+    restricted: bool = False,
 ) -> Attribute:
     """Construct an :class:`Attribute` or :class:`IdentityAttribute` by name.
 
-    Dispatches on :data:`IDENTITY_ATTRIBUTE_NAMES`: identifier names yield an
-    :class:`IdentityAttribute`, everything else a descriptive :class:`Attribute`.
+    ``identifying=None`` (the default) keeps today's behaviour exactly:
+    dispatch on :data:`IDENTITY_ATTRIBUTE_NAMES`. An explicit ``True``/``False``
+    — supplied by a user declaration — overrides the naming convention: the
+    declaration wins, which is the point of the declaration layer.
     """
     prov = provenance if provenance is not None else []
-    if is_identity_attribute_name(name):
+    is_identity = (
+        is_identity_attribute_name(name) if identifying is None else identifying
+    )
+    if is_identity:
         return IdentityAttribute(
             name=name, value=value, confidence=confidence, provenance=prov,
+            restricted=restricted,
         )
-    return Attribute(name=name, value=value, confidence=confidence, provenance=prov)
+    return Attribute(name=name, value=value, confidence=confidence,
+                     provenance=prov, restricted=restricted)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -513,7 +522,9 @@ class Reference:
 
     # ── adapters ────────────────────────────────────────────────────────────
     @classmethod
-    def from_record(cls, record: dict, *, id_field: str = "id") -> Reference:
+    def from_record(
+        cls, record: dict, *, id_field: str = "id", decl=None,
+    ) -> Reference:
         """Build a reference from a plain ``{field: value}`` record — the
         structured-source path, where no extraction is needed.
 
@@ -521,7 +532,17 @@ class Reference:
         :attr:`record_id`, not treated as an attribute). Empty / ``None`` values
         are dropped. Attribute names dispatch through :func:`make_attribute`, so
         identifier fields (nin, bvn, phone, …) become :class:`IdentityAttribute`.
+
+        ``decl`` (an :class:`arche.declare.Declaration`) makes the user's
+        annotations win over the naming conventions: declared roles assign
+        ``identifying``/``restricted``, ``role: ignore`` fields never enter the
+        reference, statute citations attach as provenance, and undeclared
+        fields follow the declaration's ``on_unknown`` policy (``allow`` |
+        ``warn`` | ``error``) before falling back to today's behaviour.
+        Without ``decl`` this method is byte-identical to its previous self.
         """
+        if decl is not None and id_field == "id":
+            id_field = decl.id_field
         record_id = ""
         attrs: list[Attribute] = []
         for name, value in record.items():
@@ -530,7 +551,44 @@ class Reference:
             if name == id_field:
                 record_id = str(value)
                 continue
-            attrs.append(make_attribute(name=name, value=str(value)))
+            if decl is None:
+                attrs.append(make_attribute(name=name, value=str(value)))
+                continue
+            if decl.ignored(name):
+                continue
+            identifying = decl.identifying_for(name)
+            if identifying is None:  # undeclared field
+                if decl.on_unknown == "error":
+                    from arche.declare import DeclarationError
+
+                    raise DeclarationError(
+                        f"undeclared field {name!r} (declaration "
+                        f"{decl.name!r} has on_unknown: error)"
+                    )
+                if decl.on_unknown == "warn":
+                    import warnings
+
+                    warnings.warn(
+                        f"field {name!r} is not in declaration {decl.name!r}; "
+                        "falling back to built-in conventions",
+                        stacklevel=2,
+                    )
+                attrs.append(make_attribute(name=name, value=str(value)))
+                continue
+            citation, statute_id = decl.citation_for(name)
+            prov = (
+                [ProvenanceCitation(source="declaration",
+                                    regulatory_citation=citation,
+                                    statute_id=statute_id)]
+                if citation else []
+            )
+            attrs.append(
+                make_attribute(
+                    name=name, value=str(value), provenance=prov,
+                    identifying=identifying,
+                    restricted=decl.restricted_for(name),
+                )
+            )
         return cls(attributes=attrs, record_id=record_id)
 
     @classmethod

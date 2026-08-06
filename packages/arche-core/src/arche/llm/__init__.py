@@ -100,4 +100,23 @@ class LLMConfig:
             raise ValueError(f"timeout must be > 0, got {self.timeout}")
 
 
-__all__ = ["LLMConfig"]
+__all__ = [
+    "LLMConfig",
+    # Declaration-driven extraction + the evaluation harness (LLM lane).
+    "DeclaredExtraction",
+    "extract_declared",
+    "grade_extractions",
+    "grade_pairs",
+]
+
+
+def __getattr__(name):  # lazy: keep base import light, avoid cycles
+    if name in ("DeclaredExtraction", "extract_declared"):
+        from arche.llm import declarative
+
+        return getattr(declarative, name)
+    if name in ("grade_pairs", "grade_extractions"):
+        from arche.llm import harness
+
+        return getattr(harness, name)
+    raise AttributeError(f"module 'arche.llm' has no attribute {name!r}")
