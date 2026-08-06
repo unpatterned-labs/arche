@@ -95,6 +95,7 @@ class Address:
 _STREET_SUFFIXES = [
     "Avenue", "Street", "Road", "Drive", "Crescent", "Boulevard",
     "Lane", "Highway", "Close", "Way", "Court", "Square",
+    "Place", "Terrace", "Gardens", "Grove", "Mews", "Walk", "Parade", "Row",
     "Ave", "St", "Rd", "Dr", "Blvd", "Ln", "Hwy", "Cl", "Sq",
 ]
 _STREET_SUFFIX_RE = (

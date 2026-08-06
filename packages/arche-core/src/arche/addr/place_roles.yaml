@@ -1,0 +1,141 @@
+# Copyright 2026 unpatterned.org
+# SPDX-License-Identifier: Apache-2.0
+#
+# place_roles.yaml — linguistic cues that assign a ROLE to a place mention.
+#
+# Data, not code: the cue vocabulary is regional and multilingual, and every
+# extraction cites the rule id + pack pin that decided it. Contributing a
+# Pidgin, Hausa, Yoruba, Swahili, French, or Portuguese cue is a YAML edit.
+#
+# Interaction rule with address_tokens.yaml: anchor prepositions ("behind",
+# "nyuma ya") bind INSIDE a span — they are part of the address. Role cues
+# bind BEFORE a span. "deliver to behind the central mosque, Ungwan Rimi"
+# decomposes as cue `deliver to` + span `behind the central mosque, ...`.
+#
+# Terminology (SpRL / ISO-Space 24617-7): a cue is a *spatial indicator* /
+# *motion signal*; origin = MOVELINK source, destination = MOVELINK goal,
+# via = MOVELINK midPoint, location = the ground of a static relation.
+
+pack: arche.place_roles
+version: v1
+description: >
+  Cue vocabulary for spatial role labeling of place mentions:
+  origin / destination / location / via, with structural abstention
+  (no cue, or conflicting cues, means role=unknown — never a guess).
+
+max_gap: 24
+fillers: [the, a, an, our, your, my, their, its, that, this]
+
+rules:
+  # ── origin (MOVELINK source; FROM-path) ─────────────────────────────────
+  - id: from_origin
+    role: origin
+    cues: ["from", "out of"]
+    priority: 50
+  - id: from_origin_local
+    role: origin
+    cues: ["daga", "kutoka", "lati", "comot from"]   # ha, sw, yo, pcm
+    priority: 50
+    min_span_tier: 1
+  - id: pickup_origin
+    role: origin
+    cues: ["pick up at", "pick up from", "pickup at", "pickup from",
+           "picked up at", "picked up from", "picking up from",
+           "collect from", "collect at", "collected from", "collecting from"]
+    priority: 50
+  - id: departs_origin
+    role: origin
+    cues: ["leaving", "leaves", "departing from", "departs from",
+           "ships from", "shipped from", "dispatched from",
+           "originating from", "sent from"]
+    priority: 50
+
+  # ── destination (MOVELINK goal; TO-path) ────────────────────────────────
+  - id: to_destination
+    role: destination
+    cues: ["to", "into", "onto", "towards", "toward"]
+    priority: 50
+  - id: to_destination_local
+    role: destination
+    cues: ["zuwa", "hadi", "kwenda", "para", "go reach", "carry am go",
+           "send am go", "carry go"]
+    priority: 50
+    min_span_tier: 1
+  - id: deliver_destination
+    role: destination
+    cues: ["deliver to", "deliver at", "delivery to", "delivered to",
+           "drop off at", "drop at", "dropoff at", "drops at",
+           "send to", "ship to", "return to", "take it to", "take them to",
+           "take her to", "take him to", "bring it to"]
+    priority: 50
+  - id: arrives_destination
+    role: destination
+    cues: ["arriving at", "arrives at", "arrive at", "bound for",
+           "headed to", "heading to", "en route to", "going to",
+           "destined for"]
+    priority: 50
+  - id: for_destination
+    role: destination
+    cues: ["for"]
+    priority: 50
+    min_span_tier: 1
+
+  # ── via / waypoint (MOVELINK midPoint; VIA-path) ────────────────────────
+  - id: via_waypoint
+    role: via
+    cues: ["via", "through", "passing through", "stopping at",
+           "by way of", "routed through"]
+    priority: 50
+
+  # ── location (ground of a static relation) ──────────────────────────────
+  - id: at_location
+    role: location
+    cues: ["at", "in", "on"]
+    priority: 40
+  - id: based_location
+    role: location
+    cues: ["located at", "located in", "based at", "based in",
+           "situated at", "situated in", "address is", "resides at",
+           "lives at", "lives in", "office at", "office is at",
+           "branch at", "found at", "i dey", "dey"]
+    priority: 40
+  - id: proximity_location
+    role: location
+    cues: ["near", "opposite", "close to", "next to", "beside",
+           "in front of", "across from", "adjacent to", "just off",
+           "along", "around"]
+    priority: 40
+  - id: meet_location
+    role: location
+    cues: ["meet at", "meet me at", "meeting at", "see you at", "wait at",
+           "waiting at"]
+    priority: 40
+
+  # ── pair frames ─────────────────────────────────────────────────────────
+  - id: between_route
+    kind: pair
+    cues: ["route between", "travels between", "travelling between",
+           "traveling between", "moving between", "transfer between",
+           "transfers between", "shuttle between", "runs between",
+           "journey between", "drives between"]
+    join: ["and", "&"]
+    roles: [origin, destination]
+    priority: 45
+  - id: between_plain
+    kind: pair
+    cues: ["between"]
+    join: ["and", "&"]
+    roles: [location, location]
+    priority: 45
+    note: "Direction is NOT inferable from bare 'between'. Two locations."
+
+  # ── intrinsic ───────────────────────────────────────────────────────────
+  - id: anchor_intrinsic_location
+    kind: intrinsic
+    role: location
+    source: anchor_prepositions       # vocabulary from address_tokens.yaml
+    priority: 10
+    note: >
+      "behind the central mosque, Ungwan Rimi" — the relation word is inside
+      the span, so no external cue precedes it. Cue = the leading relation
+      word; cue_span points inside the span. Loses to any external cue.
