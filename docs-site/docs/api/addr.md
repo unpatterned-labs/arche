@@ -96,7 +96,7 @@ grade.abstentions                     # correct_unknown / over_guess / missed_by
 grade.summary()                       # all of the above as a dict
 ```
 
-Refusal-aware scoring: predicting `unknown` where gold committed counts as a false negative and `missed_by_abstention` — **never** a false positive, because a non-answer is not a wrong answer. Predicting a role where gold is `unknown` counts as `over_guess` **and** a false positive: that is the failure this evaluation exists to price. Empty denominators return `None`, never a fake zero. The reasoning: [measuring honesty](../concepts/from-place-to-entity.md#measuring-honesty-the-referee-math).
+Refusal-aware scoring: predicting `unknown` where gold committed counts as a false negative and `missed_by_abstention` — **never** a false positive, because a non-answer is not a wrong answer. Predicting a role where gold is `unknown` counts as `over_guess` **and** a false positive: that is the failure this evaluation exists to price. Empty denominators return `None`, never a fake zero.
 
 ## LLM proposals
 
@@ -105,5 +105,3 @@ Refusal-aware scoring: predicting `unknown` where gold committed counts as a fal
 Have a model propose spans/roles/cues; the engine verifies each. Hallucinated spans become `violations` (dropped, never coerced into values); a committed role survives only if its cue is locatable in the source, adjacent to (or inside) the span, and pack-consistent with that role — otherwise the mention is kept and **downgraded** to `unknown`, recorded in `downgrades`. Returns `LLMPlaceExtraction` with `.mentions`, `.violations`, `.downgrades`, and `.pins()` (`model`, `prompt_sha256`, `pack`, `reproducible: False`).
 
 Because the output is `PlaceMention`s, `grade_places` scores a model with no adapter code.
-
-*Guides: [Extract places with their role](../how-to/extract-places-with-roles.md) · [place identity](../concepts/place-identity.md) · [the science](../concepts/from-place-to-entity.md).*

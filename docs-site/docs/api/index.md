@@ -144,5 +144,4 @@ Models propose, the engine verifies: declaration-driven extraction (`extract_dec
 ## See also
 
 - [Quick Start](../getting-started/quickstart.md) — five copy-paste examples.
-- [How arche Works](../concepts/how-it-works.md) — substrate-by-substrate walkthrough.
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md) — persona guide + cross-tool benchmark.

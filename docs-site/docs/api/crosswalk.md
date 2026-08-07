@@ -16,7 +16,7 @@ decision.factors       # per-field evidence
 decision.decision_id   # reproducible content address
 ```
 
-Sign with `arche.attest.attest(decision, issuer, mode="jws")`. The math is worked on [the science page](../concepts/from-place-to-entity.md#the-probability-heritage-fellegisunter).
+Sign with `arche.attest.attest(decision, issuer, mode="jws")`. 
 
 ## `resolve.crosswalk(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
 
@@ -54,7 +54,7 @@ Returns:
 }
 ```
 
-Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75 — supporting signals (geo, containment, address) amplify but never manufacture a merge — and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../how-to/read-crosswalk-output.md); the hand-computable worked example: [the science page](../concepts/from-place-to-entity.md#the-engineering-that-makes-it-safe-at-scale).
+Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75 — supporting signals (geo, containment, address) amplify but never manufacture a merge — and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../how-to/read-crosswalk-output.md).
 
 ## `reconcile.sign_edges(result, *, private_key, kid, decisions=("match", "review"))`
 
@@ -71,4 +71,4 @@ verify(signed[0]["jws"], public_key=kp.public_key).valid   # True
 
 ## `ENTITY_PACKS`
 
-The canned comparator specs (`person`, `place`, `artist`) — config over one engine, never a fork. The place pack's calibration decisions are documented on [place identity](../concepts/place-identity.md).
+The canned comparator specs (`person`, `place`, `artist`) — config over one engine, never a fork.
