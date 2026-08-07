@@ -34,6 +34,9 @@
 statute_id: NDPA-2023
 jurisdiction: NG
 version: v1.0
+# Completeness/stability is `version`; who vouches for the mappings is
+# `review_status`. Never claim regulator-reviewed without a named reviewer.
+review_status: self-reviewed
 effective_date: 2023-06-14
 authority: Nigeria Data Protection Commission (NDPC)
 breach_notification_window_hours: 72

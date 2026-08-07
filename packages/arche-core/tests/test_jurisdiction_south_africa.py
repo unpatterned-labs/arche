@@ -94,15 +94,16 @@ def test_validate_sa_id_valid_male_citizen():
 
 
 def test_validate_sa_id_valid_female():
-    """Female ID: gender code 0000-4999."""
-    # 8001014800086 — let's compute: we need a valid 13-digit with Luhn
-    # Use known valid: 7501014800086
-    # Actually, let's use a direct Luhn-valid construction.
-    # For testing, we verify the structure rather than a specific number.
-    result = validate_sa_id("8001010001081")
-    # This may or may not pass Luhn — let's use a known one
-    # We'll test the validator rejects invalid Luhn instead
-    pass  # covered by other tests
+    """8001010001089: born 1980-01-01, female (gender code 0000-4999), citizen.
+
+    Luhn-valid by construction — the female branch of the gender decode had
+    no coverage before v0.3.0a1 (the previous test asserted nothing).
+    """
+    result = validate_sa_id("8001010001089")
+    assert result.is_valid
+    assert result.metadata["gender"] == "female"
+    assert result.metadata["citizenship"] == "citizen"
+    assert result.metadata["date_of_birth"] == "1980-01-01"
 
 
 def test_validate_sa_id_permanent_resident():

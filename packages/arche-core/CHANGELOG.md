@@ -2,6 +2,72 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [0.3.0a1] — 2026-08
+
+First alpha of the 0.3 (beta) line. The published beta criteria
+(DPA-consulted statute packs at v1.0, the Africa Address Benchmark with
+cross-tool baselines, a 90-day production deployment) remain the gate for
+`v0.3.0` proper; this alpha opens the line and its breaking-change window.
+
+### Changed — statute pack maturity, stated honestly
+
+- **All six statute packs are now `version: v1.0`** (NDPA-2023, POPIA, Kenya
+  DPA, Ghana DPA, GDPR, HIPAA Safe Harbor). POPIA / Kenya DPA / Ghana DPA
+  were labelled `v0.1-scaffold` while carrying complete category mappings —
+  and GDPR / HIPAA were already `v1.0` with no external review, so the label
+  meant two different things depending on the file.
+- **New `review_status` field on every pack**, orthogonal to `version`:
+  `version` means *complete and stable* (our work); `review_status` means
+  *who vouches for the mappings* (a fact about the world). Values are
+  `self-reviewed` (arche's own reading of the cited sections) or
+  `regulator-reviewed`. The loader **fails closed**: a pack claiming
+  `regulator-reviewed` without a `reviewed_by` is rejected, because a claim
+  about regulator engagement is the one claim this product must never fudge.
+  All six shipped packs are `self-reviewed`; none claims regulator review.
+  Exposed as `Statute.review_status` / `.reviewed_by` / `.reviewed_on`.
+- **Beta criterion revised** accordingly — from "POPIA, Kenya DPA and Ghana
+  DPA reach v1.0 after structured DPA consultation" to "every shipped statute
+  pack carries a complete category mapping with cited sections and a declared
+  review status." Regulator review is now tracked per pack and sought
+  continuously, rather than gating a release. Revised in the open rather than
+  quietly re-checked: 2 of 4 beta criteria are now met.
+
+### Changed — the roadmap is a living document again
+
+- **`concepts/roadmap.md` rewritten for v0.3.0a1.** It had drifted a full
+  positioning behind: it described a 980-test v0.2.0a3 whose lead was African
+  PII detection, listed `resolve` / `sign` / places as "power-user workflows,
+  not the lead pitch", carried "no MCP server" as an explicit non-commitment
+  (we ship one), and reported three statute packs as `v0.1-scaffold`. It now
+  covers what actually ships (resolve, declare, the LLM lane, spatial roles
+  and the referee, detect + govern, attest and the agent surface), tracks the
+  beta criteria with per-criterion status, separates **in flight** work into
+  the two live tracks, states each **gated** item with the prerequisite that
+  gates it, and records three direction changes with their reasons — a
+  roadmap that never logs its own reversals is a wish list. Status vocabulary
+  (shipped / in flight / gated / not committed) is defined at the top and
+  used consistently.
+- **Beta criterion 3 corrected to *partially met*.** The v0.3.0a1 notes first
+  marked it done on the strength of the callable-shim removal, but the
+  criterion as published requires deleting the whole PEP 562 lazy v0.1
+  surface — which we deliberately did not do, to avoid breaking alpha users
+  twice in one release. The callable shims are gone; the remaining legacy
+  names are deprecated with removal targeted for v0.4.
+
+### Removed (breaking)
+
+- **The v0.1 callable-module shim `arche.resolve(text)`.** Promised for
+  v0.3 since the v0.2 migration; calling the module now raises `TypeError`.
+  `arche.resolve` is purely the facade package (`resolve.pairwise`,
+  `resolve.crosswalk`); `Pipeline.process()` is the composition-pattern
+  replacement. The `arche.detect(text)` callable is **kept deliberately** —
+  it is the documented Level-2 workhorse, not a compat shim. Remaining v0.1
+  lazy names stay importable through the 0.3 line; their removal is targeted
+  for v0.4. `ResolvedEntity` keeps its name (decision 2026-08-07).
+
+### Added
+  
+  
   ## [0.2.0a3] — 2026-05-28
 
   ### Changed

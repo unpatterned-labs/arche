@@ -1,8 +1,10 @@
 # Kenya Data Protection Act 2019 (Act No. 24 of 2019)
-# Stage 1 scaffold — full review with the ODPC (Office of the Data Protection
-# Commissioner) scheduled for the Pan-African PII Taxonomy v1.0 consultation
-# cycle (PRD §11.4, Stage 1 month 7).
-#
+# Complete category mapping against the cited sections — SELF-REVIEWED: this
+# is arche's own reading, not a reviewed one. Review with the ODPC (Office of
+# the Data Protection Commissioner) is sought and tracked per pack; when it
+# happens this file gains review_status: regulator-reviewed plus reviewed_by
+# and reviewed_on. Tier assignments are NIST-800-122-style judgement calls
+# and may move on review.
 # Schema (same across all 4 launch statutes; see NDPA-2023.yaml for the
 # full tier-vs-action explanation):
 #   action — what to DO (mask / tokenize / drop / generalize / audit / retain)
@@ -15,6 +17,9 @@
 statute_id: KENYA-DPA
 jurisdiction: KE
 version: v0.1-scaffold
+# Completeness/stability is `version`; who vouches for the mappings is
+# `review_status`. Never claim regulator-reviewed without a named reviewer.
+review_status: self-reviewed
 effective_date: 2019-11-25
 authority: Office of the Data Protection Commissioner (ODPC)
 breach_notification_window_hours: 72

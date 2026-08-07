@@ -34,11 +34,11 @@ Lifecycle (five user-facing steps)::
     from arche.policy import load_statute, apply_policy, list_available_statutes
     statute = load_statute("NDPA-2023")  # or POPIA, KENYA-DPA, GHANA-DPA
 
-Migration from v0.1: the legacy ``resolve()`` function still works through
-the callable-module shim on ``arche.resolve`` (forwarding to
-``arche.workflow.pipeline.resolve``). ``Pipeline.process()`` is the v0.2
-replacement and the recommended path for new code. The v0.1 surface is
-removed in v0.3.
+Migration from v0.1: the legacy callable-module shim ``arche.resolve(text)``
+is removed as of v0.3.0a1 — ``Pipeline.process()`` is the replacement, and
+``arche.resolve`` is purely the facade package (``resolve.pairwise``,
+``resolve.crosswalk``). Other v0.1 names remain importable through the 0.3
+line as a deprecated surface; their removal is targeted for v0.4.
 """
 
 from __future__ import annotations
@@ -264,12 +264,13 @@ def __dir__() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# __all__: the recommended v0.2 PRD §10.1 surface.
+# __all__: the recommended public API 
 # ---------------------------------------------------------------------------
 # The v0.1 names listed in ``_LAZY`` above remain importable for backward
 # compatibility but are intentionally absent from ``__all__`` so
 # ``from arche import *`` and IDE auto-complete favour the v0.2 framework
-# primitive. The v0.1 surface is removed in v0.3.
+# primitive. Removal of the remaining v0.1 names is targeted for v0.4; the
+# only v0.3 removal is the ``arche.resolve()`` callable shim (2026-08-07).
 __all__ = [
     "Pipeline",
     "Result",
@@ -284,6 +285,7 @@ __all__ = [
     "resolve",
     "resolve_places",
     "list_places",
+    # v0.3.0a1 — spatial role labeling (place-lane-v0.1)
     "extract_places",
     # Versioning
     "__version__",

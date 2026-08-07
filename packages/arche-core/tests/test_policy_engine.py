@@ -12,7 +12,6 @@ import pytest
 from arche.policy import (
     ACTIONS,
     PolicyOutcome,
-    Statute,
     apply_policy,
     list_available_statutes,
     load_statute,
@@ -189,3 +188,51 @@ def test_apply_policy_returns_policy_outcomes():
     assert isinstance(outcomes[0], PolicyOutcome)
     assert outcomes[0].statute_id == "NDPA-2023"
     assert outcomes[0].span == (4, 15)
+
+class TestReviewStatus:
+    """A pack may not claim regulator review without naming the reviewer.
+
+    `version` means complete-and-stable (our work); `review_status` means who
+    vouches for the mappings (a fact about the world). Conflating them in a
+    product whose promise is statute citation is the failure mode this guards.
+    """
+
+    def test_shipped_packs_declare_review_status(self):
+        from arche.policy import list_available_statutes, load_statute
+
+        for sid in list_available_statutes():
+            s = load_statute(sid)
+            assert s.review_status in {"self-reviewed", "regulator-reviewed"}
+            # No shipped pack claims regulator review today — if one ever
+            # does, it must carry the attribution this test demands below.
+            if s.review_status == "regulator-reviewed":
+                assert s.reviewed_by and s.reviewed_on
+
+    def test_regulator_reviewed_without_reviewer_is_rejected(self, tmp_path,
+                                                             monkeypatch):
+        import arche.policy.engine as engine
+
+        pack = tmp_path / "FAKE-DPA.yaml"
+        pack.write_text(
+            "statute_id: FAKE-DPA\njurisdiction: XX\nversion: v1.0\n"
+            "review_status: regulator-reviewed\n"
+            "policy_mappings:\n  PII-1-NAME:\n    action: mask\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(engine, "_STATUTES_DIR", tmp_path)
+        with pytest.raises(ValueError, match="attributable"):
+            engine.load_statute("FAKE-DPA")
+
+    def test_unknown_review_status_is_rejected(self, tmp_path, monkeypatch):
+        import arche.policy.engine as engine
+
+        pack = tmp_path / "FAKE2-DPA.yaml"
+        pack.write_text(
+            "statute_id: FAKE2-DPA\njurisdiction: XX\nversion: v1.0\n"
+            "review_status: vibes-based\n"
+            "policy_mappings:\n  PII-1-NAME:\n    action: mask\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(engine, "_STATUTES_DIR", tmp_path)
+        with pytest.raises(ValueError, match="review_status"):
+            engine.load_statute("FAKE2-DPA")

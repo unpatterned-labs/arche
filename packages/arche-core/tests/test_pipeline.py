@@ -1,6 +1,7 @@
 """Tests for the main pipeline entry points."""
 
-from arche import ResolutionResult, __version__, resolve
+from arche import ResolutionResult, __version__
+from arche.workflow.pipeline import resolve
 from arche.workflow.pipeline import ArchePipeline
 
 
@@ -42,4 +43,4 @@ def test_pipeline_batch():
 
 
 def test_version():
-    assert __version__ == "0.2.0a3"
+    assert __version__ == "0.3.0a1"

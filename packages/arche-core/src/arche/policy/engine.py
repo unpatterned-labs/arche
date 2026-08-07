@@ -38,11 +38,19 @@ import yaml
 from arche._types import SensitivityTier
 
 # ---------------------------------------------------------------------------
-# Action set (closed, frozen per PRD §6.3)
+# Action set 
 # ---------------------------------------------------------------------------
 
 ACTIONS: frozenset[str] = frozenset(
     {"mask", "tokenize", "drop", "generalize", "audit", "retain"}
+)
+
+# Who vouches for a statute pack's mappings. Deliberately separate from the
+# pack's ``version`` (completeness/stability): shipping a complete mapping is
+# our work; a regulator having reviewed it is a fact about the world, and the
+# two must never be conflated in a product whose promise is statute citation.
+_REVIEW_STATUSES: frozenset[str] = frozenset(
+    {"self-reviewed", "regulator-reviewed"}
 )
 
 
@@ -89,6 +97,14 @@ class Statute:
     effective_date: str
     authority: str
     policy_mappings: dict[str, dict[str, Any]]
+    # Who vouches for the mappings — orthogonal to ``version`` (which means
+    # "complete and stable"). ``self-reviewed``: arche's own mapping against
+    # the cited sections, no external review. ``regulator-reviewed``: the
+    # named authority reviewed it (``reviewed_by`` / ``reviewed_on`` say who
+    # and when). Never claim the latter without a citable review.
+    review_status: str = "self-reviewed"
+    reviewed_by: str = ""
+    reviewed_on: str = ""
     default_action: str = "mask"
     default_statute_reference: str = ""
     breach_notification_window_hours: int | None = None
@@ -207,6 +223,20 @@ def load_statute(statute_id: str) -> Statute:
         raise ValueError(
             f"Statute file {path} is missing required keys: {sorted(missing)}"
         )
+        
+    review_status = raw.get("review_status", "self-reviewed")
+    if review_status not in _REVIEW_STATUSES:
+        raise ValueError(
+            f"Statute file {path} declares review_status={review_status!r}; "
+            f"allowed: {sorted(_REVIEW_STATUSES)}"
+        )
+    if review_status == "regulator-reviewed" and not raw.get("reviewed_by"):
+        # Fail closed on the claim that matters most: a pack may not assert
+        # regulator review without naming the reviewer.
+        raise ValueError(
+            f"Statute file {path} claims review_status='regulator-reviewed' "
+            "but names no reviewed_by. Regulator review must be attributable."
+        )
 
     statute = Statute(
         statute_id=raw["statute_id"],
@@ -215,6 +245,9 @@ def load_statute(statute_id: str) -> Statute:
         effective_date=raw.get("effective_date", ""),
         authority=raw.get("authority", ""),
         policy_mappings=raw["policy_mappings"] or {},
+        review_status=review_status,
+        reviewed_by=raw.get("reviewed_by", ""),
+        reviewed_on=str(raw.get("reviewed_on", "")),
         default_action=raw.get("default_action", "mask"),
         default_statute_reference=raw.get("default_statute_reference", ""),
         breach_notification_window_hours=raw.get("breach_notification_window_hours"),

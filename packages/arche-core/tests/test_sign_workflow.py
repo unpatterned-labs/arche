@@ -130,7 +130,6 @@ def test_sign_workflow_accepts_raw_private_key_with_issuer_did():
 
 
 def test_sign_workflow_describe():
-    kp = generate_keypair()
     wf = SignWorkflow(jurisdiction="NG", tokenize_salt="t")
     d = wf.describe()
     assert d["kind"] == "SignWorkflow"

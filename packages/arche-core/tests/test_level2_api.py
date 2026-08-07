@@ -3,7 +3,8 @@
 
 import pytest
 
-from arche import detect, link, match, resolve
+from arche import detect, link, match
+from arche.workflow.pipeline import resolve
 from arche.extract import Entity
 from arche.workflow.pipeline import IdentityGraph
 
@@ -36,9 +37,11 @@ class TestDetect:
             backend="regex",
             include_pii=True,
         )
-        sources = {e.source for e in entities}
-        # Should include regex/african and/or pii sources
         assert len(entities) >= 1
+        # Every entity names the detector that proposed it — provenance is
+        # never blank on the Level-2 path.
+        sources = {e.source for e in entities}
+        assert sources and all(sources)
 
     def test_detect_without_pii(self):
         entities_with = detect("NIN 12345678901", backend="regex", include_pii=True)
@@ -60,7 +63,6 @@ class TestDetect:
         assert entities == []
 
     def test_detect_max_length(self):
-        from arche import configure
 
         # This should raise for text exceeding max length
         long_text = "x" * 500_001

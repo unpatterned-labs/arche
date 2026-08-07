@@ -538,7 +538,7 @@ def test_ndpa_penalties():
 
 def test_full_pipeline_nigerian_text():
     """End-to-end: Nigerian text → extract → resolve → governance."""
-    from arche import resolve
+    from arche.workflow.pipeline import resolve
     result = resolve(
         "Fatima Abdullahi, NIN 12345678901, phone 0803 555 7890, Lagos Nigeria",
         backend="regex",

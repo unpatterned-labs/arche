@@ -17,6 +17,9 @@
 statute_id: POPIA
 jurisdiction: ZA
 version: v0.1-scaffold
+# Completeness/stability is `version`; who vouches for the mappings is
+# `review_status`. Never claim regulator-reviewed without a named reviewer.
+review_status: self-reviewed
 effective_date: 2021-07-01  # Section 110 commencement
 authority: Information Regulator (South Africa)
 breach_notification_window_hours: 168  # "as soon as reasonably possible" — 7-day baseline

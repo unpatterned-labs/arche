@@ -3,15 +3,11 @@
 
 """UK postcode + jurisdiction inference tests.
 
-Per docs/ceo-plans/2026-05-24-places-resolver.md §13 + §16.
-
-CRITICAL: includes the mandatory NG regression test (§13.1 row 17 — IRON RULE).
+CRITICAL: includes the mandatory NG regression test 
 The UK extension to addr/parse.py must NOT break existing NG/ZA/KE/GH inference.
 """
 
 from __future__ import annotations
-
-import pytest
 
 from arche.addr import infer_jurisdiction, parse_address
 

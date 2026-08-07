@@ -1,7 +1,7 @@
 """Edge case and adversarial tests."""
 
 import pytest
-from arche import resolve
+from arche.workflow.pipeline import resolve
 from arche.detect._names.lexicon import are_names_equivalent, normalize_african_name
 from arche.extract import Entity, _mask_text, extract
 
