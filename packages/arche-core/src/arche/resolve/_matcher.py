@@ -505,6 +505,19 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     return score
 
 
+def haversine_km(lat_a: float, lon_a: float, lat_b: float, lon_b: float) -> float:
+    """Great-circle distance in kilometres between two points."""
+    radius_km = 6371.0088  # mean Earth radius
+    phi_a, phi_b = math.radians(lat_a), math.radians(lat_b)
+    dphi = math.radians(lat_b - lat_a)
+    dlambda = math.radians(lon_b - lon_a)
+    h = (
+        math.sin(dphi / 2) ** 2
+        + math.cos(phi_a) * math.cos(phi_b) * math.sin(dlambda / 2) ** 2
+    )
+    return 2 * radius_km * math.asin(min(1.0, math.sqrt(h)))
+
+
 def compare_geo(
     lat_a: float,
     lon_a: float,
@@ -522,18 +535,30 @@ def compare_geo(
     apart — so geo is a supporting signal, never a hard gate. Generic
     geospatial comparator; not tied to any entity type.
     """
-    radius_km = 6371.0088  # mean Earth radius
-    phi_a, phi_b = math.radians(lat_a), math.radians(lat_b)
-    dphi = math.radians(lat_b - lat_a)
-    dlambda = math.radians(lon_b - lon_a)
-    h = (
-        math.sin(dphi / 2) ** 2
-        + math.cos(phi_a) * math.cos(phi_b) * math.sin(dlambda / 2) ** 2
-    )
-    distance_km = 2 * radius_km * math.asin(min(1.0, math.sqrt(h)))
+    distance_km = haversine_km(lat_a, lon_a, lat_b, lon_b)
     if decay_km <= 0:
         return 1.0 if distance_km == 0 else 0.0
     return math.exp(-distance_km / decay_km)
+
+
+def compare_place_names(name_a: str, name_b: str) -> float:
+    """Fuzzy similarity for PLACE names — deliberately lexicon-free.
+
+    Place names must never route through the person cultural-name equivalence
+    lexicon: "Fatima Hospital" and "Fatouma Hospital" are plausibly two
+    *different* facilities named after two different people, but the person
+    lexicon scores Fatima≡Fatouma at 1.0 — a false-merge vector. This
+    comparator is plain normalised string similarity (exact -> 1.0, else the
+    max of Jaro-Winkler and token-sort ratio), so agreement is earned by the
+    strings themselves and rarity weighting is left to the ``tftoken``
+    comparator alongside it.
+    """
+    na, nb = _normalise_text(name_a), _normalise_text(name_b)
+    if not na or not nb:
+        return 0.0
+    if na == nb:
+        return 1.0
+    return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
 
 
 def compare_containment(
@@ -551,23 +576,34 @@ def compare_containment(
 
     Used as a coarse GATE, not a fine matcher: a disagreement at the coarsest
     level (different ``admin1``/state) returns 0.0 — strong evidence two nearby
-    points are different places. The near-boundary case (GPS noise flipping the
-    unit) is handled by the CALLER with a soft buffer / route-to-review, never a
-    hard veto here. Agreement returns the score of the FINEST shared level: same
-    settlement is near-proof of co-location; same state is weak.
+    points are different places. Downstream, ``reconcile`` demotes any
+    would-be match carrying a containment conflict to review rather than
+    auto-vetoing it.
+
+    The walk is TOP-DOWN (coarse -> fine) and stops at the first disagreement,
+    awarding only the deepest agreement reached *before* it. This matters
+    because settlement names repeat heavily within states (Sabon Gari, Tudun
+    Wada, Unguwar Rimi): two points in the same state but *different* LGAs
+    whose settlements merely share a name must not score as co-located — the
+    LGA disagreement caps them at the state-level score.
     """
     if not path_a or not path_b:
         return None
     finest_score = {"settlement": 1.0, "admin2": 0.6, "admin1": 0.3}
-    coarsest = levels[0]
-    a0, b0 = path_a.get(coarsest), path_b.get(coarsest)
-    if a0 and b0 and _normalise_text(str(a0)) != _normalise_text(str(b0)):
-        return 0.0  # different coarsest unit -> disagreement
-    for level in reversed(levels):  # finest -> coarsest
+    best: float | None = None
+    for level in levels:  # coarse -> fine
         na, nb = path_a.get(level), path_b.get(level)
-        if na and nb and _normalise_text(str(na)) == _normalise_text(str(nb)):
-            return finest_score.get(level, 0.3)
-    return 0.2  # no level agrees but no coarse conflict -> weak
+        if not na or not nb:
+            continue  # missing on a side: no evidence at this level, keep walking
+        if _normalise_text(str(na)) != _normalise_text(str(nb)):
+            if level == levels[0]:
+                return 0.0  # different coarsest unit -> hard disagreement
+            # Mid-hierarchy disagreement: stop; award only what agreed above.
+            return best if best is not None else 0.2
+        best = finest_score.get(level, 0.3)
+    if best is not None:
+        return best
+    return 0.2  # no level comparable on both sides but no conflict -> weak
 
 
 def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]:

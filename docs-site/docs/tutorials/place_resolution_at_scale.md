@@ -111,7 +111,7 @@ Word-order swaps and exact re-entries — 177 registry rows that are very likely
 - **One call, three jobs, two countries.** Crosswalk, link, dedupe — only the data changed.
 - **`review` is the product working.** A match requires a *distinctive* signal (a rare shared name token — never geography alone) to clear the gate; everything plausible-but-unproven is surfaced, not silently merged. On real registries, the review queue *is* the deliverable.
 - **Distinctiveness needs a population.** Toy examples land in review because a 4-row corpus can't measure rarity; give the engine a real corpus (or `tf="default"` for the shipped population table) and it rewards you.
-- **Scale is a blocking story.** 2.1B pairs → 869k scored. If your records have coordinates, you get this for free; without them, pass `block=None` and keep lists moderate.
+- **Scale is a blocking story.** 2.1B pairs → 869k scored. The default is now `block="union"`: spatial H3 cells OR-ed with rare-token and shared-id keys, so a true match whose coordinates disagree by kilometres — or that has no coordinates at all — still reaches the comparators. Records without coordinates route through the token/id keys with a loud warning instead of a silent cross-product; `block=None` remains the full-cross-product escape hatch for small lists.
 - The output carries **ids and numeric evidence only — never raw values**. Rendering values (masked by default) is `arche.render`'s job.
 
 **Next steps:** [read crosswalk output field-by-field](../how-to/read-crosswalk-output.md) · resolve *people* with signable decisions via `resolve.pairwise` (the resolution-attestation notebook) · bring your own schema with explicit `comparators=`.

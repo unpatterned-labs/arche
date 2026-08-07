@@ -1,0 +1,399 @@
+# Copyright 2026 unpatterned.org
+# SPDX-License-Identifier: CC-BY-4.0
+#
+# place_roles_v1 — the gold sentence set for spatial role labeling.
+#
+# 54 labelled sentences: UK + Nigerian address forms, formal and informal
+# registers, Pidgin/Hausa/Swahili cues, and adversarial items whose gold role
+# is `unknown` (a system asserting a role there is over-guessing — the failure
+# mode this eval exists to price). Fragments are substrings of `text`; the
+# loader resolves them to spans and rejects absent or ambiguous fragments.
+#
+# Grade ANY extractor against this set with arche.addr.grade_places — the set
+# ships in the wheel precisely so a stranger can run the eval offline.
+#
+# v1 is a PROBE (50 items), not a benchmark: per-role confidence intervals at
+# this size are wide. The citable version (dual-annotated, reported kappa)
+# is tracked as v2.
+
+pack: arche.place_roles.gold
+version: v1
+license: CC-BY-4.0
+sentences:
+  # ── Nigerian, formal ─────────────────────────────────────────────────────
+  - id: ng-001
+    register: formal
+    jurisdiction: NG
+    text: "Pick up the parcel from 7B Allen Avenue, Ikeja, Lagos and deliver to 12 Adeola Odeku Street, Victoria Island."
+    places:
+      - {role: origin, text: "7B Allen Avenue, Ikeja, Lagos", cue: "from"}
+      - {role: destination, text: "12 Adeola Odeku Street, Victoria Island", cue: "deliver to"}
+  - id: ng-002
+    register: formal
+    jurisdiction: NG
+    text: "Collect the documents from Plot 14, Awolowo Road, Ikoyi and file them by Friday."
+    places:
+      - {role: origin, text: "Plot 14, Awolowo Road, Ikoyi", cue: "from"}
+  - id: ng-003
+    register: formal
+    jurisdiction: NG
+    text: "Deliver to 25 Zik Avenue, Enugu before noon tomorrow."
+    places:
+      - {role: destination, text: "25 Zik Avenue, Enugu", cue: "Deliver to"}
+  - id: ng-004
+    register: formal
+    jurisdiction: NG
+    text: "The courier ships from 3 Ahmadu Bello Way, Kaduna every weekday."
+    places:
+      - {role: origin, text: "3 Ahmadu Bello Way, Kaduna", cue: "ships from"}
+  - id: ng-005
+    register: formal
+    jurisdiction: NG
+    text: "Our registered office is at 18 Marina Road, Lagos Island."
+    places:
+      - {role: location, text: "18 Marina Road, Lagos Island", cue: "at"}
+  - id: ng-006
+    register: formal
+    jurisdiction: NG
+    text: "Send the samples to 9 Ogui Road, Enugu, 400102 for analysis."
+    places:
+      - {role: destination, text: "9 Ogui Road, Enugu, 400102", cue: "to"}
+  - id: ng-007
+    register: formal
+    jurisdiction: NG
+    text: "The meeting holds at 1 Kofo Abayomi Street, Apapa on Tuesday."
+    places:
+      - {role: location, text: "1 Kofo Abayomi Street, Apapa", cue: "at"}
+  - id: ng-008
+    register: formal
+    jurisdiction: NG
+    text: "Move the generator from 5 Airport Road, Benin City to 22 Sapele Road, Benin City."
+    places:
+      - {role: origin, text: "5 Airport Road, Benin City", cue: "from"}
+      - {role: destination, text: "22 Sapele Road, Benin City", cue: "to"}
+
+  # ── Nigerian, informal / landmark-anchored ──────────────────────────────
+  - id: ng-101
+    register: informal
+    jurisdiction: NG
+    text: "The workshop is behind the central mosque, Ungwan Rimi, Kaduna."
+    places:
+      - {role: location, text: "behind the central mosque, Ungwan Rimi, Kaduna", cue: "behind"}
+    note: intrinsic-anchor case — the cue lives inside the span.
+  - id: ng-102
+    register: informal
+    jurisdiction: NG
+    text: "Drop off at the shop opposite First Bank, Sabon Gari."
+    places:
+      - {role: destination, text: "opposite First Bank, Sabon Gari", cue: "Drop off at"}
+  - id: ng-103
+    register: informal
+    jurisdiction: NG
+    text: "Send am go for back of Mile 12 market, Lagos"
+    places:
+      - {role: destination, text: "for back of Mile 12 market, Lagos", cue: "Send am go"}
+    note: Pidgin cue; the anchor relation word is part of the span.
+  - id: ng-104
+    register: informal
+    jurisdiction: NG
+    text: "We dey near the big junction, Wuse, Abuja."
+    places:
+      - {role: location, text: "near the big junction, Wuse, Abuja", cue: "dey"}
+  - id: ng-105
+    register: informal
+    jurisdiction: NG
+    text: "Pick up from behind the Total filling station, Madina Junction."
+    places:
+      - {role: origin, text: "behind the Total filling station, Madina Junction", cue: "from"}
+    note: external directional cue beats the intrinsic anchor.
+  - id: ng-106
+    register: informal
+    jurisdiction: NG
+    text: "The clinic is beside the primary school, Karfi."
+    places:
+      - {role: location, text: "beside the primary school, Karfi", cue: "beside"}
+  - id: ng-107
+    register: informal
+    jurisdiction: NG
+    text: "Carry am go 15 Ogunlana Drive, Surulere sharp sharp."
+    places:
+      - {role: destination, text: "15 Ogunlana Drive, Surulere", cue: "Carry am go"}
+  - id: ng-108
+    register: informal
+    jurisdiction: NG
+    text: "I dey Ikeja right now, come meet me."
+    places:
+      - {role: location, text: "Ikeja", cue: "I dey"}
+
+  # ── UK, formal ──────────────────────────────────────────────────────────
+  - id: gb-001
+    register: formal
+    jurisdiction: GB
+    text: "Can you come pick up this package from 123 Maple Street, London and send it to 3 Sherborne Place, Birmingham?"
+    places:
+      - {role: origin, text: "123 Maple Street, London", cue: "from"}
+      - {role: destination, text: "3 Sherborne Place, Birmingham", cue: "to"}
+    note: the ticket's own example.
+  - id: gb-002
+    register: formal
+    jurisdiction: GB
+    text: "Courier collects from SE1 7EH at 09:00 and drops at EC2A 4DP before noon."
+    places:
+      - {role: origin, text: "SE1 7EH", cue: "from"}
+      - {role: destination, text: "EC2A 4DP", cue: "drops at"}
+  - id: gb-003
+    register: formal
+    jurisdiction: GB
+    text: "The van runs between Manchester and Leeds every Tuesday."
+    places:
+      - {role: origin, text: "Manchester", cue: "runs between"}
+      - {role: destination, text: "Leeds", cue: "and"}
+    note: pair rule between_route.
+  - id: gb-004
+    register: formal
+    jurisdiction: GB
+    text: "Our office is between Old Street and Moorgate."
+    places:
+      - {role: location, text: "Old Street", cue: "between"}
+      - {role: location, text: "Moorgate", cue: "and"}
+    note: bare `between` gives two locations, never a direction.
+  - id: gb-005
+    register: formal
+    jurisdiction: GB
+    text: "Deliver the crate to 44 Holloway Road, London N7 8JG."
+    places:
+      - {role: destination, text: "44 Holloway Road, London N7 8JG", cue: "to"}
+  - id: gb-006
+    register: formal
+    jurisdiction: GB
+    text: "She is based at 12 Queen Anne Terrace, Cambridge these days."
+    places:
+      - {role: location, text: "12 Queen Anne Terrace, Cambridge", cue: "based at"}
+  - id: gb-007
+    register: formal
+    jurisdiction: GB
+    text: "Shipment departs from 8 Dock Road, Liverpool via M62."
+    places:
+      - {role: origin, text: "8 Dock Road, Liverpool", cue: "from"}
+      - {role: via, text: "M62", cue: "via"}
+    note: the motorway is a legitimate waypoint (MOVELINK midPoint).
+  - id: gb-008
+    register: formal
+    jurisdiction: GB
+    text: "Return the keys to 2 Abbey Gardens, York when done."
+    places:
+      - {role: destination, text: "2 Abbey Gardens, York", cue: "to"}
+  - id: gb-009
+    register: formal
+    jurisdiction: GB
+    text: "I am at SE1 7EH right now, meet me there."
+    places:
+      - {role: location, text: "SE1 7EH", cue: "at"}
+  - id: gb-010
+    register: formal
+    jurisdiction: GB
+    text: "The route between 5 Mill Lane, Oxford and 9 Bridge Street, Reading takes an hour."
+    places:
+      - {role: origin, text: "5 Mill Lane, Oxford", cue: "route between"}
+      - {role: destination, text: "9 Bridge Street, Reading", cue: "and"}
+
+  # ── UK, informal ────────────────────────────────────────────────────────
+  - id: gb-101
+    register: informal
+    jurisdiction: GB
+    text: "meet me at the cafe on Long Acre Street, Covent Garden"
+    places:
+      - {role: location, text: "Long Acre Street, Covent Garden", cue: "on"}
+  - id: gb-102
+    register: informal
+    jurisdiction: GB
+    text: "we're near the big Tesco junction, Croydon, come through"
+    places:
+      - {role: location, text: "near the big Tesco junction, Croydon", cue: "near"}
+  - id: gb-103
+    register: informal
+    jurisdiction: GB
+    text: "heading to 7 Peckham Rye Lane, London after work"
+    places:
+      - {role: destination, text: "7 Peckham Rye Lane, London", cue: "heading to"}
+  - id: gb-104
+    register: informal
+    jurisdiction: GB
+    text: "grab it from behind the station car park, Brixton yeah"
+    places:
+      - {role: origin, text: "behind the station car park, Brixton", cue: "from"}
+
+  # ── Cross-border / city-level ───────────────────────────────────────────
+  - id: xx-001
+    register: formal
+    jurisdiction: KE
+    text: "She moved from Nairobi to Kampala last year."
+    places:
+      - {role: origin, text: "Nairobi", cue: "from"}
+      - {role: destination, text: "Kampala", cue: "to"}
+  - id: xx-002
+    register: formal
+    jurisdiction: ZA
+    text: "Ship to P.O. Box 1234, Sandton, Johannesburg, 2196."
+    places:
+      - {role: destination, text: "P.O. Box 1234, Sandton, Johannesburg, 2196", cue: "to"}
+  - id: xx-003
+    register: formal
+    jurisdiction: GH
+    text: "The container transfers between Tema and Kumasi twice a week."
+    places:
+      - {role: origin, text: "Tema", cue: "transfers between"}
+      - {role: destination, text: "Kumasi", cue: "and"}
+  - id: xx-004
+    register: informal
+    jurisdiction: TZ
+    text: "Tunasafiri kwenda Dodoma kesho asubuhi."
+    places:
+      - {role: destination, text: "Dodoma", cue: "kwenda"}
+    note: Swahili destination cue.
+  - id: xx-005
+    register: formal
+    jurisdiction: NG
+    text: "The flight leaves Abuja at dawn and arrives at Kano International Airport by eight."
+    places:
+      - {role: origin, text: "Abuja", cue: "leaves"}
+      - {role: destination, text: "Kano International Airport", cue: "arrives at"}
+  - id: xx-006
+    register: formal
+    jurisdiction: KE
+    text: "Goods pass through Mombasa on their way inland."
+    places:
+      - {role: via, text: "Mombasa", cue: "through"}
+
+  # ── Person-name traps ───────────────────────────────────────────────────
+  - id: trap-001
+    register: informal
+    jurisdiction: NG
+    text: "Collect the documents from Alhaji Musa and take them to 14 Awolowo Road, Ikoyi."
+    places:
+      - {role: destination, text: "14 Awolowo Road, Ikoyi", cue: "take them to"}
+    note: "'from Alhaji Musa' is a person — the title stoplist vetoes it."
+  - id: trap-002
+    register: formal
+    jurisdiction: GB
+    text: "meet Grace Street at the cafe on Milton Road, Cambridge"
+    places:
+      - {role: location, text: "Milton Road, Cambridge", cue: "on"}
+    note: "'Grace Street' is a person; the weak-span gate suppresses it."
+  - id: trap-003
+    register: formal
+    jurisdiction: GB
+    text: "Hand the report to Dr Fleet and copy the team in London."
+    places:
+      - {role: location, text: "London", cue: "in"}
+    note: "'to Dr Fleet' is a person."
+
+  # ── Adversarial: gold role is unknown ───────────────────────────────────
+  - id: amb-001
+    register: formal
+    jurisdiction: NG
+    text: "The consignment was picked up at and delivered to 7B Allen Avenue, Ikeja."
+    places:
+      - {role: unknown, text: "7B Allen Avenue, Ikeja", cue: "delivered to"}
+    note: two directional cues at equal priority — abstain, never pick one.
+  - id: amb-002
+    register: formal
+    jurisdiction: NG
+    text: "Don't deliver to 31 Ribadu Road, Kano anymore, that address is closed."
+    places:
+      - {role: unknown, text: "31 Ribadu Road, Kano", cue: "deliver to"}
+    note: negation voids the role the cue names.
+  - id: amb-003
+    register: formal
+    jurisdiction: GB
+    text: "Regarding 17 Fleet Lane, London, we have three open questions."
+    places:
+      - {role: unknown, text: "17 Fleet Lane, London", cue: null}
+    note: a place mention with no spatial-role cue at all.
+  - id: amb-004
+    register: formal
+    jurisdiction: NG
+    text: "The invoice from our Lagos office lists the registered address."
+    places:
+      - {role: unknown, text: "Lagos", cue: null}
+    note: >
+      Attributive mention — a movement-shaped cue ("from") with no movement.
+      The known blind spot of cue-based labeling; a system asserting origin
+      here is over-guessing.
+  - id: amb-005
+    register: formal
+    jurisdiction: GB
+    text: "Never send anything to 5 Cannon Row, Westminster without approval."
+    places:
+      - {role: unknown, text: "5 Cannon Row, Westminster", cue: "send"}
+    note: negated instruction; committing destination here is a role error.
+  - id: amb-006
+    register: informal
+    jurisdiction: NG
+    text: "That 22 Bode Thomas Street, Surulere matter never resolve."
+    places:
+      - {role: unknown, text: "22 Bode Thomas Street, Surulere", cue: null}
+    note: topic mention, no spatial role.
+
+  # ── Negatives: no places at all ─────────────────────────────────────────
+  - id: neg-001
+    register: formal
+    jurisdiction: XX
+    text: "Please send the invoice to me by end of day."
+    places: []
+  - id: neg-002
+    register: informal
+    jurisdiction: XX
+    text: "take vitamin B2 daily and drink plenty of water"
+    places: []
+    note: the partial-postcode trap — B2 is a vitamin, not Birmingham.
+  - id: neg-003
+    register: formal
+    jurisdiction: XX
+    text: "The board approved the budget after a long discussion."
+    places: []
+  - id: neg-004
+    register: formal
+    jurisdiction: XX
+    text: "From what I heard, the deal is off."
+    places: []
+    note: "'From' with no place after it."
+
+  # ── Mixed / boundary stress ─────────────────────────────────────────────
+  - id: mix-001
+    register: formal
+    jurisdiction: NG
+    text: "Route the driver from 4 Ogunu Road, Warri through Benin City to 10 Airport Road, Abuja."
+    places:
+      - {role: origin, text: "4 Ogunu Road, Warri", cue: "from"}
+      - {role: via, text: "Benin City", cue: "through"}
+      - {role: destination, text: "10 Airport Road, Abuja", cue: "to"}
+  - id: mix-002
+    register: formal
+    jurisdiction: GB
+    text: "Pick up at 6 Camden Passage, London, then wait at the depot."
+    places:
+      - {role: origin, text: "6 Camden Passage, London", cue: "Pick up at"}
+    note: "'the depot' is not a resolvable place span in v1."
+  - id: mix-003
+    register: formal
+    jurisdiction: NG
+    text: "Send it to 2 Awolowo Avenue, Ibadan and copy the Lagos team."
+    places:
+      - {role: destination, text: "2 Awolowo Avenue, Ibadan", cue: "to"}
+      - {role: unknown, text: "Lagos", cue: null}
+    note: the second mention is attributive ("the Lagos team"), not a role.
+  - id: mix-004
+    register: informal
+    jurisdiction: NG
+    text: "From Yaba you fit reach Ikorodu by ferry."
+    places:
+      - {role: origin, text: "Yaba", cue: "From"}
+      - {role: destination, text: "Ikorodu", cue: "reach"}
+    note: "'you fit reach' — reach as a Pidgin destination verb is v2 vocabulary; labeling only Yaba origin is also acceptable, but gold records the truth."
+  - id: mix-005
+    register: formal
+    jurisdiction: GB
+    text: "Stopping at 3 Station Parade, Harrogate before the final leg."
+    places:
+      - {role: via, text: "3 Station Parade, Harrogate", cue: "Stopping at"}

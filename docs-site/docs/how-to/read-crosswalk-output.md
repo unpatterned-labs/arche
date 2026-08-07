@@ -52,6 +52,7 @@ pack:
 When two comparators read the same field, the second is suffixed with its kind
 (`name_tftoken`) so neither hides the other.
 
+
 ## The decision bands
 
 `score` is compared to two thresholds (defaults: `threshold=0.7`,

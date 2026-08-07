@@ -88,10 +88,15 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "email", "kind": "email", "weight": 1.5},
         {"field": "address", "kind": "address", "weight": 1.0},
     ],
+    # Places are calibrated as places, not people: `placename` never consults
+    # the person equivalence lexicon (Fatima Hospital vs Fatouma Hospital are
+    # plausibly two facilities named after two different people); `type` scores
+    # the facility tier separately 
     "place": [
-        {"field": "name", "kind": "name", "weight": 2.0},
+        {"field": "name", "kind": "placename", "weight": 2.0},
         {"field": "name", "kind": "tftoken", "weight": 2.0},
-        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0},
+        {"field": "name", "kind": "type", "domain": "health_facility", "weight": 0.0},
+        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0, "decay_km": 3.0},
         {"kind": "containment", "field": "admin_path", "weight": 1.0},
         {"field": "address", "kind": "address", "weight": 1.0},
     ],
@@ -110,6 +115,7 @@ ENTITY_PACKS: dict[str, list[dict]] = {
 # than self-calibration (small artist catalogs mislead a self-calibrated table
 # — the toy-corpus trap the place tutorials document).
 _PACK_TF_DOMAIN: dict[str, str] = {"artist": "artist"}
+
 
 
 def pairwise(a, b, *, entity: str = "person", **kwargs):
@@ -150,7 +156,8 @@ def pairwise(a, b, *, entity: str = "person", **kwargs):
 
 
 def crosswalk(list_a, list_b, *, entity: str | None = None,
-              comparators: list[dict] | None = None, tf=None, decl=None, **kwargs):
+              comparators: list[dict] | None = None, tf=None, decl=None,
+              **kwargs):
     """Link/dedupe two record lists at scale (blocking + gate + evidence).
 
     Pass ``entity=`` to use a canned comparator pack (:data:`ENTITY_PACKS`),
@@ -160,7 +167,18 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     over both lists' text. Pass ``tf="default"`` (person table) or a domain
     name (``tf="artist"``) to choose explicitly. Delegates to
     :func:`~arche.resolve.reconcile.reconcile`.
+
+    Every returned edge carries a ``decision_id`` hashed over the evidence and
+    the run's ``pins`` (which include the declaration pin when ``decl=`` is
+    used, and the tf table's provenance); sign edges with
+    :func:`arche.resolve.reconcile.sign_edges`.
     """
+    extra_pins = dict(kwargs.pop("extra_pins", None) or {})
+    tf_provenance: str | None = None
+    if isinstance(tf, str):
+        tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"
+    elif tf is not None:
+        tf_provenance = "provided"
     if decl is not None:
         # A declaration IS a user-defined entity pack: generated comparators,
         # its own id_field and tf defaults. Explicit args still win.
@@ -169,8 +187,11 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
         if comparators is None:
             comparators = decl.comparators()
         kwargs.setdefault("id_field", decl.id_field)
+        extra_pins.setdefault("declaration", decl.pin())
         if tf is None and decl.tf is not None:
             tf = decl.tf
+            tf_provenance = f"shipped:{'person' if tf == 'default' else tf}" \
+                if isinstance(tf, str) else "provided"
     if comparators is None:
         if entity is None:
             raise ValueError(
@@ -191,6 +212,7 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             # falling back loudly if the data asset is absent.
             try:
                 tf = TokenFrequencyTable.default(domain=domain)
+                tf_provenance = f"shipped:{domain}"
             except FileNotFoundError as exc:
                 _warnings.warn(
                     f"shipped {domain!r} frequency table unavailable ({exc}); "
@@ -204,11 +226,15 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
             texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
             tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
-    return reconcile(list_a, list_b, comparators, tf=tf, **kwargs)
+            tf_provenance = "self-calibrated"
+    if tf_provenance is not None:
+        extra_pins.setdefault("tf", tf_provenance)
+    return reconcile(list_a, list_b, comparators, tf=tf,
+                     extra_pins=extra_pins or None, **kwargs)
 
 
 class _CallableResolveModule(_ModuleType):
-    """``arche.resolve`` is both a package (for v0.2 imports) and
+    """``arche.resolve`` is both a package (for v0.2 PRD §6.1 imports) and
     callable (for v0.1 ``from arche import resolve`` backward compat).
 
     Removed in v0.3 once the v0.1 ``resolve()`` function is renamed.

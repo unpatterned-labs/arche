@@ -35,11 +35,32 @@ from arche.addr.parse import (
     parse_addresses,
 )
 
+from arche.addr.roles import (
+    GoldSentence,
+    PlaceGrade,
+    PlaceMention,
+    PlaceRole,
+    RolePack,
+    extract_places,
+    grade_places,
+    load_gold,
+    load_role_pack,
+)
+
 __all__ = [
     "Address",
     "AddressComponents",
+    "GoldSentence",
+    "PlaceGrade",
+    "PlaceMention",
+    "PlaceRole",
+    "RolePack",
     "extract_anchor",
+    "extract_places",
+    "grade_places",
     "infer_jurisdiction",
+    "load_gold",
+    "load_role_pack",
     "normalize_landmark",
     "parse_address",
     "parse_addresses",

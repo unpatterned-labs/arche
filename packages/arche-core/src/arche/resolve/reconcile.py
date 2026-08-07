@@ -41,9 +41,13 @@ facilities, or any schema. You bring the comparators.
 
 from __future__ import annotations
 
+import contextlib
+import warnings
 from typing import Any
 
+from arche.resolve._block import blocking_recall as _blocking_recall
 from arche.resolve._block import candidate_pairs as _h3_candidate_pairs
+from arche.resolve._block import union_candidate_pairs as _union_candidate_pairs
 from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._matcher import (
     compare_addresses,
@@ -54,6 +58,10 @@ from arche.resolve._matcher import (
     compare_ids,
     compare_names,
     compare_phones,
+    compare_place_names,
+    haversine_km,
+    load_type_vocab,
+    normalize_type_token,
 )
 from arche.resolve._rerank import rerank_score
 from arche.resolve._tokenfreq import TokenFrequencyTable
@@ -61,6 +69,10 @@ from arche.resolve._tokenfreq import TokenFrequencyTable
 # Simple single-value comparators keyed by comparator ``kind``.
 _FIELD_COMPARATORS = {
     "name": lambda a, b: compare_names(a, b)[0],
+    # Place names never consult the person equivalence lexicon —
+    # Fatima≡Fatouma is a fact about people, not about two facilities
+    # named after them (the false-merge vector the place audit measured).
+    "placename": compare_place_names,
     "phone": compare_phones,
     "id": compare_ids,
     "email": compare_emails,
@@ -71,10 +83,11 @@ _FIELD_COMPARATORS = {
     "date": compare_dates,
 }
 
-# Comparator kinds whose fields carry free text worth reranking on.
-_TEXT_KINDS = ("tftoken", "name", "address")
+# Comparator kinds whose fields carry free text worth reranking on (also the
+# fields rare-token union blocking keys on).
+_TEXT_KINDS = ("tftoken", "name", "placename", "address")
 
-_DISTINCTIVE_KINDS = ("name", "id", "tftoken")
+_DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken")
 
 
 def _field_sim(
@@ -104,6 +117,21 @@ def _field_sim(
     if kind == "containment":
         field = spec.get("field", "admin_path")
         return compare_containment(ra.get(field), rb.get(field))
+    if kind == "type":
+        # Type-token agreement ("PHC" vs "HOSPITAL") via the domain vocabulary.
+        # Inapplicable (None) unless BOTH names yield a recognised type —
+        # absence of a type token is not evidence of anything.
+        vocab = load_type_vocab(spec.get("domain", ""))
+        if not vocab:
+            return None
+        field = spec.get("field", "name")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        type_a, _ = normalize_type_token(str(ra[field]), vocab)
+        type_b, _ = normalize_type_token(str(rb[field]), vocab)
+        if type_a is None or type_b is None:
+            return None
+        return 1.0 if type_a == type_b else 0.0
     if kind == "tftoken":
         if tf is None:
             raise ValueError(
@@ -154,6 +182,15 @@ def _score_pair(
         if key in evidence:
             key = f"{key}_{spec['kind']}"
         evidence[key] = round(sim, 3)
+        if spec["kind"] == "geo":
+            # Reviewers read metres, not decayed similarities: 0.136 hides
+            # what "3.2 km apart" says plainly. Distance is evidence, not a
+            # scored comparator — it carries no weight of its own.
+            lat, lon = spec.get("lat", "lat"), spec.get("lon", "lon")
+            with contextlib.suppress(KeyError, TypeError, ValueError):
+                evidence["distance_km"] = round(haversine_km(
+                    float(ra[lat]), float(ra[lon]), float(rb[lat]), float(rb[lon]),
+                ), 2)
         if spec["kind"] in distinctive_kinds:
             distinctive_max = max(distinctive_max, sim)
         if spec["kind"] == "containment" and sim == 0.0:
@@ -187,8 +224,10 @@ def reconcile(
     distinctive_kinds: tuple[str, ...] = _DISTINCTIVE_KINDS,
     distinctive_floor: float = DISTINCTIVE_FLOOR,
     tf: TokenFrequencyTable | str | None = None,
-    block: str | None = "h3",
+    block: str | None = "union",
     rerank: bool = False,
+    truth_pairs: list[tuple[Any, Any]] | None = None,
+    extra_pins: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -227,20 +266,35 @@ def reconcile(
         MusicBrainz catalog table), so distinctiveness weighting works without
         building one.
     block:
-        ``"h3"`` (default) restricts scoring to spatial neighbours when records
-        carry lat/lon — O(n·k) not O(n·m). ``None`` scores the full
-        cross-product (the original ``compare_records`` behaviour).
+        ``"union"`` (default) ORs three candidate keys — H3 spatial (res 7 +
+        a res-6 safety ring), rare-token on the text-comparator fields, and
+        shared-id — so a true match whose coordinates disagree by kilometres,
+        or that has no coordinates at all, still reaches the comparators.
+        ``"h3"`` is spatial-only (the pre-v0.3 behaviour; coordless records
+        pair with everything, loudly). ``None`` scores the full cross-product.
     rerank:
         When ``True``, apply the block-aware distinguishing-token reranker to
         each pair's score before banding (requires ``tf``).
+    truth_pairs:
+        Optional labelled true-match pairs as ``(a_id, b_id)`` (``id_field``
+        values). When given, the blocking report includes ``recall`` — the
+        fraction of true pairs the blocker kept, the ceiling on every
+        downstream metric.
+    extra_pins:
+        Extra provenance pinned into every edge's ``decision_id`` (e.g. a
+        declaration pin, an admin-boundary-layer vintage).
 
     Returns
     -------
     dict
         ``{"matches": [{"a_id", "b_id", "score", "decision", "evidence",
-        "distinctive_max"}], "count": int, "blocking": {"candidate_pairs": int,
-        "reduction_ratio": float}}`` — ids and numeric evidence only, never raw
-        PII. ``matches`` is sorted by descending score.
+        "distinctive_max", "decision_id"}], "count": int, "pins": {...},
+        "blocking": {"candidate_pairs": int, "reduction_ratio": float,
+        "strategies": {...}, "recall": float?}}`` — ids and numeric evidence
+        only, never raw PII. ``matches`` is sorted by descending score.
+        ``decision_id`` is a content hash over the edge and the pins:
+        recompute it to verify nothing changed; sign it with
+        :func:`sign_edges`.
     """
     if isinstance(tf, str):
         # "default" keeps its historical meaning (the person table); any other
@@ -257,15 +311,53 @@ def reconcile(
     full = n_a * n_b
 
     # --- candidate generation (blocking) ---------------------------------
-    if block == "h3":
+    strategy_info: dict[str, int] | None = None
+    if block == "union":
         lat_field, lon_field = _geo_fields(comparators)
+        pairs, strategy_info = _union_candidate_pairs(
+            list_a, list_b,
+            lat_field=lat_field, lon_field=lon_field,
+            text_fields=tuple(dict.fromkeys(
+                spec["field"] for spec in comparators
+                if spec.get("kind") in _TEXT_KINDS and "field" in spec
+            )),
+            id_fields=tuple(dict.fromkeys(
+                spec["field"] for spec in comparators
+                if spec.get("kind") == "id" and "field" in spec
+            )),
+        )
+        coordless = strategy_info["coordless_a"] + strategy_info["coordless_b"]
+        if coordless and not (strategy_info["token"] or strategy_info["id"]):
+            warnings.warn(
+                f"{coordless} record(s) lack coordinates and no token/id "
+                "blocking key applied — those records reached no candidate "
+                "pair. Add a text or id comparator, or pass block=None.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+    elif block == "h3":
+        lat_field, lon_field = _geo_fields(comparators)
+        coordless = sum(
+            1 for r in [*list_a, *list_b]
+            if r.get(lat_field) in (None, "") or r.get(lon_field) in (None, "")
+        )
+        if coordless:
+            warnings.warn(
+                f"block='h3': {coordless} record(s) lack coordinates and are "
+                "compared against every record on the other side (O(n*m) for "
+                "those rows). block='union' covers them with token/id keys.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         pairs = list(_h3_candidate_pairs(
             list_a, list_b, lat_field=lat_field, lon_field=lon_field,
         ))
     elif block is None:
         pairs = [(i, j) for i in range(n_a) for j in range(n_b)]
     else:
-        raise ValueError(f"unknown block strategy {block!r}; use 'h3' or None")
+        raise ValueError(
+            f"unknown block strategy {block!r}; use 'union', 'h3' or None"
+        )
 
     n_cand = len(pairs)
     reduction_ratio = round(1.0 - (n_cand / full), 4) if full else 0.0
@@ -279,6 +371,25 @@ def reconcile(
     if rerank:
         for i, j in pairs:
             block_of_a.setdefault(i, []).append(j)
+
+    # --- provenance pins (hashed into every edge's decision_id) ----------
+    # Imported here, not at module level: arche.ids itself imports from
+    # arche.resolve, so a module-level import is a circular-import landmine
+    # whenever arche.ids is the first entry point.
+    from arche.ids import content_hash
+
+    pins: dict[str, Any] = {
+        "engine": "crosswalk.v1",
+        "comparators_sha256": content_hash(comparators, prefix="cmp")
+        .split(":")[-1][:16],
+        "block": block or "none",
+        "threshold": threshold,
+        "review_margin": review_margin,
+        "distinctive_floor": distinctive_floor,
+        "tf": "provided" if tf is not None else None,
+    }
+    if extra_pins:
+        pins.update(extra_pins)
 
     # --- score + band -----------------------------------------------------
     matches: list[dict[str, Any]] = []
@@ -310,26 +421,84 @@ def reconcile(
             distinctive_max < distinctive_floor or containment_conflict
         ):
             decision = "review"
-        matches.append({
+        edge = {
             "a_id": ra.get(id_field, i),
             "b_id": rb.get(id_field, j),
             "score": round(score, 4),
             "decision": decision,
             "evidence": evidence,
             "distinctive_max": round(distinctive_max, 3),
-        })
+        }
+        # The reproducible address of this edge: a pure function of the
+        # (rounded) evidence and the pins — no timestamp, recomputable by
+        # anyone holding the same inputs. This is what makes a crosswalk
+        # edge citable and signable, exactly like a pairwise decision.
+        edge["decision_id"] = content_hash(
+            {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins},
+            prefix="xwd",
+        )
+        matches.append(edge)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
+    blocking: dict[str, Any] = {
+        "candidate_pairs": n_cand,
+        "reduction_ratio": reduction_ratio,
+    }
+    if strategy_info is not None:
+        blocking["strategies"] = strategy_info
+    if truth_pairs is not None:
+        id_of_a = [ra.get(id_field, i) for i, ra in enumerate(list_a)]
+        id_of_b = [rb.get(id_field, j) for j, rb in enumerate(list_b)]
+        blocking["recall"] = round(_blocking_recall(
+            truth_pairs, ((id_of_a[i], id_of_b[j]) for i, j in pairs),
+        ), 4)
     return {
         "matches": matches,
         "count": len(matches),
-        "blocking": {
-            "candidate_pairs": n_cand,
-            "reduction_ratio": reduction_ratio,
-        },
+        "pins": pins,
+        "blocking": blocking,
     }
+
+
+def sign_edges(
+    result: dict[str, Any],
+    *,
+    private_key: Any,
+    kid: str,
+    decisions: tuple[str, ...] = ("match", "review"),
+) -> list[dict[str, str]]:
+    """JWS-sign crosswalk edges — the place-decision attestation path.
+
+    Each signed payload is the edge dict plus the run's ``pins``, under the
+    ``arche.crosswalk_edge.v1`` schema — the same claim shape its
+    ``decision_id`` hashes, so a verifier can recompute the id from the signed
+    payload (dropping the ``decision_id`` field itself first) and confirm
+    nothing was altered. Returns
+    ``[{"decision_id", "jws"}, ...]`` for edges whose decision is in
+    ``decisions``. Edges carry ids and numeric evidence only (never raw PII),
+    so the signed artifact is as shareable as the crosswalk output itself.
+
+    Keys come from ``arche.sign.generate_keypair()`` or your own Ed25519 key;
+    verify with ``arche.sign.verify``.
+    """
+    from arche.sign import sign as _jws_sign
+
+    pins = result.get("pins", {})
+    signed: list[dict[str, str]] = []
+    for edge in result.get("matches", ()):
+        if edge.get("decision") not in decisions:
+            continue
+        payload = {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins}
+        signed.append({
+            "decision_id": edge.get("decision_id", ""),
+            "jws": _jws_sign(
+                payload=payload, private_key=private_key, kid=kid,
+                typ="arche+jws",
+            ),
+        })
+    return signed
 
 
 # Re-exported so ``from arche.resolve.reconcile import TokenFrequencyTable``
 # gives callers the table builder alongside the function that consumes it.
-__all__ = ["reconcile", "TokenFrequencyTable"]
+__all__ = ["reconcile", "sign_edges", "TokenFrequencyTable"]
