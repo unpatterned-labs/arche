@@ -103,8 +103,9 @@ class LLMConfig:
 __all__ = [
     "LLMConfig",
     # Declaration-driven extraction + the evaluation harness (LLM lane).
-    "DeclaredExtraction",
+    "LLMPlaceExtraction",
     "extract_declared",
+    "extract_places_llm",
     "grade_extractions",
     "grade_pairs",
 ]
@@ -119,4 +120,8 @@ def __getattr__(name):  # lazy: keep base import light, avoid cycles
         from arche.llm import harness
 
         return getattr(harness, name)
+    if name in ("LLMPlaceExtraction", "extract_places_llm"):
+        from arche.llm import spatial
+
+        return getattr(spatial, name)
     raise AttributeError(f"module 'arche.llm' has no attribute {name!r}")

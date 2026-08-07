@@ -10,7 +10,8 @@ masking policy, identity binding, LLM tool-definitions, and a pin that hashes
 into every signed decision. In its absence, every code path behaves exactly
 as it does without this module (the declaration is additive).
 
-The schema belongs to the user; only the role vocabulary and the decision object are arche's.
+Design record: ``docs/ARCHE_DECLARATION_LAYER_DESIGN.md``. The schema belongs
+to the user; only the role vocabulary and the decision object are arche's.
 Validation is fail-loud with a closed key vocabulary: a typo in a
 security-relevant config file that silently means "unrestricted" is the worst
 failure this format can have.
@@ -28,7 +29,8 @@ from arche.ids import canonical_json
 
 _ROLES = frozenset({"identifies", "describes", "ignore"})
 _KINDS = frozenset(
-    {"name", "id", "phone", "email", "address", "date", "tftoken", "containment"}
+    {"name", "placename", "id", "phone", "email", "address", "date", "tftoken",
+     "containment", "type"}
 )
 # Kinds that participate in Tier-1 identity binding (entity_id minting).
 _BINDING_KINDS = ("id", "phone", "email")
@@ -38,13 +40,15 @@ _TOP_KEYS = frozenset(
 )
 _FIELD_KEYS = frozenset(
     {"role", "kind", "weight", "id_family", "statute_class", "restricted",
-     "pii", "description"}
+     "pii", "description", "type_domain"}
 )
 _GEO_KEYS = frozenset({"lat", "lon", "weight", "decay_km"})
 _ON_UNKNOWN = frozenset({"allow", "warn", "error"})
 # Kind -> the person-shaped pairwise matcher slot (coreference._FIELD_MAP targets).
+# "type" has no slot (crosswalk-only, supporting); "placename" rides the name
+# slot — pairwise place decisions remain roadmap, crosswalk is the place path.
 KIND_TO_SLOT = {
-    "name": "name", "id": "national_id", "phone": "phone",
+    "name": "name", "placename": "name", "id": "national_id", "phone": "phone",
     "email": "email", "address": "address", "date": "dob",
 }
 
@@ -66,6 +70,8 @@ class FieldDecl:
     restricted: bool = False
     pii: bool = True
     description: str = ""
+    # Domain for the `type` kind's token vocabulary (e.g. "health_facility").
+    type_domain: str | None = None
     # Whether `restricted:` was written explicitly (an explicit `false` may
     # conflict with a statute `drop`; a defaulted False silently unions up).
     restricted_set: bool = False
@@ -129,11 +135,18 @@ def _parse_field(name: str, spec: dict) -> FieldDecl:
                 f'cross-link unrelated entities); use "{canonical}" explicitly '
                 "or a distinct name."
             )
+    if "type" in kinds and not spec.get("type_domain"):
+        raise _err(
+            f'fields.{name}: kind "type" requires `type_domain:` (the '
+            'type-token vocabulary to score against, e.g. "health_facility"). '
+            "A defaulted domain would silently score nothing."
+        )
     return FieldDecl(
         name=name,
         role=role,
         kinds=kinds,
         weight=float(spec.get("weight", 1.0)),
+        type_domain=spec.get("type_domain"),
         id_family=id_family,
         statute_class=spec.get("statute_class"),
         restricted=bool(spec.get("restricted", False)),
@@ -275,6 +288,9 @@ class Declaration:
                     "weight": f.weight, "id_family": f.id_family or "",
                     "statute_class": f.statute_class or "",
                     "restricted": f.restricted, "pii": f.pii,
+                    # Included only when set, so declarations that predate the
+                    # `type` kind keep their published pins byte-stable.
+                    **({"type_domain": f.type_domain} if f.type_domain else {}),
                 }
                 for f in self.fields.values()
             },
@@ -295,6 +311,9 @@ class Declaration:
                 if kind == "containment":
                     specs.append({"kind": "containment", "field": f.name,
                                   "weight": f.weight})
+                elif kind == "type":
+                    specs.append({"field": f.name, "kind": "type",
+                                  "domain": f.type_domain, "weight": f.weight})
                 else:
                     specs.append({"field": f.name, "kind": kind,
                                   "weight": f.weight})

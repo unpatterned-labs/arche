@@ -12,21 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""H3 spatial blocking — turn an O(n·m) cross-product into O(n·k).
+"""Blocking — turn an O(n·m) cross-product into O(n·k) without dropping truths.
 
-Reconciling two lists of *places* (facilities, addresses, clinics) naively
-scores every a against every b. At a few hundred records that is already tens
-of thousands of pairs; at national scale it is intractable. Blocking restricts
-scoring to pairs that *could* be the same place — here, records whose captured
-coordinates fall in the same H3 cell or an adjacent one (a 1-ring ``grid_disk``,
-so a true match split across a cell boundary by GPS noise is still compared).
+Reconciling two lists naively scores every a against every b. Blocking
+restricts scoring to pairs that *could* co-refer. A dropped true pair is
+unrecoverable downstream, so recall is the only metric a blocker is judged on
+(:func:`blocking_recall`).
+
+Three OR-able strategies (union them — each catches what the others miss):
+
+* **H3 spatial** (:func:`candidate_pairs`): same cell or 1-ring adjacent at
+  res 7 (~5 km² cells), plus a coarser ``safety_res`` ring so a true match
+  whose field-captured coordinates sit kilometres apart is still compared.
+* **Rare-token** (:func:`token_candidate_pairs`): records sharing an
+  uncommon text token ("Karfi", a plot number) are compared regardless of
+  distance — the recall channel for GPS-discordant true matches and for
+  records with no coordinates at all. Common tokens ("clinic") are skipped
+  via a hard pair-budget cap, so cost stays bounded.
+* **Shared-id** (:func:`id_candidate_pairs`): exact normalised agreement on
+  an identifier field always earns a comparison.
 
 Pure Python + h3 (a base dependency). Entity-agnostic: any record carrying a
-lat/lon works — Nigerian PHCs, UK postcodes, US hospitals alike.
+lat/lon or text works — Nigerian PHCs, UK postcodes, US hospitals alike.
 """
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from collections.abc import Iterable, Iterator
 from typing import Any
 
@@ -95,15 +108,24 @@ def candidate_pairs(
     res: int = 7,
     lat_field: str = "lat",
     lon_field: str = "lon",
+    safety_res: int | None = None,
+    pair_coordless_with_all: bool = True,
 ) -> Iterator[tuple[int, int]]:
     """Yield ``(i, j)`` index pairs worth scoring — same cell or 1-ring adjacent.
 
-    A record missing coordinates cannot be excluded on geography, so it is
-    paired with everything (correctness over pruning): if ``a`` has no coords
-    it pairs with all of ``b``; a coordless ``b`` pairs with every ``a``. When
-    every record carries coordinates this is pure same-cell+ring blocking.
+    ``safety_res`` adds a second, coarser ring (e.g. 6): pairs adjacent at
+    *either* resolution are kept. Res-7 1-ring recall on true pairs collapses
+    beyond ~2 km of GPS offset; the res-6 net holds it to roughly 10 km.
+
+    A record missing coordinates cannot be excluded on geography. With
+    ``pair_coordless_with_all=True`` (the standalone default) it is paired
+    with everything — correctness over pruning, at O(n·m) cost for those
+    records. Union blocking passes ``False`` and covers coordless records via
+    the token/id keys instead; callers report the coordless count loudly
+    either way.
     """
-    b_index = h3_index(list_b, lat_field, lon_field, res)
+    resolutions = [res] if safety_res is None else [res, safety_res]
+    b_indexes = {r: h3_index(list_b, lat_field, lon_field, r) for r in resolutions}
     b_nocoord = [
         j for j, rb in enumerate(list_b)
         if _coords(rb, lat_field, lon_field) is None
@@ -113,21 +135,163 @@ def candidate_pairs(
     for i, ra in enumerate(list_a):
         pt = _coords(ra, lat_field, lon_field)
         if pt is None:
-            # No geography to block on -> compare against every b.
-            for j in all_b:
-                yield (i, j)
+            if pair_coordless_with_all:
+                # No geography to block on -> compare against every b.
+                for j in all_b:
+                    yield (i, j)
             continue
-        cell = _latlng_to_cell(pt[0], pt[1], res)
         seen: set[int] = set()
-        for ring_cell in _grid_disk(cell, 1):
-            for j in b_index.get(ring_cell, ()):
+        for r in resolutions:
+            cell = _latlng_to_cell(pt[0], pt[1], r)
+            for ring_cell in _grid_disk(cell, 1):
+                for j in b_indexes[r].get(ring_cell, ()):
+                    if j not in seen:
+                        seen.add(j)
+                        yield (i, j)
+        if pair_coordless_with_all:
+            for j in b_nocoord:  # coordless b's can't be excluded
                 if j not in seen:
                     seen.add(j)
                     yield (i, j)
-        for j in b_nocoord:  # coordless b's can't be excluded
-            if j not in seen:
-                seen.add(j)
+
+
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
+def _norm_tokens(text: Any) -> set[str]:
+    """Lowercased, diacritics-folded word tokens of a value."""
+    folded = unicodedata.normalize("NFKD", str(text).lower())
+    folded = "".join(c for c in folded if not unicodedata.combining(c))
+    return set(_TOKEN_RE.findall(folded))
+
+
+def _token_index(records: list[dict], fields: Iterable[str]) -> dict[str, list[int]]:
+    index: dict[str, list[int]] = {}
+    for i, rec in enumerate(records):
+        tokens: set[str] = set()
+        for f in fields:
+            value = rec.get(f)
+            if value not in (None, ""):
+                tokens |= _norm_tokens(value)
+        for tok in tokens:
+            index.setdefault(tok, []).append(i)
+    return index
+
+
+def token_candidate_pairs(
+    list_a: list[dict],
+    list_b: list[dict],
+    fields: Iterable[str],
+    *,
+    pair_cap: int = 1000,
+) -> Iterator[tuple[int, int]]:
+    """Yield pairs sharing a *rare* token in any of ``fields``.
+
+    Rarity is enforced as a cost bound, not a frequency guess: a token whose
+    occurrences would contribute more than ``pair_cap`` pairs (``count_a x
+    count_b``) is too common to block on ("clinic", "primary") and is skipped.
+    Distance never enters — this is the recall channel for true matches whose
+    coordinates disagree by kilometres, and for records with no coordinates.
+    May yield duplicates across tokens; union callers dedupe.
+    """
+    fields = tuple(fields)
+    index_a = _token_index(list_a, fields)
+    index_b = _token_index(list_b, fields)
+    for tok, a_ids in index_a.items():
+        b_ids = index_b.get(tok)
+        if not b_ids or len(a_ids) * len(b_ids) > pair_cap:
+            continue
+        for i in a_ids:
+            for j in b_ids:
                 yield (i, j)
+
+
+def _norm_id_value(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(value).lower())
+
+
+def id_candidate_pairs(
+    list_a: list[dict],
+    list_b: list[dict],
+    fields: Iterable[str],
+) -> Iterator[tuple[int, int]]:
+    """Yield pairs agreeing exactly (normalised) on any identifier field.
+
+    A shared registry id is the strongest possible blocking key: such a pair
+    must always reach the comparators, whatever the map says.
+    """
+    fields = tuple(fields)
+    index_b: dict[str, list[int]] = {}
+    for j, rec in enumerate(list_b):
+        for f in fields:
+            value = rec.get(f)
+            if value in (None, ""):
+                continue
+            key = _norm_id_value(value)
+            if key:
+                index_b.setdefault(key, []).append(j)
+    for i, rec in enumerate(list_a):
+        for f in fields:
+            value = rec.get(f)
+            if value in (None, ""):
+                continue
+            for j in index_b.get(_norm_id_value(value), ()):
+                yield (i, j)
+
+
+def union_candidate_pairs(
+    list_a: list[dict],
+    list_b: list[dict],
+    *,
+    lat_field: str = "lat",
+    lon_field: str = "lon",
+    text_fields: Iterable[str] = (),
+    id_fields: Iterable[str] = (),
+    res: int = 7,
+    safety_res: int | None = 6,
+    pair_cap: int = 1000,
+) -> tuple[list[tuple[int, int]], dict[str, int]]:
+    """OR of the three blocking keys, deduped: H3 ∪ rare-token ∪ shared-id.
+
+    Returns ``(pairs, info)`` where ``info`` reports how many *new* pairs each
+    strategy contributed (in application order: h3, token, id) plus the
+    coordless record counts — the honesty numbers a run report needs. Coordless
+    records are covered by the token/id keys here, never by a silent
+    cross-product.
+    """
+    seen: set[tuple[int, int]] = set()
+
+    def _absorb(pairs: Iterator[tuple[int, int]]) -> int:
+        added = 0
+        for p in pairs:
+            if p not in seen:
+                seen.add(p)
+                added += 1
+        return added
+
+    n_h3 = _absorb(candidate_pairs(
+        list_a, list_b, res=res, lat_field=lat_field, lon_field=lon_field,
+        safety_res=safety_res, pair_coordless_with_all=False,
+    ))
+    text_fields = tuple(text_fields)
+    id_fields = tuple(id_fields)
+    n_token = _absorb(token_candidate_pairs(
+        list_a, list_b, text_fields, pair_cap=pair_cap,
+    )) if text_fields else 0
+    n_id = _absorb(id_candidate_pairs(list_a, list_b, id_fields)) if id_fields else 0
+
+    info = {
+        "h3": n_h3,
+        "token": n_token,
+        "id": n_id,
+        "coordless_a": sum(
+            1 for r in list_a if _coords(r, lat_field, lon_field) is None
+        ),
+        "coordless_b": sum(
+            1 for r in list_b if _coords(r, lat_field, lon_field) is None
+        ),
+    }
+    return sorted(seen), info
 
 
 def blocking_recall(

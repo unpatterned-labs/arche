@@ -14,7 +14,6 @@ Lifecycle (five user-facing steps)::
                                (v0.2.0a2:
                                 arche.link)
 
-Quickstart (v0.2, PRD §10.1)::
 
     from arche import Pipeline
 
@@ -157,6 +156,7 @@ _LAZY: dict[str, tuple[str, str]] = {
     # --- extract / ingest -------------------------------------------------
     "Entity": (".extract", "Entity"),
     "extract": (".extract", "extract"),
+    "extract_places": (".addr.roles", "extract_places"),
     "extract_text": (".workflow._ingest", "extract_text"),
     # Additive canonical vocabulary. ``Entity`` above stays the *reference*
     # (mention) for back-compat; the canonical *resolved* Entity is reached
@@ -271,11 +271,9 @@ def __dir__() -> list[str]:
 # ``from arche import *`` and IDE auto-complete favour the v0.2 framework
 # primitive. The v0.1 surface is removed in v0.3.
 __all__ = [
-    # PRD §10.1 — the v0.2 framework primitive
     "Pipeline",
     "Result",
     "Detection",
-    # Level 2 API kept in __all__ because it's the workhorse path
     "detect",
     "match",
     "to_match_record",
@@ -284,9 +282,9 @@ __all__ = [
     "load_type_vocab",
     "link",
     "resolve",
-    # v0.2.0a2 — places (spec §5 + §16.3)
     "resolve_places",
     "list_places",
+    "extract_places",
     # Versioning
     "__version__",
 ]
