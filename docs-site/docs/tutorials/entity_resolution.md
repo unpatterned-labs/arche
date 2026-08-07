@@ -25,7 +25,7 @@ Under the hood, two backends:
 Three customer signup records arrive from three different channels (web form, USSD callback, branch tablet). All three are the same person, but the names are spelled differently and only one has a NIN.
 
 ```python
-from arche import Pipeline
+from arche import detect
 from arche.resolve import resolve_entities
 
 texts = [
@@ -34,20 +34,42 @@ texts = [
     "Adesola Okonkwo, phone +2348035557890, email aokonkwo@example.com.",
 ]
 
-pipeline = Pipeline(jurisdiction="NG")
 all_entities = []
 for t in texts:
-    result = pipeline.process(t)
-    all_entities.extend(result.entities)   # populated in v0.2.0a2; for v0.2.0a1, see result.detections
+    all_entities.extend(detect(t))
 
 # Resolve into canonical records
 clusters = resolve_entities(all_entities, use_splink=True)
 for c in clusters:
-    print(c.canonical_name, "<->", [m.text for m in c.mentions])
-# Adesola Okonkwo <-> ['Adesola Okonkwo', 'A. Okonkwo', 'Adesola Okonkwo']
+    print(c.canonical_name, "<->", [m.text for m in c.entities])
 ```
 
-The resolver succeeded for three reasons:
+Real output from a **base install**:
+
+```text
+12345678901 <-> ['12345678901']
+0803 555 7890 <-> ['0803 555 7890']
+22156789012 <-> ['22156789012']
++234 803 555 7890 <-> ['+234 803 555 7890']
+2348035557890 <-> ['2348035557890']
+aokonkwo@example.com <-> ['aokonkwo@example.com']
+```
+
+!!! warning "The person clusters need `arche-core[detect]`"
+
+    Six singleton clusters, not one person. In the base install `detect()`
+    extracts the structured identifiers but **no `PERSON` entities** - free-form
+    person-name extraction is the GLiNER backend's job, and GLiNER ships behind
+    the `[detect]` extra. Install `arche-core[detect]` (or feed `resolve_entities`
+    entities you built yourself) before expecting the three records to collapse
+    into `Adesola Okonkwo`.
+
+    Two API notes while you are here: `Result` has no `.entities` attribute
+    (`result.entities` raises `AttributeError` - use `detect()` or
+    `result.detections`), and `ResolvedEntity` names its member list `.entities`,
+    not `.mentions`.
+
+With person entities present, the resolver succeeds for three reasons:
 
 1. **Phone normalization** - `0803 555 7890`, `+234 803 555 7890`, and `+2348035557890` all normalize to `+2348035557890` via libphonenumber. That's the strongest match key.
 2. **African-name equivalence** - `arche.detect._names.lexicon` recognises spelling variants and initial-based matches.

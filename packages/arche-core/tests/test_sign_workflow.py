@@ -38,7 +38,10 @@ def test_envelope_from_pipeline_result_round_trip():
     assert envelope.issuer == issuer
     assert envelope.purpose == "dsar_response"
     assert envelope.jurisdiction == "NG"
-    assert envelope.statute == "NDPA-2023@vv1.0"  # version field as stored
+    # The pack stores ``version: v1.0``; the envelope must not prefix a second
+    # ``v``. This assertion previously pinned the malformed ``@vv1.0`` form,
+    # locking the bug in rather than catching it.
+    assert envelope.statute == "NDPA-2023@v1.0"
     assert envelope.schema_version == "arche+envelope/v1"
     assert len(envelope.detections) == len(result.detections)
     assert len(envelope.policy_outcomes) == len(result.policy_outcomes)

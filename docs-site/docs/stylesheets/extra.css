@@ -1,80 +1,377 @@
+/* Material loads only the `font.text` and `font.code` families named in
+   mkdocs.yml. Instrument Serif carries h1/h2 and has to be pulled in here.
+   Georgia is the fallback in the stack below, so headings stay readable if
+   this request fails. */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+/* arche documentation — design system.
+   Source of truth for these decisions: DESIGN.md at the repo root.
+
+   The previous stylesheet was 80 lines: a green header, a few heading
+   colours, and no dark mode. The brand colour appeared in the header bar and
+   then disappeared for the rest of the page. This replaces it with a token
+   system that works in both schemes and carries meaning in colour. */
+
+/* ------------------------------------------------------------------ *
+ * Tokens — light
+ * ------------------------------------------------------------------ */
+
 :root {
-  --md-primary-fg-color: #1f3d36;
+  --arche-ink: #131a18;
+  --arche-ink-muted: #55625d;
+  --arche-surface: #ffffff;
+  --arche-surface-sunken: #f4f7f5;
+  --arche-line: #dde5e1;
+
+  --arche-green-900: #12241f;
+  --arche-green-700: #1f3d36;
+  --arche-green-500: #2f6f63;
+  --arche-green-100: #e4efea;
+
+  /* Verdict states. See DESIGN.md — `review` is amber because abstention is
+     the product thesis, not a failure. Colouring it red would say the
+     opposite of what the engine is for. */
+  --arche-verdict-match: #2f6f63;
+  --arche-verdict-review: #9a6410;
+  --arche-verdict-refused: #8c2f2a;
+
+  --arche-measure: 68ch;
+
+  /* Material overrides */
+  --md-primary-fg-color: var(--arche-green-700);
   --md-primary-bg-color: #ffffff;
-  --md-accent-fg-color: #2f6f63;
-  --md-typeset-a-color: #2f6f63;
+  --md-accent-fg-color: var(--arche-green-500);
+  --md-typeset-a-color: var(--arche-green-500);
+  --md-default-fg-color: var(--arche-ink);
+  --md-code-bg-color: var(--arche-surface-sunken);
 }
 
-.md-header {
-  background: #1f3d36;
+/* ------------------------------------------------------------------ *
+ * Tokens — dark. Surfaces are redesigned, not inverted; the accent is
+ * lifted so it keeps contrast against a dark ground.
+ * ------------------------------------------------------------------ */
+
+[data-md-color-scheme="slate"] {
+  --arche-ink: #e6ede9;
+  --arche-ink-muted: #8ea099;
+  --arche-surface: #0e1614;
+  --arche-surface-sunken: #131f1c;
+  --arche-line: #243330;
+
+  --arche-green-900: #0a1210;
+  --arche-green-700: #1a332d;
+  --arche-green-500: #5cab9b;
+  --arche-green-100: #1b2f2a;
+
+  --arche-verdict-match: #5cab9b;
+  --arche-verdict-review: #d99b3c;
+  --arche-verdict-refused: #d97a72;
+
+  --md-default-bg-color: var(--arche-surface);
+  --md-default-fg-color: var(--arche-ink);
+  --md-typeset-a-color: var(--arche-green-500);
+  --md-accent-fg-color: var(--arche-green-500);
+  --md-code-bg-color: var(--arche-surface-sunken);
+}
+
+/* ------------------------------------------------------------------ *
+ * Chrome
+ * ------------------------------------------------------------------ */
+
+.md-header,
+.md-tabs {
+  background: var(--arche-green-900);
   box-shadow: none;
 }
 
-.md-tabs {
-  background: #1f3d36;
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  border-bottom: 1px solid var(--arche-line);
+}
+
+.md-footer,
+.md-footer-meta {
+  background: var(--arche-green-900);
 }
 
 .md-main__inner {
-  margin-top: 1.2rem;
+  margin-top: 1.4rem;
 }
 
 .md-content {
-  max-width: 880px;
+  max-width: 960px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Typography
+ *
+ * Material sets the root to 125%, so 1rem = 20px. The previous system used
+ * 0.78rem body (15.6px) inside an 880px column, which is ~100 characters per
+ * line — well past comfortable. Prose is capped to a measure below; tables
+ * and code are deliberately exempt, because truncating a code line is worse
+ * than a wide block.
+ * ------------------------------------------------------------------ */
 
 .md-typeset {
-  font-size: 0.78rem;
-  line-height: 1.65;
+  font-size: 0.82rem;
+  line-height: 1.68;
+  color: var(--arche-ink);
 }
 
+/* Cap the measure on prose only. */
+.md-typeset > p,
+.md-typeset > ul,
+.md-typeset > ol,
+.md-typeset > blockquote {
+  max-width: var(--arche-measure);
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* h1 was 31.2px against a 24.4px h2 — a 1.28x step reads as no hierarchy at
+   all. 42/28 restores a legible jump. */
 .md-typeset h1 {
-  color: #18231f;
-  font-weight: 700;
-  margin-bottom: 0.45rem;
+  font-size: 2.1rem;
+  line-height: 1.12;
+  color: var(--arche-ink);
+  margin-bottom: 0.6rem;
 }
 
 .md-typeset h2 {
-  color: #20372f;
-  font-weight: 650;
-  margin-top: 2.1rem;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--arche-ink);
+  margin-top: 2.6rem;
+  margin-bottom: 0.7rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--arche-line);
 }
 
 .md-typeset h3 {
+  font-size: 1rem;
   font-weight: 650;
+  line-height: 1.3;
+  margin-top: 1.8rem;
 }
 
+.md-typeset h4 {
+  font-size: 0.86rem;
+  font-weight: 650;
+  color: var(--arche-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------------------ *
+ * Code
+ * ------------------------------------------------------------------ */
+
 .md-typeset code {
-  border-radius: 4px;
+  border-radius: 3px;
+  font-size: 0.86em;
 }
 
 .md-typeset pre > code {
   font-size: 0.72rem;
+  line-height: 1.6;
+  border-radius: 3px;
+  overflow-x: auto;
 }
 
+.md-typeset pre {
+  max-width: 100%;
+}
+
+/* ------------------------------------------------------------------ *
+ * Tables
+ * ------------------------------------------------------------------ */
+
 .md-typeset table:not([class]) {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--arche-line);
+  border-radius: 0;
 }
 
 .md-typeset table:not([class]) th {
-  background: #eef5f2;
-  color: #1f3d36;
+  background: var(--arche-surface-sunken);
+  color: var(--arche-ink);
   font-weight: 650;
+  border-bottom: 1px solid var(--arche-line);
 }
 
-.md-typeset blockquote {
-  border-left-color: #7aa89c;
+.md-typeset table:not([class]) td {
+  border-top: 1px solid var(--arche-line);
 }
+
+/* Wide tables scroll inside their own container instead of pushing the page
+   sideways. */
+.md-typeset__scrollwrap {
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * Verdict states — the abstention palette
+ *
+ * Used wherever a decision is displayed, in prose or in output. Markup:
+ *   <span class="verdict verdict--review">review</span>
+ * ------------------------------------------------------------------ */
+
+.verdict {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  border-radius: 3px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border: 1px solid currentcolor;
+}
+
+.verdict--match {
+  color: var(--arche-verdict-match);
+}
+
+.verdict--review {
+  color: var(--arche-verdict-review);
+}
+
+.verdict--refused {
+  color: var(--arche-verdict-refused);
+}
+
+/* ------------------------------------------------------------------ *
+ * Home page — hero and the four-verb strip
+ *
+ * Deliberately not a three-column icon grid. It is a linear pipeline,
+ * because that is what the product is.
+ * ------------------------------------------------------------------ */
+
+.arche-hero {
+  padding: 2.4rem 0 1.6rem;
+  border-bottom: 1px solid var(--arche-line);
+  margin-bottom: 2rem;
+}
+
+.arche-hero__tagline {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 2.6rem;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.6rem;
+  color: var(--arche-ink);
+}
+
+.arche-hero__sub {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 52ch;
+  color: var(--arche-ink-muted);
+  margin: 0 0 1.4rem;
+}
+
+.arche-hero__status {
+  display: inline-block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: var(--arche-verdict-review);
+  border: 1px solid currentcolor;
+  border-radius: 3px;
+  padding: 0.15em 0.6em;
+}
+
+.arche-verbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--arche-line);
+  border: 1px solid var(--arche-line);
+  margin: 2rem 0;
+}
+
+.arche-verb {
+  background: var(--arche-surface);
+  padding: 1.1rem 1rem;
+}
+
+.arche-verb__name {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--arche-green-500);
+  margin: 0 0 0.4rem;
+}
+
+.arche-verb__body {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--arche-ink-muted);
+  margin: 0;
+}
+
+@media screen and (max-width: 60em) {
+  .arche-verbs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .arche-hero__tagline {
+    font-size: 1.9rem;
+  }
+}
+
+@media screen and (max-width: 30em) {
+  .arche-verbs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Navigation
+ * ------------------------------------------------------------------ */
 
 .md-nav__title {
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .md-nav__link--active,
 .md-nav__link:is(:focus, :hover) {
-  color: #2f6f63;
+  color: var(--arche-green-500);
 }
+
+/* ------------------------------------------------------------------ *
+ * Admonitions
+ * ------------------------------------------------------------------ */
 
 .md-typeset .admonition,
 .md-typeset details {
   border-radius: 6px;
+  font-size: 0.78rem;
+  border-width: 1px;
+}
+
+.md-typeset blockquote {
+  border-left-color: var(--arche-green-500);
+  color: var(--arche-ink-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion — functional only, and off entirely when the reader asks.
+ * ------------------------------------------------------------------ */
+
+.md-typeset a {
+  transition: color 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

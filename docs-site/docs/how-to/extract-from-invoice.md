@@ -7,18 +7,31 @@ pip install arche-core[doc]   # adds docling for PDF/DOCX/PPTX/XLSX
 ```
 
 ```python
+from collections import Counter
 from arche import Pipeline
-from arche.graph.audit import AuditLog
 
-audit = AuditLog("./invoice-audit.sqlite")
-pipeline = Pipeline(jurisdiction="NG", audit_log=audit)
+pipeline = Pipeline(jurisdiction="NG")
 
 result = pipeline.process_file("invoice.pdf")
-print(result.summary())
-# {'PII-2-NIN': 1, 'PII-3-PHONE': 2, 'PII-4-EMAIL': 1, ...}
+print(Counter(d.category for d in result.detections))
 
 print(result.redacted_text)   # Safe to share with downstream consumers
 ```
+
+The counts depend on your invoice. Running the same two lines on the extracted
+text of a representative Nigerian invoice line -
+`"Invoice for Fatima Abdullahi, NIN 12345678901, phone 0803 555 7890, phone 0805 111 2222."` -
+gives:
+
+```text
+Counter({'PII-1-NAME': 2, 'PII-3-PHONE': 2, 'PII-2-NIN': 1})
+```
+
+Two things the older docs got wrong here: `Pipeline` takes no `audit_log=`
+argument (see the [constructor reference](../api/resolve.md#pipeline)), and
+`Result` has no `summary()` method - count over `result.detections` instead.
+To persist an audit trail to SQLite, see
+[Persisted audit log](../api/resolve.md#persisted-audit-log--signed-regulator-export).
 
 ---
 
@@ -53,8 +66,11 @@ signed = SignWorkflow(jurisdiction="NG").sign(
     issuer_key,
     purpose="invoice_processing",
 )
-# `signed.serialize()` is a compact JWS string the consumer can verify
-# with arche.sign.VerifyExtractWorkflow - no network call required.
+# `signed` IS the compact JWS string - `SignWorkflow.sign()` returns `str`
+# directly. There is no `.serialize()` call. The consumer verifies it with
+# arche.sign.VerifyExtractWorkflow - no network call required.
+print(signed[:40])
+# eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDprZXk6
 ```
 
 ---

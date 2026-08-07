@@ -2,7 +2,7 @@
 
 **Audience**: Fintech backend engineers, compliance teams, procurement officers
 **Time**: 10-15 minutes
-**Prerequisites**: Python 3.10+, `pip install arche-core`
+**Prerequisites**: Python 3.11+, `pip install arche-core`
 
 ---
 
@@ -219,7 +219,6 @@ for event in result.audit_log[:2]:
 ```
 
 Each audit event stores the **category label**, **character span**, **detector**, and **statute citation** - but never the NIN, name, or phone value itself. You can ship this straight to your logging pipeline and stay compliant: an auditor can reconstruct exactly what was detected and which law applied, with zero PII at rest. (Set `Pipeline(audit=False)` to skip audit-log emission.)
-```
 
 ## Step 6: Batch Processing
 
@@ -244,7 +243,7 @@ for i, result in enumerate(results, start=1):
     print()
 ```
 
-For files (PDF/DOCX) rather than strings, use `pipeline.process_file(path)` with the `arche-core[pdf]` / `[docx]` extras installed.
+For files (PDF/DOCX/PPTX/XLSX) rather than strings, use `pipeline.process_file(source)` with the `arche-core[doc]` extra installed - `process_file` routes through docling, so `[doc]` is the extra that matters. (`[pdf]` and `[docx]` are separate legacy extras that pull pymupdf / python-docx and are *not* what `process_file` uses.) Add `[doc-ocr]` for scanned pages. The parameter is named `source`, not `path`.
 
 ## Step 7: ISBN Detection (Bonus)
 

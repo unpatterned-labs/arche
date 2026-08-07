@@ -11,11 +11,15 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
 
 ### Changed — statute pack maturity, stated honestly
 
-- **All six statute packs are now `version: v1.0`** (NDPA-2023, POPIA, Kenya
-  DPA, Ghana DPA, GDPR, HIPAA Safe Harbor). POPIA / Kenya DPA / Ghana DPA
-  were labelled `v0.1-scaffold` while carrying complete category mappings —
-  and GDPR / HIPAA were already `v1.0` with no external review, so the label
-  meant two different things depending on the file.
+- **Every pack now declares its maturity in two independent fields.**
+  `NDPA-2023`, `GDPR` and `HIPAA Safe Harbor` ship at `version: v1.0`.
+  `POPIA`, `Kenya DPA` and `Ghana DPA` remain `version: v0.1-scaffold`:
+  they carry complete category mappings, but the version bump is held until
+  their cited sections have had a second reading. Previously the label meant
+  two different things depending on the file — GDPR / HIPAA were already
+  `v1.0` with no external review, while three packs with equally complete
+  mappings sat at `v0.1-scaffold`. `review_status` (below) is what
+  disentangles those two meanings; `version` alone never could.
 - **New `review_status` field on every pack**, orthogonal to `version`:
   `version` means *complete and stable* (our work); `review_status` means
   *who vouches for the mappings* (a fact about the world). Values are
@@ -30,17 +34,21 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
   pack carries a complete category mapping with cited sections and a declared
   review status." Regulator review is now tracked per pack and sought
   continuously, rather than gating a release. Revised in the open rather than
-  quietly re-checked: 2 of 4 beta criteria are now met.
+  quietly re-checked. Of the four criteria: **one met, one partially met, two
+  open** — the roadmap tracks each one.
 
 ### Changed — the roadmap is a living document again
 
 - **`concepts/roadmap.md` rewritten for v0.3.0a1.** It had drifted a full
   positioning behind: it described a 980-test v0.2.0a3 whose lead was African
   PII detection, listed `resolve` / `sign` / places as "power-user workflows,
-  not the lead pitch", carried "no MCP server" as an explicit non-commitment
-  (we ship one), and reported three statute packs as `v0.1-scaffold`. It now
+  not the lead pitch", and described the statute packs before `review_status`
+  existed to say who vouches for them. It now
   covers what actually ships (resolve, declare, the LLM lane, spatial roles
-  and the referee, detect + govern, attest and the agent surface), tracks the
+  and the referee, detect + govern, attest). No MCP server ships in this
+  release — `arche-mcp` is not published and no server code lives in this
+  repository; documentation that describes MCP tools in the present tense is
+  being corrected. The roadmap tracks the
   beta criteria with per-criterion status, separates **in flight** work into
   the two live tracks, states each **gated** item with the prerequisite that
   gates it, and records three direction changes with their reasons — a
@@ -66,17 +74,128 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
   for v0.4. `ResolvedEntity` keeps its name (decision 2026-08-07).
 
 ### Added
-  
-  
-  ## [0.2.0a3] — 2026-05-28
 
-  ### Changed
+- **Resolution became a first-class surface.** `resolve.pairwise()` scores a
+  single pair and returns a `CoReferenceDecision` (`identity` is one of
+  `same_entity` / `review` / `different`); `resolve.crosswalk()` runs a whole
+  table and returns `matches`, `count`, `blocking` and `pins`;
+  `resolve.reconcile()` and `resolve.sign_edges()` close the loop.
+- **Union blocking.** Candidate generation ORs spatial cells, rare shared
+  tokens, and shared identifiers (`union_candidate_pairs`) rather than
+  blocking on geography alone. `blocking_recall()` measures the result.
+- **Declare your own schema.** One YAML declares your fields and annotates
+  each with an arche role; `Declaration` generates the comparators, the
+  masking, the JSON Schema your LLM extracts into, and a content-hash pin
+  that enters every decision id. Driven from the CLI with
+  `arche schema validate` and `arche schema gen`.
+- **The LLM lane.** `extract_declared()` reads messy text into a declared
+  schema with hallucinated fields recorded as violations rather than values;
+  `grade_pairs()` and `grade_extractions()` score a model's judgment with
+  `review` counted as an honest abstention rather than an error.
+- **Spatial role labeling.** `extract_places()` labels which address in a
+  sentence is the origin and which is the destination and returns the
+  linguistic cue that decided it. Conflicting cues, missing cues, and negated
+  cues all yield `role="unknown"` at floor confidence rather than a guess.
+  A 22-case labelled gold set ships inside the wheel
+  (`load_gold()`) with a refusal-aware scorer (`grade_places()`), so the same
+  set grades your own extractor, including your LLM.
+- **Attestation.** `attest()` and `verify_attestation()` sign a decision
+  together with the exact representation that produced it — engine version,
+  thresholds, blocking strategy, table provenance, declaration pin.
+- **The artist entity pack** — 38 equivalence groups across 112 name forms,
+  demonstrating that a new entity type is data rather than new code.
+- **`arche compare`** — the CLI front door, masked by default, with
+  `--demo` requiring no data of your own.
 
-  - **PyPI metadata corrected.** `description` and `keywords` in pyproject.toml were still carrying the old "identity workflow framework" positioning; rewritten to match the v0.2 tagline ("African PII detection that cites the law it enforces"). v0.2.0a2 is yanked from PyPI for the same reason, its summary actively misrepresented the project.   
-  > African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH — grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
-  - **Classifiers refreshed.** Added Financial / Legal / IT audiences, Security + Text Processing topics, OS Independent, Typing :: Typed. Dropped Scientific/Engineering :: AI, it drew the wrong audience for a rule-based PII library.
-  - Keywords scrubbed of `identity-resolution`, `entity-resolution`, `digital-public-infrastructure`, `workflow-framework`, `DPI`, `identity-workflows` (all v0.1 framings); replaced with PII / data-protection / per-jurisdiction terms.
-  - **Authors field** now uses `{name = "Dennis Irorere", email = "connect@unpatterned.org"}` instead of bare `{name = "unpatterned.org"}`, so PyPI's contact link points somewhere real.
+### Fixed
+
+- **`statute_at_signing` no longer double-prefixes the version.** Statute
+  packs store `version: v1.0`, and the envelope builder prepended a second
+  `v`, so every signed envelope carried `NDPA-2023@vv1.0`. Now
+  `NDPA-2023@v1.0`. The round-trip test had pinned the malformed string,
+  which is why it survived; the assertion has been corrected.
+- **Attestations no longer claim reproducibility they do not have.**
+  `reproducible` was computed as `mode == "jws"` — a fact about the signing
+  format, not about the decision. So a decision built from an LLM extraction
+  was signed as `reproducible: True` even though its own `extraction` pin
+  recorded `reproducible: false`, putting both claims inside the same signed
+  artifact. It is now derived from the decision's pins: any pin declaring
+  itself non-reproducible makes the attestation say so. SD-JWT remains
+  non-reproducible regardless, since salted disclosure digests are not
+  byte-stable. Surfaced while verifying the bring-your-own-LLM path end to
+  end.
+- **`dir(arche.llm)` now shows the LLM API.** Everything except `LLMConfig`
+  loads lazily through the module's `__getattr__`, and Python's default module
+  `dir()` reads `__dict__` — so the module advertised `LLMConfig` alongside
+  `Any`, `annotations`, `dataclass` and `field`, and none of the actual
+  functions. Invisible to tab-completion and unhelpful at a REPL. `__dir__`
+  now returns the curated public surface plus the submodules, deterministically
+  regardless of what has been imported.
+- **`HarnessReport` and `Divergence` are importable from `arche.llm`.**
+  `grade_pairs()` returns a `HarnessReport` whose `divergences` are
+  `Divergence` objects, but neither type could be imported from the package
+  that returns them, so callers could not annotate against them.
+  `DeclaredExtraction`, `build_messages` and `build_places_messages` were
+  likewise reachable or useful but unlisted; `__all__` and the lazy-import map
+  are now generated from one table so they cannot drift apart.
+- **PyPI project metadata.** The `Documentation` URL pointed at
+  `docs.unpatterned.org`, which does not resolve; it now points at the
+  published site. `Changelog` and `Issues` links added.
+- **The package version is single-sourced.** `pyproject.toml` declared
+  `0.2.0a3` while `arche.__version__` reported `0.3.0a1`, so the built wheel
+  would have gone out under the previous release's number. Version is now
+  read from `src/arche/_version.py` and the two cannot drift again.
+
+### Security
+
+- **`sign.verify()` no longer trusts the key a token names for itself.**
+  `allow_did_key_from_kid` defaulted to `True`, so `verify(token)` with no
+  key fell back to decoding the public key from the token's own `kid`. Since
+  the signer chooses `kid`, anyone could sign a payload with their own
+  keypair, self-assert the matching `kid`, and get `valid=True` — with no
+  way to tell from the result that nothing had been authenticated. The
+  module docstring taught exactly that call.
+
+  **This is a breaking change, deliberately.** `verify(token)` with no
+  `public_key` and no `resolver` now returns `valid=False` and an error
+  naming both options. Callers who want the keyless offline path opt in with
+  `allow_did_key_from_kid=True`.
+
+  `VerificationResult` gains two fields so the question is answerable at all:
+  `key_source` (`"pinned"` / `"resolver"` / `"self-asserted"`) and `trusted`,
+  which is True only for the first two. **`valid` answers "does this
+  signature match this key"; only `trusted` answers "and did that key come
+  from somewhere I control".** `VerifyExtractResult`, `AttestationVerifyResult`
+  and `SDJWTVerifyResult` carry the same two fields.
+
+  `VerifyExtractWorkflow`, `verify_attestation()` and `verify_sd_jwt()` opt in
+  explicitly, so **offline envelope verification still works exactly as
+  documented** — a recipient with no pinned key can still check an envelope
+  with no resolver and no network call. What changed is that the result now
+  reports `signature_trusted=False` in that case, instead of being
+  indistinguishable from a verified issuer.
+
+  Five regression tests now pin this contract. The suite previously had none:
+  every signing test called the bare form, so the behaviour was asserted as
+  correct rather than caught.
+
+### Known issues
+
+- **`Pipeline(address_parsing=True)` is currently a no-op** — `result.addresses`
+  stays empty. Call `arche.addr.parse_addresses()` directly meanwhile.
+- **`Pipeline` does not detect email addresses.** `arche.detect.detect_emails`
+  works standalone but is not in the default detector chain, so emails survive
+  redaction. Pass an explicit `detectors` list if you need them.
+
+## [0.2.0a3] — 2026-05-28
+
+### Changed
+
+- **PyPI metadata corrected.** `description` and `keywords` in pyproject.toml were still carrying the old "identity workflow framework" positioning; rewritten to match the v0.2 tagline ("African PII detection that cites the law it enforces"). v0.2.0a2 is yanked from PyPI for the same reason, its summary actively misrepresented the project.   
+> African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH — grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
+- **Classifiers refreshed.** Added Financial / Legal / IT audiences, Security + Text Processing topics, OS Independent, Typing :: Typed. Dropped Scientific/Engineering :: AI, it drew the wrong audience for a rule-based PII library.
+- Keywords scrubbed of `identity-resolution`, `entity-resolution`, `digital-public-infrastructure`, `workflow-framework`, `DPI`, `identity-workflows` (all v0.1 framings); replaced with PII / data-protection / per-jurisdiction terms.
+- **Authors field** now uses `{name = "Dennis Irorere", email = "connect@unpatterned.org"}` instead of bare `{name = "unpatterned.org"}`, so PyPI's contact link points somewhere real.
 
 
 ## [0.2.0a2] — 2026-05-28

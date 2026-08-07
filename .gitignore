@@ -47,8 +47,11 @@ htmlcov/
 # Docker
 docker-compose.override.yml
 
-# Database
+# Database. The audit-log examples in the docs write SQLite files into the
+# working directory when you run them, so ignore those too.
 *.db
+*.sqlite
+*.sqlite3
 
 
 demo/outputs/
@@ -66,7 +69,10 @@ datasets/compliance/
 uv.lock
 pyproject.toml
 
-/docs-site/docs/concepts/
+/docs-site/docs/concepts/arche-direction-and-5-year-vision.md
+/docs-site/docs/concepts/arche-6month-roadmap-h2-2026.md
+/docs-site/docs/concepts/arche-phase0-mining-plan.md
+/docs-site/docs/concepts/roadmap_old.md
 
 /notebooks
 

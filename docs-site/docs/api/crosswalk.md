@@ -11,12 +11,43 @@ from arche import resolve
 
 decision = resolve.pairwise("Fatima Abdullahi, NIN 12345678901",
                             "Fatuma Abdullahi, NIN 12345678901")
-decision.decision      # "match" | "review" | "no_match"
+decision.identity      # "same_entity" | "review" | "different"
+decision.action        # what the gate decided to do about it
+decision.score         # 0.9999
 decision.factors       # per-field evidence
 decision.decision_id   # reproducible content address
 ```
 
-Sign with `arche.attest.attest(decision, issuer, mode="jws")`. 
+Real output for the pair above:
+
+```text
+identity    = 'review'
+action      = 'no_op'
+score       = 0.9999
+decision_id = 'dec:sha256:a5fde8c138c6157f00c0396ce63f6...'
+```
+
+!!! note "`identity`, not `decision`"
+
+    The verdict field is `decision.identity`, and its values are
+    `same_entity` / `review` / `different`. `decision.decision` does not
+    exist and raises `AttributeError`. The `"match"` / `"review"` /
+    `"no_match"` vocabulary belongs to **crosswalk edges**, which are a
+    different object — see `resolve.crosswalk()` below.
+
+!!! warning "A high score is not a merge"
+
+    Note the pair above scores `0.9999` and still returns `review`. Sharing
+    an exact national ID is strong evidence, but the gate requires
+    *distinctive* evidence before it will call two references the same
+    entity, and it abstains rather than guessing. `review` is the engine
+    working, not failing.
+
+Signing a decision requires a keypair. Calling
+`arche.attest.attest()` on a decision produced without an `issuer_key` raises,
+deliberately:
+a keyless `reference_id` is a hash of the person's attributes and can be
+brute-forced back to the source record. 
 
 ## `resolve.crosswalk(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
 

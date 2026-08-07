@@ -81,6 +81,20 @@ class VerificationResult:
         Convenience: the ``kid`` header, often a did:key.
     error:
         Human-readable reason for failure, ``None`` on success.
+    key_source:
+        Where the verifying key came from. ``"pinned"`` — the caller passed
+        ``public_key``. ``"resolver"`` — a caller-supplied resolver returned
+        it for this ``kid``. ``"self-asserted"`` — it was decoded from the
+        token's own ``kid``, which the signer chose. ``None`` when
+        verification failed before a key was resolved.
+    trusted:
+        True only when the key came from a source the caller controls
+        (``"pinned"`` or ``"resolver"``). **A self-asserted key is never
+        trusted**: anyone can sign a payload with their own keypair and set a
+        matching ``kid``, so ``valid=True`` with ``trusted=False`` means "this
+        token is internally consistent", not "this token came from someone I
+        recognise". Check ``trusted``, not ``valid``, when the signature is
+        meant to prove *who* signed.
     """
 
     valid: bool
@@ -88,6 +102,8 @@ class VerificationResult:
     payload: Any
     kid: str | None
     error: str | None = None
+    key_source: str | None = None
+    trusted: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -168,27 +184,43 @@ def verify(
     public_key: Ed25519PublicKey | None = None,
     resolver: Callable[[str], Ed25519PublicKey | None] | None = None,
     detached_payload: bytes | str | None = None,
-    allow_did_key_from_kid: bool = True,
+    allow_did_key_from_kid: bool = False,
 ) -> VerificationResult:
     """Verify a JWS compact-form signature.
+
+    By default this requires a key you already trust. Pass ``public_key`` or
+    a ``resolver``; without one, verification fails with an actionable error
+    rather than silently falling back to the key the token names for itself.
 
     Parameters
     ----------
     jws_compact:
         The compact JWS string.
     public_key:
-        Public key for verification, if known out-of-band. If omitted,
-        the verifier tries ``resolver(kid)`` then falls back to decoding
-        the ``kid`` as a did:key (when ``allow_did_key_from_kid=True``).
+        Public key for verification, known out-of-band. This is the normal
+        path and the one that authenticates the issuer.
     resolver:
-        Optional function mapping a ``kid`` (e.g. did:web URL) to an
-        Ed25519 public key. Lets callers plug in arbitrary key discovery.
+        Optional function mapping a ``kid`` (e.g. a did:web URL) to an
+        Ed25519 public key. Lets callers plug in their own key discovery.
+        Trusted to exactly the extent the resolver is.
     detached_payload:
         For detached JWS verification: the original payload bytes/string.
     allow_did_key_from_kid:
-        When True (default), if no public_key or resolver-resolved key
-        is available, treat the ``kid`` as a did:key and decode the
-        public key directly from it. This is the offline-friendly path.
+        Opt in to the keyless offline path: when no ``public_key`` and no
+        resolver-resolved key is available, decode the public key from the
+        token's own ``kid``.
+
+        **This authenticates nothing.** The signer chooses ``kid``, so an
+        attacker can sign any payload with their own keypair, set the
+        matching ``kid``, and the signature will verify. The result carries
+        ``key_source="self-asserted"`` and ``trusted=False`` to say so.
+
+        Use it to inspect a token's shape offline, or when the envelope's
+        integrity — not its authorship — is what you need. It defaulted to
+        True through v0.3.0a1; it now defaults to False, because a library
+        whose purpose is verifiable decisions should not make "trusted the
+        attacker's own key" the thing that happens when you call the obvious
+        function with the obvious arguments.
     """
     parts = jws_compact.split(".")
     if len(parts) != 3:
@@ -246,23 +278,34 @@ def verify(
             error=f"Signature decode failed: {exc}",
         )
 
-    # Resolve public key
+    # Resolve public key, recording which trust path produced it. The
+    # ordering is deliberate: a key the caller pinned always wins over one
+    # the token asserts about itself.
     kid = header.get("kid")
     pk = public_key
+    key_source: str | None = "pinned" if pk is not None else None
     if pk is None and resolver is not None and kid is not None:
         pk = resolver(kid)
+        if pk is not None:
+            key_source = "resolver"
     if pk is None and allow_did_key_from_kid and isinstance(kid, str) and kid.startswith("did:key:"):
         try:
             pk = decode_did_key(kid)
+            key_source = "self-asserted"
         except ValueError as exc:
             return VerificationResult(
                 valid=False, header=header, payload=None, kid=kid,
                 error=f"did:key decode failed: {exc}",
             )
     if pk is None:
+        hint = (
+            "No trusted key available: pass public_key=, or a resolver=. "
+            "To verify a token's integrity without authenticating its "
+            "issuer, pass allow_did_key_from_kid=True — but note that a "
+            "self-asserted key proves nothing about who signed."
+        )
         return VerificationResult(
-            valid=False, header=header, payload=None, kid=kid,
-            error="No public key available (provide public_key or resolver, or set kid to did:key)",
+            valid=False, header=header, payload=None, kid=kid, error=hint,
         )
 
     try:
@@ -271,6 +314,7 @@ def verify(
         return VerificationResult(
             valid=False, header=header, payload=None, kid=kid,
             error="Ed25519 signature verification failed",
+            key_source=key_source, trusted=False,
         )
 
     # Parse payload as JSON when reasonable; fall back to bytes
@@ -279,4 +323,10 @@ def verify(
     except (ValueError, json.JSONDecodeError):
         payload = payload_b
 
-    return VerificationResult(valid=True, header=header, payload=payload, kid=kid)
+    return VerificationResult(
+        valid=True, header=header, payload=payload, kid=kid,
+        key_source=key_source,
+        # A self-asserted key verifies the token against itself. That is
+        # integrity, not authorship, so it never counts as trusted.
+        trusted=key_source in ("pinned", "resolver"),
+    )

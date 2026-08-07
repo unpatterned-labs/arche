@@ -1,16 +1,35 @@
 # arche-core
 
-**The identity data engine for Africa.**
+**Know what's real.**
 
-Arche finds identifying data, helps protect it according to the right jurisdiction, and prepares it for privacy-preserving resolution.
+The open engine for messy, multilingual data. Find the entities, resolve who
+they actually are, protect them under the law that applies, and sign every
+decision.
 
-The public `arche-core` package focuses on three connected jobs:
+arche tells you and your agent what — and who — your data is actually talking
+about. It finds the entities in any document or system, standardises them for
+the names and addresses people actually use, and works out which real-world
+thing each one refers to. Along the way it keeps disagreement between sources
+instead of erasing it, protects everything under the law that applies, and
+signs every decision.
 
-- **Detect** identifying data in African text and documents.
-- **Protect** it with jurisdiction-aware masking, tokenization, generalization, dropping, retention, and audit actions.
-- **Resolve** more safely by producing normalized, policy-aware signals such as tokenized IDs, names, phones, and addresses.
+| | |
+|---|---|
+| **detect** | Find the entities and the identifying data in text and documents. |
+| **resolve** | Work out which real-world thing each reference points at — and abstain when the evidence does not support a verdict. |
+| **protect** | Apply the statute that governs the data, and cite the section it came from. |
+| **attest** | Sign a decision together with the evidence and the exact representation that produced it. |
 
-Today, Detect and Protect are the lead product surface. Resolution support is intentionally narrow: name matching, tokenized identifiers, and optional Splink-backed workflows for larger linkage tasks.
+Two records read *Damini Ogulu* and *Burna Boy*. Three clinic registers read
+*Fatima Abdullahi*, *Fatuma Abdullahi*, *F. Abdulahi*. Two sanctioned men share
+the name Khalid Mehmood, the same country and the same programme, and have
+different fathers and different national IDs. Getting those three cases right —
+two splits to heal, one merge to refuse — is the whole job.
+
+Calibrated on the world's hardest identity data, and built for how the world
+actually writes names and addresses everywhere. Africa is where the engine was
+made good, not the limit of where it works: the launch statute packs cover
+Nigeria, Kenya, South Africa and Ghana alongside GDPR and HIPAA Safe Harbor.
 
 > [!WARNING]
 > `arche-core` is pre-beta software. It is suitable for research, prototyping,  evaluation, benchmarking, and contribution. APIs may change between alpha releases. Do not use it with real personal data until you have completed your own legal, privacy, and security review.
@@ -104,22 +123,36 @@ pip install "arche-core[resolve]"
 ## Document scanning
 
 ```python
+from collections import Counter
 from arche import Pipeline
 
 pipeline = Pipeline(jurisdiction="ZA")
 result = pipeline.process_file("dsar_response.pdf")
 
-print(result.summary())
+print(Counter(d.category for d in result.detections))
+print(Counter(o.action for o in result.policy_outcomes))
 print(result.redacted_text)
+```
+
+`Result` is a plain dataclass with the fields `document_hash`, `detections`,
+`addresses`, `policy_outcomes`, `redacted_text`, `audit_log`, `metadata`. There
+is no `summary()` helper — count over `detections` / `policy_outcomes` instead.
+On `Pipeline(jurisdiction="ZA").process("ID 8001015009087, phone 082 555 1234.")`
+the two `Counter` lines print:
+
+```text
+Counter({'PII-2-NATIONAL_ID': 1, 'PII-3-PHONE': 1})
+Counter({'mask': 1, 'tokenize': 1})
 ```
 
 ## Name matching
 
 ```python
-from arche.match import match
+from arche import match
 
 score = match("Mamadou Diallo", "Muhammad Jallow", jurisdiction="NG")
 print(score.decision, score.score)
+# match 0.8865
 ```
 
 Use this when you need culturally aware name matching before or after PII detection.

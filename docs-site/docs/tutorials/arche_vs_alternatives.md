@@ -2,8 +2,9 @@
 
 A practical guide for developers, researchers, DPOs, and civil society choosing between `arche-core` and the other tools in the PII landscape. Honest about what arche is, what it isn't, and where the alternatives are the better pick.
 
-- !!! warning "Status: pre-beta (development) — not for production use yet"
-- Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
+!!! warning "Status: pre-beta (development) — not for production use yet"
+
+    Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
 
 ---
 
@@ -108,9 +109,20 @@ The statute YAMLs live in `arche/policy/statutes/`: **NDPA-2023.yaml** at v1.0 w
 from arche.policy import load_statute
 
 statute = load_statute("NDPA-2023")
-print(statute.categories["PII-2-NIN"].citation)
-# "NDPA-2023 s.30, NIMC Act s.27"
+
+print(statute.action_for("PII-2-NIN"))
+# ('mask', 'NDPA-2023 s.30, NIMC Act s.27',
+#  'Foundational identifier; high sensitivity. NIMC Act restricts disclosure.')
+
+print(statute.policy_mappings["PII-2-NIN"])
+# {'action': 'mask', 'tier': 'high',
+#  'statute_reference': 'NDPA-2023 s.30, NIMC Act s.27',
+#  'rationale': 'Foundational identifier; high sensitivity. NIMC Act restricts disclosure.'}
 ```
+
+`Statute` has no `.categories` attribute. The category table is
+`statute.policy_mappings` (a `dict[str, dict]`), and `statute.action_for(cat)`
+returns the `(action, statute_reference, rationale)` triple.
 
 No other open-source PII library produces this — *here is the rule the redaction enforced* — as a property of every detection. Combined with the audit log below it gives you regulator-ready evidence at the SDK level.
 
@@ -120,16 +132,16 @@ No other open-source PII library produces this — *here is the rule the redacti
 from arche.detect._names.lexicon import are_names_equivalent
 
 are_names_equivalent("Adeyẹmí", "Adeyemi")
-# (True, 0.96) — Yoruba tonal mark equivalence
+# (True, 1.0) — Yoruba tonal mark equivalence
 
 are_names_equivalent("Mamadou Diallo", "Mohamed Diallo")
-# (True, 0.92) — Fulani / Arabic Pan-Islamic equivalence
+# (True, 1.0) — Fulani / Arabic Pan-Islamic equivalence
 
 are_names_equivalent("Chukwuemeka Okafor", "Emeka Okafor")
-# (True, 0.95) — Igbo prefix-elision
+# (True, 1.0) — Igbo prefix-elision
 
 are_names_equivalent("Fatima Abdullahi", "Fatoumata Abdoulaye")
-# (True, 0.89) — Hausa / Wolof cognates
+# (True, 0.943) — Hausa / Wolof cognates
 ```
 
 114 equivalence groups, 454 name variants, 50+ ethnic traditions. Tested against a Jaro-Winkler baseline:
@@ -152,7 +164,7 @@ These features ship today and are fully tested, but they're not the lead pitch. 
 |---|---|---|---|
 | **Sign, share, extract** | `arche.sign`, `arche.credentials.sd_jwt` | Ed25519 + JWS signing of `Pipeline.Result`; SD-JWT-VC re-framing for wallet interop. Offline verification with `did:key`. | Compliance officer needs a regulator-ready signed audit bundle. DSAR response that crosses an organizational trust boundary. KYC attestation a wallet can carry. |
 | **Citizen-side DSAR** | `arche.workflow.dsar` | Draft-only DSAR letter generation citing NDPA s.34 / POPIA s.23 / Kenya DPA s.26 / Ghana DPA s.35. Per-jurisdiction. | Civil-society org training citizens to exercise rights. Journalist filing a DSAR as part of an investigation. |
-| **Entity resolution** | `arche.match`, `arche.link`, `arche.resolve` | Lightweight Fellegi-Sunter matcher with jurisdiction-specific priors. African-name-aware comparator functions. | Deduplicate up to ~100K records on a laptop. For billion-row scale, install `arche-core[resolve]` and feed Splink. |
+| **Entity resolution** | `arche.match`, `arche.link` (functions on the top-level `arche` package), `arche.resolve` | Lightweight Fellegi-Sunter matcher with jurisdiction-specific priors. African-name-aware comparator functions. | Deduplicate up to ~100K records on a laptop. For billion-row scale, install `arche-core[resolve]` and feed Splink. |
 | **Places resolution** | `arche.resolve_places`, `arche.list_places` | Jurisdictional place lookup with verifiable JWS audit receipts. UK first; African expansion is roadmap. | "Find me an NHS dentist near SW1" with a signed receipt for the query, the redaction, and the result. |
 | **Append-only audit log** | `arche.graph.audit` | SQLite-backed log with markdown compliance reports and JWS-signed regulator exports. PII values never stored. | Standalone audit-log surface for an existing detection pipeline. NDPC quarterly handoff. |
 
@@ -168,12 +180,27 @@ The shape of your problem: you have customer records with NIN / BVN / Ghana Card
 
 ```python
 from arche import Pipeline
+from arche.graph.audit import AuditEvent
 
 pipeline = Pipeline(jurisdiction="NG")            # auto-loads NDPA-2023
 result = pipeline.process(customer_intake_text)
 log_to_warehouse(result.redacted_text)            # safe to share
-audit.emit_batch(result.audit_entries)            # PII-free audit row
+audit.emit_many(                                  # PII-free audit rows
+    AuditEvent.detection(
+        document_hash=result.document_hash,
+        detection_id=d.id,
+        category=d.category,
+        span=(d.start, d.end),
+        confidence=d.confidence,
+        detector=d.detector,
+    )
+    for d in result.detections
+)
 ```
+
+(The method is `emit_many`, not `emit_batch`, and it takes `AuditEvent` objects.
+`Result` has no `audit_entries` field - the raw rows are `result.audit_log`, a
+`list[dict]`.)
 
 You use arche when:
 
@@ -194,10 +221,14 @@ for sample in dataset:
     yield {
         "text": sample.text,
         "expected": sample.labels,
-        "detected": [(d.category, d.span) for d in result.detections],
-        "applied_policy": [(o.action, o.statute_section) for o in result.policy_outcomes],
+        "detected": [(d.category, (d.start, d.end)) for d in result.detections],
+        "applied_policy": [(o.action, o.statute_reference) for o in result.policy_outcomes],
     }
 ```
+
+`Detection` exposes `start` / `end`, not a `span` tuple. `PolicyOutcome` names
+the citation field `statute_reference`, not `statute_section` (it *does* have a
+`span`).
 
 You use arche when:
 

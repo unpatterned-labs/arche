@@ -128,18 +128,22 @@ def test_load_public_key_from_raw_bytes():
 def test_sign_and_verify_dict_payload():
     kp = generate_keypair()
     jws_str = sign({"hello": "world"}, kp.private_key, kid=kp.did_key)
-    result = verify(jws_str)
+    result = verify(jws_str, public_key=kp.public_key)
     assert result.valid is True
     assert result.payload == {"hello": "world"}
     assert result.kid == kp.did_key
     assert result.header["alg"] == "EdDSA"
     assert result.header["typ"] == "JWT"
+    # A pinned key is the only thing that makes a signature evidence of
+    # authorship, so the result must say the key was pinned.
+    assert result.key_source == "pinned"
+    assert result.trusted is True
 
 
 def test_sign_and_verify_string_payload():
     kp = generate_keypair()
     jws_str = sign("plain text body", kp.private_key, kid=kp.did_key)
-    result = verify(jws_str)
+    result = verify(jws_str, public_key=kp.public_key)
     assert result.valid is True
     # String payloads are returned as bytes when they don't parse as JSON
     assert result.payload == b"plain text body"
@@ -148,7 +152,7 @@ def test_sign_and_verify_string_payload():
 def test_sign_with_typ_arche_jws():
     kp = generate_keypair()
     jws_str = sign({"foo": "bar"}, kp.private_key, kid=kp.did_key, typ="arche+jws")
-    result = verify(jws_str)
+    result = verify(jws_str, public_key=kp.public_key)
     assert result.valid is True
     assert result.header["typ"] == "arche+jws"
 
@@ -164,7 +168,7 @@ def test_verify_tampered_payload_fails():
     ).rstrip(b"=").decode("ascii")
     tampered = f"{header}.{tampered_payload}.{signature}"
 
-    result = verify(tampered)
+    result = verify(tampered, public_key=kp.public_key)
     assert result.valid is False
     assert "verification failed" in (result.error or "")
 
@@ -210,7 +214,7 @@ def test_detached_jws_roundtrip():
     assert len(parts) == 3
     assert parts[1] == ""
 
-    result = verify(jws_str, detached_payload=payload)
+    result = verify(jws_str, detached_payload=payload, public_key=kp.public_key)
     assert result.valid is True
 
 
@@ -225,7 +229,7 @@ def test_detached_jws_without_payload_fails():
 def test_detached_jws_wrong_payload_fails():
     kp = generate_keypair()
     jws_str = sign(b"original", kp.private_key, kid=kp.did_key, detached=True)
-    result = verify(jws_str, detached_payload=b"different")
+    result = verify(jws_str, detached_payload=b"different", public_key=kp.public_key)
     assert result.valid is False
     assert "verification failed" in (result.error or "")
 
@@ -253,14 +257,20 @@ def test_payload_canonicalization_sorts_keys():
 # ── Offline did:key resolution ──────────────────────────────────────────────
 
 
-def test_verify_uses_did_key_from_kid_when_no_resolver():
-    """The offline path: kid is a did:key, no resolver provided, no
-    public_key argument. verify() decodes the did:key directly."""
+def test_verify_uses_did_key_from_kid_when_explicitly_allowed():
+    """The offline path: kid is a did:key, no resolver, no public_key, and
+    the caller has explicitly opted in. verify() decodes the did:key.
+
+    The signature checks out, so `valid` is True — but the key came from the
+    token itself, so `trusted` must be False. That distinction is the whole
+    point of the opt-in.
+    """
     kp = generate_keypair()
     jws_str = sign({"offline": True}, kp.private_key, kid=kp.did_key)
-    # No public_key, no resolver — should still verify
-    result = verify(jws_str)
+    result = verify(jws_str, allow_did_key_from_kid=True)
     assert result.valid is True
+    assert result.key_source == "self-asserted"
+    assert result.trusted is False
 
 
 def test_verify_with_custom_resolver():
@@ -286,4 +296,91 @@ def test_verify_no_key_available_returns_error():
     jws_str = sign({"x": 1}, kp.private_key, kid="custom:identifier")
     result = verify(jws_str, allow_did_key_from_kid=False)
     assert result.valid is False
-    assert "No public key" in (result.error or "")
+    assert "No trusted key available" in (result.error or "")
+
+
+# ── Trust anchoring ─────────────────────────────────────────────────────────
+#
+# These pin the security contract rather than the current behaviour. Before
+# v0.3.0a1, `allow_did_key_from_kid` defaulted to True, so `verify(token)`
+# with no key returned valid=True for a token signed by anyone at all — the
+# key was read from the `kid` the signer chose. Nothing in the suite caught
+# it, because nothing asserted what verification is *for*.
+
+
+def test_verify_fails_closed_without_a_trusted_key():
+    """The bare call must not silently fall back to the token's own key."""
+    kp = generate_keypair()
+    jws_str = sign({"decision": "match"}, kp.private_key, kid=kp.did_key)
+
+    result = verify(jws_str)
+
+    assert result.valid is False
+    assert result.trusted is False
+    # The error has to tell the caller what to do, not just that it failed.
+    assert "public_key" in (result.error or "")
+    assert "allow_did_key_from_kid" in (result.error or "")
+
+
+def test_self_asserted_key_is_never_trusted():
+    """An attacker signs their own payload and names their own key.
+
+    The signature genuinely matches that key, so `valid` is True on the
+    opted-in path. `trusted` must still be False: the token proves it is
+    internally consistent, not that the legitimate issuer produced it.
+    """
+    attacker = generate_keypair()
+    forged = sign(
+        {"a_id": "PATIENT_X", "decision": "match", "score": 0.9999},
+        attacker.private_key,
+        kid=attacker.did_key,
+        typ="arche+jws",
+    )
+
+    lenient = verify(forged, allow_did_key_from_kid=True)
+    assert lenient.valid is True
+    assert lenient.trusted is False
+    assert lenient.key_source == "self-asserted"
+
+
+def test_forgery_is_rejected_against_the_real_issuer_key():
+    """The same forgery, checked against the key a recipient actually trusts."""
+    attacker = generate_keypair()
+    issuer = generate_keypair()
+    forged = sign(
+        {"decision": "match"}, attacker.private_key, kid=attacker.did_key,
+    )
+
+    result = verify(forged, public_key=issuer.public_key)
+
+    assert result.valid is False
+    assert result.trusted is False
+    assert "verification failed" in (result.error or "")
+
+
+def test_pinned_key_wins_over_a_self_asserted_kid():
+    """A caller-supplied key must take precedence over the token's own kid,
+    even when the kid would decode to something that verifies."""
+    attacker = generate_keypair()
+    issuer = generate_keypair()
+    forged = sign({"x": 1}, attacker.private_key, kid=attacker.did_key)
+
+    # allow_did_key_from_kid=True must not rescue a token that fails against
+    # the pinned key — the fallback is for when no key was supplied at all.
+    result = verify(
+        forged, public_key=issuer.public_key, allow_did_key_from_kid=True,
+    )
+    assert result.valid is False
+    assert result.key_source == "pinned"
+
+
+def test_resolver_supplied_key_counts_as_trusted():
+    """A resolver is the caller's own key discovery, so it anchors trust."""
+    kp = generate_keypair()
+    jws_str = sign({"x": 1}, kp.private_key, kid="did:web:example.org#key-1")
+
+    result = verify(jws_str, resolver=lambda _kid: kp.public_key)
+
+    assert result.valid is True
+    assert result.key_source == "resolver"
+    assert result.trusted is True

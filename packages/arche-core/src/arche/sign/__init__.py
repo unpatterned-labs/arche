@@ -34,10 +34,27 @@ Public API::
         typ="arche+jws",
     )
 
-    # Verify offline (kid embeds the did:key, no resolver needed).
-    result = verify(jws)
+    # Verify against a key you already trust. Always pass one when the
+    # signature is meant to prove *who* signed.
+    result = verify(jws, public_key=kp.public_key)
     assert result.valid
     assert result.payload == {"hello": "world"}
+
+.. warning:: Trust comes from the key, not from ``valid``
+
+   ``verify()`` requires a key you already trust. Without ``public_key`` or
+   a ``resolver`` it now fails with an actionable error rather than falling
+   back to the key the token names for itself.
+
+   That fallback is still available as ``allow_did_key_from_kid=True``, and
+   it is genuinely useful for checking an envelope's integrity offline. But
+   it authenticates nothing: an attacker can sign any payload with their own
+   keypair and set a matching ``kid``, and it will verify. Results from that
+   path carry ``key_source="self-asserted"`` and ``trusted=False``.
+
+   **Check ``result.trusted`` whenever the signature is meant to prove who
+   signed.** ``valid`` answers "does this signature match this key"; only
+   ``trusted`` answers "and did that key come from somewhere I control".
 
 The default algorithm is Ed25519 with did:key issuer identification — the
 EUDI Wallet / MOSIP e-signet / DIF reference choice for 2026 DPI work.

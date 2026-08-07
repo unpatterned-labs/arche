@@ -1,11 +1,11 @@
 # How to Match African Names
 
 ```python
-from arche.african.names import are_names_equivalent
+from arche.detect._names.lexicon import are_names_equivalent
 
 match, confidence = are_names_equivalent("Mamadou", "Muhammad")
 print(f"Match: {match}, Confidence: {confidence:.0%}")
-# Match: True, Confidence: 88%
+# Match: True, Confidence: 92%
 ```
 
 ---
@@ -23,7 +23,7 @@ arche solves this with 114 cultural naming equivalence groups spanning 50+ ethni
 ## Example pairs
 
 ```python
-from arche.african.names import are_names_equivalent
+from arche.detect._names.lexicon import are_names_equivalent
 
 pairs = [
     # Pan-Islamic naming traditions
@@ -52,15 +52,21 @@ Output:
 
 ```
   Fatima               ~ Fatoumata            -> MATCH (94%)
-  Abdullahi            ~ Abdoulaye            -> MATCH (87%)
-  Ibrahim              ~ Ibrahima             -> MATCH (91%)
+  Abdullahi            ~ Abdoulaye            -> MATCH (94%)
+  Ibrahim              ~ Ibrahima             -> MATCH (99%)
   Musa                 ~ Moussa               -> MATCH (96%)
-  Aisha                ~ Aissatou             -> MATCH (89%)
-  Diallo               ~ Jallow               -> MATCH (90%)
+  Aisha                ~ Aissatou             -> MATCH (93%)
+  Diallo               ~ Jallow               -> MATCH (91%)
   Pierre               ~ Peter                -> MATCH (91%)
-  Oluwaseun            ~ Seun                 -> MATCH (85%)
-  Janet Okafor         ~ David Mensah         -> NO MATCH (12%)
+  Oluwaseun            ~ Seun                 -> NO MATCH (18%)
+  Janet Okafor         ~ David Mensah         -> NO MATCH (19%)
 ```
+
+Note the Yoruba prefix-elision case. Compared as bare given names,
+`Oluwaseun` / `Seun` falls below the default 0.80 threshold. Elision is
+recovered when the surrounding name tokens agree - `are_names_equivalent(
+"Chukwuemeka Okafor", "Emeka Okafor")` returns `(True, 1.0)`, because the
+surname anchors the comparison. Compare full names, not isolated given names.
 
 ---
 
@@ -75,10 +81,11 @@ Output:
 The combined score must exceed a threshold (default 0.80) to return `True`.
 
 ```python
-from arche.african.names import are_names_equivalent
+from arche.detect._names.lexicon import are_names_equivalent
 
 # Adjust the threshold
 match, conf = are_names_equivalent("Fatima", "Fatoumata", threshold=0.70)
+# (True, 0.943)
 
 # Adjust the weighting
 match, conf = are_names_equivalent(
@@ -86,7 +93,10 @@ match, conf = are_names_equivalent(
     equivalence_weight=0.80,  # Trust the table more
     jaro_weight=0.20,
 )
+# (True, 0.9715)
 ```
+
+`equivalence_weight`, `jaro_weight`, and `threshold` are keyword-only.
 
 Parameters:
 
@@ -121,7 +131,18 @@ These groups were compiled from civil registration records, census data, and lin
 
 ## Use in a resolution pipeline
 
-The naming intelligence is built into `link()` automatically -- when you resolve entities across two sources, equivalent name variants collapse into one identity:
+The naming intelligence is built into the matcher automatically. `match()` scores
+two names with the same lexicon, in the base install:
+
+```python
+from arche import match
+
+score = match("Fatima Abdullahi", "Fatoumata Abdoulaye", jurisdiction="NG")
+print(score)
+# MatchScore(score=0.9435, decision='match')
+```
+
+`link()` applies the same comparator when it clusters entities across sources:
 
 ```python
 from arche import detect, link
@@ -132,19 +153,17 @@ source_b = detect("Fatoumata Abdoulaye from the MOSIP enrollment center.")
 graph = link(source_a, source_b, jurisdiction="NG")
 
 for identity in graph.resolved:
-    if identity.sources > 1:        # linked across both sources
-        print(identity.canonical_name)
-        print(f"  Aliases: {', '.join(identity.aliases)}")
-        print(f"  Confidence: {identity.confidence:.0%}")
+    print(identity.canonical_name, identity.aliases, identity.confidence)
 ```
 
-```
-Fatoumata Abdoulaye
-  Aliases: Fatima Abdullahi
-  Confidence: 100%
-```
+!!! warning "`link()` needs a person-name detector"
 
-You do not need to call `are_names_equivalent()` directly -- it is used automatically during the link/resolution step.
+    In the **base install** this prints nothing. `detect()` extracts free-form
+    person names only when the GLiNER backend is present, so both calls above
+    return `[]` and `graph.resolved` is empty. Install `arche-core[detect]` to
+    populate person entities, or feed `link()` entities you built yourself.
+
+You do not need to call `are_names_equivalent()` directly -- it is used automatically during the match/link step.
 
 ---
 

@@ -81,7 +81,7 @@ for o in result.policy_outcomes:
 # PII-1-NAME   tokenize   NDPA-2023 s.30
 ```
 
-Statute YAMLs live at `arche/policy/_data/<STATUTE-ID>.yaml` and are human-readable. Statute amendments are policy-file changes, not code changes.
+Statute YAMLs live at `arche/policy/statutes/<STATUTE-ID>.yaml` and are human-readable. Statute amendments are policy-file changes, not code changes.
 
 ## Cultural naming intelligence
 
@@ -103,15 +103,19 @@ Growing via Wikidata + community curation. See [`datasets/`](../../datasets/) fo
 ```python
 # Presidio's English recognizers + arche's African recognizers
 pip install arche-core[presidio]
-# arche.detect.presidio surfaces both as one recognizer set.
+# arche.protect uses Presidio when it is installed and falls back to regex
+# when it is not. (There is no importable arche.detect.presidio API.)
 
 # GLiNER's multilingual NER + arche's statute classification
 pip install arche-core[detect]
-# Pipeline(jurisdiction="NG", backend="gliner") routes soft-PII through GLiNER.
+# arche.extract.extract(text, backend="gliner") routes soft-PII through GLiNER.
+# Pipeline() has no backend= parameter — its constructor takes jurisdiction,
+# statute, detectors, address_parsing, audit, tokenize_salt, overlays,
+# transparency_notice.
 
 # Splink's record linkage + arche's jurisdiction-aware comparators
 pip install arche-core[resolve]
-# Statute-tagged detections feed Splink as clean inputs.
+# arche.resolve.resolve_entities(entities, use_splink=True) feeds Splink.
 ```
 
 ## Audit log

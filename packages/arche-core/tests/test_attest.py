@@ -121,3 +121,29 @@ def test_sd_jwt_marks_non_reproducible_semantics_distinct_from_jws():
     sdj = verify_attestation(attest(d, kp, mode="sd-jwt").compact)
     assert jws.reproducible is True
     assert sdj.reproducible is False  # sd-jwt attests provenance, not byte-repro
+
+
+def test_non_reproducible_pin_makes_the_attestation_say_so():
+    """A decision fed by a hosted model must not be attested as reproducible.
+
+    ``reproducible`` was computed as ``mode == "jws"`` — a fact about the
+    signing format, not about the decision. So an LLM-extracted decision whose
+    own ``extraction`` pin recorded ``reproducible: false`` was signed as
+    ``reproducible: True``, with both claims inside the same artifact.
+    """
+    kp = generate_keypair()
+    a = Reference.from_record({"full_name": "Ngozi Okonkwo", "national_id": "NIN-9001"})
+    b = Reference.from_record({"full_name": "Ngozi Okonkwo", "national_id": "NIN-9001"})
+
+    graded = coref_references(
+        a, b, jurisdiction="NG", issuer_key=_ISSUER_KEY,
+        extra_pins={"extraction": {"model": "some-model@2026-08",
+                                   "reproducible": False}},
+    )
+    r = verify_attestation(attest(graded, kp, mode="jws").compact)
+    assert r.valid
+    assert r.reproducible is False
+
+    # The engine-only decision over the same references still replays.
+    engine = coref_references(a, b, jurisdiction="NG", issuer_key=_ISSUER_KEY)
+    assert verify_attestation(attest(engine, kp, mode="jws").compact).reproducible is True
