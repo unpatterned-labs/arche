@@ -74,6 +74,8 @@ nav:
     - Overview: api/index.md
     - Pipeline: api/resolve.md
     - detect(): api/detect.md
+    - crosswalk(), pairwise(), sign_edges(): api/crosswalk.md
+    - addr — addresses, spatial roles, grading": api/addr.md
   - Examples:
     - Pipeline (NDPA): https://github.com/unpatterned-labs/arche/blob/main/examples/01_pipeline_ndpa.py
     - Sign-share-extract: https://github.com/unpatterned-labs/arche/blob/main/examples/02_sign_share_extract.py
