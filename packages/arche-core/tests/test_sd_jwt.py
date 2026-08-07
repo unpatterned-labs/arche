@@ -7,12 +7,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from arche import Pipeline
 from arche.credentials import (
     SDJWTResult,
-    SDJWTVerifyResult,
     envelope_to_sd_jwt,
     issue_sd_jwt,
     present,

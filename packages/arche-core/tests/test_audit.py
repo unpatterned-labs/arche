@@ -72,7 +72,7 @@ def test_create_audit_entry_hashes_input():
 
 
 def test_resolve_creates_audit_entry():
-    from arche import resolve
+    from arche.workflow.pipeline import resolve
     result = resolve("Test text for audit", backend="regex")
     assert result.audit_entry is not None
     assert result.audit_entry.action == "resolve"
@@ -82,6 +82,6 @@ def test_resolve_creates_audit_entry():
 def test_global_audit_log():
     log = get_audit_log()
     initial_len = len(log)
-    from arche import resolve
+    from arche.workflow.pipeline import resolve
     resolve("Audit log test", backend="regex")
     assert len(log) > initial_len

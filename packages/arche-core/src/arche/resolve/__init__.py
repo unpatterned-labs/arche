@@ -26,24 +26,14 @@ arrives in v0.3 alongside the ``arche-core[graph]`` Kuzu backend and the
 
 ----
 
-v0.1 backward compat: this module is also CALLABLE. The v0.1 API exposed
-``from arche import resolve`` as a function (defined in
-``workflow.pipeline``). To keep that surface working through the v0.2
-migration without forcing every test and downstream caller to update
-imports, the ``arche.resolve`` module is made callable - calling it
-forwards to ``arche.workflow.pipeline.resolve``. A ``DeprecationWarning``
-is emitted on call.
-
-This dual nature (package + callable) is intentional and temporary. In v0.3
-the callable trick is removed and the function relocates to a clearly-named
-home (likely ``arche.workflow.Pipeline.process``).
+v0.3 note: the v0.1 callable-module shim (``arche.resolve(text)``) is
+removed. Use ``arche.Pipeline(...).process(text)`` for the composition
+pattern, or ``resolve.pairwise`` / ``resolve.crosswalk`` from this facade.
 """
 
 from __future__ import annotations
 
-import sys as _sys
 import warnings as _warnings
-from types import ModuleType as _ModuleType
 
 from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
 from arche.resolve.artists import artist_aliases  # noqa: E402,F401
@@ -232,25 +222,8 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     return reconcile(list_a, list_b, comparators, tf=tf,
                      extra_pins=extra_pins or None, **kwargs)
 
-
-class _CallableResolveModule(_ModuleType):
-    """``arche.resolve`` is both a package (for v0.2 PRD §6.1 imports) and
-    callable (for v0.1 ``from arche import resolve`` backward compat).
-
-    Removed in v0.3 once the v0.1 ``resolve()`` function is renamed.
-    """
-
-    def __call__(self, *args, **kwargs):  # type: ignore[override]
-        _warnings.warn(
-            "Calling arche.resolve() as a function is the v0.1 API. "
-            "Use arche.Pipeline(...).process(text) or arche.workflow.RedactionWorkflow "
-            "for the v0.2 composition pattern. This callable shim is removed in v0.3.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        from arche.workflow.pipeline import resolve as _resolve_fn
-
-        return _resolve_fn(*args, **kwargs)
-
-
-_sys.modules[__name__].__class__ = _CallableResolveModule
+# The v0.1 callable-module shim (``arche.resolve(text)`` forwarding to the
+# pipeline with a DeprecationWarning) was removed in v0.3.0a1 as promised.
+# ``arche.resolve`` is now purely the facade package: ``resolve.pairwise``,
+# ``resolve.crosswalk``. The v0.1 function lives on as
+# ``arche.workflow.pipeline.resolve`` for the Pipeline internals.

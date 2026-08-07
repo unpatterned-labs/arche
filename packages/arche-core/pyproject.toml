@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "arche-core"
 version = "0.2.0a3"
-description = "African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH — grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink."
+description = "Know what's real. The open engine for messy, multilingual, real-world data — detect, resolve, protect, attest. Entity resolution + PII detection: find the entities in any document or system, work out which real-world thing each refers to, keep disagreement between sources instead of erasing it, protect it under the law that applies, and sign every decision. Any entity, any jurisdiction (NDPA, GDPR, HIPAA). Composes with Presidio, GLiNER, and Splink."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
@@ -13,6 +13,9 @@ authors = [
     {name = "Dennis Irorere", email = "connect@unpatterned.org"}
 ]
 keywords = [
+    "entity-resolution", "record-linkage", "identity-resolution",
+    "data-matching", "deduplication", "MCP", "AI-agents",
+    "multilingual", "data-cleaning", "data-quality", "attestation",
     "PII", "PII-detection", "PII-redaction", "data-protection",
     "African-PII", "Africa", "Nigeria", "Kenya", "South-Africa", "Ghana",
     "NDPA", "POPIA", "Kenya-DPA", "Ghana-DPA",
@@ -37,7 +40,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
-
 # Base install: under 100MB, no mandatory ML or DPI dependencies.
 # Heavy capabilities ship as opt-in extras below per PRD §1 and BP §7.
 dependencies = [

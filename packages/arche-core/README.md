@@ -1,11 +1,21 @@
 # arche-core
 
-**African PII detection that cites the law it enforces.**
+**Know what's real.**
+
+The open engine for messy, multilingual, real-world data — **detect · resolve · protect · attest**.
+
+arche is an open pipeline for turning messy, multilingual data into resolved real-world entities. It tells you and your agent what — and who — your data is actually talking about: it finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to.
+
+Along the way it keeps disagreement between sources instead of erasing it, protects everything under the law that applies, and signs every decision.
+
+Match, don't guess: 40% → 0% measured false-match rate on African names; zero false merges on the standard record-linkage benchmark. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
 
 > [!WARNING]
-> **Status:** pre-beta (development) -  `arche-core` is under active development. 
+> **Status:** pre-beta (development) - `arche-core` is under active development. APIs may change between alpha
+> releases.
+> **v0.3.0a1 is the first alpha of the beta line — not beta itself.**
 
-`arche-core` detects PII for African jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
+`arche-core` detects PII accross various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
 
 > Presidio detects PII. GLiNER does multilingual NER. Splink links records. None of them know that a BVN is sensitive under NDPA §30, or that "Adeyẹmí" and "Adeyemi" are the same Yoruba name with and without tonal marks, or that "behind Total filling station, Madina Junction" is a parseable Ghanaian address. `arche-core` does that one job.
 
@@ -27,7 +37,7 @@ print(result.redacted_text)
 # NAME_... NAME_..., NIN [NIN], BVN [BVN].
 ```
 
-Same code works for `jurisdiction="ZA"` (POPIA), `"KE"` (Kenya DPA), `"GH"` (Ghana DPA). Four launch jurisdictions, four DPA-grounded statute YAML files, one composable framework.
+Same code works for `jurisdiction="ZA"` (POPIA), `"KE"` (Kenya DPA), `"GH"` (Ghana DPA). Six statute packs at v1.0 (the four African DPAs plus GDPR and HIPAA Safe Harbor), each declaring whether it is `self-reviewed` or `regulator-reviewed`, one composable framework.
 
 ## Install
 

@@ -1,6 +1,7 @@
 """Tests for the main pipeline entry points."""
 
-from arche import ResolutionResult, __version__, resolve
+from arche import ResolutionResult, __version__
+from arche.workflow.pipeline import resolve
 from arche.workflow.pipeline import ArchePipeline
 
 

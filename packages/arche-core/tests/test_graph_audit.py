@@ -9,7 +9,6 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import pytest
 
 from arche.graph.audit import AuditEvent, AuditLog
 from arche.sign import VerifyExtractWorkflow, generate_keypair

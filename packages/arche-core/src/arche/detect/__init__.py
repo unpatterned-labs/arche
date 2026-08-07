@@ -3,7 +3,7 @@
 
 """Detection layer - find PII and identifiers in unstructured text.
 
-Per Stage 1 PRD §4. Composed of per-country detector packages (ng/, ke/, za/,
+Composed of per-country detector packages (ng/, ke/, za/,
 gh/) for government identifiers with check-digit validation, plus optional
 backends (gliner/, presidio/) for soft-PII detection in multiple languages.
 
@@ -36,10 +36,12 @@ from types import ModuleType as _ModuleType
 
 
 class _CallableDetectModule(_ModuleType):
-    """``arche.detect`` is both a package (for v0.2 PRD §6.1 imports) and
-    callable (for v0.1 ``from arche import detect`` backward compat).
-
-    Removed in v0.3 once the v0.1 ``detect()`` function is renamed.
+    """``arche.detect`` is both a package and
+    callable — and unlike the removed ``arche.resolve`` shim, this one is
+    KEPT deliberately (decision 2026-08-07): ``arche.detect(text)`` is the
+    documented Level-2 workhorse API, and the callable module is what makes
+    it work regardless of whether the name resolved to the subpackage or the
+    lazy function first. Revisit only if the Level-2 function is renamed.
     """
 
     def __call__(self, *args, **kwargs):  # type: ignore[override]

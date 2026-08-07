@@ -288,9 +288,10 @@ def test_dsar_envelope_has_expiry_matching_deadline():
 
     verified = VerifyExtractWorkflow().process(result.drafts[0].signed_envelope)
     expires = datetime.fromisoformat(verified.envelope.expires_at)
-    # Should be roughly 30 days from "now"
-    delta = expires - before
-    assert timedelta(days=29, hours=23) < delta < timedelta(days=30, hours=1)
+    # Should be roughly 30 days from "now" — bounded on BOTH sides of the
+    # run, so a clock read taken before the call can't widen the window.
+    assert timedelta(days=29, hours=23) < expires - before < timedelta(days=30, hours=1)
+    assert expires - after < timedelta(days=30, hours=1)
 
 
 def test_dsar_result_metadata():

@@ -11,9 +11,7 @@ import pytest
 
 from arche.sign import (
     Keypair,
-    VerificationResult,
     decode_did_key,
-    encode_did_key,
     export_private_pem,
     export_public_pem,
     generate_keypair,

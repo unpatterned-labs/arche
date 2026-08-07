@@ -41,6 +41,9 @@
 statute_id: HIPAA-SAFE-HARBOR
 jurisdiction: US
 version: v1.0
+# Completeness/stability is `version`; who vouches for the mappings is
+# `review_status`. Never claim regulator-reviewed without a named reviewer.
+review_status: self-reviewed
 effective_date: 2003-04-14
 authority: "US HHS — HIPAA Privacy Rule, 45 CFR §164.514(b)(2)"
 breach_notification_window_hours: 1440  # Breach Notification Rule: no later than 60 days

@@ -11,7 +11,7 @@ import pytest
 
 from arche.extract import Entity
 from arche.resolve import ResolvedEntity
-from arche.workflow._review import ReviewCandidate, ReviewQueue
+from arche.workflow._review import ReviewQueue
 
 
 # ===================================================================
