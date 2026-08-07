@@ -94,7 +94,7 @@ class Result:
     metadata: dict[str, Any]
 ```
 
-`Result` is a plain `@dataclass` with no instance methods. Read fields directly, or serialize the whole thing with `dataclasses.asdict` — see the [Output Formats guide](../guides/output-formats.md) for the canonical JSON / CSV / Pydantic projection patterns.
+`Result` is a plain `@dataclass` with no instance methods. Read fields directly, or serialize the whole thing with `dataclasses.asdict`.
 
 ### Field reference
 
@@ -273,12 +273,3 @@ print(result.metadata["source_file"], result.metadata["num_pages"])
 _Verified against `arche-core` v0.2.0a3 on 2026-05-29. Constructor signature, `Result` dataclass fields, `Detection` dataclass fields, and the absence of `Result` methods all confirmed against [`packages/arche-core/src/arche/workflow/_primitive.py`](https://github.com/unpatterned-labs/arche/blob/main/packages/arche-core/src/arche/workflow/_primitive.py)._
 
 ---
-
-## See also
-
-- [Output Formats](../guides/output-formats.md) — JSON / CSV / Pydantic projection patterns for `Result`.
-- [Architecture](../concepts/architecture.md) — how `Pipeline` composes with the other substrates.
-- [How arche Works](../concepts/how-it-works.md) — substrate-by-substrate walkthrough.
-- [Power-user: Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
-- [Power-user: Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
-- [Roadmap](../concepts/roadmap.md) — where the API goes next.

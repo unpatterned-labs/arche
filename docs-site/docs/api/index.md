@@ -14,7 +14,6 @@ For the deeper substrate APIs, import from the substrate package directly; hand-
 
 | Symbol | Purpose | Page |
 |---|---|---|
-| [`Pipeline`](pipeline.md) | The framework primitive — detect + policy + audit in one call | pipeline.md |
 | `Result` | Typed return from `Pipeline.process(...)` | pipeline.md |
 | `Detection` | A single detected PII span with category, span, confidence | pipeline.md |
 | [`detect`](detect.md) / [`match`](match.md) | The Level-2 workhorse functions | per-page |
