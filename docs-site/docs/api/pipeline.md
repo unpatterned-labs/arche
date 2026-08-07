@@ -266,7 +266,7 @@ print(f"{len(result.detections)} detections")
 print(result.metadata["source_file"], result.metadata["num_pages"])
 ```
 
-`Result` is a plain dataclass — for JSON / CSV / Pydantic serialization patterns, see the [Output Formats guide](../guides/output-formats.md).
+`Result` is a plain dataclass — for JSON / CSV / Pydantic serialization patterns.
 
 ---
 

@@ -16,7 +16,7 @@ For the deeper substrate APIs, import from the substrate package directly; hand-
 |---|---|---|
 | `Result` | Typed return from `Pipeline.process(...)` | pipeline.md |
 | `Detection` | A single detected PII span with category, span, confidence | pipeline.md |
-| [`detect`](detect.md) / [`match`](match.md) | The Level-2 workhorse functions | per-page |
+| [`detect`](detect.md) | The Level-2 workhorse functions | per-page |
 | [`resolve.pairwise` / `resolve.crosswalk` / `sign_edges`](crosswalk.md) | Entity resolution: signable pairwise decisions + list-scale crosswalks | crosswalk.md |
 | [`extract_places` / `grade_places` / `PlaceMention`](addr.md) | Spatial role labeling + the shipped referee | addr.md |
 
