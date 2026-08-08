@@ -23,15 +23,31 @@ Two lists for Kano State, both public:
 
 We deliberately did **not** use Nigeria's official registry (NHFR, mirrored on HDX) as the comparison. More on why in a moment.
 
+!!! warning "Correction, August 2026"
+
+    An earlier version of this post called the OpenStreetMap comparison
+    *independent validation*. It is not. OSM's health facilities for Kano carry
+    the same lineage as GRID3, and we can now show that from the data. Every
+    number below still holds as a **consistency check** between two views of
+    the same territory; none of it is evidence that the matcher is right about
+    the world. The section [Our own circularity, caught with
+    Overture](#our-own-circularity-caught-with-overture) has the measurement,
+    and [the place benchmark](../concepts/place-benchmark.md) has the test that
+    catches it in ten lines.
+
 ## Result: most of it isn't a hard problem
 
 Running `crosswalk(osm, grid3, entity="place")` compared 1,180,255 possible pairs, blocked them down to 39,701 actually scored — a 96.6% reduction — and finished in **21 seconds on a laptop, offline**.
 
 | Outcome | OSM records | Share |
 |---|---|---|
-| Resolved to a GRID3 facility | 532 | 77.7% |
-| Sent to human review | 100 | 14.6% |
+| Resolved to a GRID3 facility | 521 | 76.1% |
+| Sent to human review | 111 | 16.2% |
 | No plausible candidate | 53 | 7.7% |
+
+*(Those are the shipped v0.3.0a1 defaults. The geographic veto described below
+moved eleven records from the first row to the second after this post first
+ran.)*
 
 And before any of that, a plain dictionary lookup on exact names already solved a large share of the list.
 
@@ -49,7 +65,45 @@ And a third problem hides underneath: `Health Post` appears in half the names, s
 
 A single threshold cannot fix this. Raise it and you lose the transliterations; lower it and you merge distinct clinics. The comparison has to know that `Health Post` is a type and `Tsalle` is a name.
 
-## The 100 records that matter
+## Distance has to be able to refuse
+
+One thing we got wrong first time round. Geography was a *scored* signal in the
+place pack, weighted 1.0 against name and token-frequency's combined 4.0. A
+weighted signal can be outvoted, and it was: two Kano facilities sharing a
+common Hausa name merged **143 km apart**, with the geo comparator itself
+scoring 0.000. The names were confident enough to drown it out.
+
+v0.3.0a1 adds `veto_km` to the place pack. Beyond the threshold, distance stops
+being a preference and becomes a constraint. Two properties are deliberate: it
+demotes to `review` and never to `no_match`, because distance says a human must
+look rather than that the answer is no; and records without usable coordinates
+are never vetoed, because you cannot refute a claim on evidence you do not
+have.
+
+Swept against LGA agreement, which both sources record independently:
+
+| veto | matches | same-LGA | diff-LGA | LGA agreement | matches over 10 km |
+|---|---|---|---|---|---|
+| none | 618 | 481 | 134 | 78.2% | 73 |
+| 50 km | 594 | 481 | 110 | 81.4% | 49 |
+| 25 km | 561 | 481 | 77 | 86.2% | 16 |
+| **10 km** | **545** | **479** | **64** | **88.2%** | **0** |
+
+Loosening from 10 km to 25 km buys back two same-LGA matches and lets in
+thirteen cross-LGA ones. That is a bad trade when a veto costs a human glance
+and a wrong merge costs a clinic its allocation. At the shipped setting the
+furthest matched pair is 8.97 km apart, and 170 pairs carry `geo_conflict_km`
+into the review queue as the stated reason.
+
+It is not free. `Aminu kano teaching hospital AKTH` and `Aminu Kano Teaching
+Hospital` sit 10.06 km apart in one of the crosswalks, six metres over the
+threshold, and are obviously the same hospital. A large urban campus can be
+recorded at its gate, its main block or its administrative address, and a
+threshold tuned on rural point features is the wrong shape for that. We have
+not fixed it, and we would rather say so than quietly widen the threshold
+around one example.
+
+## The records that matter
 
 Here is what arche scored well and **still refused to merge**:
 
@@ -69,7 +123,7 @@ Every one of these has a fluent, confident, wrong answer available:
 
 A system optimising for match rate merges all five and looks excellent on a dashboard. In a Master Facility List, a wrong merge is not a lower score — **it is a clinic disappearing from the national list and losing its allocation.**
 
-`review` is not the system failing. It is the system telling you exactly where a human is genuinely required, and there are far fewer of those than the raw residue suggested: 100 records, not 685.
+`review` is not the system failing. It is the system telling you exactly where a human is genuinely required, and there are far fewer of those than the raw residue suggested: 111 records, not 685.
 
 ## A finding about GRID3 and HDX
 
@@ -81,7 +135,59 @@ NHFR is the Nigeria Health Facility Registry: the thing HDX mirrors. GRID3's nam
 
 That has a practical consequence worth stating plainly: **"GRID3 is the master data" is a governance claim, not a technical one.** Which list wins when they disagree belongs to the ministry, not the matcher. What a reconciliation engine can honestly supply is the disagreement itself — kept rather than erased, with the evidence attached.
 
-OpenStreetMap is crowd-mapped and not derived from the registry, which is why the numbers above use it.
+OpenStreetMap is crowd-mapped, so we used it instead. That was the mistake.
+
+## Our own circularity, caught with Overture
+
+We found the GRID3/HDX problem, wrote it up, and then failed to apply the same
+question to our own replacement. Here is the measurement we should have run
+first, and it takes two lines.
+
+Take the pairs the matcher agreed on and look at the distance between their
+coordinates. Independent field surveys of the same building do not agree
+exactly. Handheld GPS error is 3 to 10 metres in good conditions, worse under
+tree cover or beside a wall. Two teams, two devices, two visits, and you expect
+tens of metres of disagreement, distributed.
+
+**The GRID3 × OSM matches have a median separation of 0.000 km, and 319 of 545
+of them, 59%, are at exactly zero.** No pair of independent surveys produces
+that. OSM's health facilities for Kano were imported from the same lineage as
+GRID3, most likely the registry both draw on.
+
+To check that rather than infer it, we pulled Overture Maps, which publishes
+per-feature source lineage. Of its 358 named health places in the Kano bounding
+box: **354 from Meta, 3 from Microsoft, 1 from Foursquare. Zero OpenStreetMap,
+zero GRID3, zero NHFR.** Independence stated in the data instead of assumed.
+
+Running the identical crosswalk against both sources gives two completely
+different signatures:
+
+| | OpenStreetMap | Overture |
+|---|---|---|
+| records | 685 | 358 |
+| matched | 521 | 37 |
+| coverage | 76.1% | 10.3% |
+| median distance | 0.000 km | 0.050 km |
+| at exactly 0.00 km | 319 (59%) | 3 (8%) |
+
+The genuinely independent source agrees on **fewer** facilities and agrees
+**less precisely** about where they are. That is not the matcher performing
+worse. It is what honest disagreement between two observations looks like.
+
+Which means the 88.2% figure in the veto sweep above is a **consistency check,
+not validation.** It is a sound basis for choosing a threshold. It is not
+evidence that the matcher is right about the world, and the earlier version of
+this post said it was.
+
+The coverage gap is a finding rather than a defect. GRID3 is overwhelmingly
+rural primary health centres and health posts; Meta's place data covers named,
+signed, commercial facilities, which skews urban. An independent source can
+validate the urban tier and says almost nothing about the rural network, which
+is exactly where a national facility list matters most. Knowing that is more
+useful than a precision score.
+
+The full method, the caveats, and a `looks_derived()` helper you can point at
+any two datasets are in [the place benchmark](../concepts/place-benchmark.md).
 
 ## The same engine, applied to people
 
@@ -108,6 +214,26 @@ a space as a token boundary, so the shared name contributes nothing and the
 distinctiveness gate never fires. **That is a real gap in arche, found by
 running this comparison** — and it's a data fix for the place pack, not an
 architectural one.
+
+We shipped that fix. `resolve/_data/orthography.yaml` is an inspectable Hausa
+rule pack: adjacent-token boundary collapsing, nasal assimilation (`n` becomes
+`m` before `b` or `p`), and ten curated equivalence groups. Threaded through
+the Kano crosswalk it promotes **13 pairs from `review` to `match` with zero
+demotions and no edge's score falling** — `Yangwarzo` / `Yan Gwarzo`,
+`Kafinmaiko` / `Kafin Maiko`, `Sanbauna` / `Sambauna`,
+`Unguwar Malam Amadu` / `Unguwar Mallam Ahmadu`. It is additive by
+construction, taking `max(literal, keyed)`, because the first version computed
+the similarity over keys *instead of* literal tokens and that recovered 13
+pairs while demoting 79.
+
+Note which of the model's four wins are *not* in that list. `Riruwai` /
+`Ririwai` and `Sarigarin` / `Sari Girin` are vowel alternations, and they are
+recorded in the YAML under `known_gaps` and deliberately left unhandled. Whether
+`gari` and `girin` are one morpheme with a vowel alternation or two words is a
+question about Hausa, not about string distance, and a rule loose enough to fold
+those vowels would also merge genuinely distinct settlement names. That needs a
+Hausa speaker. The model guessed and happened to be right; we would rather write
+the gap down than guess with it.
 
 **And it fails in a way no amount of scale fixes.** On five pairs with
 *identical facility names at essentially identical coordinates*, the model
@@ -139,7 +265,7 @@ Neither should be the whole system:
 1. **arche blocks and gates** — 1.2M possible pairs down to 40k scored, the
    unambiguous majority resolved deterministically, the rest refused. Nothing
    expensive has happened yet.
-2. **The review queue routes to the model** — ~100 pairs, not 40,000. Asked
+2. **The review queue routes to the model** — ~111 pairs, not 40,000. Asked
    only where a human would otherwise be needed, and its recall on name
    variants is exactly what helps there.
 3. **The model proposes; it never merges.** Its verdict is evidence with a
@@ -176,7 +302,11 @@ jupyter lab examples/notebooks/
 - **`02_same_person_across_documents.ipynb`** — three PDFs, one person, using docling for layout-aware extraction and GLiNER for entity recognition. Masking on by default.
 - **`03_llm_vs_arche.ipynb`** — the head-to-head above. Needs `OPENAI_API_KEY` in `.env` and costs a few cents.
 
-Every number in this post comes from executing those notebooks.
+Every number in this post is reproducible from this repository. The
+notebooks cover the crosswalk, the person case and the head-to-head; the veto
+sweep, the orthography measurement and the independence test are scripts you
+can paste from [the place benchmark](../concepts/place-benchmark.md), which
+also runs offline apart from the Overture pull.
 
 ### A note on the document stack
 
@@ -201,8 +331,16 @@ The shape of the problem is not "match more". It is:
 2. **A chunk is automatable** — word order, transliteration, a dropped type suffix.
 3. **A small remainder needs judgement**, and the honest job of a tool is to draw that third line accurately and hand over the evidence.
 
-The 100 review cases are the product. They are also the part that currently costs three rounds of expert verification, and the only part anyone would pay to make faster.
+The 111 review cases are the product. They are also the part that currently costs three rounds of expert verification, and the only part anyone would pay to make faster.
+
+And a fourth, which we learned by getting it wrong: **check where your
+validation source came from before you quote a number off it.** We spotted the
+circularity in GRID3 versus HDX, published that finding, and then benchmarked
+against a source with the same problem. Two lines of arithmetic on the matched
+distances would have caught it. They now live in
+[the place benchmark](../concepts/place-benchmark.md), and running them on our
+own work is the only reason this post has a correction rather than a claim.
 
 ---
 
-*`arche-core` is Apache-2.0. It is pre-beta: APIs may change between alpha releases, and you should complete your own legal, privacy and security review before using it with real personal data. The facility data is CC-BY (GRID3) and ODbL (OpenStreetMap).*
+*`arche-core` is Apache-2.0. It is pre-beta: APIs may change between alpha releases, and you should complete your own legal, privacy and security review before using it with real personal data. The facility data is CC-BY (GRID3) and ODbL (OpenStreetMap); Overture Maps place data is CDLA-Permissive-2.0 with Foursquare rows under Apache-2.0.*

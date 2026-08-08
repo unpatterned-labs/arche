@@ -182,33 +182,68 @@ class TestRobustness:
 
 
 class TestEgress:
-    def test_guard_is_consulted_before_anything_leaves(self):
-        calls = []
+    """Against the REAL EgressGuard, not a stand-in.
 
-        class _Guard:
-            def check(self, value, *, provider):
-                calls.append((value, provider))
+    An earlier version of these tests used a duck-typed fake exposing
+    ``check()``. `EgressGuard` has no such method — it exposes ``guarded()`` —
+    so the fake let a broken call site pass. A test that only agrees with the
+    code it is testing proves nothing; these construct the real class.
+    """
 
-        verify_place(
-            "Karfi Health Post", 11.62, 8.49, retrieved_at=WHEN,
-            user_agent=UA, guard=_Guard(), fetch=_fetch(_KARFI),
+    def _guard(self, **kw):
+        from arche import Pipeline
+        from arche.guard import EgressGuard
+
+        return EgressGuard(Pipeline(jurisdiction="NG"), key=b"k" * 32, **kw)
+
+    def test_the_real_guard_exposes_the_method_the_adapter_calls(self):
+        from arche.guard import EgressGuard
+
+        assert hasattr(EgressGuard, "guarded")
+
+    def test_a_permitted_query_passes_through(self):
+        guard = self._guard(
+            allowed_providers=["nominatim"], transfer_basis="ndpc_adequacy_assessment"
         )
-        assert calls == [("Karfi Health Post", "nominatim")]
+        ev = verify_place(
+            "Karfi Health Post", 11.62, 8.49, retrieved_at=WHEN,
+            user_agent=UA, guard=guard, fetch=_fetch(_KARFI),
+        )
+        assert ev.verdict == "corroborates"
 
-    def test_a_refusing_guard_prevents_the_request(self):
+    def test_a_provider_outside_the_allow_list_is_refused(self):
+        from arche.guard import GuardDenied
+
         sent = []
-
-        class _Deny:
-            def check(self, value, *, provider):
-                raise PermissionError("statute forbids transfer")
 
         def _spy(url, params, headers):
             sent.append(url)
             return _KARFI
 
-        with pytest.raises(PermissionError):
+        guard = self._guard(allowed_providers=["geocodio"], transfer_basis="ndpc_adequacy_assessment")
+        with pytest.raises(GuardDenied):
             verify_place(
-                "Adesola Okonkwo, 12 Example Road", 11.6, 8.5,
-                retrieved_at=WHEN, user_agent=UA, guard=_Deny(), fetch=_spy,
+                "Karfi Health Post", 11.62, 8.49,
+                retrieved_at=WHEN, user_agent=UA, guard=guard, fetch=_spy,
             )
         assert sent == [], "nothing may leave when the guard refuses"
+
+    def test_a_cross_border_call_without_a_transfer_basis_is_refused(self):
+        """Nominatim is hosted in Europe, so the adapter always declares the
+        call as crossing a border. Without a permitted basis the statute pack
+        must refuse."""
+        from arche.guard import GuardDenied
+
+        sent = []
+
+        def _spy(url, params, headers):
+            sent.append(url)
+            return _KARFI
+
+        guard = self._guard(allowed_providers=["nominatim"])  # no transfer_basis
+        with pytest.raises(GuardDenied):
+            verify_place(
+                "Karfi Health Post", 11.62, 8.49,
+                retrieved_at=WHEN, user_agent=UA, guard=guard, fetch=_spy,
+            )
+        assert sent == []

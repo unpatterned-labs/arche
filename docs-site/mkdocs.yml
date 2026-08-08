@@ -79,6 +79,7 @@ nav:
     - A place is not a point: concepts/a-place-is-not-a-point.md
     - From place to entity (the math): concepts/from-place-to-entity.md
     - Place identity: concepts/place-identity.md
+    - The place benchmark: concepts/place-benchmark.md
     - The five ER activities: concepts/er-activities.md
     - Verifiability, the signature on the decision: concepts/verifiability.md
     - Roadmap: concepts/roadmap.md
@@ -92,6 +93,7 @@ nav:
     # nobody could navigate to.
     - Extract places with spatial roles: how-to/extract-places-with-roles.md
     - Read the crosswalk output: how-to/read-crosswalk-output.md
+    - Verify a merge against an external source: how-to/verify-with-external-sources.md
     - Why arche and when to use it: tutorials/arche_vs_alternatives.md
     - Place resolution at scale (NG + UK): tutorials/place_resolution_at_scale.md
     - Person resolution at scale (scored): tutorials/person_resolution_at_scale.md

@@ -116,8 +116,10 @@ def verify_place(
         ``contradicts``. Defaults to the place pack's ``veto_km``.
     guard:
         Optional :class:`arche.guard.EgressGuard`. When supplied, the query is
-        checked before it leaves — a name the statute pack forbids sending
-        raises rather than being transmitted.
+        run through ``guard.guarded(name, provider="nominatim",
+        crosses_border=True)`` before it leaves, and a name the statute pack
+        forbids sending raises :class:`arche.guard.GuardDenied` rather than
+        being transmitted.
 
     Returns
     -------
@@ -143,7 +145,13 @@ def verify_place(
     if guard is not None:
         # Sending a place name to a third party is egress. Let the statute
         # pack refuse before anything leaves the process.
-        guard.check(name, provider="nominatim")
+        #
+        # `crosses_border=True` is not a default we get to skip: the public
+        # Nominatim instance is operated by the OSM Foundation in Europe, so
+        # any query from a Nigerian or Kenyan deployment is a cross-border
+        # transfer and the statute pack must be given the chance to say no.
+        # Pass a guard built with the right `transfer_basis` if you have one.
+        guard.guarded(name, provider="nominatim", crosses_border=True)
 
     params = {"q": name, "format": "jsonv2", "limit": str(limit)}
     if country_codes:
