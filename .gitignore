@@ -80,3 +80,10 @@ pyproject.toml
 # contributors are free to use any tooling they like without it landing here.
 .claude/
 CLAUDE.md
+
+# Provider pulls (Overture, geocoder caches). Evidence, never packs — the
+# provenance firewall means these must not be committed alongside the data
+# packs they would otherwise encumber.
+/overture_*.csv
+/review_queue.csv
+/headtohead.json

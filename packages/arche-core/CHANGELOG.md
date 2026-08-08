@@ -146,6 +146,53 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
   would have gone out under the previous release's number. Version is now
   read from `src/arche/_version.py` and the two cannot drift again.
 
+### Changed — geography can now refuse (breaking for the place pack)
+
+- **The place pack gained a geographic veto, `veto_km: 10.0`.** Distance was a
+  weighted signal at 1.0 against name+tftoken's combined 4.0, so it could be
+  outvoted: two Kano facilities sharing a common Hausa name merged **143 km
+  apart** with the geo comparator scoring 0.000. Distance is a physical
+  constraint, not a preference, and it now demotes an otherwise-matching pair
+  to `review`.
+
+  Benchmarked on GRID3 × OpenStreetMap (Kano, 685 × 1,723), scored against LGA
+  agreement — a label both sources carry independently and neither derives from
+  the other:
+
+  | veto | same-LGA | diff-LGA | precision | matches >10 km |
+  |---|---|---|---|---|
+  | none | 481 | 134 | 78.2% | 73 |
+  | 50 km | 481 | 110 | 81.4% | 49 |
+  | 25 km | 481 | 77 | 86.2% | 16 |
+  | **10 km** | **479** | **64** | **88.2%** | **0** |
+
+  Shipped defaults now resolve 545 matches at **88.2% LGA precision**, with
+  nothing matched beyond 9 km and **170 pairs moved into review** carrying
+  `geo_conflict_km` as evidence.
+
+  It demotes to `review`, never `no_match` — the asymmetry is the point. Being
+  too strict costs a human glance; being too loose costs a clinic its
+  allocation. Records without usable coordinates are never vetoed, because
+  absent evidence refutes nothing.
+
+- **`arche.resolve._orthography` — orthographic keying for name tokens.**
+  A settlement written `Mai Tsidau` in one registry and `Maitsidau` in another
+  shared no token, so the distinctiveness gate never fired and the true match
+  was dropped. `_data/orthography.yaml` ships a Hausa pack: adjacent-token
+  boundary collapsing, nasal assimilation (`n → m` before `b`/`p`), and ten
+  curated equivalence groups. On Kano it recovers 13 real pairs
+  (`Yan Gwarzo`/`Yangwarzo`, `Kafin Maiko`/`Kafinmaiko`, `Sanbauna`/`Sambauna`)
+  with **zero demotions**.
+
+  Strictly additive by construction: `max(literal, keyed)`. An earlier wiring
+  computed the Jaccard over keys *instead of* literal tokens and recovered 13
+  pairs while demoting 79 — the benchmark caught it. Vowel alternations
+  (`Ririwai`/`Riruwai`) are recorded in the pack as `known_gaps` rather than
+  guessed at; resolving them needs a Hausa speaker, not a pattern.
+
+  Off by default (`orthography=None`) on `weighted_token_sim` and
+  `shared_name_distinctiveness`, because it changes scores.
+
 ### Security
 
 - **`sign.verify()` no longer trusts the key a token names for itself.**
