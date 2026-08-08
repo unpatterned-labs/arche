@@ -93,6 +93,65 @@ Every pair came back **`review`**, with `address = 1.00` but name similarity bet
 
 That is the correct answer. A bank that auto-merges two customer records on name and address alone will eventually show one person another person's transactions — which under GDPR is a reportable breach. The system that says *"very likely, but look at this one"* is the one you want holding that decision.
 
+## So can a frontier model just do this?
+
+We ran it rather than arguing about it. Thirty pairs sampled from the crosswalk
+with a fixed seed — 15 arche called `match`, 15 it sent to `review` — put to
+`gpt-4o-mini` with both names, both coordinates, the distance, and the stakes
+spelled out. The results were not what we expected.
+
+**The model is genuinely better than arche at one thing.** It correctly merged
+four pairs arche refused, all of them Hausa word-boundary variants:
+`Sarigarin` / `Sari Girin`, `Maitsidau` / `Mai Tsidau`, `Riruwai` / `Ririwai`.
+At identical coordinates these are the same facility. arche's comparator treats
+a space as a token boundary, so the shared name contributes nothing and the
+distinctiveness gate never fires. **That is a real gap in arche, found by
+running this comparison** — and it's a data fix for the place pack, not an
+architectural one.
+
+**And it fails in a way no amount of scale fixes.** On five pairs with
+*identical facility names at essentially identical coordinates*, the model
+returned `unsure` or `different` — one of them at 0.90 confidence:
+
+| arche | LLM | Pair | Distance |
+|---|---|---|---|
+| match 1.000 | **different** (0.90) | Alfindi Health Post vs Alfindi Health Post | 0.00 km |
+| match 1.000 | unsure (0.80) | Kurugu Health Post vs Kurugu Health Post | 0.00 km |
+| match 0.998 | unsure (0.70) | Yanchibi Health Post vs Yanchibi Health Post | 0.02 km |
+
+There is no reading of the evidence under which those are different
+facilities. The model invented a distinction because it was asked a question,
+and producing an answer is what it does. Its confidence score carried no signal
+that these verdicts were less reliable than any other.
+
+It also **never once hedged** on the review set. Every pair arche declined to
+decide got a confident verdict.
+
+And it isn't a stable function. Asked the same question five times at
+`temperature = 0`, it gave **two different answers**. arche returned the same
+content-addressed `decision_id` all five times. You cannot attest what you
+cannot replay.
+
+### Which implies an architecture, not a winner
+
+Neither should be the whole system:
+
+1. **arche blocks and gates** — 1.2M possible pairs down to 40k scored, the
+   unambiguous majority resolved deterministically, the rest refused. Nothing
+   expensive has happened yet.
+2. **The review queue routes to the model** — ~100 pairs, not 40,000. Asked
+   only where a human would otherwise be needed, and its recall on name
+   variants is exactly what helps there.
+3. **The model proposes; it never merges.** Its verdict is evidence with a
+   measured reliability, not a decision.
+4. **A human confirms**, and the adjudication is signed.
+
+The cost difference is the argument for that ordering. At the measured 164
+tokens per pair, running a mid-tier model over every pair in a national
+crosswalk is **$68,107**. Running it over the review queue only is **$9,944** —
+and a cheap model on the queue is under $500. The deterministic gate is what
+makes the expensive, non-replayable component affordable to use at all.
+
 ## Two things the notebooks show that we would rather they didn't
 
 Both are real, both are in the shipped release, and both are documented as known issues.
@@ -114,9 +173,25 @@ jupyter lab examples/notebooks/
 ```
 
 - **`01_facility_reconciliation.ipynb`** — the GRID3 × OpenStreetMap crosswalk above, step by step, written for someone who has never done entity resolution. Exports the review queue as CSV.
-- **`02_same_person_across_documents.ipynb`** — three PDFs, one person, with masking on by default.
+- **`02_same_person_across_documents.ipynb`** — three PDFs, one person, using docling for layout-aware extraction and GLiNER for entity recognition. Masking on by default.
+- **`03_llm_vs_arche.ipynb`** — the head-to-head above. Needs `OPENAI_API_KEY` in `.env` and costs a few cents.
 
 Every number in this post comes from executing those notebooks.
+
+### A note on the document stack
+
+Notebook 2 measures `docling` against a plain text-layer extractor on the same
+file: **28,927 characters in 98 seconds versus 16,520 in 0.1 seconds.** docling
+reconstructs table structure rather than reading the text layer in storage
+order, which is why it recovers 75% more from a payslip. Use it when the
+document has structure you need — statements, invoices, payslips, forms — and a
+text-layer extractor when you only need prose.
+
+For names, `arche-core[detect]` (GLiNER) separates `PERSON` from
+`ORGANIZATION` at 0.99 confidence on these documents. A layout heuristic
+cannot: `United States` and `Pay Summary` are shaped exactly like a name, and
+no amount of regex tuning fixes that. The notebook shows the heuristic failing
+first, because the failure is the argument for the model.
 
 ## What we took from it
 

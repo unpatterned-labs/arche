@@ -1,0 +1,98 @@
+# orthography.yaml — orthographic variation packs for name tokenisation.
+#
+# What it is: per-language rules describing how the SAME name gets written
+# differently across registries. Used to build an *orthographic key* for a name
+# token, so that two spellings of one name share a key and the distinctiveness
+# gate can see that they have something in common.
+#
+# Why this exists: arche's gate requires a shared DISTINCTIVE token before it
+# will merge two references. That is deliberate — it is what stops
+# "Fatima Hospital" and "Fatouma Hospital" being fused. But it also means a
+# name written "Mai Tsidau" in one registry and "Maitsidau" in another shares
+# no token at all, and a true match is silently dropped. This pack closes that
+# gap without loosening the gate.
+#
+# Scope discipline — read before adding a rule:
+#
+#   A rule here changes which health facilities get merged. Only add
+#   `rewrites` for variation that is MECHANICAL and verifiable: a
+#   documented phonological or transcription regularity, not a guess about
+#   two names that look similar. Everything else belongs in `equivalents`,
+#   as an explicit, inspectable list a native speaker can correct.
+#
+#   If you are unsure which category something falls into, it is `equivalents`.
+#
+# Contributor notes:
+#   - Rules apply to the whole name after case-folding and diacritic-stripping.
+#   - `equivalents` groups are token-level and bidirectional.
+#   - Adding a language, a rule, or a group is a DATA edit, not a code change.
+#   - Open a "Data correction or addition" issue if a rule is wrong. Knowing a
+#     naming convention first-hand is the qualification that matters here.
+
+version: v0.1
+review_status: self-reviewed
+
+hausa:
+  description: >
+    Hausa (ha) as written in Nigerian health facility registries. Boko script.
+    Registries are transcribed by many hands over decades, so the same
+    settlement name appears with different word boundaries and different
+    renderings of Arabic-origin names.
+
+  # Compound names are written joined or split more or less freely across
+  # registries: "Mai Tsidau" and "Maitsidau", "Dan Kaba" and "Dankaba".
+  # Collapsing whitespace before keying makes both forms agree.
+  #
+  # This is a formatting convention, not a phonological claim, which is why it
+  # is safe to apply mechanically.
+  collapse_word_boundaries: true
+
+  rewrites:
+    # Nasal place assimilation: /n/ surfaces as [m] before a labial (b, p).
+    # Standard Hausa orthography writes the assimilated form, but registry
+    # transcription often preserves the underlying /n/ — hence "Sanbauna"
+    # alongside "Sambauna". The rule is regular and applies across the
+    # language, so it is mechanical rather than a per-name judgement.
+    - id: nasal-assimilation-labial
+      pattern: 'n(?=[bp])'
+      replace: 'm'
+      note: >
+        n -> m before b or p. Sanbauna == Sambauna, Kanbari == Kambari.
+      confidence: high
+
+  # Curated token equivalences. Each group is a set of spellings that denote
+  # the same word. These are LISTED rather than derived, because the variation
+  # is lexical (which spelling a transcriber chose) rather than the output of a
+  # regular rule we can state precisely.
+  #
+  # Seeded deliberately small. Every group below is either an honorific or an
+  # Arabic-origin given name where the variation is well attested in Nigerian
+  # registry data. Extend it from real data, not from intuition.
+  equivalents:
+    - [malam, mallam, mallamai, malamai]      # honorific: teacher / learned man
+    - [muhammad, muhammadu, mohammed, mohammad, mahammadu]
+    - [amadu, ahmadu, ahmad, ahmed]
+    - [usman, usmanu, uthman, usuman]
+    - [ibrahim, ibrahima, brahim]
+    - [unguwar, ungwar, unguwa, ungwa]        # "ward / quarter of"
+    - [gari, garin]                            # "town / town of" (genitive linker)
+    - [sabon, sabuwar, sabo]                   # "new"
+    - [tsohon, tsohuwar, tsoho]                # "old"
+    - [dan, ɗan, dam]                          # "son of / person of"
+
+  # Variation we have SEEN in the data and deliberately do NOT handle, because
+  # handling it correctly needs a Hausa speaker rather than a pattern. Listed
+  # so the gap is visible instead of silently absent.
+  #
+  # Open a data-correction issue if you can resolve any of these:
+  known_gaps:
+    - example: [Sarigarin, Sari Girin]
+      why: >
+        Collapsing boundaries yields "sarigarin" vs "sarigirin". Whether
+        gari/girin is one morpheme with a vowel alternation or two distinct
+        words is a question about Hausa, not about string distance.
+    - example: [Ririwai, Riruwai]
+      why: >
+        Medial i/u alternation. Plausibly one settlement, plausibly two.
+        We will not guess at a vowel-folding rule that would also merge
+        genuinely distinct names.

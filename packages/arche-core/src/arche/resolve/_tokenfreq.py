@@ -217,20 +217,78 @@ class TokenFrequencyTable:
         """
         return {tok: f for tok, f in self._rel.items() if f >= min_freq}
 
-    def weighted_token_sim(self, a: str, b: str) -> float:
+    def weighted_token_sim(
+        self, a: str, b: str, *, orthography: str | None = None
+    ) -> float:
         """TF-weighted token-set similarity in [0, 1] (distinctiveness-weighted Jaccard).
 
         Overlap is weighted by distinctiveness, so agreeing on a rare token counts
         far more than agreeing on a common one. Returns 0.0 if either side has no
         tokens.
+
+        ``orthography`` optionally names a pack (e.g. ``"hausa"``) describing how
+        one name gets written two ways across registries. Tokens are then
+        compared through an orthographic key, so ``"Mai Tsidau"`` and
+        ``"Maitsidau"`` count as agreeing. Off by default: this changes scores,
+        so it is a benchmarked opt-in rather than a silent default.
+
+        Distinctiveness for a keyed group is taken from its **most common**
+        member. A compound is only as rare as its commonest part — otherwise a
+        joined form like ``healthpost``, which appears in no frequency table,
+        would read as unseen-therefore-rare and inflate every pair of
+        facilities whose names both end "Health Post".
         """
         ta, tb = set(_tokens(a)), set(_tokens(b))
         if not ta or not tb:
             return 0.0
+
         inter, union = ta & tb, ta | tb
         num = sum(self.distinctiveness(t) for t in inter)
         den = sum(self.distinctiveness(t) for t in union)
-        return num / den if den else 0.0
+        literal = num / den if den else 0.0
+
+        if orthography:
+            from arche.resolve._orthography import load_orthography
+
+            pack = load_orthography(orthography)
+            if pack is not None:
+                keys_a = pack.keys(_tokens(a))
+                keys_b = pack.keys(_tokens(b))
+
+                def weight(key: str) -> float:
+                    sources = keys_a.get(key, set()) | keys_b.get(key, set())
+                    if not sources:
+                        return self.distinctiveness(key)
+                    return min(self.distinctiveness(s) for s in sources)
+
+                def redundant(key: str) -> bool:
+                    """A join that bridges nothing.
+
+                    If both names already contain every component token
+                    individually, the joined form carries no new agreement —
+                    "Kurugu Health Post" and "Alfindi Health Post" both yield
+                    ``healthpost``, but they already agreed on ``health`` and
+                    ``post`` separately. Counting it again is double-counting
+                    a shared type, in the direction of a false merge.
+                    """
+                    parts = keys_a.get(key, set()) | keys_b.get(key, set())
+                    if len(parts) < 2 or key in parts:
+                        return False
+                    return parts <= ta and parts <= tb
+
+                inter_k = {k for k in keys_a.keys() & keys_b.keys() if not redundant(k)}
+                union_k = {k for k in keys_a.keys() | keys_b.keys() if not redundant(k)}
+                num_k = sum(weight(k) for k in inter_k)
+                den_k = sum(weight(k) for k in union_k)
+                keyed = num_k / den_k if den_k else 0.0
+                # Strictly additive. Keying restructures the Jaccard
+                # denominator, which on real data cost more pairs than it
+                # recovered — 13 gained against 79 lost on the Kano crosswalk.
+                # Taking the max means a pack can only ever recover a pair the
+                # literal comparison was dropping, never demote one it kept.
+                return max(literal, keyed)
+
+        return literal
 
     # ── composition + introspection ────────────────────────────────────────────
     def _as_counts(self) -> dict[str, float]:
