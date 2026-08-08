@@ -35,6 +35,8 @@ build/
 .DS_Store
 Thumbs.db
 
+.gstack/
+
 # Logs
 *.log
 npm-debug.log*
