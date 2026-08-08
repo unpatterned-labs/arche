@@ -53,7 +53,7 @@ docker-compose.override.yml
 *.sqlite
 *.sqlite3
 
-
+/data/docs
 demo/outputs/
 
 datasets/compliance/
