@@ -2,8 +2,26 @@
 
 *One PyPI package. Four DPA-grounded statutes. Lightweight by default. By Unpatterned Labs.*
 
+!!! note "Archived — this announced v0.2.0a3, and is kept as written"
+
+    The current release is **v0.3.0a1**, and the positioning has moved on: arche
+    is now *the open engine for messy, multilingual data — detect, resolve,
+    protect, attest*, with resolution as the lead capability rather than a
+    future direction. African calibration remains the credential; it is no
+    longer described as the scope.
+
+    This post is left in place rather than rewritten. A blog is a record of what
+    was believed when, and quietly editing an old announcement to match a newer
+    story is the sort of tidying this project should not do. Read it as history.
+
+    For where things actually stand: [The part intelligence doesn't make
+    cheaper](the-part-intelligence-doesnt-make-cheaper.md) for the argument,
+    [the roadmap](../concepts/roadmap.md) for the state, and
+    [why arche, and when to use it](../tutorials/arche_vs_alternatives.md) for
+    the comparison — which corrects a claim made below.
+
 !!! warning "Status: pre-beta development"
-    `arche-core` v0.2.0a3 is on PyPI for research, prototyping, evaluation, and contribution. APIs may change between alpha releases. Production use against real personal data is not recommended until beta.
+    `arche-core` v0.2.0a3 was on PyPI for research, prototyping, evaluation, and contribution. APIs may change between alpha releases. Production use against real personal data is not recommended until beta.
 
 arche started with a large ambition: an African-first identity workflow stack that could detect, resolve, link, verify, and govern records across messy documents and systems.
 
@@ -68,6 +86,20 @@ pip install "arche-core[detect]"    # GLiNER soft PII plus statute classificatio
 pip install "arche-core[resolve]"   # Splink at scale, fed by arche detections
 pip install "arche-core[doc]"       # docling-backed document parsing
 ```
+
+!!! warning "Correction — the Splink line above was wrong"
+
+    "Splink at scale, fed by arche detections" was inaccurate when written and
+    is still worth correcting rather than deleting. Splink is imported by
+    exactly one function in the package — the legacy `resolve_entities()` path.
+    Nothing in `pairwise`, `crosswalk`, the frequency tables or the name
+    lexicon imports it, even with Splink installed.
+
+    The honest relationship is that arche and Splink implement the *same*
+    statistical framework, and Splink implements it better. arche's
+    contribution is the representation that framework runs on. The
+    [comparison page](../tutorials/arche_vs_alternatives.md) has the fifteen
+    lines that demonstrate it.
 
 This is the practical shape: start with `Pipeline`, then add heavier tools only when the workflow needs them.
 
