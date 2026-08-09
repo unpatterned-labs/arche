@@ -25,6 +25,8 @@ docs-site/site/
 build/
 *.egg-info/
 
+.ruff_cache/
+
 # IDE
 .vscode/
 .idea/

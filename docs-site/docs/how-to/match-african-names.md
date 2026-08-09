@@ -62,11 +62,7 @@ Output:
   Janet Okafor         ~ David Mensah         -> NO MATCH (19%)
 ```
 
-Note the Yoruba prefix-elision case. Compared as bare given names,
-`Oluwaseun` / `Seun` falls below the default 0.80 threshold. Elision is
-recovered when the surrounding name tokens agree - `are_names_equivalent(
-"Chukwuemeka Okafor", "Emeka Okafor")` returns `(True, 1.0)`, because the
-surname anchors the comparison. Compare full names, not isolated given names.
+Note the Yoruba prefix-elision case. Compared as bare given names, `Oluwaseun` / `Seun` falls below the default 0.80 threshold. Elision is recovered when the surrounding name tokens agree - `are_names_equivalent( "Chukwuemeka Okafor", "Emeka Okafor")` returns `(True, 1.0)`, because the surname anchors the comparison. Compare full names, not isolated given names.
 
 ---
 
@@ -131,8 +127,7 @@ These groups were compiled from civil registration records, census data, and lin
 
 ## Use in a resolution pipeline
 
-The naming intelligence is built into the matcher automatically. `match()` scores
-two names with the same lexicon, in the base install:
+The naming intelligence is built into the matcher automatically. `match()` scores two names with the same lexicon, in the base install:
 
 ```python
 from arche import match
@@ -158,10 +153,7 @@ for identity in graph.resolved:
 
 !!! warning "`link()` needs a person-name detector"
 
-    In the **base install** this prints nothing. `detect()` extracts free-form
-    person names only when the GLiNER backend is present, so both calls above
-    return `[]` and `graph.resolved` is empty. Install `arche-core[detect]` to
-    populate person entities, or feed `link()` entities you built yourself.
+    In the **base install** this prints nothing. `detect()` extracts free-form person names only when the GLiNER backend is present, so both calls above return `[]` and `graph.resolved` is empty. Install `arche-core[detect]` to populate person entities, or feed `link()` entities you built yourself.
 
 You do not need to call `are_names_equivalent()` directly -- it is used automatically during the match/link step.
 

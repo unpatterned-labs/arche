@@ -72,9 +72,13 @@ nav:
   # 28 pages that all explained how to call a function and not one that
   # explained what arche is. These pages lived in a gitignored directory.
   - Concepts:
+    # Three pages describe the flow, and the order is the reading path:
+    # how-it-works is the newcomer's walkthrough, lifecycle is the "can it do
+    # X today" inventory, architecture is the internal layering. Each page
+    # states that split in its opening lines.
     - How arche works: concepts/how-it-works.md
-    - Architecture: concepts/architecture.md
     - The identity lifecycle: concepts/lifecycle.md
+    - Architecture: concepts/architecture.md
     - A representation engine, not an inference engine: concepts/representation-engine.md
     - A place is not a point: concepts/a-place-is-not-a-point.md
     - From place to entity (the math): concepts/from-place-to-entity.md

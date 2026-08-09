@@ -1,184 +1,206 @@
-# How arche Works
+# How arche works
 
-arche-core does one job: **detect PII in African text and ground every detection in the data protection statute that classifies it.** Government IDs with check-digit validation. Phones with libphonenumber. Names with a 114-group equivalence lexicon. Addresses with landmark anchoring. Every detection emits a sensitivity tier and the regulatory citation that justifies the policy action applied to it.
-
-This page walks through how a single `Pipeline.process(text)` call moves through the detection, policy, and audit stages. Signing, DSAR drafting, place lookup and entity matching compose on top of the same primitives — see [Attest](attest.md) and the workflow guides. Resolution and attestation, arche's lead capability today, are covered in [the representation engine](representation-engine.md) and [from place to entity](from-place-to-entity.md).
+*One record, all four verbs, start to finish. Written for a reader who has never done entity resolution.*
 
 ---
 
-## The end-to-end call
+Two clinics in Kano file a monthly return with the same health ministry. One of them writes a patient's name **Fatima Abdullahi**. The other writes **Fatuma Abdulahi**. Both record the same eleven-digit National Identification Number. A person glancing at the pair says "same woman, spelled twice" without effort. A database says nothing at all, because the strings do not match. And a system that simply merged every pair sharing a number would, sooner or later, merge two different people because somebody mistyped a digit.
+
+arche lives in the space between those answers. It describes itself in four verbs — **detect · resolve · protect · attest** — and this page runs that one record through all four, in order, with the real output of every step printed underneath it. Nothing below is pseudocode; every block was executed to produce the text that follows it.
+
+```
+1. DETECT    find the personal data in the text, and name the law that classifies it
+2. PROTECT   apply the action that law requires, before the text goes anywhere else
+3. RESOLVE   decide whether two records are the same person, and show the evidence
+4. ATTEST    sign the decision, so someone who was not there can check it
+```
+
+---
+
+## 1 and 2. Detect and protect
+
+These are two verbs and one function call, which is the honest way to present them: arche will not hand you a list of discovered identifiers without also telling you what the applicable statute says to do with them.
+
+```python
+from arche import Pipeline
+
+result = Pipeline(jurisdiction="NG").process(
+    "Fatima Abdullahi, NIN 12345678901, phone 0803 555 7890."
+)
+
+for d in result.detections:
+    print(f"{d.category:12} {d.sensitivity_tier.value:9} {d.regulatory_citation}")
+
+print()
+print(result.redacted_text)
+print([(o.category, o.action) for o in result.policy_outcomes])
+```
+
+```text
+PII-2-NIN    high      NDPA-2023 s.30, NIMC Act s.27
+PII-1-NAME   moderate  NDPA-2023 s.30
+PII-1-NAME   moderate  NDPA-2023 s.30
+PII-3-PHONE  moderate  NDPA-2023 s.30
+
+NAME_099000a2 NAME_e38a0fcd, NIN [NIN], phone PHONE_d3100c11.
+[('PII-2-NIN', 'mask'), ('PII-1-NAME', 'tokenize'), ('PII-1-NAME', 'tokenize'), ('PII-3-PHONE', 'tokenize')]
+```
+
+Read the first three columns as a sentence. `PII-2-NIN` is a label from the Pan-African PII Taxonomy, a published list of categories rather than a name we invented at the call site. `high` is a sensitivity tier. **`NDPA-2023 s.30, NIMC Act s.27` is the part most detection libraries do not have**: the section of the Nigeria Data Protection Act, and of the NIMC Act that governs the National Identification Number specifically, under which that field is being treated. `Pipeline(jurisdiction="NG")` loaded the Nigerian statute pack; passing `"ZA"` would have loaded POPIA and produced different sections and, where the two laws differ, different actions.
+
+The redacted line shows two of the six actions a statute may choose. The NIN was **masked** — replaced by a category placeholder, `[NIN]`, and gone for good. The name and the phone were **tokenized** — replaced by a deterministic, non-reversible token. The difference matters more than it looks: the same phone number produces the same `PHONE_d3100c11` in every document you process with the same salt, so you can still count how many returns mention one patient without ever holding their number. A mask throws that link away; a token keeps the link and drops the value. Which one a field gets is the statute's call, not the detector's.
+
+Now the second clinic's line, through the same pipeline:
 
 ```python
 from arche import Pipeline
 
 pipeline = Pipeline(jurisdiction="NG")
-result = pipeline.process(
-    "Customer Adesola Okonkwo, NIN 12345678901, phone 0803 555 7890."
-)
 
-print(result.redacted_text)
-# Customer Adesola Okonkwo, NIN [NIN], phone PHONE_...
-
-print(result.detections[0].regulatory_citation)
-# NDPA-2023 s.30, NIMC Act s.27
-
-print(result.policy_outcomes[0].action)
-# mask
+for line in ("Fatima Abdullahi, NIN 12345678901.",
+             "Fatuma Abdulahi, NIN 12345678901."):
+    print(pipeline.process(line).redacted_text)
 ```
 
-Behind that one call:
+```text
+NAME_099000a2 NAME_e38a0fcd, NIN [NIN].
+Fatuma NAME_ae1ee794, NIN [NIN].
+```
 
-1. **Statute auto-loaded.** `Pipeline(jurisdiction="NG")` resolves to `NDPA-2023.yaml`. Override with `Pipeline(statute="NDPA-2023")` to pin a specific version.
-2. **Detect.** Per-country detectors run in deterministic order - NG detectors first, then `_africa` cross-cutting (phones, generic IDs), then optional GLiNER2 if `arche-core[detect]` is installed.
-3. **Validate.** Structural validators (Luhn for SA ID, the 11-digit NIN constraint, BVN's 11-digit format) drop false positives.
-4. **Policy.** The statute YAML maps each detected category to one of the six closed actions. The applied action carries a statute section reference into the `PolicyOutcome`.
-5. **Redact.** Spans flagged for `mask` / `tokenize` / `drop` / `generalize` are rewritten into `result.redacted_text`. The original detection coordinates remain available in `result.detections`.
-6. **Audit.** Each detection emits an `AuditEvent` row into the SQLite log (PII values never stored - only category labels, spans, and document hashes).
-
-The `Result` object holds everything: detections, policy outcomes, redacted text, audit entries, and the original (un-redacted) input for verifiability use cases like `SignWorkflow`.
+**"Fatuma" came through in the clear.** Name detection on the base wheel is a lexicon of African given names and surnames, and this spelling is not in it. That is not a bug to be embarrassed about so much as the first thing a newcomer needs to internalise: protection can only act on what detection proposed, so the coverage of the detectors *is* the strength of the guarantee. The full inventory of what is and is not detected today is on [the lifecycle page](lifecycle.md), and it is worth reading before you deploy anything.
 
 ---
 
-## API levels
+## 3. Resolve
 
-| Level | What you get | When to use |
-|---|---|---|
-| **Workflow** | `Pipeline`, `DSARWorkflow`, `SignWorkflow` | "Run the whole substrate chain in one call" |
-| **Substrate** | `arche.policy.apply_policy`, `arche.sign.sign`, `arche.graph.audit.AuditLog` | "I want control over one substrate" |
-| **Primitive** | `arche.detect.ng.ids.detect_nigerian_ids`, `arche.policy.engine.apply_action` | "I'm building my own composition" |
-
-Workflows call substrates. Substrates call primitives. No capability is lost at any level - every workflow is just a thin orchestrator over the layers documented in [Architecture](architecture.md).
-
----
-
-## Why this composition matters
-
-A traditional PII library answers *"is this string a phone number?"*. arche answers *"this string is a Nigerian mobile under NDPA-2023 s.29 (sensitive personal data), which means it MUST be masked before processing, and I'm leaving an audit row that an NDPC investigator can verify against my deployment's records."*
-
-That gap - between **detection** and **statute-grounded compliance evidence** - is what arche-core fills. The primitives exist in many libraries (libphonenumber detects phones, Presidio detects English-centric PII, GLiNER does multilingual NER). arche-core is the layer that turns those primitives into auditable compliance output by attaching the African-context layer (per-country ID validators, name equivalences, landmark addresses) to the statute-aware layer (versioned YAML, six closed actions, sensitivity tiers, regulatory citations).
-
-That combination - detection + statute citation + audit log row - is the thesis. See [the roadmap](roadmap.md) for where the framework goes from here.
-
----
-
-## Detector substrate - a deeper look
-
-Per-country detectors live at `arche.detect.{ng,ke,za,gh}.ids`. Each is a pure-Python module with a single entry function that returns a list of `Detection` objects:
+Resolution asks a different question from detection. Not "what is in this text" but "are these two records about the same person". arche's answer comes back as a decision plus the numbers that produced it.
 
 ```python
-from arche.detect.ng.ids import detect_nigerian_ids
+from arche.canonical import Reference
+from arche.resolve import pairwise
 
-for d in detect_nigerian_ids("My NIN is 12345678901 and BVN is 22156789012."):
-    print(d.id_type, d.country, d.start, d.end, d.confidence, d.metadata)
-# BVN NG 33 44 0.85 {'validator_status': 'format_valid'}
-# NIN NG 10 21 0.6  {'validator_status': 'format_valid'}
+ISSUER_KEY = b"an issuer secret of at least 32b"
+
+a = Reference.from_record({"id": "lagos-001", "full_name": "Fatima Abdullahi",
+                           "national_id": "12345678901"})
+b = Reference.from_record({"id": "kano-774", "full_name": "Fatuma Abdulahi",
+                           "national_id": "12345678901"})
+
+decision = pairwise(a, b, issuer_key=ISSUER_KEY)
+print("identity :", decision.identity)
+print("action   :", decision.action)
+print("score    :", decision.score)
+print("factors  :", decision.factors)
+print("gate     :", decision.gate)
 ```
 
-Note the return type: the per-country ID detectors return `NationalID` records (`text`, `country`, `id_type`, `confidence`, `start`, `end`, `metadata`), not `Detection` objects. Taxonomy categories, sensitivity tiers and citations are attached one layer up, by `Pipeline`.
-
-Confidence is **not** a uniform 1.0. Each pattern carries a base confidence reflecting how much the shape alone is worth — Ghana Card 0.95 and KRA PIN 0.92 have distinctive formats, while a bare Nigerian NIN (0.55) or a 7-to-8-digit Kenyan National ID (0.40) could be almost
-any number — and a passing structural check raises it. `metadata` records which check ran, so a low score is explainable rather than mysterious.
-
-The `Detection.category` follows the Pan-African PII Taxonomy (`PII-1..PII-9`, 54 categories at v0.1.1), shipped as a standalone CC-BY-4.0 dataset at [`datasets/pan-african-pii-taxonomy/`](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
-
----
-
-## Policy substrate - six closed actions
-
-Exactly six actions are available to a statute, and the set is closed:
-
-| Action | Use case |
-|---|---|
-| `mask` | Sensitive PII surfacing to a less-privileged consumer (analyst, auditor) |
-| `tokenize` | Need referential integrity across documents but not the underlying value |
-| `drop` | The PII has no downstream use; remove it |
-| `generalize` | Need partial signal (year of birth, city) without the full value |
-| `audit` | The action is legal-allowed; just log that it happened |
-| `retain` | Allowlist; statute permits passthrough |
-
-A statute YAML maps each detection category to exactly one action plus a free-text citation. The mapping is auditable and version-controlled, not buried in code.
-
-```yaml
-# Excerpt from NDPA-2023.yaml
-categories:
-  PII-2-NIN:
-    action: mask
-    citation: "NDPA-2023 s.29 (sensitive personal data - biometric/identity)"
-  PII-3-PHONE:
-    action: tokenize
-    citation: "NDPA-2023 s.26 (lawful basis: legitimate interest)"
+```text
+identity : same_entity
+action   : merge
+score    : 1.0
+factors  : {'name': 0.9053, 'national_id': 1.0, 'name_tf': 0.0}
+gate     : {'distinctive_cleared': True, 'clearing_signal': 'national_id', 'floor': 0.75}
 ```
 
-Six packs ship — NDPA-2023, POPIA, Kenya DPA, Ghana DPA, GDPR and HIPAA
-Safe Harbor — and each declares a `review_status` separately from its
-`version`, because "we finished it" and "someone official checked it"
-are different claims. All six are `self-reviewed`; none claims regulator
-review, and the loader refuses a pack that claims it without naming a
-reviewer. → [the pack table](architecture.md#4-the-statute-engine)
+A `Reference` is one record's worth of claims about one thing, and `from_record` turns an ordinary dictionary into one. The `factors` are the per-field evidence: the two names are 0.905 similar, the two national IDs are identical, and `name_tf` — a measure of how *distinctive* the words the names share are, weighted against how common those words are in the population — is **0.0**, because "Fatima Abdullahi" and "Fatuma Abdulahi" share no token at all once you compare them literally. The shared identifier is carrying this decision on its own, and the `gate` says so out loud: `clearing_signal: national_id`.
 
----
-
-## Sign substrate - offline verifiability
-
-`arche.sign` does not require any infrastructure. The recipient verifies
-the JWS using the issuer's `did:key`, which is embedded in the JWS
-header. No DID resolver, no PKI, no network call.
+Three outcomes are possible on the `identity` axis: `same_entity`, `different`, and `review`. The third one is the point of the product.
 
 ```python
-from arche.sign import SignWorkflow, VerifyExtractWorkflow, generate_keypair
+from arche.canonical import Reference
+from arche.resolve import pairwise
 
-issuer_key = generate_keypair()  # did:key:z6Mk...
-signed = SignWorkflow(jurisdiction="NG").sign(
-    document, issuer_key, purpose="dsar_response"
-)
+ISSUER_KEY = b"an issuer secret of at least 32b"
 
-# Cold start verification - no network call
-result = VerifyExtractWorkflow().process(signed)
-assert result.signature_valid
-assert result.statute_at_signing == "NDPA-2023@v1.0"   # id and version, pinned
+# The same NIN, and nothing else to go on.
+c = Reference.from_record({"id": "ussd-9", "national_id": "12345678901"})
+d = Reference.from_record({"id": "ussd-4", "national_id": "12345678901"})
+
+thin = pairwise(c, d, issuer_key=ISSUER_KEY)
+print("identity :", thin.identity)
+print("action   :", thin.action)
+print("score    :", thin.score)
+print("factors  :", thin.factors)
+print("gate     :", thin.gate)
 ```
 
-`arche.credentials.sd_jwt` re-frames any signed envelope as an SD-JWT-VC
-(IETF format) so the same document plays nicely with EUDI Wallet ARF
-and MOSIP Inji ecosystems.
+```text
+identity : review
+action   : no_op
+score    : 0.9999
+factors  : {'national_id': 1.0}
+gate     : {'distinctive_cleared': True, 'clearing_signal': 'national_id', 'floor': 0.75}
+```
+
+Look at that carefully, because it surprises almost everyone. The two records share an exact national ID. The score is **0.9999**. The distinctive-signal gate **cleared**. And arche still refuses to say they are the same person. `same_entity` requires three things at once — the score, a distinctive signal, and *at least two fields that actually agreed* — and here only one field was ever compared, so the third condition fails and the decision lands in `review` with a recommended action of `no_op`. One number is not a person. If that identifier was mistyped, or belongs to a shared household account, or was reused by a registry, there is nothing in these two records that would catch it.
+
+Abstention is a feature that costs something, and it is worth being clear about the trade: arche will hand you pairs a naive join would have merged silently, and a human has to look at them. In exchange, a merge that does come back carries evidence you can read, and a wrong merge is the expensive failure — it fuses two people's records, and unpicking that afterwards is very much harder than glancing at a queue.
 
 ---
 
-## Audit substrate - append-only, regulator-ready
+## 4. Attest
 
-Every detection emits an `AuditEvent` row into the SQLite log:
-
-- `timestamp` - ISO 8601 UTC
-- `event_type` - `detection` / `policy` / `address` / `workflow_start` / `workflow_end`
-- `document_hash` - SHA-256 of the input (NOT the input itself)
-- `category` - Pan-African PII Taxonomy label
-- `span_start`, `span_end` - character offsets only; the substring stays in the document
-- `action` - one of the six closed actions
-- `statute_id`, `statute_reference` - which pack decided, and the section it cites
-- `prev_hash`, `signature` - nullable, and **not populated today**. The
-  columns exist so hash-chaining can land without a migration; until it
-  does, the log is append-only by convention, not tamper-evident.
-
-Export for regulator handoff:
+The last verb turns a decision into something a third party can check.
 
 ```python
-from arche.graph.audit import AuditLog
+from arche.attest import attest, verify_attestation
+from arche.canonical import Reference
+from arche.resolve import pairwise
+from arche.sign import generate_keypair
 
-audit = AuditLog("./compliance.sqlite")
-audit.compliance_report_markdown()   # Human-readable markdown
-audit.export_signed(key=officer_key, purpose="ndpc_quarterly_audit")
-# Returns a JWS-signed bundle the regulator can verify offline.
+ISSUER_KEY = b"an issuer secret of at least 32b"
+signing_key = generate_keypair()
+
+a = Reference.from_record({"id": "lagos-001", "full_name": "Fatima Abdullahi",
+                           "national_id": "12345678901"})
+b = Reference.from_record({"id": "kano-774", "full_name": "Fatuma Abdulahi",
+                           "national_id": "12345678901"})
+
+signed = attest(pairwise(a, b, issuer_key=ISSUER_KEY), signing_key)
+
+checked = verify_attestation(signed.compact, public_key=signing_key.public_key)
+print("valid       :", checked.valid)
+print("trusted     :", checked.trusted)
+print("key_source  :", checked.key_source)
+print("decision    :", checked.claims["decision"])
+print("reproducible:", checked.claims["reproducible"])
+print("raw names in the attestation:",
+      "Fatima" in signed.compact or "Abdullahi" in signed.compact)
 ```
 
-SQLite is the only backend. There is no storage-backend protocol and no
-Postgres or graph extra; if you need the rows elsewhere, `audit.export()`
-gives you them.
+```text
+valid       : True
+trusted     : True
+key_source  : pinned
+decision    : same_entity
+reproducible: True
+raw names in the attestation: False
+```
+
+Four fields in that output are doing separate jobs, and conflating any two of them is how people end up trusting something they should not.
+
+**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls** — here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](attest.md) shows the forged case side by side with the genuine one.
+
+**`reproducible: True` is a claim about replay**, and it is derived from what actually fed the decision rather than from the signing format. The engine's own path is deterministic, so this decision replays byte for byte. Had the two records been extracted by a hosted language model, the extraction step could not be replayed by a stranger, and the attestation would say `reproducible: False` instead of quietly implying otherwise.
+
+**And no raw name is in the artefact.** An attestation carries the decision, the numeric evidence, the gate, and content-addressed identifiers — not the person. That is what makes it shareable with a regulator, an auditor, or a counterparty who has no business seeing the underlying records.
 
 ---
 
-## What's next
+## What you have at the end
 
-- [Attest: the signature on the decision](attest.md) - what a signature does and does not prove
-- [Architecture](architecture.md) - proposers, deciders, and the spine they share
-- [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
-- [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
+One paragraph, because this is the whole claim. You started with a line of text and finished with: a list of the personal data it contained, each tagged with the statute section that governs it; a copy of the text safe to pass on, with the identifiers masked or tokenised according to that statute; a decision about whether two records are the same person, with the per-field evidence and the gate that permitted it; and a signature over that decision that a stranger can verify offline, containing no personal data at all.
+
+---
+
+## What this page did not show
+
+It showed one pair. Real work is usually two *lists* — `resolve.crosswalk` links them at scale, and for places it enforces a geographic veto that demotes a pair to `review` when the coordinates are too far apart no matter how well the names match. It used arche's built-in field names; a [declaration](../how-to/declare-your-schema.md) lets you keep your own schema and state what your fields mean. It said nothing about sending data to a third party, which is what `arche.guard.EgressGuard` exists to refuse by default.
+
+It also showed detection working. Detection is where arche's coverage is most uneven, and this page deliberately left the inventory to a page that can be exhaustive about it.
+
+- [The identity lifecycle](lifecycle.md) — verb by verb: what ships, what is gated, and what does not exist. The page to read before you rely on any of the above.
+- [Architecture](architecture.md) — how the code is layered, and which components are permitted to conclude anything.
+- [Attest: the signature on the decision](attest.md) — what a signature does and does not prove.
+- [A representation engine, not an inference engine](representation-engine.md) — why `name_tf` was 0.0, and why that is the interesting number.
+- [Entity resolution tutorial](../tutorials/entity_resolution.md) — the same ideas with your hands on the keyboard.
