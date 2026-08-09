@@ -81,7 +81,7 @@ nav:
     - Place identity: concepts/place-identity.md
     - The place benchmark: concepts/place-benchmark.md
     - The five ER activities: concepts/er-activities.md
-    - Verifiability, the signature on the decision: concepts/verifiability.md
+    - Attest, the signature on the decision: concepts/attest.md
     - Roadmap: concepts/roadmap.md
   - Guides:
     - Match African names: how-to/match-african-names.md

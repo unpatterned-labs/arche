@@ -49,7 +49,7 @@ signed = sign_edges(result, private_key=kp.private_key, kid=kp.did_key)
 verify(signed[0]["jws"], public_key=kp.public_key).valid   # True
 ```
 
-The signature says *given this evidence and this representation, this was the decision* — the only honest claim about entities that have histories. Why signatures, and when they are worth their cost: [the signature on the decision](verifiability.md).
+The signature says *given this evidence and this representation, this was the decision* — the only honest claim about entities that have histories. Why signatures, and when they are worth their cost: [the signature on the decision](attest.md).
 
 ## 5. The sensitive half
 

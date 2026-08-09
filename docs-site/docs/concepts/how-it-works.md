@@ -2,7 +2,7 @@
 
 arche-core does one job: **detect PII in African text and ground every detection in the data protection statute that classifies it.** Government IDs with check-digit validation. Phones with libphonenumber. Names with a 114-group equivalence lexicon. Addresses with landmark anchoring. Every detection emits a sensitivity tier and the regulatory citation that justifies the policy action applied to it.
 
-This page walks through how a single `Pipeline.process(text)` call moves through the detection, policy, and audit stages. Signing, DSAR drafting, place lookup and entity matching compose on top of the same primitives — see [Verifiability](verifiability.md) and the workflow guides. Resolution and attestation, arche's lead capability today, are covered in [the representation engine](representation-engine.md) and [from place to entity](from-place-to-entity.md).
+This page walks through how a single `Pipeline.process(text)` call moves through the detection, policy, and audit stages. Signing, DSAR drafting, place lookup and entity matching compose on top of the same primitives — see [Attest](attest.md) and the workflow guides. Resolution and attestation, arche's lead capability today, are covered in [the representation engine](representation-engine.md) and [from place to entity](from-place-to-entity.md).
 
 ---
 
@@ -28,27 +28,14 @@ print(result.policy_outcomes[0].action)
 
 Behind that one call:
 
-1. **Statute auto-loaded.** `Pipeline(jurisdiction="NG")` resolves to
-   `NDPA-2023.yaml`. Override with `Pipeline(statute="NDPA-2023")` to
-   pin a specific version.
-2. **Detect.** Per-country detectors run in deterministic order - NG
-   detectors first, then `_africa` cross-cutting (phones, generic IDs),
-   then optional GLiNER2 if `arche-core[detect]` is installed.
-3. **Validate.** Structural validators (Luhn for SA ID, the 11-digit
-   NIN constraint, BVN's 11-digit format) drop false positives.
-4. **Policy.** The statute YAML maps each detected category to one of
-   the six closed actions. The applied action carries a statute
-   section reference into the `PolicyOutcome`.
-5. **Redact.** Spans flagged for `mask` / `tokenize` / `drop` /
-   `generalize` are rewritten into `result.redacted_text`. The original
-   detection coordinates remain available in `result.detections`.
-6. **Audit.** Each detection emits an `AuditEvent` row into the SQLite
-   log (PII values never stored - only category labels, spans, and
-   document hashes).
+1. **Statute auto-loaded.** `Pipeline(jurisdiction="NG")` resolves to `NDPA-2023.yaml`. Override with `Pipeline(statute="NDPA-2023")` to pin a specific version.
+2. **Detect.** Per-country detectors run in deterministic order - NG detectors first, then `_africa` cross-cutting (phones, generic IDs), then optional GLiNER2 if `arche-core[detect]` is installed.
+3. **Validate.** Structural validators (Luhn for SA ID, the 11-digit NIN constraint, BVN's 11-digit format) drop false positives.
+4. **Policy.** The statute YAML maps each detected category to one of the six closed actions. The applied action carries a statute section reference into the `PolicyOutcome`.
+5. **Redact.** Spans flagged for `mask` / `tokenize` / `drop` / `generalize` are rewritten into `result.redacted_text`. The original detection coordinates remain available in `result.detections`.
+6. **Audit.** Each detection emits an `AuditEvent` row into the SQLite log (PII values never stored - only category labels, spans, and document hashes).
 
-The `Result` object holds everything: detections, policy outcomes,
-redacted text, audit entries, and the original (un-redacted) input for
-verifiability use cases like `SignWorkflow`.
+The `Result` object holds everything: detections, policy outcomes, redacted text, audit entries, and the original (un-redacted) input for verifiability use cases like `SignWorkflow`.
 
 ---
 
@@ -60,9 +47,7 @@ verifiability use cases like `SignWorkflow`.
 | **Substrate** | `arche.policy.apply_policy`, `arche.sign.sign`, `arche.graph.audit.AuditLog` | "I want control over one substrate" |
 | **Primitive** | `arche.detect.ng.ids.detect_nigerian_ids`, `arche.policy.engine.apply_action` | "I'm building my own composition" |
 
-Workflows call substrates. Substrates call primitives. No capability is
-lost at any level - every workflow is just a thin orchestrator over
-the substrates documented in [Architecture](architecture.md).
+Workflows call substrates. Substrates call primitives. No capability is lost at any level - every workflow is just a thin orchestrator over the layers documented in [Architecture](architecture.md).
 
 ---
 
@@ -78,9 +63,7 @@ That combination - detection + statute citation + audit log row - is the thesis.
 
 ## Detector substrate - a deeper look
 
-Per-country detectors live at `arche.detect.{ng,ke,za,gh}.ids`. Each is
-a pure-Python module with a single entry function that returns a list
-of `Detection` objects:
+Per-country detectors live at `arche.detect.{ng,ke,za,gh}.ids`. Each is a pure-Python module with a single entry function that returns a list of `Detection` objects:
 
 ```python
 from arche.detect.ng.ids import detect_nigerian_ids
@@ -91,23 +74,12 @@ for d in detect_nigerian_ids("My NIN is 12345678901 and BVN is 22156789012."):
 # NIN NG 10 21 0.6  {'validator_status': 'format_valid'}
 ```
 
-Note the return type: the per-country ID detectors return `NationalID`
-records (`text`, `country`, `id_type`, `confidence`, `start`, `end`,
-`metadata`), not `Detection` objects. Taxonomy categories, sensitivity
-tiers and citations are attached one layer up, by `Pipeline`.
+Note the return type: the per-country ID detectors return `NationalID` records (`text`, `country`, `id_type`, `confidence`, `start`, `end`, `metadata`), not `Detection` objects. Taxonomy categories, sensitivity tiers and citations are attached one layer up, by `Pipeline`.
 
-Confidence is **not** a uniform 1.0. Each pattern carries a base
-confidence reflecting how much the shape alone is worth — Ghana Card
-0.95 and KRA PIN 0.92 have distinctive formats, while a bare Nigerian
-NIN (0.55) or a 7-to-8-digit Kenyan National ID (0.40) could be almost
-any number — and a passing structural check raises it. `metadata`
-records which check ran, so a low score is explainable rather than
-mysterious.
+Confidence is **not** a uniform 1.0. Each pattern carries a base confidence reflecting how much the shape alone is worth — Ghana Card 0.95 and KRA PIN 0.92 have distinctive formats, while a bare Nigerian NIN (0.55) or a 7-to-8-digit Kenyan National ID (0.40) could be almost
+any number — and a passing structural check raises it. `metadata` records which check ran, so a low score is explainable rather than mysterious.
 
-The `Detection.category` follows the Pan-African PII Taxonomy
-(`PII-1..PII-9`, 54 categories at v0.1.1), shipped as a standalone
-CC-BY-4.0 dataset at
-[`datasets/pan-african-pii-taxonomy/`](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
+The `Detection.category` follows the Pan-African PII Taxonomy (`PII-1..PII-9`, 54 categories at v0.1.1), shipped as a standalone CC-BY-4.0 dataset at [`datasets/pan-african-pii-taxonomy/`](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
 
 ---
 
@@ -124,9 +96,7 @@ Exactly six actions are available to a statute, and the set is closed:
 | `audit` | The action is legal-allowed; just log that it happened |
 | `retain` | Allowlist; statute permits passthrough |
 
-A statute YAML maps each detection category to exactly one action plus
-a free-text citation. The mapping is auditable and version-controlled,
-not buried in code.
+A statute YAML maps each detection category to exactly one action plus a free-text citation. The mapping is auditable and version-controlled, not buried in code.
 
 ```yaml
 # Excerpt from NDPA-2023.yaml
@@ -144,7 +114,7 @@ Safe Harbor — and each declares a `review_status` separately from its
 `version`, because "we finished it" and "someone official checked it"
 are different claims. All six are `self-reviewed`; none claims regulator
 review, and the loader refuses a pack that claims it without naming a
-reviewer. → [the pack table](architecture.md#substrate-2-policy)
+reviewer. → [the pack table](architecture.md#4-the-statute-engine)
 
 ---
 
@@ -208,7 +178,7 @@ gives you them.
 
 ## What's next
 
-- [Verifiability concepts](verifiability.md) - sign-share-extract deep dive
-- [Architecture](architecture.md) - the substrate diagram
+- [Attest: the signature on the decision](attest.md) - what a signature does and does not prove
+- [Architecture](architecture.md) - proposers, deciders, and the spine they share
 - [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
 - [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)

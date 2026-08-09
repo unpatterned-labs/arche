@@ -86,7 +86,7 @@ signed envelopes.
   cryptographically without any PKI, resolver, or network call
 - SD-JWT-VC re-framing, the format the EUDI Wallet ARF specifies
 - Post-quantum (hybrid Ed25519 + ML-DSA) signing is designed but **not
-  shipped**; there is no `arche-core[pqc]` extra. → [Verifiability](verifiability.md)
+  shipped**; there is no `arche-core[pqc]` extra. → [Attest](attest.md)
 
 ### Govern
 
@@ -97,7 +97,7 @@ record the decision.
   GDPR, HIPAA Safe Harbor. Every category in every pack carries a cited
   section, and every pack declares a `review_status`; all six are
   `self-reviewed` and none claims regulator review. Three still carry a
-  stale `v0.1-scaffold` version label — see [Architecture](architecture.md#substrate-2-policy).
+  stale `v0.1-scaffold` version label — see [Architecture](architecture.md#4-the-statute-engine).
 - **Six closed actions**: mask, tokenize, drop, generalize, audit, retain.
 - **Append-only audit log**: SQLite-backed, PII values never stored
   (only category labels, character spans, document hashes). Append-only
