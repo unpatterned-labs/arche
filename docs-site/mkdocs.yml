@@ -1,5 +1,8 @@
 site_name: arche
-site_description: Know what's real. The open engine for messy, multilingual data - find the entities, resolve who they actually are, protect them under the law that applies, and sign every decision. Entity resolution, PII detection and attestation, calibrated on the world's hardest identity data. Composes with Presidio, GLiNER, and Splink.
+# "Composes with Splink" was the old tail of this line. It described one
+# deprecated function and nothing else in the package: pairwise, crosswalk and
+# reconcile import zero splink. See tutorials/arche_vs_alternatives.md.
+site_description: Know what's real. The open engine for messy, multilingual data - find the entities, resolve who they actually are, protect them under the law that applies, and sign every decision. The representation layer record linkage needs - equivalence packs, frequency tables, identifier grammars and statute packs, shipped as inspectable data. Composes with Presidio and GLiNER as detector backends.
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
@@ -110,7 +113,9 @@ nav:
     - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
   - Workflows:
     - Sign, share, extract: tutorials/sign_share_extract.md
-    - Citizen DSAR: tutorials/citizen_dsar.md
+    # "Citizen DSAR" expanded: a reader who does not already work in data
+    # protection cannot tell what the page is for from the acronym alone.
+    - Data Subject Access Requests (DSAR): tutorials/citizen_dsar.md
     - Entity resolution: tutorials/entity_resolution.md
   - API:
     - Overview: api/index.md

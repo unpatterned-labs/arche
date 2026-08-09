@@ -193,6 +193,39 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
   Off by default (`orthography=None`) on `weighted_token_sim` and
   `shared_name_distinctiveness`, because it changes scores.
 
+### Fixed — redaction leaked plaintext on overlapping detections
+
+- **`apply_policy` spliced each detection independently**, in reverse start
+  order. That is correct only for disjoint spans. Detectors nest routinely — a
+  NAME inside an ADDRESS, a LOCATION inside an ADDRESS — and the second splice
+  then applied original-text offsets to an already-resized string.
+
+  On ordinary Nigerian address text, with the shipped detector set and no
+  options, that produced:
+
+  ```text
+  'Plot 5 Ibrahim Taiwo Road, behind the Total filling station, Kano.'
+      ->  '[ADDRESS]o Road, [ADDRESS].'        # 'o Road' leaked
+  '12 Adeola Odeku Street, Victoria Island, Lagos.'
+      ->  '[ADDRESS], Lagos.'                  # 'Lagos' survived inside a masked span
+  ```
+
+  `detections` and `policy_outcomes` were correct throughout; only the
+  rewritten string was wrong, which is the worst shape for this class of bug —
+  the output looks redacted.
+
+  Overlapping spans are now grouped and each group replaced once. The **action**
+  comes from the most restrictive member (`drop > mask > tokenize > generalize
+  > audit > retain`), because letting the outer span win would emit a
+  generalized address still containing a NIN the pack said to mask, and letting
+  the inner win would leave the rest of the address in clear. The **label**
+  comes from the widest member, because an address containing a name is still
+  an address.
+
+  Every detection still gets its own outcome, in input order, with its own
+  category, action and citation. Disjoint spans — the common case — are
+  unaffected.
+
 ### Security
 
 - **`sign.verify()` no longer trusts the key a token names for itself.**

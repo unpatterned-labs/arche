@@ -9,7 +9,7 @@ name = "arche-core"
 # 0.2.0a3 while the package reported 0.3.0a1, which would have published
 # the 0.3 line under the 0.2 version number.
 dynamic = ["version"]
-description = "Know what's real. The open engine for messy, multilingual, real-world data — detect, resolve, protect, attest. Entity resolution + PII detection: find the entities in any document or system, work out which real-world thing each refers to, keep disagreement between sources instead of erasing it, protect it under the law that applies, and sign every decision. Any entity, any jurisdiction (NDPA, GDPR, HIPAA). Composes with Presidio, GLiNER, and Splink."
+description = "Know what's real. The open engine for messy, multilingual, real-world data — detect, resolve, protect, attest. Entity resolution + PII detection: find the entities in any document or system, work out which real-world thing each refers to, keep disagreement between sources instead of erasing it, protect it under the law that applies, and sign every decision. Any entity, any jurisdiction (NDPA, GDPR, HIPAA). Runs offline on CPU; composes with Presidio and GLiNER."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"

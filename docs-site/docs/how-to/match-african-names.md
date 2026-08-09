@@ -16,7 +16,7 @@ print(f"Match: {match}, Confidence: {confidence:.0%}")
 
 This causes real harm: duplicate health records, failed KYC checks, broken social protection disbursements, and fragmented civil registration.
 
-arche solves this with 114 cultural naming equivalence groups spanning 50+ ethnic traditions.
+arche solves this with 114 cultural naming equivalence groups spanning 20+ ethnic and linguistic traditions.
 
 ---
 

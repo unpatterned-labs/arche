@@ -12,7 +12,7 @@ disagreement   →  w = log2((1 − m) / (1 − u))
 partial (similarity s)  →  w = s · log2(m/u) + (1 − s) · log2((1−m)/(1−u))
 ```
 
-Weights sum across fields, then `P(match) = 2^W / (1 + 2^W)`. One worked number, with the shipped defaults `name_m = 0.92`, `name_u = 0.01`: exact name agreement is worth `log2(0.92/0.01) = 6.52` bits, so a name alone gives `2^6.52 / (1 + 2^6.52) ≈ 0.989`. Disagreement costs `log2(0.08/0.99) = −3.63` bits. The pairwise decision then bands at 0.85 (match) and 0.40 (review). The math is not ours and we do not improve it; at scale we [stand on Splink](../tutorials/arche_vs_alternatives.md), which runs the same model with proper EM-estimated parameters.
+Weights sum across fields, then `P(match) = 2^W / (1 + 2^W)`. One worked number, with the shipped defaults `name_m = 0.92`, `name_u = 0.01`: exact name agreement is worth `log2(0.92/0.01) = 6.52` bits, so a name alone gives `2^6.52 / (1 + 2^6.52) ≈ 0.989`. Disagreement costs `log2(0.08/0.99) = −3.63` bits. The pairwise decision then bands at 0.85 (match) and 0.40 (review). The math is not ours and we do not improve it — [Splink runs the same model](../tutorials/arche_vs_alternatives.md) with proper EM-estimated parameters, and runs it better. arche implements a thin version itself and spends its effort on the representation the model scores over. At scale the shipped path is arche's own `crosswalk`; nothing in `pairwise`, `crosswalk` or the frequency tables imports Splink.
 
 ## Rarity is evidence
 

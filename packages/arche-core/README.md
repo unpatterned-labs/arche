@@ -17,7 +17,7 @@ Numbers we publish come with the script that produces them. The current one is t
 > releases.
 > **v0.3.0a1 is the first alpha of the beta line — not beta itself.**
 
-`arche-core` detects PII across various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
+`arche-core` detects PII across various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Runs offline on CPU, and composes with Presidio and GLiNER.
 
 > Presidio detects PII. GLiNER does multilingual NER. Splink links records. None of them know that a BVN is sensitive under NDPA §30, or that "Adeyẹmí" and "Adeyemi" are the same Yoruba name with and without tonal marks, or that "behind Total filling station, Madina Junction" is a parseable Ghanaian address. `arche-core` does that one job.
 
@@ -87,7 +87,7 @@ Statute YAMLs live at `arche/policy/statutes/<STATUTE-ID>.yaml` and are human-re
 
 ## Cultural naming intelligence
 
-`arche-core` ships a 114-group African name equivalence lexicon covering 454 name forms across 50+ ethnic traditions:
+`arche-core` ships a 114-group African name equivalence lexicon covering 454 name forms across 20+ ethnic and linguistic traditions:
 
 - Mohammed = Muhammad = Mamadou = Muhammadu (Pan-Islamic)
 - Diallo = Jallow = Jalloh (Fulani cross-ethnic orthography)
@@ -98,7 +98,7 @@ Statute YAMLs live at `arche/policy/statutes/<STATUTE-ID>.yaml` and are human-re
 
 Growing via Wikidata + community curation. See [`datasets/`](../../datasets/) for the full dataset and contribution guide.
 
-## Composing with Presidio, GLiNER, and Splink
+## Composing with Presidio and GLiNER
 
 `arche-core` is designed to compose with the incumbent tools, not replace them. The three integration patterns:
 
@@ -115,9 +115,12 @@ pip install arche-core[detect]
 # statute, detectors, address_parsing, audit, tokenize_salt, overlays,
 # transparency_notice.
 
-# Splink's record linkage + arche's jurisdiction-aware comparators
+# Splink's record linkage — the deprecated v0.1 path only
 pip install arche-core[resolve]
 # arche.resolve.resolve_entities(entities, use_splink=True) feeds Splink.
+# NOTE: this is the ONLY code path that imports Splink. The shipped surface
+# — resolve.pairwise, resolve.crosswalk, the frequency tables and the name
+# lexicon — implements Fellegi-Sunter itself and imports no Splink at all.
 ```
 
 ## Audit log

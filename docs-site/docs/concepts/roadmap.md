@@ -41,7 +41,7 @@ One YAML declares *your* fields and annotates each with arche's roles (`identifi
 ### Detect + govern — the African-context layer
 
 - Per-country ID detectors: Nigeria (NIN, BVN, TIN, RC, voter PVC, driver's licence), Kenya (National ID, KRA PIN, NHIF), South Africa (SA ID with Luhn + DOB/gender/citizenship decode, tax reference, passport), Ghana (Ghana Card, SSNIT, TIN), plus 11 further African patterns. libphonenumber-backed normalization across 30+ networks.
-- **114-group name equivalence lexicon** (450 forms, 50+ ethnic traditions) and population-scale frequency tables.
+- **114-group name equivalence lexicon** (450 forms, 20+ ethnic and linguistic traditions) and population-scale frequency tables.
 - **Six statute packs** — NDPA-2023, POPIA, Kenya DPA, Ghana DPA, GDPR, HIPAA Safe Harbor — each carrying a complete category mapping with a cited section on every category, and each declaring `review_status` (`self-reviewed` or `regulator-reviewed`; the loader refuses the latter without a named reviewer). All six are `self-reviewed`; none claims regulator review. Six closed actions, sensitivity tiers, a citation on every detection. *Label debt, stated: NDPA-2023, GDPR and HIPAA carry `version: v1.0` while POPIA, Kenya DPA and Ghana DPA still carry `version: v0.1-scaffold` even though their mappings are complete — the relabelling the v0.3.0a1 notes describe has not landed in the shipped packs yet.*
 - `Pipeline(jurisdiction=...)` composes detect → policy → audit; SQLite append-only audit log that never stores PII values.
 - **Pan-African PII Taxonomy v0.1** — 54 categories, CC-BY-4.0, published as a standalone dataset.
