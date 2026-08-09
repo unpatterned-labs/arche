@@ -1,4 +1,4 @@
-# Declare your schema — your fields, arche's guarantees
+# Declare your schema: your fields, arche's guarantees
 
 Splink wants structured, same-schema tables. Senzing wants its attribute dictionary. arche wants **your** schema — you just tell it what your fields *mean*. One YAML file assigns each of your fields a role, and from that single declaration arche derives comparators, masking policy, identity binding, an LLM extraction schema, and a pin that hashes into every signed decision.
 

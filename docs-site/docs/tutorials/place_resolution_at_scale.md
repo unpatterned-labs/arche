@@ -24,7 +24,7 @@ out = resolve.crosswalk(list_a, list_b, entity="place")
 
 That one call is the whole API. `entity="place"` selects the canned place comparators (fuzzy name + token distinctiveness + geo proximity); H3 spatial blocking keeps big lists fast; the distinctive-signal gate keeps the merges safe.
 
-## Step 0 — the trap every new user hits
+## Step 0: the trap every new user hits
 
 Run the smallest possible example and read it carefully, because it teaches the engine's most important idea:
 
@@ -36,7 +36,7 @@ Same facility, ~60 m apart — and the engine says **`review`**. The evidence ex
 
 Hold that thought and add data.
 
-## Step 1 — Nigeria: HFR ↔ OpenStreetMap, Kano state
+## Step 1: HFR ↔ OpenStreetMap, Kano state
 
 ```python
 kano = resolve.crosswalk(hfr_kano, osm_kano, entity="place")
@@ -66,7 +66,7 @@ Karfi Health Post <-> Karfi Primary Health Centre  review  0.651  {'name': 0.834
 
 The third number is the coverage story: **only 110 of 165 OSM facilities matched confidently, and ~93% of the register has no confident map counterpart** — a *measured* coverage gap, which is itself the deliverable for mapping programmes.
 
-## Step 2 — UK: FHRS ↔ OpenStreetMap, Leeds
+## Step 2: FHRS ↔ OpenStreetMap, Leeds
 
 Different country, different domain, different naming culture — **the identical call**:
 
@@ -81,7 +81,7 @@ blocking:  {'candidate_pairs': 1959586, 'reduction_ratio': 0.6969}
 
 962 confident links between the hygiene register and the map (`Black Sheep Coffee <-> Black Sheep Coffee 0.9999`, …). Note the blocking ratio: only ~70% skipped, versus 98.9% in Kano — **a dense city centre packs many establishments into each H3 cell**, so more neighbours must be scored. Same engine, honest cost profile per geography. This is the entity- and region-agnostic claim made concrete: nothing changed between Nigeria and the UK except the data.
 
-## Step 3 — Scale: dedupe the full national register
+## Step 3: Dedupe the full national register
 
 The question changes — *does the 46,146-row register contain duplicate records of the same facility?* — but the engine doesn't:
 

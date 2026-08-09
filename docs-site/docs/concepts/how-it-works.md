@@ -8,12 +8,28 @@ Two clinics in Kano file a monthly return with the same health ministry. One of 
 
 arche lives in the space between those answers. It describes itself in four verbs — **detect · resolve · protect · attest** — and this page runs that one record through all four, in order, with the real output of every step printed underneath it. Nothing below is pseudocode; every block was executed to produce the text that follows it.
 
-```
-1. DETECT    find the personal data in the text, and name the law that classifies it
-2. PROTECT   apply the action that law requires, before the text goes anywhere else
-3. RESOLVE   decide whether two records are the same person, and show the evidence
-4. ATTEST    sign the decision, so someone who was not there can check it
-```
+<div class="flow" markdown>
+<div class="flow__step" markdown>
+<span class="flow__n">01</span>
+<span class="flow__verb">detect</span>
+<span class="flow__what">Find the personal data in the text, and **name the law that classifies it**.</span>
+</div>
+<div class="flow__step" markdown>
+<span class="flow__n">02</span>
+<span class="flow__verb">protect</span>
+<span class="flow__what">Apply the action that law requires, **before the text goes anywhere else**.</span>
+</div>
+<div class="flow__step" markdown>
+<span class="flow__n">03</span>
+<span class="flow__verb">resolve</span>
+<span class="flow__what">Decide whether two records are the same person, **and show the evidence**.</span>
+</div>
+<div class="flow__step" markdown>
+<span class="flow__n">04</span>
+<span class="flow__verb">attest</span>
+<span class="flow__what">Sign the decision, **so someone who was not there can check it**.</span>
+</div>
+</div>
 
 ---
 

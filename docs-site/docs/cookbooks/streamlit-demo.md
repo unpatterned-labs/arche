@@ -128,5 +128,5 @@ The Streamlit Community Cloud deployment of this script (with four preloaded sam
 ## See also
 
 - [Cookbook - Nigerian fintech KYC](fintech-kyc.md) - the production version of what this demo shows
-- [Quick Start example 1](../getting-started/quickstart.md#1-the-pipeline-primitive-ndpa-2023-enforcement-in-one-call) - same Pipeline call as the demo
+- [Quick Start example 1](../getting-started/quickstart.md#1-detect-protect-one-call) - same Pipeline call as the demo
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md) - the conversion page after the demo lands

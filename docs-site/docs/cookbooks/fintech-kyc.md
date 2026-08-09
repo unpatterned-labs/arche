@@ -128,6 +128,6 @@ The bundle is a JWS envelope binding the audit rows + the statute version + the 
 
 ## See also
 
-- [Quick Start example 1 - Pipeline with NDPA-2023](../getting-started/quickstart.md#1-the-pipeline-primitive-ndpa-2023-enforcement-in-one-call)
+- [Quick Start example 1 - Pipeline with NDPA-2023](../getting-started/quickstart.md#1-detect-protect-one-call)
 - [Power-user cookbook: South African health export](health-export.md) - same pattern, POPIA instead of NDPA
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md)

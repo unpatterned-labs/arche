@@ -23,7 +23,7 @@ The four verbs are **detect · resolve · protect · attest**. An earlier versio
 
 ---
 
-## Detect — what arche can find in text
+## Detect: what arche can find in text
 
 `Pipeline(jurisdiction=...)` runs a detector set chosen for that jurisdiction. Each detector proposes spans; none of them decides what happens next.
 
@@ -92,7 +92,7 @@ out : '[ADDRESS]o Road, [ADDRESS].'
 
 ---
 
-## Resolve — deciding who is who
+## Resolve: deciding who is who
 
 Two engines, deliberately not merged, because they answer different questions and combine evidence under different laws.
 
@@ -150,7 +150,7 @@ The distant pair is demoted to `review` and carries `geo_conflict_km` as the rea
 
 ---
 
-## Protect — holding data under the law that applies
+## Protect: holding data under the law that applies
 
 `arche.policy` routes each detection through the applicable statute and applies one of six closed actions. The set is closed on purpose; a seventh is a design decision, not a configuration change.
 
@@ -180,7 +180,7 @@ One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(o
 
 ---
 
-## Attest — signing the decision
+## Attest: signing the decision
 
 `arche.sign` produces Ed25519 / JWS envelopes over a `Pipeline.Result`; `arche.attest` produces an `Attestation` over one co-reference decision; `arche.credentials.sd_jwt` re-frames either as an IETF SD-JWT-VC with selective disclosure and optional holder key binding. Compact serialization only. `resolve.reconcile.sign_edges` does the same job for crosswalk edges at list scale.
 
@@ -196,7 +196,7 @@ Three properties are worth knowing before you write verification code, and all t
 
 ---
 
-## External evidence — the thing that looks like linking and is not
+## External evidence: the thing that looks like linking and is not
 
 `arche.adapters` ships, and it is new enough to be easy to misread. An adapter asks a third party a question and brings back a witnessed observation. It never returns a merge decision: `ProviderEvidence.verdict` is one of `corroborates`, `contradicts`, `inconclusive`, and `match` and `different` are conspicuously absent from that list, because a geocoder is not entitled to an opinion about identity.
 

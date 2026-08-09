@@ -16,7 +16,7 @@ In practice almost nobody asks, and the reason is bureaucratic rather than legal
 from arche.sign import generate_keypair
 from arche.workflow import DSAROrganization, DSARRequestor, DSARWorkflow
 
-# Citizen-held key — generate once, store locally. arche never holds it.
+# Citizen-held key: generate once, store locally. arche never holds it.
 citizen_key = generate_keypair()
 
 workflow = DSARWorkflow(

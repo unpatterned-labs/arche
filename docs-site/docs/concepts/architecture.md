@@ -10,28 +10,46 @@ Those four verbs are a good account of what you can *do* with arche. They are no
 
 **The organising principle is authority: what a component is permitted to conclude.** Almost everything in arche produces evidence and is forbidden to reach a verdict. A small, named set of components reaches verdicts, and each one has a written combination law. Attestation then binds a verdict to the evidence and the versions that produced it. The four verbs cut across those layers rather than stacking on top of each other.
 
-```
-                        ┌──────────────────────────────────────┐
-   ATTEST               │  ids · sign · attest · credentials   │
-   binds a verdict to   │  content-addressed, signed, pinned   │
-   its evidence         └──────────────────┬───────────────────┘
-                                           │
-                        ┌──────────────────┴───────────────────┐
-   DECIDERS             │  reconcile gate · coref gate         │
-   four combination     │  geographic veto · statute engine    │
-   laws, each written   │  egress guard                        │
-   down                 └──────────────────┬───────────────────┘
-                                           │
-                        ┌──────────────────┴───────────────────┐
-   PROPOSERS            │  detectors · comparators · blockers  │
-   produce evidence,    │  provider adapters · LLMs · docling  │
-   never verdicts       └──────────────────┬───────────────────┘
-                                           │
-                        ┌──────────────────┴───────────────────┐
-   THE SPINE            │  canonical.Reference · ids           │
-   the vocabulary       │  declare.Declaration                 │
-   everything speaks    └──────────────────────────────────────┘
-```
+<div class="layers" markdown>
+<div class="layer layer--binds" markdown>
+<div class="layer__label" markdown>
+<span class="layer__name">attest</span>
+<span class="layer__role">binds a verdict to its evidence</span>
+</div>
+<div class="layer__body" markdown>
+`ids` · `sign` · `attest` · `credentials`
+<span class="layer__note">content-addressed, signed, pinned</span>
+</div>
+</div>
+<div class="layer layer--decides" markdown>
+<div class="layer__label" markdown>
+<span class="layer__name">deciders</span>
+<span class="layer__role">five combination laws, each written down</span>
+</div>
+<div class="layer__body" markdown>
+reconcile gate · coref gate · geographic veto · statute engine · egress guard
+<span class="layer__note">the only layer permitted to conclude anything</span>
+</div>
+</div>
+<div class="layer" markdown>
+<div class="layer__label" markdown>
+<span class="layer__name">proposers</span>
+<span class="layer__role">produce evidence, never verdicts</span>
+</div>
+<div class="layer__body" markdown>
+detectors · comparators · blockers · provider adapters · LLMs · docling
+</div>
+</div>
+<div class="layer" markdown>
+<div class="layer__label" markdown>
+<span class="layer__name">the spine</span>
+<span class="layer__role">the vocabulary everything speaks</span>
+</div>
+<div class="layer__body" markdown>
+`canonical.Reference` · `ids` · `declare.Declaration`
+</div>
+</div>
+</div>
 
 Read it bottom-up. Nothing in the spine decides anything; nothing in the proposer layer decides anything; the decider layer is small enough to enumerate and each entry has a rule you can quote.
 
@@ -41,7 +59,7 @@ Read it bottom-up. Nothing in the spine decides anything; nothing in the propose
 
 Three modules carry the vocabulary every other layer speaks. They are the part of arche worth understanding first, and the part the old page never mentioned.
 
-### `canonical.Reference` — the common currency
+### `canonical.Reference`: the common currency
 
 A `Reference` is one record's worth of claims about one thing: a list of `Attribute`s, a `record_id`, and a `source_system`. It is what extraction produces and what resolution consumes, and it is the reason the two halves of the product are one product.
 
@@ -49,7 +67,7 @@ The distinction it encodes is the one that carries the whole engine: **identity 
 
 References arrive from two directions. `Reference.from_record(record)` is the structured path — you already have rows. `arche.extract` and `arche.ensemble` are the unstructured path — you have prose. Both land in the same shape, so the resolution engines never need to know which one you used.
 
-### `ids` — the canonicalisation everything signable passes through
+### `ids`: the canonicalisation everything signable passes through
 
 Every identifier arche emits is a pure function of its inputs. `ids.py` fixes what "the same inputs" means:
 
@@ -59,7 +77,7 @@ Every identifier arche emits is a pure function of its inputs. `ids.py` fixes wh
 
 That yields `document_content_id`, `reference_id`, `decision_id` — and one deliberately different thing, `entity_id`, which is an HMAC pseudonym keyed to the issuer. The reason is stated in the module: a bare SHA-256 of an eleven-digit NIN is brute-forceable, so anything derived from a low-entropy identifier and intended to be shared is keyed, not hashed. Keyless ids remain useful locally, but they are pseudonymous personal data, not "PII-free", and `attest` refuses to sign them by default.
 
-### `declare.Declaration` — one YAML, five derived artefacts
+### `declare.Declaration`: one YAML, five derived artefacts
 
 This is arguably the most important architectural idea in the product, and the old page did not mention it.
 
@@ -167,7 +185,7 @@ They share their primitives — comparators, normalisers, the token-frequency ta
 
 The scores from the two engines are not comparable. That is on purpose.
 
-### 3. The geographic veto — a constraint, not a weight
+### 3. The geographic veto: a constraint, not a weight
 
 Before v0.3.0a1 geography was a scored signal in the place pack, weighted 1.0 against name and token-frequency's combined 4.0. A weighted signal can be outvoted, and it was: two Kano facilities sharing a common Hausa name merged 143 km apart, with the geo comparator itself scoring 0.000.
 
@@ -238,7 +256,7 @@ Six statute packs ship as YAML at `arche/policy/statutes/`:
 
 Every category in every pack carries a statute-section citation. The two labels are independent by design: `version` is a claim about our work, `review_status` a claim about the world — who vouches for the mappings. No pack claims `regulator-reviewed`, and the loader fails closed on one that does so without naming a reviewer. The three `v0.1-scaffold` labels remain in the shipped YAML; they understate packs that are complete, and correcting them is outstanding in our roadmap.
 
-### 5. The egress guard — fail-closed, four teeth
+### 5. The egress guard: fail-closed, four teeth
 
 `guard.EgressGuard` wraps a statute-aware `Pipeline` so that nothing crosses a boundary a policy did not permit. All four teeth default to deny:
 

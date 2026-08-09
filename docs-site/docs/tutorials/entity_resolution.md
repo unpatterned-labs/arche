@@ -19,7 +19,7 @@ arche answers that question two different ways, because it is really two differe
 
 Both share their primitives — comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant. What they do not share is the gate policy, and that is deliberate rather than historical; [Architecture](../concepts/architecture.md#1-and-2-two-resolution-gates-deliberately-not-merged) has the reasoning.
 
-## `pairwise` — one decision, signable
+## `pairwise`: one decision, signable
 
 The narrow question. Two references in, one decision out, and the decision is a content-addressed artefact you can sign and hand to somebody who was not there.
 
@@ -97,7 +97,7 @@ A matcher that returned `match` here would be right most of the time and catastr
 
 Note that `entity_id` is populated regardless. A shared exact identifier binds the two references to the same keyed pseudonym even when the decision abstains — the binding is a fact about the identifier, the decision is a claim about the people.
 
-## `crosswalk` — two lists, at scale
+## `crosswalk`: two lists, at scale
 
 The wide question. Blocking, then comparators, then a weighted mean, then the gate, then any vetoes, and out come edges.
 
@@ -214,7 +214,7 @@ Two properties of `veto_km: 10.0` are deliberate. It demotes to `review` and **n
 
 The threshold was set by a sweep against Local Government Area agreement, which moves from 78.2% to 88.2% between no veto and 10 km. [The place benchmark](../concepts/place-benchmark.md) reproduces that sweep and — this matters more than the number — shows why it is a **consistency check rather than validation**: OpenStreetMap's Kano health facilities share lineage with GRID3, with 59% of matched pairs sitting at exactly 0.00 km apart. No two independent surveys produce that. Do not cite 88.2% as accuracy, and read that page before choosing a validation source of your own.
 
-## `reconcile` — the engine underneath
+## `reconcile`: the engine underneath
 
 `crosswalk` is a convenience layer over `reconcile`, which takes explicit comparator specs and no entity pack. Reach for it when your schema is your own and you want to state the comparison rather than inherit it.
 

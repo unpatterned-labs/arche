@@ -26,7 +26,7 @@ Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is re
 
 ## Substrate APIs
 
-### Detect — `arche.detect`
+### Detect: `arche.detect`
 
 ```python
 from arche.detect.ng.ids import detect_nigerian_ids
@@ -39,7 +39,7 @@ from arche.detect._africa.phones import normalize_e164, validate_phone
 
 Per-country ID detectors return `list[Detection]`. Phone helpers wrap `phonenumbers` (libphonenumber port) for E.164 normalization.
 
-### Policy — `arche.policy`
+### Policy: `arche.policy`
 
 ```python
 from arche.policy import (
@@ -51,7 +51,7 @@ from arche.policy import (
 
 Statute YAMLs live at `arche/policy/statutes/`. Six packs at v1.0: NDPA-2023 (NG), POPIA (ZA), KENYA-DPA, GHANA-DPA, GDPR, HIPAA-SAFE-HARBOR. Every pack declares `review_status` (`self-reviewed` or `regulator-reviewed`) alongside `version`; the loader rejects a regulator-review claim with no named reviewer. Read it off `Statute.review_status`.
 
-### Address & spatial roles — `arche.addr`
+### Address & spatial roles: `arche.addr`
 
 ```python
 from arche.addr import parse_address, parse_addresses, extract_anchor
@@ -60,7 +60,7 @@ from arche.addr import extract_places, grade_places, load_gold, load_role_pack
 
 NG/ZA/KE/GH + UK address parsing with landmark anchors, plus spatial role labeling (origin/destination/location/via with cue evidence) and the shipped gold set + refusal-aware grader. Full reference: [addr.md](addr.md).
 
-### Sign + Credentials — `arche.sign`, `arche.credentials`
+### Sign + Credentials: `arche.sign`, `arche.credentials`
 
 ```python
 from arche.sign import (
@@ -79,7 +79,7 @@ from arche.credentials.sd_jwt import (
 
 Ed25519 + did:key + JWS. SD-JWT-VC for wallet ecosystem interop (EUDI Wallet ARF / MOSIP Inji format).
 
-### Audit — `arche.graph.audit`
+### Audit: `arche.graph.audit`
 
 ```python
 from arche.graph.audit import AuditLog, AuditEvent
@@ -87,7 +87,7 @@ from arche.graph.audit import AuditLog, AuditEvent
 
 SQLite-backed append-only log. PII values never stored — only category labels, spans, document hashes. Signed export bundles for regulator handoff. See PRD §8.2.
 
-### Workflows — `arche.workflow`
+### Workflows: `arche.workflow`
 
 ```python
 from arche.workflow import Pipeline, Result, Detection
@@ -96,7 +96,7 @@ from arche.workflow.dsar import DSARWorkflow
 
 `Pipeline` composes Detect → Policy → Audit. `DSARWorkflow` is the citizen-side Data Subject Access Request drafter for NDPA / POPIA / Kenya DPA / Ghana DPA.
 
-### Document ingest — `arche.doc` (optional)
+### Document ingest: `arche.doc` (optional)
 
 ```python
 from arche.doc import parse  # requires arche-core[doc]
@@ -104,7 +104,7 @@ from arche.doc import parse  # requires arche-core[doc]
 
 docling-backed PDF/DOCX/PPTX/XLSX/HTML parser. `Pipeline.process_file(path)` delegates to this substrate.
 
-### Entity resolution — `arche.resolve`
+### Entity resolution: `arche.resolve`
 
 ```python
 from arche.resolve import pairwise, crosswalk, ENTITY_PACKS
@@ -115,7 +115,7 @@ The documented front door has two entry points by use-shape: `pairwise(a, b)` �
 
 The legacy classical surface (`resolve_entities`, `resolve_identity_records`, `ResolvedEntity` — fuzzy Fellegi–Sunter with African-name equivalence, optional Splink backend via `arche-core[resolve]`) remains importable; see the [entity resolution tutorial](../tutorials/entity_resolution.md).
 
-### Declarations — `arche.declare`
+### Declarations: `arche.declare`
 
 ```python
 from arche.declare import Declaration, DeclarationError
@@ -129,7 +129,7 @@ decl.tool_def("anthropic")   # or "openai" / "json-schema"
 
 One YAML declares the user's fields and their roles (`identifies` / `describes` / `ignore`, kinds, `restricted`, statute classes); everything downstream generates from it. Guide: [Declare your schema](../how-to/declare-your-schema.md).
 
-### LLM lane — `arche.llm`
+### LLM lane: `arche.llm`
 
 ```python
 from arche.llm import LLMConfig, extract_declared, extract_places_llm

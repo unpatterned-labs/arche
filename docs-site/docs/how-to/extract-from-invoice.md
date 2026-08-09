@@ -24,7 +24,7 @@ The counts depend on your invoice. Running the same two lines on the extracted t
 Counter({'PII-1-NAME': 2, 'PII-3-PHONE': 2, 'PII-2-NIN': 1})
 ```
 
-Two things the older docs got wrong here: `Pipeline` takes no `audit_log=` argument (see the [constructor reference](../api/resolve.md#pipeline)), and `Result` has no `summary()` method - count over `result.detections` instead. To persist an audit trail to SQLite, see [Persisted audit log](../api/resolve.md#persisted-audit-log--signed-regulator-export).
+Two things the older docs got wrong here: `Pipeline` takes no `audit_log=` argument (see the [constructor reference](../api/resolve.md#pipeline)), and `Result` has no `summary()` method - count over `result.detections` instead. To persist an audit trail to SQLite, see [Persisted audit log](../api/resolve.md#persisted-audit-log-signed-regulator-export).
 
 ---
 

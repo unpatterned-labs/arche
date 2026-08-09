@@ -1,13 +1,18 @@
 # Quick Start
 
-Your first NDPA-compliant redaction in five minutes, then four power-user workflows that compose on top. Every example is copy-paste ready.
+Four verbs, five minutes, no API key. `detect` finds the entities and identifying data, `resolve` works out which real-world thing each one refers to, `protect` applies the law that governs it, and `attest` signs the result. Everything below was run against v0.3.0a1 and the output is what it actually printed.
 
-!!! tip "If you're new to arche-core, start with Example 1 and stop there"
-    Example 1 - the `Pipeline` primitive - is the lead use case and covers ~95% of what most users need. Examples 2 onward are **power-user workflows** that build on the same primitives. Read them when you have a specific use case for signed envelopes, citizen DSAR drafting, wallet credentials, or standalone audit logs.
+```bash
+pip install arche-core
+```
+
+The base install is pure Python and runs offline. Heavy capabilities are opt-in extras.
 
 ---
 
-## 1. The Pipeline primitive - NDPA-2023 enforcement in one call
+## 1. detect + protect: one call
+
+Detection and policy are a single pass, because a detection without the rule that classifies it is not much use.
 
 ```python
 from arche import Pipeline
@@ -23,37 +28,138 @@ result = pipeline.process(text)
 print(result.redacted_text)
 ```
 
-Output:
-
-```
-Customer Adesola Okonkwo registered with NIN [NIN] and BVN [BVN].
-Contact phone PHONE_.... RC 245678.
+```text
+Customer Adesola Okonkwo registered with NIN [NIN] and BVN [BVN]. Contact phone PHONE_847fca26. RC 245678.
 ```
 
-The `Pipeline` auto-resolves `jurisdiction="NG"` to the NDPA-2023 statute YAML, runs the per-country detectors, applies the closed action set, and returns a typed `Result` with detections, policy outcomes, redacted text, and audit log entries.
-
-Inspect the policy decisions:
+Each detection carries the statute section that classified it, and one of six closed actions:
 
 ```python
 for o in result.policy_outcomes:
-    print(f"{o.category:25s} -> {o.action:10s} ({o.statute_reference})")
+    print(f"{o.category:12} -> {o.action:10} {o.statute_reference}")
 ```
 
-```
-PII-2-RC                  -> retain     (NDPA-2023 s.31 (legitimate interests))
-PII-2-BVN                 -> mask       (NDPA-2023 s.30, CBN BVN policy 2014)
-PII-2-NIN                 -> mask       (NDPA-2023 s.30, NIMC Act s.27)
+```text
+PII-2-RC     -> retain     NDPA-2023 s.31 (legitimate interests)
+PII-2-BVN    -> mask       NDPA-2023 s.30, CBN BVN policy 2014
+PII-2-NIN    -> mask       NDPA-2023 s.30, NIMC Act s.27
+PII-3-PHONE  -> tokenize   NDPA-2023 s.30
 ```
 
-Same code, different jurisdictions:
+`RC 245678` survives on purpose — a company registration number is public under NDPA s.31, and the pack says `retain`. The phone becomes a deterministic token, so the same number in two systems yields the same string and can still be joined on without ever being read.
+
+!!! warning "Always check what was detected, not just what came back"
+
+    `Adesola Okonkwo` is **not** redacted above. The name detector runs, but this name is not in the lexicon, so nothing was found and nothing was removed. `redacted_text` looks clean either way. Print `result.detections` and confirm the list is what you expected — an empty list means nothing was redacted, not that nothing was there. Install `arche-core[detect]` for GLiNER-backed name detection.
+
+Same call, different law:
 
 ```python
-Pipeline(jurisdiction="ZA")       # auto-loads POPIA
-Pipeline(jurisdiction="KE")       # auto-loads KENYA-DPA
-Pipeline(jurisdiction="GH")       # auto-loads GHANA-DPA
+Pipeline(jurisdiction="ZA")   # POPIA
+Pipeline(jurisdiction="KE")   # Kenya DPA
+Pipeline(jurisdiction="GH")   # Ghana DPA
+Pipeline(jurisdiction="DE")   # GDPR
 ```
 
-That's the whole core workflow. If this is all you need, skip the rest and go to the [API Reference](../api/index.md).
+---
+
+## 2. resolve: which real thing is this?
+
+Two records, two spellings, one national ID:
+
+```python
+from arche import resolve
+from arche.canonical import Reference
+
+a = Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"})
+b = Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"})
+
+decision = resolve.pairwise(a, b)
+print(decision.identity, decision.score)
+```
+
+```text
+same_entity 1.0
+```
+
+`identity` is one of `same_entity`, `different`, or **`review`**. That third answer is the point of the whole engine, and the next example is where you see it earn its place.
+
+### Whole lists: `crosswalk`
+
+```python
+from arche import resolve
+
+registry = [
+    {"name": "Karfi Health Post",    "lat": "11.62", "lon": "8.49"},
+    {"name": "Tsalle Health Post",   "lat": "11.71", "lon": "8.33"},
+    {"name": "Yan Bawa Health Post", "lat": "11.50", "lon": "8.00"},
+]
+survey = [
+    {"name": "Karfi Health Clinic",              "lat": "11.62", "lon": "8.49"},
+    {"name": "Tsalle Primary Health Care Centre","lat": "11.71", "lon": "8.33"},
+    {"name": "Yan Bawa Health Post",             "lat": "12.50", "lon": "9.00"},
+]
+
+result = resolve.crosswalk(registry, survey, entity="place")
+
+for m in result["matches"]:
+    ev = m["evidence"]
+    print(f'{m["decision"]:7} {m["score"]:.3f} {ev.get("distance_km", 0):7.2f} km  '
+          f'{registry[m["a_id"]]["name"]:22} <-> {survey[m["b_id"]]["name"]}')
+```
+
+```text
+review  0.800  155.54 km  Yan Bawa Health Post   <-> Yan Bawa Health Post
+match   0.730    0.00 km  Karfi Health Post      <-> Karfi Health Clinic
+review  0.631    0.00 km  Tsalle Health Post     <-> Tsalle Primary Health Care Centre
+```
+
+Three rows, three different behaviours, and they are worth reading one at a time.
+
+**Row 2 is a merge.** `Karfi Health Post` and `Karfi Health Clinic` are the same place at the same coordinates; the facility-type words differ and the distinctive part agrees.
+
+**Row 1 is the geographic veto.** The names are byte-identical — every name comparator scores 1.0 — and the records sit 155 km apart. Distance is a physical constraint rather than a weighted preference, so the pair is demoted. Note it is demoted to `review`, never dropped: distance says a human must look, not that the answer is no.
+
+**Row 3 is a tier difference.** Same settlement, but a health post and a primary health care centre are different levels of care with different staffing. Plausible, not distinctive, so it waits for a person.
+
+None of those three needed a model, a network call, or an API key.
+
+---
+
+## 3. attest: sign the decision
+
+A decision is worth what your ability to defend it later is worth.
+
+```python
+from arche import resolve
+from arche.canonical import Reference
+from arche.attest import attest, verify_attestation
+from arche.sign import generate_keypair
+
+ISSUER_KEY = b"replace-with-a-real-32-byte-secret!"   # >= 32 bytes
+
+a = Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"})
+b = Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"})
+decision = resolve.pairwise(a, b, issuer_key=ISSUER_KEY)
+
+kp = generate_keypair()
+signed = attest(decision, kp, mode="jws")
+
+v = verify_attestation(signed.compact, public_key=kp.public_key)
+print(v.valid, v.trusted, v.reproducible)
+print(decision.decision_id)
+```
+
+```text
+True True True
+dec:hmac-sha256:f5f26b63420a418b2b4774fd584c131e84ca904c05df310a253a85a731789af8
+```
+
+Three separate questions, and conflating them is the mistake this API exists to prevent. `valid` — does the signature match the key it was checked against? `trusted` — did that key come from somewhere **you** control, rather than one the token named for itself? `reproducible` — can the decision be replayed from its evidence? Had a language model extracted the fields, `reproducible` would read `False`.
+
+**Always check `trusted`, not just `valid`.** Verifying without pinning a key proves a token is internally consistent, not that anyone in particular made it.
+
+`decision_id` is a content address over the evidence and the exact representation that produced it. Same inputs and same key, same id — tomorrow or in five years.
 
 ---
 
