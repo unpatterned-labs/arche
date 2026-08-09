@@ -194,7 +194,6 @@ Stated up front so nobody discovers it later.
 
 There is **no MCP server**. Agent-facing work today means the masked `to_dict(reveal=False)` projections and `Declaration.tool_def()`, wired into your own tool layer. Clustering is not implemented — the engine returns pairwise edges, because a merge that depends on other merges cannot be signed in isolation. `Pipeline(address_parsing=True)` is accepted and ignored. Unknown jurisdiction codes fail silently rather than raising.
 
-The [roadmap](../concepts/roadmap.md) tracks all of it, with the prerequisite that gates each item.
 
 ## Start here
 

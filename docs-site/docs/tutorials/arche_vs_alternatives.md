@@ -255,7 +255,7 @@ PII-3-PHONE    '0803 555 7890'    tier=moderate NDPA-2023 s.30
 Customer NAME_099000a2 NAME_e38a0fcd, NIN [NIN], BVN [BVN], phone PHONE_d3100c11, RC 245678.
 ```
 
-Change `jurisdiction="NG"` to `"ZA"` for POPIA, `"KE"` for the Kenya DPA, `"GH"` for the Ghana DPA, or any EU-27 or EEA country code — `"DE"`, `"FR"`, `"IE"` — for the GDPR. Sectoral regimes take the explicit escape hatch, `Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR")`. Six packs ship; three of them still carry a `v0.1-scaffold` version label that understates how complete they are, and correcting those labels is [outstanding](../concepts/roadmap.md). The company registration number is `retain` rather than masked, because the NDPA treats it under legitimate interests and the pack says so out loud.
+Change `jurisdiction="NG"` to `"ZA"` for POPIA, `"KE"` for the Kenya DPA, `"GH"` for the Ghana DPA, or any EU-27 or EEA country code — `"DE"`, `"FR"`, `"IE"` — for the GDPR. Sectoral regimes take the explicit escape hatch, `Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR")`. Six packs ship; three of them still carry a `v0.1-scaffold` version label that understates how complete they are, and correcting those labels is outstanding in the roadmap. The company registration number is `retain` rather than masked, because the NDPA treats it under legitimate interests and the pack says so out loud.
 
 Watch the failure mode at the edge of that map, because it is silent: `"EU"` is not a jurisdiction code. `Pipeline(jurisdiction="EU")` constructs happily, resolves no statute, and returns text unchanged. That is exactly the case `EgressGuard` exists to catch — no statute means no policy means no permission to emit.
 

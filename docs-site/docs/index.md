@@ -222,9 +222,6 @@ detection.
 | protect | Applies jurisdiction-aware policy actions and emits audit-ready output with the statute section cited |
 | attest | Signs a decision with its evidence and the representation that produced it |
 
-See the [roadmap](concepts/roadmap.md) for what is in flight, what is gated
-behind a prerequisite, and what is explicitly not committed. The four published
-beta criteria are tracked there with per-criterion status.
 
 ## Next steps
 

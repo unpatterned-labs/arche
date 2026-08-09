@@ -89,7 +89,6 @@ nav:
     - The place benchmark: concepts/place-benchmark.md
     - The five ER activities: concepts/er-activities.md
     - Attest, the signature on the decision: concepts/attest.md
-    - Roadmap: concepts/roadmap.md
   - Guides:
     - Match African names: how-to/match-african-names.md
     - Extract from invoice: how-to/extract-from-invoice.md

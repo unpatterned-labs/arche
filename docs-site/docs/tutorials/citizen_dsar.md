@@ -230,7 +230,7 @@ So what a DPO actually learns from a verified envelope is: the request was signe
 
 That is a deliberate constraint rather than an unfinished feature. A workflow that emailed statutory demands on a citizen's behalf would be one miscited section or one wrong DPO address away from doing real damage in that citizen's name, and the person carrying the consequence is not the person who wrote the code. Autonomous dispatch would need consent mechanics, a delivery audit trail, and a bounce-and-escalation path that none of this ships today.
 
-The organisation side is also absent: arche drafts requests, it does not help a controller answer them. That is a different product with different obligations, and it is on the [roadmap](../concepts/roadmap.md) rather than in this release.
+The organisation side is also absent: arche drafts requests, it does not help a controller answer them. That is a different product with different obligations, and it is on the roadmap rather than in this release.
 
 ## What's next
 

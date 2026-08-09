@@ -41,7 +41,7 @@ Calling `.to_dict(reveal=False)` on each mention gives you **offsets only** — 
 
 !!! note "No MCP server ships in v0.3.0a1"
 
-    An MCP server is [in flight](../concepts/roadmap.md), not released. `arche-mcp` is not on PyPI and no server code lives in this repository. Until it ships, the masked `to_dict(reveal=False)` shape above and `Declaration.tool_def()` are the agent-facing surface, and you wire them into your own tool layer.
+    An MCP server is, not released. `arche-mcp` is not on PyPI and no server code lives in this repository. Until it ships, the masked `to_dict(reveal=False)` shape above and `Declaration.tool_def()` are the agent-facing surface, and you wire them into your own tool layer.
 
 ## 4. Bring your own LLM — verified, not trusted
 

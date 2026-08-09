@@ -236,7 +236,7 @@ Six statute packs ship as YAML at `arche/policy/statutes/`:
 | `POPIA.yaml` | South Africa | `v0.1-scaffold` | `self-reviewed` |
 | `GHANA-DPA.yaml` | Ghana | `v0.1-scaffold` | `self-reviewed` |
 
-Every category in every pack carries a statute-section citation. The two labels are independent by design: `version` is a claim about our work, `review_status` a claim about the world — who vouches for the mappings. No pack claims `regulator-reviewed`, and the loader fails closed on one that does so without naming a reviewer. The three `v0.1-scaffold` labels remain in the shipped YAML; they understate packs that are complete, and correcting them is [outstanding](roadmap.md).
+Every category in every pack carries a statute-section citation. The two labels are independent by design: `version` is a claim about our work, `review_status` a claim about the world — who vouches for the mappings. No pack claims `regulator-reviewed`, and the loader fails closed on one that does so without naming a reviewer. The three `v0.1-scaffold` labels remain in the shipped YAML; they understate packs that are complete, and correcting them is outstanding in our roadmap.
 
 ### 5. The egress guard — fail-closed, four teeth
 
@@ -350,7 +350,7 @@ Stated so nobody has to discover it by reading source.
 
 Stated so adopters can hold us to scope.
 
-- **No MCP server.** There is no MCP module in the wheel and none in the source tree. Any description of arche MCP tools is describing something that does not exist yet; see [the roadmap](roadmap.md).
+- **No MCP server.** There is no MCP module in the wheel and none in the source tree. Any description of arche MCP tools is describing something that does not exist yet;
 - **No FHIR R4 emission or registry/DPI adapters** (OpenCRVS, MOSIP, DHIS2, OpenG2P). Early stubs were deleted because they were empty modules pretending to be features. Adapters ship when there is a real deployment to build against.
 - **No risk / churn / fraud signal heuristics.** The early `arche.signal` layer was example-tier guessing and was removed. Its compliance half is now the statute-grounded `policy_outcomes` on `Pipeline.Result`.
 - **No hash-chained audit log.** The `prev_hash` and `signature` columns exist and nothing populates them. The log is append-only by convention, not tamper-evident.

@@ -163,7 +163,7 @@ The distant pair is demoted to `review` and carries `geo_conflict_km` as the rea
 | `audit` | Log the decision, leave the text untouched |
 | `retain` | Allowlist; pass through unchanged |
 
-Six statute packs ship as YAML at `arche/policy/statutes/`: `NDPA-2023` (Nigeria), `GDPR` (EU/EEA), `HIPAA-SAFE-HARBOR` (US health), `KENYA-DPA`, `POPIA` (South Africa) and `GHANA-DPA`. Every category in every pack carries a statute-section citation. Each pack declares a `review_status` separately from its `version`, because "we finished it" and "someone official checked it" are different claims — all six are `self-reviewed`, none claims regulator review, and the loader fails closed on a pack that claims it without naming a reviewer. Three packs still carry a stale `v0.1-scaffold` version label that understates their completeness; correcting them is [outstanding](roadmap.md).
+Six statute packs ship as YAML at `arche/policy/statutes/`: `NDPA-2023` (Nigeria), `GDPR` (EU/EEA), `HIPAA-SAFE-HARBOR` (US health), `KENYA-DPA`, `POPIA` (South Africa) and `GHANA-DPA`. Every category in every pack carries a statute-section citation. Each pack declares a `review_status` separately from its `version`, because "we finished it" and "someone official checked it" are different claims — all six are `self-reviewed`, none claims regulator review, and the loader fails closed on a pack that claims it without naming a reviewer. Three packs still carry a stale `v0.1-scaffold` version label that understates their completeness; correcting them is outstanding in our roadmap.
 
 One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(overlays=["EU-AI-ACT"])`. It is not a per-field statute — the AI Act governs the system, not the field — so it asserts at document level whether the run met a record-keeping (Art 12), transparency (Art 50) or data-minimisation (GDPR Art 5(1)(c) / Art 25) obligation and stamps the result into `Result.metadata`. Its own YAML states the boundary: evidence the operator presents, not a compliance certificate.
 
@@ -210,11 +210,11 @@ One adapter is implemented, for Nominatim, and it is lazy-imported so nothing pu
 
 Stated so adopters can hold us to scope.
 
-**No registry or DPI linking.** Connecting a resolved reference to OpenCRVS, MOSIP, DHIS2, OpenG2P or FHIR has no implementation. There is no `arche.link` module and no registry adapter. This is a sequencing decision: an adapter that is not integration-tested against a running instance is scaffolding, and scaffolding in an identity library is worse than an honest gap. When it opens, its shape is already fixed by two rules enforced elsewhere — a verdict from an external registry is evidence and never a decision, and every adapter is an egress destination. → [the gate on this work](roadmap.md#gated)
+**No registry or DPI linking.** Connecting a resolved reference to OpenCRVS, MOSIP, DHIS2, OpenG2P or FHIR has no implementation. There is no `arche.link` module and no registry adapter. This is a sequencing decision: an adapter that is not integration-tested against a running instance is scaffolding, and scaffolding in an identity library is worse than an honest gap. When it opens, its shape is already fixed by two rules enforced elsewhere — a verdict from an external registry is evidence and never a decision, and every adapter is an egress destination.
 
 One distinction survives whatever ships: registry *linking* (this reference co-refers with that registry record) is not identity *proofing* (the presenting party **is** that record's subject). arche does the first. The second needs possession, biometrics, or consent, and is not a library's job.
 
-**No MCP server.** There is no MCP module in the wheel or the source tree. Some docstrings mention an MCP surface as a design target; any description of arche MCP tools is describing something that does not exist yet. → [the roadmap](roadmap.md)
+**No MCP server.** There is no MCP module in the wheel or the source tree. Some docstrings mention an MCP surface as a design target; any description of arche MCP tools is describing something that does not exist yet.
 
 **No risk, churn or fraud heuristics.** The early `arche.signal` layer was example-tier guessing and was removed. Its compliance half is the statute-grounded `policy_outcomes` on `Pipeline.Result`.
 
@@ -236,4 +236,3 @@ The same logic runs one step further, and it is why registry linking is gated be
 - [Architecture](architecture.md) — the internal layering, and which components may conclude anything
 - [Attest: the signature on the decision](attest.md) — `valid` versus `trusted`, in full
 - [The place benchmark](place-benchmark.md) — what the veto threshold was tuned against, and the limits of that measurement
-- [Roadmap](roadmap.md) — what is in flight and what is gated
