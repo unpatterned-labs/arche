@@ -106,6 +106,18 @@ Designed, sequenced, and honestly blocked on a named prerequisite.
 | **Warehouse / dbt integration** | A team running dbt who wants the entity map and will tell us what shape it needs |
 | **Registry adapters** (OpenCRVS, MOSIP, Companies House) | A real deployment to build against, not scaffolding. Verdicts from adapters are evidence, never decisions; every adapter is an egress destination |
 | **A fine-tuned small model** for extraction/roles | The gold sets first, then verifier-gated distillation, then it ships only if it beats the deterministic floor *without* raising over-guess |
+| **OpenMRS integration** — patient record linkage across facility EMRs | A deployment with real duplicate burden. The facility crosswalk is the half we have already proven; the patient half is the same engine with a person pack and a much higher cost of a wrong merge. Gated on a partner who will adjudicate the review queue, because a duplicate-patient decision nobody signs off is a decision nobody can defend |
+| **Product resolution** — the same engine, non-person entities | Deliberately sequenced after places, because products are where the representation thesis gets its cleanest test: a product has identifiers (ISBN, GTIN, batch), names that vary by market and language, and no privacy surface at all, so the engine can be measured without a statute in the way |
+
+### Where product resolution starts
+
+Two beachheads, chosen because each has a public identifier to anchor on and a real reconciliation problem behind it.
+
+**Books first.** ISBN is a clean, checksummed, globally-issued identifier with an open catalogue behind it, and `compare_isbns` already ships. Editions, translations, reissues and imprints give exactly the same shape as the facility problem: the same work under many names, many identifiers, and a genuine question about when two records are one thing. It is the cheapest honest test of whether the engine generalises past people and places.
+
+**Then food traceability and audit.** A batch moving from farm to processor to distributor to retailer is described differently at every hop, and the reconciliation has to survive that. This is where the parts arche already has stop being separate features: resolution links the hops, the attestation makes each link independently checkable, and the review queue is where a human decides whether two consignments are the same consignment. An audit trail whose links cannot be verified is a spreadsheet with better branding.
+
+Both are gated the same way as everything else here: a partner with the problem and data to run it against, not a demo.
 
 ---
 

@@ -75,15 +75,32 @@ def test_detect_emails_finds_addresses():
     assert all(d.id.startswith("det:email:") for d in dets)  # detector-qualified id
 
 
-def test_emails_not_in_default_detectors_but_opt_in_works():
-    # Not in defaults (adding it would change existing users' outputs)...
-    assert "emails" not in Pipeline(jurisdiction="DE").detector_packages
-    # ...but opt-in routes it, and GDPR enrichment cites the statute.
-    p = Pipeline(jurisdiction="DE", detectors=["emails"])
+def test_emails_are_in_the_default_detectors():
+    """Changed in v0.3.0a1.
+
+    This test previously asserted the opposite, with the reason given as
+    "adding it would change existing users' outputs". That is true and it was
+    the wrong trade: an email address is PII under all six shipped statute
+    packs, and `Pipeline` is the redaction path. Returning email addresses in
+    the clear by default is not a compatible behaviour worth preserving.
+    """
+    assert "emails" in Pipeline(jurisdiction="DE").detector_packages
+
+    p = Pipeline(jurisdiction="DE")
     result = p.process("Kontakt: sales@firma.de")
     emails = [d for d in result.detections if d.category == "PII-3-EMAIL"]
     assert len(emails) == 1
     assert emails[0].regulatory_citation and "GDPR" in emails[0].regulatory_citation
+    # and it must actually leave the output
+    assert "sales@firma.de" not in result.redacted_text
+
+
+def test_narrowing_detectors_still_opts_out():
+    """The escape hatch for callers who need the old output."""
+    p = Pipeline(jurisdiction="DE", detectors=["names"])
+    assert "emails" not in p.detector_packages
+    result = p.process("Kontakt: sales@firma.de")
+    assert not [d for d in result.detections if d.category == "PII-3-EMAIL"]
 
 
 # ── EU-AI-Act overlay ────────────────────────────────────────────────────────

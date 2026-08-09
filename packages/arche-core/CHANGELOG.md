@@ -193,6 +193,25 @@ cross-tool baselines, a 90-day production deployment) remain the gate for
   Off by default (`orthography=None`) on `weighted_token_sim` and
   `shared_name_distinctiveness`, because it changes scores.
 
+### Changed — `Pipeline` now detects email addresses by default (breaking)
+
+- **`emails` joins the default detector set.** It was opt-in, on the stated
+  grounds that adding it "would change existing callers' detections, policy
+  outcomes and redacted text". That was true, and it was the wrong trade.
+
+  An email address is PII under **all six** shipped statute packs — each maps
+  `PII-3-EMAIL` to `tokenize` or `mask` with a citation — and `Pipeline` is the
+  redaction path. A redaction pipeline that returns email addresses in the
+  clear, by default, is not a compatible behaviour worth preserving.
+
+  ```text
+  before  'Contact Fatima Abdullahi at fatima.abdullahi@example.ng about NIN 12345678901.'
+  after   'Contact NAME_099000a2 NAME_e38a0fcd at EMAIL_b07216d6 about NIN [NIN].'
+  ```
+
+  Callers who need the previous output can narrow explicitly with
+  `Pipeline(detectors=[...])`.
+
 ### Fixed — redaction leaked plaintext on overlapping detections
 
 - **`apply_policy` spliced each detection independently**, in reverse start

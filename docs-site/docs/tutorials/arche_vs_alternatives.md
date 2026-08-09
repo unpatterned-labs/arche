@@ -273,28 +273,47 @@ The two labels on every pack are independent by design: `version` is a claim abo
 
 **Use an LLM when** you need representation *authored* — parsing landmark addresses, proposing candidate equivalences, transliterating across scripts. Models are genuinely good at that. Do not let one *be* the representation: its decisions cannot be replayed once a version retires, the records often may not legally reach it, and the facts deserve to outlive any checkpoint. [`arche.llm`](../how-to/bring-your-own-llm.md) exists to grade a model against the deterministic engine, not to defer to it.
 
-**Use arche when** any of these is true. Your identifiers are not covered by the Western defaults and you would otherwise be writing grammars and validators yourself. Your names need equivalence knowledge and frequency calibration a generic comparator cannot supply. You need every detection to cite the statute section that classifies it, because someone will eventually ask which rule fired. You need a decision you can sign, hand to a third party, and have them verify offline. Or you need the answer "a human must look at this" to be a first-class output rather than a threshold you tuned.
+**Use arche when** you want one pipeline that does all of the above at once, and keeps working where the data is thin.
 
-**Do not use arche when** your data is clean Western PII with no African or low-standardisation footprint and Presidio's defaults already work; when you want a hosted, supported identity-resolution platform rather than a library; or when you just want to scrub PII out of one document, where a regular expression is more direct and more honest.
+That is the case arche is built for: privacy-preserving record linkage, matching and detection over **unstructured, multilingual** data, for human and agent callers alike. Not a matcher you feed clean columns to — a pipeline that takes a PDF, a registry export, a form, or a paragraph, finds the entities in it, works out which real-world thing each one refers to, protects everything under the law that applies, and signs the result.
 
-## What arche does not do today
+"Where the data is thin" is the part generic tools handle worst and arche is calibrated for. No canonical spelling of the name. No national identifier, or three competing ones. An address that is a landmark and a direction rather than a street and a number. Coordinates that disagree by kilometres because two teams measured at different gates. Sources that contradict each other and are both partly right. In that regime the answer is often **not** a merge, and a tool whose only outputs are match and no-match will quietly pick one.
 
-Stated so adopters can hold us to scope. Each of these is verifiable against the source tree.
+It is also the pipeline to reach for when **places and addresses** are the problem rather than an afterthought: landmark-anchored parsing, spatial-role labelling, union blocking that survives bad coordinates, and a geographic veto that refuses a merge distance says is impossible. Most linkage tools treat an address as a string. Here it is an identity attribute with its own comparators.
 
-| Gap | Today |
+And it is the one to reach for when you will have to defend a decision later — because every detection cites the statute section that classified it, every decision carries the evidence that produced it, and "a human must look at this" is a first-class output rather than a threshold you tuned.
+
+**arche also support** when your data is clean Western PII with no African or low-standardisation footprint and Presidio's defaults already work; when you want a hosted, supported identity-resolution platform rather than a library; or when you just want to scrub PII out of one document.
+
+## The edges of the map
+
+Two different lists, kept apart on purpose. Blurring them is how a bug gets filed as a design decision and quietly stops being anyone's problem.
+
+### Deliberately out of scope
+
+These are choices, and we would make them again.
+
+| Boundary | Why |
 |---|---|
-| **MCP server** | Does not exist. There is no MCP module in the wheel or the source tree; the only mentions are docstrings describing a future surface. Any description of arche MCP tools is describing something unbuilt. |
-| **Clustering / transitive closure** | `crosswalk` returns pairwise edges. Collective resolution is the open remainder and is post-beta. |
-| **Signable place decisions** | `pairwise(entity="place")` raises `NotImplementedError`. `crosswalk` is the place path. |
-| **Email detection by default** | `Pipeline` does not detect email addresses unless you ask. The detector exists and is deliberately off, because adding it would change every existing caller's detections and redacted text; opt in with `detectors=[..., "emails"]`. The resolution path includes it already. |
-| **`Pipeline(address_parsing=True)`** | Accepted and ignored — output is byte-identical with and without it. Documented known issue. |
-| **Unknown jurisdiction codes** | Accepted silently. A code with no statute mapping yields no policy and unchanged text rather than an error. |
-| **Detectors outside Africa** | The GDPR and HIPAA statute packs load for any EU/EEA code and for `statute="HIPAA-SAFE-HARBOR"`, but only the cross-cutting detectors run there. `Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR")` finds no US identifiers, because there are none to find — running African ID regexes on German or American text would produce confident mislabels, so it deliberately does not. Compose Presidio for that coverage. |
-| **Hash-chained audit log** | The `prev_hash` and `signature` columns exist; nothing populates them. Append-only by convention, not tamper-evident. |
-| **Persistent storage** | SQLite for the audit log only. `StorageBackend` is named in an RFC and does not exist as a protocol. |
-| **FHIR, OpenCRVS, MOSIP, DHIS2, OpenG2P adapters** | Not in scope. Early stubs were deleted because they were empty modules pretending to be features. |
-| **Post-quantum signatures** | Ed25519 only. There is no `arche-core[pqc]` extra. |
-| **W3C VC 1.1 JSON-LD** | SD-JWT-VC only. |
+| **Clustering / transitive closure** | `crosswalk` returns pairwise edges. Collective resolution changes what a decision *means* — a merge that depends on other merges cannot be signed in isolation — so it waits until the benchmark can measure it. |
+| **Detectors outside Africa** | GDPR and HIPAA statute packs load anywhere, but only cross-cutting detectors run outside the launch jurisdictions. `Pipeline(jurisdiction="US")` finds no US identifiers, because running African ID grammars on American text would produce confident mislabels in a signed audit log. Compose Presidio for that coverage. |
+| **FHIR, OpenCRVS, MOSIP, DHIS2 adapters** | Not in scope. Earlier stubs were deleted for being empty modules pretending to be features. Registry adapters return when a real partner routes real decisions through one. |
+| **Persistent storage** | SQLite for the audit log only. arche decides and signs; remembering is somebody else's job. |
+| **Post-quantum signatures, W3C VC 1.1 JSON-LD** | Ed25519 and SD-JWT-VC only. Both are tracked, neither is pretended. |
+
+### Built, not finished
+
+These are not boundaries. They are work.
+
+| Gap | State |
+|---|---|
+| **MCP server** | Does not exist — no module in the wheel or the source tree. The agent-facing surface today is the masked `to_dict(reveal=False)` shape and `Declaration.tool_def()`, wired into your own tool layer. Next release. |
+| **Signable place decisions** | `pairwise(entity="place")` raises `NotImplementedError`; `crosswalk` is the place path. |
+| **`Pipeline(address_parsing=True)`** | Accepted and ignored — byte-identical output with and without. The parameter lies, and should either be wired or removed. |
+| **Unknown jurisdiction codes** | Accepted silently: no statute, no policy, unchanged text, no error. `Pipeline(jurisdiction="EU")` looks like it worked. It should raise. |
+| **Hash-chained audit log** | `prev_hash` and `signature` columns exist and nothing populates them. Append-only by convention, not tamper-evident — do not describe it as the latter. |
+
+Email detection used to sit in the second table, with the reason given as "adding it would change existing callers' output". That was true and it was the wrong trade — an email address is PII under all six statute packs. It is in the default detector set as of v0.3.0a1. The lesson generalises: if a limitation's only justification is that fixing it would change behaviour, it is a bug wearing a scope decision's coat.
 | **Organisation-side DSAR** | Citizen-side drafting only, and draft-only at that. |
 | **Statute packs at v1.0** | NDPA-2023, GDPR and HIPAA Safe Harbor are labelled `v1.0`; POPIA, Kenya DPA and Ghana DPA still carry `v0.1-scaffold`. No pack is regulator-reviewed. |
 
