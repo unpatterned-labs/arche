@@ -329,6 +329,192 @@
 }
 
 /* ------------------------------------------------------------------ *
+ * Pipeline flow — the four verbs as an ordered sequence
+ *
+ * These were a fenced code block, which said "this is output you can
+ * copy" when it is actually the shape of the product. A numbered rule-
+ * separated list reads as a sequence and survives a narrow screen.
+ *
+ *   <div class="flow" markdown>
+ *   <div class="flow__step" markdown>
+ *   <span class="flow__n">1</span>
+ *   <span class="flow__verb">detect</span>
+ *   <span class="flow__what">…</span>
+ *   </div>
+ *   </div>
+ * ------------------------------------------------------------------ */
+
+.flow {
+  border-top: 1px solid var(--arche-line);
+  margin: 1.8rem 0;
+}
+
+.flow__step {
+  display: grid;
+  grid-template-columns: 2rem 7.5rem 1fr;
+  gap: 0 1rem;
+  align-items: baseline;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--arche-line);
+}
+
+/* `md_in_html` wraps the three spans in a `<p>`, which would leave the
+   grid with one child and collapse the columns. `display: contents`
+   promotes the spans back to grid items, and is harmless if a future
+   markdown version stops wrapping. */
+.flow__step > p { display: contents; }
+
+.flow__n {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  color: var(--arche-ink-muted);
+  padding-top: 0.15em;
+}
+
+.flow__verb {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--arche-green-500);
+}
+
+.flow__what {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--arche-ink-muted);
+}
+
+.flow__what strong { color: var(--arche-ink); font-weight: 600; }
+
+@media screen and (max-width: 45em) {
+  .flow__step { grid-template-columns: 1.6rem 1fr; }
+  .flow__verb { grid-column: 2; }
+  .flow__what { grid-column: 2; margin-top: 0.3rem; }
+}
+
+/* A pair of records shown with the verdict each one earned. Used where
+   two identical strings get different answers — the argument that no
+   amount of reading the text can settle. */
+
+.pairs { border-top: 1px solid var(--arche-line-strong, var(--arche-line)); margin: 1.8rem 0; }
+
+.pairs__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--arche-line);
+}
+
+.pairs__names {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--arche-ink);
+  word-break: break-word;
+}
+
+.pairs__why {
+  display: block;
+  font-family: var(--md-text-font-family, inherit);
+  font-size: 0.72rem;
+  color: var(--arche-ink-muted);
+  margin-top: 0.35rem;
+}
+
+@media screen and (max-width: 45em) {
+  .pairs__row { grid-template-columns: 1fr; gap: 0.6rem; }
+}
+
+/* ------------------------------------------------------------------ *
+ * Layer stack — the authority diagram on the architecture page
+ *
+ * This was ASCII art in a code fence: unreadable on a phone, invisible
+ * to a screen reader, and it re-flowed into nonsense whenever the font
+ * fell back. The accent edge is not decoration — it marks the one band
+ * that is permitted to conclude something, which is the whole argument
+ * of the page.
+ *
+ *   <div class="layers" markdown>
+ *   <div class="layer layer--decides" markdown>
+ *   <div class="layer__label" markdown>
+ *   <span class="layer__name">deciders</span>
+ *   <span class="layer__role">…</span>
+ *   </div>
+ *   <div class="layer__body" markdown>…</div>
+ *   </div>
+ *   </div>
+ * ------------------------------------------------------------------ */
+
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1.8rem 0;
+}
+
+.layer {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 0 1.25rem;
+  padding: 0.9rem 1rem;
+  background: var(--arche-surface-sunken);
+  border-left: 2px solid var(--arche-line);
+}
+
+/* The one band allowed to reach a verdict, and the one that binds it. */
+.layer--decides { border-left-color: var(--arche-green-500); }
+.layer--binds { border-left-color: var(--arche-green-500); opacity: 0.95; }
+
+/* The `<p>` md_in_html inserts would otherwise push the two columns out
+   of alignment with each other. */
+.layer__label > p,
+.layer__body > p { margin: 0; }
+
+.layer__name {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--arche-ink);
+}
+
+.layer__role {
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--arche-ink-muted);
+  margin-top: 0.3rem;
+}
+
+.layer__body {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: var(--arche-ink);
+  align-self: center;
+}
+
+.layer__body code { background: none; padding: 0; font-size: inherit; }
+
+.layer__note {
+  display: block;
+  font-family: var(--md-text-font-family, inherit);
+  font-size: 0.7rem;
+  color: var(--arche-ink-muted);
+  margin-top: 0.3rem;
+}
+
+@media screen and (max-width: 45em) {
+  .layer { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* ------------------------------------------------------------------ *
  * Navigation
  * ------------------------------------------------------------------ */
 

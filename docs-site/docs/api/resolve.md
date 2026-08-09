@@ -56,7 +56,7 @@ class Pipeline:
 There is **no `audit_log=` parameter.** `Pipeline` does not take an `AuditLog`
 instance and does not write to SQLite. It emits audit rows onto
 `result.audit_log` (a `list[dict]`); persisting them is a separate, explicit
-step - see [Persisted audit log](#persisted-audit-log--signed-regulator-export)
+step - see [Persisted audit log](#persisted-audit-log-signed-regulator-export)
 below.
 
 At least one of `jurisdiction` or `statute` must be supplied.

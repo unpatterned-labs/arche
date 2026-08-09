@@ -1,4 +1,4 @@
-# Bring your own LLM — arche grades it
+# Bring your own LLM: arche grades it
 
 You want the best model doing your extraction. arche's position is not "don't" — it's **models propose, the engine decides, and the signature tells the truth about which was which**.
 

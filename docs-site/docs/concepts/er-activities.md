@@ -1,4 +1,4 @@
-# The five ER activities — where arche stands
+# The five ER activities: where arche stands
 
 Entity resolution has a textbook decomposition ([Talburt](https://doi.org/10.1016/C2009-0-63396-1), *Entity Resolution and Information Quality*), and it begins with a discipline this whole project is built on — Talburt's opening move, paraphrased:
 

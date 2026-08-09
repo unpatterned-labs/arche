@@ -1,6 +1,6 @@
 # A place is not a point
 
-*Space, place, and why the hardest entity to resolve might be the ground under your feet. By Dennis Irorere, Unpatterned Labs, August 2026.*
+*Space, place, and why the hardest entity to resolve might be the ground under your feet. By Dennis Irorere, August 2026.*
 
 ---
 
@@ -10,7 +10,7 @@ If you trust the coordinates, they are different places; two kilometres is not G
 
 Here is the resolution, and it took local knowledge, not better math: the facility was upgraded. The health post became a PHC, the name changed with the tier, and the two coordinates were captured years apart by different field teams, one standing at the gate and one at the junction where the access road starts. One place, two references, and the disagreement between them is not noise. It is history.
 
-I came to entity resolution from geospatial engineering, so places are where the whole problem started for me, and I have been keeping [reading notes](https://github.com/denironyx/systems-that-decide-what-matters/tree/main/04-spatial-identity) on spatial identity for a while. This post is those notes colliding with the code we ship in [arche](https://github.com/unpatterned-labs/arche): what geographers figured out about place decades before matching software existed, what the address really is, and why the best location matchers in the world quietly agree with the geographers.
+I came to entity resolution from geospatial engineering, so places are where the whole problem started for me, and I have been keeping [reading notes](https://github.com/denironyx/systems-that-decide-what-matters/tree/main/04-spatial-identity) on spatial identity for a while. This post is those notes colliding with the code we ship in [arche](https://github.com/unpatterned-labs/arche): what geographers figured out about place decades before matching software existed, what the address really is, why almost everything you do online eventually has to touch ground somewhere, and why the best location matchers in the world quietly agree with the geographers.
 
 ## Space is what the GPS sees
 
@@ -29,6 +29,24 @@ House numbering arrives in Europe in the 1700s as an instrument of taxation, con
 In [Talburt's vocabulary](er-activities.md), that is the moment the address became an *identity attribute*. The address was the state's sharpest join key yet, adopted precisely because the name-frequency problem we still fight today (agreeing on "Ibrahim" in Kano is weak evidence; agreeing on "Gyaranya" is strong) had already broken identification centuries earlier. Frequency-weighted matching and the postal address are two answers to the same collision, three hundred years apart.
 
 Mask ends with a warning that maps cleanly onto Relph. Systems like what3words assign every three-metre square on earth a three-word code, and it works, in the sense that a drone can find you, and several postal services have adopted it. But a grid code is pure space: no community speaks it, no history attaches to it, and even where a post office signs up, the code lives in an app rather than in neighbours' heads. It is also owned: a private company holds the grid, the wordlist, and the licence, which is the exact inverse of the shared, verifiable knowledge that made addresses work. Keep that thought; it comes back when we get to "behind the Total filling station."
+
+## The seam where the digital becomes physical
+
+Mask's story is a state reaching a subject. Change the actor and the argument walks intact into the present, because the modern version is a merchant reaching a customer, and it runs on the same field.
+
+Consider what you are to a shop you have never walked into. You are an account, a device fingerprint, a payment token, a session, a history of things you looked at and did not buy. Every one of those is an identifier that exists only inside a system; none of them has a location, and none of them needs one. The whole apparatus works beautifully right up to the moment something has to physically arrive. Then it has to hand off to a person on a motorbike deciding whether this is the right gate.
+
+That handoff deserves more attention than it gets, because it is the one step in the chain with no digital fallback. The order is bits. The payment is bits. Fraud scoring, the recommendation that produced the order, the confirmation mail, the tracking page with the little moving dot: bits, all of it, and each of those steps can be retried, cached, replicated, or rolled back. The last hundred metres cannot. It happens once, in the street, and nothing upstream can compensate for getting it wrong.
+
+I would resist calling that meeting a *point*, though, and not out of pedantry — the geometry is precisely the thing that fails. Call it a **seam**. A seam is where two materials that were made separately have to be joined, and it is where things tear. The delivery does not fail because the coordinate was wrong in the fourth decimal place. It fails because two parties do not share a representation of the same place: the customer holds one ("the blue gate after the mosque, ask for Mama Ngozi"), the system holds another (a pin someone dropped on a roof from a satellite image), and the rider has to reconcile the two with the engine running. Precision is not the missing ingredient. A shared, checkable representation is. That is the same claim the rest of this post makes about matching, arriving from the other direction.
+
+The seam runs both ways, and the two directions fail differently, which is the part I find most useful to hold on to. **Digital to physical** — a parcel, a dispatched ambulance, a meter installation, a ballot box — fails **loudly**. The package does not arrive, somebody calls, a refund is issued, a complaint is logged, and the failure has a price attached to it within the hour. **Physical to digital** — proof of address for a bank account, a census enumeration, a facility register, a tax roll — fails **silently**. You are simply not in the file, and nobody phones to tell you that you were left out of the sampling frame. Loud failures attract engineering budget. Silent ones compound for a decade and then get called a data gap, at which point they are described as a measurement problem rather than the exclusion they actually were.
+
+Commerce has of course noticed the seam and is busy fixing it, privately. Riders keep notes. Apps let you drop your own pin and save it. Platforms build internal place graphs out of successful deliveries, so that the eleventh parcel to your house lands more easily than the first. All of that works, and every bit of it is a place representation — an unusually good one, learned from physical outcomes rather than declared by a surveyor. It is also owned, unshared, and non-portable, which puts it in exactly the position Mask puts what3words in: a functioning answer that only one party can read. Your address becomes solved inside one company's logistics stack and stays unsolved everywhere else. The ambulance still cannot find you. So does the electoral commission, the meter reader, and the next platform you sign up to, each of which will rediscover your blue gate from scratch.
+
+One honest correction to my own frame before it gets too tidy. **The address is not the only bridge, and in much of the world it is not the primary one.** The phone number does an enormous amount of this work: one-time passwords, mobile money, and most tellingly the call the rider makes from the junction. Delivery in Lagos or Nairobi is in practice a two-stage protocol, where the address gets you to the neighbourhood and a voice call gets you to the door. Biometrics run the seam in the opposite direction, binding a physical body to a digital record. So the claim I will actually defend is the narrower one: **place is the bridge for anything that has to arrive**, and the phone call is the fallback protocol we fall back on precisely when the place representation was not good enough to carry the handoff alone. Counting how often that fallback fires is a decent measure of how badly a place is represented.
+
+This is not a detour from the engineering. It is why arche resolves places at all rather than only people; it is why the third answer matters more here than in analytics, because two addresses wrongly merged do not produce a slightly wrong dashboard, they deliver a stranger's parcel to your door, which is a privacy breach wearing a logistics costume. And it is why [spatial role labelling](../how-to/extract-places-with-roles.md) exists in the package at all: "pick up from X and deliver to Y" is the seam stated in one sentence, and swapping the two roles is the most literal way there is to tear it.
 
 ## What the best location matchers actually learned
 
@@ -72,7 +90,9 @@ In [the representation essay](representation-engine.md) we used the address "beh
 
 It is a rich place description. It has a landmark anchor, an implied containment (Madina, Accra), a spatial relation, and a verification community: thousands of people can confirm it, correct it, and navigate by it. It is *more* place-like than "Flat 2, 12 High Street", not less. What it lacks is not information. What it lacks is a system willing to represent it.
 
-Billions of people live at places that are named but not addressed. The machinery above (names weighted by rarity, containment hierarchies, landmark anchors, types split from identities, decisions signed with their dates) is what taking those places seriously looks like in software. The satellite sees space. People make place. We match the second one.
+Billions of people live at places that are named but not addressed, and the cost of that is not inconvenience. It is that the seam does not close for them. The order can be placed, the payment clears, the digital half runs perfectly — and then the last hundred metres has to be improvised over the phone, every time, by two people who have no shared way to name the same gate. Whatever cannot be improvised over the phone simply does not get delivered: not the parcel, and not the ambulance, the meter, the enumerator, or the ballot.
+
+The machinery above (names weighted by rarity, containment hierarchies, landmark anchors, types split from identities, decisions signed with their dates) is what taking those places seriously looks like in software. The satellite sees space. People make place. We match the second one.
 
 ---
 

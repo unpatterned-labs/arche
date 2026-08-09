@@ -1,4 +1,4 @@
-# Read crosswalk output — every number explained
+# Read crosswalk output: every number explained
 
 You ran a place crosswalk and got this back:
 
@@ -75,7 +75,7 @@ You can also skip self-calibration and bring population knowledge directly: `res
 
 Even a score above 0.70 only becomes `match` if some **distinctive** comparator (`name`, `id`, `tftoken`) clears the floor (`distinctive_floor=0.75`). This is the rule that stops a *shared location* from manufacturing a merge: two different facilities at one coordinate score high on `geo`, but geo is not distinctive — the pair lands at `review`. `distinctive_max` in the output tells you how close the gate came to clearing.
 
-## `blocking` — why big lists are fast
+## `blocking`: why big lists are fast
 
 ```text
 {'candidate_pairs': 4, 'reduction_ratio': 0.0}

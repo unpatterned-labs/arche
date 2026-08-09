@@ -9,11 +9,11 @@ The single source of truth for what arche ships today, what gates the beta relea
 
 ---
 
-## Today — v0.3.0a1
+## Today: v0.3.0a1
 
 `pip install arche-core` · 1,456 tests in `packages/arche-core/tests` · ~1.3 MB base wheel, CPU-only, no mandatory ML dependencies · Python 3.11–3.13.
 
-### Resolve — the lead capability
+### Resolve: the lead capability
 
 - **`resolve.pairwise(a, b)`** — "are these two the same?" Fellegi–Sunter log-odds with an exact-id gate and id-conflict veto, returning a signable `CoReferenceDecision` with per-field evidence and a reproducible `decision_id`.
 - **`resolve.crosswalk(list_a, list_b)`** — link two lists at scale. **Union blocking** (H3 spatial ∪ rare-token ∪ shared-id) keeps true pairs whose coordinates disagree by kilometres or are missing entirely; per-run `blocking.recall` when you supply labelled truth. Every edge carries evidence, a `decision_id` hashed over that evidence plus provenance pins, and can be **JWS-signed** with `sign_edges`.
@@ -21,11 +21,11 @@ The single source of truth for what arche ships today, what gates the beta relea
 - **The distinctive-signal gate** — supporting signals (geo, containment, address) amplify but never manufacture a merge; `review` is a first-class outcome, not a failure.
 - Measured: **40% → 0%** false-match rate on arche's African-name evaluation set (not yet published as a runnable benchmark — see *In flight*); [zero false merges at 0.877 auto-match recall](../tutorials/person_resolution_at_scale.md) on the synthetic Febrl 4 record-linkage set.
 
-### Declare — your schema, not ours
+### Declare: your schema, not ours
 
 One YAML declares *your* fields and annotates each with arche's roles (`identifies` / `describes` / `ignore`, comparator kind, `restricted`, statute class). From it arche generates comparators, masking, LLM tool definitions, validation, and a content-hash **pin** that enters every `decision_id`. No schema registry, ever. → [Declare your schema](../how-to/declare-your-schema.md)
 
-### The LLM lane — models propose, the engine executes
+### The LLM lane: models propose, the engine executes
 
 - **`extract_declared`** — declaration-driven extraction through any model (`complete_fn` callable or `LLMConfig`: OpenAI / Anthropic / Ollama / litellm). Hallucinated fields become violations, never values.
 - **`extract_places_llm`** — cue-verified spatial role proposals: a committed role survives only if its cue is locatable in the source, adjacent to the span, and pack-consistent; otherwise it downgrades to `unknown`.
@@ -38,7 +38,7 @@ One YAML declares *your* fields and annotates each with arche's roles (`identifi
 - **`extract_places`** — spatial role labeling (origin / destination / location / via / unknown) with the linguistic cue as evidence and structural abstention on conflict, negation, or absent cues.
 - **The referee ships in the wheel**: a 54-sentence labelled gold set (`load_gold`) plus `grade_places`, a refusal-aware scorer that prices `over_guess` and `missed_by_abstention` separately from F1 — so anyone can grade *their* extractor, including an LLM. → [extract places with roles](../how-to/extract-places-with-roles.md)
 
-### Detect + govern — the African-context layer
+### Detect + govern: the African-context layer
 
 - Per-country ID detectors: Nigeria (NIN, BVN, TIN, RC, voter PVC, driver's licence), Kenya (National ID, KRA PIN, NHIF), South Africa (SA ID with Luhn + DOB/gender/citizenship decode, tax reference, passport), Ghana (Ghana Card, SSNIT, TIN), plus 11 further African patterns. libphonenumber-backed normalization across 30+ networks.
 - **114-group name equivalence lexicon** (450 forms, 20+ ethnic and linguistic traditions) and population-scale frequency tables.
@@ -54,7 +54,7 @@ One YAML declares *your* fields and annotates each with arche's roles (`identifi
 
 ---
 
-## Beta — v0.3.0 (the named criteria)
+## Beta: v0.3.0 (the named criteria)
 
 We mark arche **beta** when these are true. Status is tracked here every release, and revisions are made in the open rather than by quietly re-checking a box.
 

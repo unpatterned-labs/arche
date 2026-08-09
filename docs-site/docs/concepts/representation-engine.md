@@ -94,7 +94,7 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 **Low-standardization data is the proving ground.** arche's packs and benchmarks are calibrated on identity data with no canonical spellings, landmark addresses, and fragmented ID systems — the regimes where representation failures dominate and where a matcher that only ships inference is silently wrong.
 
-## Further reading — both halves
+## Further reading: both halves
 
 *The inference half:* Fellegi & Sunter (1969), ["A Theory for Record Linkage"](https://doi.org/10.1080/01621459.1969.10501049) (*JASA* 64), building on Newcombe et al. (1959) in [*Science*](https://doi.org/10.1126/science.130.3381.954), is the model under Splink and arche's pairwise core; Winkler (1989, "Frequency-Based Matching in the Fellegi–Sunter Model of Record Linkage," ASA Survey Research Methods) formalized the value-specific frequency adjustment arche's tables feed. [Linacre et al. (2022)](https://doi.org/10.23889/ijpds.v7i3.1794) describes Splink itself, and Robin Linacre's [interactive Fellegi–Sunter introduction](https://www.robinlinacre.com/probabilistic_linkage/) is the best on-ramp. [Papadakis et al. (2020)](https://doi.org/10.1145/3377455) surveys blocking, and [Bhattacharya & Getoor (2007)](https://doi.org/10.1145/1217299.1217304) is the collective-resolution remainder pairwise scoring doesn't cover.
 

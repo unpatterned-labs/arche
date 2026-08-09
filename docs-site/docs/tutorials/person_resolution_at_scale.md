@@ -36,7 +36,7 @@ review queue     45
 
 **Precision 1.0.** The engine trades recall for it: the hardest ~12% of pairs land in `review` rather than being guessed. In identity systems that trade *is* the product — a false merge is a stranger's records fused; a review row is seconds of human time.
 
-## Blocking for people — measured, not hoped
+## Blocking for people: measured, not hoped
 
 Places had coordinates, so H3 blocking was free. People don't. The full 5,000 × 5,000 is **25 million pairs**. The classic answer is **multi-pass key blocking** — compare two records only if they share a cheap key. Three passes (postcode / surname-prefix / exact national id), and because we have ground truth we can *measure* the cost:
 

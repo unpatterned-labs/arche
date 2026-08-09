@@ -1,4 +1,4 @@
-# Extract places from free text, with their role — and grade any extractor
+# Extract places from free text with their role, and grade any extractor
 
 "Pick up from X and send it to Y" contains two addresses and one catastrophic failure mode: swapping them. An agent that books a courier with the roles flipped sends the rider to the pickup with the package. `extract_places` labels each place span with its **spatial role** and returns the **linguistic cue** that decided it, so the assignment is inspectable — and when cues are absent or conflicting it answers `unknown` rather than guessing.
 
@@ -41,9 +41,9 @@ Calling `.to_dict(reveal=False)` on each mention gives you **offsets only** — 
 
 !!! note "No MCP server ships in v0.3.0a1"
 
-    An MCP server is, not released. `arche-mcp` is not on PyPI and no server code lives in this repository. Until it ships, the masked `to_dict(reveal=False)` shape above and `Declaration.tool_def()` are the agent-facing surface, and you wire them into your own tool layer.
+    An MCP server is not released. `arche-mcp` is not on PyPI and no server code lives in this repository. Until it ships, the masked `to_dict(reveal=False)` shape above and `Declaration.tool_def()` are the agent-facing surface, and you wire them into your own tool layer.
 
-## 4. Bring your own LLM — verified, not trusted
+## 4. Bring your own LLM: verified, not trusted
 
 When the deterministic core abstains too often for your text, route a model through the same discipline with `arche.llm.extract_places_llm` — any callable or an `LLMConfig`, exactly like [extract_declared](bring-your-own-llm.md):
 
@@ -59,7 +59,7 @@ ex.pins()        # {"place_extraction": {model, prompt_sha256, pack, reproducibl
 
 The constraint is non-negotiable: **a model-proposed role is only accepted when its cue can be located in the source text, adjacent to the span, and matched against the cue pack for that role.** A cue the model made up, placed elsewhere, or mapped to the wrong role downgrades the mention to `unknown` — kept, but stripped of the guess. The `cue` field stays what it claims to be: the linguistic evidence, never a post-hoc rationalization. And because the output is `PlaceMention`s, the same `grade_places` referee below scores the model's proposals with no adapter.
 
-## 5. Grade your own extractor — the referee
+## 5. Grade your own extractor: the referee
 
 The durable asset is not our cue engine; it is the labeled test set plus the scorer, shipped **in the wheel**. `pip install arche-core` is the whole setup for evaluating *your* LLM, prompt, or model on spatial role labeling — including the African-address and Pidgin slices no other benchmark covers:
 
