@@ -1,6 +1,6 @@
 # `arche.detect`
 
-Per-country PII / identity detectors. Each launch jurisdiction exposes an `ids` module with a single entry function returning `list[Detection]`.
+Per-country PII / identity detectors. Each launch jurisdiction exposes an `ids` module with a single entry function taking only `text` and returning `list[NationalID]`.
 
 ```python
 from arche.detect.ng.ids import detect_nigerian_ids
@@ -16,7 +16,21 @@ from arche.detect._africa.ids import detect_african_ids
 from arche.detect._africa.phones import normalize_e164, validate_phone
 ```
 
-Detectors return [`Detection`](resolve.md#detection) objects with category labels from the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml).
+These per-country detectors return `NationalID` objects - a lighter record than the
+[`Detection`](pipeline.md#detection) the `Pipeline` emits. Fields: `text`, `country`,
+`id_type`, `confidence`, `start`, `end`, `metadata`:
+
+```python
+from arche.detect.ng.ids import detect_nigerian_ids
+
+detect_nigerian_ids("NIN 12345678901, BVN 22156789012.")[0]
+# NationalID(text='22156789012', country='NG', id_type='BVN', confidence=0.85,
+#            start=21, end=32, metadata={'validator_status': 'format_valid'})
+```
+
+Run the same text through `Pipeline` to get `Detection` objects carrying the
+[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml)
+category label, the sensitivity tier, and the statute citation.
 
 > Most callers don't need this surface directly - `Pipeline(jurisdiction=...)` calls the right detectors automatically. Use these primitives when you're building your own composition.
 
@@ -35,7 +49,7 @@ Detectors return [`Detection`](resolve.md#detection) objects with category label
 
 ## Non-launch African countries
 
-`arche.detect._africa.ids.detect_african_ids(text, country=...)` covers: RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ.
+`arche.detect._africa.ids.detect_african_ids(text)` covers: RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ. It takes only `text` - there is no `country` parameter; the country is inferred and reported on each returned `NationalID.country`.
 
 Country-specific coverage promotes to a top-level `arche.detect.<cc>` module as Stage 2 work - based on launch-partner deployments.
 
@@ -46,12 +60,24 @@ Country-specific coverage promotes to a top-level `arche.detect.<cc>` module as 
 ```python
 from arche.detect._africa.phones import normalize_e164, validate_phone
 
-normalize_e164("0803 555 7890", country="NG")
-# "+2348035557890"
+normalize_e164("0803 555 7890", default_country="NG")
+# '+2348035557890'
 
-validate_phone("+254 712 345 678", country="KE")
-# (True, "+254712345678", "MOBILE")
+validate_phone("+254 712 345 678", default_country="KE")
+# {'valid': True,
+#  'country': 'KE',
+#  'e164': '+254712345678',
+#  'national': '0712 345678',
+#  'international': '+254 712 345678',
+#  'country_calling_code': 254,
+#  'line_type': 'mobile',
+#  'carrier_hint': 'Safaricom',
+#  'region_hint': 'Kenya'}
 ```
+
+The keyword is `default_country`, not `country`, and it defaults to `"NG"`.
+`normalize_e164` returns `str | None`; `validate_phone` returns a `dict`, not a
+tuple.
 
 Wraps the `phonenumbers` Python port of libphonenumber. Covers 30+ African telecom networks per PRD FR-DETECT-9.
 
@@ -59,14 +85,32 @@ Wraps the `phonenumbers` Python port of libphonenumber. Covers 30+ African telec
 
 ## Optional ML backends
 
-The v0.1 GLiNER2 NER backend is still available behind the `[detect]` extra:
+The GLiNER2 NER backend is available behind the `[detect]` extra:
 
 ```bash
 pip install arche-core[detect]
 ```
 
+There is **no public API under `arche.detect.gliner` or `arche.detect.presidio`** -
+both packages are empty placeholder namespaces in this release. `import
+arche.detect.gliner` succeeds but the module exports nothing, so any
+`from arche.detect.gliner import ...` line raises `ImportError`.
+
+The optional backends are wired in through `backend=` on the extraction entry
+point instead:
+
 ```python
-from arche.detect.gliner import detect_soft_pii
+from arche.extract import extract
+
+extract("Call 0803 555 7890", backend="regex")
+# [EntityReference(text='080***', type='PHONE', confidence=0.90, source='african')]
+
+extract(text, backend="gliner")   # raises ModuleNotFoundError without [detect]
 ```
+
+`backend` accepts `"auto"` (default - GLiNER when installed, regex otherwise),
+`"auto+llm"`, `"gliner"`, and `"regex"`. Presidio is reached through
+`arche.protect`, which uses it when installed and falls back to regex when it is
+not; it has no `arche.detect.presidio` surface.
 
 Future model-backed detectors will be documented when they are ready for public evaluation.

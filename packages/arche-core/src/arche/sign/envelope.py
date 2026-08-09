@@ -104,7 +104,10 @@ class ArcheSignedDocument:
         statute_id = metadata.get("statute_id")
         statute_version = metadata.get("statute_version")
         statute = (
-            f"{statute_id}@v{statute_version}"
+            # The pack's ``version`` field already carries its own ``v``
+            # prefix (``version: v1.0``), so prefixing another one here
+            # produced ``NDPA-2023@vv1.0`` in every signed envelope.
+            f"{statute_id}@{statute_version}"
             if statute_id and statute_version
             else statute_id
         )

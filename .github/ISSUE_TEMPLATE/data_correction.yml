@@ -1,0 +1,65 @@
+name: Data correction or addition
+description: A name equivalence, ID format, address convention, or statute mapping is wrong or missing
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These are among the most valuable contributions to arche, and they do
+        not require writing any code. If you know a naming convention, an
+        orthography, an ID format, or a statute from the inside, that
+        knowledge is the product.
+
+        **No real personal data, please.** Describe the *convention*, not a
+        real person who follows it.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of data
+      options:
+        - "Name equivalence (these forms are the same name)"
+        - "Name distinction (these forms are NOT the same name)"
+        - "National or government ID format"
+        - "Phone number convention"
+        - "Address or place convention"
+        - "Statute mapping or citation"
+        - "Entity pack (artists, facilities, ...)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: region
+    attributes:
+      label: Country, region, or language
+      placeholder: "Nigeria — Fulani orthography"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: What arche does now
+      description: What does it currently return, and why is that wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: correct
+    attributes:
+      label: What it should do
+      description: The correct behaviour, with synthetic examples.
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: >
+        A standards document, registry, or official specification if there is
+        one. "This is how it is done where I live" is also valid evidence and
+        we would rather have it than nothing — just say so.
+    validations:
+      required: false

@@ -354,6 +354,26 @@ _ACTION_HANDLERS = {
     "retain": _retain,
 }
 
+# How much of the original each action removes, most-removing first. Used to
+# resolve OVERLAPPING detections: over any region two detections both claim,
+# the more restrictive action wins.
+#
+# The ordering is a safety property, not a preference. Detectors legitimately
+# nest — a NAME inside an ADDRESS, a LOCATION inside an ADDRESS — and the
+# shipped NDPA pack gives those different actions (ADDRESS generalize, NAME
+# tokenize, LOCATION retain). Letting the *outer* span win would emit a
+# generalized address still containing a NIN the pack said to mask; letting
+# the *inner* win would leave the rest of the address in clear text. Only
+# "most restrictive over the union" is safe in both directions.
+_ACTION_SEVERITY: dict[str, int] = {
+    "drop": 5,
+    "mask": 4,
+    "tokenize": 3,
+    "generalize": 2,
+    "audit": 1,
+    "retain": 0,
+}
+
 
 # ---------------------------------------------------------------------------
 # Apply policy to a document
@@ -383,38 +403,81 @@ def apply_policy(
 
     Notes
     -----
-    The engine processes detections in *reverse* start order when building
-    the redacted text so that substitutions don't shift downstream span
-    offsets. The returned outcomes list is in *forward* (input) order.
+    Overlapping detections are resolved before any text is rewritten. Spans
+    that overlap are grouped, and the group's whole extent is replaced once
+    using the **most restrictive** action any member asked for
+    (:data:`_ACTION_SEVERITY`).
+
+    Splicing each detection independently — which this function used to do —
+    is only correct for disjoint spans. Detectors nest routinely, and the
+    second splice then applied original-text offsets to an already-resized
+    string. On ordinary Nigerian address text with the shipped detector set
+    that produced ``'[ADDRESS]o Road, [ADDRESS].'`` — plaintext leaked out of
+    a span the statute said to remove — and left ``Lagos`` in clear inside a
+    masked ADDRESS span.
+
+    Every input detection still gets its own outcome, in input order, carrying
+    its own category, action and citation: those are facts about the category
+    and stay true whether or not the span won its overlap. ``applied_value``
+    reports what actually reached the text.
     """
-    # Sort by start descending so we can splice without offset drift.
-    indexed = list(enumerate(detections))
-    indexed.sort(key=lambda pair: -getattr(pair[1], "start", 0))
-
-    outcomes_by_index: dict[int, PolicyOutcome] = {}
-    redacted = text
-
-    for original_index, det in indexed:
+    # ---- 1. resolve each detection to an action, keeping input order ------
+    resolved: list[tuple[int, int, int, str, str, str, str, str]] = []
+    for original_index, det in enumerate(detections):
         start = getattr(det, "start", None)
         end = getattr(det, "end", None)
         if start is None or end is None:
             continue
-
         category = getattr(det, detection_category_attr, None) or "PII-1-UNKNOWN"
-        original = getattr(det, "text", None) or text[start:end]
         det_id = getattr(det, "id", None) or f"det:{start}:{end}"
-
         action, statute_ref, rationale = statute.action_for(category)
+        resolved.append(
+            (start, end, original_index, category, det_id, action, statute_ref, rationale)
+        )
+
+    # ---- 2. group overlapping spans into disjoint regions -----------------
+    # Sorted by start, then widest first, so a container is seen before what
+    # it contains.
+    groups: list[dict] = []
+    for item in sorted(resolved, key=lambda r: (r[0], -r[1])):
+        start, end = item[0], item[1]
+        if groups and start < groups[-1]["end"]:
+            g = groups[-1]
+            g["end"] = max(g["end"], end)
+            g["members"].append(item)
+        else:
+            groups.append({"start": start, "end": end, "members": [item]})
+
+    # ---- 3. one replacement per region, most restrictive action wins ------
+    applied_by_index: dict[int, str] = {}
+    for g in groups:
+        # Two different members decide two different things. The ACTION comes
+        # from the most restrictive member, because that is the safety
+        # property. The LABEL comes from the widest member, because that is
+        # what the region *is*: an address containing a name is still an
+        # address, and rendering it `NAME_…` would misdescribe the span even
+        # though it would be equally safe.
+        action = max(g["members"], key=lambda r: _ACTION_SEVERITY.get(r[5], 0))[5]
+        category = max(g["members"], key=lambda r: (r[1] - r[0]))[3]
+        # The region's original text, not any single detection's `.text` —
+        # the replacement stands in for everything the group covers.
+        original = text[g["start"]:g["end"]]
         handler = _ACTION_HANDLERS[action]
         if action == "tokenize":
             replacement = handler(category, original, salt=tokenize_salt)
         else:
             replacement = handler(category, original)
+        g["replacement"] = replacement
+        for member in g["members"]:
+            applied_by_index[member[2]] = replacement
 
-        # Splice replacement into the working text. For retain/audit the
-        # replacement equals the original so this is a no-op.
-        redacted = redacted[:start] + replacement + redacted[end:]
+    # ---- 4. splice the now-disjoint regions, rightmost first --------------
+    redacted = text
+    for g in sorted(groups, key=lambda g: -g["start"]):
+        redacted = redacted[:g["start"]] + g["replacement"] + redacted[g["end"]:]
 
+    outcomes_by_index: dict[int, PolicyOutcome] = {}
+    for start, end, original_index, category, det_id, action, statute_ref, rationale in resolved:
         outcomes_by_index[original_index] = PolicyOutcome(
             detection_id=det_id,
             category=category,
@@ -423,7 +486,7 @@ def apply_policy(
             statute_id=statute.statute_id,
             statute_version=statute.version,
             rationale=rationale,
-            applied_value=replacement,
+            applied_value=applied_by_index.get(original_index, ""),
             span=(start, end),
         )
 

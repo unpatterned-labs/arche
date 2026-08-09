@@ -102,26 +102,59 @@ class LLMConfig:
 
 __all__ = [
     "LLMConfig",
-    # Declaration-driven extraction + the evaluation harness (LLM lane).
-    "LLMPlaceExtraction",
+    # Declaration-driven extraction (LLM lane).
+    "DeclaredExtraction",
+    "build_messages",
     "extract_declared",
-    "extract_places_llm",
+    # The evaluation harness. HarnessReport and Divergence are what
+    # grade_pairs returns, so they have to be importable from here — you
+    # cannot annotate a function against a type you cannot name.
+    "Divergence",
+    "HarnessReport",
     "grade_extractions",
     "grade_pairs",
+    # Spatial role extraction.
+    "LLMPlaceExtraction",
+    "build_places_messages",
+    "extract_places_llm",
 ]
+
+# Which submodule each lazily-loaded public name lives in. Keeping this as
+# data rather than a chain of `if name in (...)` branches means __getattr__
+# and __dir__ cannot disagree about what the module exports.
+_LAZY: dict[str, str] = {
+    "DeclaredExtraction": "declarative",
+    "build_messages": "declarative",
+    "extract_declared": "declarative",
+    "Divergence": "harness",
+    "HarnessReport": "harness",
+    "grade_extractions": "harness",
+    "grade_pairs": "harness",
+    "LLMPlaceExtraction": "spatial",
+    "build_places_messages": "spatial",
+    "extract_places_llm": "spatial",
+}
 
 
 def __getattr__(name):  # lazy: keep base import light, avoid cycles
-    if name in ("DeclaredExtraction", "extract_declared"):
-        from arche.llm import declarative
+    module = _LAZY.get(name)
+    if module is not None:
+        import importlib
 
-        return getattr(declarative, name)
-    if name in ("grade_pairs", "grade_extractions"):
-        from arche.llm import harness
-
-        return getattr(harness, name)
-    if name in ("LLMPlaceExtraction", "extract_places_llm"):
-        from arche.llm import spatial
-
-        return getattr(spatial, name)
+        return getattr(importlib.import_module(f"arche.llm.{module}"), name)
     raise AttributeError(f"module 'arche.llm' has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    """The public surface, plus the submodules callers import directly.
+
+    Python's default module ``dir()`` reads ``__dict__``, so nothing reached
+    through ``__getattr__`` appears until it has already been imported. That
+    left ``dir(arche.llm)`` showing ``LLMConfig`` beside implementation
+    imports like ``dataclass``, ``field`` and ``Any``, and none of the actual
+    API — unhelpful at a REPL and invisible to tab-completion.
+
+    The result is deterministic: it does not change as a side effect of which
+    submodules happen to have been imported already.
+    """
+    return sorted(set(__all__) | {"declarative", "harness", "providers", "spatial"})

@@ -32,8 +32,10 @@ That's the whole feature. The detector chain inside Pipeline already knows about
 Assuming a FastAPI / Django / Flask handler, the typical shape:
 
 ```python
+from collections import Counter
+
 from arche import Pipeline
-from arche.graph.audit import AuditLog
+from arche.graph.audit import AuditLog, AuditEvent
 
 pipeline = Pipeline(jurisdiction="NG", tokenize_salt=settings.TOKENIZE_SALT)
 audit = AuditLog(settings.AUDIT_DB_PATH)   # SQLite file path
@@ -41,7 +43,31 @@ audit = AuditLog(settings.AUDIT_DB_PATH)   # SQLite file path
 async def on_intake_received(intake: IntakeRecord) -> RedactedIntake:
     text = format_intake_as_text(intake)
     result = pipeline.process(text)
-    audit.emit_pipeline_result(result, document_id=intake.id)
+
+    audit.emit_many(
+        AuditEvent.detection(
+            document_hash=result.document_hash,
+            detection_id=d.id,
+            category=d.category,
+            span=(d.start, d.end),
+            confidence=d.confidence,
+            detector=d.detector,
+        )
+        for d in result.detections
+    )
+    audit.emit_many(
+        AuditEvent.policy(
+            document_hash=result.document_hash,
+            detection_id=o.detection_id,
+            category=o.category,
+            action=o.action,
+            statute_id=o.statute_id,
+            statute_reference=o.statute_reference,
+            span=o.span,
+        )
+        for o in result.policy_outcomes
+    )
+
     return RedactedIntake(
         id=intake.id,
         redacted_text=result.redacted_text,
@@ -50,7 +76,15 @@ async def on_intake_received(intake: IntakeRecord) -> RedactedIntake:
     )
 ```
 
-`audit.emit_pipeline_result` writes every detection and policy decision into the SQLite log. PII values are never stored - only category labels, span offsets, document hashes (PRD Section 8.2).
+`AuditLog` has no `emit_pipeline_result` method - the surface is `emit`,
+`emit_many`, `query`, `count`, `compliance_report_markdown`, `export`, and
+`export_signed`. You build the events yourself from `result.detections` and
+`result.policy_outcomes`, as above; `result.audit_log` is a `list[dict]` for
+your own logging pipeline and cannot be passed to `emit_many` directly.
+
+Written this way the log stores only category labels, span offsets, detector
+names, statute references, and document hashes. PII values are never stored
+(PRD Section 8.2).
 
 ## What goes to the warehouse, what stays out
 
@@ -61,17 +95,24 @@ The warehouse mirror gets `RedactedIntake`. The original `IntakeRecord` lives on
 Three months later, the compliance officer needs to produce the audit. With the SQLite log already populated:
 
 ```python
+from datetime import datetime
+
 from arche.sign import generate_keypair
 
 officer_key = generate_keypair()    # or load from your KMS
 bundle = audit.export_signed(
     key=officer_key,
     purpose="ndpc_audit_2026q2",
-    since="2026-04-01",
-    until="2026-06-30",
+    since=datetime(2026, 4, 1),
+    until=datetime(2026, 6, 30),
 )
 # Email the bundle (or upload to NDPC portal). The auditor verifies offline.
 ```
+
+`since` / `until` must be `datetime` objects - passing date strings raises
+`AttributeError: 'str' object has no attribute 'isoformat'`. All of
+`export_signed`'s parameters are keyword-only, and it returns a compact JWS
+`str`.
 
 The bundle is a JWS envelope binding the audit rows + the statute version + the officer's `did:key`. The auditor verifies cryptographically that nothing changed since signing.
 

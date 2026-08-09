@@ -203,7 +203,18 @@ class Pipeline:
         ``Pipeline(detectors=["ng"])`` — opt-out preserved for backward
         compatibility.
         """
-        cross_cutting = ["names", "locations", "ip", "digital_id", "addr", "core"]
+        # `emails` is in the default set as of v0.3.0a1. It was previously
+        # opt-in, on the grounds that adding it would change existing callers'
+        # detections, policy outcomes and redacted text. That is true, and it
+        # was the wrong trade: an email address is PII under all six shipped
+        # statute packs — each maps PII-3-EMAIL to tokenize or mask with a
+        # citation — and `Pipeline` is the redaction path. A redaction pipeline
+        # that returns email addresses in the clear, by default, is not a
+        # compatible behaviour worth preserving. Narrow with
+        # `Pipeline(detectors=[...])` if you need the old output.
+        cross_cutting = [
+            "names", "locations", "emails", "ip", "digital_id", "addr", "core",
+        ]
         if self.jurisdiction in {"NG", "KE", "ZA", "GH"}:
             return [self.jurisdiction.lower(), *cross_cutting]
         if self.jurisdiction is None or self.jurisdiction in self._AFRICAN_JURISDICTIONS:
@@ -446,10 +457,9 @@ class Pipeline:
                 from arche.detect.locations import detect_locations
                 results.extend(detect_locations(text))
             elif pkg == "emails":
-                # Cross-cutting email detector (PII-3-EMAIL). Opt-in: NOT in
-                # the default set — adding it there would change existing
-                # callers' detections/policy outcomes/redacted text. The
-                # resolution path (coref_from_pipeline) includes it by default.
+                # Cross-cutting email detector (PII-3-EMAIL). In the default
+                # set as of v0.3.0a1 — see `_default_detectors` for why it
+                # stopped being opt-in.
                 from arche.detect.emails import detect_emails
                 results.extend(detect_emails(text))
             elif pkg == "ip":

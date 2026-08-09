@@ -622,3 +622,58 @@ class TestBackendValidation:
         # Should not raise
         entities = extract("test", backend="auto+llm", llm_config=config)
         assert isinstance(entities, list)
+
+
+class TestPublicSurface:
+    """`dir(arche.llm)` must show the API, not the implementation.
+
+    Everything except `LLMConfig` is loaded lazily through the module's
+    `__getattr__`, and Python's default module `dir()` reads `__dict__` — so
+    the real API was invisible while `Any`, `annotations`, `dataclass` and
+    `field` were on show. Nothing caught it because nothing asserted what the
+    module is supposed to export.
+    """
+
+    def test_every_exported_name_resolves(self):
+        import arche.llm as llm
+
+        unresolved = [n for n in llm.__all__ if not hasattr(llm, n)]
+        assert unresolved == []
+
+    def test_dir_lists_the_public_api(self):
+        import arche.llm as llm
+
+        listed = {n for n in dir(llm) if not n.startswith("_")}
+        assert set(llm.__all__) <= listed
+
+    def test_dir_hides_implementation_imports(self):
+        import arche.llm as llm
+
+        assert {"Any", "annotations", "dataclass", "field"}.isdisjoint(dir(llm))
+
+    def test_dir_is_stable_across_lazy_imports(self):
+        """Importing a submodule must not change the advertised surface."""
+        import arche.llm as llm
+
+        before = dir(llm)
+        from arche.llm import extract_places_llm, grade_pairs  # noqa: F401
+
+        assert dir(llm) == before
+
+    def test_harness_return_types_are_importable(self):
+        """`grade_pairs` returns a HarnessReport containing Divergences, so
+        both have to be nameable from `arche.llm` — you cannot annotate
+        against a type you cannot import."""
+        from arche.llm import Divergence, HarnessReport  # noqa: F401
+
+    def test_lazy_map_and_all_agree(self):
+        """The two lists must not drift apart."""
+        import arche.llm as llm
+
+        assert set(llm._LAZY) | {"LLMConfig"} == set(llm.__all__)
+
+    def test_unknown_attribute_still_raises(self):
+        import arche.llm as llm
+
+        with pytest.raises(AttributeError, match="has no attribute"):
+            llm.not_a_real_name

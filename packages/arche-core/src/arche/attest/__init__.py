@@ -127,6 +127,16 @@ class SignedAttestation:
 
 @dataclass
 class AttestationVerifyResult:
+    """The outcome of verifying an attestation.
+
+    ``valid`` means the signature checked out against whichever key was
+    resolved. ``trusted`` means that key came from somewhere the caller
+    controls — a pinned ``public_key`` or their own ``resolver``. Verifying
+    with neither falls back to the key the attestation names for itself,
+    which proves the attestation is internally consistent but says nothing
+    about who issued it. Check ``trusted`` before acting on a claim.
+    """
+
     valid: bool
     mode: str
     claims: dict[str, Any]
@@ -135,6 +145,34 @@ class AttestationVerifyResult:
     key_bound: bool = False
     holder_did: str | None = None
     error: str | None = None
+    trusted: bool = False
+    key_source: str | None = None
+
+
+def _is_reproducible(decision: CoReferenceDecision) -> bool:
+    """Can this decision be replayed from its evidence and representation?
+
+    This used to be computed as ``mode == "jws"``, which describes the
+    *signing* format and says nothing about the decision. Every JWS
+    attestation therefore claimed ``reproducible: True`` — including one
+    built from an LLM extraction whose own ``extraction`` pin recorded
+    ``reproducible: false`` in the very same artifact.
+
+    The engine's own path is deterministic (canonical form, fixed-precision
+    floats, sorted keys), so a decision is reproducible unless something that
+    fed it declared otherwise. A hosted model's output is the case that
+    matters: the representation and the decision maths replay, the extraction
+    does not, and the attestation has to say so.
+
+    Note this is only half the question — see the caller, which also requires
+    ``mode == "jws"``. An SD-JWT carries salted disclosure digests and is not
+    byte-reproducible whatever produced the decision.
+    """
+    pins = getattr(decision, "pins", None) or {}
+    for pin in pins.values():
+        if isinstance(pin, dict) and pin.get("reproducible") is False:
+            return False
+    return True
 
 
 def _subject_claims(
@@ -200,7 +238,11 @@ def attest(
     exp_str = expires_at.isoformat() if expires_at is not None else None
     att = Attestation.from_decision(
         decision, issuer=issuer, purpose=purpose,
-        reproducible=(mode == "jws"), issued_at=issued_at, expires_at=exp_str,
+        # Both must hold: the wire form has to be byte-stable (JWS, not the
+        # salted SD-JWT), *and* nothing that fed the decision may have
+        # declared itself non-reproducible.
+        reproducible=(mode == "jws") and _is_reproducible(decision),
+        issued_at=issued_at, expires_at=exp_str,
     )
 
     if mode == "jws":
@@ -297,13 +339,21 @@ def verify_attestation(
             key_bound=r.key_bound, holder_did=r.holder_did,
             error=r.error,
         )
-    r = verify(compact, public_key=public_key, resolver=resolver)
+    # Explicit opt-in keeps the offline path working: an attestation can be
+    # checked for internal consistency with no key and no network. The
+    # resulting key is self-asserted, so `trusted` below reports False and
+    # the caller can tell integrity from authorship.
+    r = verify(
+        compact, public_key=public_key, resolver=resolver,
+        allow_did_key_from_kid=True,
+    )
     claims = r.payload if (r.valid and isinstance(r.payload, dict)) else {}
     return AttestationVerifyResult(
         valid=r.valid, mode="jws", claims=claims,
         decision_id=claims.get("decision_id"),
         reproducible=bool(claims.get("reproducible", False)),
         error=r.error,
+        trusted=r.trusted, key_source=r.key_source,
     )
 
 

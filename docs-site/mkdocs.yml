@@ -1,17 +1,37 @@
 site_name: arche
-site_description: African PII detection that cites the law it enforces. Government IDs, names, phones, addresses for NG/KE/ZA/GH - grounded in NDPA, POPIA, Kenya DPA, Ghana DPA. Composes with Presidio, GLiNER, and Splink.
+# "Composes with Splink" was the old tail of this line. It described one
+# deprecated function and nothing else in the package: pairwise, crosswalk and
+# reconcile import zero splink. See tutorials/arche_vs_alternatives.md.
+site_description: Know what's real. The open engine for messy, multilingual data - find the entities, resolve who they actually are, protect them under the law that applies, and sign every decision. The representation layer record linkage needs - equivalence packs, frequency tables, identifier grammars and statute packs, shipped as inspectable data. Composes with Presidio and GLiNER as detector backends.
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
 
 theme:
   name: material
+  # Both schemes, with a toggle. The site previously shipped `default` only,
+  # so a reader with a dark system theme got a full-brightness page and no way
+  # to change it. Palette values live in stylesheets/extra.css; see DESIGN.md.
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: custom
-      accent: indigo
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
   font:
-    text: Inter
+    # Instrument Serif carries the headings because this is a product about
+    # records, names and statutes, and a serif says "record" in a way no
+    # grotesque does. Instrument Sans is its native companion. See DESIGN.md.
+    text: Instrument Sans
     code: JetBrains Mono
   features:
     - navigation.instant
@@ -51,11 +71,35 @@ nav:
   - Getting started:
     - Installation: getting-started/installation.md
     - Quick start: getting-started/quickstart.md
+  # Concepts come before the how-to guides: the published site previously had
+  # 28 pages that all explained how to call a function and not one that
+  # explained what arche is. These pages lived in a gitignored directory.
+  - Concepts:
+    # Three pages describe the flow, and the order is the reading path:
+    # how-it-works is the newcomer's walkthrough, lifecycle is the "can it do
+    # X today" inventory, architecture is the internal layering. Each page
+    # states that split in its opening lines.
+    - How arche works: concepts/how-it-works.md
+    - The identity lifecycle: concepts/lifecycle.md
+    - Architecture: concepts/architecture.md
+    - A representation engine, not an inference engine: concepts/representation-engine.md
+    - A place is not a point: concepts/a-place-is-not-a-point.md
+    - From place to entity (the math): concepts/from-place-to-entity.md
+    - Place identity: concepts/place-identity.md
+    - The place benchmark: concepts/place-benchmark.md
+    - The five ER activities: concepts/er-activities.md
+    - Attest, the signature on the decision: concepts/attest.md
   - Guides:
     - Match African names: how-to/match-african-names.md
     - Extract from invoice: how-to/extract-from-invoice.md
-    - Declare your schema (your fields, our guarantees): how-to/declare-your-schema.md
+    - Declare your schema (your fields, our roles): how-to/declare-your-schema.md
     - Bring your own LLM (arche grades it): how-to/bring-your-own-llm.md
+    # Both were tracked, built, and linked from other pages, but appeared in
+    # no nav entry — so the two flagship v0.3.0a1 features had documentation
+    # nobody could navigate to.
+    - Extract places with spatial roles: how-to/extract-places-with-roles.md
+    - Read the crosswalk output: how-to/read-crosswalk-output.md
+    - Verify a merge against an external source: how-to/verify-with-external-sources.md
     - Why arche and when to use it: tutorials/arche_vs_alternatives.md
     - Place resolution at scale (NG + UK): tutorials/place_resolution_at_scale.md
     - Person resolution at scale (scored): tutorials/person_resolution_at_scale.md
@@ -68,14 +112,20 @@ nav:
     - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
   - Workflows:
     - Sign, share, extract: tutorials/sign_share_extract.md
-    - Citizen DSAR: tutorials/citizen_dsar.md
+    # "Citizen DSAR" expanded: a reader who does not already work in data
+    # protection cannot tell what the page is for from the acronym alone.
+    - Data Subject Access Requests (DSAR): tutorials/citizen_dsar.md
     - Entity resolution: tutorials/entity_resolution.md
   - API:
     - Overview: api/index.md
-    - Pipeline: api/resolve.md
+    # Points at pipeline.md, not resolve.md. resolve.md documented an
+    # `audit_log=` parameter that does not exist and three Result methods
+    # that were never implemented; pipeline.md is the verified reference and
+    # had been orphaned from the nav. resolve.md is a consolidation candidate.
+    - Pipeline: api/pipeline.md
     - detect(): api/detect.md
     - crosswalk(), pairwise(), sign_edges(): api/crosswalk.md
-    - addr — addresses, spatial roles, grading": api/addr.md
+    - addr — addresses, spatial roles, grading: api/addr.md
   - Examples:
     - Pipeline (NDPA): https://github.com/unpatterned-labs/arche/blob/main/examples/01_pipeline_ndpa.py
     - Sign-share-extract: https://github.com/unpatterned-labs/arche/blob/main/examples/02_sign_share_extract.py
@@ -86,7 +136,9 @@ nav:
     - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
   - Blog:
     - blog/index.md
-    - Introducing arche (v0.2): blog/introducing-arche.md
+    - The part intelligence doesn't make cheaper: blog/the-part-intelligence-doesnt-make-cheaper.md
+    - The same clinic, three spellings: blog/reconciling-nigerias-health-facilities.md
+    - Introducing arche: blog/introducing-arche.md
 
 extra:
   social:

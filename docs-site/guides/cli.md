@@ -1,6 +1,21 @@
 # CLI Reference
 
-> **arche-core v0.2.0a3 does not ship a CLI.** The Python API is the entry point for every workflow. A v0.2-aware CLI is on the roadmap, not committed; the work is gated on the same beta criteria as the rest of v0.3.
+`arche-core` ships an `arche` console script. Two subcommands exist today:
+
+```bash
+arche compare A.csv B.csv            # link two record files -> HTML report + decisions JSON
+arche compare --demo                 # run the built-in artist demo, no data needed
+arche schema validate decl.yaml      # validate a declaration file
+arche schema gen decl.yaml           # generate an extraction schema / tool-def / comparator pack
+```
+
+`arche compare` flags: `--entity {person,place,artist}`, `--schema DECL.YAML`,
+`--out`, `--json`, `--reveal` (off by default - the report is masked),
+`--brand-color #HEX`, `--block {auto,none}`, `--demo`. Run `arche --help` or
+`arche <subcommand> --help` for the authoritative list.
+
+Everything else in this guide is Python-API territory. The redaction and audit
+workflows below have **no** CLI subcommand yet.
 
 The Python API takes three lines:
 
@@ -25,19 +40,35 @@ For batch processing — reading multiple files, writing redacted outputs alongs
 import sys
 from pathlib import Path
 from arche import Pipeline
-from arche.graph.audit import AuditLog
+from arche.graph.audit import AuditLog, AuditEvent
 
 audit = AuditLog("./compliance.sqlite")
-pipeline = Pipeline(jurisdiction="NG", audit_log=audit)
+pipeline = Pipeline(jurisdiction="NG")   # no audit_log= parameter; see below
 
 for raw in sys.argv[1:]:
     path = Path(raw)
     text = path.read_text(encoding="utf-8")
     result = pipeline.process(text)
+    audit.emit_many(
+        AuditEvent.detection(
+            document_hash=result.document_hash,
+            detection_id=d.id,
+            category=d.category,
+            span=(d.start, d.end),
+            confidence=d.confidence,
+            detector=d.detector,
+        )
+        for d in result.detections
+    )
     out = path.with_suffix(path.suffix + ".redacted")
     out.write_text(result.redacted_text, encoding="utf-8")
     print(f"{path.name}: {len(result.detections)} detections -> {out.name}")
 ```
+
+`Pipeline` takes no `audit_log=` argument - its real constructor parameters are
+`jurisdiction`, `statute`, `detectors`, `address_parsing`, `audit`,
+`tokenize_salt`, `overlays`, and `transparency_notice`. Persisting to SQLite is
+the explicit `AuditLog.emit_many()` step above.
 
 Run it:
 

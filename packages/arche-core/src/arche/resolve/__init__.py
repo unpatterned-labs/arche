@@ -86,7 +86,32 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "name", "kind": "placename", "weight": 2.0},
         {"field": "name", "kind": "tftoken", "weight": 2.0},
         {"field": "name", "kind": "type", "domain": "health_facility", "weight": 0.0},
-        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0, "decay_km": 3.0},
+        # `veto_km` is a hard constraint, not a weight. As a scored signal geo
+        # was outvoted 4:1 by name+tftoken, so two facilities sharing a common
+        # Hausa name merged 143 km apart with geo scoring 0.000.
+        #
+        # Benchmarked on GRID3 x OpenStreetMap (Kano, 685 x 1,723), scored
+        # against LGA agreement — a label both sources carry independently:
+        #
+        #     no veto   481 same-LGA / 134 diff-LGA   78.2%   73 matches >10km
+        #     50 km     481          / 110            81.4%   49
+        #     25 km     481          /  77            86.2%   16
+        #     10 km     479          /  64            88.2%    0
+        #
+        # These are the SHIPPED configuration (orthography off). An earlier
+        # version of this comment carried the +hausa numbers (494/492), which
+        # describe a configuration the pack does not ship.
+        #
+        # 10 km is the pick. Against 25 km it gives up 2 same-LGA matches to
+        # remove 13 cross-LGA ones, and leaves nothing matched beyond 10 km.
+        # The asymmetry is what justifies the tighter threshold: a veto demotes
+        # to `review`, never `no_match`, so being too strict costs a human
+        # glance while being too loose costs a clinic its allocation.
+        #
+        # Records with no coordinates are never vetoed — absent evidence
+        # refutes nothing.
+        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0,
+         "decay_km": 3.0, "veto_km": 10.0},
         {"kind": "containment", "field": "admin_path", "weight": 1.0},
         {"field": "address", "kind": "address", "weight": 1.0},
     ],

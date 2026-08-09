@@ -181,6 +181,15 @@ class VerifyExtractResult:
 
     On a valid signature, this carries the recovered envelope plus
     metadata describing the verification context.
+
+    ``signature_valid`` says the signature checked out against whichever key
+    was resolved. ``signature_trusted`` says that key came from somewhere the
+    recipient controls — a pinned ``public_key`` or their own ``resolver``.
+    When a `VerifyExtractWorkflow` is constructed with neither, the key is
+    read from the envelope's own ``kid``: the envelope is then proven
+    internally consistent, but not proven to have come from any particular
+    issuer, and ``signature_trusted`` is False. Check it before treating
+    ``issuer_did`` as an identity.
     """
 
     signature_valid: bool
@@ -192,6 +201,8 @@ class VerifyExtractResult:
     expired: bool = False
     header: dict[str, Any] = field(default_factory=dict)
     error: str | None = None
+    signature_trusted: bool = False
+    key_source: str | None = None
 
     # Convenience accessors that mirror Pipeline.Result
     @property
@@ -276,6 +287,14 @@ class VerifyExtractWorkflow:
             jws_compact,
             public_key=self.public_key,
             resolver=self.resolver,
+            # Explicit opt-in preserves the documented offline path: a
+            # recipient with no pinned key can still check that the envelope
+            # is internally consistent using the did:key in the header, with
+            # no resolver and no network call. When neither a key nor a
+            # resolver was supplied the resulting key is self-asserted, so
+            # `signature_trusted` below reports False and the caller can tell
+            # integrity from authorship.
+            allow_did_key_from_kid=True,
         )
 
         if not v.valid:
@@ -342,6 +361,8 @@ class VerifyExtractWorkflow:
             schema_version=envelope.schema_version,
             expired=False,
             header=v.header,
+            signature_trusted=v.trusted,
+            key_source=v.key_source,
         )
 
     # -----------------------------------------------------------------------

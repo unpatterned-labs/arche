@@ -1,0 +1,90 @@
+name: Bug report
+description: Something behaves differently from what the docs say
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this.
+
+        **Please do not paste real personal data** — no real national IDs,
+        phone numbers, or names attached to real records. Synthetic values
+        reproduce almost everything. If a bug genuinely only appears with real
+        data, say so and describe the shape of it instead.
+
+        For a security vulnerability, do not open an issue. See
+        [SECURITY.md](https://github.com/unpatterned-labs/arche/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: >
+        The smallest snippet that shows the problem, using synthetic data.
+        Paste the actual output and traceback, not a summary of it.
+      render: python
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: arche-core version
+      description: "`python -c \"import arche; print(arche.__version__)\"`"
+      placeholder: "0.3.0a1"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version and OS
+      placeholder: "3.12 on Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: extras
+    attributes:
+      label: Which optional extras are installed?
+      description: Several behaviours differ between the base install and the extras.
+      multiple: true
+      options:
+        - "none (base install)"
+        - "doc / doc-ocr"
+        - "detect (GLiNER)"
+        - "presidio"
+        - "resolve (Splink)"
+        - "geo"
+        - "llm / litellm"
+        - "not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: jurisdiction
+    attributes:
+      label: Jurisdiction or data pack involved
+      description: >
+        If this concerns a statute pack, a name equivalence, an ID format, or
+        an address convention, tell us which one — and if you know the
+        convention first-hand, tell us what the correct behaviour is. That is
+        the most useful part of a report like this.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: no-real-data
+    attributes:
+      label: Confirmation
+      options:
+        - label: This report contains no real personal data.
+          required: true

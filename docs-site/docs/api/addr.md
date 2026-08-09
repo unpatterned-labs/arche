@@ -67,13 +67,17 @@ for m in extract_places("Pick up from 7B Allen Avenue, Ikeja and deliver to "
 | `address` | the normalized `Address` (or a minimal one for gazetteer/postcode spans) |
 | `jurisdiction`, `jurisdiction_confidence` | inferred per mention |
 
-`to_dict(reveal=False)` is the masked shape the MCP tool emits: offsets, canonical cue phrase, and component *names* — never address text or component values.
+`to_dict(reveal=False)` is the masked shape: offsets, canonical cue phrase, and component *names* — never address text or component values. This is the shape to hand an agent or any other caller across a trust boundary, since it holds the source text and can slice the offsets itself.
+
+!!! warning "`reveal` defaults to `True`"
+
+    `to_dict()` with no argument returns the **unmasked** shape, including the address text. Pass `reveal=False` explicitly when the output crosses a trust boundary.
 
 **Abstention is structural.** No cue, cues conflicting at equal priority, or a negated cue (`"don't deliver to X"`) all yield `role="unknown"` at floor confidence 0.25 — the extractor never guesses a role it cannot evidence.
 
 ### `load_role_pack(path=None) -> RolePack`
 
-Load and validate the cue vocabulary (module-cached; malformed packs raise `RolePackError` naming the offending key). `pack.pin` is `arche.place_roles@v1:sha256:<16 hex>` — cite it with any result. `pack.vocabulary()` is the closed set of phrases the MCP surface may emit.
+Load and validate the cue vocabulary (module-cached; malformed packs raise `RolePackError` naming the offending key). `pack.pin` is `arche.place_roles@v1:sha256:<16 hex>` — cite it with any result. `pack.vocabulary()` is the closed set of phrases a cue may be reported as — useful when you need a caller's output constrained to a fixed vocabulary rather than free text.
 
 ## The referee
 

@@ -259,6 +259,14 @@ class SDJWTVerifyResult:
     key_bound: bool = False
     holder_did: str | None = None
     error: str | None = None
+    # ``valid`` means the issuer signature checked out against whichever key
+    # was resolved; ``trusted`` means that key came from a pinned
+    # ``public_key`` or the caller's own ``resolver``, rather than from the
+    # credential's own ``kid``. A self-asserted issuer key proves the
+    # credential is internally consistent, not that any particular issuer
+    # made it. ``key_bound`` is a separate question about the *holder*.
+    trusted: bool = False
+    key_source: str | None = None
 
     @property
     def claims(self) -> dict[str, Any]:
@@ -305,8 +313,13 @@ def verify_sd_jwt(
         body = body[:-1]
     presented_disclosures = [s for s in body if s]
 
-    # Verify the JWS
-    v = verify(jws_compact, public_key=public_key, resolver=resolver)
+    # Verify the JWS. Explicit opt-in keeps offline credential inspection
+    # working when the verifier has no pinned issuer key; `trusted` on the
+    # result reports whether the key was actually anchored.
+    v = verify(
+        jws_compact, public_key=public_key, resolver=resolver,
+        allow_did_key_from_kid=True,
+    )
     if not v.valid:
         return SDJWTVerifyResult(
             valid=False,
@@ -477,6 +490,8 @@ def verify_sd_jwt(
         expired=expired,
         key_bound=key_bound,
         holder_did=holder_did,
+        trusted=v.trusted,
+        key_source=v.key_source,
     )
 
 

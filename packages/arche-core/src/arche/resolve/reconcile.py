@@ -161,12 +161,15 @@ def _score_pair(
 ) -> tuple[float, float, bool, dict[str, float]] | None:
     """Weighted-mean similarity for one pair.
 
-    Returns ``(score, distinctive_max, containment_conflict, evidence)`` or
-    ``None`` when no comparator applied (nothing to compare).
+    Returns ``(score, distinctive_max, conflict, evidence)`` or ``None`` when
+    no comparator applied (nothing to compare).
+
+    ``conflict`` is set by either an admin-unit disagreement or a geographic
+    impossibility, and demotes an otherwise-matching pair to ``review``.
     """
     num = den = 0.0
     distinctive_max = 0.0
-    containment_conflict = False
+    conflict = False
     evidence: dict[str, float] = {}
     for spec in comparators:
         sim = _field_sim(spec, ra, rb, tf)
@@ -188,16 +191,33 @@ def _score_pair(
             # scored comparator — it carries no weight of its own.
             lat, lon = spec.get("lat", "lat"), spec.get("lon", "lon")
             with contextlib.suppress(KeyError, TypeError, ValueError):
-                evidence["distance_km"] = round(haversine_km(
+                km = haversine_km(
                     float(ra[lat]), float(ra[lon]), float(rb[lat]), float(rb[lon]),
-                ), 2)
+                )
+                evidence["distance_km"] = round(km, 2)
+                # Geographic veto. Distance is a physical constraint, not a
+                # preference: two buildings 143 km apart are not one building
+                # however alike their names. As a weighted signal geo was
+                # outvoted 4:1 by name+tftoken, so an identical common
+                # place name merged facilities in different LGAs — 134 of 618
+                # Kano matches crossed an LGA boundary. Vetoing beyond a
+                # threshold took LGA precision from 78.2% to 86.2%.
+                #
+                # The veto demotes to `review`, never to `no_match`: distance
+                # says a human must look, not that the answer is no. Absent
+                # coordinates never veto — you cannot refute on missing
+                # evidence.
+                veto_km = spec.get("veto_km")
+                if veto_km is not None and km > float(veto_km):
+                    conflict = True
+                    evidence["geo_conflict_km"] = round(km, 2)
         if spec["kind"] in distinctive_kinds:
             distinctive_max = max(distinctive_max, sim)
         if spec["kind"] == "containment" and sim == 0.0:
-            containment_conflict = True
+            conflict = True
     if den == 0:
         return None
-    return num / den, distinctive_max, containment_conflict, evidence
+    return num / den, distinctive_max, conflict, evidence
 
 
 def _geo_fields(comparators: list[dict]) -> tuple[str, str]:
@@ -399,7 +419,7 @@ def reconcile(
         scored = _score_pair(ra, rb, comparators, tf, distinctive_kinds)
         if scored is None:
             continue
-        score, distinctive_max, containment_conflict, evidence = scored
+        score, distinctive_max, conflict, evidence = scored
 
         if rerank:
             a_text = _rerank_text(ra, text_fields)
@@ -414,11 +434,11 @@ def reconcile(
         if score < floor:
             continue
         decision = "match" if score >= threshold else "review"
-        # Distinctive-signal gate + soft containment-conflict flag: a shared
-        # location can never auto-merge two records without a distinctive
-        # signal clearing the floor and no admin-unit disagreement.
+        # Distinctive-signal gate + conflict flag: a shared location can never
+        # auto-merge two records without a distinctive signal clearing the
+        # floor, no admin-unit disagreement, and no geographic impossibility.
         if decision == "match" and (
-            distinctive_max < distinctive_floor or containment_conflict
+            distinctive_max < distinctive_floor or conflict
         ):
             decision = "review"
         edge = {

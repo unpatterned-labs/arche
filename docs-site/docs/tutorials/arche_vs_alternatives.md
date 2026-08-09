@@ -1,352 +1,349 @@
 # Why arche, and when to use it
 
-A practical guide for developers, researchers, DPOs, and civil society choosing between `arche-core` and the other tools in the PII landscape. Honest about what arche is, what it isn't, and where the alternatives are the better pick.
+*Presidio labels spans. GLiNER extracts them. Splink and Senzing link records. Every one of them has to be told what counts as agreement in the data in front of it, and none of them ships that knowledge. arche is building the layer that does — **entity representation**: a shared, inspectable, correctable account of what the world's entities are called and which is which. This page states that claim, corrects one we got wrong, and is honest about where the alternatives are the better pick.*
 
-- !!! warning "Status: pre-beta (development) — not for production use yet"
-- Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
+!!! warning "Status: pre-beta (v0.3.0a1) — not for production use yet"
+
+    Suitable today for research, prototyping, evaluation, benchmarking, and contributing.
 
 ---
 
-## The setup
+## What arche is for
 
-You're building something that handles African data — a Nigerian fintech onboarding flow, a Kenyan health-tech intake screen, a journalist's PII scanner for leaked emails, a South African civil-society audit of a public dataset. You need to detect PII. You install [Microsoft Presidio](https://microsoft.github.io/presidio/) (the obvious choice). You feed it a sample customer record:
+Record linkage has a settled mathematical core. Fellegi and Sunter wrote it down in 1969: for each field, weigh the probability that two records agree given they refer to the same entity against the probability they agree by chance, add the log-odds, compare against two thresholds. Splink runs that over a million records on a laptop. Senzing sells entity resolution as a product. arche implements the model too. Nobody is competing on the arithmetic.
 
-```
-Customer Fatima Abdullahi, NIN 12345678901, BVN 22156789012,
-phone 0803 555 7890, RC 245678.
-```
+What is not settled, and what nothing ships, is the input the arithmetic needs. Before you can weigh agreement you have to decide **what agreement is**. Is `Diallo` agreement with `Jallow`? Is `Karfi PHC` agreement with `Karfi Health Post`? Is agreeing on `Ibrahim` worth the same as agreeing on `Gyaranya`? Is `12345678901` a national identity number, a bank verification number, or a phone number with the leading zero eaten by a spreadsheet?
 
-Presidio confidently returns:
+Those are not questions about probability. They are questions about the world, and every one of them has an answer that somebody knows and that no model can reliably guess. Generic engines make you supply those answers yourself, per project, in code that never leaves your repository. Nobody else gets the correction. Nobody can check it. When you leave, it goes.
 
-```
-NIN 12345678901  → US_BANK_NUMBER  ✗
-BVN 22156789012  → US_BANK_NUMBER  ✗
-0803 555 7890   → US_PHONE_NUMBER  ✗ (it's a Nigerian network)
-RC 245678        → (not detected)  ✗
-```
+**arche's contribution is that layer, shipped as data.** Equivalence packs, frequency tables, identifier grammars, type-token vocabularies, orthography rules, statute mappings — inspectable files you can diff, cite, version and correct, rather than weights you can only retrain or heuristics you can only reimplement. [A representation engine, not an inference engine](../concepts/representation-engine.md) makes the full argument, including why a language model can author a representation but cannot be one.
 
-That's not a typo. Presidio's default recognizers literally label Nigerian customers as having US bank accounts. Same story for Ghana Card (gets called `US_PASSPORT`), South African ID, Kenyan KRA PIN. The Presidio team isn't wrong — they built recognizers for the data their users had. Your data isn't their data.
+That is the forward-looking version of "why arche". The feature comparison below is real and it is worth reading, but it is a snapshot of a landscape, not the reason the project exists.
 
-**Same input, `arche-core`:**
+## The Splink question, answered plainly
+
+An earlier version of this page — and, at the time of writing, the package description on PyPI — said arche "composes with Splink" and delegates probabilistic scoring to it. That is true of exactly one legacy function and false of everything else, and stating it plainly matters more than the tidiness of the story.
+
+You can check it yourself in about fifteen lines. Watch `sys.modules` while calling each entry point, with splink installed.
 
 ```python
-from arche import Pipeline
+import sys
 
-result = Pipeline(jurisdiction="NG").process(
-    "Customer Fatima Abdullahi, NIN 12345678901, BVN 22156789012, "
-    "phone 0803 555 7890, RC 245678."
+import splink
+print("splink installed:", splink.__version__)
+for name in [m for m in sys.modules if m.split(".")[0] == "splink"]:
+    del sys.modules[name]
+
+
+def loaded():
+    return len([m for m in sys.modules if m.split(".")[0] == "splink"])
+
+
+from arche.canonical import Reference
+from arche.extract import Entity
+from arche.resolve import (
+    TokenFrequencyTable, crosswalk, pairwise, resolve_entities,
 )
+print(f"{'import arche.resolve':44} splink modules loaded: {loaded()}")
+
+a = Reference.from_record({"id": "A", "full_name": "Ngozi Adeyemi",
+                           "national_id": "12345678901"})
+b = Reference.from_record({"id": "B", "full_name": "N. Adeyemi",
+                           "national_id": "12345678901"})
+pairwise(a, b, issuer_key=b"k" * 32)
+print(f"{'pairwise()':44} splink modules loaded: {loaded()}")
+
+crosswalk([{"id": "A", "name": "Karfi PHC"}],
+          [{"id": "B", "name": "Karfi Health Post"}], entity="person")
+print(f"{'crosswalk()':44} splink modules loaded: {loaded()}")
+
+TokenFrequencyTable.default()
+print(f"{'TokenFrequencyTable.default()':44} splink modules loaded: {loaded()}")
+
+# The v0.2 classical resolver, ten entities or more, with the extra installed.
+resolve_entities([Entity(text=f"Adesola Okonkwo {i // 3}", entity_type="PERSON",
+                         confidence=0.9, start=0, end=10) for i in range(12)],
+                 use_splink=True)
+print(f"{'resolve_entities(..., use_splink=True)':44} splink modules loaded: {loaded()}")
 ```
 
+```text
+splink installed: 4.0.16
+import arche.resolve                         splink modules loaded: 0
+pairwise()                                   splink modules loaded: 0
+crosswalk()                                  splink modules loaded: 0
+TokenFrequencyTable.default()                splink modules loaded: 0
+resolve_entities(..., use_splink=True)       splink modules loaded: 84
 ```
-PII-1-NAME      "Fatima Abdullahi"  tier=moderate  NDPA-2023 s.30
-PII-2-NIN       "12345678901"       tier=high      NDPA-2023 s.30, NIMC Act s.27
-PII-2-BVN       "22156789012"       tier=high      NDPA-2023 s.30, CBN BVN policy 2014
-PII-3-PHONE     "0803 555 7890"     tier=moderate  NDPA-2023 s.26
-PII-2-RC        "245678"            tier=low       NDPA-2023 s.31 (legitimate interests)
-```
 
-Every detection: validated checksum, the statute section that classifies it, the sensitivity tier, the policy action that follows. Change `jurisdiction="NG"` to `"ZA"` and you get POPIA. `"KE"` for Kenya DPA. `"GH"` for Ghana DPA. Same code; four jurisdictions.
+*(Splink prints its own EM-training chatter during the last call; it is elided above.)*
 
-That's the gap in one example. The rest of this page is the proof, the personas, and the honest limitations.
+One import site exists in the whole package, inside `_resolve_splink` in `resolve/classical.py`, on the v0.2 `resolve_entities()` path. `_matcher.py`'s own docstring says it "replaces Splink as the primary matching engine". `_tokenfreq.py` names Splink once, in a comment describing "the term-frequency adjustment a Splink user gets from their own data" — an analogy for what the shipped table does, not a dependency on it.
 
----
+**The honest relationship is this: arche and Splink implement the same statistical framework.** Both are Fellegi-Sunter. Splink is the better implementation of the framework — distributed backends, EM parameter estimation, a million records on a laptop, an ecosystem. arche's contribution is not a better scorer. It is **the representation the scorer runs on**: the comparators, vocabularies and frequency tables that make Fellegi-Sunter work on names and places that generic comparison levels get wrong. Those are portable. A Splink user can build a custom comparison level around arche's name lexicon or feed arche's frequency table as a term-frequency adjustment, and get the benefit without importing arche's matcher at all. That is a better description of composition than a dependency edge, and it is the one that survives contact with the code.
 
-## The proof — cross-tool benchmark
+## Two kinds of failure
 
-From [`benchmarks/lingua-africa-eval-v0.2`](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.2.md): **48 synthetic test cases across six anchor languages** (English, Nigerian Pidgin, Yoruba, Hausa, Swahili, Amharic) covering NG / KE / ZA / GH government identifiers, IPs, DIDs, and crypto wallets. CC-BY-4.0. Reproducible from `pip install arche-core[presidio]` plus one script.
+### The one you can see in thirty seconds
 
-| Tool | Cases matching expected categories | Notes |
-|---|---|---|
-| **arche-core v0.2.0a3** | **47 / 48** | All African IDs detected across all six anchor languages. Luhn validators correctly reject negative-control invalid SA ID. Cross-cutting detectors (IP, DID, crypto wallet) work irrespective of surrounding script. The one gap is PVC (NG voter card) detection — documented post-beta work. |
-| **Microsoft Presidio** (default, generous "any non-empty" scoring) | **37 / 48** | On generous scoring, passes negative tests and IP / crypto cases. On per-category matching the picture inverts: Presidio scores **2 / 25** on cases where the expected label is a specific PII-2 / PII-5 / PII-8 category — and confidently mislabels NG NIN / BVN, SA ID, and Ghana Card as US-default types. Even Amharic text with an embedded NG NIN gets labeled `US_BANK_NUMBER`. |
-| **GLiNER2-PII** (Fastino) | Not run standalone | Install pulls ~2.5 GB of torch + transformers. Public schema covers 42 PII categories — **none are African government IDs**. Composed via `arche-core[detect]` extra for soft-PII coverage. |
-| **OpenAI Privacy Filter** | Not run | API-only. No published per-category breakdown. Closed-weight model — auditability question open. |
-
-The headline: **Presidio's default recognizers actively harm African DPI compliance work** by labelling Nigerian customers as having US bank accounts. arche-core ships the African recognizers that close this gap — and the regexes that drive them are script-agnostic for ASCII identifier shapes, so Yoruba / Hausa / Amharic narratives wrapped around an NIN or KRA PIN still detect correctly.
-
-Per-language breakdown (arche, 48 total cases):
-
-| Language | Cases | arche |
-|---|---|---|
-| English | 8 | 8 / 8 |
-| Nigerian Pidgin | 8 | 8 / 8 |
-| Yoruba | 8 | 8 / 8 |
-| Hausa | 8 | 7 / 8 *(PVC post-beta)* |
-| Swahili | 8 | 8 / 8 |
-| Amharic | 8 | 8 / 8 |
-
-A v0.1 baseline (15 cases, English-only) is preserved as [`lingua-africa-eval-v0.1`](https://github.com/unpatterned-labs/arche/blob/main/benchmarks/lingua-africa-eval-v0.1.md) for historical comparison. The grant-period expansion is **1000+ examples per language across six anchor languages** with arche-core, arche-core + GLiNER2-PII, Presidio + custom African recognizers (we contribute upstream), GLiNER2-PII alone, and OpenAI Privacy Filter via API.
-
----
-
-## Try it before you read the rest
-
-The fastest way to internalise the difference is to paste your own text into the [live demo](https://demo.unpatterned.org). Pick a jurisdiction, paste any text (synthetic only — never real PII), see the detection set with tier and citation, see the policy decisions, see the PII-free audit log, walk away with a JWS receipt that verifies offline. Four preloaded samples cover NG / ZA / KE / GH so you can see the surface in 30 seconds.
-
-The demo runs on Streamlit Cloud and proxies the same `pip install arche-core` you'd install locally. No telemetry, no PII storage. Source: [`demo/app.py`](https://github.com/unpatterned-labs/arche/blob/main/demo/app.py).
-
----
-
-## What arche actually does that nothing else does
-
-Three concrete gaps no other tool in the PII landscape closes:
-
-### 1. Per-country African identifier coverage with check-digit validation
-
-The Pan-African PII Taxonomy v0.1 covers 51 categories across NDPA-2023 (Nigeria), POPIA (South Africa), Kenya DPA, and Ghana DPA. The shipped detectors include **NIN, BVN, RC, TIN, voter PVC, driver's licence (NG); national ID, KRA PIN, NHIF (KE); SA ID with full Luhn + structural decode, tax reference, passport (ZA); Ghana Card, SSNIT, TIN (GH)** — plus 11 non-launch African country patterns (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ). Every detector validates check-digits where the underlying spec supports it; structural validators drop false positives at detection time, before policy applies.
-
-Presidio's default recognizers ship **none** of these. You'd write each one yourself, maintain the regex against ID-scheme amendments, and integrate with your audit layer. Multiply by four jurisdictions and you have a quarter of an engineer's time wired to a problem that arche solves at `pip install` time.
-
-### 2. Sensitivity tier and statute citation on every Detection
-
-Detection is one floor. Every `Detection` arche emits carries `sensitivity_tier` (`HIGH` / `MODERATE` / `LOW` per the loaded statute) and `regulatory_citation` (the exact statute section) — populated from the statute YAML at detection time, before the policy engine fires. Tier-aware dashboards, per-citation compliance reports, and HIGH-tier routing become properties of the data structure, not a downstream join you have to build.
-
-The statute YAMLs live in `arche/policy/statutes/`: **NDPA-2023.yaml** at v1.0 with §24 / §26 / §29 / §34-38 cited inline; **POPIA.yaml, KENYA-DPA.yaml, GHANA-DPA.yaml** at v0.1 scaffold pending DPA consultation. Statute amendments are YAML changes, not code changes — you can read them, audit them, fork them, version them in git.
+Detection first, because it is the failure that is immediately visible. Install Microsoft Presidio, feed it identifiers from the four launch jurisdictions, and take its highest-confidence answer.
 
 ```python
-from arche.policy import load_statute
+from presidio_analyzer import AnalyzerEngine
 
-statute = load_statute("NDPA-2023")
-print(statute.categories["PII-2-NIN"].citation)
-# "NDPA-2023 s.30, NIMC Act s.27"
+from arche import Pipeline
+
+CASES = [
+    ("NG", "Customer Fatima Abdullahi, NIN 12345678901."),
+    ("NG", "BVN 22156789012 on file."),
+    ("ZA", "ID number 8001015009087 on the application."),
+    ("GH", "Ghana Card GHA-123456789-0 presented."),
+    ("KE", "KRA PIN A012345678Z registered."),
+]
+
+engine = AnalyzerEngine()
+
+for jurisdiction, text in CASES:
+    guesses = sorted(engine.analyze(text=text, language="en"),
+                     key=lambda r: -r.score)
+    top = (f"{guesses[0].entity_type} ({guesses[0].score})" if guesses
+           else "(nothing detected)")
+    ours = [(d.category, d.text)
+            for d in Pipeline(jurisdiction=jurisdiction).process(text).detections
+            if d.category.startswith("PII-2")]
+    print(text)
+    print(f"    presidio : {top}")
+    print(f"    arche    : {ours}")
 ```
 
-No other open-source PII library produces this — *here is the rule the redaction enforced* — as a property of every detection. Combined with the audit log below it gives you regulator-ready evidence at the SDK level.
+```text
+Customer Fatima Abdullahi, NIN 12345678901.
+    presidio : PHONE_NUMBER (0.4)
+    arche    : [('PII-2-NIN', '12345678901')]
+BVN 22156789012 on file.
+    presidio : DATE_TIME (0.85)
+    arche    : [('PII-2-BVN', '22156789012')]
+ID number 8001015009087 on the application.
+    presidio : US_BANK_NUMBER (0.05)
+    arche    : [('PII-2-NATIONAL_ID', '8001015009087')]
+Ghana Card GHA-123456789-0 presented.
+    presidio : PHONE_NUMBER (0.4)
+    arche    : [('PII-2-GHANA_CARD', 'GHA-123456789-0')]
+KRA PIN A012345678Z registered.
+    presidio : (nothing detected)
+    arche    : [('PII-2-KRA_PIN', 'A012345678Z')]
+```
 
-### 3. Cultural naming intelligence — 114 equivalence groups
+A Nigerian bank verification number read as a date at 0.85 confidence. A South African ID — thirteen digits with an embedded date of birth, gender, citizenship flag and a Luhn check digit — read as a US bank account. A Kenyan tax PIN not seen at all.
+
+The Presidio team did nothing wrong. They shipped recognisers for the data their users had, and their extension API is exactly how you are meant to add your own. The point is what "add your own" costs: an identifier grammar per scheme, a check-digit validator where a public spec exists, a sensitivity classification, and the statute section that justifies it — multiplied by every jurisdiction you operate in, maintained against amendments, forever. That work is representation. It is the same work whichever engine you plug it into, and it is worth doing once in public.
+
+arche ships **26 identifier patterns** in `detect._africa.ids.ID_PATTERNS`, covering the four launch jurisdictions plus eleven further African countries, with structural and check-digit validation wherever the underlying scheme publishes one. Phone normalisation runs through `phonenumbers` for E.164. Neural NER is the opt-in `arche-core[detect]` extra and is never on the critical path — the base wheel is rule-based and CPU-only by design.
+
+### The one you cannot see
+
+The second failure is quieter and more expensive, because the arithmetic is flawless and the answer is still wrong.
+
+Hand `Mamadou Diallo` and `Mohamed Jallow` to any string comparator and it computes, correctly, that the strings barely overlap. `Diallo` and `Jallow` are one Fula surname split by a colonial border — Francophone and Anglophone transcriptions of the same name. No amount of probability recovers that, because the evidence the probability needed never existed in the records. Somebody has to put it there.
 
 ```python
-from arche.detect._names.lexicon import are_names_equivalent
+from jellyfish import jaro_winkler_similarity
 
-are_names_equivalent("Adeyẹmí", "Adeyemi")
-# (True, 0.96) — Yoruba tonal mark equivalence
+from arche.resolve._matcher import compare_names
 
-are_names_equivalent("Mamadou Diallo", "Mohamed Diallo")
-# (True, 0.92) — Fulani / Arabic Pan-Islamic equivalence
+PAIRS = [
+    ("Mamadou Diallo", "Mohamed Jallow"),         # one Fula surname, two orthographies
+    ("Chukwuemeka Okafor", "Emeka Okafor"),       # Igbo prefix-elision
+    ("Fatima Abdullahi", "Fatoumata Abdoulaye"),  # Hausa / Wolof cognates
+    ("Adeyẹmí Okonkwo", "Adeyemi Okonkwo"),       # Yoruba tone marks
+    ("Ngozi Adeyemi", "Chinwe Balogun"),          # a negative that must not move
+]
 
-are_names_equivalent("Chukwuemeka Okafor", "Emeka Okafor")
-# (True, 0.95) — Igbo prefix-elision
-
-are_names_equivalent("Fatima Abdullahi", "Fatoumata Abdoulaye")
-# (True, 0.89) — Hausa / Wolof cognates
+print(f"{'jaro-winkler':>13} {'arche':>7}  pair")
+for a, b in PAIRS:
+    similarity, _u = compare_names(a, b)
+    print(f"{jaro_winkler_similarity(a, b):>13.3f} {similarity:>7.3f}"
+          f"  {a!r} <> {b!r}")
 ```
 
-114 equivalence groups, 454 name variants, 50+ ethnic traditions. Tested against a Jaro-Winkler baseline:
+```text
+ jaro-winkler   arche  pair
+        0.769   0.911  'Mamadou Diallo' <> 'Mohamed Jallow'
+        0.752   1.000  'Chukwuemeka Okafor' <> 'Emeka Okafor'
+        0.683   0.943  'Fatima Abdullahi' <> 'Fatoumata Abdoulaye'
+        0.947   1.000  'Adeyẹmí Okonkwo' <> 'Adeyemi Okonkwo'
+        0.371   0.447  'Ngozi Adeyemi' <> 'Chinwe Balogun'
+```
 
-| Metric | Jaro-Winkler | arche | Delta |
-|---|---|---|---|
-| F1 | 0.849 | **0.988** | **+16.3%** |
-| Precision | 1.000 | 1.000 | 0.0% |
-| Recall | 0.738 | 0.976 | +23.8% |
+Jaro-Winkler is not a strawman here: `JaroWinklerAtThresholds` is a standard Splink comparison level and is what arche's own classical path configures when it hands work to Splink. The lexicon moves the true pairs and leaves the negative where it was. It is deliberately conservative — arche does not claim `Mamadou` and `Mary` are the same name, only equivalences documented by people who speak the languages. **114 equivalence groups, 454 name forms, across 20-plus ethnic and linguistic traditions**, published CC-BY-4.0 in [`datasets/name_equivalences`](https://github.com/unpatterned-labs/arche/tree/main/datasets/name_equivalences) with a per-file breakdown in `datasets/STATISTICS.md`.
 
-Zero false positives — the lexicon is conservative by design. arche never claims equivalence between *Mamadou* and *Mary*; only between genuinely co-referential variants documented by African linguists.
+The other half of the same problem is what agreement is *worth*. Two records agreeing on `Ibrahim` is weak evidence in northern Nigeria and strong evidence in Reykjavik, and no comparator can know that without a population.
 
----
+```python
+from arche.resolve import TokenFrequencyTable
 
-## What else ships in the package (power-user)
+tf = TokenFrequencyTable.default()
+print(f"shipped person table: {tf.vocabulary_size:,} tokens "
+      f"over {tf.total_count:,.0f} counts")
+print(f"{'token':12} {'rel. freq':>10} {'distinctiveness':>16}")
+for token in ("ibrahim", "mohammed", "gyaranya", "okonkwo"):
+    print(f"{token:12} {tf.rel_freq(token):>10.6f} "
+          f"{tf.distinctiveness(token):>16.4f}")
+```
 
-These features ship today and are fully tested, but they're not the lead pitch. Read the row that matches your use case; skip the rest.
+```text
+shipped person table: 50,591 tokens over 1,903,937 counts
+token         rel. freq  distinctiveness
+ibrahim        0.001399           0.5709
+mohammed       0.000384           0.6832
+gyaranya       0.000050           0.8602
+okonkwo        0.000018           0.9479
+```
 
-| Feature | Module | One-line | When you'd use it |
-|---|---|---|---|
-| **Sign, share, extract** | `arche.sign`, `arche.credentials.sd_jwt` | Ed25519 + JWS signing of `Pipeline.Result`; SD-JWT-VC re-framing for wallet interop. Offline verification with `did:key`. | Compliance officer needs a regulator-ready signed audit bundle. DSAR response that crosses an organizational trust boundary. KYC attestation a wallet can carry. |
-| **Citizen-side DSAR** | `arche.workflow.dsar` | Draft-only DSAR letter generation citing NDPA s.34 / POPIA s.23 / Kenya DPA s.26 / Ghana DPA s.35. Per-jurisdiction. | Civil-society org training citizens to exercise rights. Journalist filing a DSAR as part of an investigation. |
-| **Entity resolution** | `arche.match`, `arche.link`, `arche.resolve` | Lightweight Fellegi-Sunter matcher with jurisdiction-specific priors. African-name-aware comparator functions. | Deduplicate up to ~100K records on a laptop. For billion-row scale, install `arche-core[resolve]` and feed Splink. |
-| **Places resolution** | `arche.resolve_places`, `arche.list_places` | Jurisdictional place lookup with verifiable JWS audit receipts. UK first; African expansion is roadmap. | "Find me an NHS dentist near SW1" with a signed receipt for the query, the redaction, and the result. |
-| **Append-only audit log** | `arche.graph.audit` | SQLite-backed log with markdown compliance reports and JWS-signed regulator exports. PII values never stored. | Standalone audit-log surface for an existing detection pipeline. NDPC quarterly handoff. |
+This is Winkler's 1989 value-specific frequency adjustment — a piece of the classical model that has been in the literature for thirty-five years, that every serious engine supports, and that most deployments never switch on because it needs a table nobody publishes for their population. Splink accepts external term-frequency tables. So does arche. The table is the contribution, not the mechanism.
 
----
+The consequence at decision time is that `Ibrahim Musa` matched against `Ibrahim Musa` **does not clear arche's pairwise gate**, because neither shared token is rare enough to distinguish two people. It goes to a human instead. [Entity resolution](entity_resolution.md#the-same-pair-two-engines-two-answers) shows that abstention, and the pair of engines that disagree about it, in full.
 
-## Why arche, by persona
+## Where it is calibrated, and why that is Africa
 
-### Developer building African fintech / healthtech / civic platforms
+Almost every worked example on this site is Nigerian, Kenyan, South African or Ghanaian. That is a statement about calibration, not about scope.
 
-You're the primary persona. You're the one who installs `arche-core` first.
+Representation failures dominate wherever identity data has no canonical spellings, addresses are landmarks rather than grids, identifier schemes are young and fragmented, and the same person appears under a legal name, a praise name, a transliteration and an initial. A matcher that only ships inference is not slightly worse there — it is confidently wrong, and it cannot tell you so. Calibrating against that regime is what forces the packs to be real: a comparator tuned on clean Western names would never have needed the Hausa boundary-collapsing rules, and a frequency table calibrated on a different population prices its tokens for that population and not for yours.
 
-The shape of your problem: you have customer records with NIN / BVN / Ghana Card / SA ID. Your stack is FastAPI / Django / Streamlit. Your auditor will ask *"show me the rule that fired."* You don't want to write per-country regexes, maintain check-digit validators, hand-roll redaction logic, and build a statute-citation audit layer from scratch. You want `pip install` and three lines.
+The regime is not confined to Africa. It is South and Southeast Asia, Latin America, migrant registries, historical archives, and any dataset that crossed a script boundary or a colonial border. The engine is entity-generic already — [persons](person_resolution_at_scale.md), [places](place_resolution_at_scale.md) and [recording artists](artist_resolution.md) run on the same crosswalk engine and the same comparator kit, and adding the artist pack required no new comparator code at all. The statute layer ships GDPR and HIPAA Safe Harbor alongside the four African packs. What arrives next is more representation, contributed by the people who hold the facts, not more engine.
+
+## What arche ships as data
+
+| Pack | What it decides | Where it lives |
+|---|---|---|
+| Name equivalences | Whether two spellings are the same name | [`datasets/name_equivalences`](https://github.com/unpatterned-labs/arche/tree/main/datasets/name_equivalences) (CC-BY-4.0) |
+| Frequency tables | What agreement on a token is worth | `TokenFrequencyTable.default()`, and `default(domain="artist")` |
+| Identifier grammars | What a string of digits actually is | `detect._africa.ids.ID_PATTERNS` — 26 patterns, validated |
+| Type-token vocabulary | That `PHC` and `Primary Health Centre` are the same tier | `resolve/type_tokens.yaml` |
+| Orthography rules | That `Mai Tsidau` and `Maitsidau` share a token | `resolve/_data/orthography.yaml` — opt-in, with its gaps written down |
+| Statute packs | What a field is, legally, and what may be done to it | `arche/policy/statutes/*.yaml` |
+| PII taxonomy | The category vocabulary all of the above agree on | [`datasets/pan-african-pii-taxonomy`](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy) — 54 categories, CC-BY-4.0 |
+
+Every one of those is a file. You can read it, diff it, fork it, cite it in a paper, and send a pull request correcting it when it is wrong about your language. That is the property weights do not have.
+
+## The statute layer, which the open-source alternatives do not have
+
+Detection is one floor. Every `Detection` arche emits already carries the statute section that classifies it and the sensitivity tier that follows, populated from the statute YAML before the policy engine runs.
 
 ```python
 from arche import Pipeline
 
-pipeline = Pipeline(jurisdiction="NG")            # auto-loads NDPA-2023
-result = pipeline.process(customer_intake_text)
-log_to_warehouse(result.redacted_text)            # safe to share
-audit.emit_batch(result.audit_entries)            # PII-free audit row
+TEXT = ("Customer Fatima Abdullahi, NIN 12345678901, BVN 22156789012, "
+        "phone 0803 555 7890, RC 245678.")
+
+result = Pipeline(jurisdiction="NG").process(TEXT)
+for d in result.detections:
+    print(f"{d.category:14} {d.text!r:18} tier={d.sensitivity_tier:8} "
+          f"{d.regulatory_citation}")
+print()
+print(result.redacted_text)
 ```
 
-You use arche when:
+```text
+PII-2-RC       'RC 245678'        tier=low      NDPA-2023 s.31 (legitimate interests)
+PII-2-BVN      '22156789012'      tier=high     NDPA-2023 s.30, CBN BVN policy 2014
+PII-2-NIN      '12345678901'      tier=high     NDPA-2023 s.30, NIMC Act s.27
+PII-1-NAME     'Fatima'           tier=moderate NDPA-2023 s.30
+PII-1-NAME     'Abdullahi'        tier=moderate NDPA-2023 s.30
+PII-3-PHONE    '0803 555 7890'    tier=moderate NDPA-2023 s.30
 
-- Your customers carry **NIN, BVN, Ghana Card, SA ID, KRA PIN** and Presidio's defaults don't help.
-- You need every detection to **cite the specific statute section** so when the regulator asks *"what rule fired?"* the answer is in your audit log, not your head.
-- You ship records to downstream consumers and want each redacted output **cryptographically signed** so the consumer trusts it offline.
-- You want **one `pip install`** instead of stitching Presidio + custom recognizers + signing + audit from scratch.
-
-You probably do NOT use arche if your data is purely Western (US / EU) and you have no African footprint — Presidio + custom validators is more direct.
-
-### Researcher in African NLP / responsible AI / PII benchmarking
-
-```python
-from arche import Pipeline
-
-for sample in dataset:
-    result = Pipeline(jurisdiction=sample.jurisdiction).process(sample.text)
-    yield {
-        "text": sample.text,
-        "expected": sample.labels,
-        "detected": [(d.category, d.span) for d in result.detections],
-        "applied_policy": [(o.action, o.statute_section) for o in result.policy_outcomes],
-    }
+Customer NAME_099000a2 NAME_e38a0fcd, NIN [NIN], BVN [BVN], phone PHONE_d3100c11, RC 245678.
 ```
 
-You use arche when:
+Change `jurisdiction="NG"` to `"ZA"` for POPIA, `"KE"` for the Kenya DPA, `"GH"` for the Ghana DPA, or any EU-27 or EEA country code — `"DE"`, `"FR"`, `"IE"` — for the GDPR. Sectoral regimes take the explicit escape hatch, `Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR")`. Six packs ship; three of them still carry a `v0.1-scaffold` version label that understates how complete they are, and correcting those labels is outstanding in the roadmap. The company registration number is `retain` rather than masked, because the NDPA treats it under legitimate interests and the pack says so out loud.
 
-- You're building a **Pan-African PII benchmark** and want versioned ground-truth labels grounded in the published taxonomy.
-- You're benchmarking GLiNER2-PII / Presidio / OpenAI Privacy Filter against jurisdiction-aware ground truth and need a baseline that's *not* Western-default.
-- You want to ship a citable **digital public good** alongside your paper — the [Pan-African PII Taxonomy v0.1 (CC-BY-4.0)](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy).
+Watch the failure mode at the edge of that map, because it is silent: `"EU"` is not a jurisdiction code. `Pipeline(jurisdiction="EU")` constructs happily, resolves no statute, and returns text unchanged. That is exactly the case `EgressGuard` exists to catch — no statute means no policy means no permission to emit.
 
-You probably do NOT use arche if your research target is state-of-the-art neural NER on English / EU corpora — `gliner-large-v2.5` or `dslim/bert-base-NER` is more direct.
+The two labels on every pack are independent by design: `version` is a claim about our work, `review_status` is a claim about the world. **No pack claims `regulator-reviewed`**, and the loader fails closed on one that does so without naming a reviewer. Statute amendments are YAML changes, not code changes.
 
-### Compliance officer / DPO / regulator
+## When to use each tool
 
-```python
-from arche.graph.audit import AuditLog
-from arche.sign import generate_keypair
+**Use Microsoft Presidio when** your data is English-language US or EU PII, you are already in the Microsoft ecosystem, or you are prepared to write and maintain per-country recognisers yourself. Its extension model is good and its Western coverage is better than arche's.
 
-audit = AuditLog("./compliance.sqlite")
-# Pipeline runs daily; every detection writes a PII-free row.
+**Use GLiNER when** you need multilingual soft-PII — free-form names, occupations, organisations — from a single model, your categories overlap what it ships, and you can absorb the install footprint. It ships no African government identifiers. arche composes with it through `arche-core[detect]`, deterministic validators disposing of what the model proposes.
 
-# Quarterly handoff to the regulator
-officer_key = generate_keypair()
-bundle = audit.export_signed(key=officer_key, purpose="ndpc_quarterly_audit")
-# bundle is a JWS-signed regulator report. NDPC verifies offline.
-```
+**Use Splink when** you have a large volume of structured records to link and your comparison logic is either standard or something you are happy to author. It is the better inference engine and this page is not arguing otherwise. Bring arche's frequency table and name comparators to it if your names need them.
 
-You use arche when:
+**Use Senzing or another commercial ER product when** you want an operational system rather than a library: identity resolution as a running service, with a support contract, an operator console and an entity store. arche is a library that returns decisions; it has no server, no console and no storage backend.
 
-- The regulator wants an **append-only audit log** that proves PII was never stored — only category labels, character spans, document hashes.
-- You need **JWS-signed export bundles** for periodic regulator handoff, verifiable offline by the regulator's tooling.
-- Your organisation processes multi-jurisdictional data and needs a **single policy engine** that honours the right statute per record.
-- You're preparing for an NDPC / Information Regulator / ODPC audit and need a regulator-ready compliance report on demand (`audit.compliance_report_markdown()`).
+**Use an LLM when** you need representation *authored* — parsing landmark addresses, proposing candidate equivalences, transliterating across scripts. Models are genuinely good at that. Do not let one *be* the representation: its decisions cannot be replayed once a version retires, the records often may not legally reach it, and the facts deserve to outlive any checkpoint. [`arche.llm`](../how-to/bring-your-own-llm.md) exists to grade a model against the deterministic engine, not to defer to it.
 
-You probably do NOT use arche if your compliance regime is purely GDPR and your data has no African footprint — OneTrust / Privitar / commercial suites have richer GDPR-specific tooling.
+**Use arche when** you want one pipeline that does all of the above at once, and keeps working where the data is thin.
 
-### Journalist / civil society / data subject
+That is the case arche is built for: privacy-preserving record linkage, matching and detection over **unstructured, multilingual** data, for human and agent callers alike. Not a matcher you feed clean columns to — a pipeline that takes a PDF, a registry export, a form, or a paragraph, finds the entities in it, works out which real-world thing each one refers to, protects everything under the law that applies, and signs the result.
 
-```python
-from arche.workflow import DSARWorkflow, DSARRequestor, DSAROrganization
-from arche.sign import generate_keypair
+"Where the data is thin" is the part generic tools handle worst and arche is calibrated for. No canonical spelling of the name. No national identifier, or three competing ones. An address that is a landmark and a direction rather than a street and a number. Coordinates that disagree by kilometres because two teams measured at different gates. Sources that contradict each other and are both partly right. In that regime the answer is often **not** a merge, and a tool whose only outputs are match and no-match will quietly pick one.
 
-citizen_key = generate_keypair()      # one-time, stored in your wallet
-draft = DSARWorkflow(
-    jurisdiction="NG",
-    requestor=DSARRequestor(name="Adesola Okonkwo", identifier_label="NIN", ...),
-    request_type="access",
-    targets=[DSAROrganization(name="Sterling Bank", dpo_email="dpo@sterlingbank.ng")],
-).run(citizen_key)
+It is also the pipeline to reach for when **places and addresses** are the problem rather than an afterthought: landmark-anchored parsing, spatial-role labelling, union blocking that survives bad coordinates, and a geographic veto that refuses a merge distance says is impossible. Most linkage tools treat an address as a string. Here it is an identity attribute with its own comparators.
 
-# draft.letter_text cites NDPA-2023 §34. draft.signed_envelope is JWS-signed.
-# Email it. Two weeks later, the DPO is on the clock.
-```
+And it is the one to reach for when you will have to defend a decision later — because every detection cites the statute section that classified it, every decision carries the evidence that produced it, and "a human must look at this" is a first-class output rather than a threshold you tuned.
 
-You use arche when:
+**arche also support** when your data is clean Western PII with no African or low-standardisation footprint and Presidio's defaults already work; when you want a hosted, supported identity-resolution platform rather than a library; or when you just want to scrub PII out of one document.
 
-- You're investigating how a Nigerian bank / health system / telco handles personal data and need to file a **statute-grounded DSAR**.
-- You're a civil-society organisation training citizens to exercise data protection rights they have on paper but can't operationally use today.
-- You're a journalist publishing a **PII audit** of public records, government data, court filings, or the official gazette — and need a reproducible detection set.
+## The edges of the map
 
-You probably do NOT use arche if you just want to scrub PII from a single document — a one-line regex is more direct.
+Two different lists, kept apart on purpose. Blurring them is how a bug gets filed as a design decision and quietly stops being anyone's problem.
 
----
+### Deliberately out of scope
 
-## When to use each alternative
+These are choices, and we would make them again.
 
-**Use Microsoft Presidio alone when:**
+| Boundary | Why |
+|---|---|
+| **Clustering / transitive closure** | `crosswalk` returns pairwise edges. Collective resolution changes what a decision *means* — a merge that depends on other merges cannot be signed in isolation — so it waits until the benchmark can measure it. |
+| **Detectors outside Africa** | GDPR and HIPAA statute packs load anywhere, but only cross-cutting detectors run outside the launch jurisdictions. `Pipeline(jurisdiction="US")` finds no US identifiers, because running African ID grammars on American text would produce confident mislabels in a signed audit log. Compose Presidio for that coverage. |
+| **FHIR, OpenCRVS, MOSIP, DHIS2 adapters** | Not in scope. Earlier stubs were deleted for being empty modules pretending to be features. Registry adapters return when a real partner routes real decisions through one. |
+| **Persistent storage** | SQLite for the audit log only. arche decides and signs; remembering is somebody else's job. |
+| **Post-quantum signatures, W3C VC 1.1 JSON-LD** | Ed25519 and SD-JWT-VC only. Both are tracked, neither is pretended. |
 
-- Your data is English-language US / EU PII (SSN, credit card, IBAN, US phone, US address).
-- You're already in the Microsoft ecosystem.
-- You're willing to write per-country custom recognizers yourself.
+### Built, not finished
 
-**Use GLiNER2-PII (Fastino) alone when:**
+These are not boundaries. They are work.
 
-- You want a single-model, GPU-friendly NER backbone.
-- Your PII categories overlap with the 42 GLiNER2 ships.
-- You can absorb the ~2.5 GB install footprint.
+| Gap | State |
+|---|---|
+| **MCP server** | Does not exist — no module in the wheel or the source tree. The agent-facing surface today is the masked `to_dict(reveal=False)` shape and `Declaration.tool_def()`, wired into your own tool layer. Next release. |
+| **Signable place decisions** | `pairwise(entity="place")` raises `NotImplementedError`; `crosswalk` is the place path. |
+| **`Pipeline(address_parsing=True)`** | Accepted and ignored — byte-identical output with and without. The parameter lies, and should either be wired or removed. |
+| **Unknown jurisdiction codes** | Accepted silently: no statute, no policy, unchanged text, no error. `Pipeline(jurisdiction="EU")` looks like it worked. It should raise. |
+| **Hash-chained audit log** | `prev_hash` and `signature` columns exist and nothing populates them. Append-only by convention, not tamper-evident — do not describe it as the latter. |
 
-**Use Splink alone when:**
+Email detection used to sit in the second table, with the reason given as "adding it would change existing callers' output". That was true and it was the wrong trade — an email address is PII under all six statute packs. It is in the default detector set as of v0.3.0a1. The lesson generalises: if a limitation's only justification is that fixing it would change behaviour, it is a bug wearing a scope decision's coat.
+| **Organisation-side DSAR** | Citizen-side drafting only, and draft-only at that. |
+| **Statute packs at v1.0** | NDPA-2023, GDPR and HIPAA Safe Harbor are labelled `v1.0`; POPIA, Kenya DPA and Ghana DPA still carry `v0.1-scaffold`. No pack is regulator-reviewed. |
 
-- You have 1M+ rows of clean structured data to dedupe.
-- Your blocking and comparison logic is purely Western-name-based.
-- You're comfortable with DuckDB, parameter estimation, and Fellegi-Sunter setup ceremony.
-
-**Use OpenAI Privacy Filter alone when:**
-
-- You're already calling OpenAI and want PII filtering as a side-effect.
-- Closed-weight, non-auditable detection is acceptable.
-- Your compliance regime doesn't require a per-decision audit trail.
-
-**Use arche-core when:**
-
-- Your data has any African footprint and you need detection that works out of the box.
-- You need detection + policy + audit in one library, not three.
-- You need offline verification of provenance.
-- You need citizen-side rights tooling (DSAR).
-- You want **one `pip install`** instead of stitching four tools and three custom recognizer sets.
-
-**Use arche + Presidio (`arche-core[presidio]`) when:**
-
-- Your data is mixed (African + Western), and you want Presidio's Western recognizers alongside arche's African recognizers under one unified taxonomy.
-
-**Use arche + GLiNER2-PII (`arche-core[detect]`) when:**
-
-- You need multilingual soft-PII coverage (free-form names, occupations) in code-mixed contexts like Nigerian Pidgin.
-- The deterministic arche recognizers cover the hard structured IDs; GLiNER fills the soft entities.
-
-**Use arche + Splink (`arche-core[resolve]`) when:**
-
-- You have >100K records to dedupe and want African-name-aware blocking and comparators inside the Splink pipeline.
-
----
-
-## Honest limitations of arche today (v0.2.0a3)
-
-| Gap | Today | Where it goes |
-|---|---|---|
-| Full address parsing across all four launch jurisdictions | NG + ZA MVP today | Beta (v0.3): KE and GH coverage. Stage 2: full PRD §5 parser with GERS / Placekey emission. |
-| Multilingual soft-PII | GLiNER2-PII via `[detect]` extra | Post-beta: optional fine-tuned model if demonstrated adoption justifies the training run. |
-| PVC, GhanaPost GPS, M-Pesa references | Not detected | Per-detector beta-period work; documented in `lingua-africa-eval-v0.2.md`. |
-| PQC signatures | Ed25519 only | `arche-core[pqc]` hybrid Ed25519 + ML-DSA (NIST FIPS 204) is roadmap, not committed. |
-| W3C VC 1.1 JSON-LD emission | SD-JWT-VC only today | `arche-core[didkit]` extra is roadmap. |
-| DSAR organisation-side workflow | Citizen-side only | Beta-period or later. |
-| Hash-chained audit log | Schema ready, not populated | Beta-period work. |
-| Statute YAMLs v1.0 | NDPA-2023 v1.0; others v0.1 scaffold | Beta criterion: all four DPA-consulted to v1.0. |
-| MOSIP / OpenCRVS / DHIS2 / OpenG2P production adapters | **Not in scope** — adapter stubs were deleted in v0.2.0a2 | Ships when there's a real partner deployment in flight, not as scaffolding. |
-
-
----
+Two measurement caveats belong here rather than in a footnote. The place pack's headline **88.2% is a consistency figure, not accuracy** — OpenStreetMap's Kano health facilities share lineage with GRID3, and [the place benchmark](../concepts/place-benchmark.md) shows that from the data. And the Febrl4 person figures (precision 1.0, zero false merges, 0.877 auto-match recall) are measured on a **synthetic** corpus at the pairwise level; [person resolution at scale](person_resolution_at_scale.md) has the run.
 
 ## Install
 
 ```bash
-pip install arche-core                     # Base — every persona above
-pip install arche-core[detect]             # + GLiNER2-PII for multilingual soft-PII
+pip install arche-core                     # base — rule-based, CPU-only, no ML
+pip install arche-core[detect]             # + GLiNER for multilingual soft-PII
 pip install arche-core[presidio]           # + Presidio for Western PII overlap
-pip install arche-core[resolve]            # + Splink + DuckDB for billion-row dedup
 pip install arche-core[doc]                # + docling for PDF / DOCX / PPTX / XLSX
-pip install arche-core[all]                # Everything above
+pip install arche-core[geo]                # + shapely and duckdb for polygon work
+pip install arche-core[resolve]            # + splink and duckdb (see the note below)
+pip install arche-core[all]                # pdf, docx, detect, presidio, resolve, llm
 ```
+
+`[resolve]` is the one extra whose name over-promises. Installing it changes the behaviour of exactly one function — `resolve_entities(..., use_splink=True)`, the v0.2 classical path — and has no effect on `pairwise`, `crosswalk` or `reconcile`.
 
 ```python
 from arche import Pipeline
+
 result = Pipeline(jurisdiction="NG").process("your text here")
 ```
 
----
-
 ## See also
 
-- **[Case study A: NG invoice PDF, end to end](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-invoice.ipynb)** — docling-parsed invoice through Pipeline + sign + verify roundtrip.
-- **[Case study B: BusinessDay article, the honest wedge boundary](https://github.com/unpatterned-labs/arche/blob/main/notebooks/case-study-web-article.ipynb)** — what arche does and doesn't surface on free-text journalism.
-- **[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy)** — the ground truth the benchmark uses, published CC-BY-4.0.
-- [Power-user: Sign, share, extract tutorial](sign_share_extract.md)
-- [Power-user: Citizen DSAR tutorial](citizen_dsar.md)
+- [A representation engine, not an inference engine](../concepts/representation-engine.md) — the full argument, with the bibliography for both halves
+- [Entity resolution](entity_resolution.md) — the shipped resolution surface, end to end
+- [The place benchmark](../concepts/place-benchmark.md) — what a benchmark number can and cannot tell you, and a ten-line test for dataset independence
+- [Architecture](../concepts/architecture.md) — which component is permitted to conclude anything
+- [Match African names](../how-to/match-african-names.md) — the name packs in practice
+- [Bring your own LLM](../how-to/bring-your-own-llm.md) — models propose, curators accept, the engine executes

@@ -37,7 +37,11 @@ Conflicting cues, negation, and cue-less mentions all abstain with floor confide
 
 ## 3. From your agent
 
-The MCP tool `extract_places(text)` returns **offsets only** — roles, cue rule ids, confidence, and component *names*, never the address text. The agent already holds the text and slices the offsets; the raw value stays on the caller's side of the trust boundary. No reveal option exists on this path.
+Calling `.to_dict(reveal=False)` on each mention gives you **offsets only** — roles, cue rule ids, confidence, and component *names*, never the address text. That is the shape to hand an agent: it already holds the text and can slice the offsets, so the raw value never crosses the trust boundary.
+
+!!! note "No MCP server ships in v0.3.0a1"
+
+    An MCP server is, not released. `arche-mcp` is not on PyPI and no server code lives in this repository. Until it ships, the masked `to_dict(reveal=False)` shape above and `Declaration.tool_def()` are the agent-facing surface, and you wire them into your own tool layer.
 
 ## 4. Bring your own LLM — verified, not trusted
 

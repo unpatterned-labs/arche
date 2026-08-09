@@ -8,14 +8,16 @@ arche is an open pipeline for turning messy, multilingual data into resolved rea
 
 Along the way it keeps disagreement between sources instead of erasing it, protects everything under the law that applies, and signs every decision.
 
-Match, don't guess: 40% → 0% measured false-match rate on African names; zero false merges on the standard record-linkage benchmark. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
+**Match, don't guess.** When the evidence isn't distinctive enough, resolution returns `review` rather than a verdict — two people who share a name are not one person, and a system that merges them has not scored slightly worse, it has deleted someone. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
+
+Numbers we publish come with the script that produces them. The current one is the [place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/): reconciling Nigeria's GRID3 reference data against OpenStreetMap for Kano State gives **88.2% agreement with independently-recorded administrative boundaries**, and the page states the weak-label methodology, its five limitations, and the case where it demonstrably gets a match wrong.
 
 > [!WARNING]
 > **Status:** pre-beta (development) - `arche-core` is under active development. APIs may change between alpha
 > releases.
 > **v0.3.0a1 is the first alpha of the beta line — not beta itself.**
 
-`arche-core` detects PII accross various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
+`arche-core` detects PII across various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Runs offline on CPU, and composes with Presidio and GLiNER.
 
 > Presidio detects PII. GLiNER does multilingual NER. Splink links records. None of them know that a BVN is sensitive under NDPA §30, or that "Adeyẹmí" and "Adeyemi" are the same Yoruba name with and without tonal marks, or that "behind Total filling station, Madina Junction" is a parseable Ghanaian address. `arche-core` does that one job.
 
@@ -81,11 +83,11 @@ for o in result.policy_outcomes:
 # PII-1-NAME   tokenize   NDPA-2023 s.30
 ```
 
-Statute YAMLs live at `arche/policy/_data/<STATUTE-ID>.yaml` and are human-readable. Statute amendments are policy-file changes, not code changes.
+Statute YAMLs live at `arche/policy/statutes/<STATUTE-ID>.yaml` and are human-readable. Statute amendments are policy-file changes, not code changes.
 
 ## Cultural naming intelligence
 
-`arche-core` ships a 114-group African name equivalence lexicon covering 454 name forms across 50+ ethnic traditions:
+`arche-core` ships a 114-group African name equivalence lexicon covering 454 name forms across 20+ ethnic and linguistic traditions:
 
 - Mohammed = Muhammad = Mamadou = Muhammadu (Pan-Islamic)
 - Diallo = Jallow = Jalloh (Fulani cross-ethnic orthography)
@@ -96,22 +98,29 @@ Statute YAMLs live at `arche/policy/_data/<STATUTE-ID>.yaml` and are human-reada
 
 Growing via Wikidata + community curation. See [`datasets/`](../../datasets/) for the full dataset and contribution guide.
 
-## Composing with Presidio, GLiNER, and Splink
+## Composing with Presidio and GLiNER
 
 `arche-core` is designed to compose with the incumbent tools, not replace them. The three integration patterns:
 
 ```python
 # Presidio's English recognizers + arche's African recognizers
 pip install arche-core[presidio]
-# arche.detect.presidio surfaces both as one recognizer set.
+# arche.protect uses Presidio when it is installed and falls back to regex
+# when it is not. (There is no importable arche.detect.presidio API.)
 
 # GLiNER's multilingual NER + arche's statute classification
 pip install arche-core[detect]
-# Pipeline(jurisdiction="NG", backend="gliner") routes soft-PII through GLiNER.
+# arche.extract.extract(text, backend="gliner") routes soft-PII through GLiNER.
+# Pipeline() has no backend= parameter — its constructor takes jurisdiction,
+# statute, detectors, address_parsing, audit, tokenize_salt, overlays,
+# transparency_notice.
 
-# Splink's record linkage + arche's jurisdiction-aware comparators
+# Splink's record linkage — the deprecated v0.1 path only
 pip install arche-core[resolve]
-# Statute-tagged detections feed Splink as clean inputs.
+# arche.resolve.resolve_entities(entities, use_splink=True) feeds Splink.
+# NOTE: this is the ONLY code path that imports Splink. The shipped surface
+# — resolve.pairwise, resolve.crosswalk, the frequency tables and the name
+# lexicon — implements Fellegi-Sunter itself and imports no Splink at all.
 ```
 
 ## Audit log

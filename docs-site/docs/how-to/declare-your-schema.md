@@ -27,7 +27,29 @@ fields:
   observer_notes: {role: ignore}
 ```
 
-The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (this field can tell one entity from another), `describes` (carried, compared if it has a kind, never identifying), `ignore` (never enters arche at all — the clean escape hatch for free-text columns). **`kind`** picks the comparator. **`id_family`** links identifiers across systems (two declarations that both say `imo` mint the same entity id for the same vessel). **`restricted: true`** means usable as match evidence, *never* disclosable — even under `--reveal`. **`pii: false`** is the only route to clear-text rendering. **`statute_class`** attaches the governing law: the citation rides every attribute built from that field, and a statute `drop` action forces restriction no matter what the declaration says.
+The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (this field can tell one entity from another), `describes` (carried, compared if it has a kind, never identifying), `ignore` (never enters arche at all — the clean escape hatch for free-text columns). **`kind`** picks the comparator. **`id_family`** labels which identifier system a field belongs to, so two declarations that both say `imo` are comparing like with like. Read `decl.binding_fields()` to see the families a declaration declares.
+
+!!! warning "A declared `id_family` does not yet mint a keyed `entity_id`"
+
+    `entity_id` is minted by `arche.ids.identity_binding_key`, which recognises
+    a **fixed** set of identifier names — `national_id`, `nin`, `bvn`,
+    `ghana_card`, `kenya_id`, `sa_id`, `passport`, `phone`, `email` — and does
+    not consult your declaration. Two records sharing a declared `imo` resolve
+    correctly and the gate clears, but the decision carries `entity_id: None`:
+
+    ```python
+    dec = resolve.pairwise(a, b, decl=fisheries, issuer_key=KEY)
+    dec.identity     # 'same_entity'
+    dec.score        # 1.0
+    dec.entity_id    # None  <- not minted from a declared id_family
+    ```
+
+    A built-in binding field does mint one
+    (`ent:hmac:QilAEC9poAQrXqLcAN3JXkYmlcxLIszIebp5euIiyaQ`). Extending the
+    binding key to declared families is open work. Until then, treat
+    `id_family` as a comparator hint, not as a cross-system join key.
+
+**`restricted: true`** means usable as match evidence, *never* disclosable — even under `--reveal`. **`pii: false`** is the only route to clear-text rendering. **`statute_class`** attaches the governing law: the citation rides every attribute built from that field, and a statute `drop` action forces restriction no matter what the declaration says.
 
 Validation is deliberately unforgiving: unknown keys, typo'd roles, reserved id families, and unknown statute classes are **errors**, each naming the offender. A typo in a file that governs disclosure must never silently mean "unrestricted."
 

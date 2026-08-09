@@ -1,4 +1,9 @@
-# Copyright 2026 unpatterned.ai — Licensed under Apache 2.0
+# Copyright 2026 Unpatterned Labs — Licensed under CC-BY-NC-SA-4.0
+# https://creativecommons.org/licenses/by-nc-sa/4.0/
+#
+# DATA, not code: the arche source is Apache-2.0. This curated compilation is
+# licensed separately and more restrictively — see LICENSING.md. Non-commercial
+# use with attribution and share-alike; commercial use needs a separate grant.
 # https://github.com/unpatterned-labs/archeblob/main/datasets/DATASET_LICENSE.md
 tradition: East African names (Swahili, Luo, Amharic, Tigrinya, Somali)
 groups:

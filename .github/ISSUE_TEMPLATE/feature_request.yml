@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest a capability arche does not have
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening this, it is worth checking the
+        [roadmap](https://unpatterned-labs.github.io/arche/concepts/roadmap/).
+        It states what is in flight, what is gated behind a prerequisite, and
+        what is explicitly not committed — the last category is deliberate,
+        and knowing why something is on it may change the request.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: >
+        What are you trying to do that you cannot do today? Describe the
+        situation rather than the solution — the underlying problem is usually
+        more useful to us than a proposed API.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: If you have a specific shape in mind, sketch it.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you are doing instead right now
+      description: >
+        Workarounds tell us how painful this is and sometimes reveal that the
+        real gap is somewhere else.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      description: >
+        arche is a library that decides and signs. A few things are
+        deliberately out of scope — tick any you think this touches so we can
+        talk about it rather than silently decline.
+      options:
+        - label: This might involve storing or remembering state between calls
+        - label: This might involve an agent framework or orchestration
+        - label: This might involve sending data to a third-party service
+        - label: None of these apply

@@ -8,7 +8,7 @@ Verify:
 
 ```bash
 python -c "import arche; print('arche', arche.__version__, 'ok')"
-# arche 0.2.0a1 ok
+# arche 0.3.0a1 ok
 ```
 
 ---
@@ -34,9 +34,12 @@ The base install is the framework. Heavy capabilities ship as opt-in extras so a
 
     ```bash
     pip install arche-core[doc]       # docling - PDF, DOCX, PPTX, XLSX, HTML
-    pip install arche-core[doc-ocr]   # adds easyocr for scanned PDFs / images
-    pip install arche-core[doc-vlm]   # adds transformers for VLM backends
+    pip install arche-core[doc-ocr]   # adds rapidocr-onnxruntime for scanned PDFs / images
     ```
+
+    There is no `[doc-vlm]` extra. `[doc]` and `[doc-ocr]` are the only
+    document-ingest extras; `doc-ocr` pulls docling plus RapidOCR (pure-ONNX,
+    no torch, no system tesseract).
 
     Enables `Pipeline.process_file(path)` for non-text inputs.
 
@@ -99,8 +102,8 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 | Add arche-core as a **project dependency** (writes `pyproject.toml` + `uv.lock`) | `uv add 'arche-core[detect]'` | Pinned in your project; collaborators get the same version |
 | Install into the **active environment** ad-hoc | `uv pip install 'arche-core[detect]'` | Works inside any active venv / conda env, no project file edits |
 | **Run once** without polluting any environment | `uvx --from 'arche-core[detect]' python -m my_script` | Ephemeral env; deps disappear after the process exits |
-| Install as a **global CLI tool** with extras | `uv tool install 'arche-core[detect]'` | `arche` (when v0.2.0a2 ships the CLI back) available everywhere |
-| Develop **inside this monorepo** | `uv sync --all-packages` | Resolves the whole workspace including arche-core, arche-graph, arche-live |
+| Install as a **global CLI tool** with extras | `uv tool install 'arche-core[detect]'` | The `arche` CLI (`arche compare`, `arche schema validate`, `arche schema gen`) available everywhere |
+| Develop **inside this monorepo** | `uv sync --all-packages` | Resolves the workspace; `packages/arche-core` is the only member present on disk today |
 
 !!! warning "Shell quoting"
 
@@ -143,13 +146,18 @@ uv add 'arche-core[splink]'                # use [resolve] instead
 ### Workspace development (this monorepo)
 
 ```bash
-git clone https://github.com/Plehthore/arche
+git clone https://github.com/unpatterned-labs/arche
 cd arche
 uv sync --all-packages
 uv run pytest packages/arche-core/tests
 ```
 
-`uv sync --all-packages` resolves the workspace's full dependency graph including arche-core, arche-graph, arche-adapters, and the api / demo members. Extras defined inside each member's `pyproject.toml` are part of the resolve.
+`uv sync --all-packages` resolves the workspace's full dependency graph. Note
+that `packages/arche-core` is currently the **only** workspace member that
+exists on disk - the root `pyproject.toml` also lists `packages/arche-mcp`,
+`packages/arche-graph`, `packages/arche-live`, `api`, and `demo`, but those
+directories are not in the repository. uv skips absent members, so the sync
+still succeeds; it just resolves arche-core.
 
 To add an extra at sync time without editing pyproject:
 

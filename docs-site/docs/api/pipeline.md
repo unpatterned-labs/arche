@@ -161,7 +161,7 @@ class Detection:
 
 | Field | Type | What's in it |
 |---|---|---|
-| `id` | `str` | Stable identifier for cross-referencing in `policy_outcomes` and `audit_log`. Shape: `det:<start>:<end>`. |
+| `id` | `str` | Stable identifier for cross-referencing in `policy_outcomes` and `audit_log`. Shape: `det:<detector-slug>:<start>:<end>` — e.g. `det:nin:4:15`, `det:phone:23:36`. |
 | `category` | `str` | Pan-African PII Taxonomy v0.1 label — e.g. `"PII-2-NIN"`, `"PII-1-NAME"`, `"PII-3-PHONE"`, `"PII-4-ADDRESS"`, `"PII-5-CRYPTO_WALLET"`. |
 | `text` | `str` | The actual matched substring from the input. The original PII value — keep this off your wire and out of your logs. |
 | `start` | `int` | Inclusive character offset into the input text. |
