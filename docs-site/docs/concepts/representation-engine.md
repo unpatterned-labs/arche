@@ -88,7 +88,7 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 **A new entity type is a representation, not a program.** Persons, places, and artists run on the same crosswalk engine and comparator kit — a new type is configuration plus data: an identity-attribute mapping, equivalence data, frequency calibration. The [artist pack](../tutorials/artist_resolution.md) added no new comparator code at all. (Signable `pairwise` decisions are person-shaped today; extending them is roadmap, not implied.)
 
-**Engines are swappable below; callers are agnostic above.** Because the representation layer is the contract, the inference backend can be arche's in-memory core today and Splink tomorrow — and the caller can be a script, a pipeline, or an AI agent asking through MCP.
+**Engines are swappable below; callers are agnostic above.** Because the representation layer is the contract, the inference backend can be arche's in-memory core today and Splink tomorrow — and the caller can be a script, a pipeline, or an AI agent (through whatever tool layer you wire it into — an MCP server is on the roadmap, not in this release).
 
 **Representation quality is measurable.** Inference benchmarks measure classifiers. arche's benchmarks measure *representations*: false-match rates when the frequency table is population-scale vs toy, missed-match rates when equivalence packs are present vs absent — with embedding matchers as baselines and losses published alongside wins. That is the shape of the planned African-name benchmark: sharply named representation failures (transliteration, patronymics, compound names, cross-script variants), runnable against any engine.
 

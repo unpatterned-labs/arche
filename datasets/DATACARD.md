@@ -17,7 +17,7 @@ language:
 - st
 - lg
 - mg
-license: apache-2.0
+license: cc-by-nc-sa-4.0
 task_categories:
 - token-classification
 - text-classification
@@ -48,10 +48,10 @@ source_datasets: []
 ## Dataset Description
 
 - **Homepage:** https://github.com/unpatterned-labs/arche/tree/main/datasets
-- **Repository:** https://github.com/Plehthore/arche
+- **Repository:** https://github.com/unpatterned-labs/arche
 - **Paper:** N/A
-- **Point of Contact:** datasets@unpatterned.ai
-- **License:** CC-BY-NC-SA 4.0
+- **Point of Contact:** datasets@unpatterned.org
+- **License:** CC-BY-NC-SA-4.0 (this dataset only; the rest of arche's data is CC-BY-4.0)
 - **Size:** 114 equivalence groups, 454 name forms, 340 variant spellings
 
 ### Dataset Summary
@@ -187,7 +187,7 @@ All names in the dataset are common given names and surnames. No individual pers
 
 #### Who are the source language producers?
 
-The naming conventions encoded in this dataset originate from living cultural and linguistic traditions practiced by hundreds of millions of people across Africa. The dataset was compiled by researchers and practitioners at unpatterned.ai with domain expertise in African naming systems.
+The naming conventions encoded in this dataset originate from living cultural and linguistic traditions practiced by hundreds of millions of people across Africa. The dataset was compiled by researchers and practitioners at unpatterned.org with domain expertise in African naming systems.
 
 ### Annotations
 
@@ -207,7 +207,7 @@ This dataset contains **no personal data**. It consists entirely of common name 
 - Supports the DPGA (Digital Public Goods Alliance) mission of equitable access to digital systems
 
 **Risks to monitor:**
-- Name equivalence data could theoretically be misused for surveillance; the CC-BY-NC-SA license and ethical review processes mitigate this
+- Name equivalence data could be misused for surveillance. An earlier version of this card claimed the non-commercial licence mitigated that. It did not, and the dataset is now CC-BY-4.0, so no licence term restricts who may use it. The honest position: **this is public cultural knowledge, a licence was never a meaningful control over its misuse, and we are not pretending otherwise.** What we can do is refuse to make the data better at the thing that would cause harm — the equivalence groups deliberately do not encode ethnicity, religion, or region as inferable attributes, and arche's matcher will not merge two people on name similarity alone
 - Equivalence groups are not exhaustive -- absence from the dataset should not be treated as evidence that two names are NOT equivalent
 
 ### Discussion of Biases
@@ -231,10 +231,29 @@ This dataset is maintained by [unpatterned.org](https://unpatterned.org), a non-
 
 ### Licensing Information
 
-This dataset is released under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC-BY-NC-SA 4.0)** license.
+The name-equivalence dataset is released under
+**[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC-BY-NC-SA-4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/)**.
 
-- **Non-commercial use** (academic research, government DPI deployments, non-profit projects, open-source DPI integrations): Free to use with attribution
-- **Commercial use** (SaaS products, KYC/AML platforms, fintech deduplication): Requires a commercial license from unpatterned.org
+- **Non-commercial use** — academic research, government DPI deployments,
+  non-profit projects, open-source integrations: free, with attribution, and
+  derivatives under the same terms.
+- **Commercial use** — SaaS products, KYC/AML platforms, fintech
+  deduplication: needs a separate grant. Open an issue.
+
+This is the **only** arche dataset with a non-commercial clause. The statute
+packs, the Pan-African PII Taxonomy, the artist pack, the frequency tables and
+the benchmark gold set are all CC-BY-4.0 and free for commercial use, because
+each is either a reading of public law or derived from public-domain and CC-BY
+sources. See [LICENSING.md](../LICENSING.md) for the split and the reasoning.
+
+**The position on this dataset is under review**, and two earlier versions of
+this card said something different. Check this file rather than relying on a
+copy.
+
+**A limitation we are not hiding:** the same 114 groups are also compiled into
+`arche/detect/_names/lexicon.py` and ship in the Apache-2.0 `arche-core` wheel.
+This licence governs the YAML source of truth and the contribution flow; it
+does not restrict the copy already distributed in the package.
 
 ### Citation Information
 

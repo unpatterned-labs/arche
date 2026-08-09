@@ -8,7 +8,7 @@ Places are the entity type where identity is hardest to pin down: the thing itse
 | 2 | Space proposes, place decides — coordinates generate candidates; names, types, and containment decide | [union blocking + the place pack](#2-the-signals-and-what-each-encodes) |
 | 3 | An address is an identity attribute — invented to identify, not to navigate | [`addr` parsing, landmark anchors, spatial roles](#3-the-unaddressed-majority) |
 | 4 | Place identity is temporal — a match decision is true *as of* its evidence | [`decision_id` + `sign_edges` pins](#4-time-drift-and-the-signature) |
-| 5 | Location past a certain precision *is* the person | [masked-by-default, offsets-only MCP](#5-the-sensitive-half) |
+| 5 | Location past a certain precision *is* the person | [masked by default, offsets only](#5-the-sensitive-half) |
 
 ## 1. A place reference is not the place
 
@@ -53,7 +53,7 @@ The signature says *given this evidence and this representation, this was the de
 
 ## 5. The sensitive half
 
-A clinic is public; a home is not — and the re-identification literature is blunt about which side location falls on: a home/work location pair narrows most people to a handful (Golle & Partridge 2009), and four coarse spatio-temporal points uniquely identify 95% of a 1.5M-person mobility set (de Montjoye et al. 2013). arche's doctrine, enforced rather than advised: reports render [masked by default](../how-to/declare-your-schema.md), restricted fields never reach clear text, and the MCP surface returns **offsets only** — never address text — so raw values stay on the caller's side of the trust boundary. Privacy-preserving linkage encodings (Bloom filters et al., Christen/Ranbaduge/Schnell 2020) are tracked as consume-don't-build; the declaration pin already provides the pre-encoding contract two linking parties actually need.
+A clinic is public; a home is not — and the re-identification literature is blunt about which side location falls on: a home/work location pair narrows most people to a handful (Golle & Partridge 2009), and four coarse spatio-temporal points uniquely identify 95% of a 1.5M-person mobility set (de Montjoye et al. 2013). arche's doctrine, enforced rather than advised: reports render [masked by default](../how-to/declare-your-schema.md), restricted fields never reach clear text, and `PlaceMention.to_dict(reveal=False)` returns **offsets only** — never address text — so raw values stay on the caller's side of the trust boundary. (That masked shape is what an agent-facing surface would emit; no MCP server ships in v0.3.0a1.) Privacy-preserving linkage encodings (Bloom filters et al., Christen/Ranbaduge/Schnell 2020) are tracked as consume-don't-build; the declaration pin already provides the pre-encoding contract two linking parties actually need.
 
 ## What we don't claim
 

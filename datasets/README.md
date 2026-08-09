@@ -43,7 +43,7 @@ datasets/
 ├── data/                      # Generated exports (CSV, JSONL, Parquet)
 ├── compliance/                # Jurisdiction-specific compliance metadata
 ├── DATACARD.md                # HuggingFace dataset card
-├── DATASET_LICENSE.md         # CC-BY-NC-SA 4.0 license
+├── DATASET_LICENSE.md         # CC-BY-4.0 license
 ├── STATISTICS.md              # Detailed dataset statistics
 ├── export_hf.py               # Export to CSV / JSONL / Parquet for HuggingFace
 └── README.md                  # This file
@@ -166,7 +166,7 @@ Output JSON schemas are written to `datasets/schemas/`.
 
 ## Usage
 
-This dataset can be used by any entity resolution tool -- Splink, Zingg, Senzing, Dedupe, or your own custom pipeline. The [arche SDK](https://github.com/Plehthore/arche) loads these automatically.
+This dataset can be used by any entity resolution tool -- Splink, Zingg, Senzing, Dedupe, or your own custom pipeline. The [arche SDK](https://github.com/unpatterned-labs/arche) loads these automatically.
 
 Typical integration patterns:
 1. **Pre-processing**: Normalize names using the equivalence groups before running Splink/Dedupe comparison vectors
@@ -208,7 +208,7 @@ See [benin_edo_names.csv](contributions/benin_edo_names.csv) for a complete exam
 
 ### Option B: Direct YAML Editing
 
-1. Fork the [repository](https://github.com/Plehthore/arche)
+1. Fork the [repository](https://github.com/unpatterned-labs/arche)
 2. Add entries to the appropriate YAML file in `datasets/name_equivalences/`
 3. Follow the existing format: `canonical` + `variants` list
 4. Submit a pull request with a brief note explaining the naming tradition
@@ -257,7 +257,7 @@ print(score)  # → MatchScore(score=1.0, decision='match')
 ```bibtex
 @misc{arche_naming_2026,
   title={African Cultural Naming Intelligence Dataset: Name Equivalence Groups for African Identity Resolution},
-  author={unpatterned.ai},
+  author={unpatterned.org},
   year={2026},
   howpublished={\url{https://huggingface.co/datasets/unpatterned/african-cultural-naming}},
   note={114 equivalence groups covering 454 name forms across 20+ African ethnic/linguistic traditions}
@@ -268,6 +268,6 @@ print(score)  # → MatchScore(score=1.0, decision='match')
 
 [Apache 2.0](DATASET_LICENSE.md) — free for any use, commercial or non-commercial. Attribution required.
 
-The naming equivalence data encodes public cultural knowledge. We open-source it under Apache 2.0 to maximize adoption and to become the standard for cultural naming intelligence in identity resolution. The ongoing curation effort — funded by the community and by [Plehthore](https://plehthore.com) — is what makes this dataset grow.
+The naming equivalence data encodes public cultural knowledge. We release it under CC-BY-4.0 to maximise adoption and to become the standard for cultural naming intelligence in identity resolution. Attribution is the only condition; commercial use is free. The ongoing curation effort is what makes this dataset grow, and corrections from native speakers are the most valuable contributions it receives.
 
 See [DATASET_LICENSE.md](DATASET_LICENSE.md) for full terms.

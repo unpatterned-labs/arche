@@ -2,7 +2,7 @@
 name = "arche-workspace"
 version = "0.1.0a2"
 requires-python = ">=3.11"
-description = "arche monorepo — the open-source identity resolution SDK by unpatterned.ai"
+description = "arche monorepo — the open-source identity resolution SDK by unpatterned.org"
 dependencies = [
     "arche-core[all]",
     "ipykernel>=7.2.0",

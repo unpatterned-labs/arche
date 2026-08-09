@@ -8,14 +8,16 @@ arche is an open pipeline for turning messy, multilingual data into resolved rea
 
 Along the way it keeps disagreement between sources instead of erasing it, protects everything under the law that applies, and signs every decision.
 
-Match, don't guess: 40% → 0% measured false-match rate on African names; zero false merges on the standard record-linkage benchmark. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
+**Match, don't guess.** When the evidence isn't distinctive enough, resolution returns `review` rather than a verdict — two people who share a name are not one person, and a system that merges them has not scored slightly worse, it has deleted someone. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
+
+Numbers we publish come with the script that produces them. The current one is the [place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/): reconciling Nigeria's GRID3 reference data against OpenStreetMap for Kano State gives **88.2% agreement with independently-recorded administrative boundaries**, and the page states the weak-label methodology, its five limitations, and the case where it demonstrably gets a match wrong.
 
 > [!WARNING]
 > **Status:** pre-beta (development) - `arche-core` is under active development. APIs may change between alpha
 > releases.
 > **v0.3.0a1 is the first alpha of the beta line — not beta itself.**
 
-`arche-core` detects PII accross various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
+`arche-core` detects PII across various jurisdictions; government IDs, names, phone numbers, addresses, and grounds every detection in the data protection statute that governs it. NDPA, POPIA, Kenya DPA, Ghana DPA, GDPR. Six closed policy actions. Composes with Presidio, GLiNER, and Splink.
 
 > Presidio detects PII. GLiNER does multilingual NER. Splink links records. None of them know that a BVN is sensitive under NDPA §30, or that "Adeyẹmí" and "Adeyemi" are the same Yoruba name with and without tonal marks, or that "behind Total filling station, Madina Junction" is a parseable Ghanaian address. `arche-core` does that one job.
 
