@@ -57,10 +57,12 @@ _FORMAT = "arche-tf/1"
 _DEFAULT_RESOURCES = {
     "person": "name_frequencies.json.gz",
     "artist": "artist_frequencies.json.gz",
+    "place": "place_frequencies.json.gz",
 }
 _DEFAULT_BUILDERS = {
     "person": "datasets/names_dataops/build_name_frequencies.py",
     "artist": "datasets/artists_dataops/build_artist_frequencies.py",
+    "place": "datasets/places_dataops/build_place_frequencies.py",
 }
 # Process-wide cache for the packaged default tables (they are immutable).
 _DEFAULT_CACHE: dict[str, TokenFrequencyTable] = {}
@@ -92,12 +94,25 @@ class TokenFrequencyTable:
         counts: Mapping[str, float] | None = None,
         total: float | None = None,
         unknown_floor: float = _UNKNOWN_FLOOR,
+        population_scale: bool = False,
     ) -> None:
         """Construct from either raw ``counts`` (preferred — retains totals for
         :meth:`merge` / :meth:`most_common`) or a precomputed ``rel_freq`` map
         (legacy; no raw counts). Keys are normalised on the way in.
         """
         self._floor = unknown_floor
+        # Whether this table can support a RARITY claim. `distinctiveness` is
+        # -log10(rel_freq)/5, which is calibrated against population
+        # frequencies. Over a 2,000-name corpus the rarest possible token sits
+        # near 0.77 and a token seen twice near 0.71, so a 0.75 gate would
+        # refuse everything — thresholds are not a property of the measure
+        # alone, they depend on corpus size (Draisbach & Naumann, ICIQ 2013).
+        # A gate may only consult distinctiveness when this is True.
+        self.population_scale = bool(population_scale)
+        # Content version of a shipped table, or None for one built at runtime.
+        # Carried into `pins` so a decision names the exact frequency data that
+        # produced it — the same discipline as the declaration pin.
+        self.version: str | None = None
         if counts is not None:
             norm: Counter[str] = Counter()
             for tok, c in counts.items():
@@ -150,7 +165,7 @@ class TokenFrequencyTable:
         for name, c in counts.items():
             for tok in _tokens(name):
                 agg[tok] += float(c)
-        return cls(counts=agg, unknown_floor=unknown_floor)
+        return cls(counts=agg, unknown_floor=unknown_floor, population_scale=True)
 
     @classmethod
     def default(cls, domain: str = "person") -> TokenFrequencyTable:
@@ -321,7 +336,12 @@ class TokenFrequencyTable:
         for tok, c in other._as_counts().items():
             merged[tok] += c * other_weight
         return TokenFrequencyTable(
-            counts=merged, unknown_floor=min(self._floor, other._floor)
+            counts=merged,
+            unknown_floor=min(self._floor, other._floor),
+            # Merging a population table with a local corpus keeps the
+            # population claim: the result is still calibrated against a
+            # population, just with local counts folded in.
+            population_scale=self.population_scale or other.population_scale,
         )
 
     def most_common(self, n: int = 20) -> list[tuple[str, float]]:
@@ -364,9 +384,16 @@ class TokenFrequencyTable:
     def from_dict(cls, d: Mapping) -> TokenFrequencyTable:
         """Rebuild from :meth:`to_dict` output."""
         floor = d.get("unknown_floor", _UNKNOWN_FLOOR)
+        # A serialised table is a published artefact, not a scratch count over
+        # the two lists in hand, so it may support a rarity claim.
         if "counts" in d:
-            return cls(counts=d["counts"], total=d.get("total"), unknown_floor=floor)
-        return cls(d.get("rel_freq", {}), unknown_floor=floor)
+            tbl = cls(counts=d["counts"], total=d.get("total"),
+                      unknown_floor=floor, population_scale=True)
+        else:
+            tbl = cls(d.get("rel_freq", {}), unknown_floor=floor,
+                      population_scale=True)
+        tbl.version = d.get("version")
+        return tbl
 
     def save(self, path: str | Path) -> None:
         """Write to ``path`` as JSON (gzipped when the suffix is ``.gz``)."""

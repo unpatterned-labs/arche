@@ -317,7 +317,7 @@ Email detection used to sit in the second table, with the reason given as "addin
 | **Organisation-side DSAR** | Citizen-side drafting only, and draft-only at that. |
 | **Statute packs at v1.0** | NDPA-2023, GDPR and HIPAA Safe Harbor are labelled `v1.0`; POPIA, Kenya DPA and Ghana DPA still carry `v0.1-scaffold`. No pack is regulator-reviewed. |
 
-Two measurement caveats belong here rather than in a footnote. The place pack's headline **88.2% is a consistency figure, not accuracy** — OpenStreetMap's Kano health facilities share lineage with GRID3, and [the place benchmark](../concepts/place-benchmark.md) shows that from the data. And the Febrl4 person figures (precision 1.0, zero false merges, 0.877 auto-match recall) are measured on a **synthetic** corpus at the pairwise level; [person resolution at scale](person_resolution_at_scale.md) has the run.
+Two measurement caveats belong here rather than in a footnote. The place pack's headline **88.1% is a consistency figure, not accuracy** — OpenStreetMap's Kano health facilities share lineage with GRID3, and [the place benchmark](../concepts/place-benchmark.md) shows that from the data. And the Febrl4 person figures (precision 1.0, zero false merges, 0.877 auto-match recall) are measured on a **synthetic** corpus at the pairwise level; [person resolution at scale](person_resolution_at_scale.md) has the run.
 
 ## Install
 

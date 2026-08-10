@@ -4,7 +4,23 @@
 
 ---
 
-The headline first, because it is a correction. arche's place pack is tuned against a Kano State crosswalk between GRID3 reference data and OpenStreetMap. That crosswalk reports 88.2% precision under an LGA weak label. **It is not independent validation.** OSM's health facilities for this state share lineage with GRID3, and we can now show that from the data rather than argue it. The number is a consistency check: useful for tuning a threshold, worthless as evidence that the matcher is right about the world.
+!!! note "Which frequency table these numbers were measured against"
+
+    Every figure on this page was produced with the shipped place frequency
+    table **`sha256:ffd230b66df60188`**, and that string appears in the `tf`
+    pin of every edge the run produced (`shipped:place@sha256:ffd230b66df60188`).
+
+    This matters more than a version note usually does. Token rarity is not only
+    a comparator input, it is a **blocking key** — so rebuilding the table
+    changes which pairs are proposed for scoring at all, and therefore changes
+    the match and review counts even when no threshold moved. A page of numbers
+    without the table that produced them is not reproducible.
+
+    The numbers here are frozen against that table version. They are not
+    re-measured on every rebuild; they are re-measured when the pin changes and
+    the change is deliberate.
+
+The headline first, because it is a correction. arche's place pack is tuned against a Kano State crosswalk between GRID3 reference data and OpenStreetMap. That crosswalk reports 88.1% precision under an LGA weak label. **It is not independent validation.** OSM's health facilities for this state share lineage with GRID3, and we can now show that from the data rather than argue it. The number is a consistency check: useful for tuning a threshold, worthless as evidence that the matcher is right about the world.
 
 We caught it with a test that takes about ten lines and works on any two datasets. That test, [below](#the-independence-test), is the most reusable thing on this page.
 
@@ -41,7 +57,7 @@ Read the limits honestly, because they are large.
 - **It measures precision, never recall.** A true match arche never found contributes nothing. There is no denominator of real facilities here.
 - **Agreeing on an LGA does not make a pair correct.** Kano has 44 LGAs. Two genuinely different clinics in the same LGA agree on the label and are counted as a success.
 - **It is a proxy for distance, and the veto is a distance rule.** Tuning `veto_km` against LGA agreement is not fully independent of the thing being tuned. The sweep below is a sanity check on a threshold, not a proof that the threshold is optimal.
-- **LGA strings are themselves messy.** Both sides are lower-cased and stripped before comparison. Records missing an LGA on either side are excluded and their count is reported (2 of 545 at the shipped setting).
+- **LGA strings are themselves messy.** Both sides are lower-cased and stripped before comparison. Records missing an LGA on either side are excluded and their count is reported (2 of 564 at the shipped setting).
 
 A weak label is worth having when the alternative is no label. It is not worth promoting to "accuracy".
 
@@ -104,17 +120,17 @@ for veto in (None, 50.0, 25.0, 10.0):
 
 ```text
    veto  matches   same   diff    prec  >10km  max km  review
-   none      618    481    134  78.2%     73  143.02     289
+   none      636    497    137  78.4%     72  143.02     457
   50 km      594    481    110  81.4%     49   49.13     313
   25 km      561    481     77  86.2%     16   24.30     346
-  10 km      545    479     64  88.2%      0    8.97     362
+  10 km      564    495     67  88.1%      0    8.97     529
 ```
 
 ### Why 10 km
 
 The shape of the sweep is the argument. Loosening from 10 km to 25 km buys back two same-LGA matches and lets in thirteen cross-LGA ones. That is a bad trade under an asymmetric cost: a veto costs a human glance, a wrong merge costs a clinic its place on the national list and its allocation with it.
 
-At the shipped setting: **545 matches, 88.2% LGA agreement, maximum matched distance 8.97 km, and 170 pairs moved to `review` carrying `geo_conflict_km` as the reason.** Nothing is matched beyond 10 km, which is the property the threshold exists to guarantee.
+At the shipped setting: **564 matches, 88.1% LGA agreement, maximum matched distance 8.97 km, and 279 pairs moved to `review` carrying `geo_conflict_km` as the reason.** Nothing is matched beyond 10 km, which is the property the threshold exists to guarantee.
 
 ### A known false negative
 
@@ -409,7 +425,7 @@ Overture         {'fraction_exact': 0.081, 'median_km': 0.05, 'verdict': 'consis
 2. **The coordinate-distance distribution is a cheap lineage test.** A median near zero plus a large exact-tie fraction means derivation.
 3. **Independent sources disagree, and that is the point.** If your validation source agrees with you perfectly, it is probably not a source.
 4. **Apply the scrutiny to your own choices.** We caught the GRID3/HDX circularity and then walked into a softer version of it. The test that catches other people is the test worth running on yourself.
-5. **88.2% is a consistency figure.** It is what the place pack was tuned against, and it is not a claim about accuracy in the world.
+5. **88.1% is a consistency figure.** It is what the place pack was tuned against, and it is not a claim about accuracy in the world.
 
 ## Next
 

@@ -201,7 +201,7 @@ print("evidence:", worst["evidence"])
 ```
 
 ```text
-Counter({'match': 545, 'review': 362})
+Counter({'match': 564, 'review': 529})
 blocking: {'candidate_pairs': 39701, 'reduction_ratio': 0.9664, 'strategies': {'h3': 37369, 'token': 2332, 'id': 0, 'coordless_a': 0, 'coordless_b': 0}}
 names   : Kauyen Adam Health Post <> Kauyen Adam Health Post
 score   : 0.805 -> decision: review
@@ -212,7 +212,7 @@ Two byte-identical names, every name comparator at 1.0, a score of 0.805 comfort
 
 Two properties of `veto_km: 10.0` are deliberate. It demotes to `review` and **never** to `no_match`, because distance says a human must look rather than that the answer is no. And records without usable coordinates are never vetoed, because you cannot refute a claim on evidence you do not have.
 
-The threshold was set by a sweep against Local Government Area agreement, which moves from 78.2% to 88.2% between no veto and 10 km. [The place benchmark](../concepts/place-benchmark.md) reproduces that sweep and — this matters more than the number — shows why it is a **consistency check rather than validation**: OpenStreetMap's Kano health facilities share lineage with GRID3, with 59% of matched pairs sitting at exactly 0.00 km apart. No two independent surveys produce that. Do not cite 88.2% as accuracy, and read that page before choosing a validation source of your own.
+The threshold was set by a sweep against Local Government Area agreement, which moves from 78.4% to 88.1% between no veto and 10 km. [The place benchmark](../concepts/place-benchmark.md) reproduces that sweep and — this matters more than the number — shows why it is a **consistency check rather than validation**: OpenStreetMap's Kano health facilities share lineage with GRID3, with 59% of matched pairs sitting at exactly 0.00 km apart. No two independent surveys produce that. Do not cite 88.1% as accuracy, and read that page before choosing a validation source of your own.
 
 ## `reconcile`: the engine underneath
 

@@ -48,7 +48,11 @@ from typing import Any
 from arche.resolve._block import blocking_recall as _blocking_recall
 from arche.resolve._block import candidate_pairs as _h3_candidate_pairs
 from arche.resolve._block import union_candidate_pairs as _union_candidate_pairs
-from arche.resolve._gate import DISTINCTIVE_FLOOR
+from arche.resolve._gate import (
+    DISTINCTIVE_FLOOR,
+    distinctive_residual,
+    shared_name_distinctiveness,
+)
 from arche.resolve._matcher import (
     compare_addresses,
     compare_containment,
@@ -88,6 +92,10 @@ _FIELD_COMPARATORS = {
 _TEXT_KINDS = ("tftoken", "name", "placename", "address")
 
 _DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken")
+# Kinds whose similarity is a claim about STRINGS, so it must be priced by the
+# rarity of what the two strings share before it may clear a gate. `id` is
+# absent on purpose: an identifier is distinctive by construction.
+_NAME_LIKE_KINDS = ("name", "placename", "tftoken")
 
 
 def _field_sim(
@@ -199,9 +207,9 @@ def _score_pair(
                 # preference: two buildings 143 km apart are not one building
                 # however alike their names. As a weighted signal geo was
                 # outvoted 4:1 by name+tftoken, so an identical common
-                # place name merged facilities in different LGAs — 134 of 618
+                # place name merged facilities in different LGAs — 137 of 636
                 # Kano matches crossed an LGA boundary. Vetoing beyond a
-                # threshold took LGA precision from 78.2% to 86.2%.
+                # threshold took LGA precision from 78.4% to 88.1%.
                 #
                 # The veto demotes to `review`, never to `no_match`: distance
                 # says a human must look, not that the answer is no. Absent
@@ -212,7 +220,40 @@ def _score_pair(
                     conflict = True
                     evidence["geo_conflict_km"] = round(km, 2)
         if spec["kind"] in distinctive_kinds:
-            distinctive_max = max(distinctive_max, sim)
+            contribution = sim
+            if (
+                spec["kind"] in _NAME_LIKE_KINDS
+                and tf is not None
+                and getattr(tf, "population_scale", False)
+            ):
+                # A name comparator returning 1.0 says "these two strings are
+                # identical", which is a fact about strings and not evidence of
+                # identity: "General Hospital" is identical to "General
+                # Hospital" in every state in the country. What may clear a
+                # gate is agreement on something *rare*.
+                #
+                # Cap the contribution by how distinctive the shared tokens
+                # actually are. This is the two-clause test the coreference
+                # gate already applies (see `_gate` C4), so both engines now
+                # refuse the same pair for the same stated reason, and the
+                # architecture page's claim — "two identical common names must
+                # not clear it" — becomes true on the place lane too.
+                a_val = str(ra.get(spec.get("field", ""), "") or "")
+                b_val = str(rb.get(spec.get("field", ""), "") or "")
+                if a_val and b_val:
+                    # Two ways to hold a distinctive signal, combined with max
+                    # so this is strictly additive: a literally shared rare
+                    # token, or a rare residual on both sides once generic
+                    # words are stripped. The second exists because a
+                    # one-letter difference in the identifying word
+                    # ("Kalahaddi"/"Kalahadi") shares no literal token and
+                    # would otherwise be judged on `health` and `post`.
+                    rarity = max(
+                        shared_name_distinctiveness(a_val, b_val, tf),
+                        distinctive_residual(a_val, b_val, tf),
+                    )
+                    contribution = min(contribution, rarity)
+            distinctive_max = max(distinctive_max, contribution)
         if spec["kind"] == "containment" and sim == 0.0:
             conflict = True
     if den == 0:

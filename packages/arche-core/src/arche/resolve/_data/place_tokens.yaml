@@ -1,0 +1,236 @@
+# place_tokens.yaml — the curated layer over the place frequency table.
+#
+# What it is: the hand-editable half of place distinctiveness. The counts in
+# `place_frequencies.json.gz` are measured over a corpus; this file is where a
+# person who knows the domain corrects what the corpus got wrong. Both are
+# inputs to the same artefact, and `build_place_frequencies.py` applies this
+# file last, so a curated entry always wins over a measured count.
+#
+# Why it exists: a corpus only knows the words that are in it. Nigerian
+# registries spell out "Primary Health Care Centre", so `PHC` appears in 4 of
+# 51,022 GRID3 facility names and the table concludes it is a *rare* token —
+# which would let two unrelated "X PHC" records clear the distinctiveness gate
+# on the strength of the abbreviation. No amount of extra corpus fixes that;
+# somebody who has read a Nigerian facility list has to say it.
+#
+# Scope discipline — read before adding an entry:
+#
+#   An entry here changes which facilities get merged. `abbreviations` is for
+#   forms that genuinely stand for the same thing; `generic_tokens` is for
+#   words that carry no identity in this domain; `frequency_overrides` is a
+#   last resort and every entry needs a `reason` a stranger can check.
+#
+#   If a token is distinctive in one country and generic in another, it is
+#   NOT a generic token. Say so in an issue instead — a per-country layer is
+#   the right fix and does not exist yet.
+#
+# Contributor notes:
+#   - Tokens are matched after case-folding and diacritic-stripping.
+#   - Adding an entry is a DATA edit, not a code change. Rebuild with
+#     `python datasets/places_dataops/build_place_frequencies.py`.
+#   - Open a "Data correction or addition" issue if something here is wrong.
+#     Having worked with the registry is the qualification that matters.
+#   - Sources and licences: datasets/places_dataops/SOURCES.md
+#
+# Prior art: this is the same idea as uk_address_matcher's
+# `address_abbreviations.json` and `common_end_tokens.csv`, kept in one file
+# because they are two answers to one question — what does this token tell me
+# about identity?
+
+version: v0.1
+
+# ── Tunables ────────────────────────────────────────────────────────────────
+settings:
+  # A token listed in `generic_tokens` is forced to at least this relative
+  # frequency, which caps its distinctiveness below DISTINCTIVE_FLOOR (0.75).
+  # 1.0e-3 yields distinctiveness 0.60 — comfortably generic, not zero, so a
+  # generic word still contributes a little to a weighted comparison.
+  generic_min_rel_freq: 1.0e-3
+  # An abbreviation's descriptor needs at least this many observed occurrences
+  # before its frequency is trusted. Below it, the entry is reported under
+  # `low_evidence` and left untouched — see the note on `abbreviations`.
+  descriptor_min_evidence: 500
+
+# ── Abbreviations ───────────────────────────────────────────────────────────
+# `token` stands for `expands_to`. An abbreviation names a CONCEPT, so what the
+# gate needs is how common that concept is in the population, counted over BOTH
+# spellings across the corpus. The builder counts the expansion as a contiguous
+# phrase and the abbreviation as a token, sums them into one canonical
+# descriptor, and gives the abbreviation that frequency. Never lowers a count.
+#
+# An earlier rule took the minimum over the expansion's token counts. That was
+# wrong: a generic phrase containing one uncommon word ("hydro electric power")
+# handed its abbreviation that word's rarity, so `HEP` read as distinctive.
+#
+# Two abbreviations may share an expansion (`ctr` and `cntr` are both "centre").
+# Add `canonical:` to fold several forms onto one descriptor explicitly;
+# otherwise each token is its own descriptor and both are credited.
+#
+# If the corpus does not contain the concept often enough to price it, the
+# builder reports the entry under `low_evidence` and leaves the token alone,
+# rather than assigning a near-zero frequency that would read as *rare*. The
+# fix for a genuinely generic descriptor the corpus never spells out is
+# `generic_tokens` below, which asserts the judgement instead of pretending to
+# have measured it.
+abbreviations:
+  # Health — Nigeria, Ghana, Kenya
+  - {token: phc,   expands_to: primary health care centre}
+  - {token: chc,   expands_to: comprehensive health centre}
+  - {token: hc,    expands_to: health centre}
+  - {token: hp,    expands_to: health post}
+  - {token: gh,    expands_to: general hospital}
+  - {token: sph,   expands_to: specialist hospital}
+  - {token: tbh,   expands_to: teaching hospital}
+  - {token: mch,   expands_to: maternal and child health}
+  - {token: disp,  expands_to: dispensary}
+  - {token: hosp,  expands_to: hospital}
+  - {token: med,   expands_to: medical}
+  - {token: matty, expands_to: maternity}
+  # Health — UK
+  - {token: gp,    expands_to: general practice}
+  - {token: nhs,   expands_to: national health service}
+  # Energy
+  - {token: ss,    expands_to: substation}
+  - {token: sub,   expands_to: substation}
+  - {token: pp,    expands_to: power plant}
+  - {token: ps,    expands_to: power station}
+  - {token: hep,   expands_to: hydro electric power}
+  - {token: pv,    expands_to: photovoltaic}
+  # Education and civic
+  - {token: sch,   expands_to: school}
+  - {token: pri,   expands_to: primary}
+  - {token: sec,   expands_to: secondary}
+  - {token: univ,  expands_to: university}
+  - {token: coll,  expands_to: college}
+  - {token: ctr,   expands_to: centre}
+  - {token: cntr,  expands_to: centre}
+  - {token: intl,  expands_to: international}
+  - {token: natl,  expands_to: national}
+  - {token: govt,  expands_to: government}
+  - {token: mem,   expands_to: memorial}
+
+# ── Generic tokens ──────────────────────────────────────────────────────────
+# Words that describe WHAT a place is, never WHICH place it is. Two records
+# agreeing on one of these have agreed on nothing identifying. The corpus
+# usually discovers this on its own; the list is here for the cases where a
+# word is generic in the domain but under-represented in whatever sources were
+# available, and so that the judgement is inspectable rather than emergent.
+generic_tokens:
+  # Facility TIER designators. These are definitionally generic — they say what
+  # level of care a place provides, never which place it is — but measurement
+  # alone left several of them within 0.05 of the 0.75 gate (`tbh` at 0.747,
+  # `govt` at 0.740), where a routine corpus refresh could flip them over it.
+  # A property this stable should be asserted, not re-derived from whichever
+  # sources happened to be reachable on build day.
+  - phc      # primary health care centre
+  - gp       # general practice
+  - hc       # health centre
+  - hp       # health post
+  - gh       # general hospital
+  - sph      # specialist hospital
+  - tbh      # teaching hospital
+  - disp
+  - govt
+  # facility type
+  - hospital
+  - health
+  - clinic
+  - centre
+  - center
+  - post
+  - dispensary
+  - maternity
+  - infirmary
+  - surgery
+  - practice
+  - medical
+  - dental
+  - eye
+  - cottage
+  - comprehensive
+  - specialist
+  - teaching
+  - referral
+  - general
+  - primary
+  - secondary
+  - tertiary
+  - district
+  - rural
+  - urban
+  - model
+  - central
+  - main
+  - annex
+  # energy
+  - power
+  - station
+  - substation
+  - plant
+  - solar
+  - wind
+  - farm
+  - hydro
+  - hydroelectric
+  - thermal
+  - grid
+  - feeder
+  - transmission
+  - distribution
+  - injection
+  - generating
+  # `kv` is a unit, not an abbreviation for a place word: there is no
+  # "kilovolt" in any corpus to inherit a frequency from, so it is floored
+  # here instead. The builder reported it as unresolved rather than inventing
+  # a count, which is the behaviour to preserve.
+  - kv
+  # Reported by the builder under `low_evidence`: these concepts are real and
+  # generic, but the corpus does not spell them out as contiguous phrases often
+  # enough to price them (registries write "Hydroelectric" as one word, and
+  # almost never write out "maternal and child health"). Asserting genericness
+  # here is the documented escalation, and it is visible in the diff.
+  - chc      # comprehensive health centre
+  - mch      # maternal and child health
+  - nhs      # national health service
+  - hep      # hydro electric power
+  # education and civic
+  - school
+  - college
+  - university
+  - academy
+  - nursery
+  - library
+  - market
+  - office
+  - branch
+  # corporate and structural noise
+  - ltd
+  - limited
+  - plc
+  - inc
+  - company
+  - services
+  - service
+  - trust
+  - foundation
+  - the
+  - and
+  - of
+  - de
+  - la
+
+# ── Frequency overrides ─────────────────────────────────────────────────────
+# Last resort. Sets a token's relative frequency directly, overriding both the
+# measured corpus and the two lists above. Every entry needs a `reason` that
+# someone else can check — "it felt wrong" is not one.
+#
+# Example of the shape (commented out; there are no live overrides today):
+#
+# frequency_overrides:
+#   - token: unguwar
+#     rel_freq: 2.0e-3
+#     reason: >
+#       Hausa for "ward/quarter", prefixes a large share of Kano facility
+#       names. Common in the population, under-counted here because the
+#       GeoNames settlement stratum romanises it inconsistently.
+frequency_overrides: []

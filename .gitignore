@@ -94,3 +94,4 @@ DESIGN.md
 /overture_*.csv
 /review_queue.csv
 /headtohead.json
+datasets/data/_cache/

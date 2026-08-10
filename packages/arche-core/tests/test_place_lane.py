@@ -269,9 +269,56 @@ class TestEdgeAttestation:
         assert r3["pins"]["boundary_layer"] == "GRID3-NGA-2024.1"
 
     def test_pins_carry_tf_provenance(self):
+        # The place pack uses the SHIPPED place table, not a table
+        # self-calibrated over the two lists. Distinctiveness is a claim about
+        # a population — a pair of small lists cannot know that `hospital` is
+        # common and `Gyaranya` is rare, and while it fell through to the
+        # person table those facility words were unseen and read as *rare*.
         result = self._result()
-        assert result["pins"]["tf"] == "self-calibrated"
+        # The pin names the exact table, not just the domain. A rebuild changes
+        # which tokens are rare, and rare tokens are both a comparator input and
+        # a blocking key, so a new table can change a decision. If that were
+        # invisible in the pin, every decision would keep claiming to be
+        # reproducible while quietly meaning something else.
+        assert result["pins"]["tf"].startswith("shipped:place@sha256:")
         assert result["pins"]["engine"] == "crosswalk.v1"
+
+    def test_common_name_does_not_clear_the_distinctive_gate(self):
+        # Two facilities called "General Hospital" 4.4 km apart are not
+        # evidence of one facility, however identical the strings. The
+        # distinctive residual is generic on both sides, so the pair must land
+        # in `review`; an identically-shaped pair with a rare residual merges.
+        common = crosswalk(
+            [{"name": "General Hospital", "lat": 12.00, "lon": 8.50}],
+            [{"name": "General Hospital", "lat": 12.04, "lon": 8.50}],
+            entity="place",
+        )["matches"]
+        distinctive = crosswalk(
+            [{"name": "Gyaranya Health Post", "lat": 12.00, "lon": 8.50}],
+            [{"name": "Gyaranya Health Post", "lat": 12.04, "lon": 8.50}],
+            entity="place",
+        )["matches"]
+        assert common and distinctive
+        assert common[0]["decision"] == "review"
+        assert distinctive[0]["decision"] == "match"
+        # Same score — only the rarity of what they share differs.
+        assert common[0]["score"] == pytest.approx(distinctive[0]["score"])
+
+    def test_self_calibrated_table_does_not_gate_on_rarity(self):
+        # Over a small corpus a token seen twice scores ~0.71, below the 0.75
+        # floor, so consulting distinctiveness there would refuse everything.
+        # A caller passing their own corpus table must keep the old behaviour.
+        from arche.resolve._tokenfreq import TokenFrequencyTable
+
+        names = ["General Hospital", "Karfi Health Post", "Tsalle Health Post"]
+        tf = TokenFrequencyTable.from_corpus(names)
+        assert tf.population_scale is False
+        edges = crosswalk(
+            [{"name": "General Hospital", "lat": 12.00, "lon": 8.50}],
+            [{"name": "General Hospital", "lat": 12.04, "lon": 8.50}],
+            entity="place", tf=tf,
+        )["matches"]
+        assert edges and edges[0]["decision"] == "match"
 
     def test_sign_edges_round_trip(self):
         pytest.importorskip("cryptography")

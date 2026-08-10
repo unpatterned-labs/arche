@@ -51,6 +51,43 @@ def ordered_name_tokens(text: str) -> list[str]:
     return _TOKEN_RE.findall(_normalise_text(text or ""))
 
 
+def distinctive_residual(
+    name_a: str,
+    name_b: str,
+    tf: TokenFrequencyTable,
+    *,
+    floor: float = DISTINCTIVE_FLOOR,
+) -> float:
+    """Rarity of what is left on each side once generic words are removed.
+
+    :func:`shared_name_distinctiveness` requires a *literally* shared token, so
+    a one-letter spelling difference in the part that actually identifies the
+    place ("Kalahaddi Health Post" vs "Kalahadi Health Post") falls back to the
+    rarity of ``health`` and ``post`` and reads as generic — demoting a true
+    match measured at the same coordinates.
+
+    This asks the other question: strip the tokens the corpus says are common
+    and see whether each side still has a rare word in it. The frequency table
+    does the stripping, so no facility-type vocabulary is needed and the answer
+    is a property of the population rather than of a curated list.
+
+    Returns the weaker side's best remaining token, so both records must carry
+    something distinctive. Zero when either side is generic throughout — which
+    is exactly the "General Hospital" case this is meant to catch.
+
+    This is only ever combined with ``max`` against the literal measure, so it
+    can recover pairs that were being demoted and can never lower a score.
+    """
+    best_side: list[float] = []
+    for name in (name_a, name_b):
+        rare = [tf.distinctiveness(t) for t in name_tokens(name)
+                if tf.distinctiveness(t) >= floor]
+        if not rare:
+            return 0.0
+        best_side.append(max(rare))
+    return min(best_side)
+
+
 def shared_name_distinctiveness(
     name_a: str,
     name_b: str,

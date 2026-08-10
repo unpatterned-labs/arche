@@ -178,12 +178,18 @@ This is the short list. Each entry has a combination law written down in the cod
 |---|---|---|
 | Question | Link two lists at scale | Are these two the same? |
 | Combination law | Weighted arithmetic mean | Fellegi-Sunter log-odds |
-| Gate clears when | Any distinctive-*kind* comparator reaches the floor | A genuinely **rare** shared name token exists |
+| Gate clears when | A distinctive-*kind* comparator reaches the floor **and**, for name-like kinds, what the two names share is itself rare | A genuinely **rare** shared name token exists |
 | Output | Edges with `decision_id` and evidence | A signable `CoReferenceDecision` |
 
-They share their primitives — comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant, all in `resolve/_matcher.py`, `_tokenfreq.py` and `_gate.py`. What they do not share is the gate *policy*, and `_gate.py`'s docstring is explicit about why: coref additionally requires a rare shared token, so two identical **common** names must not clear it. Converging the two policies would either weaken that guarantee or change facility-crosswalk scores. It is a benchmarked scoring change, not a refactor, and it is not on the roadmap disguised as tidying.
+They share their primitives — comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant, all in `resolve/_matcher.py`, `_tokenfreq.py` and `_gate.py`. They now also share the *principle* behind the gate, which they did not until recently, and the story is worth telling because it is what this page is for.
 
-The scores from the two engines are not comparable. That is on purpose.
+Coref has always required a rare shared token, so two identical **common** names cannot clear it. Crosswalk took the maximum over its distinctive comparators, and a `placename` comparator returning 1.0 on two identical strings cleared the gate on its own — carrying no claim about rarity at all. The consequence was measurable and bad: two facilities named "General Hospital" 4.4 km apart merged with **exactly the same score and evidence** as two sharing a genuinely distinctive name.
+
+The root cause was not the gate but the corpus. No place frequency table shipped, so the place pack fell through to the *person* table, where `hospital`, `health`, `clinic` and `centre` are unseen and therefore read as **rare**. Both halves are now fixed: a place table is built from CC0 and CC-BY sources across twenty countries and four sectors, and the crosswalk gate prices name-like similarity by the rarity of what the names actually share.
+
+Two details of that fix are load-bearing. It consults distinctiveness **only against a population-scale table** — over a small self-calibrated corpus a token seen twice scores 0.71, below the floor, so the gate would refuse everything; callers passing their own corpus table keep the previous behaviour exactly. And rarity is measured two ways combined with `max` — a literally shared rare token, *or* a rare residual on both sides once generic words are stripped — because requiring literal overlap alone demoted 19 true matches whose identifying word differed by a single letter (`Kalahaddi` / `Kalahadi`) at zero distance. The measured cost of the final version on the Kano crosswalk is **2 pairs moved from `match` to `review`, and none lost**.
+
+The scores from the two engines are still not comparable. That part is on purpose.
 
 ### 3. The geographic veto: a constraint, not a weight
 
@@ -219,8 +225,8 @@ print("evidence:", worst["evidence"])
 ```
 
 ```text
-Counter({'match': 545, 'review': 362})
-edges carrying geo_conflict_km: 170
+Counter({'match': 564, 'review': 529})
+edges carrying geo_conflict_km: 279
 names   : Kauyen Adam Health Post <> Kauyen Adam Health Post
 score   : 0.805 -> decision: review
 evidence: {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.025, 'distance_km': 11.06, 'geo_conflict_km': 11.06}
@@ -228,7 +234,7 @@ evidence: {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.025, 'di
 
 That is the architecture in one edge. Two byte-identical names, every name comparator at 1.0, a score of 0.805 comfortably over the 0.7 threshold — and the edge still lands in `review`, carrying the distance that put it there. No weight could have produced that outcome; only a constraint could.
 
-The threshold was set by a sweep, and what it can and cannot tell you is documented honestly in [the place benchmark](place-benchmark.md): LGA agreement moves 78.2% → 88.2%, and that number is a consistency check against a weak label, not validation.
+The threshold was set by a sweep, and what it can and cannot tell you is documented honestly in [the place benchmark](place-benchmark.md): LGA agreement moves 78.4% → 88.1%, and that number is a consistency check against a weak label, not validation.
 
 ### 4. The statute engine
 

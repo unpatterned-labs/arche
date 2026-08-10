@@ -135,7 +135,7 @@ b_id=0  match    score=0.919  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.
 b_id=1  review   score=0.8  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.0, 'distance_km': 62.2, 'geo_conflict_km': 62.2}
 ```
 
-The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed** — you cannot refute a claim on evidence you do not have — and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.2% to 88.2%; what that number can and cannot tell you is set out in full on [the place benchmark](place-benchmark.md), where it is called a consistency check rather than validation.
+The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed** — you cannot refute a claim on evidence you do not have — and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.4% to 88.1%; what that number can and cannot tell you is set out in full on [the place benchmark](place-benchmark.md), where it is called a consistency check rather than validation.
 
 ### Also in resolve
 

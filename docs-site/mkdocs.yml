@@ -136,6 +136,7 @@ nav:
     - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
   - Blog:
     - blog/index.md
+    - Similar is not the same: blog/similar-is-not-the-same.md
     - The part intelligence doesn't make cheaper: blog/the-part-intelligence-doesnt-make-cheaper.md
     - The same clinic, three spellings: blog/reconciling-nigerias-health-facilities.md
     - Introducing arche: blog/introducing-arche.md
