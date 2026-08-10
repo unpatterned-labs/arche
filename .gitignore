@@ -86,6 +86,8 @@ pyproject.toml
 .claude/
 CLAUDE.md
 
+DESIGN.md
+
 # Provider pulls (Overture, geocoder caches). Evidence, never packs — the
 # provenance firewall means these must not be committed alongside the data
 # packs they would otherwise encumber.
