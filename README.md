@@ -83,13 +83,23 @@ Same pipeline shape works for the four launch jurisdictions:
 
 | Area | Current coverage |
 |---|---|
-| Government IDs | Nigerian NIN, BVN, TIN, RC, PVC, drivers licence; Kenyan National ID, Huduma, KRA PIN, NHIF; South African ID, tax, passport; Ghana Card, SSNIT, TIN; plus wider African ID patterns |
+| Government IDs | Nigerian NIN, BVN, TIN, RC, PVC, drivers licence; Kenyan National ID, Huduma Namba, KRA PIN, NHIF; South African ID, tax, passport; Ghana Card, SSNIT, TIN; plus wider African ID patterns |
 | Names and local NER | African name lexicon and equivalence data, with optional GLiNER soft-PII detection |
 | Phones | libphonenumber-backed E.164 normalization across African networks |
 | Addresses | Nigeria and South Africa parser MVP |
 | Digital identifiers | DIDs, Bitcoin addresses, Ethereum addresses |
 | Network identifiers | IPv4 and IPv6 detection with private and special-range flags |
 | Documents | PDF, DOCX, PPTX, XLSX, and HTML parsing via `arche-core[doc]` |
+
+**How Huduma Namba is detected, because the distinction matters.** A Huduma
+Namba has no check digit and shares its length range with NHIF numbers and the
+Kenyan National ID, so a bare 8-digit string carries no evidence of which of the
+three it is. Detection is therefore **cue-anchored**: `PII-2-HUDUMA` is emitted
+where the text says "Huduma", and a bare number is reported as whatever the
+bare-digit patterns make of it. That is the same evidence a person uses, and it
+is why this pattern carries 0.88 confidence where the bare-digit ones sit at
+0.40–0.45. Until v0.3.0a2 there was no pattern at all and Huduma numbers were
+reported as `PII-2-NHIF` — mislabelled rather than missed.
 
 ## Detect, Protect, Resolve
 

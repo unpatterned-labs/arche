@@ -174,7 +174,12 @@ def extract_places_llm(
     if complete_fn is None:
         from arche.llm.providers import complete as _provider_complete
 
-        raw = _provider_complete(messages, config)
+        # `providers.complete(config, messages)` — config first. This read
+        # `(messages, config)`, so every `config=` call reached the provider
+        # with a list where the config belonged and died on the first attribute
+        # access. It survived a release because the tests only ever exercise
+        # `complete_fn=`, which does not go through here at all.
+        raw = _provider_complete(config, messages)
         model = model or getattr(config, "model", "")
     else:
         raw = complete_fn(messages)

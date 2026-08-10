@@ -548,7 +548,10 @@ class Pipeline:
         # Old-style: NationalID → Detection conversion.
         category_id = getattr(raw, "id_type", None) or "UNKNOWN"
         identity_class = "foundational" if category_id in {
-            "NIN", "NATIONAL_ID", "GHANA_CARD"
+            # HUDUMA is the NIIMS number — Kenya's foundational identity under
+            # the National Integrated Identity Management System, not a
+            # sector-specific functional id like NHIF or a KRA PIN.
+            "NIN", "NATIONAL_ID", "GHANA_CARD", "HUDUMA"
         } else "functional"
         return Detection(
             # Detector-qualified id: span-only ids collide when two detectors

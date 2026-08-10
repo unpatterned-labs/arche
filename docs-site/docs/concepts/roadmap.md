@@ -11,7 +11,7 @@ The single source of truth for what arche ships today, what gates the beta relea
 
 ## Today: v0.3.0a1
 
-`pip install arche-core` · 1,456 tests in `packages/arche-core/tests` · ~1.3 MB base wheel, CPU-only, no mandatory ML dependencies · Python 3.11–3.13.
+`pip install arche-core` · 1,561 tests in `packages/arche-core/tests` · ~2.5 MB base wheel, CPU-only, no mandatory ML dependencies · Python 3.11–3.13.
 
 ### Resolve: the lead capability
 
@@ -50,7 +50,7 @@ One YAML declares *your* fields and annotates each with arche's roles (`identifi
 
 - `arche.sign` (Ed25519 + JWS + did:key), `arche.attest`, `arche.credentials.sd_jwt` (SD-JWT-VC with key binding), `arche.workflow.dsar`.
 - **`arche compare`** and **`arche schema`** — link two files into a masked, shareable HTML report plus a `decisions.json` sidecar; validate a declaration or generate LLM tool-definitions from it. Both in one command.
-- The MCP server is **not** in this list. It is built but unpublished — see *In flight*.
+- The MCP server is **not** in this list, and it is **not built**. See *In flight* for the correction.
 
 ---
 
@@ -86,7 +86,7 @@ Active work with named deliverables. Two tracks run in parallel — the measured
 
 - **EgressGuard completion** — the boundary that decides what may leave, with region/provider pinning.
 - **Hash-chained audit + Merkle checkpoints** — `prev_hash` is stubbed today; replay and bitemporal query follow.
-- **`arche-mcp`, the MCP server** — built and guarded by design (offsets and evidence, never raw PII; no reveal option on any agent path; fails closed without a statute), but **not yet published**: it is not in the `arche-core` wheel and `uvx arche-mcp` does not resolve. Publishing it, then closing the production gaps — auth/delegation first, then tool-call attestation and audit events — is this track's next deliverable. Until it is on PyPI, treat it as in flight, not shipped.
+- **`arche-mcp`, the MCP server** — **not built.** Earlier versions of this page said it was "built but unpublished" and described its security behaviour in detail: that it exposed offsets and evidence rather than raw PII, that no agent path offered a reveal option, and that it failed closed without a statute. **None of that code exists.** There is no MCP module in this repository and none in the wheel; `uvx arche-mcp` does not resolve because there is nothing to resolve. The claim was wrong, it asserted security properties of software that was never written, and it is corrected here rather than quietly deleted. Design work is real and the four verbs map cleanly onto tools; building it is a post-v0.3.0a2 milestone, and nothing about its behaviour should be relied on until it is on PyPI with tests.
 - **EU AI Act overlay** — gated on a deployment that actually needs it. *No EU AI Act statute pack ships today*; Annex III obligations were deferred to December 2027 by the June 2026 Digital Omnibus, and we will not imply otherwise.
 
 **Place lane remainder** — calibrating the `type` comparator on labelled pairs (it ships at weight 0, visible in evidence, deliberately unscored until then); mid-hierarchy containment hygiene; comparator-firing documentation.
@@ -118,6 +118,31 @@ Two beachheads, chosen because each has a public identifier to anchor on and a r
 **Then food traceability and audit.** A batch moving from farm to processor to distributor to retailer is described differently at every hop, and the reconciliation has to survive that. This is where the parts arche already has stop being separate features: resolution links the hops, the attestation makes each link independently checkable, and the review queue is where a human decides whether two consignments are the same consignment. An audit trail whose links cannot be verified is a spreadsheet with better branding.
 
 Both are gated the same way as everything else here: a partner with the problem and data to run it against, not a demo.
+
+---
+
+## Next: v0.3.0a2 and the UK charge-point benchmark
+
+A dated plan, so it can be held to. Target **2026-08-18**.
+
+Two correctness fixes come first, because both were found by auditing our own claims and one of them is a security defect in shipped code.
+
+**`EgressGuard` fails open on nested detections.** The guard's stated guarantee is that no raw *detected* value appears in any output field. On overlapping spans that is false. The Nigerian detector set produces nesting on ordinary addresses: `PII-4-ADDRESS` covering "12 Awolowo Road, Ikoyi, Lagos" and `PII-4-LOCATION` covering "Lagos". The projection consumes the inner span, skips the outer one, and the address prefix crosses the boundary in clear while `PII-4-ADDRESS` disappears from the output fields entirely. Severity inverts as well: the dropped span is the more restricted one. The fix is not novel work — `policy.engine` already resolves overlapping spans into disjoint regions with most-restrictive-action-wins, and that logic ports across. Ships as **v0.3.0a2** with the defect described plainly in the changelog and `SECURITY.md`, not folded into a "bug fixes" line.
+
+**Then the UK charge-point benchmark**, and the question it exists to answer is whether this engine is calibrated to Nigeria or overfitted to it. Those are different problems with very different costs.
+
+Early probing says calibrated, and says so in a useful way. The shipped place pack carries `decay_km: 3.0` and `veto_km: 10.0`, sized for health facilities kilometres apart. UK charge points that are genuinely different entities sit tens of metres apart, so geographic similarity saturates near 1.0 for true and false pairs alike and the veto never fires. The place frequency table has the same shape of gap: it is built on health, energy, education and civic vocabulary, so `supercharger`, `charging`, `rapid` and the operator names are unseen tokens, hit the unknown floor, and read as *rare* — the "General Hospital" failure reproduced in a domain the table has never seen. Recovering accuracy needed **parameters and a frequency stratum, not comparator changes**. If that holds up under a real labelled set, the finding is that the architecture generalises and the calibration does not travel, which is the honest and much cheaper answer.
+
+**Independence is the gate, and it runs before anything else.** Open Charge Map is an aggregator and may ingest the national registry; if it does, that pair is a key join wearing an entity-resolution costume, exactly as GRID3 and OpenStreetMap were in Kano. The test is the one already published on [the place benchmark](place-benchmark.md): median separation and the fraction of matches at exactly 0.00 km. It runs first, and its result is published whichever way it falls. A failed independence test is a finding, not a failed benchmark.
+
+| Deliverable | Detail |
+|---|---|
+| **v0.3.0a2** | `EgressGuard` overlap fix with nested-span tests; disclosure in `CHANGELOG.md` and `SECURITY.md` |
+| **Truth-in-docs sweep** | This page's MCP claims, corrected above; statute-pack version labels; the wheel-size and test-count figures; the "independently-recorded boundaries" phrasing that our own benchmark page contradicts |
+| **UK charge-point benchmark** | Independence test as a gate, 300–500 stratified labelled pairs, precision at `match` ≥ 0.95, surfaced recall ≥ 0.90, false-merge rate ≤ 0.02, blocking recall ≥ 0.98 at metre scale |
+| **An EV comparator pack + frequency stratum** | Calibration shipped as data, not code, and reported as the finding |
+
+**Explicitly not in this window:** the MCP server; an `arche-langchain` package; document extraction of our own. On the last one the position is settled — vendors in that space produce *references*; what arche adds is which real-world entity a reference denotes, whether you may retain it, and a signature over the decision. Bring your own extractor.
 
 ---
 
@@ -166,7 +191,7 @@ Visible on the horizon; named so adopters can push, not promised. Jurisdiction d
 A roadmap that never records its own reversals is a wish list. Three, with reasons:
 
 - **The lead moved from "African PII detection" to "know the real-world entity, prove the decision."** Detection is a layer, not the product; resolution plus attestation is. African calibration remains the wedge and the credential — the hardest identity data in the world — rather than the scope. → [the thesis](representation-engine.md)
-- **An MCP server is now on the roadmap at all**, reversing an early non-commitment ("agent integration is downstream of framework adoption"). Agents turned out to be an *install surface*, not a later channel. The server is built; publishing it is in flight, and the reversal is recorded here whether or not it lands on schedule.
+- **An MCP server is now on the roadmap at all**, reversing an early non-commitment ("agent integration is downstream of framework adoption"). Agents turned out to be an *install surface*, not a later channel. The server is **not** built — see *In flight*, where an earlier false claim on this page is corrected. The reversal of the non-commitment stands; the implementation has not started.
 - **Resolution left the "power-user" shelf.** `resolve`, `sign`, and `attest` were once documented as extras behind the detection pitch. They are the pitch.
 
 **Standing non-commitments** (unchanged): no fine-tuned PII model in the base wheel — detectors stay rule-based and check-digit-validated, with neural NER as an opt-in extra; no production DPI adapters as scaffolding; no arXiv paper as a deliverable — engineering ships as documented work and benchmarks; no claim of regulator endorsement, ever, without a named reviewer and a date.

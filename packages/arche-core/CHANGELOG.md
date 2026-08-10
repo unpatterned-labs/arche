@@ -2,6 +2,130 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [0.3.0a2] — 2026-08
+
+A security fix and the documentation corrections it turned up. No new features.
+
+### Fixed — `EgressGuard` emitted detected values in clear when spans overlapped
+
+**This is a security defect in the component whose entire purpose is to stop
+exactly that, and it affects `0.3.0a1`.** Anyone using `arche.guard.EgressGuard`
+should upgrade.
+
+`_project` replaced detected spans right-to-left and skipped any span that
+overlapped one it had already consumed. It sorted by `(start, end)` descending,
+which reaches the *innermost* span first, so the **container** was the span
+that got skipped — and the part of it outside the inner span was never
+replaced. The docstring claimed the opposite ("the outer, earlier-consumed span
+wins"); the code did not do that.
+
+This was not a corner case. The shipped Nigerian detector set produces nested
+spans on any ordinary address, where `PII-4-ADDRESS` contains `PII-4-LOCATION`:
+
+```text
+in    Janet Okafor lives at 12 Awolowo Road, Ikoyi, Lagos.
+0.3.0a1  Janet [NAME:…] lives at 12 Awolowo Road, Ikoyi, [LOCATION:…].
+0.3.0a2  Janet [NAME:…] lives at [ADDRESS:…].
+```
+
+Two things made it hard to notice. The street address crossed the boundary in
+clear, and `PII-4-ADDRESS` was **absent from `GuardedProjection.fields`
+entirely**, so nothing downstream could tell that a detection had been dropped.
+Severity also inverted: under NDPA-2023 `ADDRESS` generalises while `LOCATION`
+is retained, so the span discarded was the more restricted one.
+
+Overlapping detections are now grouped into disjoint regions and each region is
+replaced exactly once — the same resolution `policy.engine` already applied to
+redaction. Within a region the **action** comes from the most restrictive member
+(the safety property) and the **label** from the widest (an address containing a
+name is still an address). The token is derived from the whole region's text
+rather than one detection's, because the region is what leaves.
+
+`GuardedField` gains **`covers`**, a tuple of every category absorbed into the
+region, so a collapsed region stays auditable. Existing fields are unchanged and
+the dataclass remains backward compatible.
+
+Six regression tests were added, including an end-to-end one that runs the real
+pipeline and asserts no detection's text survives in the projection. The prior
+tests covered only disjoint spans, which is why this passed for a full release.
+
+### Fixed — `extract_places_llm(config=...)` never reached the provider
+
+`llm/spatial.py` called `providers.complete(messages, config)`. The signature is
+`complete(config, messages)`. Every call through the `config=` path handed the
+provider a list where the configuration belonged and failed on the first
+attribute access, so the documented "bring your own LLM" route for spatial role
+extraction did not work at all.
+
+`llm/declarative.py` and `llm/extraction.py` both call it correctly, so this was
+one transposition rather than a pattern.
+
+It survived a release because the entire spatial test suite passes
+`complete_fn=`, which bypasses the provider module. Three tests now cover the
+`config=` path — argument order, the model pin, and the mutually-exclusive
+argument check — and the first of them fails against the old code.
+
+### Added — Huduma Namba detection (`PII-2-HUDUMA`)
+
+Closes the gap the README correction above exposed. A Huduma Namba was
+previously matched by the NHIF pattern and reported as `PII-2-NHIF`:
+mislabelled, not missed, so a caller filtering on NHIF silently received Huduma
+numbers and a caller looking for Huduma found nothing.
+
+Detection is **cue-anchored by design**. The NIIMS number has no check digit and
+its 8-12 character range overlaps both NHIF (8-9 digits) and the National ID
+(7-8 digits), so a bare number genuinely does not say which of the three it is.
+Matching bare digits as HUDUMA would have inverted the bug rather than fixed it,
+and started mislabelling NHIF numbers instead. The pattern fires only where the
+text says "Huduma", which is the same evidence a person uses and the only
+evidence present — hence 0.88 confidence against 0.40-0.45 for the bare-digit
+patterns.
+
+Added to both the jurisdiction detector (`detect.ke.ids`) and the pan-African
+fallback (`detect._africa.ids`) so the two cannot diverge, ordered ahead of the
+bare-digit patterns. `PII-2-HUDUMA` maps to `mask` at `high` tier in the Kenya
+DPA pack, and `HUDUMA` joins the foundational identity classes — it is the NIIMS
+identity, not a sector-specific functional id. The `PII-2-NATIONAL_ID` rationale
+no longer claims to cover Huduma.
+
+Ten tests, including the ones that pin what it must *not* do: no bare number is
+claimed as a Huduma Namba, and the cue is word-bounded so "shuduma" does not
+trigger it.
+
+### Fixed — documentation that overstated what exists
+
+Found while auditing our own claims for the above.
+
+- **`roadmap.md` said the MCP server was "built but unpublished"** and described
+  its security behaviour in detail — offsets not raw PII, no reveal option on
+  any agent path, fails closed without a statute. **No MCP code has ever existed
+  in this repository.** All three claims are corrected in place rather than
+  quietly deleted, because asserting security properties of software that was
+  never written is the more serious error of the two.
+- **The PyPI front page claimed independence we explicitly disclaim.** The
+  package README said the Kano crosswalk gives "88.2% agreement with
+  **independently-recorded** administrative boundaries" and linked to a page
+  whose first paragraph says "**It is not independent validation**" and reports
+  88.1%. Corrected to state the weak label, the shared lineage, and that the
+  figure is a consistency check.
+- **"Six statute packs at v1.0"** — six packs ship; three are `v1.0` and three
+  are `v0.1-scaffold`. The README now says which are which.
+- **"~310KB base"** — the base wheel is **~2.5 MB** and has been for some time;
+  the place frequency table added 1.2 MB of it. Also corrected in the roadmap,
+  which said ~1.3 MB and "1,456 tests" against an actual 1,561.
+- **Huduma Namba was listed as a detected government ID.** It is declared in
+  `jurisdictions.kenya` with a validator but has **no pattern in the detector
+  set**, so a Huduma number is matched by the NHIF pattern and reported as
+  `PII-2-NHIF` — mislabelled rather than merely missed. Removed from the
+  coverage table and named as a gap.
+- **"~500 cities"** in the detection-layer notes — the gazetteer holds 102
+  cities and 134 aliases (236 lookup keys).
+- **`pyproject.toml` listed five workspace members that are not on disk**
+  (`arche-mcp`, `arche-graph`, `arche-live`, `api`, `demo`).
+- **`data/scripts/build_bridge_file.py` imported `arche_mcp`** and raised
+  `ImportError` on every run. The handler it wanted was lifted into core as
+  `resolve.reconcile` with the same signature.
+
 ## [0.3.0a1] — 2026-08
 
 First alpha of the 0.3 (beta) line. The published beta criteria

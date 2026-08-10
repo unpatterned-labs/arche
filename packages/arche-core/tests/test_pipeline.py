@@ -43,4 +43,6 @@ def test_pipeline_batch():
 
 
 def test_version():
-    assert __version__ == "0.3.0a1"
+    # Pinned deliberately: bumping the version is a release decision, so it
+    # should require touching a test rather than happening as a side effect.
+    assert __version__ == "0.3.0a2"

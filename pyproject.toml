@@ -11,11 +11,9 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "packages/arche-core",
-    "packages/arche-mcp",
-    "packages/arche-graph",
-    "packages/arche-live",
-    "api",
-    "demo",
+    # arche-mcp / arche-graph / arche-live / api / demo were listed here
+    # but have never existed on disk. A workspace member that is not a
+    # directory is a claim about what ships; uv tolerates it silently.
 ]
 
 [tool.uv.sources]
