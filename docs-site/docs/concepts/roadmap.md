@@ -121,9 +121,43 @@ Both are gated the same way as everything else here: a partner with the problem 
 
 ---
 
+## Representation: where a learned vector may and may not enter
+
+We reviewed this properly — place and Earth embeddings, dense vector matching, and hyperdimensional computing — against the shipped engine. The position, and the work it implies, are stated here because "does arche use embeddings?" is a fair question with a specific answer.
+
+**No learned vector enters the decision path.** Not as a comparator, not in the distinctive-evidence gate, not in `factors`. Three reasons, in descending order of how hard they are to argue with:
+
+- **Frequency weighting cannot be expressed as a similarity.** Fellegi-Sunter prices agreement at `log(m/u)`, where `u` is a property of how common the value is *in the population being linked*. A cosine is a function of two strings; there is no argument for the population. Agreement on "Ibrahim" being weaker evidence than agreement on "Gyaranya" is not a fact about those strings, and no encoder recovers it.
+- **A single opaque score cannot clear a gate honestly.** `DISTINCTIVE_FLOOR = 0.75` is a claim about rarity. A cosine of 0.75 is not, and letting one clear the other would make the abstention guarantee decorative.
+- **An embedding of a name is invertible personal data**, and it would break both the "no raw PII in evidence" guarantee and the replayability of `decision_id`, which a model update silently invalidates.
+
+**Two places a model legitimately helps, and we intend to use both.**
+
+*Candidate generation.* Every production place matcher in this literature puts its embedding here and nowhere else. Overture's blocking model uses name, category and address embeddings; the winning Foursquare Kaggle solutions generated candidates from spatial proximity **and** name-embedding neighbours, because neither channel alone reached acceptable recall. OpenSanctions states the division of labour plainly — embeddings are *"phenomenal at surfacing a wide set of match candidates"* but *"less suited to help discern false positives."* A blocker changes which pairs are offered, never what a decision means, so it never touches `decision_id`.
+
+*Pack authoring, offline.* A model proposing name-equivalence and orthography groups that a human accepts into YAML buys cross-script recall with no runtime vector, exact frequency weighting, and the contributor model intact. This is the pattern `extract_places_llm` already ships — model proposes, engine verifies — pointed at the data packs for the first time.
+
+**The blocker is not the representation; it is that we cannot yet measure the question.** There is no African name-matching benchmark and no Nigerian place-resolution evaluation set — not in this repository and not in the published literature. Every place-ER benchmark we could verify is North American, European, or East and Southeast Asian. So the honest position is not "an embedding would lose" but "arche cannot tell whether it would win," and the instrument that decides it is the deliverable.
+
+**Scope of the next series of work, in order:**
+
+| Work | What it is |
+|---|---|
+| **A place frequency table** | Correctness, not research. Only person and artist frequency corpora ship today, so facility words (`hospital`, `health`, `clinic`, `centre`) are unseen by the table, read as rare, and clear the distinctiveness floor. Two facilities named "General Hospital" 4.4 km apart currently merge with the same score and evidence as two sharing a genuinely rare name. The mechanism is right — on person names it correctly routes `Ibrahim Musa` to `review` — the corpus is missing |
+| **Two licence classes** | `cdla-permissive-2.0` and `apache-2.0` are absent from the provenance firewall's taxonomy, so Overture Places — permissively licensed, and deliberately free of OSM share-alike — classifies as `unknown` and is barred from packs. The firewall is over-restrictive against the best available source, on a taxonomy gap rather than a licence problem |
+| **The Nigerian place-resolution gold set** | Thousands of adjudicated pairs, not the 120 we have. Labelled with two independent models over an explicit evidence hierarchy, disagreements routed to human adjudication. Published. This is the contribution, and no equivalent exists for any African country |
+| **Blocking recall, measured** | `blocking_recall()` returns a number only if you hand it truth pairs, which no benchmark of ours currently does. Above ~0.95 and the embedding question is closed for the foreseeable future. Below, and the answer is a name-similarity blocking channel — a fourth key beside h3, rare-token and shared-id |
+| **Comparators before contenders** | Thread `orthography=` through `reconcile()`; give the `type` comparator a calibrated non-zero weight instead of shipping it at 0. Both are known gaps, both are cheap, and both must be closed before anything is benchmarked against them |
+
+**Ship criterion for a blocking channel, set in advance:** recall up ≥2 points absolute, candidate pairs up ≤25%, and the gain concentrated in the named zero-token-overlap slice. `false_merge_rate` must stay at 0 on hard negatives. If the work is blocking-only, the `match` count must **not** change — newly blocked pairs are unlabelled, so a run reporting "more matches" is reporting nothing until those pairs are adjudicated.
+
+**What we will not build:** an embedding comparator inside the weighted mean or the log-odds sum; an end-to-end neural matcher (it is a baseline to report against, not a component); Earth or location embeddings inside resolution — the location-encoding field's own consolidating benchmark contains no matching task, and swapping a distance a reviewer reads in metres for a cosine they cannot is a straight loss; and embeddings for facility-type alignment, because "Health Post → PHC" is an ordinal tier relation usually recording an upgrade event, not a similarity.
+
 ## Not committed
 
-Visible on the horizon; named so adopters can push, not promised. Jurisdiction depth beyond Africa (Brazil LGPD, India DPDP, Indonesia PDP, Mexico, Philippines — each roughly one statute pack plus one detector pack); sector packs over the African base (health, agriculture, energy, manufacturing); hypervector/HDC matching (research only until it beats the shipped matcher on a published slice); multimodal spatial grounding.
+Visible on the horizon; named so adopters can push, not promised. Jurisdiction depth beyond Africa (Brazil LGPD, India DPDP, Indonesia PDP, Mexico, Philippines — each roughly one statute pack plus one detector pack); sector packs over the African base (health, agriculture, energy, manufacturing); multimodal spatial grounding.
+
+**Hypervector/HDC matching** stays research-only, and the gate is now specific: it enters the roadmap if a seeded binary-hypervector comparator raises recall by ≥3 points absolute at `false_merge_rate = 0` against the shipped token-frequency and Fellegi-Sunter matcher, on published benchmark slices, without enlarging the review queue, without adding a numeric dependency to the base wheel, and while still answering *which token* cleared the gate. Until the benchmark exists this is not evaluable, so the first deliverable is the benchmark, not the matcher. Worth stating plainly: hyperdimensional computing's own 52-page applications survey contains no record linkage, entity resolution, or name matching. There is no prior art here and no baseline but our own.
 
 ---
 

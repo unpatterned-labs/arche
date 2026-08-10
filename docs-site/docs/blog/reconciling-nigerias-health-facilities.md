@@ -65,10 +65,10 @@ Swept against LGA agreement, which both sources record independently:
 
 | veto | matches | same-LGA | diff-LGA | LGA agreement | matches over 10 km |
 |---|---|---|---|---|---|
-| none | 618 | 481 | 134 | 78.2% | 73 |
+| none | 636 | 497 | 137 | 78.4% | 72 |
 | 50 km | 594 | 481 | 110 | 81.4% | 49 |
 | 25 km | 561 | 481 | 77 | 86.2% | 16 |
-| **10 km** | **545** | **479** | **64** | **88.2%** | **0** |
+| **10 km** | **564** | **495** | **67** | **88.1%** | **0** |
 
 Loosening from 10 km to 25 km buys back two same-LGA matches and lets in thirteen cross-LGA ones. That is a bad trade when a veto costs a human glance and a wrong merge costs a clinic its allocation. At the shipped setting the furthest matched pair is 8.97 km apart, and 170 pairs carry `geo_conflict_km` into the review queue as the stated reason.
 
@@ -114,7 +114,7 @@ We found the GRID3/HDX problem, wrote it up, and then failed to apply the same q
 
 Take the pairs the matcher agreed on and look at the distance between their coordinates. Independent field surveys of the same building do not agree exactly. Handheld GPS error is 3 to 10 metres in good conditions, worse under tree cover or beside a wall. Two teams, two devices, two visits, and you expect tens of metres of disagreement, distributed.
 
-**The GRID3 × OSM matches have a median separation of 0.000 km, and 319 of 545 of them, 59%, are at exactly zero.** No pair of independent surveys produces that. OSM's health facilities for Kano were imported from the same lineage as GRID3, most likely the registry both draw on.
+**The GRID3 × OSM matches have a median separation of 0.000 km, and 332 of 564 of them, 59%, are at exactly zero.** No pair of independent surveys produces that. OSM's health facilities for Kano were imported from the same lineage as GRID3, most likely the registry both draw on.
 
 To check that rather than infer it, we pulled Overture Maps, which publishes per-feature source lineage. Of its 358 named health places in the Kano bounding box: **354 from Meta, 3 from Microsoft, 1 from Foursquare. Zero OpenStreetMap, zero GRID3, zero NHFR.** Independence stated in the data instead of assumed.
 
@@ -130,7 +130,7 @@ Running the identical crosswalk against both sources gives two completely differ
 
 The genuinely independent source agrees on **fewer** facilities and agrees **less precisely** about where they are. That is not the matcher performing worse. It is what honest disagreement between two observations looks like.
 
-Which means the 88.2% figure in the veto sweep above is a **consistency check, not validation.** It is a sound basis for choosing a threshold. It is not evidence that the matcher is right about the world, and the earlier version of this post said it was.
+Which means the 88.1% figure in the veto sweep above is a **consistency check, not validation.** It is a sound basis for choosing a threshold. It is not evidence that the matcher is right about the world, and the earlier version of this post said it was.
 
 The coverage gap is a finding rather than a defect. GRID3 is overwhelmingly rural primary health centres and health posts; Meta's place data covers named, signed, commercial facilities, which skews urban. An independent source can validate the urban tier and says almost nothing about the rural network, which is exactly where a national facility list matters most. Knowing that is more useful than a precision score.
 

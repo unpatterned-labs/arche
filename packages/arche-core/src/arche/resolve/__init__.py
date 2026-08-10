@@ -93,14 +93,20 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         # Benchmarked on GRID3 x OpenStreetMap (Kano, 685 x 1,723), scored
         # against LGA agreement — a label both sources carry independently:
         #
-        #     no veto   481 same-LGA / 134 diff-LGA   78.2%   73 matches >10km
-        #     50 km     481          / 110            81.4%   49
-        #     25 km     481          /  77            86.2%   16
-        #     10 km     479          /  64            88.2%    0
+        #     no veto   497 same-LGA / 137 diff-LGA   78.4%   72 matches >10km
+        #     50 km     497          / 113            81.5%   48
+        #     25 km     497          /  80            86.1%   15
+        #     10 km     495          /  67            88.1%    0
         #
         # These are the SHIPPED configuration (orthography off). An earlier
         # version of this comment carried the +hausa numbers (494/492), which
         # describe a configuration the pack does not ship.
+        #
+        # Re-measured when the pack moved from a table self-calibrated over the
+        # two lists to the shipped `place` frequency table. The sweep's shape is
+        # unchanged and 10 km is still the pick; the counts rose because the
+        # population table changes which tokens are rare, and rare tokens are a
+        # blocking key — so more true pairs reach the comparators at all.
         #
         # 10 km is the pick. Against 25 km it gives up 2 same-LGA matches to
         # remove 13 cross-LGA ones, and leaves nothing matched beyond 10 km.
@@ -129,7 +135,14 @@ ENTITY_PACKS: dict[str, list[dict]] = {
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather
 # than self-calibration (small artist catalogs mislead a self-calibrated table
 # — the toy-corpus trap the place tutorials document).
-_PACK_TF_DOMAIN: dict[str, str] = {"artist": "artist"}
+# Packs whose population is NOT the two lists being linked. Self-calibrating
+# over a small pair of lists cannot know that `hospital` is common and
+# `Gyaranya` is rare — that is a fact about the population, not about the
+# lists. Before the place table shipped, `place` fell through to the person
+# table, where facility words are unseen and therefore read as *rare*: two
+# "General Hospital" records 4.4 km apart cleared the distinctiveness gate
+# with the same evidence as two sharing a genuinely distinctive name.
+_PACK_TF_DOMAIN: dict[str, str] = {"artist": "artist", "place": "place"}
 
 
 
@@ -227,7 +240,14 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             # falling back loudly if the data asset is absent.
             try:
                 tf = TokenFrequencyTable.default(domain=domain)
+                # Name the exact table, not just the domain. A rebuild changes
+                # which tokens are rare, and rare tokens are both a comparator
+                # input and a BLOCKING key — so a new table proposes a
+                # different candidate set and can change a decision. That has
+                # to be visible in the pin.
                 tf_provenance = f"shipped:{domain}"
+                if getattr(tf, "version", None):
+                    tf_provenance += f"@{tf.version}"
             except FileNotFoundError as exc:
                 _warnings.warn(
                     f"shipped {domain!r} frequency table unavailable ({exc}); "
