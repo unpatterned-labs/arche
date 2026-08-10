@@ -16,7 +16,7 @@ applyTo:
 - `arche/detect/{ng,ke,za,gh}/` — per-country detectors. Each country has `ids.py` (national IDs, BVN, etc.) and `phones.py` (libphonenumber-backed validators).
 - `arche/detect/_africa/` — pan-African fallback (`ids.py`, `phones.py`). Runs when `Pipeline` has no jurisdiction or one we don't have a specific detector for.
 - `arche/detect/names/` — African name lexicon (114+ equivalence groups, ~454 forms). Loaded lazily.
-- `arche/detect/locations/` — African city gazetteer (~500 cities + aliases).
+- `arche/detect/locations/` — African city gazetteer (102 cities + 134 aliases = 236 lookup keys). The gazetteer data itself lives in `arche/addr/_gazetteer/cities.py`.
 - `arche/detect/{ip,digital_id,phones,gliner,presidio}/` — cross-cutting detectors. Phone numbers are libphonenumber-validated. GLiNER and Presidio are opt-in extras.
 - `arche/addr/` — address parser (NG + ZA MVP). Stage 1 / Week 3 delivery; emits `PII-4-ADDRESS` with structured components.
 - `arche/locate.py` — coordinate enrichment for `LOCATION` entities.

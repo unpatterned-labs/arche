@@ -226,6 +226,24 @@ OTHER_PATTERNS: dict[str, dict] = {
 
 
 # Composed registry: launch four + 11 others = 17 country pattern entries.
+def _validate_huduma(text: str) -> tuple[bool, dict]:
+    """Structural check for a Huduma Namba (NIIMS).
+
+    Mirrors :func:`arche.jurisdictions.kenya.validate_huduma_namba`: 8-12
+    characters, alphanumeric once separators are stripped. NIIMS publishes no
+    check digit, so this is format validation and nothing more — the metadata
+    says so rather than implying a checksum ran.
+    """
+    cleaned = re.sub(r"[\s\-]+", "", text).upper()
+    if not 8 <= len(cleaned) <= 12 or not cleaned.isalnum():
+        return False, {}
+    return True, {
+        "issuer": "NIIMS",
+        "format": "alphanumeric 8-12",
+        "note": "Huduma Namba format is evolving; structural validation only",
+    }
+
+
 ID_PATTERNS: dict[str, dict] = {
     **NG_PATTERNS,
     **KE_PATTERNS,
@@ -317,6 +335,7 @@ def detect_african_ids(text: str) -> list[NationalID]:
     priority_order = [
         # Highly specific alphanumeric formats first
         "GH_CARD", "GH_TIN", "GH_SSNIT",
+        "KE_HUDUMA",  # cue-anchored, so more specific than any bare-digit KE id
         "KE_KRA_PIN",
         "NG_RC", "NG_DRIVERS", "NG_PVC",
         "ZA_PASSPORT",

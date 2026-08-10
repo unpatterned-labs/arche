@@ -10,7 +10,7 @@ Along the way it keeps disagreement between sources instead of erasing it, prote
 
 **Match, don't guess.** When the evidence isn't distinctive enough, resolution returns `review` rather than a verdict — two people who share a name are not one person, and a system that merges them has not scored slightly worse, it has deleted someone. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
 
-Numbers we publish come with the script that produces them. The current one is the [place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/): reconciling Nigeria's GRID3 reference data against OpenStreetMap for Kano State gives **88.2% agreement with independently-recorded administrative boundaries**, and the page states the weak-label methodology, its five limitations, and the case where it demonstrably gets a match wrong.
+Numbers we publish come with the script that produces them, and with what they do not prove. The current one is the [place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/): reconciling Nigeria's GRID3 reference data against OpenStreetMap for Kano State gives **88.1% agreement with an LGA weak label**. That is a *consistency check, not validation* — OpenStreetMap's health facilities for this state share lineage with GRID3, which the page demonstrates from the data rather than asserting. It is a sound basis for tuning a threshold and no evidence that the matcher is right about the world. The page states the methodology, its five limitations, and a case where it demonstrably gets a match wrong.
 
 > [!WARNING]
 > **Status:** pre-beta (development) - `arche-core` is under active development. APIs may change between alpha
@@ -39,12 +39,12 @@ print(result.redacted_text)
 # NAME_... NAME_..., NIN [NIN], BVN [BVN].
 ```
 
-Same code works for `jurisdiction="ZA"` (POPIA), `"KE"` (Kenya DPA), `"GH"` (Ghana DPA). Six statute packs at v1.0 (the four African DPAs plus GDPR and HIPAA Safe Harbor), each declaring whether it is `self-reviewed` or `regulator-reviewed`, one composable framework.
+Same code works for `jurisdiction="ZA"` (POPIA), `"KE"` (Kenya DPA), `"GH"` (Ghana DPA). Six statute packs ship, **three at `v1.0`** (NDPA-2023, GDPR, HIPAA Safe Harbor) and **three at `v0.1-scaffold`** (POPIA, Kenya DPA, Ghana DPA — complete category mappings, version held until their cited sections have a second reading). Every pack declares that maturity in its `version` field and, separately, whether it is `self-reviewed` or `regulator-reviewed`. None claims regulator review.
 
 ## Install
 
 ```bash
-pip install arche-core          # ~310KB base — pure-Python detectors, statute policy
+pip install arche-core          # ~2.5 MB base — pure-Python detectors, statute policy
 pip install arche-core[all]     # everything (GLiNER + Presidio + Splink + docling + LLM)
 ```
 

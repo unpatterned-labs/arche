@@ -142,3 +142,55 @@ class TestGradedAgainstGold:
         assert g.abstentions["over_guess"] == 0
         assert g.per_role["origin"]["fn"] == 0
         assert g.per_role["destination"]["fn"] == 0
+
+
+class TestProviderCallSignature:
+    """The `config=` path, which nothing else in the suite exercises.
+
+    Every other test here passes `complete_fn=`, which bypasses the provider
+    module entirely. That gap let `spatial.py` call
+    `complete(messages, config)` — arguments reversed — through a full release:
+    the real provider would take a list where it expected an `LLMConfig` and
+    die on the first attribute access, while the suite stayed green.
+    """
+
+    def test_provider_receives_config_first(self, monkeypatch):
+        from arche.llm import LLMConfig
+        from arche.llm import providers
+
+        seen: dict = {}
+
+        def fake_complete(config, messages):
+            seen["config"] = config
+            seen["messages"] = messages
+            return "[]"
+
+        monkeypatch.setattr(providers, "complete", fake_complete)
+        cfg = LLMConfig(model="test-model", api_key="k")
+        extract_places_llm("send it to 3 Sherborne Place, Birmingham", config=cfg)
+
+        assert seen["config"] is cfg
+        assert isinstance(seen["messages"], list)
+        assert all("role" in m and "content" in m for m in seen["messages"])
+
+    def test_config_path_pins_the_model_name(self, monkeypatch):
+        from arche.llm import LLMConfig
+        from arche.llm import providers
+
+        monkeypatch.setattr(providers, "complete", lambda config, messages: "[]")
+        cfg = LLMConfig(model="test-model", api_key="k")
+        ex = extract_places_llm("deliver to 7B Allen Avenue, Ikeja", config=cfg)
+        # The pin names what produced the extraction; a decision made under a
+        # model has to say which one.
+        assert ex.pins()["place_extraction"]["model"] == "test-model"
+        assert ex.pins()["place_extraction"]["reproducible"] is False
+
+    def test_supplying_both_config_and_complete_fn_is_refused(self):
+        from arche.llm import LLMConfig
+
+        with pytest.raises(ValueError, match="exactly one"):
+            extract_places_llm(
+                "deliver to 7B Allen Avenue, Ikeja",
+                config=LLMConfig(model="m", api_key="k"),
+                complete_fn=lambda messages: "[]",
+            )

@@ -43,6 +43,10 @@ from typing import TYPE_CHECKING, Any
 
 from arche._tokens import token as _strong_token
 
+# Same ordering the statute engine uses, imported rather than restated so the
+# guard and the policy layer can never disagree about which action is stricter.
+from arche.policy.engine import _ACTION_SEVERITY
+
 if TYPE_CHECKING:
     from arche.workflow._primitive import Detection, Pipeline
 
@@ -69,6 +73,11 @@ class GuardedField:
     token: str | None  # strong hashed ID; None when the field was dropped
     citation: str | None
     tier: str
+    #: Every category absorbed into this region when detections overlapped.
+    #: A single field can stand for several detections — an address that
+    #: contains a location and a name is replaced once — and this keeps the
+    #: collapsed categories auditable instead of silently dropping them.
+    covers: tuple[str, ...] = ()
 
 
 @dataclass
@@ -186,39 +195,91 @@ class EgressGuard:
     def _project(
         self, text: str, detections: list[Detection], statute: Any
     ) -> tuple[str, list[GuardedField]]:
-        """Replace every detected span with a strong hashed ID (or remove on drop).
+        """Replace every detected region with a strong hashed ID (or remove it).
 
-        Right-to-left so offsets stay valid; overlapping detections are skipped
-        (the outer, earlier-consumed span wins) so a partial raw fragment can't
-        survive.
+        Overlapping detections are grouped into **disjoint regions** and each
+        region is replaced exactly once. This is the same resolution
+        ``policy.engine`` applies, and it is here for the same reason.
+
+        The previous implementation sorted by ``(start, end)`` descending and
+        skipped any span whose ``end`` ran past the last span it consumed. Its
+        docstring claimed the outer span won. It did not: descending order
+        reaches the *inner* span first, so the container was the one skipped,
+        and its unconsumed prefix crossed the boundary in clear. The shipped
+        Nigerian detector set produces exactly that shape on an ordinary
+        address, where ``PII-4-ADDRESS`` contains ``PII-4-LOCATION``::
+
+            in   Janet Okafor lives at 12 Awolowo Road, Ikoyi, Lagos.
+            out  Janet [NAME:…] lives at 12 Awolowo Road, Ikoyi, [LOCATION:…].
+
+        The address survived, and ``PII-4-ADDRESS`` was absent from the output
+        fields entirely, so nothing downstream could tell. Severity inverted
+        too: ADDRESS generalises where LOCATION is retained, so the span that
+        was dropped was the more restricted one.
+
+        Two decisions per region, and they are deliberately different. The
+        **action** comes from the most restrictive member, because that is the
+        safety property. The **label** comes from the widest member, because an
+        address containing a name is still an address, and rendering it
+        ``[NAME:…]`` would misdescribe what left even though it would be
+        equally safe. Every category the region absorbed is reported on
+        ``GuardedField.covers`` so a collapsed region is still auditable.
         """
-        ordered = sorted(detections, key=lambda d: (d.start, d.end), reverse=True)
-        out = text
-        fields: list[GuardedField] = []
-        consumed_start = len(text) + 1
-        for det in ordered:
-            if det.end > consumed_start:  # overlaps an already-processed span
-                continue
+        resolved: list[tuple[int, int, str, str, str | None, str]] = []
+        for det in detections:
             action, ref, _ = statute.action_for(det.category)
-            citation = ref or det.regulatory_citation
-            # Authoritative from the statute, not from prior enrichment.
-            tier = statute.tier_for(det.category).value
+            resolved.append((
+                det.start,
+                det.end,
+                det.category,
+                action,
+                ref or det.regulatory_citation,
+                # Authoritative from the statute, not from prior enrichment.
+                statute.tier_for(det.category).value,
+            ))
+
+        groups: list[dict] = []
+        # Sorted by start, then widest first, so a container is seen before
+        # whatever it contains.
+        for item in sorted(resolved, key=lambda r: (r[0], -r[1])):
+            start, end = item[0], item[1]
+            if groups and start < groups[-1]["end"]:
+                g = groups[-1]
+                g["end"] = max(g["end"], end)
+                g["members"].append(item)
+            else:
+                groups.append({"start": start, "end": end, "members": [item]})
+
+        fields: list[GuardedField] = []
+        for g in groups:
+            widest = max(g["members"], key=lambda r: (r[1] - r[0]))
+            action = max(
+                g["members"], key=lambda r: _ACTION_SEVERITY.get(r[3], 0)
+            )[3]
+            category = widest[2]
             if action == "drop":
                 tok = None
-                replacement = ""
+                g["replacement"] = ""
             else:
-                tok = _strong_token(det.text, _id_type_for(det.category), self._key)
-                replacement = f"[{_label(det.category)}:{tok[:16]}]"
-            out = out[: det.start] + replacement + out[det.end :]
-            consumed_start = det.start
+                # The token stands in for the WHOLE region, so it is derived
+                # from the region's text — not from any single detection's
+                # `.text`, which would only cover part of what left.
+                tok = _strong_token(
+                    text[g["start"]:g["end"]], _id_type_for(category), self._key
+                )
+                g["replacement"] = f"[{_label(category)}:{tok[:16]}]"
             fields.append(
                 GuardedField(
-                    category=det.category,
+                    category=category,
                     action=action,
                     token=tok,
-                    citation=citation,
-                    tier=tier,
+                    citation=widest[4],
+                    tier=widest[5],
+                    covers=tuple(sorted({m[2] for m in g["members"]})),
                 )
             )
-        fields.reverse()  # restore document order
+
+        out = text
+        for g in sorted(groups, key=lambda g: -g["start"]):
+            out = out[: g["start"]] + g["replacement"] + out[g["end"] :]
         return out, fields

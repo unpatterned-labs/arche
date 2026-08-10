@@ -104,6 +104,27 @@ old default, it was not verifying issuers, and it needs a key.
 
 We would rather write these down than have you find them.
 
+### Fixed in 0.3.0a2: `EgressGuard` leaked on overlapping detections
+
+`EgressGuard` in **0.3.0a1** could emit a detected value in clear text when two
+detections overlapped. Nested spans — an address containing a location, which
+the Nigerian detector set produces on ordinary addresses — caused the container
+to be skipped and its uncovered prefix to cross the boundary unreplaced. The
+skipped category was also missing from `GuardedProjection.fields`, so the loss
+was silent, and because `ADDRESS` generalises where `LOCATION` is retained, the
+span that survived was the more sensitive one.
+
+**Affected:** `0.3.0a1`, any use of `arche.guard.EgressGuard`.
+**Fixed in:** `0.3.0a2`. Overlapping detections are grouped into disjoint
+regions, replaced once, with the most restrictive action in the region winning.
+**Action:** upgrade. If you have shipped projections built with `0.3.0a1`,
+re-check them for unreplaced address fragments.
+
+No CVE has been requested: this is pre-release software with no known
+deployments. We are recording it here rather than folding it into a "bug fixes"
+line because the guard is a security control and a silent failure in one is
+worth naming.
+
 ### Alpha status
 
 `arche-core` has not had an external security audit. The statute packs are

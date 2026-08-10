@@ -42,6 +42,23 @@ def _validate_nhif(text: str) -> tuple[bool, dict]:
         return False, {}
     return True, {}
 
+def _validate_huduma(text: str) -> tuple[bool, dict]:
+    """Structural check for a Huduma Namba (NIIMS).
+
+    Mirrors :func:`arche.jurisdictions.kenya.validate_huduma_namba`: 8-12
+    characters, alphanumeric once separators are stripped. NIIMS publishes no
+    check digit, so this is format validation and nothing more — the metadata
+    says so rather than implying a checksum ran.
+    """
+    cleaned = re.sub(r"[\s\-]+", "", text).upper()
+    if not 8 <= len(cleaned) <= 12 or not cleaned.isalnum():
+        return False, {}
+    return True, {
+        "issuer": "NIIMS",
+        "format": "alphanumeric 8-12",
+        "note": "Huduma Namba format is evolving; structural validation only",
+    }
+
 
 KE_PATTERNS: dict[str, dict] = {
     "KE_ID": {
@@ -53,6 +70,29 @@ KE_PATTERNS: dict[str, dict] = {
         ),
         "validator": _always_valid,
         "base_confidence": 0.40,  # short digit sequences are ambiguous
+    },
+    "KE_HUDUMA": {
+        "country": "KE",
+        "id_type": "HUDUMA",
+        "description": "Kenya Huduma Namba (NIIMS) — cue-anchored",
+        # DELIBERATELY cue-anchored. A Huduma Namba is an 8-12 character
+        # string with no check digit and no distinguishing shape, so a bare
+        # number cannot be told apart from an NHIF number or a National ID —
+        # they occupy overlapping length ranges of pure digits. Matching bare
+        # digits as HUDUMA would not fix the old bug, it would invert it and
+        # start mislabelling NHIF numbers instead.
+        #
+        # So this only fires when the document says "Huduma". That is the same
+        # evidence a human uses, it is the only evidence actually present, and
+        # it is why the confidence can be high where the bare-digit patterns
+        # sit at 0.40-0.45.
+        "pattern": re.compile(
+            r"\bhuduma\s*(?:namba|number|no\.?|#)?\s*[:\-]?\s*"
+            r"(?<![A-Za-z0-9])([0-9]{8,12})(?![A-Za-z0-9])",
+            re.IGNORECASE,
+        ),
+        "validator": _validate_huduma,
+        "base_confidence": 0.88,  # the cue word is doing the work
     },
     "KE_KRA_PIN": {
         "country": "KE",
@@ -79,11 +119,11 @@ KE_PATTERNS: dict[str, dict] = {
 
 
 def detect_kenyan_ids(text: str) -> list[NationalID]:
-    """Detect Kenyan identifiers in text. Covers National ID, KRA PIN, NHIF."""
+    """Detect Kenyan identifiers: Huduma Namba, National ID, KRA PIN, NHIF."""
     results: list[NationalID] = []
     seen_spans: set[tuple[int, int]] = set()
     # Process more-specific patterns first so a KRA PIN isn't double-counted.
-    for key in ("KE_KRA_PIN", "KE_NHIF", "KE_ID"):
+    for key in ("KE_HUDUMA", "KE_KRA_PIN", "KE_NHIF", "KE_ID"):
         spec = KE_PATTERNS[key]
         for m in spec["pattern"].finditer(text):
             span = (m.start(1), m.end(1))

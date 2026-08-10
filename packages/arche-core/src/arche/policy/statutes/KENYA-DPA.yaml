@@ -45,11 +45,26 @@ policy_mappings:
     tier: moderate
     statute_reference: "Kenya DPA s.25 (rights of data subject)"
 
+  PII-2-HUDUMA:
+    action: mask
+    tier: high
+    statute_reference: "Kenya DPA s.30, Huduma Namba (NIIMS)"
+    rationale: >
+      The NIIMS number is a foundational identifier and is treated like the
+      National ID. Detection is cue-anchored: a Huduma Namba has no check
+      digit and shares its length range with NHIF numbers and the National ID,
+      so it is only recognised where the document says "Huduma". A bare number
+      is reported as whatever the bare-digit patterns make of it, which is the
+      honest answer when no other evidence is present.
+
   PII-2-NATIONAL_ID:
     action: mask
     tier: high
     statute_reference: "Kenya DPA s.30, Registration of Persons Act"
-    rationale: "Huduma Namba and the 7-8 digit Kenyan National ID are foundational identifiers."
+    rationale: >
+      The 7-8 digit Kenyan National ID is a foundational identifier. Huduma
+      Namba used to be folded in here because no detector emitted it; it now
+      has its own category, PII-2-HUDUMA.
 
   PII-2-KRA_PIN:
     action: mask

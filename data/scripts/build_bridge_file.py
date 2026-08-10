@@ -23,7 +23,10 @@ import h3
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fetch_facility_data as ffd  # noqa: E402
-from arche_mcp import handlers  # noqa: E402
+# `arche_mcp` never existed. The MCP `compare_records` handler this script was
+# written against was lifted into arche-core as `resolve.reconcile` with the
+# same signature, so the import was dead and this script raised ImportError.
+from arche.resolve import reconcile  # noqa: E402
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 OVERTURE_REL = "2026-07-22.0"
@@ -111,8 +114,7 @@ def build(state: str) -> None:
             bridge.append({"hfr_id": f["id"], "hfr_name": f["name"], "gers_id": "",
                            "overture_name": "", "score": 0.0, "decision": "no_overture_place"})
             continue
-        out = handlers.compare_records([f], cands, comparators=comps,
-                                       threshold=0.75, id_field="gers_id")
+        out = reconcile([f], cands, comps, threshold=0.75, id_field="gers_id")
         best = out["matches"][0] if out["matches"] else None
         if best is None:
             no_match += 1
