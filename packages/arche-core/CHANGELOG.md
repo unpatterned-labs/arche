@@ -110,15 +110,27 @@ Measured, shipped configuration:
 
 | | before | after |
 |---|---|---|
-| London hospitals, 86 labelled pairs | 73 auto-matched | **83 (96.5%)** |
-| routed to review | 12 | 2 |
+| London hospitals, 86 labelled pairs | 73 auto-matched | **82 (95.3%)** |
+| routed to review | 12 | 3 |
 | Kano GRID3 x OpenStreetMap | 564 match, 88.1% LGA | 566 match, **88.1% LGA** |
 
-The two pairs still abstaining are the ones that should:
-`Memorial Hospital` against `Memorial Hospital, Woolwich` (that stem appears
-four times in each source) and `Nuffield Health Highgate Hospital` against
-`Highgate Private Hospital` (brand substitution, which belongs in an alias field
-rather than a comparator). The base wheel grows from 2.46 MB to 2.93 MB.
+The three pairs still abstaining are the ones that should:
+
+- `Memorial Hospital` against `Memorial Hospital, Woolwich` — that stem appears
+  four times in each source, and `memorial hospital` as a phrase scores 0.554.
+- `Nuffield Health Highgate Hospital` against `Highgate Private Hospital` —
+  brand substitution, which belongs in an alias field rather than a comparator.
+- `St Mary's Hospital` against a byte-identical `St Mary's Hospital`. This one
+  is worth spelling out, because an identical string abstaining looks like a
+  bug and is not. The rarest shared token is `marys` at 0.716 and the rarest
+  shared phrase is `marys hospital` at 0.704, both under the 0.75 floor —
+  `st` alone has 10,651 occurrences in the place corpus, and London has more
+  than one St Mary's Hospital. The gate is refusing to let a shared location
+  manufacture a merge on a name that does not identify anything, which is the
+  same rule that stops two `General Hospital` records merging. It costs a true
+  pair, and the pair goes to review rather than being lost.
+
+The base wheel grows from 2.46 MB to 2.93 MB.
 
 **A known risk, stated rather than buried.** Phrase rarity makes *containment*
 errors easier to trip, because a shared phrase is distinctive even when the two
