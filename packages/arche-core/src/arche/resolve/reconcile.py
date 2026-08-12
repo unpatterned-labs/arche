@@ -70,6 +70,7 @@ from arche.resolve._matcher import (
     normalize_type_token,
     split_place_name,
 )
+from arche.resolve._productcode import build_code_table, compare_codes, compare_specs
 from arche.resolve._rerank import rerank_score
 from arche.resolve._tokenfreq import TokenFrequencyTable
 
@@ -99,7 +100,7 @@ _FIELD_COMPARATORS = {
 # fields rare-token union blocking keys on).
 _TEXT_KINDS = ("tftoken", "name", "placename", "address")
 
-_DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken")
+_DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken", "code")
 # Kinds whose similarity is a claim about STRINGS, so it must be priced by the
 # rarity of what the two strings share before it may clear a gate. `id` is
 # absent on purpose: an identifier is distinctive by construction.
@@ -133,6 +134,7 @@ def _field_sim(
     ra: dict,
     rb: dict,
     tf: TokenFrequencyTable | None,
+    code_tf: TokenFrequencyTable | None = None,
 ) -> float | None:
     """One comparator's similarity for a record pair, or ``None`` if inapplicable.
 
@@ -170,6 +172,17 @@ def _field_sim(
         if type_a is None or type_b is None:
             return None
         return 1.0 if type_a == type_b else 0.0
+    if kind in ("code", "spec"):
+        # Product evidence. Both read a title field and are inapplicable when
+        # the category's rules find nothing to compare, never scored as a
+        # disagreement for being absent.
+        field = spec["field"]
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        category = spec.get("category")
+        if kind == "spec":
+            return compare_specs(str(ra[field]), str(rb[field]), category)
+        return compare_codes(str(ra[field]), str(rb[field]), code_tf, category)
     if kind == "tftoken":
         if tf is None:
             raise ValueError(
@@ -205,6 +218,7 @@ def _score_pair(
     comparators: list[dict],
     tf: TokenFrequencyTable | None,
     distinctive_kinds: tuple[str, ...],
+    code_tf: TokenFrequencyTable | None = None,
 ) -> tuple[float, float, bool, dict[str, float]] | None:
     """Weighted-mean similarity for one pair.
 
@@ -220,7 +234,7 @@ def _score_pair(
     conflict = False
     evidence: dict[str, float] = {}
     for spec in comparators:
-        sim = _field_sim(spec, ra, rb, tf)
+        sim = _field_sim(spec, ra, rb, tf, code_tf)
         if sim is None:
             continue
         weight = float(spec.get("weight", 1.0))
@@ -494,6 +508,20 @@ def reconcile(
                 "threshold outside that range either always or never fires"
             )
 
+    # A `code` comparator is only as good as its frequency table: without one
+    # it blocks Abt-Buy at 0.5643 precision, with one at 0.9973 on rare codes.
+    # Build it here, from both lists, so `crosswalk(a, b, entity=...)` is a
+    # single call rather than a setup ritual.
+    code_tf = None
+    code_specs = [s for s in comparators if s.get("kind") == "code"]
+    if code_specs:
+        category = code_specs[0].get("category")
+        fields = {s["field"] for s in code_specs}
+        code_tf = build_code_table(
+            (str(r[f]) for r in (*list_a, *list_b) for f in fields if r.get(f)),
+            category,
+        )
+
     n_a, n_b = len(list_a), len(list_b)
     full = n_a * n_b
 
@@ -583,7 +611,7 @@ def reconcile(
     floor = threshold - review_margin
     for i, j in pairs:
         ra, rb = list_a[i], list_b[j]
-        scored = _score_pair(ra, rb, comparators, tf, distinctive_kinds)
+        scored = _score_pair(ra, rb, comparators, tf, distinctive_kinds, code_tf)
         if scored is None:
             continue
         score, distinctive_max, conflict, evidence = scored

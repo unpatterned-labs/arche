@@ -208,18 +208,30 @@ class TestGeneralisation:
         res = crosswalk(a, b, comparators=comparators)
         assert [e["decision"] for e in res["matches"]] == ["review"]
 
-    def test_shipped_packs_are_unchanged(self):
-        """No pack declares `refutes_below` yet — this ships as a primitive.
+    def test_packs_with_published_numbers_do_not_declare_it(self):
+        """Turning refutation on for an established pack moves its published numbers.
 
-        Turning it on for a shipped pack changes that pack's published numbers,
-        so it is a separate, measured decision rather than a side effect of
-        adding the mechanism.
+        `place`, `person` and `artist` all have benchmark figures in the docs
+        and changelog, so enabling `refutes_below` on any of them is a separate,
+        separately-measured decision rather than a side effect.
+
+        `product_electronics` is exempt because it declares refutation as its
+        *identity contract* — a purchasable variant, where a capacity or pack
+        size difference means a different product — and it shipped with that
+        contract from its first release, so there is no earlier number to move.
         """
         from arche.resolve import ENTITY_PACKS
 
-        for name, pack in ENTITY_PACKS.items():
-            for spec in pack:
+        established = set(ENTITY_PACKS) - {"product_electronics"}
+        for name in established:
+            for spec in ENTITY_PACKS[name]:
                 assert "refutes_below" not in spec, (
                     f"{name} pack now declares refutes_below; its benchmark "
                     "numbers must be re-measured and republished first"
                 )
+
+    def test_the_product_lane_declares_it_deliberately(self):
+        from arche.resolve import ENTITY_PACKS
+
+        assert any("refutes_below" in s
+                   for s in ENTITY_PACKS["product_electronics"])

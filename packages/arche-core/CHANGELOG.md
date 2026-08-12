@@ -4,6 +4,94 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added — an experimental electronics product lane
+
+`ENTITY_PACKS["product_electronics"]`, plus the primitives it is built from.
+One call, no setup:
+
+```python
+from arche.resolve import crosswalk
+crosswalk(abt, buy, entity="product_electronics", id_field="id")
+```
+
+Measured on [Leipzig Abt-Buy](https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution)
+(1,081 x 1,092, 1,097 true pairs, complete ground truth so false merges are
+visible):
+
+| | baseline, name only | `product_electronics` |
+|---|---|---|
+| precision | 0.7954 | **0.9707** |
+| recall | 0.2197 | **0.6645** |
+| F1 | 0.3443 | **0.7890** |
+| false merges | 62 | **22** |
+
+**There is no "model number" signal — there is a rare-code signal.** A regex
+that extracts code-looking tokens blocks candidates at 0.5643 precision, barely
+better than a coin flip. Conditioned on the document frequency of the shared
+code it separates almost perfectly:
+
+```text
+rarest shared code, df   pairs   true   precision
+1-2                        754    752      0.9973
+3-4                         47     23      0.4894
+5-9                         55      6      0.1091
+20+                        503      0      0.0000
+```
+
+503 candidate pairs share a code seen twenty or more times — `1080p`, `16gb`,
+`720p` — and **not one is a true match**. `1080p` is the `General Hospital` of
+consumer electronics, so the fix is the frequency table and the existing gate,
+not a cleverer regex and a hand-maintained blocklist.
+
+**A calibration bug worth recording, because it made the lane worse than no
+lane.** `TokenFrequencyTable.distinctiveness` is `min(1, -log10(rel_freq)/5)`,
+calibrated for the million-token word corpora behind the place and person
+tables. A code vocabulary is ~2,000 documents, so the rarest possible shared
+code — one occurrence in each source — scored **0.6205**, below
+`DISTINCTIVE_FLOOR` (0.75). The gate therefore demoted *every* true product
+match and recall fell from 0.2197 to **0.0948**. The formula was not wrong; it
+was being asked a question about a different distribution. `code_rarity` scores
+document frequency directly as `min(1, 2/df)`, which is the measured precision
+curve above.
+
+New public surface:
+
+- `resolve._productcode.extract_product_code_candidates(text, category)` —
+  *candidates*, deliberately not "model numbers". A regex cannot tell a
+  manufacturer code from a retailer SKU from a spec; rarity does that later.
+  Normalisation is most of the lane: raw-string matching finds a shared code on
+  44.9% of true pairs, normalised on **71.2%**, because one source writes
+  `SB97CS` and the other `SB-97Cs`.
+- `kind: "code"` — rarity-weighted code agreement. `None` when either side has
+  no candidate; **0.0**, not a veto, when both have codes and share none —
+  18.6% of true pairs are in that position (accessories, bundles, retailer
+  SKUs), so a conflict rule would refute them all.
+- `kind: "spec"` — agreement on identity-bearing units, for use with
+  `refutes_below`.
+- `ProductCategory` / `register_category` — **the modularity seam.** Adding
+  food, books or apparel is a category registration plus a benchmark, not a
+  change to any comparator.
+
+**Identity contract: a purchasable variant (SKU).** A 16GB and a 32GB player are
+different products however alike their titles, which is why `spec` refutes
+rather than merely scoring. That contract is data on the category
+(`identity_units`), not a constant in a comparator, so a lane with different
+semantics declares different units.
+
+**Scope, stated rather than buried.** There is no generic `product` pack and
+shipping one would overclaim. The evidence is a single electronics corpus: on
+Amazon-GoogleProducts, which is general merchandise, the lane moves F1 only
+0.3971 → 0.4007. The rules that work here fail elsewhere by construction —
+Levi's `501` is rejected twice by thresholds that exist to filter prices and
+years, `32x32` looks like a model and is not, and reading `600mg` as a drug's
+model code would be dangerous. The category is flagged `experimental=True` and
+a test asserts no generic `product` pack exists.
+
+Two further honest limits: the `spec` refutation rests on 46 of 1,097 true pairs
+— all 46 agree, but that is a thin base — and the code frequency table is
+self-calibrated over the two catalogues being matched rather than shipped, which
+is u-probability estimation over the data at hand rather than a shipped asset.
+
 ### Added — place-name qualifier splitting
 
 Sources disambiguate places by appending the containing region, and they do not
