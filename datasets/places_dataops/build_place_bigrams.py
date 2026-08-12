@@ -48,6 +48,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
+import hashlib
 import io
 import json
 import sys
@@ -57,10 +59,27 @@ from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO / "packages" / "arche-core" / "src"))
-from arche.resolve._tokenfreq import TokenFrequencyTable, _tokens  # noqa: E402
+from arche.resolve._tokenfreq import (  # noqa: E402
+    TOKEN_RULES,
+    TokenFrequencyTable,
+    _tokens as _raw_tokens,
+)
+
+# Bound to the CLI rule in main(). The bigram table MUST be built under the
+# same tokenisation as the unigram table it accompanies: a phrase assembled
+# from one tokenisation and looked up in counts accumulated under another is
+# the same silent mismatch the `token_rule` machinery exists to prevent.
+_TOKEN_RULE = "plain"
+
+
+def _tokens(text):
+    return _raw_tokens(text, _TOKEN_RULE)
 
 _CACHE = _REPO / "datasets" / "data" / "_cache" / "places"
-_OUT = _REPO / "datasets" / "data" / "_cache" / "place_bigrams.json.gz"
+_OUT = (
+    _REPO / "packages" / "arche-core" / "src" / "arche" / "resolve" / "_data"
+    / "place_bigrams.json.gz"
+)
 
 _GN_NAME, _GN_ASCII, _GN_FCLASS, _GN_FCODE = 1, 2, 6, 7
 _HEALTH = {"HSP", "HSPC", "HSPD", "HSPL"}
@@ -113,9 +132,15 @@ def _csv(path: Path, fields: tuple[str, ...]) -> Counter[str]:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=_OUT)
+    ap.add_argument("--token-rule", default="possessive", choices=list(TOKEN_RULES),
+                    help="must match the unigram table this accompanies")
     ap.add_argument("--prune-min", type=int, default=3,
                     help="drop bigrams seen fewer than N times across strata")
     args = ap.parse_args()
+
+    global _TOKEN_RULE
+    _TOKEN_RULE = args.token_rule
+    print(f"token rule: {_TOKEN_RULE}")
 
     if not _CACHE.exists():
         print(f"No source cache at {_CACHE}.\n"
@@ -169,9 +194,18 @@ def main() -> int:
     before = len(merged)
     merged = Counter({g: n for g, n in merged.items() if raw[g] >= args.prune_min})
 
-    table = TokenFrequencyTable(counts=merged)
+    table = TokenFrequencyTable(counts=merged, token_rule=args.token_rule)
+    payload = table.to_dict()
+    # Content version, same discipline as the unigram table: the phrase table
+    # is a scoring input, so a rebuild must be visible in every decision id it
+    # touches rather than changing results silently.
+    payload["version"] = "sha256:" + hashlib.sha256(
+        json.dumps({k: round(v, 4) for k, v in sorted(merged.items())},
+                   separators=(",", ":")).encode("utf-8")
+    ).hexdigest()[:16]
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    table.save(args.out)
+    with gzip.open(args.out, "wt", encoding="utf-8") as fh:
+        json.dump(payload, fh, separators=(",", ":"))
     print(f"{len(strata)} strata -> {before:,} bigrams, "
           f"{len(merged):,} after prune-min={args.prune_min}")
     print(f"wrote {args.out} ({args.out.stat().st_size / 1024:.0f} KB)")

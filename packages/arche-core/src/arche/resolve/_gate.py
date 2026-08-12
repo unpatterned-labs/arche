@@ -21,10 +21,9 @@ and the token-distinctiveness primitives.
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
-from arche.resolve._matcher import _normalise_text
+from arche.resolve._tokenfreq import DEFAULT_TOKEN_RULE, _tokens
 
 if TYPE_CHECKING:
     from arche.resolve._tokenfreq import TokenFrequencyTable
@@ -33,22 +32,27 @@ if TYPE_CHECKING:
 # constant, used by both engines and surfaced in coref's pins.
 DISTINCTIVE_FLOOR = 0.75
 
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
+def name_tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> set[str]:
+    """Normalised alphanumeric name tokens, under a table's tokenisation rule.
+
+    This used to keep its own ``_TOKEN_RE``, duplicating the one in
+    :mod:`arche.resolve._tokenfreq`, with a docstring asserting the two
+    "match". Nothing enforced that. Changing one and not the other produced no
+    error and no warning — the table counted one vocabulary while the gate
+    looked up another, so a rule could appear simply not to work. The tokeniser
+    now lives in exactly one place and the *rule* travels on the table.
+    """
+    return set(_tokens(text, rule))
 
 
-def name_tokens(text: str) -> set[str]:
-    """Normalised alphanumeric name tokens (matching the TF tokenizer)."""
-    return set(_TOKEN_RE.findall(_normalise_text(text or "")))
-
-
-def ordered_name_tokens(text: str) -> list[str]:
+def ordered_name_tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
     """The same tokens, in the order they appear.
 
     Orthographic keying needs order: joining *adjacent* tokens is what lets
     ``"Mai Tsidau"`` meet ``"Maitsidau"``, and adjacency is meaningless once
     the tokens are in a set.
     """
-    return _TOKEN_RE.findall(_normalise_text(text or ""))
+    return _tokens(text, rule)
 
 
 def distinctive_residual(
@@ -78,9 +82,10 @@ def distinctive_residual(
     This is only ever combined with ``max`` against the literal measure, so it
     can recover pairs that were being demoted and can never lower a score.
     """
+    rule = getattr(tf, "token_rule", DEFAULT_TOKEN_RULE)
     best_side: list[float] = []
     for name in (name_a, name_b):
-        rare = [tf.distinctiveness(t) for t in name_tokens(name)
+        rare = [tf.distinctiveness(t) for t in name_tokens(name, rule)
                 if tf.distinctiveness(t) >= floor]
         if not rare:
             return 0.0
@@ -110,16 +115,28 @@ def shared_name_distinctiveness(
     recover pairs that were being dropped, never lower an existing score or
     move the floor. Off by default.
     """
-    literal = name_tokens(name_a) & name_tokens(name_b)
+    # The rule comes from the TABLE, never from the call site: a table counted
+    # under one tokenisation and queried under another looks up tokens whose
+    # counts mean something else.
+    rule = getattr(tf, "token_rule", DEFAULT_TOKEN_RULE)
+    literal = name_tokens(name_a, rule) & name_tokens(name_b, rule)
     best = max((tf.distinctiveness(t) for t in literal), default=0.0)
+
+    # A name can be distinctive as a PHRASE while every one of its tokens is
+    # ordinary. `london`, `bridge` and `hospital` are each common; `london
+    # bridge` is not. Combined with max, so this can only recover a pair that
+    # was abstaining and can never demote one that already matched.
+    phrase = getattr(tf, "phrase_distinctiveness", None)
+    if phrase is not None:
+        best = max(best, phrase(name_a, name_b))
 
     if orthography:
         from arche.resolve._orthography import load_orthography
 
         pack = load_orthography(orthography)
         if pack is not None:
-            keys_a = pack.keys(ordered_name_tokens(name_a))
-            keys_b = pack.keys(ordered_name_tokens(name_b))
+            keys_a = pack.keys(ordered_name_tokens(name_a, rule))
+            keys_b = pack.keys(ordered_name_tokens(name_b, rule))
             for key in keys_a.keys() & keys_b.keys():
                 sources = keys_a[key] | keys_b[key]
                 # Score through the SOURCE tokens, never the key itself. A

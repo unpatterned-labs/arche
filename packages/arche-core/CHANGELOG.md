@@ -2,6 +2,137 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [Unreleased]
+
+### Added — phrase distinctiveness, shipped in the wheel
+
+The gate asks whether two names share something *rare*, and it asked that of
+**tokens**. That is right where the identifying part of a name is one rare word:
+``Karfi Health Post`` clears on ``karfi`` at 0.93. It is wrong where identity
+lives in a phrase of ordinary words. Every token of ``London Bridge Hospital``
+is common — ``london`` 0.69, ``bridge`` 0.61, ``hospital`` 0.35 — so two records
+of that hospital 30 m apart with byte-identical names were routed to ``review``.
+
+A bigram frequency table now ships alongside the unigram one and the corpus
+separates the two cases with no curation at all:
+
+```text
+general hospital  0.486     london bridge  0.921
+primary health    0.322     kings college  0.967
+health post       0.349     king george    0.766
+```
+
+`TokenFrequencyTable.phrase_distinctiveness` returns the rarity of the rarest
+**shared** phrase, and the gate combines it with the token measure using `max`,
+so it can only recover a pair and never demote one.
+
+Four guards, each closing a failure this codebase has already hit once:
+
+- **Only phrases the corpus has actually seen may speak.** Membership is tested
+  against the raw counts, not `rel_freq(g) > floor` — `rel_freq` clamps at the
+  unknown floor, so a genuinely rare phrase and an unseen one return the same
+  number. The first version used the clamped test and silently discarded
+  `london bridge`, which is real and sits below the floor.
+- **The phrase table must share its unigram table's tokenisation.** Loading
+  raises otherwise: a phrase assembled under one rule cannot be looked up in
+  counts accumulated under another.
+- **A runtime-built table is silent.** Phrase evidence requires
+  `population_scale`, so a small corpus cannot clear the gate on noise.
+- **The phrase table is named in the pin**, which now reads
+  `shipped:place@sha256:…+phrases@sha256:…`. It is a scoring input, so a rebuild
+  changes decision ids rather than results silently.
+
+Measured, shipped configuration:
+
+| | before | after |
+|---|---|---|
+| London hospitals, 86 labelled pairs | 73 auto-matched | **83 (96.5%)** |
+| routed to review | 12 | 2 |
+| Kano GRID3 x OpenStreetMap | 564 match, 88.1% LGA | 566 match, **88.1% LGA** |
+
+The two pairs still abstaining are the ones that should:
+`Memorial Hospital` against `Memorial Hospital, Woolwich` (that stem appears
+four times in each source) and `Nuffield Health Highgate Hospital` against
+`Highgate Private Hospital` (brand substitution, which belongs in an alias field
+rather than a comparator). The base wheel grows from 2.46 MB to 2.93 MB.
+
+**A known risk, stated rather than buried.** Phrase rarity makes *containment*
+errors easier to trip, because a shared phrase is distinctive even when the two
+records are at different granularities. Among the auto-matches are
+`King's College Hospital Emergency Department` against `King's College Hospital`
+and `Charing Cross Hospital` against `Charing Cross Hospital Medical School` —
+a department and a medical school, neither of which is the hospital.
+
+We are **not** suppressing them, and the reason is that this corpus cannot
+adjudicate the class: `Caterham Dene Hospital & Minor Injuries Unit` and
+`Moorfields Eye Hospital (City Road campus)` are labelled *true* while the two
+above are unlabelled, so a token-subset rule learned here would fit label noise
+and would also route three known-true pairs to review. Containment needs its own
+relation labels and its own verdict; until then it is a documented limitation of
+auto-match on this domain, not a solved problem.
+
+### Fixed — the gate and the frequency table could silently disagree about what a token is
+
+`resolve/_gate.py` kept its own `_TOKEN_RE`, duplicating the one in
+`resolve/_tokenfreq.py`, under a docstring asserting the two "match". Nothing
+enforced that. Editing one and not the other raised nothing and warned nothing:
+the table counted one vocabulary while the gate looked up another, so a
+tokenisation change could appear simply not to work while the suite stayed
+green. We hit exactly that while developing the change below, twice.
+
+There is now **one tokeniser**, and the rule is a property of the *table* rather
+than of a call site. `TokenFrequencyTable` carries `token_rule`, serialises it,
+reads legacy payloads as `plain`, and **refuses to `merge` across rules** —
+counts accumulated under one tokenisation do not mean the same thing under
+another. `_gate` and `weighted_token_sim` both take the rule from the table they
+were handed.
+
+`packages/arche-core/tests/test_token_rules.py` pins all of it, including that
+`_gate` no longer defines a token regex at all.
+
+### Added — `possessive` tokenisation rule, and the place table rebuilt under it
+
+`Queen's` tokenised as `queen` + a bare `s`, so `Queens Hospital` and
+`Queen's Hospital` shared nothing but `hospital` (distinctiveness 0.35) and were
+routed to `review` despite a name similarity of 0.987.
+
+The new rule emits the joined form **alongside** the originals —
+`queen`, `s`, `queens` — never instead. Two alternatives were measured on a
+London hospital benchmark (OpenStreetMap x Wikidata, 86 labelled pairs, with the
+table rebuilt under each rule so no query hit counts accumulated differently):
+
+| rule | auto-matched | vs baseline |
+|---|---|---|
+| `plain` (previous behaviour) | 72 / 86 | — |
+| strip the possessive entirely | 71 / 86 | **1 worse**, 0 recovered |
+| emit alongside (`possessive`) | 74 / 86 | 2 recovered, 0 lost |
+
+Stripping recovers nothing because `Queens` and `Queen's` still reduce to
+different tokens; it only deletes a token that was never the deciding one.
+Folding — emitting `queens` *instead* — was rejected for demoting
+`St Mary Hospital` against `St Mary's Hospital` from 0.683 to 0.504.
+
+**Additivity is not free, and the first version of this change broke it.**
+`weighted_token_sim` is a ratio, so an extra token on one side only inflates the
+union and lowers the score: `St Mary Hospital` vs `St Mary's Hospital` fell
+0.763 to 0.563. The comparator now scores under both the table's rule and
+`plain` and takes the better, which makes the rule additive by construction
+rather than by argument. The shipped `place` table is rebuilt under
+`possessive`; its content version changes, so every `decision_id` computed
+against it changes, which is correct and intended.
+
+Measured effect, shipped configuration: **London 73 -> 75 of 86 auto-matched**;
+**Kano GRID3 x OpenStreetMap unchanged** at 564 matches and 88.1% LGA agreement.
+
+Two limits worth stating rather than burying. The London figure is an
+auto-match rate over a *tag-bearing positive subset* — the labels come from
+OpenStreetMap `wikidata=` tags, only 91 of 226 records carry one, and an absent
+tag means *unlabelled*, not *non-match*. It is not a recall measurement and
+there is no precision instrument for that corpus yet. And additivity is
+guaranteed **within a table**: rebuilding shifts the denominator for every
+token, so whether a migration demotes anything is a benchmark question, not an
+invariant.
+
 ## [0.3.0a2] — 2026-08
 
 A security fix and the documentation corrections it turned up. No new features.

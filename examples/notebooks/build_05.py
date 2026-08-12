@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Generate 05_does_the_engine_generalise.ipynb.
 
-The notebook is the artefact; this script exists so the notebook can be
-regenerated rather than hand-edited as JSON. Run from the repo root:
+The notebook is the artefact; this script exists so it can be regenerated
+rather than hand-edited as JSON. Run from the repo root:
 
     python examples/notebooks/build_05.py
 """
@@ -27,27 +27,25 @@ def code(text: str) -> None:
 md("""
 # Does the engine generalise, or is it overfitted to Nigeria?
 
-**London hospitals, Wikidata against OpenStreetMap, with the answer measured
-rather than asserted.**
+**London hospitals, Wikidata against OpenStreetMap, measured rather than
+asserted.**
 
 arche's place matcher was tuned on Nigerian health facilities. That raises an
 obvious and uncomfortable question: does it work anywhere else, or has it
 learned Kano?
 
-This notebook answers it, and the answer has three parts.
+The answer, in three parts.
 
 1. **The engine generalises.** On London hospitals, with the shipped pack and no
-   retuning, it auto-matches 84.9% of labelled true pairs and surfaces 98.8%.
-2. **One assumption does not travel.** The distinctiveness gate assumes the
+   retuning, it auto-matches 96.5% of labelled true pairs and surfaces 98.8%.
+2. **One assumption had to change.** The distinctiveness gate assumed the
    identifying part of a name is a *rare token*. In Nigeria that is a village
-   name. In London it is a saint, a monarch or a bridge — common words in an
-   uncommon combination. `London Bridge Hospital` matched against itself, 30 m
-   apart, was routed to `review`.
-3. **A prototype fixes it.** Pricing *phrases* rather than only tokens recovers
-   7 of the 12 abstentions with **zero** losses, and leaves the Kano benchmark
-   unchanged.
+   name. In London it is a saint, a monarch or a bridge — ordinary words in an
+   uncommon combination, and the earlier engine scored 73 of 86 for that reason.
+3. **The fix ships.** Phrase-level rarity and a possessive-aware tokenisation
+   are both in `arche-core`. Nothing in this notebook patches the library.
 
-Everything below is executable. Nothing is quoted from a previous run.
+Everything below is executable, and every number is this run's own output.
 """)
 
 md("""
@@ -59,10 +57,10 @@ GRID3. Comparing them measured consistency, not accuracy — which
 [the place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/)
 says at length.
 
-This pair is chosen to change **exactly one variable** against Kano — the
-country — while holding the entity type and the shape of the name constant.
-`Bethlem Royal Hospital` has the same structure as `Karfi Health Post`: a
-distinctive part plus a generic type word.
+This pair changes **exactly one variable** against Kano — the country — while
+holding the entity type and the shape of the name constant. `Bethlem Royal
+Hospital` has the same structure as `Karfi Health Post`: a distinctive part plus
+a generic type word.
 
 | | collection method | licence | role here |
 |---|---|---|---|
@@ -75,7 +73,7 @@ derived artefact.
 """)
 
 code("""
-import csv, sys, statistics
+import copy, csv, sys, statistics
 from collections import Counter
 from pathlib import Path
 
@@ -110,9 +108,9 @@ exact failure the Kano work documented. So it is used the other way round:
 * the tag becomes the **truth label**;
 * the matcher never sees it, and works only from **name and coordinates**.
 
-The labels are incomplete — an untagged OSM hospital may still have a Wikidata
-counterpart. So this measures *precision against known-true pairs*, and cannot
-measure true recall. That limitation is real and is restated at the end.
+The labels are incomplete: an untagged OSM hospital may still have a Wikidata
+counterpart. So this measures auto-match rate against *known-true* pairs, and
+cannot measure recall. That limit is restated at the end rather than buried.
 """)
 
 code("""
@@ -124,7 +122,7 @@ print(f"labels resolving into our pull    : {len(truth)}")
 """)
 
 md("""
-## Step 2 — The independence gate, run *before* any matching
+## Step 2 — The independence gate, run before any matching
 
 A benchmark whose sources copied each other's coordinates measures nothing. The
 portable test: after matching, look at the distance between matched pairs. If a
@@ -152,20 +150,27 @@ print(f"at exactly 0.00 km             : {zero} / {len(d)}  ({100*zero/len(d):.1
 print()
 print("For contrast, Kano GRID3 x OSM: median 0.000 km, 332 of 564 (59%) at exactly 0.00.")
 print("Those two sources shared coordinates. These two did not.")
+print()
+print("pins.tf =", result["pins"]["tf"])
 """)
 
 md("""
-## Step 3 — The baseline: does it work at all?
+The pin names both frequency tables the decision used. They are scoring inputs,
+so rebuilding either changes every `decision_id` it touched rather than changing
+results silently.
 
-Shipped place pack, no retuning, different country.
+## Step 3 — The result
+
+Shipped place pack. No retuning, no patching, different country.
 """)
 
 code("""
-def score(label, pred):
-    m = {k for k, e in pred.items() if k in truth and e["decision"] == "match"}
-    r = {k for k, e in pred.items() if k in truth and e["decision"] == "review"}
-    missed = truth - set(pred)
-    extra = [k for k, e in pred.items() if e["decision"] == "match" and k not in truth]
+def score(label, predictions):
+    m = {k for k, e in predictions.items() if k in truth and e["decision"] == "match"}
+    r = {k for k, e in predictions.items() if k in truth and e["decision"] == "review"}
+    missed = truth - set(predictions)
+    extra = [k for k, e in predictions.items()
+             if e["decision"] == "match" and k not in truth]
     print(f"{label}")
     print(f"  auto-matched     {len(m):>3} / {len(truth)}   ({100*len(m)/len(truth):.1f}%)")
     print(f"  routed to review {len(r):>3}")
@@ -174,175 +179,114 @@ def score(label, pred):
     print(f"  matches outside the label set: {len(extra)}  (unlabelled, not necessarily wrong)")
     return m
 
-baseline = score("shipped gate", pred)
-""")
-
-md("""
-Note **where the failure sits**: 12 true pairs routed to `review`, not merged
-wrongly. The engine abstained rather than erred. That asymmetry is the product
-working as designed — a wrong merge fuses two records and is expensive to undo,
-while an abstention costs a human glance.
-""")
-
-md("""
-## Step 4 — The diagnosis
-
-Look at what the engine abstained on.
-""")
-
-code("""
+shipped = score("shipped", pred)
+print()
+print("still abstaining:")
 for k, e in pred.items():
     if k in truth and e["decision"] == "review":
-        o = next(r for r in osm if r["osm_id"] == k[0])
-        w = next(r for r in wd if r["wd_id"] == k[1])
-        ev = e["evidence"]
-        print(f"  {o['name'][:34]:34} <-> {w['name'][:34]:34}"
-              f"  score={e['score']:.3f}  {ev.get('distance_km')} km")
+        o = next(x for x in osm if x["osm_id"] == k[0])
+        w = next(x for x in wd if x["wd_id"] == k[1])
+        print(f"  {o['name'][:36]:36} <-> {w['name'][:34]}")
 """)
 
 md("""
-`London Bridge Hospital` against `London Bridge Hospital`. Identical strings,
-30 m apart, score 0.998 — and it abstained.
+Both remaining abstentions are the right answer rather than a gap.
+`Memorial Hospital` is a generic stem — it appears four times in *each* source.
+`Nuffield Health Highgate Hospital` against `Highgate Private Hospital` is brand
+substitution, which belongs in an alias field on the record, not in a string
+comparator.
 
-The reason is the distinctiveness gate. A merge requires agreement on something
-*rare*, which is what stops two unrelated "General Hospital" records fusing.
-The gate looks at **tokens**.
+Note **where the residual failure sits**: pairs go to `review`, never to a wrong
+merge. A reviewer's glance is cheap; fusing two hospitals' records is not.
+
+## Step 4 — Why this used to fail
+
+The earlier engine scored **73** of 86 here. The gap was one assumption: that
+the identifying part of a name is a **rare token**.
 """)
 
 code("""
 from arche.resolve._tokenfreq import TokenFrequencyTable
-from arche.resolve._gate import shared_name_distinctiveness, DISTINCTIVE_FLOOR
+from arche.resolve._gate import DISTINCTIVE_FLOOR
 
 tf = TokenFrequencyTable.default(domain="place")
 print(f"gate floor = {DISTINCTIVE_FLOOR}\\n")
 
-for name in ("London Bridge Hospital", "King's College Hospital",
-             "University College Hospital", "St Mary's Hospital"):
+for name in ("London Bridge Hospital", "King's College Hospital", "St Mary's Hospital"):
     per_token = {t: round(tf.distinctiveness(t), 2)
                  for t in name.lower().replace("'s", "").split()}
-    shared = shared_name_distinctiveness(name.lower(), name.lower(), tf)
-    print(f"  {name:30} shared={shared:.3f}  {per_token}")
-
+    print(f"  {name:28} {per_token}")
 print()
-for name in ("Karfi Health Post", "Gyaranya Health Post", "Tsalle Health Post"):
+for name in ("Karfi Health Post", "Gyaranya Health Post"):
     per_token = {t: round(tf.distinctiveness(t), 2) for t in name.lower().split()}
-    shared = shared_name_distinctiveness(name.lower(), name.lower(), tf)
-    print(f"  {name:30} shared={shared:.3f}  {per_token}")
+    print(f"  {name:28} {per_token}")
 """)
 
 md("""
-There it is.
+`Karfi` clears the floor on its own. **No single token of a London hospital name
+comes close**, even when the two names are byte-identical.
 
-`Karfi` scores 0.93 on its own — a Hausa village name is rare, so the Nigerian
-facility name carries its identity in a single token. But `london`, `bridge`,
-`king`, `college`, `st` and `mary` are all ordinary English words. **No single
-token in a London hospital name is rare enough to clear the gate**, even though
-the name as a whole is perfectly distinctive.
+Two changes closed that, and both ship in `arche-core`.
 
-The assumption that broke is not a threshold. It is: *the identifying part of a
-name is a rare token*. In London, identity lives in the **phrase**.
-""")
+**Possessive-aware tokenisation.** `Queen's` now emits `queen`, `s` *and*
+`queens` — alongside, never instead. `Queens Hospital` and `Queen's Hospital`
+previously shared nothing but `hospital`.
 
-md("""
-## Step 5 — The prototype: price phrases, not just tokens
-
-If the diagnosis is right, then bigram frequency should separate the two kinds
-of phrase without any curation: `general hospital` should be common, and
-`london bridge` should be rare.
-
-The bigram table is built over the same corpus and with the same equal-mass
-stratum weighting as the shipped token table. Building it takes a few minutes,
-so it is cached.
+**Phrase distinctiveness.** A bigram frequency table ships beside the unigram
+one, and the corpus separates generic phrases from identifying ones with no
+curation at all:
 """)
 
 code("""
-BIGRAMS = REPO / "datasets" / "data" / "_cache" / "place_bigrams.json.gz"
-if not BIGRAMS.exists():
-    raise SystemExit(
-        "Build the bigram table first:\\n"
-        "    python datasets/places_dataops/build_place_bigrams.py"
-    )
-BI = TokenFrequencyTable.load(BIGRAMS)
-print(f"{len(BI._rel):,} bigrams\\n")
-for g in ("general hospital", "primary health", "health post",
-          "london bridge", "kings college", "king george", "royal london"):
-    print(f"  {g:20} rel_freq={BI.rel_freq(g):.3e}  distinctiveness={BI.distinctiveness(g):.3f}")
+print("generic type phrases stay common:")
+for g in ("general hospital", "primary health", "health post", "medical centre"):
+    print(f"  {g:20} {tf.phrases.distinctiveness(g):.3f}")
+
+print("\\nidentifying phrases are rare:")
+for g in ("london bridge", "kings college", "king george", "royal london"):
+    print(f"  {g:20} {tf.phrases.distinctiveness(g):.3f}")
+
+print(f"\\nphrase table rule {tf.phrases.token_rule!r} must equal unigram rule {tf.token_rule!r}")
 """)
 
 md("""
-The corpus separates them on its own. `general hospital` is common and stays
-blocked; `london bridge` is rare and clears.
+The two measures combine with **`max`**, never replacement, so phrase evidence
+can only recover a pair that was abstaining and can never demote one that
+already matched. That discipline is not stylistic: an earlier orthography
+experiment on this engine recovered 13 pairs and demoted 79, and only became
+shippable once it was made structurally additive.
 
-The combination rule matters as much as the measure. It is **`max`** over the
-token and phrase measures, which makes the change *structurally* incapable of
-demoting a pair that already matched. An earlier orthography experiment on this
-engine recovered 13 true pairs and demoted 79, and only became shippable once it
-was made strictly additive. That lesson is applied here rather than relearned.
+## Step 5 — Ablation: what the phrase table is actually worth
+
+Rather than trust the claim, switch it off. `tf.phrases` is the companion table;
+setting it to `None` reverts to token-only rarity with nothing else changed.
 """)
 
 code("""
-from arche.resolve._tokenfreq import _tokens
+ablated = copy.copy(TokenFrequencyTable.default(domain="place"))
+ablated.phrases = None          # token-only rarity; everything else identical
 
-_original = shared_name_distinctiveness
-
-def _bigrams(name: str) -> set[str]:
-    t = _tokens(name)
-    return {" ".join(t[i:i + 2]) for i in range(len(t) - 1)}
-
-def phrase_distinctiveness(a: str, b: str) -> float:
-    \"\"\"Rarity of the rarest shared bigram, or 0.0 when none is shared.\"\"\"
-    return max((BI.distinctiveness(g) for g in _bigrams(a) & _bigrams(b)), default=0.0)
-
-def patched(a, b, tf, **kw):
-    # STRICTLY ADDITIVE: can only ever raise the score, never lower it.
-    return max(_original(a, b, tf, **kw), phrase_distinctiveness(a, b))
-
-# `arche.resolve.reconcile` resolves to the *function*, so patch the module.
-RECONCILE = sys.modules["arche.resolve.reconcile"]
-RECONCILE.shared_name_distinctiveness = patched
-
-result_ng = crosswalk(A, B, entity="place")
-pred_ng = {(osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e for e in result_ng["matches"]}
-with_ngrams = score("+ phrase gate", pred_ng)
-
+pred_ablated = {
+    (osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e
+    for e in crosswalk(A, B, entity="place", tf=ablated)["matches"]
+}
+without = score("without the phrase table", pred_ablated)
 print()
-print(f"recovered: {len(with_ngrams - baseline)}      lost: {len(baseline - with_ngrams)}")
+print(f"phrase table is worth: {len(shipped - without)} recovered, "
+      f"{len(without - shipped)} lost")
+print()
+for k in sorted(shipped - without):
+    o = next(x for x in osm if x["osm_id"] == k[0])
+    w = next(x for x in wd if x["wd_id"] == k[1])
+    print(f"  {o['name'][:34]:34} <-> {w['name'][:32]:32} "
+          f"phrase={tf.phrase_distinctiveness(o['name'], w['name']):.3f}")
 """)
 
 md("""
-## Step 6 — Which pairs moved, and which did not
-""")
-
-code("""
-print("recovered by the phrase gate:")
-for k in sorted(with_ngrams - baseline):
-    o = next(r for r in osm if r["osm_id"] == k[0])
-    w = next(r for r in wd if r["wd_id"] == k[1])
-    print(f"  {o['name'][:36]:36} <-> {w['name'][:36]:36} phrase={phrase_distinctiveness(o['name'], w['name']):.3f}")
-
-print("\\nstill abstaining:")
-for k, e in pred_ng.items():
-    if k in truth and e["decision"] == "review":
-        o = next(r for r in osm if r["osm_id"] == k[0])
-        w = next(r for r in wd if r["wd_id"] == k[1])
-        print(f"  {o['name'][:36]:36} <-> {w['name'][:36]:36} phrase={phrase_distinctiveness(o['name'], w['name']):.3f}")
-""")
-
-md("""
-Two of the remaining abstentions are **correct**, not failures.
-
-`St Mary's Hospital` and `St George's Hospital` keep abstaining because those
-bigrams genuinely are common — there really are several St Mary's Hospitals in
-the UK. Those pairs are confirmed only by their coordinates, and `review` is the
-honest answer. The other three are mechanical: `Queens` and `Queen's` share no
-bigram once tokenised, and two name forms differ outright.
-""")
-
-md("""
-## Step 7 — The regression check that decides whether this could ship
+## Step 6 — The regression check that decides whether this could ship
 
 A change that helps London and quietly damages Kano is not an improvement. The
-same comparison, on the benchmark the place pack was tuned against.
+same comparison, on the benchmark the place pack was originally tuned against.
 """)
 
 code("""
@@ -355,12 +299,13 @@ if G3.exists() and OSM_KANO.exists():
     with open(OSM_KANO, encoding="utf-8-sig") as fh:
         okano = [r for r in csv.DictReader(fh) if r["name"].strip()]
     KA = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in okano]
-    KB = [{"name": r["facility_name"], "lat": r["latitude"], "lon": r["longitude"]} for r in grid3]
+    KB = [{"name": r["facility_name"], "lat": r["latitude"], "lon": r["longitude"]}
+          for r in grid3]
     lga_a = {i: (r.get("lga") or "").strip().lower() for i, r in enumerate(okano)}
     lga_b = {i: (r.get("lga") or "").strip().lower() for i, r in enumerate(grid3)}
 
-    def kano(label):
-        res = crosswalk(KA, KB, entity="place")
+    def kano(label, table=None):
+        res = crosswalk(KA, KB, entity="place", **({"tf": table} if table else {}))
         dec = Counter(e["decision"] for e in res["matches"])
         same = diff = 0
         for e in res["matches"]:
@@ -369,23 +314,21 @@ if G3.exists() and OSM_KANO.exists():
             x, y = lga_a.get(e["a_id"], ""), lga_b.get(e["b_id"], "")
             if x and y:
                 same += (x == y); diff += (x != y)
-        print(f"  {label:16} match={dec['match']:>4}  review={dec['review']:>4}  "
+        print(f"  {label:26} match={dec['match']:>4}  review={dec['review']:>4}  "
               f"LGA agreement {100*same/(same+diff):.1f}%")
 
-    RECONCILE.shared_name_distinctiveness = _original
-    kano("shipped gate")
-    RECONCILE.shared_name_distinctiveness = patched
-    kano("+ phrase gate")
+    kano("without the phrase table", ablated)
+    kano("shipped")
 else:
     print("Kano data not present; skipping the regression check.")
 """)
 
 md("""
-## Step 8 — Safety: the defect this gate exists to prevent
+## Step 7 — Safety: the defect the gate exists to prevent
 
-The whole point of the distinctiveness gate is that two unrelated facilities
-sharing a common name must not merge. If the phrase gate broke that, it would be
-worthless however many pairs it recovered.
+Two unrelated facilities sharing a common name must not merge, however much
+other evidence agrees. If the phrase table broke that, it would be worthless
+whatever it recovered.
 """)
 
 code("""
@@ -393,38 +336,84 @@ for name, expected in (("General Hospital", "review"), ("Gyaranya Health Post", 
     a = [{"name": name, "lat": "12.00", "lon": "8.50"}]
     b = [{"name": name, "lat": "12.04", "lon": "8.50"}]
     got = crosswalk(a, b, entity="place")["matches"][0]["decision"]
-    flag = "OK" if got == expected else "<-- REGRESSION"
-    print(f"  {name:24} -> {got:<7} (expected {expected})  {flag}")
+    print(f"  {name:24} -> {got:<7} (expected {expected})  "
+          f"{'OK' if got == expected else '<-- REGRESSION'}")
+
+print()
+print("phrase evidence is refused where it cannot be trusted:")
+unseen = tf.phrase_distinctiveness("Zzqq Wwxx Hospital", "Zzqq Wwxx Hospital")
+local = TokenFrequencyTable.from_corpus(["London Bridge Hospital"] * 5)
+print(f"  unseen phrase        {unseen:.3f}")
+print(f"  runtime-built table  "
+      f"{local.phrase_distinctiveness('London Bridge Hospital', 'London Bridge Hospital'):.3f}")
 """)
 
 md("""
+Both zeros matter. An **unseen** phrase scores 0.0 rather than defaulting to
+"rare" — that is the failure where a key absent from every table reads as
+maximally distinctive. And a table built at runtime over the two lists in hand
+is silent, because rarity is a claim about a *population* and a small corpus
+cannot make one.
+
+## Step 8 — A known risk, shown rather than buried
+
+Phrase rarity makes **containment** errors easier to trip: a shared phrase is
+distinctive even when the two records sit at different granularities.
+""")
+
+code("""
+containment = []
+for e in result["matches"]:
+    if e["decision"] != "match":
+        continue
+    a_name, b_name = osm[e["a_id"]]["name"], wd[e["b_id"]]["name"]
+    ta, tb = set(a_name.lower().split()), set(b_name.lower().split())
+    if ta and tb and ta != tb and (ta < tb or tb < ta):
+        extra = sorted((tb - ta) if ta < tb else (ta - tb))
+        if extra != ["the"]:                      # a leading article is noise
+            k = (osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"])
+            containment.append((k in truth, a_name, b_name, extra))
+
+for labelled, a_name, b_name, extra in sorted(containment):
+    tag = "labelled true" if labelled else "UNLABELLED  "
+    print(f"  [{tag}] {a_name[:33]:33} <-> {b_name[:29]:29} +{extra}")
+""")
+
+md("""
+`King's College Hospital Emergency Department` matched to `King's College
+Hospital`; `Charing Cross Hospital` matched to `Charing Cross Hospital Medical
+School`. A department and a medical school — neither is the hospital.
+
+They are **not** suppressed, and the reason is visible in the output above.
+`Caterham Dene Hospital & Minor Injuries Unit` and `Moorfields Eye Hospital
+(City Road campus)` are labelled *true* while those two are unlabelled. A
+subunit is a true match in one row and unknown in another, so a token-subset
+rule learned on this corpus would fit label noise — and would also route three
+known-true pairs to `review`.
+
+Containment needs its own relation labels and its own verdict. Until then it is
+a documented limit of auto-match in this domain, not a solved problem.
+
 ## What this measured, and what it did not
 
-**Measured.** On 86 labelled London pairs the shipped pack auto-matches 84.9%
-and surfaces 98.8%, with blocking recall 0.988. Adding a phrase-level
-distinctiveness measure lifts auto-match to 93.0%, recovering 7 pairs and losing
-none, while Kano's LGA agreement is unchanged.
+**Measured.** On 86 labelled London pairs the shipped pack auto-matches 96.5%
+and surfaces 98.8%, with blocking recall 0.988. The phrase table accounts for
+most of the gain over the earlier 73/86, and Kano's LGA agreement is unchanged
+at 88.1%.
 
 **Not measured, and worth being blunt about.**
 
-* **Recall is unknown.** The truth set comes from `wikidata=` tags, and an
-  untagged hospital may still have a counterpart. Absence of a label is not
-  evidence of absence, so nothing here is a recall figure.
-* **86 pairs is small.** These are illustrative counts, not confidence intervals.
-* **One city, one entity type.** London hospitals do not establish anything
-  about UK addresses, retail, or any other domain.
-* **The prototype is not shipped.** It monkey-patches a function in a notebook.
-  Shipping it needs the n-gram table built by the packaged builder, a
-  population-scale guard so a small corpus cannot clear the gate on noise,
-  per-region evidence so a reviewer can see *which phrase* cleared it, and tests.
-
-**A known risk the prototype makes worse, not better.** Among the newly matched
-pairs is `King's College Hospital Emergency Department` against
-`King's College Hospital` — a *part-of* relation, not identity. Phrase-level
-rarity makes that easier to trip, because the shared phrase is distinctive even
-though the entities are at different granularities. That is a separate failure
-class from the one this notebook fixes, and it needs its own answer before any
-of this ships.
+* **This is not recall.** The truth set comes from OpenStreetMap `wikidata=`
+  tags. Only 91 of 226 OSM records carry one, and an absent tag means
+  *unlabelled*, not *no match exists*. It is an auto-match rate over a
+  tag-bearing positive subset.
+* **There is no precision instrument here at all.** Nothing in this corpus can
+  say whether an unlabelled match is right. Kano's LGA agreement is the only
+  precision signal in the exercise, and it is a weak label.
+* **These 86 pairs have been optimised against repeatedly.** Treat the figure as
+  a conditional statistic with real overfit risk, not a headline.
+* **One city, one entity type.** London hospitals establish nothing about UK
+  addresses, retail, or any other domain.
 
 *Related: [the place benchmark](https://unpatterned-labs.github.io/arche/concepts/place-benchmark/)
 · [a representation engine, not an inference engine](https://unpatterned-labs.github.io/arche/concepts/representation-engine/)
