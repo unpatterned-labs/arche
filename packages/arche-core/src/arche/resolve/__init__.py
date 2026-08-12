@@ -248,6 +248,12 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
                 tf_provenance = f"shipped:{domain}"
                 if getattr(tf, "version", None):
                     tf_provenance += f"@{tf.version}"
+                # The phrase table is a second scoring input and changes
+                # decisions, so it is named in the pin too. A decision has to
+                # say which data produced it, not merely which domain.
+                phrases = getattr(tf, "phrases", None)
+                if phrases is not None and getattr(phrases, "version", None):
+                    tf_provenance += f"+phrases@{phrases.version}"
             except FileNotFoundError as exc:
                 _warnings.warn(
                     f"shipped {domain!r} frequency table unavailable ({exc}); "

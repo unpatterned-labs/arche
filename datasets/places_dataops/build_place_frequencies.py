@@ -69,7 +69,18 @@ from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO / "packages" / "arche-core" / "src"))
-from arche.resolve._tokenfreq import TokenFrequencyTable, _tokens  # noqa: E402
+from arche.resolve._tokenfreq import (  # noqa: E402
+    TokenFrequencyTable,
+    _tokens as _raw_tokens,
+)
+
+# Bound to the CLI rule in main(); every counting path goes through it so
+# the artefact and its stamp cannot disagree.
+_TOKEN_RULE = "plain"
+
+
+def _tokens(text):
+    return _raw_tokens(text, _TOKEN_RULE)
 
 
 def _normalise_token(raw: str) -> str:
@@ -487,6 +498,10 @@ def main() -> int:
                     default=_REPO / "packages" / "arche-core" / "src" / "arche"
                     / "resolve" / "_data" / "place_tokens.yaml",
                     help="curated abbreviation/generic-token pack")
+    ap.add_argument("--token-rule", default="possessive", choices=["plain", "possessive"],
+                    help="tokenisation the counts are accumulated under; stamped "
+                         "into the artefact so the runtime cannot query it under "
+                         "a different rule")
     ap.add_argument("--prune-min", type=int, default=2,
                     help="drop tokens seen fewer than N times (wheel size)")
     ap.add_argument("--offline", action="store_true",
@@ -498,6 +513,10 @@ def main() -> int:
     # The descriptor index has to exist before counting starts: a canonical
     # descriptor's frequency is counted over the corpus in the same pass as the
     # tokens, not reconstructed from token counts afterwards.
+    global _TOKEN_RULE
+    _TOKEN_RULE = args.token_rule
+    print(f"token rule: {_TOKEN_RULE}\n")
+
     desc_index, desc_labels = _descriptor_index(args.tokens)
     if desc_index:
         forms = sum(len(t) for t in desc_index.values())
@@ -595,7 +614,7 @@ def main() -> int:
         merged, args.tokens, descriptors=descriptors, labels=desc_labels
     )
 
-    table = TokenFrequencyTable(counts=merged)
+    table = TokenFrequencyTable(counts=merged, token_rule=args.token_rule)
     payload = table.to_dict()
     payload["curated"] = curated
     # A content version over the counts themselves. Every rebuild that changes

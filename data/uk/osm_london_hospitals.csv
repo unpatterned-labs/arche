@@ -1,0 +1,227 @@
+osm_id,osm_type,name,operator,lat,lon,wikidata
+289563831,node,Bridge Lane Health Centre,,51.473268,-0.166317,
+296563324,node,British Home & Hospital for Incurables,,51.423089,-0.107068,
+1131534975,node,Queen Mary's Childrens' Hospital,,51.379798,-0.184842,
+1971677516,node,Chapel Orchard Day Surgery,,51.402049,-0.171537,
+5355643300,node,Leatherhead Clinic,,51.295826,-0.319531,
+9294597166,node,Cobham Day Surgery,Epsomedical,51.334761,-0.407903,
+10716500404,node,SpaMedica Epsom,SpaMedica,51.336107,-0.26185,
+10995777570,node,Sexual Health Clinic,Croydon University Hospital,51.391181,-0.11231,
+10995777571,node,Macmillan Cancer Support Centres,Croydon University Hospital,51.389544,-0.11159,
+10995801768,node,Main Reception,Croydon University Hospital,51.389253,-0.111157,
+10995804162,node,Patient Advice and Liaison Service (PALS),Croydon University Hospital,51.388644,-0.108499,
+10995804163,node,Maternity Reception,Croydon University Hospital,51.391293,-0.111059,
+10995804164,node,Fertility Treatment,,51.391148,-0.110279,
+10995804171,node,Gynaecology Department,Croydon University Hospital,51.390515,-0.109361,
+10995804179,node,Women's Health Unit,Croydon University Hospital,51.390933,-0.111065,
+10995804180,node,Croydon Heart Centre,,51.3887,-0.11113,
+10995804184,node,Dental Department,Croydon University Hospital,51.39027,-0.109744,
+10995804185,node,Dermatology Department,Croydon University Hospital,51.390485,-0.109961,
+10995804186,node,Diabetic Department,Croydon University Hospital,51.388698,-0.108209,
+10995804187,node,MRI,Croydon University Hospital,51.38883,-0.10883,
+10995804195,node,Main X-Ray,Croydon University Hospital,51.389109,-0.108793,
+10995804196,node,Vascular Ultrasound,Croydon University Hospital,51.389162,-0.110344,
+10995804197,node,Wound Clinic,Croydon University Hospital,51.389095,-0.110259,
+10995804198,node,Moorfields Eye Unit,Croydon University Hospital,51.389307,-0.109984,
+10995804199,node,The Willows (Children's Clinic),Croydon University Hospital,51.389144,-0.109738,
+10995804200,node,Day Surgery Unit (DSU),Croydon University Hospital,51.389866,-0.110707,
+10995811829,node,Emergency Department,Croydon University Hospital,51.388702,-0.109257,
+11170258999,node,King's College Hospital Emergency Department,,51.468759,-0.092795,
+12026398668,node,Dental Hospital,,51.469123,-0.092711,
+12313941685,node,Hounslow Medical Centre,,51.469439,-0.377273,
+4356408,way,The Wilson Hospital,NHS,51.39751,-0.163146,
+4536914,way,St George's Hospital,St George's University Hospitals NHS Foundation Trust,51.426442,-0.175207,Q3495316
+4822314,way,St. Helier Hospital,Epsom and St Helier University Hospitals NHS Trust,51.380377,-0.184577,Q7593367
+4907493,way,Barnes Hospital,,51.467206,-0.255859,Q16983704
+20184882,way,Ashford Hospital,Ashford and St. Peter's Hospitals NHS Foundation Trust,51.444385,-0.473373,Q30292831
+23088561,way,Tolworth Hospital,NHS,51.379491,-0.289191,Q30292891
+23109454,way,Kingston Hospital,,51.414916,-0.282685,Q50517755
+24525110,way,St Anthony's,,51.379898,-0.220726,Q16900532
+24787431,way,Lambeth Hospital,,51.465331,-0.122496,Q6481446
+26617656,way,Croydon University Hospital,,51.390124,-0.110056,Q5189706
+26730443,way,West Middlesex Hospital,,51.473078,-0.32441,Q7985920
+27219238,way,Norbury Health Centre,,51.404985,-0.120361,
+28834809,way,Bourne Hall Health Centre,,51.351272,-0.25253,
+35781504,way,Queen Mary's Hospital,,51.454971,-0.241604,Q7270446
+85472872,way,Royal Brompton Hospital,Guy's and St Thomas' NHS Foundation Trust,51.489166,-0.170971,Q7373850
+85472885,way,The Royal Marsden Hospital,,51.490573,-0.172546,Q7761706
+111343934,way,Lister Hospital,,51.486423,-0.150183,Q6646489
+136939614,way,Ashtead Clinic,,51.31409,-0.303646,
+137754985,way,Purley War Memorial Hospital,,51.340567,-0.114802,
+142385900,way,Royal Hospital for Neuro-Disability,,51.451981,-0.213927,Q7374301
+150470710,way,The Groves Medical Centre,,51.41034,-0.261338,
+188617701,way,Charing Cross Hospital,,51.486919,-0.219763,Q4982607
+248377711,way,Appleby Care Centre,,51.342996,-0.266649,
+277432734,way,King's College Hospital,King's College Hospital NHS Foundation Trust,51.468429,-0.093654,Q1742181
+285018126,way,Leatherhead Community Hospital,,51.295237,-0.32002,
+289707828,way,Epsom General Hospital,,51.325152,-0.273139,Q2692584
+331884029,way,St. Ebba's Hospital,,51.350768,-0.273049,Q7587779
+382250707,way,Ashtead Hospital,Bupa,51.304558,-0.303177,
+463924137,way,Cassel Hospital,West London NHS Trust,51.432411,-0.309056,Q5049284
+839142057,way,Royal Marsden Hospital,,51.344285,-0.191248,
+855389355,way,Teddington Memorial Hospital,,51.425694,-0.341094,Q17022101
+863316715,way,Nuffield Health Cancer Centre London,,51.433857,-0.223748,
+872044524,way,New Victoria Hospital,,51.415762,-0.25418,
+881918254,way,Chelsea and Westminster Hospital,,51.484391,-0.18144,Q5090151
+888717352,way,Royal Brompton Hospital,,51.489994,-0.17417,Q7373850
+1007473437,way,Cobham Community Hospital and Health Centre,,51.334891,-0.408094,
+1164672572,way,Springfield University Hospital,NHS,51.436988,-0.170793,
+1322377021,way,West Park Hospital,NHS,51.340534,-0.300761,
+1325519507,way,,,51.339425,-0.293652,
+1334599072,way,Horton Haven,,51.345011,-0.284845,
+1338483556,way,,,51.337114,-0.297407,
+1342767633,way,,,51.346885,-0.273636,
+1416702354,way,,NHS,51.430781,-0.339557,
+1458084061,way,,NHS,51.411925,-0.125129,
+444635673,node,Chelsfield Park Hospital,BMI Healthcare,51.358257,0.131675,
+449351427,node,Jasmine Centre,,51.433896,0.26085,
+449351429,node,King's / Dartford Dialysis Unit,,51.433839,0.260842,
+637882835,node,Sloane Hospital,,51.408204,-0.00454,
+9212650768,node,Livingstone Community Hospitals,,51.44223,0.226764,
+7954585,way,Queen Mary's Hospital,,51.418746,0.103933,Q7270448
+29443690,way,Caterham Dene Hospital & Minor Injuries Unit,,51.283807,-0.085536,Q30293099
+29754448,way,Caterham Dene - Physiotherapy,,51.283562,-0.085468,
+30413855,way,Bracton Centre,,51.433255,0.179635,
+35776498,way,Bethlem Royal Hospital,,51.382628,-0.031683,Q831377
+38166967,way,Childrens Resource Centre,,51.435522,0.255846,
+145477095,way,Biggin Hill Clinic,,51.313071,0.034439,
+161126146,way,Darent Valley Hospital,,51.434731,0.25709,Q25171377
+182344201,way,Shirley Oaks Hospital,,51.382169,-0.056382,
+207542812,way,Sevenoaks Hospital,,51.287789,0.195533,
+255439869,way,Queen Elizabeth Hospital,,51.477848,0.050258,Q7270343
+307058677,way,,,51.377552,-0.032676,
+484298094,way,University Hospital Lewisham,,51.453781,-0.017924,Q14956783
+498304824,way,Little Brook Hospital,Kent and Medway NHS and Social Care Partnership Trust,51.446421,0.242804,
+540185923,way,Renal Dialysis Unit,NHS Kings@Bromley,51.401139,0.014417,
+581607863,way,Princess Royal University Hospital,King's College NHS Foundation Trust,51.366202,0.058056,Q7244808
+591570712,way,Blackheath Hospital,Circle Health Group Limited,51.463431,0.006701,
+654480339,way,Erith and District Hospital,,51.476961,0.166766,Q30293058
+713671496,way,Memorial Hospital,,51.467775,0.063508,Q23891198
+727431875,way,,,51.421126,-0.078595,
+860476845,way,Beckenham Beacon,,51.405196,-0.033003,Q4878645
+904874618,way,Eltham Community Hospital,,51.449236,0.05372,Q105376589
+1157931537,way,Baring Road Medical Centre,NHS,51.435425,0.01943,
+1194334017,way,Hayes Priory,Priory,51.372967,0.014657,
+1217422518,way,Orpington Hospital,,51.362479,0.094795,Q30292829
+1477757914,way,Tessa Jowell Health Centre,NHS,51.459283,-0.080533,
+254005151,node,Priory Hospital,,51.632064,-0.118304,
+2778453137,node,The Portland Hospital,,51.522471,-0.143586,
+6295862569,node,North London Hospice Winchmore Hill,,51.624991,-0.092509,
+12152081139,node,Watford General Hospital,,51.649017,-0.404225,
+12187913901,node,Great Ormond Street Outpatients - Zebra and Hippo Clinic Areas,,51.521632,-0.121322,
+12601902086,node,National Hospital for Neurology and Neurosurgery at Cleveland Street,NHS,51.519657,-0.138002,
+12842417237,node,Medlabs Diagnostics,,51.5209,-0.11247,
+12873147549,node,Proton International @ UCLH,Proton International London Limited,51.523826,-0.136348,
+12873147555,node,HCA Healthcare UK Laboratories,,51.522587,-0.135248,
+12873180107,node,Optimal Vision,Optimal Vision Ltd,51.519966,-0.130212,
+12873245976,node,Until SOHO,,51.514553,-0.129968,
+12875654728,node,Queen Square Imaging Centre,Q.S. Enterprises Limited,51.521738,-0.123057,
+12886273770,node,Tunica Diagnostics,Tunica Diagnostics ltd,51.51455,-0.130012,
+12924662500,node,Clinical Research Facility,University College London Hospitals NHS Foundation Trust,51.522714,-0.136017,
+13006104317,node,Sleep & Health Clinic,Sleep & Health Clinic ltd,51.52345,-0.140372,
+4211785,way,St Ann's Hospital,,51.580218,-0.088321,Q7592462
+4363883,way,Hammersmith Hospital,,51.517388,-0.235288,Q5645747
+4379364,way,Barnet Hospital,,51.650912,-0.21456,Q4861607
+6134866,way,Northwick Park Hospital,,51.575335,-0.321525,Q7060443
+7989424,way,Watford General Hospital,NHS,51.648525,-0.402044,Q7974617
+20259708,way,St Mark's,,51.575993,-0.320169,Q7589963
+24414388,way,Finchley Memorial Hospital,,51.60561,-0.177012,Q28404845
+24437604,way,Chase Farm Hospital,,51.667077,-0.10256,Q5087127
+24648544,way,Central Middlesex Hospital,,51.531484,-0.267615,Q5061433
+28226427,way,"Royal National Throat, Nose and Ear Hospital",,51.529241,-0.119268,Q7374519
+31636962,way,St Charles' Hospital,,51.522221,-0.21761,Q27081429
+31927218,way,Hillingdon Hospital,The Hillingdon Hospitals NHS Trust,51.52555,-0.461464,Q5763292
+42792695,way,Potters Bar Community Hospital,,51.687172,-0.177421,Q30292872
+43290805,way,St. Pancras Hospital,,51.536279,-0.131396,Q7595036
+45388015,way,St Mary's Hospital,,51.517482,-0.174285,Q3495342
+47630726,way,Mount Vernon,,51.61563,-0.445971,Q6924380
+47698729,way,Royal National Orthopaedic Hospital,,51.631594,-0.310836,Q7374518
+48915770,way,The Whittington Hospital,,51.566645,-0.139318,Q7996907
+80402499,way,Ealing Hospital,,51.507531,-0.345319,
+80888181,way,The Princess Grace Hospital,HCA,51.522486,-0.15291,Q16901558
+80888190,way,King Edward VII's Hospital,,51.520934,-0.150418,Q580652
+80888195,way,The Portland Hospital,,51.523021,-0.144361,Q7231952
+89825005,way,Cambian Churchill,,51.497186,-0.109639,
+92785814,way,,,51.590513,-0.281964,
+97175523,way,CRGH,City Fertility Limited,51.520201,-0.101541,
+110476079,way,The London Welbeck Hospital,,51.518254,-0.149376,Q6671010
+111800473,way,Vincent Square Clinic,,51.491474,-0.134545,
+112682015,way,Gordon Hospital,,51.492166,-0.13595,Q60747194
+116629214,way,Evelina London Children's Hospital,Guy's & St Thomas' NHS Foundation Trust,51.498323,-0.118394,Q5416238
+122227536,way,St Thomas' Hospital,Guy's and St Thomas' NHS Foundation Trust,51.499101,-0.118732,Q1143779
+122299506,way,Cleveland Clinic London,Cleveland Clinic,51.499394,-0.148755,Q97040389
+156497004,way,Springdene Nursing Home,,51.63444,-0.16795,
+164458516,way,Edgware Community Hospital,,51.606484,-0.270967,Q30293035
+166385829,way,Bowes Road Clinic,,51.615494,-0.131082,
+170732745,way,St Bartholomew's Hospital,,51.517531,-0.100077,Q164946
+186977094,way,The Old Red Hill Clinic (Barnet Adolescent Services),,51.61142,-0.27727,
+193432693,way,The Broadway Health Centre,,51.511139,-0.379344,
+208072187,way,Millway Medical Practice,,51.615535,-0.244009,
+222183797,way,St Bernards Hospital (West London Mental Health NHS Trust),,51.506364,-0.347189,
+229290055,way,Cygnet Hospital,,51.567208,-0.337796,
+315305511,way,Cygnet Hospital Ealing,,51.521155,-0.297186,
+352120259,way,Harefield Hospital,Guy's and St Thomas' NHS Foundation Trust,51.607114,-0.485204,Q5656797
+402012627,way,Moorfields Eye Hospital (City Road campus),,51.527263,-0.090215,Q1946861
+420411264,way,Fitzrovia Hospital,,51.523477,-0.140432,
+440410278,way,University College Hospital,National Health Service (NHS),51.52487,-0.136443,Q3551343
+444440630,way,Weymouth Street Hospital,Phoenix Hospital Group,51.520236,-0.150541,Q20714162
+492083208,way,Highgate Mental Health Centre,Camden and Islington NHS Foundation Trust,51.566736,-0.142588,
+504129695,way,BMI Hendon Hospital,,51.593717,-0.22441,
+514349576,way,Nuffield Health Highgate Hospital,Nuffield Health,51.57665,-0.157055,Q28404470
+548533106,way,Great Ormond Street Hospital for Children,Great Ormond Street Hospital for Children NHS Foundation Trust,51.522474,-0.120403,Q1349705
+660411791,way,The Portland Hospital Consulting Suite,,51.522804,-0.144213,
+669882382,way,Privé Clinics,,51.518668,-0.146477,
+670848153,way,Queen Anne Street Medical Centre,,51.51821,-0.147099,
+672219101,way,Nuffield Health,Nuffield Health,51.517724,-0.148281,
+688880323,way,Nightingale Hospital,,51.521814,-0.165221,Q60746347
+699934188,way,Hospital of St John and St Elizabeth,,51.533269,-0.174979,Q5908758
+818779914,way,Royal Free Hospital,Royal Free London,51.55302,-0.165458,Q7374196
+821710065,way,Cromwell Hospital,BUPA,51.49522,-0.191141,Q5187669
+833201881,way,University College Hospital at Westmoreland Street,University College London Hospitals NHS Foundation Trust,51.519606,-0.149661,Q7739155
+912368818,way,Queen Charlotte's & Chelsea Hospital,,51.516385,-0.237341,Q7270242
+926396835,way,Noah's Ark Children's Hospice,,51.658121,-0.214871,
+967775040,way,Spire Bushey Hospital,Spire Healthcare Limited,51.637438,-0.331636,
+988525443,way,The Doctors Laboratory,The Doctors Laboratory Limited,51.528029,-0.128041,
+991369947,way,Potters Bar Clinic,Elysium Healthcare,51.686549,-0.177779,Q107103988
+1043104661,way,The Cavell Hospital,,51.659073,-0.101947,
+1113340300,way,Royal National ENT and Eastman Dental Hospitals,University College Hospitals,51.522549,-0.134531,
+1114959175,way,Macmillan Cancer Centre,University College Hospitals,51.523117,-0.135201,
+1120163062,way,,,51.521164,-0.297148,
+1390491265,way,National Hospital for Neurology and Neurosurgery,NHS,51.522192,-0.122473,Q3336892
+1390491266,way,Royal London Hospital for Integrated Medicine,,51.52177,-0.121475,Q7374417
+265667686,node,Cheshunt Community Hospital,,51.69925,-0.033211,
+2671414583,node,Suttons Manor Hospital,Priory Group,51.660966,0.18444,
+13262025383,node,"Neonatal Unit, L1 Z2",,51.522985,0.036765,
+13262504860,node,A&E Department,,51.52298,0.03436,
+13262504861,node,Rainbow Ward,,51.523304,0.035068,
+13436406358,node,Moorfields at Hoxton,Moorfields Eye Hospital,51.534681,-0.089875,
+4271138,way,North Middlesex University Hospital,,51.613284,-0.073543,Q7056104
+24437660,way,St Michael's Community Hospital,,51.662016,-0.083919,
+32612277,way,Newham University Hospital,Barts Health NHS Trust,51.521674,0.03664,Q7018154
+41378470,way,Whipps Cross University Hospital,,51.577515,0.002042,Q7993761
+43514739,way,Homerton University Hospital,,51.550645,-0.045508,Q19654384
+120359076,way,Grays Court Community Hospital,,51.539279,0.158058,
+122850042,way,Brentwood Community Hospital,,51.623341,0.316027,
+130345641,way,Queens Hospital,"Barking, Havering and Redbridge University Hospitals NHS Trust",51.568723,0.181018,Q7270013
+147241472,way,Hartswood Hospital,,51.600424,0.293018,
+170991726,way,Nuffield Hospital,,51.623346,0.312908,
+184154674,way,Mile End Hospital,Barts Health NHS Trust,51.525053,-0.04217,Q6851069
+197910029,way,Victoria Hospital,,51.583815,0.188002,
+263728248,way,Coborn Centre for Adolescent Mental Health,,51.519681,0.038392,
+275414908,way,,NHS,51.583751,0.029039,
+322546930,way,Spire London East,,51.587242,0.043649,
+326277354,way,John Howard Centre,East London NHS Foundation Trust,51.548032,-0.039138,
+362325982,way,The Holly Private Hospital,,51.624328,0.032177,
+413948227,way,London Bridge Hospital,,51.506132,-0.08604,Q6669893
+448178927,way,Barking Community Hospital,,51.53879,0.098818,Q30292861
+497718283,way,Mildmay Mission Hospital,,51.527731,-0.07558,Q124749523
+640495338,way,Royal London Hospital,Barts Health NHS Trust,51.517447,-0.059924,Q7374421
+707322577,way,Guy's Hospital,Guy's and St Thomas' NHS Foundation Trust,51.503235,-0.08683,Q777039
+779654814,way,,,51.626841,0.294373,
+780482089,way,Goodmayes Hospital,North East London NHS Foundation Trust,51.577393,0.111232,Q30293120
+863401259,way,St. George's Health & Wellbeing Hub,NHS,51.5487,0.219036,
+868274062,way,Cygnet Hospital Beckton,,51.513611,0.064702,
+902050280,way,King George Hospital,,51.580253,0.111264,Q6411611
+1038016075,way,White Lodge Medical Practice,,51.658502,-0.087794,
+1306349223,way,Jane Atkinson Health and Wellbeing Centre,North East London NHS Foundation Trust,51.590887,-0.007005,
+1432555189,way,The London Independent Hospital,Circle Health Group,51.520213,-0.047046,

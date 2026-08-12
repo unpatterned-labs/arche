@@ -48,6 +48,26 @@ from pathlib import Path
 from arche.resolve._matcher import _normalise_text
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
+# The English possessive as it survives `_normalise_text`, which lowercases and
+# strips diacritics but leaves apostrophes alone.
+_POSSESSIVE_RE = re.compile(r"([a-z0-9]+)['’]s(?![a-z0-9])")
+
+#: How a name becomes tokens. The rule is a property of a *table*, not of a
+#: call site: a table counted under one rule and queried under another silently
+#: undercounts, because the query looks up a token whose count was accumulated
+#: differently. :class:`TokenFrequencyTable` therefore carries its own rule and
+#: every consumer asks the table rather than tokenising on its own account.
+#:
+#: ``plain``       the historical rule. ``Queen's`` -> ``queen``, ``s``.
+#: ``possessive``  emits the joined form ALONGSIDE, never instead:
+#:                 ``Queen's`` -> ``queen``, ``s``, ``queens``. Additive by
+#:                 set-union, so the shared-token set is a superset of
+#:                 ``plain``'s and a gate can only ever see more evidence.
+#:                 Folding (emitting ``queens`` *instead*) was measured and
+#:                 rejected: it demotes ``St Mary Hospital`` against
+#:                 ``St Mary's Hospital`` from 0.683 to 0.504.
+TOKEN_RULES = ("plain", "possessive")
+DEFAULT_TOKEN_RULE = "plain"
 # Relative-frequency floor for a token never seen in the corpus. A brand-new
 # token is treated as rare-but-not-impossible (uk_address_matcher uses 5e-5).
 _UNKNOWN_FLOOR = 5e-5
@@ -59,6 +79,12 @@ _DEFAULT_RESOURCES = {
     "artist": "artist_frequencies.json.gz",
     "place": "place_frequencies.json.gz",
 }
+#: Phrase (bigram) tables that accompany a unigram table. A name whose every
+#: token is ordinary can still be distinctive as a PHRASE: `london`, `bridge`
+#: and `hospital` are all common, `london bridge` is not. Only `place` has one.
+_DEFAULT_PHRASES = {
+    "place": "place_bigrams.json.gz",
+}
 _DEFAULT_BUILDERS = {
     "person": "datasets/names_dataops/build_name_frequencies.py",
     "artist": "datasets/artists_dataops/build_artist_frequencies.py",
@@ -68,9 +94,21 @@ _DEFAULT_BUILDERS = {
 _DEFAULT_CACHE: dict[str, TokenFrequencyTable] = {}
 
 
-def _tokens(text: str) -> list[str]:
-    """Normalised alphanumeric tokens (lowercased, diacritics stripped)."""
-    return _TOKEN_RE.findall(_normalise_text(text or ""))
+def _tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
+    """Normalised alphanumeric tokens (lowercased, diacritics stripped).
+
+    ``rule`` selects an emission from :data:`TOKEN_RULES`. Pass the rule the
+    *table* was built with — see :attr:`TokenFrequencyTable.token_rule` — never
+    a rule chosen at the call site.
+    """
+    if rule not in TOKEN_RULES:
+        raise ValueError(f"unknown token rule {rule!r}; expected one of {list(TOKEN_RULES)}")
+    norm = _normalise_text(text or "")
+    out = _TOKEN_RE.findall(norm)
+    if rule == "possessive":
+        # Alongside, never instead. See TOKEN_RULES.
+        out.extend(m.group(1) + "s" for m in _POSSESSIVE_RE.finditer(norm))
+    return out
 
 
 class TokenFrequencyTable:
@@ -95,6 +133,7 @@ class TokenFrequencyTable:
         total: float | None = None,
         unknown_floor: float = _UNKNOWN_FLOOR,
         population_scale: bool = False,
+        token_rule: str = DEFAULT_TOKEN_RULE,
     ) -> None:
         """Construct from either raw ``counts`` (preferred — retains totals for
         :meth:`merge` / :meth:`most_common`) or a precomputed ``rel_freq`` map
@@ -113,6 +152,18 @@ class TokenFrequencyTable:
         # Carried into `pins` so a decision names the exact frequency data that
         # produced it — the same discipline as the declaration pin.
         self.version: str | None = None
+        #: The tokenisation this table's counts were accumulated under. Every
+        #: consumer must tokenise the same way or the lookup lands on a token
+        #: whose count means something else.
+        if token_rule not in TOKEN_RULES:
+            raise ValueError(
+                f"unknown token rule {token_rule!r}; expected one of {list(TOKEN_RULES)}"
+            )
+        self.token_rule: str = token_rule
+        #: Optional companion table of phrase (bigram) frequencies, built over
+        #: the same corpus under the same rule. `None` when the domain has no
+        #: phrase table or one was not found.
+        self.phrases: TokenFrequencyTable | None = None
         if counts is not None:
             norm: Counter[str] = Counter()
             for tok, c in counts.items():
@@ -136,17 +187,19 @@ class TokenFrequencyTable:
     # ── builders ──────────────────────────────────────────────────────────────
     @classmethod
     def from_corpus(
-        cls, texts: Iterable[str], *, unknown_floor: float = _UNKNOWN_FLOOR
+        cls, texts: Iterable[str], *, unknown_floor: float = _UNKNOWN_FLOOR,
+        token_rule: str = DEFAULT_TOKEN_RULE,
     ) -> TokenFrequencyTable:
         """Count tokens over ``texts`` (self-calibrating over the list resolved)."""
         counts: Counter[str] = Counter()
         for t in texts:
-            counts.update(_tokens(t))
-        return cls(counts=counts, unknown_floor=unknown_floor)
+            counts.update(_tokens(t, token_rule))
+        return cls(counts=counts, unknown_floor=unknown_floor, token_rule=token_rule)
 
     @classmethod
     def from_counts(
-        cls, counts: Mapping[str, float], *, unknown_floor: float = _UNKNOWN_FLOOR
+        cls, counts: Mapping[str, float], *, unknown_floor: float = _UNKNOWN_FLOOR,
+        token_rule: str = DEFAULT_TOKEN_RULE,
     ) -> TokenFrequencyTable:
         """Ingest a *precomputed* frequency list (``name/token -> count``).
 
@@ -163,9 +216,10 @@ class TokenFrequencyTable:
         """
         agg: Counter[str] = Counter()
         for name, c in counts.items():
-            for tok in _tokens(name):
+            for tok in _tokens(name, token_rule):
                 agg[tok] += float(c)
-        return cls(counts=agg, unknown_floor=unknown_floor, population_scale=True)
+        return cls(counts=agg, unknown_floor=unknown_floor, population_scale=True,
+                   token_rule=token_rule)
 
     @classmethod
     def default(cls, domain: str = "person") -> TokenFrequencyTable:
@@ -191,7 +245,22 @@ class TokenFrequencyTable:
             resource = files("arche.resolve").joinpath("_data", resource_name)
             try:
                 with as_file(resource) as path:
-                    _DEFAULT_CACHE[domain] = cls.load(path)
+                    table = cls.load(path)
+                    phrase_name = _DEFAULT_PHRASES.get(domain)
+                    if phrase_name is not None:
+                        phrase_path = path.parent / phrase_name
+                        if phrase_path.exists():
+                            phrases = cls.load(phrase_path)
+                            if phrases.token_rule != table.token_rule:
+                                raise ValueError(
+                                    f"phrase table {phrase_name} was built under "
+                                    f"{phrases.token_rule!r} but its unigram table "
+                                    f"under {table.token_rule!r}; a phrase assembled "
+                                    f"from one tokenisation cannot be looked up in "
+                                    f"counts accumulated under another"
+                                )
+                            table.phrases = phrases
+                    _DEFAULT_CACHE[domain] = table
             except (FileNotFoundError, ModuleNotFoundError) as exc:
                 raise FileNotFoundError(
                     f"The default {domain} frequency table is not present. "
@@ -253,7 +322,21 @@ class TokenFrequencyTable:
         would read as unseen-therefore-rare and inflate every pair of
         facilities whose names both end "Health Post".
         """
-        ta, tb = set(_tokens(a)), set(_tokens(b))
+        # This is a RATIO, so a rule that emits extra tokens is not
+        # automatically safe: when only one side carries a possessive, the
+        # extra token inflates the union and the score falls. Measured on
+        # "St Mary Hospital" vs "St Mary's Hospital": 0.763 -> 0.563 under the
+        # possessive rule alone. So score under the table's rule AND under
+        # `plain`, and take the better — strictly additive, so a richer
+        # tokenisation can only ever recover a pair, never demote one.
+        if self.token_rule != DEFAULT_TOKEN_RULE:
+            best = self._token_sim(a, b, DEFAULT_TOKEN_RULE, orthography)
+            return max(best, self._token_sim(a, b, self.token_rule, orthography))
+        return self._token_sim(a, b, self.token_rule, orthography)
+
+    def _token_sim(self, a: str, b: str, rule: str, orthography: str | None) -> float:
+        """One tokenisation's distinctiveness-weighted Jaccard."""
+        ta, tb = set(_tokens(a, rule)), set(_tokens(b, rule))
         if not ta or not tb:
             return 0.0
 
@@ -267,8 +350,8 @@ class TokenFrequencyTable:
 
             pack = load_orthography(orthography)
             if pack is not None:
-                keys_a = pack.keys(_tokens(a))
-                keys_b = pack.keys(_tokens(b))
+                keys_a = pack.keys(_tokens(a, rule))
+                keys_b = pack.keys(_tokens(b, rule))
 
                 def weight(key: str) -> float:
                     sources = keys_a.get(key, set()) | keys_b.get(key, set())
@@ -316,6 +399,48 @@ class TokenFrequencyTable:
         scale = 1.0 / min(positive)  # smallest positive freq -> count 1
         return {tok: f * scale for tok, f in self._rel.items() if f > 0}
 
+    def phrase_distinctiveness(self, a: str, b: str) -> float:
+        """Rarity of the rarest shared phrase, or 0.0 when none is shared.
+
+        The gate asks whether two names share something *rare* and asks it of
+        tokens. That is right where the identifying part of a name is one rare
+        word — ``Karfi Health Post`` clears on ``karfi``. It is wrong where
+        identity lives in a phrase of ordinary words: every token of
+        ``London Bridge Hospital`` is common, so two records of that hospital
+        30 m apart with byte-identical names abstained.
+
+        The corpus separates the two cases with no curation at all::
+
+            general hospital 0.486    london bridge 0.921
+            health post      0.349    kings college 0.967
+
+        Returns 0.0 — never a default rarity — when there is no phrase table,
+        when it is not population-scale, or when the two names share no phrase.
+        A caller combines this with the token measure using ``max``, so it can
+        only ever recover a pair.
+        """
+        phrases = self.phrases
+        if phrases is None or not phrases.population_scale:
+            return 0.0
+        rule = phrases.token_rule
+        ta, tb = _tokens(a, rule), _tokens(b, rule)
+        ga = {" ".join(ta[i:i + 2]) for i in range(len(ta) - 1)}
+        gb = {" ".join(tb[i:i + 2]) for i in range(len(tb) - 1)}
+        shared = ga & gb
+        if not shared:
+            return 0.0
+        # Only phrases the corpus has actually SEEN may speak. An unseen phrase
+        # would score at the unknown floor and read as maximally distinctive —
+        # the `healthpost` failure, at phrase scale where counts are sparser.
+        #
+        # Test membership in the counts, NOT `rel_freq(g) > floor`: `rel_freq`
+        # clamps at the floor, so a genuinely rare phrase and an unseen one
+        # return the same number. `london bridge` sits below the floor and is
+        # real; that check silently discarded it.
+        counts = phrases._counts or {}
+        seen = [g for g in shared if g in counts]
+        return max((phrases.distinctiveness(g) for g in seen), default=0.0)
+
     def merge(
         self,
         other: TokenFrequencyTable,
@@ -330,6 +455,12 @@ class TokenFrequencyTable:
 
             table = census.merge(african, weight=1.0, other_weight=3.0)
         """
+        if self.token_rule != other.token_rule:
+            raise ValueError(
+                f"cannot merge tables built under different tokenisations: "
+                f"{self.token_rule!r} and {other.token_rule!r}. Counts accumulated "
+                f"under one rule do not mean the same thing under another."
+            )
         merged: Counter[str] = Counter()
         for tok, c in self._as_counts().items():
             merged[tok] += c * weight
@@ -342,6 +473,7 @@ class TokenFrequencyTable:
             # population claim: the result is still calibrated against a
             # population, just with local counts folded in.
             population_scale=self.population_scale or other.population_scale,
+            token_rule=self.token_rule,
         )
 
     def most_common(self, n: int = 20) -> list[tuple[str, float]]:
@@ -372,7 +504,8 @@ class TokenFrequencyTable:
     # ── persistence ─────────────────────────────────────────────────────────────
     def to_dict(self) -> dict:
         """Serialise to a plain dict (counts preferred, else rel_freq)."""
-        d: dict = {"format": _FORMAT, "unknown_floor": self._floor}
+        d: dict = {"format": _FORMAT, "unknown_floor": self._floor,
+                   "token_rule": self.token_rule}
         if self._counts is not None:
             d["total"] = self._total
             d["counts"] = self._counts
@@ -386,12 +519,14 @@ class TokenFrequencyTable:
         floor = d.get("unknown_floor", _UNKNOWN_FLOOR)
         # A serialised table is a published artefact, not a scratch count over
         # the two lists in hand, so it may support a rarity claim.
+        # A table built before token rules existed is `plain` by definition.
+        rule = d.get("token_rule", DEFAULT_TOKEN_RULE)
         if "counts" in d:
             tbl = cls(counts=d["counts"], total=d.get("total"),
-                      unknown_floor=floor, population_scale=True)
+                      unknown_floor=floor, population_scale=True, token_rule=rule)
         else:
             tbl = cls(d.get("rel_freq", {}), unknown_floor=floor,
-                      population_scale=True)
+                      population_scale=True, token_rule=rule)
         tbl.version = d.get("version")
         return tbl
 
