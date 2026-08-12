@@ -51,6 +51,7 @@ from arche.resolve._block import union_candidate_pairs as _union_candidate_pairs
 from arche.resolve._gate import (
     DISTINCTIVE_FLOOR,
     distinctive_residual,
+    name_tokens,
     shared_name_distinctiveness,
 )
 from arche.resolve._matcher import (
@@ -172,8 +173,9 @@ def _score_pair(
     Returns ``(score, distinctive_max, conflict, evidence)`` or ``None`` when
     no comparator applied (nothing to compare).
 
-    ``conflict`` is set by either an admin-unit disagreement or a geographic
-    impossibility, and demotes an otherwise-matching pair to ``review``.
+    ``conflict`` is set by an admin-unit disagreement, a geographic
+    impossibility, or a comparator declared with ``refutes_below`` scoring
+    under its threshold, and demotes an otherwise-matching pair to ``review``.
     """
     num = den = 0.0
     distinctive_max = 0.0
@@ -193,6 +195,32 @@ def _score_pair(
         if key in evidence:
             key = f"{key}_{spec['kind']}"
         evidence[key] = round(sim, 3)
+        # Refutation. Some attributes discriminate without confirming, and a
+        # weight cannot express one because a weight is symmetric: it rewards
+        # agreement by exactly as much as it punishes disagreement.
+        #
+        # Measured on DBLP-ACM, where the mapping is complete so false merges
+        # are visible: publication year agrees on 2,224 of 2,224 true pairs and
+        # separates 213 of the 391 false merges. Raising its weight *lowers*
+        # precision — 0.850 at weight 0.5, 0.876 at 2.0, 0.653 at 7.0 — because
+        # thousands of unrelated papers share a year, so turning the field up
+        # turns up the noise it sits in. No weight recovers what the field
+        # plainly knows.
+        #
+        # `refutes_below` is the asymmetric form, and it generalises the
+        # geographic veto rather than inventing anything: disagreement demotes
+        # to `review` (never `no_match` — a refutation says a human must look,
+        # not that the answer is no), while agreement adds nothing beyond
+        # whatever `weight` already grants. Pair it with `weight: 0.0` for a
+        # pure discriminator that refutes and never confirms.
+        #
+        # A missing value never refutes: `sim is None` was dropped above, so
+        # absent evidence cannot fire this, exactly as absent coordinates
+        # cannot fire `veto_km`.
+        refutes_below = spec.get("refutes_below")
+        if refutes_below is not None and sim < float(refutes_below):
+            conflict = True
+            evidence[f"{key}_conflict"] = round(sim, 3)
         if spec["kind"] == "geo":
             # Reviewers read metres, not decayed similarities: 0.136 hides
             # what "3.2 km apart" says plainly. Distance is evidence, not a
@@ -253,6 +281,29 @@ def _score_pair(
                         distinctive_residual(a_val, b_val, tf),
                     )
                     contribution = min(contribution, rarity)
+                    # Name the phrase when phrase rarity is what carried the
+                    # gate. A scoring input a reviewer cannot see is a weight
+                    # wearing the word "representation"; the edge has to say
+                    # which claim it relied on, not merely that it cleared.
+                    best_phrase = getattr(tf, "best_shared_phrase", None)
+                    if best_phrase is not None:
+                        found = best_phrase(a_val, b_val)
+                        if found is not None:
+                            phrase, phrase_rarity = found
+                            # The token-only reading, computed directly:
+                            # `shared_name_distinctiveness` already folds the
+                            # phrase measure in, so comparing against it would
+                            # never fire.
+                            rule = getattr(tf, "token_rule", "plain")
+                            shared_toks = (name_tokens(a_val, rule)
+                                           & name_tokens(b_val, rule))
+                            token_only = max(
+                                (tf.distinctiveness(t) for t in shared_toks),
+                                default=0.0,
+                            )
+                            if phrase_rarity > token_only:
+                                evidence["name_phrase"] = phrase
+                                evidence["name_phrase_rarity"] = round(phrase_rarity, 3)
             distinctive_max = max(distinctive_max, contribution)
         if spec["kind"] == "containment" and sim == 0.0:
             conflict = True
@@ -309,6 +360,19 @@ def reconcile(
         Kinds: ``name``, ``phone``, ``id``, ``email``, ``address`` (field
         comparators); ``geo`` and ``containment`` (structural); ``tftoken``
         (TF-weighted token overlap — **requires** ``tf``).
+
+        Any spec may add ``"refutes_below": x`` to make that comparator a
+        **discriminator**: when it applies and scores below ``x``, the pair is
+        demoted to ``review`` regardless of how well everything else agrees.
+        It never demotes to ``no_match``, and a missing value never refutes.
+        Use it for attributes that disagree meaningfully but agree cheaply —
+        a publication year, an edition, a model number, a date of birth —
+        where raising ``weight`` makes precision *worse* because agreement on
+        a low-entropy field is not evidence. Pair with ``"weight": 0.0`` for a
+        discriminator that refutes and never confirms::
+
+            {"field": "year", "kind": "date", "weight": 0.0,
+             "refutes_below": 0.99}
     threshold:
         Score at/above which a pair is a ``match`` (subject to the gate).
     review_margin:
@@ -367,6 +431,30 @@ def reconcile(
     if rerank and tf is None:
         raise ValueError("rerank=True requires a TokenFrequencyTable passed as tf= "
                          '(or tf="default")')
+
+    # Validate refutation thresholds once, not per pair. A silent out-of-range
+    # value is the worst outcome here: above 1.0 it refutes every pair it
+    # touches and the run looks merely conservative, at or below 0.0 it can
+    # never fire and the run looks merely permissive. Both read as a tuning
+    # problem rather than a typo, so they fail loudly instead.
+    for spec in comparators:
+        below = spec.get("refutes_below")
+        if below is None:
+            continue
+        try:
+            below = float(below)
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"refutes_below must be a number, got {below!r} on comparator "
+                f"{spec.get('field', spec.get('kind'))!r}"
+            ) from None
+        if not 0.0 < below <= 1.0:
+            raise ValueError(
+                f"refutes_below must be in (0.0, 1.0], got {below} on "
+                f"comparator {spec.get('field', spec.get('kind'))!r}; "
+                "comparator similarities are bounded to [0.0, 1.0], so a "
+                "threshold outside that range either always or never fires"
+            )
 
     n_a, n_b = len(list_a), len(list_b)
     full = n_a * n_b

@@ -62,6 +62,7 @@ sys.path.insert(0, str(_REPO / "packages" / "arche-core" / "src"))
 from arche.resolve._tokenfreq import (  # noqa: E402
     TOKEN_RULES,
     TokenFrequencyTable,
+    _phrase_tokens,
     _tokens as _raw_tokens,
 )
 
@@ -99,7 +100,11 @@ _LOCAL = [
 
 
 def bigrams(text: str) -> list[str]:
-    toks = _tokens(text or "")
+    # The runtime's phrase reading, not the unigram one: the possessive is
+    # FOLDED so adjacency is a property of the name. Building with the append
+    # reading put phantom pairs like "hospital kings" in the table, which were
+    # rare precisely because they never occur.
+    toks = _phrase_tokens(text or "", _TOKEN_RULE)
     return [" ".join(toks[i:i + 2]) for i in range(len(toks) - 1)]
 
 

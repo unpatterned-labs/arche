@@ -4,6 +4,70 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added — `refutes_below`, a declarable discriminator veto
+
+Any comparator spec may now declare `"refutes_below": x`. When that comparator
+applies and scores under `x`, the pair is demoted to `review` no matter how well
+everything else agrees:
+
+```python
+{"field": "year", "kind": "date", "weight": 0.5, "refutes_below": 0.99}
+```
+
+**Why a weight could not already do this.** A weight is symmetric — it rewards
+agreement by exactly as much as it punishes disagreement. Some attributes are
+not symmetric: they disagree meaningfully and agree cheaply. A publication year
+is the clean case, and DBLP–ACM makes it measurable because the Leipzig mapping
+is *complete*, so false merges are visible for the first time in this project.
+Year agrees on **2,224 of 2,224** true pairs and separates 213 of 391 false
+merges. Raising its weight makes precision **worse**:
+
+| `year` weight (against 7.0 on title + authors) | Precision | Recall |
+|---|---|---|
+| 0.5 | 0.8500 | 0.9960 |
+| 2.0 | 0.8761 | 0.9987 |
+| 7.0 | 0.6531 | 0.9996 |
+| 25.0 | 0.6531 | 0.9996 |
+
+Thousands of unrelated papers share a year, so turning the field up turns up the
+noise it sits in. Declared as a refutation instead, on the same declaration:
+
+```text
+baseline (year scored)     P=0.8500  R=0.9960   (TP 2215, FP 391)
+year refutes_below 0.99    P=0.9506  R=0.9960   (TP 2215, FP 115)
+```
+
+**276 false merges removed, zero true matches lost.** Reproduce with
+`uv run python data/scripts/benchmark_leipzig.py`.
+
+This generalises the geographic veto rather than inventing anything, and keeps
+its rules:
+
+- **Demotes to `review`, never `no_match`.** A refutation says a human must
+  look, not that the answer is no. Note this is strictly better than what a
+  heavy weight does — a heavy weight pushes the pair under the floor and the
+  edge is *dropped*, so the reviewer never sees the conflict at all.
+- **A missing value never refutes.** Absent evidence refutes nothing, exactly
+  as absent coordinates cannot fire `veto_km`.
+- **Refutation and scoring stay orthogonal.** `weight` is unchanged by the
+  flag; pair with `"weight": 0.0` for a discriminator that refutes and never
+  confirms.
+- **The conflict is named in the evidence** as `<field>_conflict`, because a
+  demotion a reviewer cannot explain is indistinguishable from a bug.
+- **Out-of-range thresholds raise** rather than silently always- or
+  never-firing, both of which read as a tuning choice rather than a typo.
+
+Before this, arche had exactly two vetoes: `veto_km`, which requires
+coordinates, and `id_conflict`, hardcoded to the field name `national_id`.
+Neither was reachable from a declaration, so the gap blocked publications
+(year), products (model, pack size), charge points (connector) and people (date
+of birth) identically.
+
+**No shipped pack declares `refutes_below` yet**, and a test enforces that.
+Turning it on for `place`, `person` or `artist` changes those packs' published
+numbers, so it is a separate and separately-measured decision rather than a side
+effect of adding the mechanism.
+
 ### Added — phrase distinctiveness, shipped in the wheel
 
 The gate asks whether two names share something *rare*, and it asked that of
