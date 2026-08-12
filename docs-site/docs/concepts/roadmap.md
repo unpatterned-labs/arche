@@ -113,11 +113,74 @@ Designed, sequenced, and honestly blocked on a named prerequisite.
 
 Two beachheads, chosen because each has a public identifier to anchor on and a real reconciliation problem behind it.
 
-**Books first.** ISBN is a clean, checksummed, globally-issued identifier with an open catalogue behind it, and `compare_isbns` already ships. Editions, translations, reissues and imprints give exactly the same shape as the facility problem: the same work under many names, many identifiers, and a genuine question about when two records are one thing. It is the cheapest honest test of whether the engine generalises past people and places.
+**Books first — with the coverage problem stated up front.** ISBN is a clean, checksummed, globally-issued identifier with an open catalogue behind it, and `compare_isbns` already ships. Editions, translations, reissues and imprints give exactly the same shape as the facility problem: the same work under many names, many identifiers, and a genuine question about when two records are one thing.
+
+What the first probe found, though, is that the binding constraint is not matching. Taking one real book with a known author, title and publisher, Open Library returns **zero** results for the author and zero for the exact title. The record is not there to be matched. This is the ordinary case for small-press, regional and self-published output, and it is the case that matters most to the people arche is built for — the same long-tail absence that makes African identity data hard, showing up in a bibliographic registry.
+
+That reframes the work rather than cancelling it. A resolver's honest verdict when a catalogue has no candidate is *not found*, and saying so is a feature: the failure mode worth preventing is a confident merge onto the nearest plausible listing. So the deliverable is a **coverage report before an accuracy report** — what fraction of a given catchment the registry actually holds — because a matcher measured only on records that exist will overstate itself on every corpus with a long tail.
 
 **Then food traceability and audit.** A batch moving from farm to processor to distributor to retailer is described differently at every hop, and the reconciliation has to survive that. This is where the parts arche already has stop being separate features: resolution links the hops, the attestation makes each link independently checkable, and the review queue is where a human decides whether two consignments are the same consignment. An audit trail whose links cannot be verified is a spreadsheet with better branding.
 
 Both are gated the same way as everything else here: a partner with the problem and data to run it against, not a demo.
+
+---
+
+## The refutation gap, and the first precision number
+
+Every accuracy figure published here so far — Kano, London — comes from a labelled set built by us, and each measures the same thing: how many true pairs we find. None of them can measure a **false merge**, because none of them knows every pair that is *not* a match. Eighty-six labelled London pairs cannot tell you what the engine does to the other few thousand.
+
+The [Leipzig entity-resolution benchmarks](https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution) close that hole, and they are the reason this section exists. Their mappings are *complete*: every pair not listed is a known non-match, so precision becomes measurable for the first time. They are CC-BY-4.0, downloadable without registration, and widely enough used that our numbers can be read against other people's.
+
+**The first run, on DBLP–ACM** — 2,616 × 2,294 records, 2,224 true pairs, no bibliographic pack, comparators declared by hand:
+
+| | |
+|---|---|
+| Blocking recall | 0.9996 — one true pair never proposed |
+| Surfaced recall | 0.9996 |
+| Recall at `match` | 0.9960 |
+| **Precision at `match`** | **0.8500** — 2,215 true, **391 false merges** |
+
+Recall is essentially perfect. Precision is not, and the false merges have one shape: recurring generic titles. `Guest editorial` appears eight times in ACM, `Book reviews` eight, `Reminiscences on Influential Papers` seven. This is the "General Hospital" defect — agreement on a string that is identical everywhere read as evidence of identity — reproduced in a third domain, on data we did not choose or label.
+
+**The part that is a genuine architectural finding.** Of the 254 exact cross-source title collisions that are *not* true pairs, 213 disagree on year. And year agrees on **2,224 of 2,224** true pairs — 100.00%. A discriminator this clean should be trivial to exploit, so we tried the obvious thing and raised its weight:
+
+| `year` weight (against 7.0 on title + authors) | Precision | Recall |
+|---|---|---|
+| 0.5 | 0.8500 | 0.9960 |
+| 2.0 | 0.8761 | 0.9987 |
+| 7.0 | 0.6531 | 0.9996 |
+| 25.0 | 0.6531 | 0.9996 |
+
+Precision peaks early and then **collapses**. The reason is structural, not a tuning miss: a weight is symmetric. Weighting a field up punishes disagreement, but it rewards agreement by exactly as much — and *agreement on a year is not evidence*, because thousands of unrelated papers share one. Turning up a discriminator turns up the noise it sits in. There is no weight that recovers what the field plainly knows.
+
+This is the same argument the geographic veto already makes in the code — "two buildings 143 km apart are not one building however alike their names" — but it is now demonstrated on an attribute with no coordinates, in a domain with no pack, on someone else's data. **Some attributes refute without confirming.** They cannot be expressed as weights, and today arche has no way to declare one.
+
+Grepping for what exists: there are exactly **two vetoes in the entire engine**. `veto_km`, which requires latitude and longitude, and `id_conflict`, which is hardcoded to the literal field name `national_id`. Both are domain-specific, and neither is reachable from a declaration. So the gap is not a missing books pack or a missing product pack — it is a missing *primitive*, and it blocks books (year, edition), products (model, pack size, voltage), charge points (connector type), and people (date of birth) identically.
+
+**The deliverable, therefore, is a declarable discriminator veto** — an attribute the author marks as refuting, which demotes to `review` on disagreement, never to `no_match`, and never fires on a missing value, because you cannot refute on absent evidence. That is the rule the geographic veto already follows; this generalises it rather than inventing it.
+
+**Built, and measured on the same run.** `refutes_below` ships as a comparator flag. On the declaration above, with nothing else changed:
+
+```text
+baseline (year scored)     P=0.8500  R=0.9960   (TP 2215, FP 391)
+year refutes_below 0.99    P=0.9506  R=0.9960   (TP 2215, FP 115)
+```
+
+276 false merges removed, **zero true matches lost**. The earlier projection on this page said ≈ 0.93; the measured figure is better because year also separates near-title false merges, not only the exact-title collisions the projection counted. Reproduce with `uv run python data/scripts/benchmark_leipzig.py`.
+
+One detail worth keeping, because it inverts the obvious intuition: a heavy weight does not merely fail to demote a false merge, it *overcorrects* on true ones. At weight 25 a disagreeing pair falls under the floor and the edge is dropped entirely, so a reviewer never sees the conflict. A refutation keeps the pair and queues it. The weight is worse in both directions at once.
+
+No shipped pack declares `refutes_below` yet, and a test enforces that. Turning it on for `place` changes that pack's published numbers, so it is a separate measured decision.
+
+It was sequenced ahead of any new entity lane on purpose. A lane built before it inherits the defect; a lane built after it gets the fix for free.
+
+| Deliverable | Detail |
+|---|---|
+| **Discriminator veto** | **Done.** Declarable, demote-to-review, missing-value-safe; the geographic veto becomes one instance of it rather than the only one |
+| **Leipzig as a standing benchmark** | DBLP–ACM and Abt–Buy in CI, precision and false-merge rate reported every release, published whichever way they fall |
+| **A false-merge rate on every benchmark page** | Kano and London currently report recall only; both get the caveat until a complete mapping exists for them |
+
+**On Apache Ossie** (incubating; formerly Open Semantic Interchange): it is a vendor-neutral way to exchange *semantic models* as JSON/YAML across analytics and BI tools. It is not a matching engine and not a competitor — the honest seam is arche's declaration, which is already a portable contract about what fields mean. Emitting and ingesting that as an Ossie-compatible artifact is plausible and cheap. It is deliberately **not** committed: the project is in incubation, its schema will churn, and threading a moving format through our most load-bearing contract buys nothing this quarter. Watched, not adopted.
 
 ---
 
@@ -188,7 +251,9 @@ Visible on the horizon; named so adopters can push, not promised. Jurisdiction d
 
 ## Direction changes worth stating
 
-A roadmap that never records its own reversals is a wish list. Three, with reasons:
+A roadmap that never records its own reversals is a wish list. Four, with reasons:
+
+- **A new entity lane is no longer the next step; a missing primitive is.** The plan was to pick a lane — products, or books — and build it. Running a public benchmark with complete ground truth first showed that the engine's weakest point is not coverage of a domain but the absence of any way to declare an attribute that *refutes*, and that no amount of weighting substitutes for one. Building a lane on top of that would have shipped the defect into it. → *[the refutation gap](#the-refutation-gap-and-the-first-precision-number)*
 
 - **The lead moved from "African PII detection" to "know the real-world entity, prove the decision."** Detection is a layer, not the product; resolution plus attestation is. African calibration remains the wedge and the credential — the hardest identity data in the world — rather than the scope. → [the thesis](representation-engine.md)
 - **An MCP server is now on the roadmap at all**, reversing an early non-commitment ("agent integration is downstream of framework adoption"). Agents turned out to be an *install surface*, not a later channel. The server is **not** built — see *In flight*, where an earlier false claim on this page is corrected. The reversal of the non-commitment stands; the implementation has not started.

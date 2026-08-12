@@ -188,6 +188,8 @@ _LAZY: dict[str, tuple[str, str]] = {
     "compare_geo": (".resolve._matcher", "compare_geo"),
     "normalize_type_token": (".resolve._matcher", "normalize_type_token"),
     "load_type_vocab": (".resolve._matcher", "load_type_vocab"),
+    "split_place_name": (".resolve._matcher", "split_place_name"),
+    "compare_place_qualifiers": (".resolve._matcher", "compare_place_qualifiers"),
     # --- pipeline (v0.1 callables) ----------------------------------------
     # Retargeted to .workflow.pipeline (real location); see note above.
     # NOTE: `resolve_fhir` was removed in v0.2.0a3 along with the
@@ -281,6 +283,8 @@ __all__ = [
     "compare_geo",
     "normalize_type_token",
     "load_type_vocab",
+    "split_place_name",
+    "compare_place_qualifiers",
     "link",
     "resolve",
     "resolve_places",

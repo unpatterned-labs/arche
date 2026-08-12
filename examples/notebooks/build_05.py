@@ -37,7 +37,7 @@ learned Kano?
 The answer, in three parts.
 
 1. **The engine generalises.** On London hospitals, with the shipped pack and no
-   retuning, it auto-matches 96.5% of labelled true pairs and surfaces 98.8%.
+   retuning, it auto-matches 95.3% of labelled true pairs and surfaces 98.8%.
 2. **One assumption had to change.** The distinctiveness gate assumed the
    identifying part of a name is a *rare token*. In Nigeria that is a village
    name. In London it is a saint, a monarch or a bridge — ordinary words in an
@@ -396,10 +396,10 @@ a documented limit of auto-match in this domain, not a solved problem.
 
 ## What this measured, and what it did not
 
-**Measured.** On 86 labelled London pairs the shipped pack auto-matches 96.5%
+**Measured.** On 86 labelled London pairs the shipped pack auto-matches 95.3%
 and surfaces 98.8%, with blocking recall 0.988. The phrase table accounts for
-most of the gain over the earlier 73/86, and Kano's LGA agreement is unchanged
-at 88.1%.
+most of the gain over the earlier 73/86 — 7 recovered, 0 lost — and Kano's LGA
+agreement is unchanged at 88.1%.
 
 **Not measured, and worth being blunt about.**
 

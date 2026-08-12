@@ -4,6 +4,139 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added — place-name qualifier splitting
+
+Sources disambiguate places by appending the containing region, and they do not
+agree on how. On the [Leipzig Geographic Settlements
+benchmark](https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution)
+— 3,054 records, 4 sources, complete ground truth — the same settlements are
+written four ways:
+
+```text
+NYTimes   Petra (Jordan)      99.7% qualified
+DBpedia   Cordoba, Spain      36.8% qualified
+Freebase  savannah             0.0% qualified
+GeoNames  Split                0.0% qualified
+```
+
+A name comparator reads the appended region as part of the identifying string.
+The real pair NYTimes `Marseille (France)` against DBpedia `Marseille` scored
+**0.661** against a 0.70 threshold — `placename` 0.900 and `tftoken` 0.533, both
+diluted by a country name that is not part of the identity.
+
+**The distinctiveness gate was clearing at 0.900 throughout.** This was a
+representation failure, not a threshold one, and it is worth stating because the
+tempting fix is to lower `DISTINCTIVE_FLOOR`. That constant is shared with the
+person lane, where 0.70 lets two different people both named `Ibrahim Musa`
+auto-merge — `test_coreference.test_s3_common_name_only_is_review` pins it.
+
+Three additions, all opt-in:
+
+- **`arche.split_place_name(name) -> (core, qualifier)`** — public.
+  `('Petra', 'Jordan')`, `('Cordoba', 'Spain')`, `('Split', '')`. A qualifier is
+  only reported when a non-empty core remains, so `(Jordan)` stays whole.
+- **`kind: "qualifier"`** — a comparator on the appended region. Returns `None`
+  when either side is unqualified, because three of the four sources leave most
+  names unqualified and absence is missing evidence, not disagreement.
+- **`strip_qualifier: true`** — a spec flag on any text comparator, making it
+  judge the core name. Declare both on the same field, no record preprocessing:
+
+```python
+{"field": "name", "kind": "placename", "weight": 2.0, "strip_qualifier": True},
+{"field": "name", "kind": "tftoken",   "weight": 2.0, "strip_qualifier": True},
+{"field": "name", "kind": "qualifier", "weight": 1.0},
+```
+
+Measured on the benchmark, pooled across all six source pairs:
+
+| | shipped pack | with the split |
+|---|---|---|
+| precision (pooled micro) | 0.9862 | 0.9733 |
+| recall at auto-match | 0.7135 | 0.9205 |
+| surfaced recall | 0.9654 | 0.9806 |
+| **review queue** | 1,732 edges | **676 edges** |
+
+Read the last two rows before the third. Auto-match recall moves 20 points, but
+surfaced recall moves 1.5 — roughly 837 of the newly auto-matched pairs were
+**already in the review queue**. This is an automation result, 61% less human
+adjudication for the same evidence, not a discovery result. Precision pays 1.3
+points for it, and the worst source pair pays 2.4.
+
+**It ships off by default, and a test enforces that.** Enabling it changes Kano
+not at all — facility names carry no qualifiers — and on London recovers nothing
+while adding two more unlabelled auto-matches. The qualifier convention is a
+property of the *source*, not of places, so it is a capability rather than a
+default. Turning it on for a shipped pack moves that pack's published numbers.
+
+The qualifier is a **scored** signal rather than a `refutes_below` discriminator
+on purpose: qualifiers are written at different granularities and in different
+forms (`NY` against `New York`), and as a refutation it removed 13 false merges
+while costing 17 true ones.
+
+### Added — `refutes_below`, a declarable discriminator veto
+
+Any comparator spec may now declare `"refutes_below": x`. When that comparator
+applies and scores under `x`, the pair is demoted to `review` no matter how well
+everything else agrees:
+
+```python
+{"field": "year", "kind": "date", "weight": 0.5, "refutes_below": 0.99}
+```
+
+**Why a weight could not already do this.** A weight is symmetric — it rewards
+agreement by exactly as much as it punishes disagreement. Some attributes are
+not symmetric: they disagree meaningfully and agree cheaply. A publication year
+is the clean case, and DBLP–ACM makes it measurable because the Leipzig mapping
+is *complete*, so false merges are visible for the first time in this project.
+Year agrees on **2,224 of 2,224** true pairs and separates 213 of 391 false
+merges. Raising its weight makes precision **worse**:
+
+| `year` weight (against 7.0 on title + authors) | Precision | Recall |
+|---|---|---|
+| 0.5 | 0.8500 | 0.9960 |
+| 2.0 | 0.8761 | 0.9987 |
+| 7.0 | 0.6531 | 0.9996 |
+| 25.0 | 0.6531 | 0.9996 |
+
+Thousands of unrelated papers share a year, so turning the field up turns up the
+noise it sits in. Declared as a refutation instead, on the same declaration:
+
+```text
+baseline (year scored)     P=0.8500  R=0.9960   (TP 2215, FP 391)
+year refutes_below 0.99    P=0.9506  R=0.9960   (TP 2215, FP 115)
+```
+
+**276 false merges removed, zero true matches lost.** Reproduce with
+`uv run python data/scripts/benchmark_leipzig.py`.
+
+This generalises the geographic veto rather than inventing anything, and keeps
+its rules:
+
+- **Demotes to `review`, never `no_match`.** A refutation says a human must
+  look, not that the answer is no. Note this is strictly better than what a
+  heavy weight does — a heavy weight pushes the pair under the floor and the
+  edge is *dropped*, so the reviewer never sees the conflict at all.
+- **A missing value never refutes.** Absent evidence refutes nothing, exactly
+  as absent coordinates cannot fire `veto_km`.
+- **Refutation and scoring stay orthogonal.** `weight` is unchanged by the
+  flag; pair with `"weight": 0.0` for a discriminator that refutes and never
+  confirms.
+- **The conflict is named in the evidence** as `<field>_conflict`, because a
+  demotion a reviewer cannot explain is indistinguishable from a bug.
+- **Out-of-range thresholds raise** rather than silently always- or
+  never-firing, both of which read as a tuning choice rather than a typo.
+
+Before this, arche had exactly two vetoes: `veto_km`, which requires
+coordinates, and `id_conflict`, hardcoded to the field name `national_id`.
+Neither was reachable from a declaration, so the gap blocked publications
+(year), products (model, pack size), charge points (connector) and people (date
+of birth) identically.
+
+**No shipped pack declares `refutes_below` yet**, and a test enforces that.
+Turning it on for `place`, `person` or `artist` changes those packs' published
+numbers, so it is a separate and separately-measured decision rather than a side
+effect of adding the mechanism.
+
 ### Added — phrase distinctiveness, shipped in the wheel
 
 The gate asks whether two names share something *rare*, and it asked that of
@@ -46,15 +179,27 @@ Measured, shipped configuration:
 
 | | before | after |
 |---|---|---|
-| London hospitals, 86 labelled pairs | 73 auto-matched | **83 (96.5%)** |
-| routed to review | 12 | 2 |
+| London hospitals, 86 labelled pairs | 73 auto-matched | **82 (95.3%)** |
+| routed to review | 12 | 3 |
 | Kano GRID3 x OpenStreetMap | 564 match, 88.1% LGA | 566 match, **88.1% LGA** |
 
-The two pairs still abstaining are the ones that should:
-`Memorial Hospital` against `Memorial Hospital, Woolwich` (that stem appears
-four times in each source) and `Nuffield Health Highgate Hospital` against
-`Highgate Private Hospital` (brand substitution, which belongs in an alias field
-rather than a comparator). The base wheel grows from 2.46 MB to 2.93 MB.
+The three pairs still abstaining are the ones that should:
+
+- `Memorial Hospital` against `Memorial Hospital, Woolwich` — that stem appears
+  four times in each source, and `memorial hospital` as a phrase scores 0.554.
+- `Nuffield Health Highgate Hospital` against `Highgate Private Hospital` —
+  brand substitution, which belongs in an alias field rather than a comparator.
+- `St Mary's Hospital` against a byte-identical `St Mary's Hospital`. This one
+  is worth spelling out, because an identical string abstaining looks like a
+  bug and is not. The rarest shared token is `marys` at 0.716 and the rarest
+  shared phrase is `marys hospital` at 0.704, both under the 0.75 floor —
+  `st` alone has 10,651 occurrences in the place corpus, and London has more
+  than one St Mary's Hospital. The gate is refusing to let a shared location
+  manufacture a merge on a name that does not identify anything, which is the
+  same rule that stops two `General Hospital` records merging. It costs a true
+  pair, and the pair goes to review rather than being lost.
+
+The base wheel grows from 2.46 MB to 2.93 MB.
 
 **A known risk, stated rather than buried.** Phrase rarity makes *containment*
 errors easier to trip, because a shared phrase is distinctive even when the two

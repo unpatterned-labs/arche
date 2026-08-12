@@ -111,6 +111,39 @@ def _tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
     return out
 
 
+def _phrase_tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
+    """The token *sequence* a phrase is read from.
+
+    Phrases are about adjacency in the name, which makes them a different
+    problem from token membership. The ``possessive`` rule emits the joined
+    form *alongside* the originals and appends it, which is right for a set
+    but wrong for a sequence: a bigram window then runs off the end of the real
+    tokens and into the appended ones, inventing phrases that never occurred.
+    ``King's College Hospital`` produced ``hospital kings``, which is not
+    adjacent to anything, and — being a phantom — was rare enough to carry a
+    gate.
+
+    So for phrases the possessive is **folded**: one position, one token.
+    ``King's College Hospital`` reads ``kings college hospital``, whose bigrams
+    are ``kings college`` and ``college hospital``. That also removes the
+    ``king s`` / ``s college`` junk the plain reading leaves behind.
+    """
+    norm = _normalise_text(text or "")
+    if rule == "possessive":
+        # A callable, not a backreference string. A shell-escaped "\1" has
+        # been mangled into a literal control byte here more than once,
+        # and it fails silently: the captured word is replaced by an
+        # unmatchable character and simply disappears from the tokens.
+        norm = _POSSESSIVE_RE.sub(lambda m: m.group(1) + "s", norm)
+    return _TOKEN_RE.findall(norm)
+
+
+def _bigrams(text: str, rule: str = DEFAULT_TOKEN_RULE) -> set[str]:
+    """Adjacent token pairs of ``text`` under the phrase reading."""
+    toks = _phrase_tokens(text, rule)
+    return {" ".join(toks[i:i + 2]) for i in range(len(toks) - 1)}
+
+
 class TokenFrequencyTable:
     """Relative token frequencies over a corpus, with a distinctiveness weight.
 
@@ -423,10 +456,7 @@ class TokenFrequencyTable:
         if phrases is None or not phrases.population_scale:
             return 0.0
         rule = phrases.token_rule
-        ta, tb = _tokens(a, rule), _tokens(b, rule)
-        ga = {" ".join(ta[i:i + 2]) for i in range(len(ta) - 1)}
-        gb = {" ".join(tb[i:i + 2]) for i in range(len(tb) - 1)}
-        shared = ga & gb
+        shared = _bigrams(a, rule) & _bigrams(b, rule)
         if not shared:
             return 0.0
         # Only phrases the corpus has actually SEEN may speak. An unseen phrase
@@ -439,7 +469,28 @@ class TokenFrequencyTable:
         # real; that check silently discarded it.
         counts = phrases._counts or {}
         seen = [g for g in shared if g in counts]
-        return max((phrases.distinctiveness(g) for g in seen), default=0.0)
+        if not seen:
+            return 0.0
+        return max(phrases.distinctiveness(g) for g in seen)
+
+    def best_shared_phrase(self, a: str, b: str) -> tuple[str, float] | None:
+        """The phrase that would clear a gate, and its rarity, or ``None``.
+
+        A scoring input a reviewer cannot see is a weight wearing the word
+        "representation". This is what lets an edge say *which* phrase decided
+        it, so the claim on the decision is auditable and arguable rather than
+        merely reproducible.
+        """
+        phrases = self.phrases
+        if phrases is None or not phrases.population_scale:
+            return None
+        rule = phrases.token_rule
+        counts = phrases._counts or {}
+        seen = [g for g in (_bigrams(a, rule) & _bigrams(b, rule)) if g in counts]
+        if not seen:
+            return None
+        best = max(seen, key=phrases.distinctiveness)
+        return best, phrases.distinctiveness(best)
 
     def merge(
         self,

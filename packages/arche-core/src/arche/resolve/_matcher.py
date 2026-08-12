@@ -561,6 +561,79 @@ def compare_place_names(name_a: str, name_b: str) -> float:
     return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
 
 
+# A trailing parenthetical, or everything after the first comma. Anchored and
+# non-greedy so `Moorfields Eye Hospital (City Road campus)` splits at the last
+# parenthesis rather than the first.
+_QUALIFIER_PAREN = re.compile(r"^(.*?)\s*\(([^)]*)\)\s*$")
+
+
+def split_place_name(name: str) -> tuple[str, str]:
+    """Split a place name into ``(core, qualifier)``.
+
+    Sources disambiguate places by appending the containing region, and they do
+    not agree on how. Measured on the Leipzig Geographic Settlements benchmark,
+    the same four sources describe one settlement four ways::
+
+        NYTimes   Petra (Jordan)        99.7% qualified
+        DBpedia   Cordoba, Spain        36.8% qualified
+        Freebase  savannah               0.0% qualified
+        GeoNames  Split                  0.0% qualified
+
+    A name comparator treats the qualifier as part of the identifying string,
+    so ``Marseille (France)`` against ``Marseille`` scored 0.661 — below the
+    match threshold — while the distinctiveness gate was clearing comfortably
+    at 0.90. The failure was representation, not thresholds.
+
+    Splitting lets the name comparator compare names and the qualifier be
+    weighed separately, which is what it is: a containment hint, not part of
+    the identity.
+
+    ``('Petra', 'Jordan')``, ``('Cordoba', 'Spain')``, ``('Split', '')``.
+
+    A qualifier is only reported when a non-empty core remains, so ``(Jordan)``
+    stays whole rather than becoming an anonymous qualifier. Only the first
+    comma splits, so ``Moorfields Eye Hospital (City Road campus)`` keeps its
+    campus as the qualifier and multi-comma names keep the remainder together.
+    """
+    text = (name or "").strip()
+    if not text:
+        return "", ""
+    m = _QUALIFIER_PAREN.match(text)
+    if m:
+        core, qualifier = m.group(1).strip(), m.group(2).strip()
+        if core and qualifier:
+            return core, qualifier
+        return text, ""
+    if "," in text:
+        core, _, qualifier = text.partition(",")
+        core, qualifier = core.strip(), qualifier.strip()
+        if core and qualifier:
+            return core, qualifier
+    return text, ""
+
+
+def compare_place_qualifiers(name_a: str, name_b: str) -> float | None:
+    """Similarity of two place names' *qualifiers*, or ``None`` if either lacks one.
+
+    ``None`` rather than 0.0 is the whole point: most sources qualify some names
+    and not others, and an unqualified name is missing evidence, not a
+    disagreement. Scoring absence as 0.0 would punish exactly the cross-source
+    pairs this comparator exists to help.
+
+    Deliberately lexicon-free and fuzzy, like :func:`compare_place_names`,
+    because qualifiers are written at different granularities and in different
+    forms — ``NY`` against ``New York``, ``Calif`` against ``California``.
+    Those abbreviations are why this is a *scored* signal rather than a
+    refutation: as a ``refutes_below`` discriminator it removed 13 false merges
+    but cost 17 true ones, a trade a fuzzy field cannot reliably make.
+    """
+    qa = split_place_name(name_a)[1]
+    qb = split_place_name(name_b)[1]
+    if not qa or not qb:
+        return None
+    return compare_place_names(qa, qb)
+
+
 def compare_containment(
     path_a: Mapping[str, Any] | None,
     path_b: Mapping[str, Any] | None,
