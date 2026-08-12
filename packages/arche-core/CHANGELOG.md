@@ -4,6 +4,75 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added — place-name qualifier splitting
+
+Sources disambiguate places by appending the containing region, and they do not
+agree on how. On the [Leipzig Geographic Settlements
+benchmark](https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution)
+— 3,054 records, 4 sources, complete ground truth — the same settlements are
+written four ways:
+
+```text
+NYTimes   Petra (Jordan)      99.7% qualified
+DBpedia   Cordoba, Spain      36.8% qualified
+Freebase  savannah             0.0% qualified
+GeoNames  Split                0.0% qualified
+```
+
+A name comparator reads the appended region as part of the identifying string.
+The real pair NYTimes `Marseille (France)` against DBpedia `Marseille` scored
+**0.661** against a 0.70 threshold — `placename` 0.900 and `tftoken` 0.533, both
+diluted by a country name that is not part of the identity.
+
+**The distinctiveness gate was clearing at 0.900 throughout.** This was a
+representation failure, not a threshold one, and it is worth stating because the
+tempting fix is to lower `DISTINCTIVE_FLOOR`. That constant is shared with the
+person lane, where 0.70 lets two different people both named `Ibrahim Musa`
+auto-merge — `test_coreference.test_s3_common_name_only_is_review` pins it.
+
+Three additions, all opt-in:
+
+- **`arche.split_place_name(name) -> (core, qualifier)`** — public.
+  `('Petra', 'Jordan')`, `('Cordoba', 'Spain')`, `('Split', '')`. A qualifier is
+  only reported when a non-empty core remains, so `(Jordan)` stays whole.
+- **`kind: "qualifier"`** — a comparator on the appended region. Returns `None`
+  when either side is unqualified, because three of the four sources leave most
+  names unqualified and absence is missing evidence, not disagreement.
+- **`strip_qualifier: true`** — a spec flag on any text comparator, making it
+  judge the core name. Declare both on the same field, no record preprocessing:
+
+```python
+{"field": "name", "kind": "placename", "weight": 2.0, "strip_qualifier": True},
+{"field": "name", "kind": "tftoken",   "weight": 2.0, "strip_qualifier": True},
+{"field": "name", "kind": "qualifier", "weight": 1.0},
+```
+
+Measured on the benchmark, pooled across all six source pairs:
+
+| | shipped pack | with the split |
+|---|---|---|
+| precision (pooled micro) | 0.9862 | 0.9733 |
+| recall at auto-match | 0.7135 | 0.9205 |
+| surfaced recall | 0.9654 | 0.9806 |
+| **review queue** | 1,732 edges | **676 edges** |
+
+Read the last two rows before the third. Auto-match recall moves 20 points, but
+surfaced recall moves 1.5 — roughly 837 of the newly auto-matched pairs were
+**already in the review queue**. This is an automation result, 61% less human
+adjudication for the same evidence, not a discovery result. Precision pays 1.3
+points for it, and the worst source pair pays 2.4.
+
+**It ships off by default, and a test enforces that.** Enabling it changes Kano
+not at all — facility names carry no qualifiers — and on London recovers nothing
+while adding two more unlabelled auto-matches. The qualifier convention is a
+property of the *source*, not of places, so it is a capability rather than a
+default. Turning it on for a shipped pack moves that pack's published numbers.
+
+The qualifier is a **scored** signal rather than a `refutes_below` discriminator
+on purpose: qualifiers are written at different granularities and in different
+forms (`NY` against `New York`), and as a refutation it removed 13 false merges
+while costing 17 true ones.
+
 ### Added — `refutes_below`, a declarable discriminator veto
 
 Any comparator spec may now declare `"refutes_below": x`. When that comparator

@@ -64,9 +64,11 @@ from arche.resolve._matcher import (
     compare_names,
     compare_phones,
     compare_place_names,
+    compare_place_qualifiers,
     haversine_km,
     load_type_vocab,
     normalize_type_token,
+    split_place_name,
 )
 from arche.resolve._rerank import rerank_score
 from arche.resolve._tokenfreq import TokenFrequencyTable
@@ -78,6 +80,11 @@ _FIELD_COMPARATORS = {
     # Fatima≡Fatouma is a fact about people, not about two facilities
     # named after them (the false-merge vector the place audit measured).
     "placename": compare_place_names,
+    # The containing region a source appended to disambiguate — `Petra
+    # (Jordan)`, `Cordoba, Spain`. Returns None when either side is
+    # unqualified, because sources qualify inconsistently and an absent
+    # qualifier is missing evidence rather than disagreement.
+    "qualifier": compare_place_qualifiers,
     "phone": compare_phones,
     "id": compare_ids,
     "email": compare_emails,
@@ -97,6 +104,28 @@ _DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken")
 # rarity of what the two strings share before it may clear a gate. `id` is
 # absent on purpose: an identifier is distinctive by construction.
 _NAME_LIKE_KINDS = ("name", "placename", "tftoken")
+
+
+def _text_values(
+    spec: dict[str, Any], ra: dict, rb: dict, field: str
+) -> tuple[str, str]:
+    """Both records' values for ``field``, with ``strip_qualifier`` applied.
+
+    ``strip_qualifier`` makes a text comparator judge the *core* name and leave
+    the appended region to a ``qualifier`` comparator alongside it. Declare both
+    on the same field:
+
+        {"field": "name", "kind": "placename", "weight": 2.0,
+         "strip_qualifier": True},
+        {"field": "name", "kind": "qualifier",  "weight": 1.0},
+
+    It is opt-in because it changes what a comparator compares, and therefore
+    every number a pack has published.
+    """
+    a_val, b_val = str(ra[field]), str(rb[field])
+    if spec.get("strip_qualifier"):
+        return split_place_name(a_val)[0], split_place_name(b_val)[0]
+    return a_val, b_val
 
 
 def _field_sim(
@@ -151,14 +180,23 @@ def _field_sim(
         field = spec["field"]
         if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
             return None
-        return tf.weighted_token_sim(str(ra[field]), str(rb[field]))
+        a_val, b_val = _text_values(spec, ra, rb, field)
+        if not a_val or not b_val:
+            return None
+        return tf.weighted_token_sim(a_val, b_val)
     field = spec["field"]
     if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
         return None
     fn = _FIELD_COMPARATORS.get(kind)
     if fn is None:
         return None
-    return fn(str(ra[field]), str(rb[field]))
+    if kind == "qualifier":
+        # Reads the qualifier itself; stripping it would leave nothing.
+        return fn(str(ra[field]), str(rb[field]))
+    a_val, b_val = _text_values(spec, ra, rb, field)
+    if not a_val or not b_val:
+        return None
+    return fn(a_val, b_val)
 
 
 def _score_pair(
