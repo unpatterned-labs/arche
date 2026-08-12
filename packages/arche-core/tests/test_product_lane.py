@@ -4,14 +4,15 @@
 """Tests for the experimental electronics product lane.
 
 The measurement this lane is built on, from Leipzig Abt-Buy (complete ground
-truth): a regex that extracts code-looking tokens blocks candidate pairs at
-0.5643 precision, which is barely better than a coin flip. Conditioned on the
-document frequency of the shared code it separates almost perfectly — 0.9973 at
-df 1-2, and 0.0000 at df 20+, where 503 pairs sharing `1080p` or `16gb` contain
-no true match at all.
+truth): with the rules that ship, code-blocking reaches 0.8865 precision over
+881 pairs and the rarity filter lifts it to 0.9499 over 818.
 
-So the signal is rarity, not "looks like a model number", and the lane is a
-frequency table plus the existing gate rather than a cleverer regex.
+Two mechanisms produce that, and the split matters. With `stop_codes` disabled,
+code-blocking is 0.5570 and there is a bucket of 503 pairs sharing a code seen
+20+ times containing no true match at all; the stop list removes it at zero
+recall cost. With the list on, the maximum document frequency is 11, so that
+bucket does not exist. The short blocklist does more work than the frequency
+table — what the table earns is the separation inside what remains.
 """
 
 from __future__ import annotations
@@ -79,8 +80,25 @@ class TestSpecs:
             "gb": {16.0}, "inch": {3.5},
         }
 
-    def test_unit_aliases_collapse(self):
-        assert extract_specs('27 in monitor')["inch"] == {27.0}
+    def test_bare_in_is_not_a_unit(self):
+        """`in` is excluded because it fires inside `3-in-1`.
+
+        Reading a charger's form factor as 3 inches made `3-in-1` and `5-in-1`
+        disagree on a unit neither title mentions. `inch` carries it instead.
+        """
+        assert extract_specs("27 inch monitor")["inch"] == {27.0}
+        assert extract_specs("Belkin 3-in-1 Charger") == {}
+
+    def test_a_spec_is_never_carved_out_of_a_model_code(self):
+        """The left-boundary bug: `F5C400300W` read as 400,300 watts.
+
+        27.4% of identity-unit matches on Abt-Buy were fabricated this way, and
+        it refuted a true pair — `F5C400300W` against `F5C400-300W`, the same
+        product — for a 400,300W-vs-300W disagreement.
+        """
+        assert extract_specs("Belkin AC Anywhere - F5C400300W") == {}
+        assert extract_specs("Netgear WNR3500L Router") == {}
+        assert compare_specs("Belkin F5C400300W", "Belkin F5C400-300W") is None
 
     def test_comparable_units_agreeing(self):
         assert compare_specs("Player 16GB black", "16GB Player") == 1.0
@@ -126,8 +144,9 @@ class TestRarityCalibration:
         assert code_rarity("ab0001x", table) >= DISTINCTIVE_FLOOR
 
     def test_rarity_tracks_the_measured_precision_curve(self, tf):
-        assert code_rarity("ab0001x", tf) == 1.0          # df 1-2 -> 0.9973
-        assert code_rarity("16gb", tf) < 0.15             # df 40  -> 0.0000
+        # Curve measured without `stop_codes`; the shape is what matters.
+        assert code_rarity("ab0001x", tf) == 1.0
+        assert code_rarity("16gb", tf) < 0.15
 
     def test_an_unseen_code_is_maximally_rare(self, tf):
         assert code_rarity("zz9999q", tf) == 1.0
@@ -139,8 +158,13 @@ class TestRarityCalibration:
 class TestCompareCodes:
     @pytest.fixture
     def tf(self):
+        # A vocabulary, not two codes: `code_baseline_df` is estimated from
+        # the corpus's own frequency distribution, so a degenerate two-code
+        # table cannot say what "typical" means.
         return build_code_table(
-            ["Cam 2595B002", "Case 2595B002"] + ["Thing 16GB"] * 20
+            [f"Widget model AB{i:04d}X" for i in range(200)]
+            + ["Cam 2595B002", "Case 2595B002"]
+            + ["Thing 16GB"] * 20
         )
 
     def test_absent_on_either_side_is_None(self, tf):
@@ -160,12 +184,22 @@ class TestCompareCodes:
     def test_a_rare_shared_code_scores_high(self, tf):
         assert compare_codes("Canon Case 2595B002", "Canon 2595B002 Cam", tf) == 1.0
 
-    def test_a_common_shared_code_scores_low(self, tf):
-        assert compare_codes("Player 16GB", "Recorder 16GB", tf) < 0.2
+    def test_a_common_shared_code_scores_below_the_gate_floor(self, tf):
+        """What matters is that it cannot clear the gate on its own."""
+        from arche.resolve._gate import DISTINCTIVE_FLOOR
+        common = compare_codes("Player 16GB", "Recorder 16GB", tf)
+        rare = compare_codes("Canon Case 2595B002", "Canon 2595B002 Cam", tf)
+        assert common < DISTINCTIVE_FLOOR < rare
 
     def test_without_a_table_it_cannot_discriminate(self, tf):
-        """The 0.5643-precision behaviour, pinned — this is why a table ships."""
+        """A common code and a rare one become indistinguishable.
+
+        This is why a table is built. On Abt-Buy with shipped defaults,
+        code-blocking alone is 0.8865 precision and the rarity filter lifts it
+        to 0.9499.
+        """
         assert compare_codes("Player 16GB", "Recorder 16GB", None) == 1.0
+        assert compare_codes("Canon 2595B002", "Case 2595B002", None) == 1.0
 
 
 class TestModularity:

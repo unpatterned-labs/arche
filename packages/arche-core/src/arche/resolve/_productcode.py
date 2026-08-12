@@ -6,23 +6,26 @@
 There is no "model number" signal
 ---------------------------------
 Measured on the Leipzig Abt-Buy benchmark (1,081 x 1,092, complete ground
-truth), a regex that extracts code-looking tokens from a product title blocks
-1,384 candidate pairs at **0.5643** precision. That looks like a weak signal.
-Conditioned on how *rare* the shared code is, it separates almost perfectly:
+truth), with the rules this module actually ships:
 
-    rarest shared code, document frequency   pairs   true   precision
-    1-2                                        754    752      0.9973
-    3-4                                         47     23      0.4894
-    5-9                                         55      6      0.1091
-    10-19                                       25      0      0.0000
-    20+                                        503      0      0.0000
+    code-blocking alone                       881 pairs, precision 0.8865
+    + rarity filter (code_rarity >= 0.75)     818 pairs, precision 0.9499
 
-503 candidate pairs share a code seen twenty or more times — ``1080p``,
-``16gb``, ``720p`` — and **not one is a true match**. So the identifying signal
-is not "looks like a model number", it is "is rare". ``1080p`` is the
-``General Hospital`` of consumer electronics, and the fix is the same one the
-place lane already ships: a frequency table and the distinctiveness gate, not a
-cleverer regex and a hand-maintained blocklist of spec words.
+Two mechanisms do that work, and the split is worth being honest about because
+an earlier version of this docstring credited the second for both. With
+``stop_codes`` **disabled**, code-blocking is 0.5570 over 1,359 pairs and there
+is a bucket of 503 pairs sharing a code seen 20+ times (``1080p``, ``720p``)
+containing no true match at all. ``stop_codes`` removes that bucket at zero
+recall cost — 0.5570 to 0.8843 — and the frequency table then takes it the rest
+of the way. **The small hand-maintained stop list does more of the work than the
+frequency table.** With the shipped list on, the maximum document frequency in
+the table is 11, so the dramatic 20+ bucket does not exist to be suppressed.
+
+What the table still earns is the separation inside what remains: a code seen
+about as often as a unique one scores 1.0, ``16gb`` at df 11 scores 0.364, and
+only the former can clear ``DISTINCTIVE_FLOOR`` unaided. So the signal is
+rarity, not "looks like a model number" — but rarity measured after a short list
+of known non-identifiers has been removed, not instead of one.
 
 That is why :func:`build_code_table` exists and why :func:`compare_codes` takes
 a table. Without one it can only say "these share a code", which the numbers
@@ -225,7 +228,7 @@ def build_code_table(
     """A document-frequency table over code candidates, built from the corpus.
 
     Feed it every title from **both** lists being matched. The result is what
-    turns a 0.5643-precision block into a 0.9973-precision one, by telling
+    turns a 0.8865-precision block into a 0.9499-precision one, by telling
     ``compare_codes`` that ``2595b002`` appears twice and ``16gb`` appears
     eleven times.
     """
@@ -243,11 +246,15 @@ def build_code_table(
     # product is listed k times it becomes 2k, and the median df across codes
     # estimates k directly: most codes belong to one product, so their df is
     # the redundancy factor. Anchoring on the constant 2 instead made recall
-    # collapse from 0.6645 to 0.0419 on a merely-redundant catalogue, because
+    # collapse from 0.6636 to 0.0419 on a merely-redundant catalogue, because
     # a unique code scored 2/4 and fell under the gate floor.
+    # The 25th percentile, not the median: most codes in a healthy catalogue
+    # identify one product, so the lower quartile tracks the redundancy factor
+    # while staying robust to a vocabulary dominated by a few common codes. A
+    # median over a two-code vocabulary is 50% noise.
     dfs = sorted((getattr(table, "_counts", None) or {}).values())
-    median_df = dfs[len(dfs) // 2] if dfs else 1.0
-    table.code_baseline_df = max(2.0, 2.0 * median_df)
+    typical = dfs[len(dfs) // 4] if dfs else 1.0
+    table.code_baseline_df = max(2.0, 2.0 * typical)
     return table
 
 
@@ -265,7 +272,7 @@ def compare_codes(
     worth.
 
     Without a ``tf`` this degrades to a plain 1.0/0.0 on any shared code. That
-    is the 0.5643-precision behaviour, and it is the reason the shipped pack
+    is the 0.8865-precision behaviour, and it is the reason the shipped pack
     builds a table.
 
     ``None`` when either side yields no candidate at all: absent evidence
@@ -299,8 +306,11 @@ def code_rarity(code: str, tf: TokenFrequencyTable) -> float:
     product match and recall fell from 0.2197 to 0.0948. The formula was not
     wrong, it was being asked a question about a different distribution.
 
-    Document frequency answers it directly, and the shape here is the measured
-    precision curve rather than a guess:
+    Document frequency answers it directly, and the shape here is a measured
+    precision curve rather than a guess. It was measured with ``stop_codes``
+    disabled, which is what produces a df-20+ bucket at all — with the shipped
+    stop list the maximum df is 11. The curve's *shape* is what this function
+    borrows, not its absolute precisions:
 
         df 1-2   precision 0.9973   ->  1.0
         df 3-4             0.4894   ->  0.67 / 0.50
@@ -318,7 +328,7 @@ def code_rarity(code: str, tf: TokenFrequencyTable) -> float:
     # 2 that a single-listing catalogue happens to produce. A catalogue where
     # every product is listed twice gives a unique code df=4, and scoring that
     # against a hardcoded 2 put it at 0.5 — below the gate floor — so recall
-    # collapsed from 0.6645 to 0.0419 on a corpus that was merely redundant.
+    # collapsed from 0.6636 to 0.0419 on a corpus that was merely redundant.
     baseline = getattr(tf, "code_baseline_df", 0.0) or 2.0
     return min(1.0, baseline / df)
 
@@ -334,9 +344,12 @@ def compare_specs(
 
     Pair it with ``refutes_below`` under a SKU identity contract: a 16GB player
     and a 32GB player are different purchasable products however alike their
-    titles. On Abt-Buy, 46 of 46 true pairs carrying a comparable unit agree on
-    every one of them, so the refutation costs nothing measurable there — but 46
-    is a thin evidence base and it is reported as such.
+    titles. On Abt-Buy, 47 of 47 true pairs carrying a comparable unit agree on
+    every one of them, so the refutation costs nothing measurable there — but 47
+    of 1,097 is a thin evidence base and it is reported as such. Its only
+    measured effect on the benchmark is to cost one true match and prevent no
+    false merge, so it earns its place from the identity contract rather than
+    from this corpus.
     """
     cat = _category(category)
     sa, sb = extract_specs(text_a, category), extract_specs(text_b, category)

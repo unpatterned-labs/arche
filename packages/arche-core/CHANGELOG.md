@@ -21,27 +21,26 @@ visible):
 | | baseline, name only | `product_electronics` |
 |---|---|---|
 | precision | 0.7954 | **0.9707** |
-| recall | 0.2197 | **0.6645** |
-| F1 | 0.3443 | **0.7890** |
+| recall | 0.2197 | **0.6636** |
+| F1 | 0.3443 | **0.7883** |
 | false merges | 62 | **22** |
 
-**There is no "model number" signal — there is a rare-code signal.** A regex
-that extracts code-looking tokens blocks candidates at 0.5643 precision, barely
-better than a coin flip. Conditioned on the document frequency of the shared
-code it separates almost perfectly:
+**The signal is rarity, and two mechanisms produce it.** With the rules that
+actually ship, code-blocking alone reaches 0.8865 precision over 881 pairs and
+the rarity filter lifts it to 0.9499 over 818.
 
-```text
-rarest shared code, df   pairs   true   precision
-1-2                        754    752      0.9973
-3-4                         47     23      0.4894
-5-9                         55      6      0.1091
-20+                        503      0      0.0000
-```
-
-503 candidate pairs share a code seen twenty or more times — `1080p`, `16gb`,
-`720p` — and **not one is a true match**. `1080p` is the `General Hospital` of
-consumer electronics, so the fix is the frequency table and the existing gate,
-not a cleverer regex and a hand-maintained blocklist.
+An earlier draft of this entry credited the frequency table for all of that,
+citing a jump from 0.5643 to 0.9973. Those figures are real but describe a
+configuration the pack does not ship — `stop_codes` disabled. With them off,
+code-blocking is 0.5570 and there is a bucket of 503 candidate pairs sharing a
+code seen 20+ times (`1080p`, `720p`) containing no true match at all.
+`stop_codes` removes that bucket at zero recall cost, 0.5570 to 0.8843, and the
+table takes it the rest of the way. **The short hand-maintained stop list does
+more of the work than the frequency table**, and with it on the maximum document
+frequency in the table is 11, so the 20+ bucket does not exist to be suppressed.
+What the table still earns is the separation inside what remains: a code as rare
+as a unique one scores 1.0, `16gb` at df 11 scores 0.364, and only the first can
+clear `DISTINCTIVE_FLOOR` unaided.
 
 **A calibration bug worth recording, because it made the lane worse than no
 lane.** `TokenFrequencyTable.distinctiveness` is `min(1, -log10(rel_freq)/5)`,
@@ -50,9 +49,12 @@ tables. A code vocabulary is ~2,000 documents, so the rarest possible shared
 code — one occurrence in each source — scored **0.6205**, below
 `DISTINCTIVE_FLOOR` (0.75). The gate therefore demoted *every* true product
 match and recall fell from 0.2197 to **0.0948**. The formula was not wrong; it
-was being asked a question about a different distribution. `code_rarity` scores
-document frequency directly as `min(1, 2/df)`, which is the measured precision
-curve above.
+was being asked a question about a different distribution. `code_rarity` scores document frequency relative to what a
+unique code looks like *in that corpus* (`min(1, baseline/df)`, where `baseline`
+is twice the lower-quartile df). An earlier version anchored on the constant 2,
+which made recall collapse from 0.6636 to 0.0419 on a catalogue where each
+product is merely listed twice — the score has to be corpus-relative, not
+absolute.
 
 New public surface:
 
@@ -87,8 +89,8 @@ years, `32x32` looks like a model and is not, and reading `600mg` as a drug's
 model code would be dangerous. The category is flagged `experimental=True` and
 a test asserts no generic `product` pack exists.
 
-Two further honest limits: the `spec` refutation rests on 46 of 1,097 true pairs
-— all 46 agree, but that is a thin base — and the code frequency table is
+Two further honest limits: the `spec` refutation rests on 47 of 1,097 true pairs
+— all 47 agree, but that is a thin base — and the code frequency table is
 self-calibrated over the two catalogues being matched rather than shipped, which
 is u-probability estimation over the data at hand rather than a shipped asset.
 
