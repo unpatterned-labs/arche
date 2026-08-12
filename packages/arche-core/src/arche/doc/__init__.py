@@ -41,7 +41,11 @@ from arche.doc.parse import (
     parse,
 )
 
+from arche.doc._documents import DocumentReport, resolve_documents  # noqa: E402
+
 __all__ = [
+    "DocumentReport",
+    "resolve_documents",
     "parse",
     "ParsedDocument",
     "DoclingNotInstalledError",
