@@ -1,0 +1,381 @@
+wd_id,name,lat,lon
+Q42291401,Poplar Hospital,51.511767,-0.00705
+Q55637564,"Western Hospital, Fulham",51.4851,-0.1953
+Q55628344,Paddington Green Children's Hospital,51.520922,-0.173642
+Q60754036,Princess Louise Hospital,51.5203,-0.2221
+Q60747058,"New Cross Hospital, Deptford",51.4791,-0.0517
+Q55607704,City of London Maternity Hospital,51.5684,-0.119
+Q55613033,Grove Hospital,51.4278,-0.1684
+Q55633855,"St Philip's Hospital, Sheffield Street",51.5148,-0.1176
+Q60760752,Fulham Hospital,51.4871,-0.2195
+Q60763595,St Giles' Hospital,51.4756,-0.0835
+Q55099146,Royal Chest Hospital,51.529,-0.093
+Q55076711,Banstead Hospital,51.3355,-0.1897
+Q60747146,Miller General Hospital,51.475278,-0.021111
+Q60754074,Westminster Children's Hospital,51.4925,-0.1366
+Q60747278,"St Lawrence's Hospital, Caterham",51.286,-0.0997
+Q55633587,South Middlesex Hospital,51.457,-0.3379
+Q55621771,Maida Vale Hospital for Nervous Diseases,51.5262,-0.1807
+Q55633850,"St Paul's Hospital, Endell Street",51.51485,-0.12479
+Q56452151,King George Military Hospital,51.505679,-0.112536
+Q60763293,Coppetts Wood Hospital,51.602,-0.1539
+Q60754130,Paddington General Hospital,51.5231,-0.1978
+Q55605116,Beckenham Hospital,51.405,-0.033
+Q7374459,Royal Masonic Hospital,51.4963,-0.241417
+Q7969501,Warlingham Park Hospital,51.3181,-0.03117
+Q7986168,"West Park Hospital, Epsom",51.3388,-0.3
+Q7796687,Thorpe Coombe Hospital,51.5907,-0.0079
+Q7374877,"Royal Star and Garter Home, Richmond",51.4502,-0.2974
+Q7989168,Westminster Hospital,51.5,-0.1291
+Q7270345,Queen Elizabeth Hospital for Children,51.5184,-0.06
+Q15137935,Greenwich Hospital,51.483363,-0.006732
+Q7593175,"St George's Hospital, Havering",51.5468,0.2186
+Q7374602,Royal Northern Hospital,51.5608,-0.123
+Q7594991,St Olave's Hospital,51.4967,-0.054167
+Q15225199,Hornsey Central Hospital,51.584052,-0.131279
+Q7594066,St Luke's Hospital for Lunatics,51.525833,-0.089722
+Q7380700,Rush Green Hospital,51.5602,0.1763
+Q7968101,Wanstead Hospital,51.5845,0.0264
+Q7969496,Warley Hospital,51.6073,0.293
+Q7594554,St Mary Abbot's Hospital,51.497676,-0.190909
+Q7592832,St Clement's Hospital,51.525833,-0.029444
+Q7275394,RAF Hospital Uxbridge,51.5458,-0.471389
+Q7568057,South Ockendon Psychiatric Hospital,51.5182,0.3013
+Q7270174,Queen Alexandra's Military Hospital,51.492428,-0.127642
+Q7374995,Royal Waterloo Hospital for Children and Women,51.505288,-0.113128
+Q7567841,South London Hospital for Women and Children,51.4531,-0.146944
+Q7618964,Stone House Hospital,51.4455,0.2447
+Q7374267,Royal Herbert Hospital,51.4708,0.0507
+Q15198238,Belgrave Hospital for Children,51.480753,-0.113147
+Q5759378,Highlands Hospital,51.6449,-0.11089
+Q3656999,Charlton House,51.4805,0.037155
+Q2866638,Friern Hospital,51.614,-0.14839
+Q4970070,British Hospital for Mothers and Babies,51.4904,0.05012
+Q5532007,General Lying-In Hospital,51.5016,-0.11666
+Q4869747,Battersea General Hospital,51.4751,-0.164
+Q5416238,Evelina London Children's Hospital,51.498056,-0.118333
+Q1742181,King's College Hospital,51.468694,-0.092222
+Q4819127,Aubrey House,51.5058,-0.202589
+Q3145297,Greenwich District Hospital,51.485278,0.009167
+Q5604611,Greentrees Hospital,51.6102,-0.1003
+Q5662828,Harold Wood Hospital,51.5925,0.2261
+Q3495342,St Mary's Hospital,51.517222,-0.173056
+Q4815925,Atkinson Morley Hospital,51.4178,-0.2375
+Q4884815,Beltwood House,51.43303,-0.070948
+Q5032193,Cane Hill Hospital,51.3128,-0.14906
+Q5906871,Horton Hospital,51.343608,-0.282469
+Q5222549,Darenth Park Hospital,51.435,0.257778
+Q4710038,Albert Dock Seamen's Hospital,51.512,0.03767
+Q5130075,Claybury Hospital,51.6031,0.0687
+Q4982607,Charing Cross Hospital,51.4871,-0.2195
+Q16934164,Northwood and Pinner Cottage Hospital,51.6039,-0.4138
+Q16932690,Neasden Hospital,51.55,-0.26
+Q16932665,St Andrew's Hospital,51.562,-0.2336
+Q15428772,German Hospital,51.5471,-0.0671
+Q16841778,Hayes Cottage Hospital,51.5216,-0.4236
+Q16932809,Netherne Hospital,51.292408,-0.140556
+Q16840254,Grey Towers,51.564,0.213
+Q16845030,Hounslow Hospital,51.4679,-0.3733
+Q15979198,Normansfield Hospital,51.4202,-0.312561
+Q16965316,St Leonard's Hospital,51.5333,-0.0774
+Q16932676,St Benedict's Hospital,51.4258,-0.1567
+Q20876281,Royal Ear Hospital building,51.5226,-0.1375
+Q27087536,Former Annie Mccall Hospital,51.470592,-0.128014
+Q22000672,Chiswick Asylum,51.483611,-0.258611
+Q25350570,Tite Street Children's Hospital,51.4859,-0.1629
+Q28963287,"St James' Hospital, Balham",51.4423,-0.1632
+Q26556191,"The Salvation Army Mothers' Hospital, Front Buildings",51.553604,-0.053908
+Q777039,Guy's Hospital,51.503333,-0.086944
+Q26672415,Bolingbroke Hospital,51.456194,-0.168287
+Q28405828,Queen Mary's Hospital for the East End,51.54207,0.00528
+Q18392694,St Peter's Hospital,51.511101,-0.124013
+Q26355494,Children's Day Hospital,51.490111,-0.115512
+Q18708275,"Harlington, Harmondsworth and Cranford Cottage Hospital",51.4896,-0.4482
+Q23891199,Brook General Hospital,51.4721,0.0476
+Q1628509,Royal Hospital Chelsea,51.486389,-0.157778
+Q26656388,"Former Hospital (Building 41), Hounslow Barracks",51.469451,-0.386513
+Q27083460,Original Block Of Former St Marks Hospital,51.529843,-0.098993
+Q28404469,Highgate Hospital,51.56674,-0.14234
+Q22004592,Shenley Hospital,51.694444,-0.292778
+Q511360,Elizabeth Garrett Anderson and Obstetric Hospital,51.52804,-0.12965
+Q114024224,Royal India Asylum,51.5062,-0.3498
+Q18160812,Joyce Green Hospital,51.4636,0.2268
+Q20714121,West London Hospital,51.49321,-0.2221
+Q27044428,British Lying-In Hospital,51.51485,-0.12479
+Q580652,King Edward VII's Hospital,51.520917,-0.150417
+Q21585413,St Alfege's Hospital,51.485278,0.009167
+Q26665303,Surrey Dispensary,51.497854,-0.091075
+Q26532766,Samaritan Hospital For Women,51.520807,-0.163412
+Q28405723,"Bexley Hospital, Bexleyheath",51.4571,0.1312
+Q28405598,Bexley Hospital,51.4345,0.175
+Q5532007,General Lying-In Hospital,51.5016,-0.11666
+Q6670366,London Fever Hospital,51.5368,-0.1064
+Q5189706,Croydon University Hospital,51.39,-0.11
+Q5416238,Evelina London Children's Hospital,51.498056,-0.118333
+Q5656797,Harefield Hospital,51.607,-0.483
+Q5651415,St Bernard's Hospital,51.5064,-0.3516
+Q5604611,Greentrees Hospital,51.6102,-0.1003
+Q5383985,Epsom Cluster,51.3437,-0.2833
+Q5662828,Harold Wood Hospital,51.5925,0.2261
+Q5689722,Headley Court,51.292,-0.278
+Q5222549,Darenth Park Hospital,51.435,0.257778
+Q5645747,Hammersmith Hospital,51.5163,-0.2369
+Q5187669,Cromwell Hospital,51.4949,-0.1914
+Q5763292,Hillingdon Hospital,51.525833,-0.461111
+Q5130075,Claybury Hospital,51.6031,0.0687
+Q134700950,Bermondsey Medical Mission Hospital,51.495261,-0.079416
+Q134700889,Alexandra Maternity Home,51.596722,-0.142899
+Q5325481,Ealing Hospital,51.506944,-0.345556
+Q5450923,Finsbury Health Centre,51.5249,-0.1089
+Q5330783,Royal National ENT and Eastman Dental Hospitals,51.522583,-0.134563
+Q5383989,Epsom Cottage Hospital,51.3419,-0.3013
+Q4970070,British Hospital for Mothers and Babies,51.4904,0.05012
+Q4869747,Battersea General Hospital,51.4751,-0.164
+Q5061433,Central Middlesex Hospital,51.53103,-0.26914
+Q124749523,Mildmay Mission Hospital,51.527778,-0.075833
+Q4861607,Barnet General Hospital,51.651,-0.215
+Q4815925,Atkinson Morley Hospital,51.4178,-0.2375
+Q4878645,Beckenham Beacon,51.405,-0.033
+Q4710038,Albert Dock Seamen's Hospital,51.512,0.03767
+Q5087127,Chase Farm Hospital,51.667,-0.103
+Q5090151,Chelsea and Westminster Hospital,51.484,-0.182
+Q2866638,Friern Hospital,51.614,-0.14839
+Q6834036,Michael Rutter Centre for Children and Adolescents,51.4698,-0.0903
+Q22000672,Chiswick Asylum,51.483611,-0.258611
+Q6670366,London Fever Hospital,51.5368,-0.1064
+Q25350570,Tite Street Children's Hospital,51.4859,-0.1629
+Q107103988,Potters Bar Clinic,51.686561,-0.178052
+Q5416238,Evelina London Children's Hospital,51.498056,-0.118333
+Q1349705,Great Ormond Street Hospital,51.5225,-0.1205
+Q6825097,Metropolitan Free Hospital,51.540558,-0.076711
+Q64555483,Canning Crescent Health Centre,51.60218,-0.11203
+Q16932809,Netherne Hospital,51.292408,-0.140556
+Q6672574,Long Grove Hospital,51.3494,-0.2901
+Q6672574,Long Grove Hospital,51.3494,-0.2901
+Q15979265,Richmond Royal Hospital,51.466778,-0.30047
+Q5032193,Cane Hill Hospital,51.3128,-0.14906
+Q5906871,Horton Hospital,51.343608,-0.282469
+Q1431700,Middlesex Hospital,51.519,-0.1377
+Q6751340,Manor Hospital,51.338944,-0.287961
+Q6837376,Michie Hospital,51.5,-0.1797
+Q6670564,London Lock Hospital,51.5002,-0.1495
+Q511360,Elizabeth Garrett Anderson and Obstetric Hospital,51.52804,-0.12965
+Q6481446,Lambeth Hospital,51.4666,-0.1231
+Q6670230,The Charterhouse,51.521389,-0.099722
+Q27044428,British Lying-In Hospital,51.51485,-0.12479
+Q6670225,London Chest Hospital,51.5321,-0.04926
+Q5049284,Cassel Hospital,51.4328,-0.3078
+Q6792344,Maudsley Hospital,51.468889,-0.091111
+Q28405598,Bexley Hospital,51.4345,0.175
+Q15198238,Belgrave Hospital for Children,51.480753,-0.113147
+Q7085524,Oldchurch Hospital,51.5713,0.1781
+Q7986168,"West Park Hospital, Epsom",51.3388,-0.3
+Q7796687,Thorpe Coombe Hospital,51.5907,-0.0079
+Q7796687,Thorpe Coombe Hospital,51.5907,-0.0079
+Q7592462,St Ann's Hospital,51.5806,-0.0906
+Q134698916,Annie McCall Maternity Hospital,51.470244,-0.126758
+Q134698935,Weir Maternity Hospital,51.446519,-0.142437
+Q7270345,Queen Elizabeth Hospital for Children,51.5184,-0.06
+Q7580974,Springfield Hospital,51.4385,-0.1766
+Q7245500,Priory Hospital,51.462604,-0.252054
+Q6978895,National Temperance Hospital,51.5287,-0.1381
+Q7007110,New End Hospital,51.5583,-0.177778
+Q134869663,Bushey Maternity Hospital,51.636014,-0.331844
+Q7969496,Warley Hospital,51.6073,0.293
+Q7568057,South Ockendon Psychiatric Hospital,51.5182,0.3013
+Q831377,Bethlem Royal Hospital,51.380833,-0.029444
+Q134700889,Alexandra Maternity Home,51.596722,-0.142899
+Q7567841,South London Hospital for Women and Children,51.4531,-0.146944
+Q7987822,Western Eye Hospital,51.5208,-0.1635
+Q1946861,Moorfields Eye Hospital,51.527222,-0.09
+Q6410963,King's Health Partners,51.503754,-0.087933
+Q6670564,London Lock Hospital,51.5002,-0.1495
+Q5908729,Hospital for Tropical Diseases,51.5227,-0.1356
+Q5908758,Hospital of St John and St Elizabeth,51.5328,-0.174167
+Q6669893,London Bridge Hospital,51.5064,-0.0859
+Q6670225,London Chest Hospital,51.5321,-0.04926
+Q6411611,"King George Hospital, London",51.580417,0.112083
+Q7060443,Northwick Park Hospital,51.576,-0.322
+Q7270448,"Queen Mary's Hospital, Sidcup",51.418889,0.101389
+Q7085524,Oldchurch Hospital,51.5713,0.1781
+Q6825097,Metropolitan Free Hospital,51.540558,-0.076711
+Q7373850,Royal Brompton Hospital,51.4894,-0.1707
+Q7270446,Queen Mary's Hospital,51.4553,-0.2422
+Q6924380,Mount Vernon Hospital,51.6168,-0.4447
+Q7245500,Priory Hospital,51.462604,-0.252054
+Q7270343,"Queen Elizabeth Hospital, London",51.478889,0.051111
+Q7270013,Queen's Hospital,51.5691,0.1789
+Q6975110,National Psychosis Unit,51.38087,-0.03061
+Q7270242,Queen Charlotte's and Chelsea Hospital,51.5161,-0.2373
+Q6978895,National Temperance Hospital,51.5287,-0.1381
+Q7007110,New End Hospital,51.5583,-0.177778
+Q7231952,Portland Hospital,51.5227,-0.1436
+Q6837376,Michie Hospital,51.5,-0.1797
+Q7244808,Princess Royal University Hospital,51.365278,0.053611
+Q7056104,North Middlesex University Hospital,51.613056,-0.075
+Q7018154,Newham University Hospital,51.523,0.036
+Q6851069,Mile End Hospital,51.52475,-0.043042
+Q7969501,Warlingham Park Hospital,51.3181,-0.03117
+Q7981418,"Wellington Hospital, London",51.5325,-0.1726
+Q7863956,UCH Macmillan Cancer Centre,51.523202,-0.137292
+Q7593367,St Helier Hospital,51.3803,-0.1836
+Q7589963,St. Mark's Hospital,51.575833,-0.320278
+Q7739155,The Heart Hospital,51.5197,-0.14973
+Q7989168,Westminster Hospital,51.5,-0.1291
+Q7974617,Watford General Hospital,51.648889,-0.404167
+Q7593175,"St George's Hospital, Havering",51.5468,0.2186
+Q7594991,St Olave's Hospital,51.4967,-0.054167
+Q7985920,West Middlesex University Hospital,51.4736,-0.3257
+Q7594066,St Luke's Hospital for Lunatics,51.525833,-0.089722
+Q7968101,Wanstead Hospital,51.5845,0.0264
+Q7993761,Whipps Cross University Hospital,51.5779,0.00197
+Q7595036,St Pancras Hospital,51.536111,-0.132222
+Q7594554,St Mary Abbot's Hospital,51.497676,-0.190909
+Q7592832,St Clement's Hospital,51.525833,-0.029444
+Q7587779,St. Ebba's Hospital,51.349,-0.274
+Q7618964,Stone House Hospital,51.4455,0.2447
+Q134776863,Chiswick Maternity Hospital,51.489015,-0.246152
+Q134698916,Annie McCall Maternity Hospital,51.470244,-0.126758
+Q134698935,Weir Maternity Hospital,51.446519,-0.142437
+Q134776515,Brookfield Orthopaedic Hospital,51.606496,0.008315
+Q134776320,"Bromley, Chislehurst and District Maternity Hospital",51.406505,0.028182
+Q134869663,Bushey Maternity Hospital,51.636014,-0.331844
+Q134705107,Streatham Babies Hospital,51.436956,-0.125271
+Q134776777,"Forest Hospital, Buckhurst Hill",51.629814,0.042188
+Q2692584,Epsom General Hospital,51.325278,-0.2725
+Q3551343,University College Hospital,51.525242,-0.134397
+Q7374417,Royal London Hospital for Integrated Medicine,51.5216,-0.1214
+Q3145297,Greenwich District Hospital,51.485278,0.009167
+Q107653617,Royal Dental Hospital,51.509694,-0.129694
+Q7374519,"Royal National Throat, Nose and Ear Hospital",51.529167,-0.119167
+Q7374602,Royal Northern Hospital,51.5608,-0.123
+Q7374421,The Royal London Hospital,51.517972,-0.05875
+Q7380700,Rush Green Hospital,51.5602,0.1763
+Q3336892,National Hospital for Neurology and Neurosurgery,51.522222,-0.121944
+Q17001820,Endell Street Military Hospital,51.5154,-0.1255
+Q3495316,St George's Hospital,51.4267,-0.1757
+Q88480720,NHS Nightingale Hospital London,51.508056,0.030278
+Q7374301,Royal Hospital for Neuro-disability,51.451917,-0.214178
+Q7374518,Royal National Orthopaedic Hospital,51.632,-0.305
+Q7374995,Royal Waterloo Hospital for Children and Women,51.505288,-0.113128
+Q30292749,Mount Vernon Hospital,51.6153,-0.4461
+Q30292844,Sevenoaks Hospital,51.288264,0.194757
+Q30292831,Ashford Hospital,51.4415,-0.469
+Q30292829,Orpington Hospital,51.3622,0.095
+Q30292861,Barking Community Hospital,51.53868,0.09866
+Q30293099,Caterham Dene Hospital,51.2839,-0.08557
+Q30293035,Edgware Community Hospital,51.60634,-0.270583
+Q30293050,Spire Hartswood Hospital,51.600416,0.293055
+Q30293058,Erith and District Hospital,51.4771,0.1667
+Q30293120,Goodmayes Hospital,51.5763,0.1105
+Q30293023,Sutton Hospital,51.344802,-0.193651
+Q17526584,The London Foot Hospital And Attached Railings,51.5225,-0.139629
+Q16934164,Northwood and Pinner Cottage Hospital,51.6039,-0.4138
+Q16932690,Neasden Hospital,51.55,-0.26
+Q16932665,St Andrew's Hospital,51.562,-0.2336
+Q16841778,Hayes Cottage Hospital,51.5216,-0.4236
+Q18392722,St James Workhouse,51.5141,-0.1374
+Q17531413,Southwark Adult Education Institute,51.4721,-0.05369
+Q17022101,Teddington Memorial Hospital,51.4258,-0.340944
+Q16845030,Hounslow Hospital,51.4679,-0.3733
+Q16965316,St Leonard's Hospital,51.5333,-0.0774
+Q16932676,St Benedict's Hospital,51.4258,-0.1567
+Q16983704,"Barnes Hospital, London",51.4672,-0.256472
+Q16900532,"St. Anthony's Hospital, North Cheam",51.3796,-0.220692
+Q18160812,Joyce Green Hospital,51.4636,0.2268
+Q30292995,Dulwich Community Hospital,51.4585,-0.0813
+Q30292939,Bishops Wood Hospital,51.61643,-0.44662
+Q14956783,University Hospital Lewisham,51.4533,-0.017222
+Q15428772,German Hospital,51.5471,-0.0671
+Q25171377,Darent Valley Hospital,51.435,0.2584
+Q26672822,The Walworth Clinic,51.490634,-0.096618
+Q30292891,Tolworth Hospital,51.3795,-0.2891
+Q30292897,Purley War Memorial Hospital,51.3402,-0.1145
+Q15225199,Hornsey Central Hospital,51.584052,-0.131279
+Q15262154,Newington Workhouse,51.485556,-0.084167
+Q11710128,St Christopher's Hospice,51.4223,-0.058
+Q30292904,Queen Mary's Hospital For Children,51.349,-0.1699
+Q26665303,Surrey Dispensary,51.497854,-0.091075
+Q28135869,London Women's Clinic,51.521512,-0.148271
+Q30293182,Wilson Hospital,51.3974,-0.1631
+Q30293208,Bridgeways Day Hospital,51.38593,0.04251
+Q30293205,Brentwood Community Hospital,51.623404,0.316174
+Q20714162,Weymouth Street Hospital,51.5202,-0.1506
+Q18708275,"Harlington, Harmondsworth and Cranford Cottage Hospital",51.4896,-0.4482
+Q19654384,Homerton University Hospital,51.550411,-0.046111
+Q30270395,Respiratory Clinical Trials,51.518175,-0.147059
+Q23891198,"Memorial Hospital, Woolwich",51.4689,0.0654
+Q23891199,Brook General Hospital,51.4721,0.0476
+Q22004592,Shenley Hospital,51.694444,-0.292778
+Q20714121,West London Hospital,51.49321,-0.2221
+Q21585413,St Alfege's Hospital,51.485278,0.009167
+Q65063842,No. 2 New Zealand General Hospital,51.3866,-0.4256
+Q65059508,Tooting Bec Hospital,51.4307,-0.1514
+Q55637564,"Western Hospital, Fulham",51.4851,-0.1953
+Q60754036,Princess Louise Hospital,51.5203,-0.2221
+Q60747058,"New Cross Hospital, Deptford",51.4791,-0.0517
+Q55607704,City of London Maternity Hospital,51.5684,-0.119
+Q60763352,Bromley Hospital,51.3971,0.01927
+Q55613033,Grove Hospital,51.4278,-0.1684
+Q55633855,"St Philip's Hospital, Sheffield Street",51.5148,-0.1176
+Q60760752,Fulham Hospital,51.4871,-0.2195
+Q60763595,St Giles' Hospital,51.4756,-0.0835
+Q55099146,Royal Chest Hospital,51.529,-0.093
+Q55076711,Banstead Hospital,51.3355,-0.1897
+Q60747146,Miller General Hospital,51.475278,-0.021111
+Q60754074,Westminster Children's Hospital,51.4925,-0.1366
+Q60747278,"St Lawrence's Hospital, Caterham",51.286,-0.0997
+Q55633587,South Middlesex Hospital,51.457,-0.3379
+Q55621771,Maida Vale Hospital for Nervous Diseases,51.5262,-0.1807
+Q60747194,The Gordon Hospital,51.4922,-0.136
+Q55633850,"St Paul's Hospital, Endell Street",51.51485,-0.12479
+Q56585212,King's College Hospital Charity,51.542835,-0.119257
+Q60763293,Coppetts Wood Hospital,51.602,-0.1539
+Q60754130,Paddington General Hospital,51.5231,-0.1978
+Q55605116,Beckenham Hospital,51.405,-0.033
+Q86752611,West Hill Hospital,51.4459,0.2109
+Q96400174,Princess Beatrice Hospital,51.488437,-0.192616
+Q42291401,Poplar Hospital,51.511767,-0.00705
+Q28963287,"St James' Hospital, Balham",51.4423,-0.1632
+Q28405828,Queen Mary's Hospital for the East End,51.54207,0.00528
+Q50575536,Royal Marsden Hospital,51.491278,-0.172583
+Q50036846,London Vision Clinic,51.523402,-0.148551
+Q28404845,Finchley Memorial Hospital,51.6056,-0.1763
+Q43895105,London Eye Hospital,51.517176,-0.145805
+Q28404470,Highgate Private Hospital,51.5764,-0.15672
+Q111231232,Savoy Hospital,51.510556,-0.120278
+Q50517755,Kingston Hospital,51.414503,-0.282107
+Q50036676,Fortius Clinic,51.516526,-0.153357
+Q108830358,London Foot Hospital,51.52257,-0.13955
+Q30265255,St Michaels Hospital,51.661764,-0.084355
+Q28405723,"Bexley Hospital, Bexleyheath",51.4571,0.1312
+Q7433944,Scio House Hospital,51.4472,-0.2322
+Q16901558,The Princess Grace Hospital,51.5225,-0.153056
+Q134698935,Weir Maternity Hospital,51.446519,-0.142437
+Q60746347,Nightingale Hospital,51.5218,-0.1652
+Q30292836,Ashtead Hospital,51.30451,-0.30331
+Q6646489,"Lister Hospital, Chelsea",51.4863,-0.1502
+Q7231952,Portland Hospital,51.5227,-0.1436
+Q6671010,London Welbeck Hospital,51.5182,-0.1496
+Q56452151,King George Military Hospital,51.505679,-0.112536
+Q14996990,The London Clinic,51.522972,-0.150278
+Q7275394,RAF Hospital Uxbridge,51.5458,-0.471389
+Q7270174,Queen Alexandra's Military Hospital,51.492428,-0.127642
+Q7374267,Royal Herbert Hospital,51.4708,0.0507
+Q88375254,West Valley Hospital,51.38001,-0.10038
+Q5759378,Highlands Hospital,51.6449,-0.11089
+Q7996907,Whittington Hospital,51.5665,-0.1395
+Q777039,Guy's Hospital,51.503333,-0.086944
+Q7374196,Royal Free Hospital,51.5531,-0.1654
+Q5074354,Charing Cross Hospital Medical School,51.4872,-0.2202
+Q134506527,Central London Ophthalmic Hospital,51.5262,-0.1241
+Q105376589,Eltham Community Hospital,51.44942,0.05401
+Q7374421,The Royal London Hospital,51.517972,-0.05875
+Q1431700,Middlesex Hospital,51.519,-0.1377
+Q5645747,Hammersmith Hospital,51.5163,-0.2369
+Q137798451,Clementine Churchill Hospital,51.56508,-0.332295
+Q106610682,Putney Hospital,51.469011,-0.228598
+Q3495316,St George's Hospital,51.4267,-0.1757
+Q139569207,London Skin Clinic,51.5216,-0.149
+Q1143779,St Thomas' Hospital,51.4991,-0.11891
+Q7567841,South London Hospital for Women and Children,51.4531,-0.146944
