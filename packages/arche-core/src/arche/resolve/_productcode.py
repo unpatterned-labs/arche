@@ -79,7 +79,9 @@ from arche.resolve._matcher import _normalise_id, _normalise_text
 from arche.resolve._tokenfreq import TokenFrequencyTable
 
 __all__ = [
+    "build_brand_prefixes",
     "code_rarity",
+    "strip_brand_prefix",
     "PRODUCT_CATEGORIES",
     "ProductCategory",
     "build_code_table",
@@ -417,3 +419,52 @@ def compare_specs(
     if not units:
         return None
     return 1.0 if all(sa[u] & sb[u] for u in units) else 0.0
+
+
+def build_brand_prefixes(values: Iterable[str], *, min_length: int = 4) -> frozenset[str]:
+    """Brand or publisher names, from a corpus's own manufacturer column.
+
+    Self-calibrated for the same reason the code table is: the vocabulary that
+    matters is the one in the catalogues being matched, and no shippable list
+    would cover them.
+
+    ``min_length`` rejects initialisms short enough to appear inside ordinary
+    titles — a two-character "brand" would strip the front off half the corpus.
+    """
+    return frozenset(
+        cleaned for value in values
+        if len(cleaned := str(value or "").strip().lower()) >= min_length
+    )
+
+
+def strip_brand_prefix(name: str, brands: frozenset[str]) -> tuple[str, str]:
+    """Split a leading brand off a product title: ``(core, brand)``.
+
+    One source prefixes the publisher and the other does not, which is the same
+    representation mismatch the place lane hit with trailing region qualifiers::
+
+        Amazon   'swat 4: special weapons and tactics'
+        Google   'vivendi-universal games inc swat 4'
+
+    Measured on Amazon-GoogleProducts, where 42% of Google titles carry such a
+    prefix, removing it moves F1 from 0.3971 to 0.4275 — and unusually, both
+    precision (0.4898 -> 0.5327) and recall (0.3338 -> 0.3569) improve, because
+    the prefix was simultaneously diluting true agreement and manufacturing
+    false agreement between unrelated products from one publisher.
+
+    The longest matching brand wins, so ``electronic arts inc`` beats
+    ``electronic arts``. A title that is *only* a brand is returned unchanged —
+    stripping it would leave nothing to match on.
+    """
+    text = (name or "").strip()
+    lowered = text.lower()
+    best = ""
+    for brand in brands:
+        if lowered.startswith(brand) and len(brand) > len(best):
+            best = brand
+    if not best:
+        return text, ""
+    core = text[len(best):].strip(" -,:|")
+    if not core:
+        return text, ""
+    return core, text[:len(best)]

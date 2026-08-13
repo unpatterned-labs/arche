@@ -146,6 +146,12 @@ class DocumentReport:
     errors: dict[str, str] = field(default_factory=dict)
     jurisdiction: str = ""
     entity: str = ""
+    #: doc -> the inferred jurisdiction and why, when `jurisdiction="auto"`.
+    jurisdictions: dict[str, Any] = field(default_factory=dict)
+    #: doc -> (declared, inferred) when an explicit jurisdiction disagrees with
+    #: the document's own evidence. Surfacing this turns "you said NG, the
+    #: evidence says GB" from 36 mystery detections into one warning.
+    jurisdiction_conflicts: dict[str, tuple[str, str]] = field(default_factory=dict)
     #: Where the time went. Progress answers "is it stuck?" during a run;
     #: this answers "what was slow?" afterwards.
     timing: Timing = field(default_factory=Timing)
@@ -204,6 +210,64 @@ class DocumentReport:
             for doc, rec in self.records.items()
         ]
 
+    def to_rows(self, reveal: bool = False) -> tuple[list[str], list[list[str]]]:
+        """``(header, rows)`` — one row per document, every value a string.
+
+        This is the primitive the other tabular exports are built on, and it is
+        public because it is the seam: pandas, Excel, BigQuery and Google Sheets
+        are each three lines of your own code on top of it, with no dependency
+        and no authentication story for this library to own.
+
+            header, rows = report.to_rows()
+            pandas.DataFrame(rows, columns=header)
+            worksheet.update([header] + rows)      # any gspread-like client
+
+        Columns are sorted, so a diff between two runs shows what changed rather
+        than that the dict order moved. Masked unless ``reveal``.
+        """
+        show = (lambda v: str(v)) if reveal else _mask
+        record_fields = sorted({k for rec in self.records.values() for k in rec})
+        header = (["document", "jurisdiction", "producer_family"]
+                  + record_fields + ["detections", "parse_seconds"])
+        rows: list[list[str]] = []
+        for doc, rec in self.records.items():
+            proposal = self.jurisdictions.get(doc) or {}
+            meta = self.metadata.get(doc) or {}
+            timing = self.timing.per_document.get(doc, {})
+            rows.append([
+                doc,
+                str(proposal.get("country") or ""),
+                str(meta.get("producer_family") or ""),
+                *[show(rec[f]) if rec.get(f) else "" for f in record_fields],
+                ";".join(f"{k}={v}" for k, v in
+                         sorted((self.detections.get(doc) or {}).items())),
+                f"{timing.get('parse', 0.0):.2f}",
+            ])
+        return header, rows
+
+    def to_csv(self, path: str | os.PathLike | None = None, *,
+               reveal: bool = False) -> str | Path:
+        """CSV of :meth:`to_rows`. Returns the text, or the path if one is given.
+
+        Written ``utf-8-sig`` so Excel opens it with the right encoding rather
+        than mangling every non-ASCII name — which, for this project's data, is
+        most of them.
+        """
+        import csv as _csv
+        import io as _io
+
+        header, rows = self.to_rows(reveal)
+        buffer = _io.StringIO(newline="")
+        writer = _csv.writer(buffer, lineterminator="\n")
+        writer.writerow(header)
+        writer.writerows(rows)
+        text = buffer.getvalue()
+        if path is None:
+            return text
+        out = Path(path)
+        out.write_text(text, encoding="utf-8-sig")
+        return out
+
     def to_json(self, reveal: bool = False, indent: int = 2) -> str:
         """The whole report as JSON — records, verdicts, and what was skipped."""
         return json.dumps(
@@ -259,7 +323,8 @@ def _record_from_metadata(info) -> dict[str, Any]:
     return out
 
 
-def _record_from_text(text: str, jurisdiction: str) -> tuple[dict, dict]:
+def _record_from_text(text: str, jurisdiction: str | None,
+                      inferred: bool = False) -> tuple[dict, dict]:
     """A canonical record plus a detection census, using only arche's own layers.
 
     Identifiers come from the **detectors**, which validate check digits, and
@@ -272,7 +337,10 @@ def _record_from_text(text: str, jurisdiction: str) -> tuple[dict, dict]:
     record: dict[str, Any] = {}
     census: dict[str, int] = {}
 
-    result = Pipeline(jurisdiction=jurisdiction).process(text)
+    # An inferred jurisdiction with no pack gets the conservative floor —
+    # otherwise "detecting the right country" silently stops redacting.
+    kwargs = {"on_uncovered": "baseline"} if inferred else {}
+    result = Pipeline(jurisdiction=jurisdiction, **kwargs).process(text)
     for det in getattr(result, "detections", []):
         category = str(getattr(det, "category", "") or "")
         census[category] = census.get(category, 0) + 1
@@ -314,7 +382,7 @@ def resolve_documents(
     source: str | os.PathLike | Iterable[str | os.PathLike],
     *,
     entity: str = "person",
-    jurisdiction: str = "NG",
+    jurisdiction: str = "auto",
     quiet: bool = True,
     progress: ProgressHandler | bool | str | None = True,
 ) -> DocumentReport:
@@ -336,6 +404,18 @@ def resolve_documents(
     ``quiet=True`` silences the third-party loggers underneath ``parse`` so the
     first thing you see is your result rather than an OCR engine banner. Pass
     ``quiet=False`` when you are debugging the parse itself.
+
+    ``jurisdiction`` defaults to ``"auto"``: each document's own evidence — a
+    postcode, a registrar's name, a currency, a company-form suffix — proposes a
+    country, and a document whose evidence is thin or conflicting gets no
+    statute rather than a guessed one. Pass a code to override; an explicit
+    jurisdiction always wins, and any disagreement with the evidence is recorded
+    in ``report.jurisdiction_conflicts`` rather than left silent.
+
+    When a jurisdiction is *inferred* and no statute pack covers it, the
+    conservative baseline floor applies. That is deliberate: detecting the right
+    country would otherwise switch protection off, because a Pipeline with no
+    statute returns text unredacted.
 
     A document that cannot be parsed is recorded in ``report.errors`` and
     skipped, never raised — one unreadable scan in a folder of twenty should not
@@ -392,7 +472,10 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
             continue
         run.emit("detect", document=name, index=index, message="detecting + extracting")
         _t = time.monotonic()
-        record, census = _record_from_text(text, jurisdiction)
+        doc_jurisdiction, inferred = _resolve_jurisdiction(
+            jurisdiction, text, getattr(parsed, "info", None), name, report,
+        )
+        record, census = _record_from_text(text, doc_jurisdiction, inferred)
         run.stage(name, "detect", time.monotonic() - _t)
         # Metadata fills only what the body did not, so a name read from the
         # document always beats a name asserted by its header.
@@ -410,3 +493,34 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
         info = getattr(parsed, "info", None)
         if info:
             report.metadata[name] = info.to_dict(reveal=True)
+
+
+def _resolve_jurisdiction(requested: str, text: str, info: Any, name: str,
+                          report: DocumentReport) -> tuple[str | None, bool]:
+    """Which jurisdiction to process this document under, and whether we inferred it.
+
+    An explicit code always wins. Inference still runs alongside it, because a
+    silent disagreement between what the caller declared and what the document
+    says is exactly how 36 phantom tax numbers appeared on a British bank
+    statement — recorded now, instead of discovered later.
+    """
+    import warnings as _warnings
+
+    from arche.jurisdictions.infer import infer_jurisdiction
+
+    proposal = infer_jurisdiction(text, metadata=info)
+    report.jurisdictions[name] = proposal.to_dict()
+
+    if requested and requested.lower() != "auto":
+        declared = requested.upper()
+        if proposal.country and proposal.country != declared:
+            report.jurisdiction_conflicts[name] = (declared, proposal.country)
+            _warnings.warn(
+                f"{name}: processing under declared jurisdiction {declared!r}, "
+                f"but the document's own evidence indicates {proposal.country!r} "
+                f"({proposal.reason}). The declared value wins; see "
+                "report.jurisdiction_conflicts.",
+                UserWarning, stacklevel=3,
+            )
+        return declared, False
+    return proposal.country, bool(proposal.country)

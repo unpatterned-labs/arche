@@ -253,6 +253,80 @@ register_category(ProductCategory(
 ))
 ```
 
+""")
+
+md("""
+## 6. Making Amazon-Google better
+
+The obvious move is to feed the matcher more fields — both catalogues carry `description`, and Amazon carries `manufacturer` on every row. Measured, that is wrong, in a way worth understanding.
+""")
+
+code("""
+def rows3(src, namefield):
+    return [{"id": r["id"], "name": r[namefield],
+             "description": (r.get("description") or "")[:400],
+             "manufacturer": r.get("manufacturer") or ""} for r in src]
+
+
+NAME = [{"field": "name", "kind": "name", "weight": 2.0},
+        {"field": "name", "kind": "tftoken", "weight": 2.0}]
+A3, B3 = rows3(amz, "title"), rows3(goo, "name")
+
+
+def bench(label, comps, b=None):
+    res = crosswalk(A3, b or B3, comparators=comps, id_field="id")
+    pred = {(e["a_id"], e["b_id"]): e for e in res["matches"]}
+    tp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k in t2)
+    fp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k not in t2)
+    p, r = tp / (tp + fp), tp / len(t2)
+    print(f"  {label:<28} P={p:.4f}  R={r:.4f}  F1={2*p*r/(p+r):.4f}  (TP {tp}, FP {fp})")
+
+
+bench("name only (baseline)", NAME)
+bench("+ description", NAME + [{"field": "description", "kind": "tftoken", "weight": 1.0}])
+bench("+ manufacturer", NAME + [{"field": "manufacturer", "kind": "name", "weight": 1.0}])
+""")
+
+md("""
+**Adding descriptions is catastrophic** — recall falls from 0.334 to 0.129. Manufacturer is break-even.
+
+The reason is visible in the data. Descriptions are marketing copy each retailer wrote independently:
+
+```text
+AMZ  swat 4: special weapons and tactics
+     'looking for a tactical shooter that asks you to do more than charg...'
+GOO  vivendi-universal games inc swat 4
+     'it is not just about the badge it is about the rush! the adrenaline...'
+```
+
+Mean Jaccard on true pairs is **0.448 for titles and 0.119 for descriptions**. Adding description as a weighted comparator dilutes real agreement with near-noise. More fields is not more signal.
+
+But look again at those two titles. **Google prefixes the publisher and Amazon does not** — and Amazon states that publisher in its own `manufacturer` column, on 100% of rows. That is the same representation mismatch the place lane hit with trailing region qualifiers, arriving at the front of the string instead of the back.
+""")
+
+code("""
+from arche.resolve._productcode import build_brand_prefixes, strip_brand_prefix
+
+brands = build_brand_prefixes(r.get("manufacturer") for r in amz)
+prefixed = sum(1 for r in goo if strip_brand_prefix(r["name"], brands)[1])
+print(f"brands learned from Amazon's manufacturer column: {len(brands)}")
+print(f"Google titles carrying one as a prefix: {prefixed}/{len(goo)} "
+      f"({100*prefixed/len(goo):.0f}%)")
+print()
+
+B4 = [{"id": r["id"], "name": strip_brand_prefix(r["name"], brands)[0],
+       "description": "", "manufacturer": ""} for r in goo]
+bench("baseline", NAME)
+bench("publisher prefix stripped", NAME, b=B4)
+""")
+
+md("""
+**Both precision and recall improve** — F1 0.3971 to 0.4275, with 30 more true matches and 45 fewer false ones.
+
+That is unusual. The prefix was doing two bad things at once: diluting agreement between two listings of the same product, and manufacturing agreement between unrelated products from the same publisher. Removing it fixes both, which is why this is not the usual precision-for-recall trade.
+
+The brand list is **self-calibrated from the corpus**, exactly like the code frequency table. No shippable list of publishers would cover an arbitrary catalogue, and the vocabulary that matters is the one in the data being matched.
+
 ## What this establishes, and what it does not
 
 **Establishes.** On a public benchmark with complete ground truth, neither built nor labelled by us, the lane takes F1 from 0.3443 to 0.7883 at precision 0.9707. The mechanism is rarity, measured, not asserted.

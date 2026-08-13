@@ -473,3 +473,63 @@ class TestPack:
         b = [{"id": "1", "name": "SanDisk Sansa Clip 32GB MP3 Player SDMX18"}]
         res = crosswalk(a, b, entity="product_electronics", id_field="id")
         assert "match" not in [e["decision"] for e in res["matches"]]
+
+
+class TestBrandPrefix:
+    """One source prefixes the publisher and the other does not.
+
+    Structurally the same mismatch the place lane hit with trailing region
+    qualifiers, and measured on Amazon-GoogleProducts it moves F1 from 0.3971 to
+    0.4275 with *both* precision and recall improving — the prefix was diluting
+    true agreement and manufacturing false agreement at the same time.
+    """
+
+    @pytest.fixture
+    def brands(self):
+        from arche.resolve._productcode import build_brand_prefixes
+
+        return build_brand_prefixes([
+            "Vivendi-Universal Games Inc", "Dreamcatcher Interactive",
+            "Electronic Arts", "Electronic Arts Inc", "EA",
+        ])
+
+    def test_a_prefixed_title_is_split(self, brands):
+        from arche.resolve._productcode import strip_brand_prefix
+
+        assert strip_brand_prefix("vivendi-universal games inc swat 4", brands) == (
+            "swat 4", "vivendi-universal games inc",
+        )
+
+    def test_an_unprefixed_title_is_untouched(self, brands):
+        from arche.resolve._productcode import strip_brand_prefix
+
+        assert strip_brand_prefix("obscure", brands) == ("obscure", "")
+
+    def test_the_longest_brand_wins(self, brands):
+        from arche.resolve._productcode import strip_brand_prefix
+
+        core, brand = strip_brand_prefix("electronic arts inc fifa 12", brands)
+        assert (core, brand) == ("fifa 12", "electronic arts inc")
+
+    def test_a_title_that_is_only_a_brand_is_left_alone(self, brands):
+        """Stripping it would leave nothing to match on."""
+        from arche.resolve._productcode import strip_brand_prefix
+
+        assert strip_brand_prefix("Electronic Arts", brands)[0] == "Electronic Arts"
+
+    def test_short_initialisms_are_rejected(self):
+        """A two-character brand would strip the front off half the corpus."""
+        from arche.resolve._productcode import build_brand_prefixes
+
+        assert "ea" not in build_brand_prefixes(["EA", "Electronic Arts"])
+        assert "electronic arts" in build_brand_prefixes(["EA", "Electronic Arts"])
+
+    def test_it_is_self_calibrated_from_the_corpus(self):
+        """No shippable brand list would cover an arbitrary catalogue.
+
+        Same reasoning as the code frequency table: the vocabulary that matters
+        is the one in the data being matched.
+        """
+        from arche.resolve._productcode import build_brand_prefixes
+
+        assert build_brand_prefixes([]) == frozenset()
