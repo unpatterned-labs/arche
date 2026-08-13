@@ -24,9 +24,12 @@ Coupling to those would tie our public API to docling's evolving spec.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from arche.doc._metadata import DocumentMetadata, read_metadata
 
 # Probe for docling availability at import time. We don't import its
 # heavy classes (DocumentConverter) — those load eagerly. We just check
@@ -87,6 +90,23 @@ class ParsedDocument:
     tables: list[list[list[str]]] = field(default_factory=list)
     num_pages: int | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def info(self) -> DocumentMetadata:
+        """The typed view of :attr:`metadata` — producer, author, dates.
+
+        ``metadata`` stays the single source of truth (a plain dict, as it has
+        always been, now populated) and this is a derived view, so the two can
+        never disagree. Sources with no readable metadata return an empty
+        :class:`~arche.doc._metadata.DocumentMetadata`, never ``None``.
+
+        Read every field as a *claim by the file*: ``producer`` and ``author``
+        are trivially forged by anyone who can write a PDF.
+        """
+        cached = self.metadata.get("_info")
+        if isinstance(cached, DocumentMetadata):
+            return cached
+        return read_metadata(self.source)
 
     def __len__(self) -> int:
         return len(self.text)
@@ -157,7 +177,20 @@ def parse(
         if rows:
             tables.append(rows)
 
+    # What the file says about itself: title, author, producer, dates. This was
+    # an empty dict for the whole life of the module while every real PDF in
+    # the repo carried the fields it was meant to hold — data discarded, not
+    # data missing. `author` in particular is an issuer identity available with
+    # no model at all. Best-effort: a source we cannot introspect (a URL, a
+    # format with no metadata, a missing backend) yields an empty dict and
+    # never raises, because failing to read metadata must not fail a parse.
     metadata: dict[str, Any] = {}
+    with contextlib.suppress(Exception):
+        info = read_metadata(source_str)
+        if info:
+            metadata = info.to_dict(reveal=True)
+            metadata["_info"] = info
+
     num_pages: int | None = None
     if hasattr(doc, "pages") and doc.pages is not None:
         try:

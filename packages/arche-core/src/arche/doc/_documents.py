@@ -35,16 +35,20 @@ they compose *here*, once, rather than in every user's first notebook.
 
 from __future__ import annotations
 
+import contextlib
 import glob as _glob
 import json
 import os
+import time
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from itertools import combinations
 from pathlib import Path
 from typing import Any, Iterable
 
-__all__ = ["DocumentReport", "resolve_documents"]
+from arche.doc._progress import Event, ProgressHandler, Timing, _Run, resolve_handler
+
+__all__ = ["DocumentReport", "Event", "ProgressHandler", "resolve_documents"]
 
 # Extracted entity types that become record fields. Names and places come from
 # the extractor; identifiers come from the detectors, which validate check
@@ -94,6 +98,16 @@ def _quiet():
     logging.disable(logging.INFO)
     for name in _NOISY_LOGGERS:
         logging.getLogger(name).setLevel(logging.ERROR)
+    # transformers writes some notices straight to stderr, bypassing both
+    # `logging` and `warnings` — "Asking to truncate to max_length..." is the
+    # one GliNER triggers on every long document. Its own verbosity switch is
+    # the only thing that silences it. Wrapped because the import is optional
+    # and its API has moved between versions; failing to quiet a library must
+    # never fail the run.
+    with contextlib.suppress(Exception):
+        from transformers.utils import logging as _hf_logging
+
+        _hf_logging.set_verbosity_error()
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -123,9 +137,18 @@ class DocumentReport:
     records: dict[str, dict[str, Any]] = field(default_factory=dict)
     decisions: list[dict[str, Any]] = field(default_factory=list)
     detections: dict[str, dict[str, int]] = field(default_factory=dict)
+    #: doc -> field -> "document" | "metadata". Which layer produced each value,
+    #: because a name read from the body and a name asserted by a PDF header are
+    #: not equally trustworthy.
+    record_provenance: dict[str, dict[str, str]] = field(default_factory=dict)
+    #: doc -> the document's self-described metadata, masked on export.
+    metadata: dict[str, Any] = field(default_factory=dict)
     errors: dict[str, str] = field(default_factory=dict)
     jurisdiction: str = ""
     entity: str = ""
+    #: Where the time went. Progress answers "is it stuck?" during a run;
+    #: this answers "what was slow?" afterwards.
+    timing: Timing = field(default_factory=Timing)
 
     # ---------------------------------------------------------------- views
 
@@ -188,6 +211,7 @@ class DocumentReport:
              "entity": self.entity,
              "records": self.to_dicts(reveal),
              "decisions": self.decisions,
+             "timing": self.timing.to_dict(),
              "errors": self.errors},
             indent=indent, default=str,
         )
@@ -215,6 +239,23 @@ def _paths(source: str | os.PathLike | Iterable[str | os.PathLike]) -> list[Path
     out: list[Path] = []
     for item in source:
         out.extend(_paths(item))
+    return out
+
+
+def _record_from_metadata(info) -> dict[str, Any]:
+    """Fields the document states about itself, needing no model.
+
+    `author='Condor Flugdienst GmbH'` is a high-confidence issuer identity
+    sitting in the PDF header — the same field the entity extractor otherwise
+    guesses at from body text, available for free and more reliably.
+
+    It is still a *claim*: metadata is trivially forged. It is used the way any
+    other unverified evidence is used, and `report.record_provenance` records
+    that it came from metadata rather than from the document body.
+    """
+    out: dict[str, Any] = {}
+    if getattr(info, "author", ""):
+        out["organisation"] = info.author
     return out
 
 
@@ -275,6 +316,7 @@ def resolve_documents(
     entity: str = "person",
     jurisdiction: str = "NG",
     quiet: bool = True,
+    progress: ProgressHandler | bool | str | None = True,
 ) -> DocumentReport:
     """Parse documents, extract one record each, and resolve them against each other.
 
@@ -305,8 +347,14 @@ def resolve_documents(
 
     report = DocumentReport(jurisdiction=jurisdiction, entity=entity)
 
+    paths = _paths(source)
+    run = _Run(resolve_handler(progress), total=len(paths))
+    run.emit("start", message=f"resolving {len(paths)} document(s)")
     with (_quiet() if quiet else nullcontext()):
-        _collect(report, _paths(source), parse, jurisdiction)
+        _collect(report, paths, parse, jurisdiction, run)
+
+    run.emit("resolve", message="comparing records")
+    _t = time.monotonic()
 
     refs = {doc: Reference.from_record(rec) for doc, rec in report.records.items()}
     for a, b in combinations(sorted(refs), 2):
@@ -319,24 +367,46 @@ def resolve_documents(
                         for k, v in dict(getattr(decision, "factors", {})).items()},
             "decision_id": getattr(decision, "decision_id", ""),
         })
+    run.timing.resolve_s = time.monotonic() - _t
+    report.timing = run.finish()
+    run.emit("done", message=f"{len(report.records)} record(s), "
+                             f"{len(report.decisions)} verdict(s)")
     return report
 
 
-def _collect(report, paths, parse, jurisdiction) -> None:
+def _collect(report, paths, parse, jurisdiction, run) -> None:
     """Parse each document and assemble its record; one bad file is not fatal."""
-    for path in paths:
+    for index, path in enumerate(paths, 1):
         name = path.name
+        run.emit("parse", document=name, index=index, message="parsing")
+        _t = time.monotonic()
         try:
-            text = parse(str(path)).text
+            parsed = parse(str(path))
+            text = parsed.text
+            run.stage(name, "parse", time.monotonic() - _t)
         except Exception as exc:  # noqa: BLE001 — one bad file is not fatal
             report.errors[name] = f"{type(exc).__name__}: {exc}"
             continue
         if not (text or "").strip():
             report.errors[name] = "no extractable text (scanned image?)"
             continue
+        run.emit("detect", document=name, index=index, message="detecting + extracting")
+        _t = time.monotonic()
         record, census = _record_from_text(text, jurisdiction)
+        run.stage(name, "detect", time.monotonic() - _t)
+        # Metadata fills only what the body did not, so a name read from the
+        # document always beats a name asserted by its header.
+        for key, value in _record_from_metadata(getattr(parsed, "info", None)).items():
+            if key not in record:
+                record[key] = value
+                report.record_provenance.setdefault(name, {})[key] = "metadata"
+        for key in record:
+            report.record_provenance.setdefault(name, {}).setdefault(key, "document")
         if not record:
             report.errors[name] = "no identity attributes found"
             continue
         report.records[name] = record
         report.detections[name] = census
+        info = getattr(parsed, "info", None)
+        if info:
+            report.metadata[name] = info.to_dict(reveal=True)
