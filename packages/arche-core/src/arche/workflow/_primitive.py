@@ -35,6 +35,8 @@ in their own modules. Pipeline is the *composition* layer.
 
 from __future__ import annotations
 
+import warnings as _warnings
+
 import hashlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -137,6 +139,11 @@ class Pipeline:
         "ZA": "POPIA",
         "KE": "KENYA-DPA",
         "GH": "GHANA-DPA",
+        # The UK is its own regime post-Brexit: retained UK GDPR plus DPA 2018,
+        # ICO oversight, IDTA transfers, digital consent at 13. Close enough to
+        # the EU's category actions to be safe to ship, different enough that
+        # pointing at EU instruments would cite the wrong law.
+        "GB": "UK-GDPR",
         # EU / EEA member states -> GDPR. Sectoral or stricter-national regimes
         # use the explicit escape hatch instead, e.g.
         # Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR").
@@ -170,12 +177,57 @@ class Pipeline:
         tokenize_salt: str = "",
         overlays: list[str] | None = None,
         transparency_notice: str | None = None,
+        on_uncovered: str = "silent",
     ):
         self.jurisdiction = jurisdiction.upper() if jurisdiction else None
         self.statute_id = statute or (
             self._STATUTE_FOR_JURISDICTION.get(self.jurisdiction)
             if self.jurisdiction else None
         )
+        # What to do when a jurisdiction is named but no pack covers it — the
+        # United Kingdom, the United States outside HIPAA, India, Brazil, and
+        # most of the world.
+        #
+        # This matters more than it looks. A Pipeline with no statute returns
+        # `redacted_text` UNCHANGED, so `jurisdiction="GB"` protects nothing.
+        # Measured on a British bank statement: `jurisdiction="NG"` produces 36
+        # false TIN detections but does mask the email; `jurisdiction="GB"`
+        # produces none and masks nothing. "Correcting" the jurisdiction would
+        # therefore take false positives from 36 to 0 by switching protection
+        # off — a flattering number bought by removing the feature.
+        #
+        #   "silent"   today's behaviour, kept as the default so no existing
+        #              caller's output changes
+        #   "warn"     same, plus a warning naming the uncovered jurisdiction
+        #   "baseline" apply BASELINE.yaml, a conservative floor that is
+        #              explicitly not law and says so in every citation
+        #
+        # `resolve_documents` passes "baseline" when it *inferred* the
+        # jurisdiction, because inference plus silence is the trap above.
+        if on_uncovered not in ("silent", "warn", "baseline"):
+            raise ValueError(
+                f"on_uncovered must be 'silent', 'warn' or 'baseline', "
+                f"got {on_uncovered!r}"
+            )
+        self.on_uncovered = on_uncovered
+        self.uncovered = bool(self.jurisdiction) and self.statute_id is None
+        if self.uncovered and on_uncovered != "silent":
+            if on_uncovered == "baseline":
+                self.statute_id = "BASELINE"
+            _warnings.warn(
+                f"no statute pack covers jurisdiction {self.jurisdiction!r}. "
+                + (
+                    "Applying arche's baseline floor, which is a conservative "
+                    "default and NOT the law of any country — every citation it "
+                    "emits says so."
+                    if on_uncovered == "baseline"
+                    else "No statute is applied, so `redacted_text` will be "
+                         "returned unchanged. Pass on_uncovered='baseline' for a "
+                         "conservative default."
+                ),
+                UserWarning,
+                stacklevel=2,
+            )
         self.detector_packages = detectors or self._default_detectors()
         self.address_parsing = address_parsing
         self.audit = audit

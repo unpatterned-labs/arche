@@ -275,7 +275,7 @@ The two labels on every pack are independent by design: `version` is a claim abo
 
 **Use arche when** you want one pipeline that does all of the above at once, and keeps working where the data is thin.
 
-That is the case arche is built for: privacy-preserving record linkage, matching and detection over **unstructured, multilingual** data, for human and agent callers alike. Not a matcher you feed clean columns to — a pipeline that takes a PDF, a registry export, a form, or a paragraph, finds the entities in it, works out which real-world thing each one refers to, protects everything under the law that applies, and signs the result.
+That is the case arche is built for: privacy-preserving record linkage, matching and detection over **unstructured, multilingual** data, for human and agent callers alike. Not a matcher you feed clean columns to — a pipeline that takes a PDF, a registry export, a form, or a paragraph, finds the entities in it, works out which real-world thing each one refers to, says plainly when it will not decide, and signs the result.
 
 "Where the data is thin" is the part generic tools handle worst and arche is calibrated for. No canonical spelling of the name. No national identifier, or three competing ones. An address that is a landmark and a direction rather than a street and a number. Coordinates that disagree by kilometres because two teams measured at different gates. Sources that contradict each other and are both partly right. In that regime the answer is often **not** a merge, and a tool whose only outputs are match and no-match will quietly pick one.
 

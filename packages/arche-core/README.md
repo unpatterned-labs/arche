@@ -2,11 +2,11 @@
 
 **Know what's real.**
 
-The open engine for messy, multilingual, real-world data — **detect · resolve · protect · attest**.
+An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.
 
-arche is an open pipeline for turning messy, multilingual data into resolved real-world entities. It tells you and your agent what — and who — your data is actually talking about: it finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to.
+arche is an open pipeline for turning messy data into resolved real-world entities. It tells you and your agent what — and who — your data is actually talking about: it finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to.
 
-Along the way it keeps disagreement between sources instead of erasing it, protects everything under the law that applies, and signs every decision.
+It keeps disagreement between sources instead of erasing it, says plainly when it will not decide, and signs every decision so you can re-check it months later.
 
 **Match, don't guess.** When the evidence isn't distinctive enough, resolution returns `review` rather than a verdict — two people who share a name are not one person, and a system that merges them has not scored slightly worse, it has deleted someone. Calibrated on the world's hardest identity data — Africa's — and built for how the world actually writes names and addresses everywhere.
 

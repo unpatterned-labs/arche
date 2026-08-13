@@ -184,6 +184,90 @@ It was sequenced ahead of any new entity lane on purpose. A lane built before it
 
 ---
 
+## The document lane, and what is being built in it
+
+**In progress for v0.4.0a1.** This section exists so the work is legible while
+it is happening rather than only after it lands.
+
+The lane is the path from a file on disk to a signed decision: **parse → read
+metadata → detect under a statute → extract → assemble a record → resolve →
+report**. `arche.resolve_documents()` runs all of it in one call, and
+[notebook 02](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/02_same_person_across_documents.ipynb)
+does three PDFs in three cells with no user-written regex.
+
+Where it sits against the rest of the project: extraction is **not** the
+differentiator. Vendors in that space produce *references*. What arche adds is
+which real-world entity a reference denotes, whether the data may move, and a
+signature over the decision. The document work exists so that differentiator is
+reachable in under a minute rather than after an afternoon of glue code.
+
+### Shipped in this lane
+
+| | What changed |
+|---|---|
+| **One-call resolution** | `resolve_documents(source)` — glob, directory or file — returns records, verdicts and a report. Thirteen notebook cells became three, and four user-written regexes became none. |
+| **Document metadata** | `ParsedDocument.metadata` was `{}` for the life of the module while every PDF carried title, author, producer and dates. Now populated, with a typed `.info` view. |
+| **Producer provenance** | `browser-print` / `html-renderer` / `enterprise-report` — whether a human printed a document from a browser or a reporting system emitted it. A trust signal from data we already hold. |
+| **Metadata as personal data** | A bank statement's `Title` carries an account fragment; a flight confirmation's `Subject` carries a booking reference. Those fields are now scanned and masked instead of invisible to redaction. |
+| **Progress and timing** | A three-minute run used to print nothing and was indistinguishable from a hang. Progress writes to a **stream**, never through `logging` — the library silences third-party loggers, so anything logging-based would be swallowed by its own silencer. TTY, CI log, notebook and agent (`ARCHE_PROGRESS=jsonl`) all work, with no new dependency. |
+| **Baseline statute floor** | `Pipeline(on_uncovered="baseline")` — see below. |
+
+### The baseline floor, and the trap it closes
+
+arche ships statute packs for six regimes. **Everywhere else — the UK, the US
+outside HIPAA, India, Brazil, most of the world — no statute resolves, and a
+Pipeline with no statute returns `redacted_text` unchanged.** Nothing is masked.
+
+That becomes dangerous the moment jurisdiction detection lands. Measured on a
+British bank statement:
+
+```text
+jurisdiction="NG"    36 false PII-2-TIN detections   email IS masked
+jurisdiction="GB"     0 false detections             email is NOT masked
+```
+
+So "correcting" the jurisdiction takes the headline false-positive count from 36
+to zero **by switching protection off**. That is the most flattering available
+reading of our own data, and this project has already had to retract claims of
+that shape.
+
+`BASELINE.yaml` is the floor that makes the correction safe: the categories no
+regime disputes (email, phone, national identifier, passport, address, payment
+card), at the strictest action any shipped pack assigns. It is **not law**, and
+every citation it emits says so in words — `"no statute pack for this
+jurisdiction — arche baseline floor, not law"`. It invents no lawful bases and no
+data-subject rights, because those are creatures of statute. Country-specific
+identifiers are deliberately absent: a floor that guessed at foreign identifiers
+would repeat the mistake it exists to fix.
+
+It is **off by default** (`on_uncovered="silent"`), so no existing caller's
+output moves. `"warn"` names the uncovered jurisdiction and the consequence.
+
+### Still to build in this lane
+
+| Item | Note |
+|---|---|
+| **Jurisdiction inference** | Evidence-based and inspectable — registration identifiers, postcode shape, currency, issuer name, phone country code — that **abstains** rather than guesses when signals conflict. An explicit `jurisdiction=` always wins. Gated behind the floor above, for the reason given. |
+| **Typed extraction** | `extract(schema=YourModel, document=parsed)` returning a validated instance with spans and pages. pydantic is already a base dependency, so this costs nothing on the wheel. |
+| **Export** | `to_rows()` as the primitive, then `to_csv()`. Google Sheets and pandas become three lines of user code on top of it rather than shipped surface with an auth story to own. `to_json()` and `save_json()` already exist; masking is the default on every path. |
+| **Report shapes** | `table()` for reading, `to_dicts()` for rows, `to_json()` for a ticket or the next pipeline stage — plus timing, so "what was slow?" is answerable after the fact. |
+| **Pluggable parse/extract backends** | `parse` and `extract` take a `backend=`. The default, `"local"`, runs entirely on your machine and makes no network calls. The interface is public so a hosted extractor can be substituted where a document defeats local parsing. Any backend that leaves the machine must declare an egress class, is refused under `ARCHE_OFFLINE=1`, and is recorded in the decision pins — a decision produced remotely is not byte-identical to one produced locally, by design. arche does not bundle, endorse or require any commercial extractor, and none is installed by default. |
+| **Content credentials (C2PA)** | **Gated, not scheduled.** The type ships with an honest empty state; the reader does not. XMP is zero bytes in every PDF available to this project, so a reader could be written but not demonstrated, and an untestable trust feature is worse than none. `ai_generated` is tri-state: absence of a manifest yields *unknown*, never *human-authored*. Gate: build it when we hold at least five documents that actually carry a manifest. |
+
+### Not built, and why
+
+**A fix to context-free identifier detectors.** The 36 false TINs are only
+partly a jurisdiction bug — `NG_TIN` matches a bare ten-digit run, so a
+*correct* Nigerian jurisdiction on a Nigerian bank statement still flags every
+transaction reference. That is a detector-calibration change which moves
+published numbers, and it belongs in its own release with its own measurement.
+
+**New EU/US identifier packs.** That is what currently makes "correct
+jurisdiction" mean "fewer detectors". It is a large separate project and should
+not be smuggled into this one.
+
+---
+
 ## Next: v0.3.0a2 and the UK charge-point benchmark
 
 A dated plan, so it can be held to. Target **2026-08-18**.

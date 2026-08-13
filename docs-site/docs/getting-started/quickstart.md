@@ -1,310 +1,185 @@
 # Quick Start
 
-Four verbs, five minutes, no API key. `detect` finds the entities and identifying data, `resolve` works out which real-world thing each one refers to, `protect` applies the law that governs it, and `attest` signs the result. Everything below was run against v0.3.0a1 and the output is what it actually printed.
+**Know what's real.**
+
+An open engine for messy data. Find the entities, resolve who or what they are,
+and decide which records are the same thing — with the evidence, the
+refutations, and a signed decision you can re-check.
+
+Five minutes, no API key, no account, nothing leaves your machine. Every output
+below is what the code actually printed.
 
 ```bash
-pip install arche-core
+pip install arche-core[doc]
 ```
-
-The base install is pure Python and runs offline. Heavy capabilities are opt-in extras.
 
 ---
 
-## 1. detect + protect: one call
+## One minute: three documents, one question
 
-Detection and policy are a single pass, because a detection without the rule that classifies it is not much use.
+You have a bank statement, an invoice and a payslip. Different issuers,
+different layouts, different spellings of the same name, no shared identifier.
+Are they the same person?
 
 ```python
-from arche import Pipeline
+from arche import resolve_documents
 
-pipeline = Pipeline(jurisdiction="NG", tokenize_salt="bank_2026")
-
-text = (
-    "Customer Adesola Okonkwo registered with NIN 12345678901 "
-    "and BVN 22156789012. Contact phone 0803 555 7890. RC 245678."
-)
-
-result = pipeline.process(text)
-print(result.redacted_text)
+report = resolve_documents("statements/*.pdf")
+print(report.table())
 ```
 
 ```text
-Customer Adesola Okonkwo registered with NIN [NIN] and BVN [BVN]. Contact phone PHONE_847fca26. RC 245678.
+EXTRACTED RECORDS
+document                    name              email               phone      organisation
+-----------------------------------------------------------------------------------------
+Monzo_bank_statement.pdf    Denn***********   —                   7211****   Monz**********
+Invoice-PEDHCF-00012.pdf    Denn*********     deni**************  —          Netl*********
+Paystatement_2025-12.pdf    Denn*********     —                   —          Viat******
+
+RESOLUTION
+document a                  document b                  verdict        score
+-----------------------------------------------------------------------------
+Monzo_bank_statement.pdf    Invoice-PEDHCF-00012.pdf    review        0.9656
+Monzo_bank_statement.pdf    Paystatement_2025-12.pdf    review        0.9974
+Invoice-PEDHCF-00012.pdf    Paystatement_2025-12.pdf    same_entity   0.9903
 ```
 
-Each detection carries the statute section that classified it, and one of six closed actions:
+That is the whole thing. No regular expressions, no field mapping, no schema.
+
+**Values are masked by default.** The table above is safe to paste into an issue
+without thinking about it. `report.table(reveal=True)` when you need the real
+values, and that choice is explicit rather than a flag you forgot.
+
+### Read the verdicts before you read the scores
+
+The **highest-scoring pair is not a match**. `0.9974` came back `review`, while
+`0.9903` came back `same_entity`.
+
+That is not a bug. The bank statement says `Dennis Aibuedefe Irorere` and the
+other two say `Dennis Irorere`. A merge requires agreement on something *rare*,
+and a shared given name is not rare enough to justify merging two people's
+financial records without a human looking. The score says the records are
+broadly consistent; the gate says nobody has earned a merge.
+
+**A score is not a decision.** That distinction is most of what arche is for.
+
+---
+
+## Two minutes: the data, as data
 
 ```python
-for o in result.policy_outcomes:
-    print(f"{o.category:12} -> {o.action:10} {o.statute_reference}")
+report.to_json()                      # records, verdicts, timing, errors
+report.to_dicts()                     # one row per document, for pandas
+report.save_json("out.json")          # straight to disk
+report.records                        # raw extracted record per document
+report.decisions                      # each verdict, with factors and decision_id
+report.timing.slowest                 # ('invoice_10.pdf', 67.4)
+```
+
+Long runs print progress to stderr as they go, so a three-minute job never looks
+like a hang:
+
+```text
+[1/4] parsing invoice_10.pdf (0.0s)
+[1/4] detecting + extracting invoice_10.pdf (49.0s)
+[2/4] parsing invoice_12_ak.pdf (67.4s)
+```
+
+`progress=False` silences it, `progress="jsonl"` emits one JSON object per line
+for agent loops, and `ARCHE_PROGRESS=0` overrides everything for CI. Output goes
+to **stderr**, so piped stdout and `to_json()` stay clean.
+
+---
+
+## Three minutes: why a verdict went that way
+
+A decision you cannot explain is indistinguishable from a bug.
+
+```python
+for d in report.decisions:
+    print(d["identity"], d["score"], d["factors"])
+    print(d["decision_id"])
 ```
 
 ```text
-PII-2-RC     -> retain     NDPA-2023 s.31 (legitimate interests)
-PII-2-BVN    -> mask       NDPA-2023 s.30, CBN BVN policy 2014
-PII-2-NIN    -> mask       NDPA-2023 s.30, NIMC Act s.27
-PII-3-PHONE  -> tokenize   NDPA-2023 s.30
+review 0.9656 {'name': 0.8, 'address': 0.4416, 'name_tf': 0.6393}
+dec:sha256:6905b79403b22a17dc471dd2d054882a30ba314c7230e3af9845b27a6d146238
 ```
 
-`RC 245678` survives on purpose — a company registration number is public under NDPA s.31, and the pack says `retain`. The phone becomes a deterministic token, so the same number in two systems yields the same string and can still be joined on without ever being read.
+`name` is string similarity. `name_tf` is the same comparison **weighted by how
+rare the shared tokens are** — matching on `Irorere` is worth far more than
+matching on a common given name, because rarity is what identifies.
 
-!!! warning "Always check what was detected, not just what came back"
-
-    `Adesola Okonkwo` is **not** redacted above. The name detector runs, but this name is not in the lexicon, so nothing was found and nothing was removed. `redacted_text` looks clean either way. Print `result.detections` and confirm the list is what you expected — an empty list means nothing was redacted, not that nothing was there. Install `arche-core[detect]` for GLiNER-backed name detection.
-
-Same call, different law:
-
-```python
-Pipeline(jurisdiction="ZA")   # POPIA
-Pipeline(jurisdiction="KE")   # Kenya DPA
-Pipeline(jurisdiction="GH")   # Ghana DPA
-Pipeline(jurisdiction="DE")   # GDPR
-```
+`decision_id` is a content hash over the evidence and the inputs. No timestamp,
+no randomness: anyone holding the same inputs recomputes the same id. That is
+what makes a verdict checkable months later rather than merely stored.
 
 ---
 
-## 2. resolve: which real thing is this?
+## Two lists instead of two documents
 
-Two records, two spellings, one national ID:
-
-```python
-from arche import resolve
-from arche.canonical import Reference
-
-a = Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"})
-b = Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"})
-
-decision = resolve.pairwise(a, b)
-print(decision.identity, decision.score)
-```
-
-```text
-same_entity 1.0
-```
-
-`identity` is one of `same_entity`, `different`, or **`review`**. That third answer is the point of the whole engine, and the next example is where you see it earn its place.
-
-### Whole lists: `crosswalk`
+The same engine links two catalogues — a registry against a survey, your
+customers against a supplier file:
 
 ```python
-from arche import resolve
+from arche.resolve import crosswalk
 
-registry = [
-    {"name": "Karfi Health Post",    "lat": "11.62", "lon": "8.49"},
-    {"name": "Tsalle Health Post",   "lat": "11.71", "lon": "8.33"},
-    {"name": "Yan Bawa Health Post", "lat": "11.50", "lon": "8.00"},
-]
-survey = [
-    {"name": "Karfi Health Clinic",              "lat": "11.62", "lon": "8.49"},
-    {"name": "Tsalle Primary Health Care Centre","lat": "11.71", "lon": "8.33"},
-    {"name": "Yan Bawa Health Post",             "lat": "12.50", "lon": "9.00"},
-]
-
-result = resolve.crosswalk(registry, survey, entity="place")
-
-for m in result["matches"]:
-    ev = m["evidence"]
-    print(f'{m["decision"]:7} {m["score"]:.3f} {ev.get("distance_km", 0):7.2f} km  '
-          f'{registry[m["a_id"]]["name"]:22} <-> {survey[m["b_id"]]["name"]}')
+result = crosswalk(list_a, list_b, entity="place")
+for edge in result["matches"]:
+    print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
 ```
 
-```text
-review  0.800  155.54 km  Yan Bawa Health Post   <-> Yan Bawa Health Post
-match   0.730    0.00 km  Karfi Health Post      <-> Karfi Health Clinic
-review  0.631    0.00 km  Tsalle Health Post     <-> Tsalle Primary Health Care Centre
-```
+Packs ship for `person`, `place`, `artist` and `product_electronics`, or bring
+your own comparators for your schema. Every pack is configuration over one
+engine, never a fork.
 
-Three rows, three different behaviours, and they are worth reading one at a time.
+**These are measured on public benchmarks with complete ground truth**, so false
+merges are visible rather than assumed:
 
-**Row 2 is a merge.** `Karfi Health Post` and `Karfi Health Clinic` are the same place at the same coordinates; the facility-type words differ and the distinctive part agrees.
+| Benchmark | Precision | Recall |
+|---|---|---|
+| Leipzig Geographic Settlements (places, 4 sources) | 0.9862 | 0.9654 surfaced |
+| DBLP–ACM (bibliographic) | 0.9506 | 0.9960 |
+| Leipzig Abt-Buy (products, experimental) | 0.9707 | 0.6636 |
 
-**Row 1 is the geographic veto.** The names are byte-identical — every name comparator scores 1.0 — and the records sit 155 km apart. Distance is a physical constraint rather than a weighted preference, so the pair is demoted. Note it is demoted to `review`, never dropped: distance says a human must look, not that the answer is no.
-
-**Row 3 is a tier difference.** Same settlement, but a health post and a primary health care centre are different levels of care with different staffing. Plausible, not distinctive, so it waits for a person.
-
-None of those three needed a model, a network call, or an API key.
+Reproduce them with `python data/scripts/benchmark_leipzig.py`.
 
 ---
 
-## 3. attest: sign the decision
+## What else is in the box
 
-A decision is worth what your ability to defend it later is worth.
+Below the fold on purpose — you do not need any of this on day one.
 
-```python
-from arche import resolve
-from arche.canonical import Reference
-from arche.attest import attest, verify_attestation
-from arche.sign import generate_keypair
-
-ISSUER_KEY = b"replace-with-a-real-32-byte-secret!"   # >= 32 bytes
-
-a = Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"})
-b = Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"})
-decision = resolve.pairwise(a, b, issuer_key=ISSUER_KEY)
-
-kp = generate_keypair()
-signed = attest(decision, kp, mode="jws")
-
-v = verify_attestation(signed.compact, public_key=kp.public_key)
-print(v.valid, v.trusted, v.reproducible)
-print(decision.decision_id)
-```
-
-```text
-True True True
-dec:hmac-sha256:f5f26b63420a418b2b4774fd584c131e84ca904c05df310a253a85a731789af8
-```
-
-Three separate questions, and conflating them is the mistake this API exists to prevent. `valid` — does the signature match the key it was checked against? `trusted` — did that key come from somewhere **you** control, rather than one the token named for itself? `reproducible` — can the decision be replayed from its evidence? Had a language model extracted the fields, `reproducible` would read `False`.
-
-**Always check `trusted`, not just `valid`.** Verifying without pinning a key proves a token is internally consistent, not that anyone in particular made it.
-
-`decision_id` is a content address over the evidence and the exact representation that produced it. Same inputs and same key, same id — tomorrow or in five years.
-
----
-
-# Power-user workflows
-
-The four examples below ship in the package and are fully tested, but they are not the lead pitch. Read the one that matches your use case; skip the rest. They all compose on top of the `Pipeline` primitive from Example 1.
-
----
-
-## 2. Sign, share, extract
+**Documents carry provenance.** `parse()` reads what a file says about itself:
 
 ```python
-from arche.sign import SignWorkflow, VerifyExtractWorkflow, generate_keypair
+from arche.doc import parse
 
-# Party A - Bank's compliance officer
-bank_key = generate_keypair()
-signer = SignWorkflow(jurisdiction="NG", tokenize_salt="bank_2026")
-signed = signer.sign(
-    "Customer Adesola Okonkwo, NIN 12345678901, BVN 22156789012.",
-    bank_key,
-    purpose="dsar_response",
-)
-# signed is a JWS compact string ~1000 chars
-
-# Wire transit happens here
-
-# Party B - Recipient verifies offline
-verifier = VerifyExtractWorkflow()
-result = verifier.process(signed)
-
-print(result.signature_valid)        # True (cryptographic verification)
-print(result.issuer_did)              # bank's did:key
-print(result.statute_at_signing)      # "NDPA-2023@v1.0"
-print(result.redacted_text)           # "... NIN [NIN], BVN [BVN] ..."
+doc = parse("invoice.pdf")
+doc.info.author              # 'Condor Flugdienst GmbH'  — the issuer, free
+doc.info.producer.family     # 'browser-print' | 'html-renderer' | 'enterprise-report'
 ```
 
-The recipient verifies offline using the `did:key` embedded in the JWS header - no infrastructure, no resolver, no network call. The signature binds the entire envelope: the recipient can trust the redacted text, the detections, and the policy outcomes are exactly what the bank processed.
+Whether a human printed a document from a browser or a reporting system emitted
+it tells you how much to trust its contents. Treat every field as a *claim by
+the file*: metadata is trivially forged.
 
-[Full sign-share-extract tutorial](../tutorials/sign_share_extract.md)
+**Data-protection policy, when you need it.** If you are handling personal data
+under a named regime, `Pipeline(jurisdiction=...)` applies a statute pack that
+maps each detected category to an action with a citation, and `EgressGuard`
+decides what may leave your boundary. Packs ship for Nigeria, South Africa,
+Kenya, Ghana, the EU, the UK and HIPAA.
+
+This is a **policy template keyed to scope you select** — it does not determine
+which law applies to your processing, because that turns on establishment, on
+where your data subjects are, and on sector, none of which a country code can
+decide. → [Detect and govern](../concepts/lifecycle.md)
 
 ---
 
-## 3. Citizen-side DSAR
+## Next
 
-```python
-from arche.workflow import DSARWorkflow, DSARRequestor, DSAROrganization
-from arche.sign import generate_keypair
-
-citizen_key = generate_keypair()
-
-wf = DSARWorkflow(
-    jurisdiction="NG",
-    requestor=DSARRequestor(
-        name="Adesola Okonkwo",
-        identifier_label="NIN",
-        identifier_value="12345678901",
-        email="adesola@example.com",
-    ),
-    request_type="access",
-    targets=[
-        DSAROrganization(name="Sterling Bank", dpo_email="dpo@sterlingbank.ng"),
-        DSAROrganization(name="MTN Nigeria", dpo_email="dpo@mtn.ng"),
-    ],
-)
-
-result = wf.run(citizen_key)
-for draft in result.drafts:
-    print(draft.letter_text)            # NDPA-2023 s.34 cited
-    print(draft.signed_envelope)        # JWS for the DPO to verify
-```
-
-Each draft cites the correct statute section per jurisdiction:
-
-- NDPA-2023 s.34 (Right of Access)
-- POPIA s.23 (Access to personal information)
-- Kenya DPA s.26(a) (Right of Access)
-- Ghana DPA s.35 (Access to personal data)
-
-Stage 1 ships `dispatch_mode="draft_only"`. The citizen reviews and dispatches manually; autonomous dispatch is Stage 4 with explicit consent mechanisms.
-
-[Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
-
----
-
-## 4. SD-JWT-VC with selective disclosure
-
-```python
-from arche.credentials import envelope_to_sd_jwt, present, verify_sd_jwt
-from arche.sign import ArcheSignedDocument, generate_keypair
-from arche import Pipeline
-
-issuer_key = generate_keypair()
-pipeline = Pipeline(jurisdiction="NG")
-result = pipeline.process("Customer Adesola Okonkwo, NIN 12345678901.")
-
-# Wrap in a signed envelope, then re-frame as SD-JWT-VC
-envelope = ArcheSignedDocument.from_pipeline_result(
-    result, issuer_did=issuer_key.did_key, purpose="kyc_attestation",
-)
-sd_jwt = envelope_to_sd_jwt(envelope, issuer_key=issuer_key)
-
-# Holder presents only jurisdiction + purpose; hides everything else
-presentation = present(sd_jwt.compact, disclose=["jurisdiction", "purpose"])
-
-v = verify_sd_jwt(presentation)
-print(v.disclosed_claims)
-# {"jurisdiction": "NG", "purpose": "kyc_attestation"}
-# Verifier cannot see detections, redacted_text, or doc_hash
-```
-
-SD-JWT-VC is the IETF selective-disclosure credential format that EUDI Wallet ARF and MOSIP Inji standardize on. The issuer signs the full credential; the holder controls which claims to disclose to each verifier; the verifier rejects any disclosure that doesn't match the signed `_sd` hashes.
-
----
-
-## 5. SQLite audit log + signed regulator export
-
-```python
-from arche.graph.audit import AuditLog, AuditEvent
-from arche.sign import generate_keypair
-
-audit = AuditLog("./arche-audit.sqlite")     # or ":memory:" for ephemeral
-
-# Emit detection events (typically done by Pipeline automatically)
-audit.emit(AuditEvent.detection(
-    document_hash="doc_001",
-    category="PII-2-NIN",
-    span=(30, 41),
-    confidence=0.95,
-    detector="rule:ng_nin",
-))
-
-# Markdown compliance report
-print(audit.compliance_report_markdown())
-
-# Signed export bundle (JWS) for regulator handoff
-compliance_key = generate_keypair()
-signed_bundle = audit.export_signed(key=compliance_key, purpose="ndpc_audit")
-```
-
-The audit log is append-only by convention. PII values are never stored - only category labels and character spans. Signed exports give the regulator cryptographic non-repudiation of what the deployment processed.
-
----
-
-## What's next
-
-- [Sign, share, extract tutorial](../tutorials/sign_share_extract.md)
-- [Citizen DSAR tutorial](../tutorials/citizen_dsar.md)
-- [API Reference](../api/index.md)
+- [Is this the same person, across three documents?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/02_same_person_across_documents.ipynb) — the notebook this page opens with
+- [Inside the one call](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/08_inside_the_one_call.ipynb) — every layer, one per cell
+- [What is the false-merge rate?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/06_what_is_the_false_merge_rate.ipynb) — the benchmark that measures precision
+- [Similar is not the same](../blog/similar-is-not-the-same.md) — why embeddings do not settle identity

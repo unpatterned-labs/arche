@@ -2,20 +2,13 @@
 
 # Know what's real.
 
-<p class="arche-hero__sub">The open engine for messy, multilingual data. Find
-the entities, resolve who they actually are, protect them under the law that
-applies, and sign every decision.</p>
+<p class="arche-hero__sub">An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.</p>
 
 <span class="arche-hero__status">v0.3.0a1 &middot; pre-beta &middot; Apache-2.0</span>
 
 </div>
 
-arche tells you and your agent what — and who — your data is actually talking
-about. It finds the entities in any document or system, standardises them for
-the names and addresses people actually use, and works out which real-world
-thing each one refers to. Along the way it keeps disagreement between sources
-instead of erasing it, protects everything under the law that applies, and
-signs every decision.
+arche tells you and your agent what — and who — your data is actually talking about. It finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to. It keeps disagreement between sources instead of erasing it, says plainly when it will not decide, and signs every decision so you can re-check it months later.
 
 <div class="arche-verbs" markdown>
 <div class="arche-verb" markdown>
