@@ -2,12 +2,9 @@
 
 **Know what's real.**
 
-An open engine for messy data. Find the entities, resolve who or what they are,
-and decide which records are the same thing — with the evidence, the
-refutations, and a signed decision you can re-check.
+An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.
 
-Five minutes, no API key, no account, nothing leaves your machine. Every output
-below is what the code actually printed.
+Five minutes, no API key, no account, nothing leaves your machine. Every output below is what the code actually printed.
 
 ```bash
 pip install arche-core[doc]
@@ -17,9 +14,7 @@ pip install arche-core[doc]
 
 ## One minute: three documents, one question
 
-You have a bank statement, an invoice and a payslip. Different issuers,
-different layouts, different spellings of the same name, no shared identifier.
-Are they the same person?
+You have a bank statement, an invoice and a payslip. Different issuers, different layouts, different spellings of the same name, no shared identifier. Are they the same person?
 
 ```python
 from arche import resolve_documents
@@ -46,20 +41,13 @@ Invoice-PEDHCF-00012.pdf    Paystatement_2025-12.pdf    same_entity   0.9903
 
 That is the whole thing. No regular expressions, no field mapping, no schema.
 
-**Values are masked by default.** The table above is safe to paste into an issue
-without thinking about it. `report.table(reveal=True)` when you need the real
-values, and that choice is explicit rather than a flag you forgot.
+**Values are masked by default.** The table above is safe to paste into an issue without thinking about it. `report.table(reveal=True)` when you need the real values, and that choice is explicit rather than a flag you forgot.
 
 ### Read the verdicts before you read the scores
 
-The **highest-scoring pair is not a match**. `0.9974` came back `review`, while
-`0.9903` came back `same_entity`.
+The **highest-scoring pair is not a match**. `0.9974` came back `review`, while `0.9903` came back `same_entity`.
 
-That is not a bug. The bank statement says `Dennis Aibuedefe Irorere` and the
-other two say `Dennis Irorere`. A merge requires agreement on something *rare*,
-and a shared given name is not rare enough to justify merging two people's
-financial records without a human looking. The score says the records are
-broadly consistent; the gate says nobody has earned a merge.
+That is not a bug. The bank statement says `Dennis Aibuedefe Irorere` and the other two say `Dennis Irorere`. A merge requires agreement on something *rare*, and a shared given name is not rare enough to justify merging two people's financial records without a human looking. The score says the records are broadly consistent; the gate says nobody has earned a merge.
 
 **A score is not a decision.** That distinction is most of what arche is for.
 
@@ -76,8 +64,7 @@ report.decisions                      # each verdict, with factors and decision_
 report.timing.slowest                 # ('invoice_10.pdf', 67.4)
 ```
 
-Long runs print progress to stderr as they go, so a three-minute job never looks
-like a hang:
+Long runs print progress to stderr as they go, so a three-minute job never looks like a hang:
 
 ```text
 [1/4] parsing invoice_10.pdf (0.0s)
@@ -85,9 +72,7 @@ like a hang:
 [2/4] parsing invoice_12_ak.pdf (67.4s)
 ```
 
-`progress=False` silences it, `progress="jsonl"` emits one JSON object per line
-for agent loops, and `ARCHE_PROGRESS=0` overrides everything for CI. Output goes
-to **stderr**, so piped stdout and `to_json()` stay clean.
+`progress=False` silences it, `progress="jsonl"` emits one JSON object per line for agent loops, and `ARCHE_PROGRESS=0` overrides everything for CI. Output goes to **stderr**, so piped stdout and `to_json()` stay clean.
 
 ---
 
@@ -106,20 +91,15 @@ review 0.9656 {'name': 0.8, 'address': 0.4416, 'name_tf': 0.6393}
 dec:sha256:6905b79403b22a17dc471dd2d054882a30ba314c7230e3af9845b27a6d146238
 ```
 
-`name` is string similarity. `name_tf` is the same comparison **weighted by how
-rare the shared tokens are** — matching on `Irorere` is worth far more than
-matching on a common given name, because rarity is what identifies.
+`name` is string similarity. `name_tf` is the same comparison **weighted by how rare the shared tokens are** — matching on `Irorere` is worth far more than matching on a common given name, because rarity is what identifies.
 
-`decision_id` is a content hash over the evidence and the inputs. No timestamp,
-no randomness: anyone holding the same inputs recomputes the same id. That is
-what makes a verdict checkable months later rather than merely stored.
+`decision_id` is a content hash over the evidence and the inputs. No timestamp, no randomness: anyone holding the same inputs recomputes the same id. That is what makes a verdict checkable months later rather than merely stored.
 
 ---
 
 ## Two lists instead of two documents
 
-The same engine links two catalogues — a registry against a survey, your
-customers against a supplier file:
+The same engine links two catalogues — a registry against a survey, your customers against a supplier file:
 
 ```python
 from arche.resolve import crosswalk
@@ -129,12 +109,56 @@ for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
 ```
 
-Packs ship for `person`, `place`, `artist` and `product_electronics`, or bring
-your own comparators for your schema. Every pack is configuration over one
-engine, never a fork.
+Packs ship for `person`, `place`, `artist` and `product_electronics`, or bring your own comparators for your schema. Every pack is configuration over one engine, never a fork — the same gate, the same evidence, the same signed decision, with different comparators declared.
 
-**These are measured on public benchmarks with complete ground truth**, so false
-merges are visible rather than assumed:
+### The same call, four kinds of thing
+
+**Places** — two health facilities, where a shared name is not enough on its own and distance can refuse:
+
+```python
+crosswalk([{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}],
+          [{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}],
+          entity="place")
+# match 1.0000  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 1.0, 'distance_km': 0.0}
+```
+
+A `veto_km` of 10 km means two facilities sharing a common Hausa name 143 km apart go to `review`, not `match`. Distance is a physical constraint, not a preference.
+
+**People** — a spelling difference that would defeat string matching, rescued by an identifier:
+
+```python
+from arche.resolve import pairwise
+from arche.canonical import Reference
+
+pairwise(Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"}),
+         Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"}),
+         entity="person")
+# same_entity 1.0000  factors={'name': 0.905, 'national_id': 1.0, 'name_tf': 0.0}
+```
+
+Note `name_tf` is **0.0**: those two names share nothing rare, so the name alone would never have earned this. The national identifier did. That is the gate telling you which evidence carried the decision.
+
+**Music** — the same artist under a longer stage name, anchored by an MBID:
+
+```python
+crosswalk([{"name": "Fela Kuti",           "mbid": "1f9df192-a621-4f54-8850-2c5373b7eac9"}],
+          [{"name": "Fela Anikulapo Kuti", "mbid": "1f9df192-a621-4f54-8850-2c5373b7eac9"}],
+          entity="artist")
+# match 0.8458  {'name': 0.8, 'name_tftoken': 0.66, 'mbid': 1.0}
+```
+
+**Products** — two retailers describing one camera case, where the identity is a code buried in marketing copy:
+
+```python
+crosswalk([{"id": "1", "name": "Canon Deluxe Black Digital Camera Case - 2595B002"}],
+          [{"id": "1", "name": "Canon PSC-85 Soft Camera Case - 2595B002"}],
+          entity="product_electronics", id_field="id")
+# match 0.7894  {'name': 0.828, 'name_code': 1.0, 'name_tftoken': 0.33}
+```
+
+`name` is only 0.828 — the titles genuinely differ, one says "Deluxe Black" and the other "PSC-85 Soft". `name_code` is 1.0 because both carry `2595B002`, and that code appears twice in the whole catalogue. Rarity is what identifies; the marketing copy is noise. This lane is marked **experimental** and calibrated on consumer electronics — see [the product tutorial](../tutorials/products.md) for where it breaks.
+
+**These are measured on public benchmarks with complete ground truth**, so false merges are visible rather than assumed:
 
 | Benchmark | Precision | Recall |
 |---|---|---|
@@ -160,20 +184,11 @@ doc.info.author              # 'Condor Flugdienst GmbH'  — the issuer, free
 doc.info.producer.family     # 'browser-print' | 'html-renderer' | 'enterprise-report'
 ```
 
-Whether a human printed a document from a browser or a reporting system emitted
-it tells you how much to trust its contents. Treat every field as a *claim by
-the file*: metadata is trivially forged.
+Whether a human printed a document from a browser or a reporting system emitted it tells you how much to trust its contents. Treat every field as a *claim by the file*: metadata is trivially forged.
 
-**Data-protection policy, when you need it.** If you are handling personal data
-under a named regime, `Pipeline(jurisdiction=...)` applies a statute pack that
-maps each detected category to an action with a citation, and `EgressGuard`
-decides what may leave your boundary. Packs ship for Nigeria, South Africa,
-Kenya, Ghana, the EU, the UK and HIPAA.
+**Data-protection policy, when you need it.** If you are handling personal data under a named regime, `Pipeline(jurisdiction=...)` applies a statute pack that maps each detected category to an action with a citation, and `EgressGuard` decides what may leave your boundary. Packs ship for Nigeria, South Africa, Kenya, Ghana, the EU, the UK and HIPAA.
 
-This is a **policy template keyed to scope you select** — it does not determine
-which law applies to your processing, because that turns on establishment, on
-where your data subjects are, and on sector, none of which a country code can
-decide. → [Detect and govern](../concepts/lifecycle.md)
+This is a **policy template keyed to scope you select** — it does not determine which law applies to your processing, because that turns on establishment, on where your data subjects are, and on sector, none of which a country code can decide. → [Detect and govern](../concepts/lifecycle.md)
 
 ---
 
