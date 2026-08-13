@@ -27,20 +27,30 @@ visible):
 
 **The signal is rarity, and two mechanisms produce it.** With the rules that
 actually ship, code-blocking alone reaches 0.8865 precision over 881 pairs and
-the rarity filter lifts it to 0.9499 over 818.
+the rarity filter lifts it to 0.9973 over 754. (Both over the full
+cross-product; inside the union blocker's own candidate set the same two rows
+are 856/0.8843 and 731/0.9973. They are different populations and are never
+mixed into one series.)
 
-An earlier draft of this entry credited the frequency table for all of that,
-citing a jump from 0.5643 to 0.9973. Those figures are real but describe a
-configuration the pack does not ship — `stop_codes` disabled. With them off,
-code-blocking is 0.5570 and there is a bucket of 503 candidate pairs sharing a
-code seen 20+ times (`1080p`, `720p`) containing no true match at all.
-`stop_codes` removes that bucket at zero recall cost, 0.5570 to 0.8843, and the
-table takes it the rest of the way. **The short hand-maintained stop list does
-more of the work than the frequency table**, and with it on the maximum document
-frequency in the table is 11, so the 20+ bucket does not exist to be suppressed.
-What the table still earns is the separation inside what remains: a code as rare
-as a unique one scores 1.0, `16gb` at df 11 scores 0.364, and only the first can
-clear `DISTINCTIVE_FLOOR` unaided.
+**The frequency table does that work, not the stop list.** Two earlier drafts of
+this entry got the attribution wrong in opposite directions, so here is the
+end-to-end measurement instead of an argument — Abt-Buy, shipped pack, with
+`stop_codes` on and with it emptied:
+
+```text
+stop_codes ON  (shipped)   TP 728  FP 22  P 0.9707  R 0.6636
+stop_codes DISABLED        TP 728  FP 22  P 0.9707  R 0.6636
+```
+
+Byte-identical. On this benchmark the stop list contributes **nothing**, because
+the table already scores `1080p` far below the gate: `16gb` at df 11 is **0.182**
+against 1.0 for a code as rare as a unique one, and only the latter clears
+`DISTINCTIVE_FLOOR` unaided.
+
+What the stop list earns is the small-catalogue case the benchmark cannot show —
+four records whose only shared code is a resolution give two false merges with
+it off and none with it on. It is a floor for corpora too small to estimate
+frequency from, not a substitute for estimating it.
 
 **A calibration bug worth recording, because it made the lane worse than no
 lane.** `TokenFrequencyTable.distinctiveness` is `min(1, -log10(rel_freq)/5)`,
@@ -81,13 +91,26 @@ rather than merely scoring. That contract is data on the category
 semantics declares different units.
 
 **Scope, stated rather than buried.** There is no generic `product` pack and
-shipping one would overclaim. The evidence is a single electronics corpus: on
-Amazon-GoogleProducts, which is general merchandise, the lane moves F1 only
-0.3971 → 0.4007. The rules that work here fail elsewhere by construction —
-Levi's `501` is rejected twice by thresholds that exist to filter prices and
-years, `32x32` looks like a model and is not, and reading `600mg` as a drug's
-model code would be dangerous. The category is flagged `experimental=True` and
-a test asserts no generic `product` pack exists.
+shipping one would overclaim. The evidence is a single electronics corpus, and
+on Amazon-GoogleProducts — general merchandise — the lane barely helps and
+**costs precision**:
+
+| Amazon-Google | baseline | lane |
+|---|---|---|
+| precision | 0.4898 | 0.4863 |
+| recall | 0.3338 | 0.3408 |
+| F1 | 0.3971 | 0.4007 |
+| false merges | 452 | 468 |
+
+That is +9 true matches for +16 false ones — a marginal precision of **0.36** on
+the pairs it changes. The F1 gain is real and it is not worth having. Reporting
+only the F1 would have hidden it.
+
+The rules that work here fail elsewhere by construction — Levi's `501` is
+rejected twice by thresholds that exist to filter prices and years, `32x32`
+looks like a model and is not, and reading `600mg` as a drug's model code would
+be dangerous. The category is flagged `experimental=True` and a test asserts no
+generic `product` pack exists.
 
 Two further honest limits: the `spec` refutation rests on 47 of 1,097 true pairs
 — all 47 agree, but that is a thin base — and the code frequency table is
@@ -157,6 +180,36 @@ not at all — facility names carry no qualifiers — and on London recovers not
 while adding two more unlabelled auto-matches. The qualifier convention is a
 property of the *source*, not of places, so it is a capability rather than a
 default. Turning it on for a shipped pack moves that pack's published numbers.
+
+**On the `spec` refutation.** It is exactly neutral on Abt-Buy — identical
+precision, recall and counts with and without it. It earns its place from the
+**identity contract** rather than from this corpus: under a purchasable-variant
+reading a 16GB and a 32GB player are different products, and the refutation is
+what makes that contract executable rather than decorative. Only 47 of 1,097
+true pairs carry a comparable unit, so this corpus cannot test whether it helps,
+and a test pins the neutrality so a future change that makes it *harmful* is
+caught. An earlier measurement showed it costing one true match; that was the
+`_SPEC` boundary bug refuting `F5C400300W` against `F5C400-300W`, now fixed.
+
+Four robustness fixes from an adversarial review of this lane:
+
+- **`compare_codes` fails loud without a table**, matching `tftoken`. It used to
+  return 1.0, making `16gb` indistinguishable from `2595b002` — a silently worse
+  answer rather than an error.
+- **`code_rarity` reads `_as_counts()`**, not `_counts`. A table built from
+  relative frequencies alone carries `_counts = None`, and reading it directly
+  made *every* code score maximally rare with no error.
+- **The code table is named in `pins`** as `codes@sha256:…`. It decides whether
+  a shared code is identifying, so two runs with different tables can reach
+  different verdicts on the same pair; an unpinned scoring input makes
+  `decision_id` claim a reproducibility it does not have.
+- **One table per declared category**, not one for the first `code` comparator
+  found, and `register_category` refuses to shadow an existing name without
+  `replace=True`.
+
+`build_code_table` now warns when the typical code appears more than twice —
+an applicability bound said out loud, since the lane was measured on catalogues
+where a code appears once per source.
 
 The qualifier is a **scored** signal rather than a `refutes_below` discriminator
 on purpose: qualifiers are written at different granularities and in different

@@ -17,6 +17,8 @@ table — what the table earns is the separation inside what remains.
 
 from __future__ import annotations
 
+import copy
+
 import pytest
 
 from arche.resolve import ENTITY_PACKS, crosswalk
@@ -191,15 +193,27 @@ class TestCompareCodes:
         rare = compare_codes("Canon Case 2595B002", "Canon 2595B002 Cam", tf)
         assert common < DISTINCTIVE_FLOOR < rare
 
-    def test_without_a_table_it_cannot_discriminate(self, tf):
-        """A common code and a rare one become indistinguishable.
+    def test_without_a_table_it_refuses(self, tf):
+        """Fail loud, like `tftoken` does in the same situation.
 
-        This is why a table is built. On Abt-Buy with shipped defaults,
-        code-blocking alone is 0.8865 precision and the rarity filter lifts it
-        to 0.9499.
+        Returning 1.0 without a table makes a common code indistinguishable
+        from a rare one, which drops block precision from 0.9499 to 0.8865 —
+        a silently worse answer, which is the failure mode worth refusing.
         """
-        assert compare_codes("Player 16GB", "Recorder 16GB", None) == 1.0
-        assert compare_codes("Canon 2595B002", "Case 2595B002", None) == 1.0
+        with pytest.raises(ValueError, match="requires a frequency table"):
+            compare_codes("Player 16GB", "Recorder 16GB", None)
+
+    def test_a_table_without_counts_does_not_silently_pass(self, tf):
+        """A `rel_freq`-only table has no document frequencies to read.
+
+        Reading `_counts` directly returned `None` here and made *every* code
+        score 1.0 — maximally rare, with no error. `_as_counts()` is the
+        accessor that reconstructs them.
+        """
+        from arche.resolve._tokenfreq import TokenFrequencyTable
+
+        bare = TokenFrequencyTable(rel_freq={"2595b002": 0.001})
+        assert compare_codes("Canon 2595B002", "Case 2595B002", bare) is not None
 
 
 class TestModularity:
@@ -243,6 +257,189 @@ class TestModularity:
     def test_an_unknown_category_raises_and_lists_what_exists(self):
         with pytest.raises(ValueError, match="unknown product category"):
             extract_product_code_candidates("x", "groceries")
+
+    def test_re_registering_a_name_raises_unless_replace(self):
+        """Silent overwrite is a process-wide change to how titles are read.
+
+        Re-registering `electronics` with a longer minimum code length makes
+        extraction return nothing, everywhere, with no error.
+        """
+        shadow = ProductCategory(name="electronics", min_code_len=99)
+        with pytest.raises(ValueError, match="already registered"):
+            register_category(shadow)
+        assert extract_product_code_candidates("Sony HDRCX150", "electronics")
+
+    def test_each_code_comparator_uses_its_own_category(self):
+        """Two categories in one run must not share a table built for one.
+
+        A table accumulated under one category's rules cannot answer questions
+        about another's — the same class of bug as a phrase table built under a
+        different tokenisation rule.
+        """
+        register_category(ProductCategory(
+            name="_test_short", min_code_len=3, min_bare_number_len=3,
+        ))
+        try:
+            a = [{"id": "1", "name": "Widget 501 model AB0001X"}]
+            b = [{"id": "1", "name": "Widget 501 model AB0001X"}]
+            res = crosswalk(a, b, id_field="id", comparators=[
+                {"field": "name", "kind": "name", "weight": 1.0},
+                {"field": "name", "kind": "code", "weight": 2.0,
+                 "category": "electronics"},
+                {"field": "name", "kind": "code", "weight": 2.0,
+                 "category": "_test_short"},
+            ])
+            pins = res["pins"]["code_tf"]
+            assert set(pins) == {"electronics", "_test_short"}
+            assert pins["electronics"] != pins["_test_short"]
+        finally:
+            PRODUCT_CATEGORIES.pop("_test_short", None)
+
+
+class TestReproducibility:
+    def test_the_code_table_is_named_in_the_pins(self):
+        """A scoring input that changes a decision must be in the pin.
+
+        Two runs with different code tables can reach different verdicts on the
+        same pair, so `decision_id` claims a reproducibility it does not have
+        unless the table is pinned — the discipline the place pack follows with
+        `shipped:place@sha256:...`.
+        """
+        a = [{"id": "1", "name": "Canon Case 2595B002"}]
+        b = [{"id": "1", "name": "Canon 2595B002 Cam"}]
+        res = crosswalk(a, b, entity="product_electronics", id_field="id")
+        pin = res["pins"]["code_tf"]["electronics"]
+        assert pin.startswith("codes@sha256:")
+
+    def test_a_different_corpus_changes_the_pin(self):
+        a = [{"id": "1", "name": "Canon Case 2595B002"}]
+        b = [{"id": "1", "name": "Canon 2595B002 Cam"}]
+        small = crosswalk(a, b, entity="product_electronics", id_field="id")
+        big = crosswalk(
+            a + [{"id": str(i), "name": f"Other AB{i:04d}X"} for i in range(2, 40)],
+            b, entity="product_electronics", id_field="id",
+        )
+        assert (small["pins"]["code_tf"]["electronics"]
+                != big["pins"]["code_tf"]["electronics"])
+
+
+class TestBenchmarkContract:
+    """Claims about the benchmark, enforced against the benchmark.
+
+    The CHANGELOG asserted that a test pinned the `spec` refutation's
+    neutrality. No such test existed — a claim about evidence, with no evidence
+    behind it, in a release that exists to be measured. This is that test.
+    """
+
+    @pytest.fixture(scope="class")
+    def abtbuy(self):
+        import csv
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[3] / "data" / "er_bench" / "products"
+        if not (root / "Abt.csv").exists():
+            pytest.skip("Leipzig Abt-Buy not present")
+
+        def read(name):
+            with open(root / name, encoding="utf-8-sig", errors="replace",
+                      newline="") as fh:
+                return list(csv.DictReader(fh))
+
+        return (
+            [{"id": r["id"], "name": r["name"]} for r in read("Abt.csv")],
+            [{"id": r["id"], "name": r["name"]} for r in read("Buy.csv")],
+            {(r["idAbt"], r["idBuy"]) for r in read("abt_buy_perfectMapping.csv")},
+        )
+
+    @staticmethod
+    def _auto(a, b, comparators):
+        res = crosswalk(a, b, comparators=comparators, tf=None, id_field="id")
+        return {(e["a_id"], e["b_id"]) for e in res["matches"]
+                if e["decision"] == "match"}
+
+    def test_the_spec_refutation_is_neutral_on_the_benchmark(self, abtbuy):
+        """It must not start costing matches without someone noticing.
+
+        Measured: the auto-match sets with and without `refutes_below` are
+        identical. It earns its place from the SKU identity contract, not from
+        this corpus — but if a future change makes it *harmful*, that is a
+        different situation and this test is what surfaces it.
+        """
+        a, b, _ = abtbuy
+        with_ref = ENTITY_PACKS["product_electronics"]
+        without = [{k: v for k, v in s.items() if k != "refutes_below"}
+                   for s in copy.deepcopy(with_ref)]
+        assert self._auto(a, b, with_ref) == self._auto(a, b, without)
+
+    def test_the_published_abt_buy_figures_hold(self, abtbuy):
+        """P=0.9707, R=0.6636, TP 728, FP 22 — the numbers in the CHANGELOG."""
+        a, b, truth = abtbuy
+        auto = self._auto(a, b, ENTITY_PACKS["product_electronics"])
+        tp = len(auto & truth)
+        fp = len(auto - truth)
+        assert (tp, fp) == (728, 22)
+        assert round(tp / (tp + fp), 4) == 0.9707
+        assert round(tp / len(truth), 4) == 0.6636
+
+    def test_the_stop_list_is_inert_on_the_benchmark(self, abtbuy):
+        """The claim that the table, not the stop list, does the work.
+
+        Two earlier drafts got this attribution wrong in opposite directions.
+        The stop list earns its place on catalogues too small to estimate
+        frequency from, not on this one.
+        """
+        a, b, _ = abtbuy
+        original = PRODUCT_CATEGORIES["electronics"]
+        register_category(
+            ProductCategory(name="electronics",
+                            identity_units=original.identity_units,
+                            stop_codes=frozenset()),
+            replace=True,
+        )
+        try:
+            without_list = self._auto(a, b, ENTITY_PACKS["product_electronics"])
+        finally:
+            register_category(original, replace=True)
+        assert without_list == self._auto(a, b, ENTITY_PACKS["product_electronics"])
+
+    def test_the_stop_list_earns_its_place_on_a_small_catalogue(self):
+        """Where the table cannot help: every code looks rare in four records."""
+        a = [{"id": "1", "name": "Sony TV 1080p"}, {"id": "2", "name": "LG TV 1080p"}]
+        b = [{"id": "1", "name": "Philips TV 1080p"},
+             {"id": "2", "name": "Toshiba TV 1080p"}]
+        original = PRODUCT_CATEGORIES["electronics"]
+        register_category(
+            ProductCategory(name="electronics",
+                            identity_units=original.identity_units,
+                            stop_codes=frozenset()),
+            replace=True,
+        )
+        try:
+            merged = self._auto(a, b, ENTITY_PACKS["product_electronics"])
+        finally:
+            register_category(original, replace=True)
+        assert merged, "without the stop list a shared resolution merges records"
+        assert not self._auto(a, b, ENTITY_PACKS["product_electronics"])
+
+
+class TestApplicabilityBound:
+    def test_a_redundant_catalogue_warns(self):
+        """The lane was measured where a code appears once per source.
+
+        The baseline adapts, but it is estimated — a catalogue well outside the
+        measured shape should say so rather than quietly report accuracy that
+        was never established for it.
+        """
+        titles = [f"Widget AB{i:04d}X" for i in range(100)] * 6
+        with pytest.warns(UserWarning, match="more redundancy than"):
+            build_code_table(titles)
+
+    def test_an_ordinary_catalogue_is_silent(self):
+        import warnings as _w
+
+        with _w.catch_warnings():
+            _w.simplefilter("error")
+            build_code_table([f"Widget AB{i:04d}X" for i in range(100)] * 2)
 
 
 class TestPack:

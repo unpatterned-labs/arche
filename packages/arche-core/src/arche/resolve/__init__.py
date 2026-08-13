@@ -143,9 +143,8 @@ ENTITY_PACKS: dict[str, list[dict]] = {
     # why `spec` refutes rather than merely scoring.
     "product_electronics": [
         # A shared *rare* code is the identity signal. Weighted highest because
-        # rarity-conditioned precision on Abt-Buy is 0.9499 with the rarity filter
-        # against 0.8865 without it. The stop list does more of that work than
-        # the table — see the changelog, which says so.
+        # rarity-conditioned precision on Abt-Buy is 0.9973 with the rarity
+        # filter (754 pairs) against 0.8865 without it (881).
         # Ordered so the evidence keys read plainly. The first comparator on a
         # field claims the bare field name, so `name` must be the name
         # comparator; otherwise a reviewer sees `name: 1.0` and has no way to
@@ -156,7 +155,7 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         # Identity-bearing specifications under the SKU contract. Scored low and
         # refuting: on Abt-Buy 47 of 47 true pairs carrying a comparable unit
         # agree on every one, so the refutation is close to free there — though
-        # 46 is a thin evidence base and the changelog says so.
+        # 47 of 1,097 is a thin evidence base and the changelog says so.
         {"field": "name", "kind": "spec", "weight": 0.5,
          "category": "electronics", "refutes_below": 0.5},
     ],

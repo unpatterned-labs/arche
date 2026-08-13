@@ -9,23 +9,37 @@ Measured on the Leipzig Abt-Buy benchmark (1,081 x 1,092, complete ground
 truth), with the rules this module actually ships:
 
     code-blocking alone                       881 pairs, precision 0.8865
-    + rarity filter (code_rarity >= 0.75)     818 pairs, precision 0.9499
+    + rarity filter (code_rarity >= 0.75)     754 pairs, precision 0.9973
 
-Two mechanisms do that work, and the split is worth being honest about because
-an earlier version of this docstring credited the second for both. With
-``stop_codes`` **disabled**, code-blocking is 0.5570 over 1,359 pairs and there
-is a bucket of 503 pairs sharing a code seen 20+ times (``1080p``, ``720p``)
-containing no true match at all. ``stop_codes`` removes that bucket at zero
-recall cost — 0.5570 to 0.8843 — and the frequency table then takes it the rest
-of the way. **The small hand-maintained stop list does more of the work than the
-frequency table.** With the shipped list on, the maximum document frequency in
-the table is 11, so the dramatic 20+ bucket does not exist to be suppressed.
+(Both over the full cross-product. Inside the union blocker's own candidate
+set the same two rows are 856/0.8843 and 731/0.9973 — a different population,
+never to be mixed into one series.)
 
-What the table still earns is the separation inside what remains: a code seen
-about as often as a unique one scores 1.0, ``16gb`` at df 11 scores 0.364, and
-only the former can clear ``DISTINCTIVE_FLOOR`` unaided. So the signal is
-rarity, not "looks like a model number" — but rarity measured after a short list
-of known non-identifiers has been removed, not instead of one.
+**The frequency table does that work, not the stop list.** Two earlier versions
+of this docstring got the attribution wrong in opposite directions, so here is
+the end-to-end measurement rather than an argument. Abt-Buy, shipped pack,
+``stop_codes`` on against ``stop_codes`` emptied:
+
+    stop_codes ON  (shipped)   TP 728  FP 22  P 0.9707  R 0.6636
+    stop_codes DISABLED        TP 728  FP 22  P 0.9707  R 0.6636
+
+Byte-identical. On this benchmark the stop list contributes **nothing**, because
+the table already scores ``1080p`` far below the gate: at df 11, ``16gb`` is
+0.182 against 1.0 for a code seen about as often as a unique one, and only the
+latter clears ``DISTINCTIVE_FLOOR`` unaided.
+
+What the stop list *does* earn is the small-catalogue case, which the benchmark
+cannot show. In a catalogue of four records where the only shared code is a
+resolution, every code looks rare and the table cannot tell them apart —
+``stop_codes`` off gives two false merges there, on gives none. It is a floor
+for corpora too small to estimate frequency from, not a substitute for
+estimating it.
+
+(For completeness, since the figure has been quoted: with ``stop_codes``
+disabled the *unfiltered candidate block* is 0.5643 over 1,384 pairs, because a
+bucket of 503 pairs sharing a code seen 20+ times enters and contains no true
+match. That is a statement about the block, not about the lane's output, and the
+rarity filter reaches 0.9973 either way.)
 
 That is why :func:`build_code_table` exists and why :func:`compare_codes` takes
 a table. Without one it can only say "these share a code", which the numbers
@@ -131,12 +145,24 @@ class ProductCategory:
 PRODUCT_CATEGORIES: dict[str, ProductCategory] = {}
 
 
-def register_category(category: ProductCategory) -> None:
+def register_category(category: ProductCategory, *, replace: bool = False) -> None:
     """Register a product category's rules. The extension point for new lanes.
 
     Adding food, books or apparel is a category registration plus a benchmark,
     not a change to any comparator.
+
+    Re-registering an existing name raises unless ``replace=True``. Silently
+    overwriting is a process-wide change to how every caller reads product
+    titles — re-registering ``electronics`` with a longer minimum code length
+    makes ``extract_product_code_candidates`` return nothing, everywhere, with
+    no error. Deliberate replacement is fine; accidental shadowing is not.
     """
+    existing = PRODUCT_CATEGORIES.get(category.name)
+    if existing is not None and not replace and existing != category:
+        raise ValueError(
+            f"product category {category.name!r} is already registered; pass "
+            "replace=True if you mean to change it process-wide"
+        )
     PRODUCT_CATEGORIES[category.name] = category
 
 
@@ -228,7 +254,7 @@ def build_code_table(
     """A document-frequency table over code candidates, built from the corpus.
 
     Feed it every title from **both** lists being matched. The result is what
-    turns a 0.8865-precision block into a 0.9499-precision one, by telling
+    turns a 0.8865-precision block into a 0.9973-precision one, by telling
     ``compare_codes`` that ``2595b002`` appears twice and ``16gb`` appears
     eleven times.
     """
@@ -252,9 +278,27 @@ def build_code_table(
     # identify one product, so the lower quartile tracks the redundancy factor
     # while staying robust to a vocabulary dominated by a few common codes. A
     # median over a two-code vocabulary is 50% noise.
-    dfs = sorted((getattr(table, "_counts", None) or {}).values())
+    dfs = sorted(table._as_counts().values())
     typical = dfs[len(dfs) // 4] if dfs else 1.0
     table.code_baseline_df = max(2.0, 2.0 * typical)
+
+    # An applicability bound, said out loud. This whole lane was measured on
+    # catalogues where a product code appears once per side. The baseline
+    # adapts to redundancy, but it is estimated, and a catalogue where the
+    # typical code already appears many times is outside what has been tested.
+    if typical > 2:
+        import warnings
+
+        warnings.warn(
+            f"product code table: the typical code appears {typical:g} times, "
+            "so this catalogue carries more redundancy than the lane was "
+            "measured on (once per source). Rarity is estimated relative to "
+            "that baseline and the lane's published accuracy does not "
+            "necessarily hold — check a labelled sample before trusting "
+            "auto-matches.",
+            UserWarning,
+            stacklevel=2,
+        )
     return table
 
 
@@ -290,7 +334,17 @@ def compare_codes(
     if not shared:
         return 0.0
     if tf is None:
-        return 1.0
+        # Fail loud, like `tftoken` does in the same situation. Without a table
+        # this returns 1.0 for `16gb` exactly as for `2595b002`, which drops
+        # block precision from 0.9973 to 0.8865 and looks like nothing is
+        # wrong. A silently worse answer is the failure mode worth refusing.
+        raise ValueError(
+            "comparator kind 'code' requires a frequency table over code "
+            "candidates; build one with "
+            "arche.resolve._productcode.build_code_table(titles). "
+            "reconcile()/crosswalk() build it for you when a 'code' comparator "
+            "is declared."
+        )
     return max(code_rarity(code, tf) for code in shared)
 
 
@@ -320,8 +374,11 @@ def code_rarity(code: str, tf: TokenFrequencyTable) -> float:
     A shared code has df >= 2 by construction — one document from each side —
     so ``2 / df`` puts the best case at exactly 1.0 and decays from there.
     """
-    counts = getattr(tf, "_counts", None) or {}
-    df = counts.get(code, 0.0)
+    # `_as_counts()` rather than `_counts`: a table built from relative
+    # frequencies alone carries `_counts = None`, and reading the attribute
+    # directly made *every* code score 1.0 — maximally rare, silently. That is
+    # worse than a crash, because the run looks like it worked.
+    df = tf._as_counts().get(code, 0.0)
     if df <= 0:
         return 1.0  # unseen in the table: as rare as it gets
     # Relative to what "unique" looks like in THIS corpus, not to the constant
@@ -346,10 +403,13 @@ def compare_specs(
     and a 32GB player are different purchasable products however alike their
     titles. On Abt-Buy, 47 of 47 true pairs carrying a comparable unit agree on
     every one of them, so the refutation costs nothing measurable there — but 47
-    of 1,097 is a thin evidence base and it is reported as such. Its only
-    measured effect on the benchmark is to cost one true match and prevent no
-    false merge, so it earns its place from the identity contract rather than
-    from this corpus.
+    of 1,097 is a thin evidence base and it is reported as such. Its measured
+    effect on Abt-Buy is **exactly nothing** — identical precision, recall and
+    counts with and without it — and on Amazon-GoogleProducts the comparator is
+    entirely inert, because no true pair there carries a comparable unit. It
+    earns its place from the identity contract, not from either corpus, and
+    `test_the_spec_refutation_is_neutral_on_the_benchmark` pins that so a change
+    making it *harmful* is caught.
     """
     cat = _category(category)
     sa, sb = extract_specs(text_a, category), extract_specs(text_b, category)

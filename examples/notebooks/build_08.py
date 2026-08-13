@@ -44,21 +44,6 @@ Both are the system working. The second one is the whole thesis.
 """)
 
 md("""
-## Setup
-""")
-
-code("""
-import os, glob, logging, warnings
-from collections import Counter
-os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
-logging.disable(logging.INFO); warnings.filterwarnings("ignore")
-
-DOCS = sorted(glob.glob("../../data/docs/*.pdf"))
-for d in DOCS:
-    print(" ", d.split("/")[-1].split("\\\\")[-1])
-""")
-
-md("""
 ## 1. Parse — a PDF is not a string
 
 `doc.parse` returns a structured document, not text. The distinction matters
@@ -68,9 +53,17 @@ line 4.
 """)
 
 code("""
+import os, glob, logging, warnings
+from collections import Counter
+os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
+logging.disable(logging.INFO); warnings.filterwarnings("ignore")
+
 from arche.doc import parse
 
+DOCS = sorted(glob.glob("../../data/docs/*.pdf"))
 doc = parse(DOCS[0])
+print(len(DOCS), "documents")
+print()
 print("available:", [a for a in dir(doc) if not a.startswith("_")])
 print(f"pages {doc.num_pages}   text {len(doc.text):,} chars   tables {len(doc.tables)}")
 print()
@@ -273,8 +266,12 @@ print("A content hash over the evidence and the pins — no timestamp, no")
 print("randomness. Anyone holding the same inputs recomputes the same id,")
 print("which is what makes the verdict checkable rather than merely stored.")
 print()
-report.save_json("../../data/docs_report.json")
-print("full report written to data/docs_report.json")
+report.save_json("../../data/docs/report.json")
+print("full report written to data/docs/report.json")
+print()
+print("Note it is written INSIDE data/docs/, which is gitignored. Values are")
+print("masked by default, but a report derived from personal documents still")
+print("names the bank, the employer and the statement dates in its filenames.")
 """)
 
 md("""
