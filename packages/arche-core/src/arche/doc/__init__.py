@@ -42,9 +42,17 @@ from arche.doc.parse import (
 )
 
 from arche.doc._documents import DocumentReport, resolve_documents  # noqa: E402
+from arche.doc._extract import Extraction, FieldEvidence, From, extract  # noqa: E402
+from arche.doc._metadata import DocumentMetadata, read_metadata  # noqa: E402
 
 __all__ = [
+    "DocumentMetadata",
     "DocumentReport",
+    "Extraction",
+    "FieldEvidence",
+    "From",
+    "extract",
+    "read_metadata",
     "resolve_documents",
     "parse",
     "ParsedDocument",

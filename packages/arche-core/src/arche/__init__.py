@@ -191,6 +191,7 @@ _LAZY: dict[str, tuple[str, str]] = {
     "split_place_name": (".resolve._matcher", "split_place_name"),
     "resolve_documents": (".doc._documents", "resolve_documents"),
     "DocumentReport": (".doc._documents", "DocumentReport"),
+    "read_metadata": (".doc._metadata", "read_metadata"),
     "compare_place_qualifiers": (".resolve._matcher", "compare_place_qualifiers"),
     # --- pipeline (v0.1 callables) ----------------------------------------
     # Retargeted to .workflow.pipeline (real location); see note above.
@@ -289,6 +290,7 @@ __all__ = [
     "compare_place_qualifiers",
     "resolve_documents",
     "DocumentReport",
+    "read_metadata",
     "link",
     "resolve",
     "resolve_places",
