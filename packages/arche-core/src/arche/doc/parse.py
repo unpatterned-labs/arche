@@ -153,12 +153,21 @@ def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[
     yields the fields it can and omits the rest. Failing to record provenance
     must never fail a parse — but the absence is then visible in the pins
     rather than silently assumed.
+
+    Both digests are **full, untruncated SHA-256** in lowercase hex, unlike the
+    16-hex internal tags elsewhere in the codebase. The difference is who
+    recomputes them: an internal tag is only ever compared against itself, while
+    ``artifact_sha256`` exists so that someone who was sent the file can run
+    ``sha256sum`` (or ``Get-FileHash``, or ``shasum -a 256``) and get the same
+    string. A truncated digest under a name that says ``sha256`` fails that
+    check and reads as "this is not the file", which is the one wrong answer
+    this field must never give.
     """
     import hashlib
 
     out: dict[str, Any] = {
         "parser": "docling",
-        "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()[:32],
+        "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "ocr": do_ocr,
     }
     with contextlib.suppress(Exception):
@@ -172,7 +181,7 @@ def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[
             with open(path, "rb") as fh:
                 for chunk in iter(lambda: fh.read(1 << 20), b""):
                     digest.update(chunk)
-            out["artifact_sha256"] = digest.hexdigest()[:32]
+            out["artifact_sha256"] = digest.hexdigest()
     return out
 
 

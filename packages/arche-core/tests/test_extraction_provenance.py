@@ -57,6 +57,25 @@ class TestWhatIsRecorded:
         assert (_extraction_provenance(str(one), "t", None)["artifact_sha256"]
                 == _extraction_provenance(str(two), "t", None)["artifact_sha256"])
 
+    def test_the_digests_are_full_sha256_a_stranger_can_reproduce(self, tmp_path):
+        """`sha256sum` on the file must print exactly what we recorded.
+
+        These were truncated to 32 hex chars once. The field is *named*
+        `artifact_sha256`, so a verifier reaches for the standard tool, gets a
+        64-char digest, and concludes the file was swapped — the one wrong
+        answer this field must never give. Full digest, or the name is a lie.
+        """
+        import hashlib
+
+        f = tmp_path / "sent-to-me.pdf"
+        f.write_bytes(b"%PDF-1.7 pretend")
+        got = _extraction_provenance(str(f), "rendered", None)
+
+        assert got["artifact_sha256"] == hashlib.sha256(f.read_bytes()).hexdigest()
+        assert got["text_sha256"] == hashlib.sha256(b"rendered").hexdigest()
+        assert len(got["artifact_sha256"]) == 64
+        assert len(got["text_sha256"]) == 64
+
     def test_the_text_digest_anchors_citations(self):
         """A span means nothing without the rendering it indexes into."""
         a = _extraction_provenance(__file__, "rendering one", None)

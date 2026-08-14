@@ -9,6 +9,16 @@ The document lane, the product lane, and the `EgressGuard` security fix that
 published version until this ships.
 
 
+### Added — extraction provenance on document decisions
+
+A decision derived from a document now records what produced it — `artifact_sha256`, `parser`, `parser_version`, `text_sha256`, `ocr` — on `ParsedDocument.provenance` and `DocumentReport.provenance`. These enter the pins **before** `decision_id` is hashed, so the id moves when the input bytes, the parser version, the rendering, or the OCR setting moves.
+
+Previously such a decision could be *re-run approximately but never re-verified*: the signature covered the verdict while saying nothing about the extraction behind it. A signed wrong merge with opaque extraction provenance is worse than an unsigned heuristic, because it lends institutional legitimacy to something the reader cannot inspect.
+
+`artifact_sha256` and `text_sha256` are **full, untruncated** SHA-256 digests in lowercase hex, so `sha256sum` / `shasum -a 256` / `Get-FileHash` reproduce them exactly. (A pre-release build truncated them to 32 hex chars, which made the standard tools disagree with a field named `sha256` — the one wrong answer it must never give.) This changes `decision_id` for every document-derived decision relative to that build.
+
+New guide: [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/), covering all three lanes and what a recipient of a signed decision should check.
+
 ### Added — an experimental electronics product lane
 
 `ENTITY_PACKS["product_electronics"]`, plus the primitives it is built from.
