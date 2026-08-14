@@ -16,7 +16,7 @@ Every extraction tool on the market will happily pull fields out of those three 
 
 Reading a PDF used to be the hard bit. It isn't any more. Layout models are good, table extraction works, and a dozen services will turn a scanned invoice into clean markdown for fractions of a cent.
 
-So extraction stopped being the moat, and what it produces turns out to be the easy half of the problem. A field is a *reference* — a string that points at something in the world. `Dennis Irorere`. `3 Marina Place`. `denironyx@gmail.com`. Three references, and no statement yet about whether they point at one person.
+So extraction stopped being the moat, and what it produces turns out to be the easy half of the problem. A field is a *reference* — a string that points at something in the world. `Dennis Irorere`. `123 Sherlorne Place`. `dennis@gmail.com`. Three references, and no statement yet about whether they point at one person.
 
 The hard half is what the field industry calls entity resolution: deciding which references denote the same real-world thing. It is old, it is unglamorous, and it is where document pipelines quietly go wrong — because the failure mode isn't a crash, it's a confident merge nobody notices for six months.
 
@@ -26,9 +26,9 @@ Here is what our three PDFs actually produce:
 EXTRACTED RECORDS
 document                    name                       organisation
 --------------------------------------------------------------------
-Monzo_bank_statement.pdf    Dennis Aibuedefe Irorere   Monzo Bank Limited
+Monzo_bank_statement.pdf    Dennis A. Irorere   Monzo Bank Limited
 Invoice-PEDHCF-00012.pdf    Dennis Irorere             Netlify, Inc.
-Paystatement_2025-12.pdf    Dennis Irorere             Viator Ltd
+Paystatement_2025-12.pdf    Dennis Irorere             Amsterheed Ltd
 ```
 
 One document carries a middle name and two do not. That is the single most ordinary fact in identity data. It is also about to decide everything.
