@@ -98,6 +98,8 @@ __all__ = [
 _CODE_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9\-/]{2,}")
 
 # A number bound to a unit: `16GB`, `5.7 cu.ft`, `120 Hz`, `12-pack`, `600mg`.
+# Alternation is leftmost-first, so two-letter units MUST precede the bare `g`
+# and `l` — otherwise `415g` is fine but `2kg` matches `g` and reports 2 grams.
 # The left boundary is load-bearing. Without it the number is carved out of a
 # model code: `F5C400300W` read as 400,300 watts and `WNR3500L` as 3,500 litres.
 # 27.4% of identity-unit matches on Abt-Buy were fabricated that way, and one
@@ -109,13 +111,18 @@ _CODE_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9\-/]{2,}")
 # `inch`, `"` and `'` carry that unit instead.
 _SPEC = re.compile(
     r"(?<![A-Za-z0-9])(\d+(?:\.\d+)?)\s*-?\s*"
-    r"(gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mm|cm|ft|inch|oz|lb|kg|ml|ct|pk|pack|w|v|p)"
+    r"(gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pk|pack|g|l|w|v|p)"
     r"(?![a-z0-9])",
     re.I,
 )
 
 # Unit spellings that mean the same thing. Kept tiny and explicit: a large
 # synonym table here would be a lexicon pretending to be a parser.
+# A candidate that is nothing but a number and a unit.
+_QUANTITY_ONLY = re.compile(
+    r"\d+(?:gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pk|pack|g|l|w|v|p)"
+)
+
 _UNIT_ALIASES = {"pk": "pack"}
 _UNIT_SCALE: dict[str, float] = {}
 
@@ -141,6 +148,16 @@ class ProductCategory:
     identity_units: tuple[str, ...] = ()
     #: Substrings that never identify, whatever their frequency.
     stop_codes: frozenset[str] = field(default_factory=frozenset)
+    #: Treat a bare number+unit token (`415g`, `600mg`) as a specification
+    #: rather than a code candidate.
+    #:
+    #: Opt-in per category, not global. Groceries and pharmacy need it — reading
+    #: a dose as a model number is the failure this exists to prevent. Consumer
+    #: electronics does not: `16gb` is a legitimate code candidate there, the
+    #: frequency table already scores it 0.182, and switching this on for
+    #: electronics moved a published Abt-Buy figure by one true match for no
+    #: benefit at all.
+    quantities_are_specs: bool = False
     experimental: bool = True
 
 
@@ -175,6 +192,49 @@ register_category(ProductCategory(
     # frequency table already suppresses them; naming them here means a small
     # catalogue, where every code looks rare, does not merge on a resolution.
     stop_codes=frozenset({"1080p", "720p", "480p", "1080i", "4k", "8k"}),
+    experimental=True,
+))
+
+
+register_category(ProductCategory(
+    name="food",
+    # Net contents are the identity of a grocery SKU, and today the electronics
+    # rules read them as *codes*: `Heinz Baked Beans 415g` yields the candidate
+    # `415g`, and `Mucinex DM 600mg 20ct` yields `600mg` and `20ct`. Treating a
+    # dose as a model number is the failure an adversarial review of this lane
+    # called out by name, and it is the current behaviour if anyone points
+    # `product_electronics` at a grocery catalogue.
+    #
+    # This category exists primarily to stop that. Quantities become
+    # identity-bearing *specifications* — where a disagreement refutes under the
+    # purchasable-variant contract — instead of identifying codes.
+    #
+    # NO MATCHING BENCHMARK. Its extraction behaviour is tested; its matching
+    # accuracy is not, because no open grocery corpus with complete ground truth
+    # is available to this project. Do not read it as measured. The gate for
+    # promoting it out of this state is a labelled corpus, the same bar the
+    # electronics lane had to clear.
+    identity_units=("g", "kg", "ml", "l", "oz", "lb", "ct", "pack", "mg"),
+    quantities_are_specs=True,
+    # A GTIN/EAN is 8-14 digits and is the real identifier when present, so bare
+    # numbers below that stay excluded while the barcode itself survives.
+    min_bare_number_len=8,
+    stop_codes=frozenset({"organic", "family", "value"}),
+    experimental=True,
+))
+
+register_category(ProductCategory(
+    name="bibliographic",
+    # Papers, articles and books. The identifying code is an ISBN, a DOI or an
+    # arXiv id — long, checksummed where it matters, and genuinely rare — so the
+    # length floor rises and specification units are irrelevant.
+    #
+    # Measured on Leipzig DBLP-ACM (2,616 x 2,294, complete ground truth):
+    # P=0.9506, R=0.9960 with the `bibliographic` pack. That corpus is
+    # *papers*, not books, so ISBN handling here is correct but unmeasured.
+    min_code_len=8,
+    min_bare_number_len=8,
+    identity_units=(),
     experimental=True,
 ))
 
@@ -220,6 +280,12 @@ def extract_product_code_candidates(
         if norm.isdigit() and len(norm) < cat.min_bare_number_len:
             continue
         if norm in cat.stop_codes:
+            continue
+        if cat.quantities_are_specs and _QUANTITY_ONLY.fullmatch(norm):
+            # `415g`, `600mg`, `12pack` are net contents, not identifiers. For a
+            # category that declares them identity-bearing they belong to
+            # `extract_specs`, where a disagreement refutes — reading a drug's
+            # dose as a model code is the failure this split exists to prevent.
             continue
         out.add(norm)
     return out

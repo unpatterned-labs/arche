@@ -533,3 +533,76 @@ class TestBrandPrefix:
         from arche.resolve._productcode import build_brand_prefixes
 
         assert build_brand_prefixes([]) == frozenset()
+
+
+class TestFoodCategory:
+    """Registered for safety, not for measured accuracy.
+
+    Pointing `product_electronics` at a grocery catalogue reads `600mg` and
+    `415g` as identity codes — treating a drug's dose as a model number, which
+    an adversarial review of this lane called out by name. This category makes
+    quantities specifications instead.
+
+    There is NO matching benchmark for it. Its extraction behaviour is tested;
+    its accuracy is not, because no open grocery corpus with complete ground
+    truth is available. Nothing here should be read as a performance claim.
+    """
+
+    @pytest.mark.parametrize("title", [
+        "Heinz Baked Beans 415g",
+        "Mucinex DM 600mg 20ct",
+        "Coca-Cola Zero 12-pack 330ml",
+    ])
+    def test_quantities_are_not_identity_codes(self, title):
+        assert extract_product_code_candidates(title, "food") == set()
+
+    def test_the_same_titles_under_electronics_still_yield_codes(self):
+        """The status quo this exists to improve on."""
+        assert extract_product_code_candidates("Mucinex DM 600mg 20ct", "electronics")
+
+    def test_quantities_become_comparable_specifications(self):
+        assert extract_specs("Heinz Baked Beans 415g", "food") == {"g": {415.0}}
+
+    def test_different_net_contents_refute(self):
+        """A 415g tin and a 220g tin are different purchasable products."""
+        assert compare_specs("Beans 415g", "Beans 220g", "food") == 0.0
+        assert compare_specs("Beans 415g", "Heinz Beans 415g", "food") == 1.0
+
+    def test_a_barcode_survives_as_an_identifier(self):
+        """GTIN/EAN is the real identifier when a grocery listing carries one."""
+        assert "5000157024671" in extract_product_code_candidates(
+            "Heinz Baked Beans 5000157024671", "food",
+        )
+
+    def test_electronics_behaviour_is_untouched(self):
+        """`quantities_are_specs` is opt-in per category, and this is why.
+
+        Switching it on for electronics moved a published Abt-Buy figure by one
+        true match for no benefit: `16gb` is a legitimate code candidate there,
+        and the frequency table already scores it 0.182.
+        """
+        got = extract_product_code_candidates("Sony 16GB Handycam HDRCX150")
+        assert {"16gb", "hdrcx150"} <= got
+
+
+class TestBibliographicCategory:
+    """Papers, articles and books. Measured on DBLP-ACM — which is papers."""
+
+    def test_an_isbn_survives(self):
+        assert "9780132350884" in extract_product_code_candidates(
+            "Clean Code 2nd Edition ISBN 978-0132350884", "bibliographic",
+        )
+
+    def test_short_numbers_are_not_identifiers(self):
+        """A page or a chapter is not a book."""
+        assert extract_product_code_candidates("Chapter 3 page 42",
+                                               "bibliographic") == set()
+
+    def test_no_specification_refutes_a_publication(self):
+        """A paper has no capacity or pack size to disagree about."""
+        assert compare_specs("Clean Code 2nd Edition",
+                             "Clean Code 3rd Edition", "bibliographic") is None
+
+    def test_it_is_marked_experimental(self):
+        """ISBN handling is correct here but unmeasured — DBLP-ACM is papers."""
+        assert PRODUCT_CATEGORIES["bibliographic"].experimental is True
