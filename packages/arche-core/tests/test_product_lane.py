@@ -441,6 +441,35 @@ class TestApplicabilityBound:
             _w.simplefilter("error")
             build_code_table([f"Widget AB{i:04d}X" for i in range(100)] * 2)
 
+    def test_a_toy_catalogue_does_not_cry_wolf(self):
+        """Regression. This warning fired in CI on a four-record fixture.
+
+        `typical` is a quartile, and a quartile over a handful of codes is not a
+        statistic — four records whose only shared token appears in every one of
+        them reported a "typical" document frequency of 4 and warned about
+        redundancy that did not exist. A warning that fires on toy inputs is how
+        people learn to ignore warnings.
+        """
+        import warnings as _w
+
+        with _w.catch_warnings():
+            _w.simplefilter("error")
+            build_code_table(["Sony TV 1080p", "LG TV 1080p",
+                              "Philips TV 1080p", "Toshiba TV 1080p"])
+
+    def test_a_small_catalogue_stays_silent_even_when_redundant(self):
+        """The deliberate trade: silence on inputs too small to judge.
+
+        Five codes repeated six times *is* redundant, and the warning still
+        does not fire, because five data points cannot establish that. Being
+        quiet on a small input is better than being wrong on it.
+        """
+        import warnings as _w
+
+        with _w.catch_warnings():
+            _w.simplefilter("error")
+            build_code_table([f"Widget AB{i:04d}X" for i in range(5)] * 6)
+
 
 class TestPack:
     def test_there_is_no_generic_product_pack(self):

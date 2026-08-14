@@ -298,6 +298,13 @@ def extract_product_code_candidates(
 # this is a bound on unbounded input, not a backtracking fix.
 _MAX_TITLE_CHARS = 2000
 
+#: Distinct codes needed before the redundancy warning is meaningful. The
+#: statistic behind it is a quartile, and a quartile over a handful of codes is
+#: noise: the four-record catalogue in the test suite reported a "typical"
+#: document frequency of 4 purely because its only shared token appeared in
+#: every record.
+_MIN_VOCAB_FOR_REDUNDANCY_WARNING = 20
+
 
 def extract_specs(text: str, category: str | None = None) -> dict[str, set[float]]:
     """Numeric specifications as ``{unit: {values}}``.
@@ -354,7 +361,13 @@ def build_code_table(
     # catalogues where a product code appears once per side. The baseline
     # adapts to redundancy, but it is estimated, and a catalogue where the
     # typical code already appears many times is outside what has been tested.
-    if typical > 2:
+    #
+    # Gated on vocabulary size, because `typical` is a quartile and a quartile
+    # over a handful of codes is not a statistic. A four-record catalogue whose
+    # only shared token is `1080p` yields a "typical" of 4 and warned about
+    # redundancy that does not exist — a warning that fires on toy inputs is
+    # how people learn to ignore warnings.
+    if len(dfs) >= _MIN_VOCAB_FOR_REDUNDANCY_WARNING and typical > 2:
         import warnings
 
         warnings.warn(
