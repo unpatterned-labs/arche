@@ -143,6 +143,10 @@ class DocumentReport:
     record_provenance: dict[str, dict[str, str]] = field(default_factory=dict)
     #: doc -> the document's self-described metadata, masked on export.
     metadata: dict[str, Any] = field(default_factory=dict)
+    #: doc -> what produced its parse: artifact hash, parser and version, text
+    #: digest. Enters every decision's pins, so a decision derived from a
+    #: document can be re-verified rather than only re-run.
+    provenance: dict[str, dict[str, Any]] = field(default_factory=dict)
     errors: dict[str, str] = field(default_factory=dict)
     jurisdiction: str = ""
     entity: str = ""
@@ -438,7 +442,22 @@ def resolve_documents(
 
     refs = {doc: Reference.from_record(rec) for doc, rec in report.records.items()}
     for a, b in combinations(sorted(refs), 2):
-        decision = resolve.pairwise(refs[a], refs[b], entity=entity)
+        # The extraction that produced these records goes INSIDE the decision
+        # hash, not alongside it. Without it a document-derived decision can be
+        # re-run approximately but never re-verified: a parser upgrade changes
+        # the text, which changes the record, which changes the verdict, and
+        # nothing would record that it had. Every cited span also indexes into
+        # a specific rendering, so `text_sha256` is what makes a citation
+        # checkable rather than merely plausible.
+        extraction = {
+            side: report.provenance.get(doc, {})
+            for side, doc in (("a", a), ("b", b))
+            if report.provenance.get(doc)
+        }
+        decision = resolve.pairwise(
+            refs[a], refs[b], entity=entity,
+            extra_pins={"extraction": extraction} if extraction else None,
+        )
         report.decisions.append({
             "a": a, "b": b,
             "identity": getattr(decision, "identity", ""),
@@ -493,6 +512,9 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
         info = getattr(parsed, "info", None)
         if info:
             report.metadata[name] = info.to_dict(reveal=True)
+        extraction = getattr(parsed, "provenance", None)
+        if extraction:
+            report.provenance[name] = dict(extraction)
 
 
 def _resolve_jurisdiction(requested: str, text: str, info: Any, name: str,

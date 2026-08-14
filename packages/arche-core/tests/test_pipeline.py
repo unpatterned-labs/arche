@@ -45,4 +45,9 @@ def test_pipeline_batch():
 def test_version():
     # Pinned deliberately: bumping the version is a release decision, so it
     # should require touching a test rather than happening as a side effect.
-    assert __version__ == "0.3.0a2"
+    #
+    # Moved 0.3.0a2 -> 0.4.0a1 in 2026-08. `0.3.0a2` was versioned, changelogged
+    # and merged but never published, and was superseded before it could be —
+    # while `SECURITY.md` told readers to upgrade to it. Both that advisory and
+    # the changelog now say so rather than quietly renumbering.
+    assert __version__ == "0.4.0a1"

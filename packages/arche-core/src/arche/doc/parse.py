@@ -81,6 +81,10 @@ class ParsedDocument:
         Page count for paginated inputs (PDF, PPTX); ``None`` otherwise.
     metadata:
         Source metadata (title, author, language, etc.) extracted by docling.
+    provenance:
+        What produced this parse: the input artifact's hash, the parser and its
+        version, the configuration that changes output, and a digest of the
+        rendered text. See :attr:`provenance` for why each is load-bearing.
     """
 
     source: str
@@ -90,6 +94,9 @@ class ParsedDocument:
     tables: list[list[list[str]]] = field(default_factory=list)
     num_pages: int | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    #: Extraction provenance — see :func:`_extraction_provenance` for why a
+    #: signature over a document-derived decision is worth little without it.
+    provenance: dict[str, Any] = field(default_factory=dict)
 
     @property
     def info(self) -> DocumentMetadata:
@@ -115,6 +122,59 @@ class ParsedDocument:
 # ---------------------------------------------------------------------------
 # parse() — the public entry point
 # ---------------------------------------------------------------------------
+
+def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[str, Any]:
+    """What has to be recorded for a decision made from this parse to be checkable.
+
+    A signature over a document-derived decision is worth very little on its
+    own: it proves the verdict was not altered, while saying nothing about the
+    extraction that produced it. Without the facts below such a decision can be
+    **re-run approximately, never re-verified** — and a signed wrong merge with
+    opaque extraction provenance is worse than an unsigned heuristic, because it
+    lends institutional legitimacy to something the reader cannot inspect.
+
+    Four facts, each because omitting it breaks a different thing:
+
+    ``artifact_sha256``
+        The exact bytes. A filename is not an identity — two files called
+        `invoice.pdf` are not the same document, and the same file renamed is.
+    ``parser`` / ``parser_version``
+        A parser upgrade changes the text, which changes the record, which
+        changes the verdict. A decision that does not name its parser cannot
+        explain why it differs from the same decision made last year.
+    ``text_sha256``
+        Every span in the evidence indexes into *this* rendering. Without it a
+        citation silently points at the wrong characters after any re-parse,
+        which is worse than pointing at nothing.
+    ``ocr``
+        Changes the text for the same bytes, so it belongs with the parser.
+
+    Best-effort by design: a URL, an unreadable file, or a missing version
+    yields the fields it can and omits the rest. Failing to record provenance
+    must never fail a parse — but the absence is then visible in the pins
+    rather than silently assumed.
+    """
+    import hashlib
+
+    out: dict[str, Any] = {
+        "parser": "docling",
+        "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()[:32],
+        "ocr": do_ocr,
+    }
+    with contextlib.suppress(Exception):
+        from importlib.metadata import version as _pkg_version
+
+        out["parser_version"] = _pkg_version("docling")
+    with contextlib.suppress(Exception):
+        path = Path(source)
+        if path.is_file():
+            digest = hashlib.sha256()
+            with open(path, "rb") as fh:
+                for chunk in iter(lambda: fh.read(1 << 20), b""):
+                    digest.update(chunk)
+            out["artifact_sha256"] = digest.hexdigest()[:32]
+    return out
+
 
 def parse(
     source: str | Path,
@@ -201,6 +261,7 @@ def parse(
     return ParsedDocument(
         source=source_str,
         text=text,
+        provenance=_extraction_provenance(source_str, text, do_ocr),
         markdown=markdown,
         json=as_json,
         tables=tables,

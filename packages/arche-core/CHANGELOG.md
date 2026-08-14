@@ -2,7 +2,12 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [0.4.0a1] — unreleased
+
+The document lane, the product lane, and the `EgressGuard` security fix that
+`0.3.0a2` was going to carry before it was superseded. `0.3.0a1` remains the only
+published version until this ships.
+
 
 ### Added — an experimental electronics product lane
 
@@ -421,7 +426,15 @@ guaranteed **within a table**: rebuilding shifts the denominator for every
 token, so whether a migration demotes anything is a benchmark question, not an
 invariant.
 
-## [0.3.0a2] — 2026-08
+## [0.3.0a2] — never published
+
+**This version does not exist on PyPI and never will.** It was versioned,
+changelogged and merged, then superseded by `0.4.0a1` before it was tagged. The
+section is kept rather than deleted because `SECURITY.md` pointed readers at it
+for a period, and a changelog that quietly loses a version its own advisory
+cited is worse than one that admits the gap.
+
+Everything below shipped in **`0.4.0a1`**.
 
 A security fix and the documentation corrections it turned up. No new features.
 
