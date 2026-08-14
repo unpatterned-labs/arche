@@ -34,6 +34,20 @@ _REPO = Path(__file__).resolve().parents[3]
 _BENCH = _REPO / "data" / "doc_bench"
 
 
+def _has_pdf_backend() -> bool:
+    """Either metadata backend. Both arrive with an extra, not the base install."""
+    for module in ("pypdfium2", "fitz"):
+        try:
+            __import__(module)
+            return True
+        except ImportError:
+            continue
+    return False
+
+
+_PDF_BACKEND = _has_pdf_backend()
+
+
 class TestProducerClassification:
     @pytest.mark.parametrize(("raw", "family", "tool"), [
         ("Skia/PDF m145", "browser-print", "Chromium"),
@@ -111,6 +125,7 @@ class TestReadMetadata:
         with pytest.raises(ValueError, match="unknown metadata backend"):
             read_metadata("x.pdf", backend="magic")
 
+    @pytest.mark.skipif(not _PDF_BACKEND, reason="no PDF metadata backend installed")
     @pytest.mark.skipif(not (_BENCH / "invoice_12_ak.pdf").exists(),
                         reason="doc_bench corpus not present")
     def test_the_issuer_arrives_for_free(self):
@@ -120,6 +135,7 @@ class TestReadMetadata:
         assert got.producer.family == "enterprise-report"
         assert got.tz_offset_minutes == 60
 
+    @pytest.mark.skipif(not _PDF_BACKEND, reason="no PDF metadata backend installed")
     @pytest.mark.skipif(not (_BENCH / "invoice_27.pdf").exists(),
                         reason="doc_bench corpus not present")
     def test_a_browser_printed_document_is_recognised(self):

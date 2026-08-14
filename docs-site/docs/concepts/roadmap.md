@@ -254,6 +254,35 @@ output moves. `"warn"` names the uncovered jurisdiction and the consequence.
 | **Pluggable parse/extract backends** | `parse` and `extract` take a `backend=`. The default, `"local"`, runs entirely on your machine and makes no network calls. The interface is public so a hosted extractor can be substituted where a document defeats local parsing. Any backend that leaves the machine must declare an egress class, is refused under `ARCHE_OFFLINE=1`, and is recorded in the decision pins — a decision produced remotely is not byte-identical to one produced locally, by design. arche does not bundle, endorse or require any commercial extractor, and none is installed by default. |
 | **Content credentials (C2PA)** | **Gated, not scheduled.** The type ships with an honest empty state; the reader does not. XMP is zero bytes in every PDF available to this project, so a reader could be written but not demonstrated, and an untestable trust feature is worse than none. `ai_generated` is tri-state: absence of a manifest yields *unknown*, never *human-authored*. Gate: build it when we hold at least five documents that actually carry a manifest. |
 
+### Document provenance and authenticity — what we are thinking
+
+Not scheduled. This is a position, written down so it can be argued with.
+
+"Can arche verify a document?" has no single answer, because *verify* covers claims of wildly different strength. The useful product is telling you **which rung you are standing on**, never a boolean.
+
+| Rung | The claim | Strength | Present in the 7 real PDFs we hold |
+|---|---|---|---|
+| 0 | The file states who made it (`producer`, `author`, dates) | **Forgeable by anyone who can write a PDF** | 7 / 7 |
+| 1 | The producer family is consistent with the claim — a browser print that says it came from an enterprise reporting system is odd | Weak forensic | 7 / 7 |
+| 2 | The structural fingerprint matches the claimed producer — object ordering, xref style, font subsetting differ per tool | Moderate forensic, hard to forge *accidentally* | buildable |
+| 3 | The document carries a valid cryptographic signature (PAdES, or a C2PA manifest) | Strong | **0 / 7** |
+| 4 | The signer resolves to a known real-world entity in a registry | Strongest | needs 3, plus resolution |
+
+**Rung 0 and 1 ship today.** `parse().info` reads the metadata and classifies the producer into `browser-print` / `html-renderer` / `enterprise-report` / `office` / `scanner`. Every surface that touches it says the same thing: metadata is a claim by the file, not a verification.
+
+**Rung 3 is where most tooling starts, and it is empty.** Zero of our seven PDFs carry a signature dictionary, XMP packet, or content-credential marker. A verification feature that only works at rung 3 serves almost nobody, because almost nothing in circulation is signed. We will read signatures and C2PA manifests **when we hold documents that carry them** — the gate is five real files, not a release date. Until then the `ContentCredentials` type ships with an honest empty state and `ai_generated` stays tri-state, because absence of a manifest is not evidence of human authorship.
+
+**Rung 4 is the one that is actually ours.** `author='Condor Flugdienst GmbH'` is a *reference to an organisation*, and deciding which real-world company a reference denotes is the thing this engine already does for people, places and products. "Who issued this document?" is an entity-resolution question wearing a security costume: extract the issuer reference, resolve it against a company registry, and sign the decision. That path is measurable with the benchmarks we already run, which rung 3 is not.
+
+Two distinctions we will keep, because collapsing them is how this goes wrong:
+
+- **Issued by** is not **belongs to**. A payslip is issued by an employer and about an employee. Provenance answers the first; the identity lane answers the second. A single "who does this document belong to" field would blur two different questions with different failure costs.
+- **Integrity** is not **authenticity**. A signature proves the bytes did not change since signing. It says nothing about whether the signer is who they claim to be, which needs a trust anchor — and that is rung 4 again.
+
+**Rung 2 is the interesting unbuilt one.** A structural fingerprint — how a specific tool lays out a PDF — is real forensics, cheap to compute, and needs no manifest. It is unbuilt because we have not measured its false-positive rate, and a provenance signal that cries wolf is worse than none. The gate is a labelled corpus of documents with known producers, including deliberately re-saved ones.
+
+*The same ladder applies beyond documents.* An API response, a database export and a CSV all carry the same structure: a self-declared origin, a forensic signature, an optional cryptographic one, and an issuer who may or may not resolve to a real entity.
+
 ### Not built, and why
 
 **A fix to context-free identifier detectors.** The 36 false TINs are only

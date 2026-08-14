@@ -2,6 +2,8 @@
 
 ## Latest
 
+- **[Who made this document?](who-made-this-document.md)** — seven real PDFs, zero signatures, and why "verify this file" is four different questions with wildly different strengths.
+
 - **[Three PDFs and a question](three-pdfs-and-a-question.md)** — a bank statement, an invoice and a payslip, and the question extraction cannot answer. What document intelligence has to get right, and the part everyone skips.
 - **[Similar is not the same](similar-is-not-the-same.md)** — embeddings, Fellegi-Sunter, and what a machine has to know before it may merge two records. Plus where explicit vectors *do* belong: retrieval for agentic entity resolution.
 - **[The part intelligence doesn't make cheaper](the-part-intelligence-doesnt-make-cheaper.md)** — reasoning is collapsing in price; knowing which real thing you mean is not. Why arche exists, and what it looks like built.

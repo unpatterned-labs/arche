@@ -17,6 +17,7 @@ from typing import Annotated
 import pytest
 from pydantic import BaseModel, Field
 
+from arche.doc import DOC_FEATURE_AVAILABLE
 from arche.doc._extract import Extraction, FieldEvidence, From, extract
 
 _BENCH = Path(__file__).resolve().parents[3] / "data" / "doc_bench"
@@ -201,6 +202,11 @@ class TestArguments:
             extract(Contact)
 
 
+# `parse()` needs docling, which is the `[doc]` extra and is absent from the
+# base CI environment. The corpus check alone was not enough: the files are
+# committed, so it passed and then `parse()` raised.
+@pytest.mark.skipif(not DOC_FEATURE_AVAILABLE,
+                    reason="parse() requires the [doc] extra (docling)")
 @pytest.mark.skipif(not (_BENCH / "invoice_6_ak.pdf").exists(),
                     reason="doc_bench corpus not present")
 class TestOnARealDocument:
