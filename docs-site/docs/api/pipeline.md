@@ -5,6 +5,23 @@
 ```python
 from arche import Pipeline
 
+## `jurisdiction` and `on_uncovered`
+
+`jurisdiction` takes an ISO 3166-1 alpha-2 code. Statute packs ship for `NG`, `ZA`, `KE`, `GH`, `GB`, the EU/EEA member states, and `US` via an explicit `statute="HIPAA-SAFE-HARBOR"`.
+
+**Everywhere else, no statute resolves — and a Pipeline with no statute returns `redacted_text` unchanged.** That is the behaviour `on_uncovered` exists to control:
+
+| value | effect |
+|---|---|
+| `"silent"` (default) | today's behaviour; no statute, nothing redacted, no warning |
+| `"warn"` | same, plus a warning naming the jurisdiction and the consequence |
+| `"baseline"` | apply arche's conservative floor — **not the law of any country**, and every citation it emits says so |
+
+Selecting a jurisdiction chooses a **policy template**. It does not determine which law applies to your processing, which turns on establishment, on where your data subjects are, and on sector.
+
+`arche.resolve_documents()` infers the jurisdiction per document by default and passes `on_uncovered="baseline"` when it inferred one, because detecting the right country would otherwise switch protection off. → [the document lane](../concepts/document-lane.md)
+
+
 pipeline = Pipeline(jurisdiction="NG")
 result = pipeline.process(
     "Customer Adesola Okonkwo, NIN 12345678901, phone 0803 555 7890."

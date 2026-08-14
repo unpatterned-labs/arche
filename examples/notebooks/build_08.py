@@ -140,6 +140,20 @@ the safe direction — without that noise ever becoming identity evidence. If TI
 *were* mapped, these 22 distinct values would be sitting in the record as
 national identifiers, and a shared Bolt reference would look like a shared ID.
 
+**This is now caught automatically.** `resolve_documents` infers the
+jurisdiction per document, and this statement's own evidence — UK postcodes, a
+sort code, `Registered in England and Wales` — names GB with no ambiguity. The
+run above passes `jurisdiction="NG"` explicitly so the failure is visible; on
+the default (`jurisdiction="auto"`) these 36 detections do not occur, and an
+explicit code that disagrees with the document is recorded in
+`report.jurisdiction_conflicts` rather than left silent.
+
+The fix took two pieces, not one. Detecting GB alone would have taken the error
+count from 36 to zero **by switching redaction off**, because no UK statute pack
+existed and a Pipeline with no statute returns text unchanged. A UK pack and a
+conservative floor had to land first. Measured: 36 -> 0 false detections, and
+the document is still redacted.
+
 ## 4. Extract — recognised, not validated
 
 Detectors find things with *structure* — an email, a phone number, a checksum.
