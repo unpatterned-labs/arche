@@ -2,7 +2,135 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [0.4.0a1] — unreleased
+
+The document lane, the product lane, and the `EgressGuard` security fix that
+`0.3.0a2` was going to carry before it was superseded. `0.3.0a1` remains the only
+published version until this ships.
+
+
+### Added — extraction provenance on document decisions
+
+A decision derived from a document now records what produced it — `artifact_sha256`, `parser`, `parser_version`, `text_sha256`, `ocr` — on `ParsedDocument.provenance` and `DocumentReport.provenance`. These enter the pins **before** `decision_id` is hashed, so the id moves when the input bytes, the parser version, the rendering, or the OCR setting moves.
+
+Previously such a decision could be *re-run approximately but never re-verified*: the signature covered the verdict while saying nothing about the extraction behind it. A signed wrong merge with opaque extraction provenance is worse than an unsigned heuristic, because it lends institutional legitimacy to something the reader cannot inspect.
+
+`artifact_sha256` and `text_sha256` are **full, untruncated** SHA-256 digests in lowercase hex, so `sha256sum` / `shasum -a 256` / `Get-FileHash` reproduce them exactly. (A pre-release build truncated them to 32 hex chars, which made the standard tools disagree with a field named `sha256` — the one wrong answer it must never give.) This changes `decision_id` for every document-derived decision relative to that build.
+
+New guide: [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/), covering all three lanes and what a recipient of a signed decision should check.
+
+### Added — an experimental electronics product lane
+
+`ENTITY_PACKS["product_electronics"]`, plus the primitives it is built from.
+One call, no setup:
+
+```python
+from arche.resolve import crosswalk
+crosswalk(abt, buy, entity="product_electronics", id_field="id")
+```
+
+Measured on [Leipzig Abt-Buy](https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution)
+(1,081 x 1,092, 1,097 true pairs, complete ground truth so false merges are
+visible):
+
+| | baseline, name only | `product_electronics` |
+|---|---|---|
+| precision | 0.7954 | **0.9707** |
+| recall | 0.2197 | **0.6636** |
+| F1 | 0.3443 | **0.7883** |
+| false merges | 62 | **22** |
+
+**The signal is rarity, and two mechanisms produce it.** With the rules that
+actually ship, code-blocking alone reaches 0.8865 precision over 881 pairs and
+the rarity filter lifts it to 0.9973 over 754. (Both over the full
+cross-product; inside the union blocker's own candidate set the same two rows
+are 856/0.8843 and 731/0.9973. They are different populations and are never
+mixed into one series.)
+
+**The frequency table does that work, not the stop list.** Two earlier drafts of
+this entry got the attribution wrong in opposite directions, so here is the
+end-to-end measurement instead of an argument — Abt-Buy, shipped pack, with
+`stop_codes` on and with it emptied:
+
+```text
+stop_codes ON  (shipped)   TP 728  FP 22  P 0.9707  R 0.6636
+stop_codes DISABLED        TP 728  FP 22  P 0.9707  R 0.6636
+```
+
+Byte-identical. On this benchmark the stop list contributes **nothing**, because
+the table already scores `1080p` far below the gate: `16gb` at df 11 is **0.182**
+against 1.0 for a code as rare as a unique one, and only the latter clears
+`DISTINCTIVE_FLOOR` unaided.
+
+What the stop list earns is the small-catalogue case the benchmark cannot show —
+four records whose only shared code is a resolution give two false merges with
+it off and none with it on. It is a floor for corpora too small to estimate
+frequency from, not a substitute for estimating it.
+
+**A calibration bug worth recording, because it made the lane worse than no
+lane.** `TokenFrequencyTable.distinctiveness` is `min(1, -log10(rel_freq)/5)`,
+calibrated for the million-token word corpora behind the place and person
+tables. A code vocabulary is ~2,000 documents, so the rarest possible shared
+code — one occurrence in each source — scored **0.6205**, below
+`DISTINCTIVE_FLOOR` (0.75). The gate therefore demoted *every* true product
+match and recall fell from 0.2197 to **0.0948**. The formula was not wrong; it
+was being asked a question about a different distribution. `code_rarity` scores document frequency relative to what a
+unique code looks like *in that corpus* (`min(1, baseline/df)`, where `baseline`
+is twice the lower-quartile df). An earlier version anchored on the constant 2,
+which made recall collapse from 0.6636 to 0.0419 on a catalogue where each
+product is merely listed twice — the score has to be corpus-relative, not
+absolute.
+
+New public surface:
+
+- `resolve._productcode.extract_product_code_candidates(text, category)` —
+  *candidates*, deliberately not "model numbers". A regex cannot tell a
+  manufacturer code from a retailer SKU from a spec; rarity does that later.
+  Normalisation is most of the lane: raw-string matching finds a shared code on
+  44.9% of true pairs, normalised on **71.2%**, because one source writes
+  `SB97CS` and the other `SB-97Cs`.
+- `kind: "code"` — rarity-weighted code agreement. `None` when either side has
+  no candidate; **0.0**, not a veto, when both have codes and share none —
+  18.6% of true pairs are in that position (accessories, bundles, retailer
+  SKUs), so a conflict rule would refute them all.
+- `kind: "spec"` — agreement on identity-bearing units, for use with
+  `refutes_below`.
+- `ProductCategory` / `register_category` — **the modularity seam.** Adding
+  food, books or apparel is a category registration plus a benchmark, not a
+  change to any comparator.
+
+**Identity contract: a purchasable variant (SKU).** A 16GB and a 32GB player are
+different products however alike their titles, which is why `spec` refutes
+rather than merely scoring. That contract is data on the category
+(`identity_units`), not a constant in a comparator, so a lane with different
+semantics declares different units.
+
+**Scope, stated rather than buried.** There is no generic `product` pack and
+shipping one would overclaim. The evidence is a single electronics corpus, and
+on Amazon-GoogleProducts — general merchandise — the lane barely helps and
+**costs precision**:
+
+| Amazon-Google | baseline | lane |
+|---|---|---|
+| precision | 0.4898 | 0.4863 |
+| recall | 0.3338 | 0.3408 |
+| F1 | 0.3971 | 0.4007 |
+| false merges | 452 | 468 |
+
+That is +9 true matches for +16 false ones — a marginal precision of **0.36** on
+the pairs it changes. The F1 gain is real and it is not worth having. Reporting
+only the F1 would have hidden it.
+
+The rules that work here fail elsewhere by construction — Levi's `501` is
+rejected twice by thresholds that exist to filter prices and years, `32x32`
+looks like a model and is not, and reading `600mg` as a drug's model code would
+be dangerous. The category is flagged `experimental=True` and a test asserts no
+generic `product` pack exists.
+
+Two further honest limits: the `spec` refutation rests on 47 of 1,097 true pairs
+— all 47 agree, but that is a thin base — and the code frequency table is
+self-calibrated over the two catalogues being matched rather than shipped, which
+is u-probability estimation over the data at hand rather than a shipped asset.
 
 ### Added — place-name qualifier splitting
 
@@ -67,6 +195,36 @@ not at all — facility names carry no qualifiers — and on London recovers not
 while adding two more unlabelled auto-matches. The qualifier convention is a
 property of the *source*, not of places, so it is a capability rather than a
 default. Turning it on for a shipped pack moves that pack's published numbers.
+
+**On the `spec` refutation.** It is exactly neutral on Abt-Buy — identical
+precision, recall and counts with and without it. It earns its place from the
+**identity contract** rather than from this corpus: under a purchasable-variant
+reading a 16GB and a 32GB player are different products, and the refutation is
+what makes that contract executable rather than decorative. Only 47 of 1,097
+true pairs carry a comparable unit, so this corpus cannot test whether it helps,
+and a test pins the neutrality so a future change that makes it *harmful* is
+caught. An earlier measurement showed it costing one true match; that was the
+`_SPEC` boundary bug refuting `F5C400300W` against `F5C400-300W`, now fixed.
+
+Four robustness fixes from an adversarial review of this lane:
+
+- **`compare_codes` fails loud without a table**, matching `tftoken`. It used to
+  return 1.0, making `16gb` indistinguishable from `2595b002` — a silently worse
+  answer rather than an error.
+- **`code_rarity` reads `_as_counts()`**, not `_counts`. A table built from
+  relative frequencies alone carries `_counts = None`, and reading it directly
+  made *every* code score maximally rare with no error.
+- **The code table is named in `pins`** as `codes@sha256:…`. It decides whether
+  a shared code is identifying, so two runs with different tables can reach
+  different verdicts on the same pair; an unpinned scoring input makes
+  `decision_id` claim a reproducibility it does not have.
+- **One table per declared category**, not one for the first `code` comparator
+  found, and `register_category` refuses to shadow an existing name without
+  `replace=True`.
+
+`build_code_table` now warns when the typical code appears more than twice —
+an applicability bound said out loud, since the lane was measured on catalogues
+where a code appears once per source.
 
 The qualifier is a **scored** signal rather than a `refutes_below` discriminator
 on purpose: qualifiers are written at different granularities and in different
@@ -278,7 +436,15 @@ guaranteed **within a table**: rebuilding shifts the denominator for every
 token, so whether a migration demotes anything is a benchmark question, not an
 invariant.
 
-## [0.3.0a2] — 2026-08
+## [0.3.0a2] — never published
+
+**This version does not exist on PyPI and never will.** It was versioned,
+changelogged and merged, then superseded by `0.4.0a1` before it was tagged. The
+section is kept rather than deleted because `SECURITY.md` pointed readers at it
+for a period, and a changelog that quietly loses a version its own advisory
+cited is worse than one that admits the gap.
+
+Everything below shipped in **`0.4.0a1`**.
 
 A security fix and the documentation corrections it turned up. No new features.
 

@@ -88,6 +88,7 @@ nav:
     - Place identity: concepts/place-identity.md
     - The place benchmark: concepts/place-benchmark.md
     - The five ER activities: concepts/er-activities.md
+    - The document lane: concepts/document-lane.md
     - Attest, the signature on the decision: concepts/attest.md
   - Guides:
     - Match African names: how-to/match-african-names.md
@@ -100,10 +101,16 @@ nav:
     - Extract places with spatial roles: how-to/extract-places-with-roles.md
     - Read the crosswalk output: how-to/read-crosswalk-output.md
     - Verify a merge against an external source: how-to/verify-with-external-sources.md
+    # Sits directly after it: that page corroborates a decision against outside
+    # data, this one checks the artifact itself. Readers arrive looking for
+    # "verify" and get sent to whichever of the two they actually meant.
+    - Re-verify a decision (and read someone else's): how-to/re-verify-a-decision.md
     - Why arche and when to use it: tutorials/arche_vs_alternatives.md
     - Place resolution at scale (NG + UK): tutorials/place_resolution_at_scale.md
     - Person resolution at scale (scored): tutorials/person_resolution_at_scale.md
     - Artist resolution (Afrobeats x West): tutorials/artist_resolution.md
+    - Zero to hero with documents: tutorials/zero-to-hero-documents.md
+    - Matching products: tutorials/products.md
   - Cookbooks:
     - Nigerian fintech KYC: cookbooks/fintech-kyc.md
     - South African health export: cookbooks/health-export.md

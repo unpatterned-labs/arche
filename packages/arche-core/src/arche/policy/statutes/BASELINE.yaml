@@ -1,0 +1,159 @@
+# Jurisdiction-neutral baseline floor — NOT A STATUTE, NOT LEGAL ADVICE.
+#
+# WHY THIS FILE EXISTS
+# --------------------
+# arche ships statute packs for six regimes. Everywhere else — the United
+# Kingdom, the United States outside HIPAA, India, Brazil, Indonesia and most of
+# the world — `Pipeline` resolves no statute, and a Pipeline with no statute
+# returns `redacted_text` UNCHANGED. Nothing is masked. Nothing is tokenised.
+#
+# That is a trap the moment jurisdiction detection lands. Measured on a British
+# bank statement:
+#
+#     jurisdiction="NG"   36 false PII-2-TIN detections, but the email IS masked
+#     jurisdiction="GB"    0 false detections, and the email is NOT masked
+#
+# So "correcting" the jurisdiction from NG to GB would take the headline
+# false-positive count from 36 to zero by switching protection off. Reporting
+# that as an improvement would be the most flattering available reading of our
+# own data, and this project has already had to retract claims of that shape.
+#
+# This file is the floor that makes the correction safe: when a jurisdiction has
+# no pack, arche still protects the categories no regime disputes, and says
+# plainly that it is doing so on its own authority rather than a statute's.
+#
+# WHAT IT IS NOT
+# --------------
+# It is NOT the law of any country. It does NOT make a deployment compliant
+# anywhere. It cites no article, section or regulation, because there is none to
+# cite — every `statute_reference` below says so in words rather than pointing
+# at an instrument that does not govern the data in front of it.
+#
+# CALIBRATED TO GDPR'S STRICTNESS. NOT GDPR.
+# -----------------------------------------
+# The action for each category below is the one GDPR.yaml assigns, because
+# GDPR is the strictest widely-adopted regime arche ships and copying its
+# *severity* is a defensible engineering default.
+#
+# It copies the severity and nothing else, and the distinction is the whole
+# point. This file emits no Article citation, claims no lawful basis, grants no
+# data-subject right and sets no breach window — because those are creatures of
+# a specific instrument with its own territorial scope, and asserting them
+# where GDPR does not apply would invent obligations rather than describe them.
+# A US-only deployment processing US data is not subject to GDPR, and a floor
+# that told it otherwise would be worse than a floor that says "not law".
+#
+# Jurisdiction-specific identifiers (a Nigerian BVN, a US SSN, a UK NINO) are
+# absent on purpose: a floor that guessed at foreign identifiers would repeat
+# the exact mistake it exists to fix — running NG detectors on a British
+# document produced 36 confident false positives.
+#
+# WHEN IT APPLIES
+# ---------------
+# Only via `Pipeline(on_uncovered="baseline")`, and only when no statute pack
+# covers the jurisdiction. It never overrides a real pack, and an explicitly
+# passed jurisdiction keeps today's behaviour unless the caller opts in.
+
+statute_id: BASELINE
+jurisdiction: "*"
+version: v0.1
+# `version` is a claim about our work; `review_status` a claim about the world.
+# `self-reviewed` is the literal truth and the strongest thing that can honestly
+# be said: these mappings were written and checked by this project. No regulator,
+# no lawyer and no external body has looked at them, and the loader's vocabulary
+# has no weaker value than this one.
+review_status: self-reviewed
+effective_date: null
+authority: "None. This is arche's own default, not an instrument of any state."
+breach_notification_window_hours: null
+
+# Left empty on purpose. Lawful bases and data-subject rights are creatures of
+# statute; a floor that invented them would be asserting law that does not
+# exist. A deployment needing these needs a real pack for its jurisdiction.
+lawful_bases: []
+data_subject_rights: []
+
+policy_mappings:
+  # Names. Tokenised rather than masked so records stay linkable for
+  # resolution while the surface form is protected.
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "A name is personal data under every regime arche ships a pack for."
+
+  # Direct contact identifiers. Every shipped pack treats these as personal
+  # data; tokenize is the strictest action any of them assigns, so it is the
+  # one used here.
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "An email address identifies a person under every regime arche ships a pack for. Protected by default rather than left in the clear."
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "A phone number is a direct contact identifier under every shipped pack."
+
+  # Government identifiers. Masked rather than tokenised: a national identifier
+  # is the highest-cost re-identification vector arche detects, and a token is
+  # still a stable handle for the same person across documents.
+  PII-2-NATIONAL-ID:
+    action: mask
+    tier: high
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "A government identifier is the strongest re-identification key in ordinary documents."
+  PII-2-PASSPORT:
+    action: mask
+    tier: high
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "A passport number identifies a person across borders and systems."
+
+  # Location. Generalised, not masked: a street address is identifying, a city
+  # usually is not, and destroying the coarse signal costs analytics without
+  # buying protection. This mirrors what GDPR and POPIA already do.
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "Street-level addresses re-identify; city-level rarely does. Generalise rather than destroy."
+
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "A coarse location is rarely identifying on its own; destroying it costs analytics without buying protection."
+
+  # Financial instruments. PCI-DSS is not a data-protection statute and applies
+  # regardless of jurisdiction, so these rows have an external standard behind
+  # them — named as a standard, not as law.
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor; PCI-DSS applies to card data independently of jurisdiction"
+    rationale: "Dropped rather than masked, matching the strictest shipped pack. Payment card data is protected by contract and standard everywhere."
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    rationale: "Account details enable direct financial access."
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: high
+    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+
+# Anything detected and not named above. `mask` is the safe direction for a
+# floor: over-masking costs a reader some context, under-masking discloses a
+# person. The categories arche detects but does not name here are mostly
+# country-specific identifiers, and masking an identifier we cannot place is
+# the conservative default.
+default_action: mask
+default_statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+
+# Absent on purpose: retention limits, cross-border transfer rules and penalties
+# are all statute-specific. A floor that invented numbers for them would be
+# fabricating obligations, which is worse than declaring none.
+retention_limits: {}
+cross_border_transfer: {}
+penalties: {}

@@ -2,20 +2,13 @@
 
 # Know what's real.
 
-<p class="arche-hero__sub">The open engine for messy, multilingual data. Find
-the entities, resolve who they actually are, protect them under the law that
-applies, and sign every decision.</p>
+<p class="arche-hero__sub">An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.</p>
 
 <span class="arche-hero__status">v0.3.0a1 &middot; pre-beta &middot; Apache-2.0</span>
 
 </div>
 
-arche tells you and your agent what — and who — your data is actually talking
-about. It finds the entities in any document or system, standardises them for
-the names and addresses people actually use, and works out which real-world
-thing each one refers to. Along the way it keeps disagreement between sources
-instead of erasing it, protects everything under the law that applies, and
-signs every decision.
+arche tells you and your agent what — and who — your data is actually talking about. It finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to. It keeps disagreement between sources instead of erasing it, says plainly when it will not decide, and signs every decision so you can re-check it months later.
 
 <div class="arche-verbs" markdown>
 <div class="arche-verb" markdown>
@@ -38,40 +31,26 @@ signs every decision.
 
 ## The problem, in three records
 
-Two catalogue rows read *Damini Ogulu* and *Burna Boy*. Three clinic registers
-around Kano read *Fatima Abdullahi*, *Fatuma Abdullahi*, *F. Abdulahi*. And two
-sanctioned men share the name Khalid Mehmood, the same country and the same
-programme, with different fathers and different national IDs.
+Two catalogue rows read *Damini Ogulu* and *Burna Boy*. Three clinic registers around Kano read *Fatima Abdullahi*, *Fatuma Abdullahi*, *F. Abdulahi*. And two sanctioned men share the name Khalid Mehmood, the same country and the same programme, with different fathers and different national IDs.
 
-Two of those are one entity wearing different names. One is two entities
-wearing the same name. Software that gets the first two right by loosening its
-matching gets the third one catastrophically wrong. Holding all three at once
-is the job.
+Two of those are one entity wearing different names. One is two entities wearing the same name. Software that gets the first two right by loosening its matching gets the third one catastrophically wrong. Holding all three at once is the job.
 
 ## Why use this library
 
 - **It abstains.** When the evidence does not support a verdict, resolution
-  returns `review` rather than guessing. An agent that flips two people has a
-  much worse day than one that asks.
+returns `review` rather than guessing. An agent that flips two people has a much worse day than one that asks.
 - **Every decision cites its law.** Detections carry a sensitivity tier and the
-  specific statute section that classifies them — NDPA-2023, POPIA, Kenya DPA,
-  Ghana DPA, GDPR, or HIPAA Safe Harbor.
+specific statute section that classifies them — NDPA-2023, POPIA, Kenya DPA, Ghana DPA, GDPR, or HIPAA Safe Harbor.
 - **Every decision can be signed** together with the exact representation that
-  produced it, so the claim *given this evidence and this representation, this
-  was the decision* is checkable by anyone.
+produced it, so the claim *given this evidence and this representation, this was the decision* is checkable by anyone.
 - **Your schema, not ours.** One YAML declares your fields; arche generates the
-  comparators, the masking, and the extraction contract your LLM fills.
+comparators, the masking, and the extraction contract your LLM fills.
 - **Bring any model.** An LLM is a proposer, never the decider. It reads messy
-  text into your declared fields — hallucinated fields become violations rather
-  than values — and the engine grades its judgment against a deterministic
-  oracle, counting `review` as an honest abstention rather than a miss. The
-  integration surface is one callable.
-  [Bring your own LLM](how-to/bring-your-own-llm.md).
+text into your declared fields — hallucinated fields become violations rather than values — and the engine grades its judgment against a deterministic oracle, counting `review` as an honest abstention rather than a miss. The integration surface is one callable. [Bring your own LLM](how-to/bring-your-own-llm.md).
 - **Calibrated on the hardest identity data there is.** Africa is where the
-  engine was made good, not the limit of where it runs. The name equivalence
-  and frequency data ships as inspectable files you can read and correct.
+engine was made good, not the limit of where it runs. The name equivalence and frequency data ships as inspectable files you can read and correct.
 - **Lightweight by default.** Heavy ML, Presidio, Splink, and document parsing
-  are opt-in extras.
+are opt-in extras.
 
 ## Installation
 
@@ -107,9 +86,7 @@ Given text or a supported document file, arche returns:
 - redacted text
 - audit records suitable for later review
 
-These outputs are useful for redaction today and for safer record linkage later:
-tokenized IDs, normalized phones, detected names, and parsed address fragments
-can become privacy-preserving join signals.
+These outputs are useful for redaction today and for safer record linkage later: tokenized IDs, normalized phones, detected names, and parsed address fragments can become privacy-preserving join signals.
 
 Supported launch jurisdictions:
 
@@ -174,20 +151,14 @@ print(Counter(o.action for o in result.policy_outcomes))
 print(result.redacted_text)
 ```
 
-`Result` is a plain dataclass - there is no `summary()` helper. Its fields are
-`document_hash`, `detections`, `addresses`, `policy_outcomes`, `redacted_text`,
-`audit_log`, and `metadata`; counting over `detections` / `policy_outcomes` is
-how you get a per-category and per-action rollup. On the equivalent inline call
-`Pipeline(jurisdiction="ZA").process("ID 8001015009087, phone 082 555 1234.")`
-those two lines print:
+`Result` is a plain dataclass - there is no `summary()` helper. Its fields are `document_hash`, `detections`, `addresses`, `policy_outcomes`, `redacted_text`, `audit_log`, and `metadata`; counting over `detections` / `policy_outcomes` is how you get a per-category and per-action rollup. On the equivalent inline call `Pipeline(jurisdiction="ZA").process("ID 8001015009087, phone 082 555 1234.")` those two lines print:
 
 ```text
 Counter({'PII-2-NATIONAL_ID': 1, 'PII-3-PHONE': 1})
 Counter({'mask': 1, 'tokenize': 1})
 ```
 
-`process_file(...)` delegates parsing to the document substrate, then sends the
-extracted text through the same detection and policy pipeline.
+`process_file(...)` delegates parsing to the document substrate, then sends the extracted text through the same detection and policy pipeline.
 
 ## What can it detect?
 
@@ -210,8 +181,7 @@ print(score.decision, score.score)
 # match 0.8865
 ```
 
-Use this when you need culturally aware name matching before or after PII
-detection.
+Use this when you need culturally aware name matching before or after PII detection.
 
 ## What ships today
 
@@ -234,5 +204,4 @@ detection.
 
 ## Licence
 
-The framework is Apache-2.0. Dataset licensing is documented separately in the
-dataset cards and repository licensing files.
+The framework is Apache-2.0. Dataset licensing is documented separately in the dataset cards and repository licensing files.

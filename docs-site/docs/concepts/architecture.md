@@ -4,7 +4,7 @@
 
 ---
 
-The product describes itself in four verbs: **detect · resolve · protect · attest**. Find the entities, work out who they actually are, hold them under the law that applies, and sign the decision.
+The engine finds the entities, resolves who or what they are, and decides which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check. Internally that is four layers, and this page is about how they compose: **detect** finds candidate references, **resolve** decides which real-world thing each denotes, **protect** applies whatever policy you have selected, and **attest** signs the result.
 
 Those four verbs are a good account of what you can *do* with arche. They are not how the code is layered, and a page that draws them as four boxes with arrows between them would be the same mistake this page is replacing. The previous version of this page described five substrates — detect, policy, sign, audit, workflow — flowing one into the next. Two of the four headline verbs did not appear in it at all, and the page carried a note apologising for covering "the detection half". When an architecture diagram needs a note explaining which half of the product it omits, the diagram is wrong.
 

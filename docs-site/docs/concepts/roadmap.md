@@ -4,6 +4,14 @@ The single source of truth for what arche ships today, what gates the beta relea
 
 **Status vocabulary**, used consistently below: **Shipped** (in the wheel, tested, documented) · **In flight** (active work with a named deliverable) · **Gated** (designed, sequenced behind a prerequisite we name) · **Not committed** (visible on the horizon; no promise).
 
+**Item labels.** Gated and in-flight items carry a conventional-commit type and
+tags, so a roadmap line maps onto the issue and the branch that would implement
+it: `feat` (new capability) · `fix` (defect in shipped behaviour) ·
+`chore` (release, dependency, infrastructure) · `refactor` (internal shape, no
+behaviour change) · `docs` · `bench` (a measurement, not a feature). Tags name
+the lane (`lane:document`, `lane:product`, `lane:place`) and the state
+(`deferred`, `blocked`, `needs-evidence`).
+
 !!! warning "Status: v0.3.0a1 — first alpha of the beta line"
     Not beta itself. APIs may change between alpha releases; not for production use against real personal data yet. Of the four named beta criteria below, one is met, one is partially met, two are open. Bug reports, issues, and contributions are very welcome.
 
@@ -99,6 +107,7 @@ Designed, sequenced, and honestly blocked on a named prerequisite.
 
 | Work | Gate |
 |---|---|
+| **`fix(doc): extraction provenance in signed decisions`** · `blocked` `lane:document` — a decision derived from a document must carry the input artifact hash, the parser identity and version, the rendered-text version its spans index into, and navigable citations | **A defect in shipped behaviour, not a new capability.** `resolve_documents` signs decisions today whose extraction is unrecorded, so they can be re-run approximately but never re-verified — pinning a backend name is provenance labelling, not auditability. A signed wrong merge with opaque extraction provenance is worse than an unsigned heuristic, because it lends institutional legitimacy to something the reader cannot inspect. Gated only on sequencing: it lands before any further document-lane feature. |
 | **Transitive clustering** (union-find over pairwise edges, persistent cluster ids) | After the benchmark — blind clustering is where chained false merges hide, so arche's version stays gated: drop non-distinctive edges before components form, flag bridge records to review |
 | **Entity relationship analysis** — households, networks, bridges | After clustering. Relationships connect *entities*; before clustering we hold only *references*, so ERA would put one person in the network three times. Then: `relationships:` in the declaration → analysis primitives (consume-don't-build) → **governed relationships** (edges are personal data: statute classes, masking, signable relationship claims) |
 | **Contextual spatial roles** (`context=` for anaphora and deixis) | The conversational gold slice lands first — eval ahead of feature |
@@ -107,6 +116,8 @@ Designed, sequenced, and honestly blocked on a named prerequisite.
 | **Registry adapters** (OpenCRVS, MOSIP, Companies House) | A real deployment to build against, not scaffolding. Verdicts from adapters are evidence, never decisions; every adapter is an egress destination |
 | **A fine-tuned small model** for extraction/roles | The gold sets first, then verifier-gated distillation, then it ships only if it beats the deterministic floor *without* raising over-guess |
 | **OpenMRS integration** — patient record linkage across facility EMRs | A deployment with real duplicate burden. The facility crosswalk is the half we have already proven; the patient half is the same engine with a person pack and a much higher cost of a wrong merge. Gated on a partner who will adjudicate the review queue, because a duplicate-patient decision nobody signs off is a decision nobody can defend |
+| **`feat(doc): pluggable parse/extract backends`** · `deferred` `needs-evidence` `lane:document` — a `backend=` argument on `doc.parse` and `doc.extract`, so a hosted extractor can be substituted where local parsing struggles, with arche's gate and signature still on top | **Deferred for lack of a demonstrated need, not for lack of value.** Zero of the seven real PDFs in this repo defeated the local parser — no parse failures, no empty-text fallbacks — so the seam would today be a protocol, a registry and a fake, with no second implementation to justify the abstraction. The design is settled and recorded: default `local` with `egress="none"`, a network backend named explicitly and cleared through `EgressGuard`, refused outright under `ARCHE_OFFLINE=1`, and recorded in the pins so a decision produced remotely is not byte-identical to one produced locally. **Trigger, either of:** (1) a real document that local parsing cannot read, or (2) a comparison run showing a hosted extractor changes the *resolution verdict*, not merely the extracted text. arche does not bundle, endorse or require any commercial extractor, and none is installed by default. |
+| **`feat(doc): within-document mention clustering`** · `deferred` `needs-evidence` `lane:document` — every named person and organisation in one long document, with counts, citations and contextual co-mentions | **Three gates, all open.** (1) *Extraction provenance ships first.* A decision derived from a document is only re-verifiable if the signed evidence carries the input artifact hash, the parser identity and version, the rendered-text version its spans index into, and navigable citations. Without those a signature makes a claim look more defensible than it is — and a signed wrong merge with opaque extraction provenance is worse than an unsigned heuristic, because it lends institutional legitimacy to something the reader cannot inspect. (2) *An evaluation that is affordable and valid.* Three structurally different documents and 150-300 sampled, adjudicated mention-pair decisions, with false merges reported separately from missed ones — not one exhaustively hand-labelled long document, which is too small to establish quality and expensive enough to stall. (3) *A benchmarked claim against real prior art.* LlamaIndex property graphs deduplicate nodes, GLiNER plus embedding clustering is a standard baseline, and spaCy's ecosystem does coreference. Others resolve mentions; the defensible gap is conservative, offline, evidence-cited resolution that abstains and says why, and that has to be measured rather than asserted. Scope, when it opens, is explicitly named people and organisations only — no pronouns, no role nouns, no asserted relationships. **Deferred deliberately (2026-08)** to keep the footing on cross-record matching, which is where the measured results are. |
 | **Product resolution** — the same engine, non-person entities | Deliberately sequenced after places, because products are where the representation thesis gets its cleanest test: a product has identifiers (ISBN, GTIN, batch), names that vary by market and language, and no privacy surface at all, so the engine can be measured without a statute in the way |
 
 ### Where product resolution starts
@@ -181,6 +192,119 @@ It was sequenced ahead of any new entity lane on purpose. A lane built before it
 | **A false-merge rate on every benchmark page** | Kano and London currently report recall only; both get the caveat until a complete mapping exists for them |
 
 **On Apache Ossie** (incubating; formerly Open Semantic Interchange): it is a vendor-neutral way to exchange *semantic models* as JSON/YAML across analytics and BI tools. It is not a matching engine and not a competitor — the honest seam is arche's declaration, which is already a portable contract about what fields mean. Emitting and ingesting that as an Ossie-compatible artifact is plausible and cheap. It is deliberately **not** committed: the project is in incubation, its schema will churn, and threading a moving format through our most load-bearing contract buys nothing this quarter. Watched, not adopted.
+
+---
+
+## The document lane, and what is being built in it
+
+**In progress for v0.4.0a1.** This section exists so the work is legible while
+it is happening rather than only after it lands.
+
+The lane is the path from a file on disk to a signed decision: **parse → read
+metadata → detect under a statute → extract → assemble a record → resolve →
+report**. `arche.resolve_documents()` runs all of it in one call, and
+[notebook 02](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/02_same_person_across_documents.ipynb)
+does three PDFs in three cells with no user-written regex.
+
+Where it sits against the rest of the project: extraction is **not** the
+differentiator. Vendors in that space produce *references*. What arche adds is
+which real-world entity a reference denotes, whether the data may move, and a
+signature over the decision. The document work exists so that differentiator is
+reachable in under a minute rather than after an afternoon of glue code.
+
+### Shipped in this lane
+
+| | What changed |
+|---|---|
+| **One-call resolution** | `resolve_documents(source)` — glob, directory or file — returns records, verdicts and a report. Thirteen notebook cells became three, and four user-written regexes became none. |
+| **Document metadata** | `ParsedDocument.metadata` was `{}` for the life of the module while every PDF carried title, author, producer and dates. Now populated, with a typed `.info` view. |
+| **Producer provenance** | `browser-print` / `html-renderer` / `enterprise-report` — whether a human printed a document from a browser or a reporting system emitted it. A trust signal from data we already hold. |
+| **Metadata as personal data** | A bank statement's `Title` carries an account fragment; a flight confirmation's `Subject` carries a booking reference. Those fields are now scanned and masked instead of invisible to redaction. |
+| **Progress and timing** | A three-minute run used to print nothing and was indistinguishable from a hang. Progress writes to a **stream**, never through `logging` — the library silences third-party loggers, so anything logging-based would be swallowed by its own silencer. TTY, CI log, notebook and agent (`ARCHE_PROGRESS=jsonl`) all work, with no new dependency. |
+| **Baseline statute floor** | `Pipeline(on_uncovered="baseline")` — see below. |
+
+### The baseline floor, and the trap it closes
+
+arche ships statute packs for six regimes. **Everywhere else — the UK, the US
+outside HIPAA, India, Brazil, most of the world — no statute resolves, and a
+Pipeline with no statute returns `redacted_text` unchanged.** Nothing is masked.
+
+That becomes dangerous the moment jurisdiction detection lands. Measured on a
+British bank statement:
+
+```text
+jurisdiction="NG"    36 false PII-2-TIN detections   email IS masked
+jurisdiction="GB"     0 false detections             email is NOT masked
+```
+
+So "correcting" the jurisdiction takes the headline false-positive count from 36
+to zero **by switching protection off**. That is the most flattering available
+reading of our own data, and this project has already had to retract claims of
+that shape.
+
+`BASELINE.yaml` is the floor that makes the correction safe: the categories no
+regime disputes (email, phone, national identifier, passport, address, payment
+card), at the strictest action any shipped pack assigns. It is **not law**, and
+every citation it emits says so in words — `"no statute pack for this
+jurisdiction — arche baseline floor, not law"`. It invents no lawful bases and no
+data-subject rights, because those are creatures of statute. Country-specific
+identifiers are deliberately absent: a floor that guessed at foreign identifiers
+would repeat the mistake it exists to fix.
+
+It is **off by default** (`on_uncovered="silent"`), so no existing caller's
+output moves. `"warn"` names the uncovered jurisdiction and the consequence.
+
+### Still to build in this lane
+
+| Item | Note |
+|---|---|
+| **Jurisdiction inference** | Evidence-based and inspectable — registration identifiers, postcode shape, currency, issuer name, phone country code — that **abstains** rather than guesses when signals conflict. An explicit `jurisdiction=` always wins. Gated behind the floor above, for the reason given. |
+| **Typed extraction** | `extract(schema=YourModel, document=parsed)` returning a validated instance with spans and pages. pydantic is already a base dependency, so this costs nothing on the wheel. |
+| **Export** | `to_rows()` as the primitive, then `to_csv()`. Google Sheets and pandas become three lines of user code on top of it rather than shipped surface with an auth story to own. `to_json()` and `save_json()` already exist; masking is the default on every path. |
+| **Report shapes** | `table()` for reading, `to_dicts()` for rows, `to_json()` for a ticket or the next pipeline stage — plus timing, so "what was slow?" is answerable after the fact. |
+| **Pluggable parse/extract backends** | `parse` and `extract` take a `backend=`. The default, `"local"`, runs entirely on your machine and makes no network calls. The interface is public so a hosted extractor can be substituted where a document defeats local parsing. Any backend that leaves the machine must declare an egress class, is refused under `ARCHE_OFFLINE=1`, and is recorded in the decision pins — a decision produced remotely is not byte-identical to one produced locally, by design. arche does not bundle, endorse or require any commercial extractor, and none is installed by default. |
+| **Content credentials (C2PA)** | **Gated, not scheduled.** The type ships with an honest empty state; the reader does not. XMP is zero bytes in every PDF available to this project, so a reader could be written but not demonstrated, and an untestable trust feature is worse than none. `ai_generated` is tri-state: absence of a manifest yields *unknown*, never *human-authored*. Gate: build it when we hold at least five documents that actually carry a manifest. |
+
+### Document provenance and authenticity — what we are thinking
+
+Not scheduled. This is a position, written down so it can be argued with.
+
+"Can arche verify a document?" has no single answer, because *verify* covers claims of wildly different strength. The useful product is telling you **which rung you are standing on**, never a boolean.
+
+| Rung | The claim | Strength | Present in the 7 real PDFs we hold |
+|---|---|---|---|
+| 0 | The file states who made it (`producer`, `author`, dates) | **Forgeable by anyone who can write a PDF** | 7 / 7 |
+| 1 | The producer family is consistent with the claim — a browser print that says it came from an enterprise reporting system is odd | Weak forensic | 7 / 7 |
+| 2 | The structural fingerprint matches the claimed producer — object ordering, xref style, font subsetting differ per tool | Moderate forensic, hard to forge *accidentally* | buildable |
+| 3 | The document carries a valid cryptographic signature (PAdES, or a C2PA manifest) | Strong | **0 / 7** |
+| 4 | The signer resolves to a known real-world entity in a registry | Strongest | needs 3, plus resolution |
+
+**Rung 0 and 1 ship today.** `parse().info` reads the metadata and classifies the producer into `browser-print` / `html-renderer` / `enterprise-report` / `office` / `scanner`. Every surface that touches it says the same thing: metadata is a claim by the file, not a verification.
+
+**Rung 3 is where most tooling starts, and it is empty.** Zero of our seven PDFs carry a signature dictionary, XMP packet, or content-credential marker. A verification feature that only works at rung 3 serves almost nobody, because almost nothing in circulation is signed. We will read signatures and C2PA manifests **when we hold documents that carry them** — the gate is five real files, not a release date. Until then the `ContentCredentials` type ships with an honest empty state and `ai_generated` stays tri-state, because absence of a manifest is not evidence of human authorship.
+
+**Rung 4 is the one that is actually ours.** `author='Condor Flugdienst GmbH'` is a *reference to an organisation*, and deciding which real-world company a reference denotes is the thing this engine already does for people, places and products. "Who issued this document?" is an entity-resolution question wearing a security costume: extract the issuer reference, resolve it against a company registry, and sign the decision. That path is measurable with the benchmarks we already run, which rung 3 is not.
+
+Two distinctions we will keep, because collapsing them is how this goes wrong:
+
+- **Issued by** is not **belongs to**. A payslip is issued by an employer and about an employee. Provenance answers the first; the identity lane answers the second. A single "who does this document belong to" field would blur two different questions with different failure costs.
+- **Integrity** is not **authenticity**. A signature proves the bytes did not change since signing. It says nothing about whether the signer is who they claim to be, which needs a trust anchor — and that is rung 4 again.
+
+**Rung 2 is the interesting unbuilt one.** A structural fingerprint — how a specific tool lays out a PDF — is real forensics, cheap to compute, and needs no manifest. It is unbuilt because we have not measured its false-positive rate, and a provenance signal that cries wolf is worse than none. The gate is a labelled corpus of documents with known producers, including deliberately re-saved ones.
+
+*The same ladder applies beyond documents.* An API response, a database export and a CSV all carry the same structure: a self-declared origin, a forensic signature, an optional cryptographic one, and an issuer who may or may not resolve to a real entity.
+
+### Not built, and why
+
+**A fix to context-free identifier detectors.** The 36 false TINs are only
+partly a jurisdiction bug — `NG_TIN` matches a bare ten-digit run, so a
+*correct* Nigerian jurisdiction on a Nigerian bank statement still flags every
+transaction reference. That is a detector-calibration change which moves
+published numbers, and it belongs in its own release with its own measurement.
+
+**New EU/US identifier packs.** That is what currently makes "correct
+jurisdiction" mean "fewer detectors". It is a large separate project and should
+not be smuggled into this one.
 
 ---
 

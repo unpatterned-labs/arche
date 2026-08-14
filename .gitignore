@@ -81,6 +81,8 @@ pyproject.toml
 
 /notebooks
 
+/examples/notebooks/08_inside_the_one_call.ipynb
+
 # Local AI assistant configuration and scratch notes. Not part of the project;
 # contributors are free to use any tooling they like without it landing here.
 .claude/

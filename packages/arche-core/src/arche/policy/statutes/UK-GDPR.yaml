@@ -1,0 +1,149 @@
+# United Kingdom — UK GDPR and the Data Protection Act 2018.
+#
+# WHY THIS IS NOT A COPY OF GDPR.yaml
+# -----------------------------------
+# Post-Brexit the UK operates its own regime: the retained UK GDPR read
+# together with the Data Protection Act 2018. The category actions are close to
+# the EU's — that similarity is why this pack is safe to ship when a US pack is
+# not — but the surrounding law is genuinely different and a pack that pointed
+# at EU instruments would be citing the wrong law:
+#
+#   * the supervisory authority is the ICO, not an EU authority or the EDPB;
+#   * international transfers use the IDTA or the UK Addendum to the EU SCCs,
+#     under UK adequacy regulations — not Art 45–49 as the EU applies them;
+#   * the age of consent for information society services is 13 (DPA 2018
+#     s.9), not the GDPR default of 16;
+#   * penalties are denominated in sterling (GBP 17.5m / 4%), not euro;
+#   * divergence is live and continuing — the Data (Use and Access) Act 2025
+#     amends parts of the regime, with provisions commencing on their own
+#     timetable, so this pack carries an explicit effective date and must be
+#     maintained as a living artifact rather than assumed stable.
+#
+# HONEST BOUNDARY
+# ---------------
+# This pack maps the categories arche's detectors actually emit to lawful
+# actions with a citation. It is the data-governance substrate the regime
+# expects. It does NOT certify UK GDPR compliance, it is NOT legal advice, and
+# selecting it does NOT establish that UK law applies to your processing —
+# applicability turns on establishment, on where data subjects are, on sector
+# and on transfers, none of which a single jurisdiction code can determine.
+
+statute_id: UK-GDPR
+jurisdiction: GB
+version: v0.1
+# Completeness is `version`; who vouches for the mappings is `review_status`.
+# Written and checked by this project. No regulator, lawyer or external body
+# has reviewed it, and `self-reviewed` is the weakest value the loader accepts.
+review_status: self-reviewed
+effective_date: 2021-01-01
+authority: Information Commissioner's Office (ICO)
+breach_notification_window_hours: 72  # UK GDPR Art 33
+
+lawful_bases:  # UK GDPR Art 6(1)
+  - consent
+  - contract
+  - legal_obligation
+  - vital_interests
+  - public_task
+  - legitimate_interests
+
+data_subject_rights:  # UK GDPR Art 12–22
+  - access
+  - rectification
+  - erasure
+  - restrict_processing
+  - data_portability
+  - object
+  - no_automated_decision
+
+policy_mappings:
+  PII-1-NAME:
+    action: tokenize
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1) (personal data)"
+  PII-2-NIN:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1); DPA 2018 Sch 1"
+    rationale: "A national identifier is a direct re-identification key. UK National Insurance numbers fall here."
+  PII-2-TIN:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1)"
+    rationale: "Tax identifiers (UTR, NINO used as a tax reference) identify a person to HMRC."
+  PII-2-DRIVERS_LICENCE:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1)"
+  PII-2-DID:
+    action: tokenize
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1)"
+  PII-2-RC:
+    action: retain
+    tier: low
+    statute_reference: "Companies Act 2006 s.1085 (public register)"
+    rationale: "A Companies House registration number is deliberately public and identifies a company, not a person."
+  PII-3-PHONE:
+    action: tokenize
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1); PECR 2003 for electronic marketing"
+  PII-3-EMAIL:
+    action: tokenize
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1); PECR 2003 for electronic marketing"
+  PII-4-ADDRESS:
+    action: generalize
+    tier: moderate
+    statute_reference: "UK GDPR Art 5(1)(c) (data minimisation)"
+    rationale: "Generalise street-level to city/region; a UK postcode alone can identify a household."
+  PII-4-LOCATION:
+    action: retain
+    tier: low
+    statute_reference: "UK GDPR Art 5(1)(c)"
+  PII-5-BANK_ACCOUNT:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1)"
+    rationale: "Sort code and account number together enable direct financial access."
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "UK GDPR Art 4(1); PCI-DSS applies independently of data protection law"
+  PII-5-CRYPTO_WALLET:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1)"
+
+default_action: mask
+default_statute_reference: "UK GDPR Art 6"
+
+retention_limits:
+  default: "No longer than necessary for the purposes processed (UK GDPR Art 5(1)(e))."
+
+# Chapter V as retained, but the mechanisms are the UK's own. The EU's SCCs are
+# usable only with the UK Addendum; the IDTA is the domestic instrument.
+cross_border_transfer:
+  permitted_basis:
+    - uk_adequacy_regulations       # UK GDPR Art 45 as retained
+    - international_data_transfer_agreement   # the IDTA
+    - uk_addendum_to_eu_sccs
+    - binding_corporate_rules
+    - explicit_consent
+    - derogations
+  notes: >
+    Transfers out of the UK require a UK mechanism. EU standard contractual
+    clauses are not sufficient on their own — they require the UK Addendum.
+
+penalties:
+  major_violation: "Up to GBP 17.5 million or 4% of total worldwide annual turnover, whichever is higher."
+  minor_violation: "Up to GBP 8.7 million or 2% of total worldwide annual turnover, whichever is higher."
+
+# Notes that do not fit the schema above but that a reader of this pack needs.
+notes:
+  digital_consent_age: "13 (DPA 2018 s.9), against the GDPR default of 16."
+  divergence: >
+    The Data (Use and Access) Act 2025 amends parts of this regime with
+    provisions commencing on their own timetable. This pack states an effective
+    date of 2021-01-01 for the post-Brexit baseline and does not yet encode
+    2025 changes. Treat it as a living artifact.

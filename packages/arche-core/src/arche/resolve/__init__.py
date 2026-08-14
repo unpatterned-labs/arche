@@ -129,7 +129,36 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "mbid", "kind": "id", "weight": 3.0},
         {"field": "isni", "kind": "id", "weight": 2.0},
     ],
-    # "product": roadmap — numeric-tolerance + colour-set comparators.
+    # Products, electronics only and marked EXPERIMENTAL. There is no generic
+    # `product` pack and shipping one would be an overclaim: what counts as a
+    # code and which specifications carry identity are properties of a product
+    # *category*. Levi's `501` is a model that a length threshold rejects,
+    # `32x32` is not a model but looks like one, and reading `600mg` as a drug's
+    # model code would be dangerous. Food, books and apparel register their own
+    # rules via `resolve._productcode.register_category`; the machinery is
+    # shared, the rules are not.
+    #
+    # Identity contract: a **purchasable variant (SKU)**. A 16GB player and a
+    # 32GB player are different products however alike their titles, which is
+    # why `spec` refutes rather than merely scoring.
+    "product_electronics": [
+        # A shared *rare* code is the identity signal. Weighted highest because
+        # rarity-conditioned precision on Abt-Buy is 0.9973 with the rarity
+        # filter (754 pairs) against 0.8865 without it (881).
+        # Ordered so the evidence keys read plainly. The first comparator on a
+        # field claims the bare field name, so `name` must be the name
+        # comparator; otherwise a reviewer sees `name: 1.0` and has no way to
+        # know it meant "these share a rare product code".
+        {"field": "name", "kind": "name", "weight": 1.5},
+        {"field": "name", "kind": "code", "weight": 3.0, "category": "electronics"},
+        {"field": "name", "kind": "tftoken", "weight": 1.5},
+        # Identity-bearing specifications under the SKU contract. Scored low and
+        # refuting: on Abt-Buy 47 of 47 true pairs carrying a comparable unit
+        # agree on every one, so the refutation is close to free there — though
+        # 47 of 1,097 is a thin evidence base and the changelog says so.
+        {"field": "name", "kind": "spec", "weight": 0.5,
+         "category": "electronics", "refutes_below": 0.5},
+    ],
 }
 
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather

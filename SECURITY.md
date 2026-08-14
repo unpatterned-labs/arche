@@ -9,7 +9,8 @@ we would rather hear about a suspected problem than not.
 
 | Version | Supported |
 |---|---|
-| `0.3.0a*` | Yes — current alpha line |
+| `0.4.0a*` | Yes — current alpha line |
+| `0.3.0a1` | No — carries the `EgressGuard` defect below; upgrade |
 | `0.2.0a*` | No — superseded, please upgrade |
 | `0.1.*` | No |
 
@@ -104,7 +105,7 @@ old default, it was not verifying issuers, and it needs a key.
 
 We would rather write these down than have you find them.
 
-### Fixed in 0.3.0a2: `EgressGuard` leaked on overlapping detections
+### Fixed in 0.4.0a1: `EgressGuard` leaked on overlapping detections
 
 `EgressGuard` in **0.3.0a1** could emit a detected value in clear text when two
 detections overlapped. Nested spans — an address containing a location, which
@@ -114,11 +115,25 @@ skipped category was also missing from `GuardedProjection.fields`, so the loss
 was silent, and because `ADDRESS` generalises where `LOCATION` is retained, the
 span that survived was the more sensitive one.
 
-**Affected:** `0.3.0a1`, any use of `arche.guard.EgressGuard`.
-**Fixed in:** `0.3.0a2`. Overlapping detections are grouped into disjoint
+**Affected:** `0.3.0a1`, which is the **only version published to PyPI** and
+therefore the only one anyone can be running. Any use of
+`arche.guard.EgressGuard`.
+
+**Fixed in:** `0.4.0a1`. Overlapping detections are grouped into disjoint
 regions, replaced once, with the most restrictive action in the region winning.
-**Action:** upgrade. If you have shipped projections built with `0.3.0a1`,
-re-check them for unreplaced address fragments.
+
+**Correction (2026-08):** this advisory previously said "Fixed in `0.3.0a2`" and
+told readers to upgrade. **`0.3.0a2` was never published.** It was versioned,
+changelogged and merged, and then superseded before release — so for a period
+this file instructed people to upgrade to something that did not exist. The fix
+itself has been in `main` throughout; only the release it rides in has changed.
+We are recording the mistake rather than quietly editing the version number,
+because an advisory that has been wrong once should say so.
+
+**Action:** upgrade to `0.4.0a1` when it publishes. If you have shipped
+projections built with `0.3.0a1`, re-check them for unreplaced address
+fragments regardless — the defect is in the projection, not only in the code
+that produced it.
 
 No CVE has been requested: this is pre-release software with no known
 deployments. We are recording it here rather than folding it into a "bug fixes"
