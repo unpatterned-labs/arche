@@ -561,3 +561,179 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Record-pair comparison cards
+   --------------------------------------------------------------------------
+   For showing what a matching problem actually looks like: two records as a
+   reader would meet them, and the verdict beside them.
+
+   Three verdicts, not two. A component that can only say match / no-match
+   cannot express the thing arche is actually for — `review` is a first-class
+   outcome here, and the CSS has to make it look like an answer rather than a
+   failure. Each card can also carry an evidence line, because a verdict
+   without its reason is the thing this project exists to argue against.
+
+   Usage (needs `md_in_html`, already enabled):
+
+     <div class="arche-pairs" markdown="1">
+     <div class="pair match">
+       <div class="pair-records">
+         <code>23A Marchant House, Jubilee Street, London, L01 23D</code>
+         <code>Flat A, Top Floor, Marchant House, 23 Jubilee Street, Fulham</code>
+       </div>
+       <div class="pair-verdict">match</div>
+     </div>
+     <p class="pair-why">postcode exact; building name exact; Fulham is
+        inside London, so the locality difference is containment, not conflict</p>
+     </div>
+
+   Wrap in a collapsible with pymdownx.details:  ???+ example "..."
+   ========================================================================== */
+
+.arche-pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.2rem 0;
+}
+
+.arche-pairs .pair {
+  display: flex;
+  align-items: stretch;
+  gap: 0.9rem;
+  border: 1px solid var(--arche-line);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  background: var(--arche-surface);
+}
+
+.arche-pairs .pair-records {
+  flex: 1 1 auto;
+  min-width: 0;                       /* lets long strings scroll, not push */
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.arche-pairs .pair-records code {
+  display: block;
+  background: var(--arche-surface-sunken);
+  border-radius: 5px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-x: auto;                   /* wide records scroll inside the card */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.arche-pairs .pair-verdict {
+  flex: 0 0 5.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.arche-pairs .pair-verdict::before {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.arche-pairs .pair.match { border-left-color: var(--arche-verdict-match); }
+.arche-pairs .pair.match .pair-verdict { color: var(--arche-verdict-match); }
+.arche-pairs .pair.match .pair-verdict::before { content: "\2713"; }
+
+.arche-pairs .pair.review { border-left-color: var(--arche-verdict-review); }
+.arche-pairs .pair.review .pair-verdict { color: var(--arche-verdict-review); }
+.arche-pairs .pair.review .pair-verdict::before { content: "?"; }
+
+.arche-pairs .pair.different { border-left-color: var(--arche-verdict-refused); }
+.arche-pairs .pair.different .pair-verdict { color: var(--arche-verdict-refused); }
+.arche-pairs .pair.different .pair-verdict::before { content: "\2715"; }
+
+/* The evidence line. Sits under its card, indented to read as belonging to it. */
+.arche-pairs .pair-why {
+  margin: -0.35rem 0 0.25rem 1.1rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--arche-line);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--arche-ink-muted);
+}
+
+.arche-pairs .pair-why strong { color: var(--arche-ink); font-weight: 600; }
+
+/* Candidate list — one messy query against several plausible answers, which is
+   the shape of a blocking/ranking problem rather than a pairwise one. */
+.arche-candidates {
+  border: 1px solid var(--arche-line);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin: 1.2rem 0;
+  background: var(--arche-surface);
+}
+
+.arche-candidates .cand-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--arche-ink-muted);
+  margin: 0 0 0.35rem;
+}
+
+.arche-candidates code {
+  display: block;
+  background: var(--arche-surface-sunken);
+  border-radius: 5px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.arche-candidates ol { margin: 0.35rem 0 0; padding-left: 1.4rem; }
+.arche-candidates li { margin: 0.35rem 0; }
+
+.arche-candidates li.chosen code {
+  border: 1.5px solid var(--arche-verdict-match);
+  background: var(--arche-green-100);
+}
+
+.arche-candidates mark {
+  background: #ffe9a8;
+  color: inherit;
+  padding: 0 0.15em;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+/* Narrow screens: verdict moves under the records rather than squeezing them. */
+@media screen and (max-width: 44.9375em) {
+  .arche-pairs .pair { flex-direction: column; gap: 0.5rem; }
+  .arche-pairs .pair-verdict {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.4rem;
+  }
+}
+
+[data-md-color-scheme="slate"] .arche-candidates li.chosen code {
+  background: rgba(47, 111, 99, 0.22);
+}
+
+[data-md-color-scheme="slate"] .arche-candidates mark {
+  background: #6b5410;
+  color: #f7efd6;
+}

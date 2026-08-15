@@ -15,7 +15,19 @@ published version until this ships.
 
 **Identity contract:** the legal or institutional party, as it would be named on a document evidencing a transaction. Sameness of *site*, membership, ownership, management, certificate or payment destination is **not** sameness of party — each of those is a relationship, and belongs in an edge rather than a merge.
 
-**It ships with no accuracy number, deliberately.** No public organisation benchmark is vendored here and no adjudicated African organisation-name set exists anywhere, so any figure quoted today would be recall on a self-built label set — the error `data/er_bench/SOURCES.md` already records the cost of (0.85 real precision against the ~0.95 the recall figures implied).
+**First accuracy number, on a public labelled set with pre-declared criteria.** Measured on ER_Magellan Fodors-Zagats (946 labelled pairs, 110 positives) — business listings from two restaurant guides, the closest organisation-shaped task in a public, baselined entity-matching suite:
+
+| | precision | recall | F1 | false merges | missed |
+|---|---|---|---|---|---|
+| **`organisation` pack** | 0.9626 | 0.9364 | **0.9493** | **4** | 7 |
+| `person` pack | 0.9863 | 0.6545 | 0.7869 | 1 | 38 |
+| token-sort baseline | 0.8333 | 0.9545 | 0.8898 | 21 | 5 |
+
+The three criteria were written down before the run and all pass: **+0.1624** F1 over the `person` pack (needed +0.10), **+0.0595** over token-sort (needed +0.05), and **4 false merges against token-sort's 21**. The token-sort comparison is the meaningful one — a fivefold reduction in false merges while gaining F1 — because "beats the person pack on organisations" only establishes the pack is genuinely calibrated rather than renamed. The margin on criterion 2 is thin and is reported as such.
+
+**What this number is not.** 946 pairs is small; the set is near-saturated (published learned baselines report ~100 F1); and it is Anglophone US restaurant listings. **It says nothing whatever about African organisation names** and must never be cited as if it did. The benchmark that would settle that is OpenSanctions Pairs — 755,540 analyst-labelled pairs, 31 countries, cross-script names — which is CC-BY-NC and requires a purchased licence for commercial use.
+
+The benchmark data is fetched, never vendored: neither Magellan nor DeepMatcher states redistribution terms for the data (the code is BSD), so `datasets/organisations_dataops/bench_organisation.py` ships and the data does not.
 
 **A population frequency table ships with it**, closing the gap the first draft of this entry declared open. Built from GLEIF LEI Level 1 data (**CC0 1.0**, a public domain dedication) — 52,875 organisation name forms across a census of 20 African jurisdictions plus a shallow sample of 45 more. `Central Cooperative Society` in two districts now scores `distinctive_max` 0.138 and routes to review, where it previously merged at 1.0; a genuinely rare shared name (`Kuapa Kokoo Farmers Union`) still matches at 0.808, so this discriminates on rarity rather than merely becoming more conservative.
 

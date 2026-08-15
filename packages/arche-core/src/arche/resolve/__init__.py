@@ -160,12 +160,25 @@ ENTITY_PACKS: dict[str, list[dict]] = {
          "category": "electronics", "refutes_below": 0.5},
     ],
     # Organisations: companies, cooperatives, unions, institutional bodies.
-    # EXPERIMENTAL — shipped without an accuracy number, deliberately. There is
-    # no public organisation benchmark vendored here yet and no adjudicated
-    # African organisation-name set anywhere, so any figure quoted today would
-    # be recall on a self-built label set, which is the error `data/er_bench/
-    # SOURCES.md` already records the cost of (0.85 real precision against the
-    # ~0.95 the recall figures implied).
+    # EXPERIMENTAL. Measured on ER_Magellan Fodors-Zagats (946 labelled pairs,
+    # 110 positives) against criteria declared before the run:
+    #
+    #                        P       R      F1    false merges
+    #     organisation    0.9626  0.9364  0.9493        4
+    #     person          0.9863  0.6545  0.7869        1
+    #     token-sort      0.8333  0.9545  0.8898       21
+    #
+    # The token-sort row is the meaningful comparison: +0.0595 F1 while cutting
+    # false merges from 21 to 4. Beating the `person` pack only shows this pack
+    # is genuinely calibrated rather than renamed.
+    #
+    # What that number is NOT: the set is small, near-saturated (published
+    # learned baselines report ~100 F1) and is Anglophone restaurant listings.
+    # It says nothing about African organisation names. The set that would
+    # settle that is OpenSanctions Pairs (755,540 analyst-labelled pairs, 31
+    # countries, cross-script), which is CC-BY-NC and needs a purchased licence
+    # for commercial use. Reproduce with
+    # `datasets/organisations_dataops/bench_organisation.py`.
     #
     # Ships with a population frequency table built from GLEIF (CC0) — see
     # datasets/organisations_dataops/SOURCES.md. It knows that `Limited`,
