@@ -1,6 +1,6 @@
 # Introducing arche
 
-*Know what's real. An open engine for messy, multilingual data — detect, resolve, protect, attest.*
+*Know what's real. An open engine for messy, multilingual data. Detect, resolve, protect, attest.*
 
 !!! warning "Status: pre-beta (v0.3.0a1)"
 
@@ -47,7 +47,7 @@ PII-3-EMAIL      moderate  NDPA-2023 s.30
 PII-3-PHONE      moderate  NDPA-2023 s.30
 ```
 
-Every detection carries a category, a sensitivity tier, and **the statute section that classifies it**. Not a generic `PERSON` label — the specific rule someone will eventually ask you about. Swap `jurisdiction` for `"ZA"`, `"KE"`, `"GH"`, or a European code and the same call loads POPIA, Kenya DPA, Ghana DPA or GDPR instead.
+Every detection carries a category, a sensitivity tier, and **the statute section that classifies it**. Not a generic `PERSON` label. The specific rule someone will eventually ask you about. Swap `jurisdiction` for `"ZA"`, `"KE"`, `"GH"`, or a European code and the same call loads POPIA, Kenya DPA, Ghana DPA or GDPR instead.
 
 ### protect
 
@@ -67,7 +67,7 @@ PII-3-EMAIL      -> tokenize  NDPA-2023 s.30
 PII-3-PHONE      -> tokenize  NDPA-2023 s.30
 ```
 
-Six closed actions — `mask`, `tokenize`, `drop`, `generalize`, `audit`, `retain` — chosen by the statute pack, not by you. `tokenize` produces a deterministic pseudonym, so the same email in two systems yields the same token and can still be joined on without ever being read.
+Six closed actions. `mask`, `tokenize`, `drop`, `generalize`, `audit`, `retain`. Chosen by the statute pack, not by you. `tokenize` produces a deterministic pseudonym, so the same email in two systems yields the same token and can still be joined on without ever being read.
 
 ### resolve
 
@@ -104,7 +104,7 @@ different 0.0843 {'name': 1.0, 'national_id': 0.0, 'name_tf': 1.0}
 
 **Identical names, and the answer is `different`.** The name comparator scores a perfect 1.0 and it does not matter, because the identifiers contradict each other. Two men named Khalid Mehmood on the same sanctions programme are not one man, and the evidence says so field by field.
 
-The third answer is the important one. `resolve.pairwise` returns `same_entity`, `different`, or **`review`** — and `review` is not an error state. A pair sharing an exact national ID can still come back `review` at a score of 0.9999, when the evidence is strong but not *distinctive*. A system whose only outputs are match and no-match will quietly pick one. This one stops and says a human is needed.
+The third answer is the important one. `resolve.pairwise` returns `same_entity`, `different`, or **`review`**, and `review` is not an error state. A pair sharing an exact national ID can still come back `review` at a score of 0.9999, when the evidence is strong but not *distinctive*. A system whose only outputs are match and no-match will quietly pick one. This one stops and says a human is needed.
 
 ### attest
 
@@ -123,7 +123,7 @@ are sha256 hashes of the person's attributes and can be brute-forced back to the
 source records, so the signed artifact would NOT be PII-free.
 ```
 
-That refusal is the design. A decision id derived from someone's attributes is not anonymous — given a candidate list you can hash your way back to the person. Keying it makes the id an HMAC instead, so it identifies the decision without leaking its subject. Pass an issuer key and it works:
+That refusal is the design. A decision id derived from someone's attributes is not anonymous. Given a candidate list you can hash your way back to the person. Keying it makes the id an HMAC instead, so it identifies the decision without leaking its subject. Pass an issuer key and it works:
 
 ```python
 from arche.attest import attest, verify_attestation
@@ -144,7 +144,7 @@ print(v.valid, v.trusted, v.reproducible)
 True True True
 ```
 
-Three different questions. `valid` — does this signature match the key? `trusted` — did that key come from somewhere *I* control, rather than one the token named for itself? `reproducible` — can this decision be replayed from its evidence? Had a language model extracted the fields, `reproducible` would read `False`, and the signature would say so.
+Three different questions. `valid`. Does this signature match the key? `trusted`. Did that key come from somewhere *I* control, rather than one the token named for itself? `reproducible`. Can this decision be replayed from its evidence? Had a language model extracted the fields, `reproducible` would read `False`, and the signature would say so.
 
 The decision also carries a content address over its evidence and the exact representation that produced it:
 
@@ -156,11 +156,11 @@ print(decision.decision_id)
 dec:hmac-sha256:13fbac38e770b9410bd5fcd91c33...
 ```
 
-Same inputs, same key, same id — tomorrow or in five years. That is what makes a merge defensible six months later, when somebody asks why two records became one.
+Same inputs, same key, same id. Tomorrow or in five years. That is what makes a merge defensible six months later, when somebody asks why two records became one.
 
 ## Where this has been measured
 
-We reconciled Kano State's health facility list against OpenStreetMap — 685 records against 1,723, offline, in about twenty seconds:
+We reconciled Kano State's health facility list against OpenStreetMap. 685 records against 1,723, offline, in about twenty seconds:
 
 | Outcome | Records | Share |
 |---|---|---|
@@ -176,7 +176,7 @@ Read those numbers honestly: **most of a reconciliation needs no product at all.
 
 arche was calibrated on African identity data, and that was a choice about difficulty rather than market.
 
-It is the regime where every comfortable assumption fails at once. Names have no canonical spelling and cross colonial language boundaries — the same person is Mamadou Diallo in Dakar and Muhammad Jallow in Banjul. Identifier schemes are multiple and young. Addresses are landmarks and directions rather than street numbers. Coordinates disagree by kilometres.
+It is the regime where every comfortable assumption fails at once. Names have no canonical spelling and cross colonial language boundaries. The same person is Mamadou Diallo in Dakar and Muhammad Jallow in Banjul. Identifier schemes are multiple and young. Addresses are landmarks and directions rather than street numbers. Coordinates disagree by kilometres.
 
 A system that works there works on the easy cases by construction. The reverse is not true, which is why tools built on clean Western data fail quietly the moment they meet the majority of the world. The calibration was earned in Africa; it is not the limit of where it applies.
 
@@ -186,13 +186,13 @@ Presidio has strong recognizers for Western PII. GLiNER does multilingual neural
 
 arche is not competing with any of them on their own ground. What none of them ships is **the input that ground requires**: whether `Diallo` agreeing with `Jallow` counts as agreement, whether agreeing on `Ibrahim` is worth as much as agreeing on `Gyaranya`, whether eleven digits are a national ID or a phone number with the leading zero eaten by a spreadsheet.
 
-That layer is arche's contribution, and it ships as **data you can read, diff, cite and correct** — equivalence packs, frequency tables, identifier grammars, statute mappings — rather than weights you can only retrain. [Why arche, and when to use it](../tutorials/arche_vs_alternatives.md) makes the case in full, including a fifteen-line script that shows exactly which code paths touch Splink and which do not.
+That layer is arche's contribution, and it ships as **data you can read, diff, cite and correct**. Equivalence packs, frequency tables, identifier grammars, statute mappings, rather than weights you can only retrain. [Why arche, and when to use it](../tutorials/arche_vs_alternatives.md) makes the case in full, including a fifteen-line script that shows exactly which code paths touch Splink and which do not.
 
 ## What is not built
 
 Stated up front so nobody discovers it later.
 
-There is **no MCP server**. Agent-facing work today means the masked `to_dict(reveal=False)` projections and `Declaration.tool_def()`, wired into your own tool layer. Clustering is not implemented — the engine returns pairwise edges, because a merge that depends on other merges cannot be signed in isolation. `Pipeline(address_parsing=True)` is accepted and ignored. Unknown jurisdiction codes fail silently rather than raising.
+There is **no MCP server**. Agent-facing work today means the masked `to_dict(reveal=False)` projections and `Declaration.tool_def()`, wired into your own tool layer. Clustering is not implemented. The engine returns pairwise edges, because a merge that depends on other merges cannot be signed in isolation. `Pipeline(address_parsing=True)` is accepted and ignored. Unknown jurisdiction codes fail silently rather than raising.
 
 
 ## Start here
@@ -201,10 +201,10 @@ There is **no MCP server**. Agent-facing work today means the masked `to_dict(re
 pip install arche-core
 ```
 
-- [Quick start](../getting-started/quickstart.md) — first result in five minutes
-- [How arche works](../concepts/how-it-works.md) — the pipeline end to end, for newcomers
-- [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) — the facility reconciliation, resolving a person across documents, and a head-to-head against a frontier model
-- [The place benchmark](../concepts/place-benchmark.md) — how we measure, and how to check whether two datasets you were told are independent actually are
+- [Quick start](../getting-started/quickstart.md). First result in five minutes
+- [How arche works](../concepts/how-it-works.md). The pipeline end to end, for newcomers
+- [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks). The facility reconciliation, resolving a person across documents, and a head-to-head against a frontier model
+- [The place benchmark](../concepts/place-benchmark.md). How we measure, and how to check whether two datasets you were told are independent actually are
 
 Apache-2.0 for the code. The datasets are CC-BY-4.0, apart from the African name-equivalence lexicon, which is CC-BY-NC-SA-4.0 and [under review](https://github.com/unpatterned-labs/arche/blob/main/LICENSING.md).
 

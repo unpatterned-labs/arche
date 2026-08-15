@@ -4,7 +4,7 @@ Every verdict and every number on this page was produced by running the pair thr
 
 The point of showing them together is that the hard cases rhyme across entity types. A hospital in Birmingham, a cooperative in Sefwi Wiawso and a flash drive on a retail site fail in the same four ways: the names agree and the things differ, the names differ and the things agree, everything agrees except one field that turns out to decide it, or nothing decides it and the honest answer is *look at this one*.
 
-That third outcome — **review** — is a first-class answer here, not a failure to reach one. Roughly a third of the examples below land on it, and most of those are cases where a matcher that only says yes or no would have to say something false.
+That third outcome. **review**. Is a first-class answer here, not a failure to reach one. Roughly a third of the examples below land on it, and most of those are cases where a matcher that only says yes or no would have to say something false.
 
 ---
 
@@ -137,7 +137,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
 
 ## One messy record against several plausible answers
 
-Pairwise matching assumes you already know which two records to compare. Often you do not — you have one string and a shortlist, which is a different problem with a different failure mode.
+Pairwise matching assumes you already know which two records to compare. Often you do not. You have one string and a shortlist, which is a different problem with a different failure mode.
 
 <details class="arche-examples" open>
 <summary>Ranking candidates</summary>
@@ -181,6 +181,6 @@ Read the five sections together and the same three rules are doing the work each
 
 **A shared string is not a shared identity.** `Central` and `Central` are identical and prove nothing; `JGS516` and `JGS516` are identical and prove almost everything. The difference is rarity, and rarity is a fact about a population rather than about the two records in front of you.
 
-**A supporting signal may amplify a decision and may never manufacture one.** Geography, address and containment can lift a well-evidenced pair over the line. None of them can carry a weak name across it — which is why two people at one address stay unmerged, and why a site sitting exactly on top of its operator is still two parties.
+**A supporting signal may amplify a decision and may never manufacture one.** Geography, address and containment can lift a well-evidenced pair over the line. None of them can carry a weak name across it, which is why two people at one address stay unmerged, and why a site sitting exactly on top of its operator is still two parties.
 
-**Refusal is an answer.** Every `review` above is a case where the available evidence genuinely does not settle it. Saying so, with the numbers attached, is more useful than a confident verdict that happens to be wrong — and it is the difference between a queue a person can work through and a merge nobody can defend.
+**Refusal is an answer.** Every `review` above is a case where the available evidence genuinely does not settle it. Saying so, with the numbers attached, is more useful than a confident verdict that happens to be wrong, and it is the difference between a queue a person can work through and a merge nobody can defend.

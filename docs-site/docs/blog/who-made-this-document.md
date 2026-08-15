@@ -4,7 +4,7 @@
 
 ---
 
-I checked seven real PDFs on my laptop — four invoices from unrelated companies, a bank statement, a payslip, a hosting invoice. Ordinary documents, the kind that arrive by email every week.
+I checked seven real PDFs on my laptop. Four invoices from unrelated companies, a bank statement, a payslip, a hosting invoice. Ordinary documents, the kind that arrive by email every week.
 
 **None of them carries a digital signature.** No PAdES signature dictionary. No XMP packet. No C2PA content credential. Zero out of seven, and the check takes four lines:
 
@@ -58,7 +58,7 @@ Paystatement.pdf                                      Telerik        enterprise-
 
 That is more useful than it looks. `Chromium` means a human pressed print in a browser. `WeasyPrint` means a server rendered HTML. `iText`, `PDFlib` and `Telerik` mean an enterprise reporting system emitted it.
 
-So when a bank statement arrives claiming to be a bank statement and the producer says a human printed it from a browser — that is not proof of anything, but it is a question worth asking. It is rung 1, and it costs nothing.
+So a bank statement whose producer says a human printed it from a browser is worth a second look. That is not proof of anything, but it is a question worth asking. It is rung 1, and it costs nothing.
 
 **And every one of those fields is forgeable.** We put that sentence on every surface that touches this, because the failure mode is someone building an approval flow on `author`.
 
@@ -80,7 +80,7 @@ The gate is a labelled corpus with known producers, including deliberately re-sa
 
 **Integrity is not authenticity.** A valid signature proves the bytes have not changed since they were signed. It says nothing about whether the signer is who they claim to be. Those are different questions and the second one needs a trust anchor outside the file.
 
-**Issued by is not belongs to.** A payslip is *issued by* an employer and *about* an employee. An invoice is issued by a vendor and about a customer. "Who does this document belong to" quietly asks both at once, and they have different failure costs — getting the issuer wrong is a fraud problem, getting the subject wrong is a privacy problem.
+**Issued by is not belongs to.** A payslip is *issued by* an employer and *about* an employee. An invoice is issued by a vendor and about a customer. "Who does this document belong to" quietly asks both at once, and they have different failure costs. Getting the issuer wrong is a fraud problem, getting the subject wrong is a privacy problem.
 
 We keep them apart. Provenance answers the first. The identity lane answers the second.
 
@@ -90,11 +90,11 @@ We keep them apart. Provenance answers the first. The identity lane answers the 
 
 Here is the reframe that made this tractable.
 
-`author='Condor Flugdienst GmbH'` is not a fact. It is a **reference to an organisation** — a string that points at something in the world and may or may not be accurate. Deciding which real-world entity a reference denotes is precisely what this engine does, for people, places, publications and products.
+`author='Condor Flugdienst GmbH'` is not a fact. It is a **reference to an organisation**. A string that points at something in the world and may or may not be accurate. Deciding which real-world entity a reference denotes is precisely what this engine does, for people, places, publications and products.
 
 So "who issued this document?" is an entity-resolution question wearing a security costume:
 
-1. Extract the issuer reference — from metadata, or from the letterhead
+1. Extract the issuer reference. From metadata, or from the letterhead
 2. Resolve it against a company registry
 3. Report the verdict *with its evidence*, and abstain when the evidence is thin
 4. Sign the decision so it can be re-checked
@@ -107,7 +107,7 @@ That path is measurable with benchmarks we already run. Rung 3 is not, because w
 
 ## What we will and will not ship
 
-**Shipped.** Metadata reading, producer classification, and the sentence *"metadata is a claim, not a verification"* everywhere it appears. Also — quietly important — metadata is now **scanned and masked** like any other text, because a bank statement's `Title` carried an account fragment and a flight confirmation's `Subject` carried a real booking reference. If your pipeline redacts the body and ignores the header, it has been leaking.
+**Shipped.** Metadata reading, producer classification, and the sentence *"metadata is a claim, not a verification"* everywhere it appears. And one quietly important thing: metadata is now **scanned and masked** like any other text, because a bank statement's `Title` carried an account fragment and a flight confirmation's `Subject` carried a real booking reference. If your pipeline redacts the body and ignores the header, it has been leaking.
 
 **Typed, not built.** `ContentCredentials` ships as a type with an honest empty state. Its `ai_generated` field is deliberately **tri-state**: absence of a manifest yields *unknown*, never *human-authored*. That is the most dangerous possible reading of an empty field and we refuse it in the type system.
 
@@ -119,7 +119,7 @@ That path is measurable with benchmarks we already run. Rung 3 is not, because w
 
 ## The same ladder is everywhere
 
-None of this is really about PDFs. An API response, a database export, a CSV someone emailed you — each has a self-declared origin, a structural signature, an optional cryptographic one, and an issuer who may or may not resolve to a real entity.
+None of this is really about PDFs. An API response, a database export, a CSV someone emailed you. Each has a self-declared origin, a structural signature, an optional cryptographic one, and an issuer who may or may not resolve to a real entity.
 
 The document case is just where the question is easiest to see, because the file goes to the trouble of telling you who made it, and you get to decide whether to believe it.
 

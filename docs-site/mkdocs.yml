@@ -39,6 +39,10 @@ theme:
     - navigation.tabs
     - navigation.sections
     - navigation.top
+    # Previous / next links in the page footer, driven by nav order. A
+    # reader landing mid-way through a sequence otherwise has no way to
+    # tell what precedes a page or what continues it.
+    - navigation.footer
     - navigation.indexes
     - content.code.copy
     - content.code.annotate
@@ -49,13 +53,30 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+# Working drafts. `.gitignore` keeps these out of git; it does NOT keep them
+# out of the built site — mkdocs renders everything under docs/, so without
+# this they publish to /concepts/drafts/ and are reachable by URL from anyone
+# who builds and deploys a working copy. Their unresolved cross-links also
+# abort `--strict`. Excluded here so the intent lives in config rather than
+# depending on a second file to mean something it does not mean.
+exclude_docs: |
+  concepts/drafts/
+
 extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  # Without `custom_fences`, a ```mermaid block is just a fenced code block:
+  # superfences hands it to the highlighter and the reader gets the diagram's
+  # source, with line numbers, instead of a diagram. Material loads mermaid.js
+  # itself once the fence is registered.
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
@@ -79,6 +100,11 @@ nav:
     # how-it-works is the newcomer's walkthrough, lifecycle is the "can it do
     # X today" inventory, architecture is the internal layering. Each page
     # states that split in its opening lines.
+    # The three orientation pages, in reading order: what this is and what is
+    # measured, then why the hard part is hard, then what it changes for you.
+    - The whole picture: concepts/the-whole-picture.md
+    - Sameness and similarity: concepts/sameness-and-similarity.md
+    - arche in practice: concepts/arche-in-practice.md
     - How arche works: concepts/how-it-works.md
     # Second, and deliberately: the newcomer's walkthrough explains the
     # mechanism, this shows the problem it is a mechanism for. Every
@@ -87,11 +113,16 @@ nav:
     - The identity lifecycle: concepts/lifecycle.md
     - Architecture: concepts/architecture.md
     - A representation engine, not an inference engine: concepts/representation-engine.md
-    - A place is not a point: concepts/a-place-is-not-a-point.md
-    - From place to entity (the math): concepts/from-place-to-entity.md
-    - Place identity: concepts/place-identity.md
-    - The place benchmark: concepts/place-benchmark.md
     - The five ER activities: concepts/er-activities.md
+    # One section for "what kind of thing am I resolving". Each page sorts a
+    # record's fields into carries-identity / conditional / describes-only, and
+    # the conditional group means something different for every entity type.
+    - Entities:
+      - Overview: concepts/entities.md
+      - Person identity: concepts/person-identity.md
+      - Place identity: concepts/place-identity.md
+      - Product identity: concepts/product-identity.md
+      - The place benchmark: concepts/place-benchmark.md
     - The document lane: concepts/document-lane.md
     - Attest, the signature on the decision: concepts/attest.md
   - Guides:
@@ -147,6 +178,16 @@ nav:
     - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
   - Blog:
     - blog/index.md
+    # Newest first, matching blog/index.md's own ordering. Three posts were
+    # written but never added here, so they existed on the site and could not
+    # be navigated to; `mkdocs build` reports those under "not included in the
+    # nav configuration" rather than as an error, which is easy to scroll past.
+    - You do not need an account to buy bread: blog/you-do-not-need-an-account-to-buy-bread.md
+    - Who acted?: blog/who-acted.md
+    - The join nobody sells: blog/the-join-nobody-sells.md
+    - Who made this document?: blog/who-made-this-document.md
+    - Three PDFs and a question: blog/three-pdfs-and-a-question.md
+    - A place is not a point: blog/a-place-is-not-a-point.md
     - Similar is not the same: blog/similar-is-not-the-same.md
     - The part intelligence doesn't make cheaper: blog/the-part-intelligence-doesnt-make-cheaper.md
     - The same clinic, three spellings: blog/reconciling-nigerias-health-facilities.md

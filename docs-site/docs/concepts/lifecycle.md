@@ -4,9 +4,9 @@
 
 ---
 
-Three pages on this site describe how work moves through arche, and they answer different questions. [How arche works](how-it-works.md) is the walkthrough — one record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
+Three pages on this site describe how work moves through arche, and they answer different questions. [How arche works](how-it-works.md) is the walkthrough. One record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
 
-The four verbs are **detect · resolve · protect · attest**. An earlier version of this page used Detect → Resolve → Verify → Govern with Link as a fifth, unshipped step. Two of those words were never the shipped vocabulary, and the ordering implied a pipeline that the code does not have — `resolve` and `protect` are independent surfaces, not consecutive stages, and most callers use one without the other.
+The four verbs are **detect · resolve · protect · attest**. An earlier version of this page used Detect → Resolve → Verify → Govern with Link as a fifth, unshipped step. Two of those words were never the shipped vocabulary, and the ordering implied a pipeline that the code does not have. `resolve` and `protect` are independent surfaces, not consecutive stages, and most callers use one without the other.
 
 | Question | Today's answer |
 |---|---|
@@ -39,13 +39,13 @@ The four verbs are **detect · resolve · protect · attest**. An earlier versio
 | `emails` | Email addresses (`PII-3-EMAIL`) | **No — opt-in** |
 | `arche-core[detect]` | GLiNER2-PII for multilingual soft-PII. Never on the critical path | No — optional extra |
 
-Every detection carries a `category` from the Pan-African PII Taxonomy, a `sensitivity_tier` of `high` / `moderate` / `low`, a `regulatory_citation` once a statute is applied, and a `confidence` that is deliberately not a uniform 1.0 — a rule's base confidence encodes what the shape alone is worth (Ghana Card 0.95, KRA PIN 0.92, NIN 0.55, Kenyan national ID 0.40, because a bare seven-or-eight-digit number is weak evidence) and a passing structural validator raises it. `metadata["validator_status"]` records which check ran.
+Every detection carries a `category` from the Pan-African PII Taxonomy, a `sensitivity_tier` of `high` / `moderate` / `low`, a `regulatory_citation` once a statute is applied, and a `confidence` that is deliberately not a uniform 1.0. A rule's base confidence encodes what the shape alone is worth (Ghana Card 0.95, KRA PIN 0.92, NIN 0.55, Kenyan national ID 0.40, because a bare seven-or-eight-digit number is weak evidence) and a passing structural validator raises it. `metadata["validator_status"]` records which check ran.
 
 ### Known gaps in detect
 
 These are the ones that change what you can promise, so they are stated rather than left to be discovered.
 
-**`Pipeline` does not detect email addresses by default.** `emails` is not in the default detector set, and the reason is compatibility — adding it would change existing callers' detections, policy outcomes and redacted text. The detector itself works standalone, and you can opt in:
+**`Pipeline` does not detect email addresses by default.** `emails` is not in the default detector set, and the reason is compatibility. Adding it would change existing callers' detections, policy outcomes and redacted text. The detector itself works standalone, and you can opt in:
 
 ```python
 from arche import Pipeline
@@ -64,9 +64,9 @@ pipeline default : [('PII-2-NIN', '12345678901'), ('PII-1-NAME', 'Zainab'), ('PI
 standalone       : [('PII-3-EMAIL', 'zainab.bello@example.com')]
 ```
 
-**`Pipeline(address_parsing=True)` does nothing.** The flag is a placeholder hook in `workflow/_primitive.py` that imports `arche.addr.parse_address` and discards it. Address spans reach the pipeline through the `addr` *detector package*, which is in the default set — so addresses are detected, but not because of that parameter. Passing it is harmless and misleading.
+**`Pipeline(address_parsing=True)` does nothing.** The flag is a placeholder hook in `workflow/_primitive.py` that imports `arche.addr.parse_address` and discards it. Address spans reach the pipeline through the `addr` *detector package*, which is in the default set, so addresses are detected, but not because of that parameter. Passing it is harmless and misleading.
 
-**Overlapping detections corrupt the redacted text.** `policy.apply_policy` splices replacements in reverse start order, which is correct for disjoint spans and wrong for nested ones. When one detection sits inside another — a name inside an email address, a name or a city inside an address span — the second splice uses offsets measured against the original text after the working text has already changed length. The output is malformed, and it can leave a fragment of the value that was meant to be removed:
+**Overlapping detections corrupt the redacted text.** `policy.apply_policy` splices replacements in reverse start order, which is correct for disjoint spans and wrong for nested ones. When one detection sits inside another. A name inside an email address, a name or a city inside an address span. The second splice uses offsets measured against the original text after the working text has already changed length. The output is malformed, and it can leave a fragment of the value that was meant to be removed:
 
 ```python
 from arche import Pipeline
@@ -86,7 +86,7 @@ dets: [('PII-1-NAME', 'Ibrahim', 7, 14), ('PII-4-LOCATION', 'Kano', 61, 65), ('P
 out : '[ADDRESS]o Road, [ADDRESS].'
 ```
 
-`'[ADDRESS]o Road'` is the whole problem in one line. Until overlap resolution lands, treat `redacted_text` as unsafe for release on any input where address, location and name detections can overlap, and read `result.detections` and `result.policy_outcomes` — which are correct — rather than the rewritten string.
+`'[ADDRESS]o Road'` is the whole problem in one line. Until overlap resolution lands, treat `redacted_text` as unsafe for release on any input where address, location and name detections can overlap, and read `result.detections` and `result.policy_outcomes`, which are correct, rather than the rewritten string.
 
 **Detection is a lexicon, and lexicons have holes.** `Fatima` is in the name lexicon and `Fatuma` is not; `Abdullahi` and `Abdulahi` both are. Nothing downstream can protect a span no detector proposed, so measure coverage on your own corpus before treating the redacted output as a compliance control.
 
@@ -105,15 +105,15 @@ Two engines, deliberately not merged, because they answer different questions an
 | Entities | Person only | `person`, `place`, `artist` |
 | Signing | `attest(decision, key)` | `resolve.reconcile.sign_edges` |
 
-The scores from the two engines are not comparable, and that is intentional rather than an oversight awaiting a refactor. Converging their gate policies would either weaken pairwise's guarantee that two identical *common* names must not clear, or change facility-crosswalk scores — a benchmarked change, not tidying.
+The scores from the two engines are not comparable, and that is intentional rather than an oversight awaiting a refactor. Converging their gate policies would either weaken pairwise's guarantee that two identical *common* names must not clear, or change facility-crosswalk scores. A benchmarked change, not tidying.
 
 ### Abstention, and the three conditions
 
-`pairwise` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999 — the worked output is [on the walkthrough page](how-it-works.md#3-resolve). A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
+`pairwise` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999. The worked output is [on the walkthrough page](how-it-works.md#3-resolve). A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
 
 ### The geographic veto
 
-On the `place` pack, distance is a constraint rather than a weighted signal: `veto_km: 10.0`. Before v0.3.0a1 geography was scored at weight 1.0 against name and token-frequency's combined 4.0, it could be outvoted, and it was — two Kano facilities sharing a common Hausa name merged 143 km apart with the geo comparator itself scoring 0.000. Three properties of the replacement are deliberate and visible in one run:
+On the `place` pack, distance is a constraint rather than a weighted signal: `veto_km: 10.0`. Before v0.3.0a1 geography was scored at weight 1.0 against name and token-frequency's combined 4.0, it could be outvoted, and it was. Two Kano facilities sharing a common Hausa name merged 143 km apart with the geo comparator itself scoring 0.000. Three properties of the replacement are deliberate and visible in one run:
 
 ```python
 from arche.resolve import crosswalk
@@ -135,15 +135,15 @@ b_id=0  match    score=0.919  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.
 b_id=1  review   score=0.8  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.0, 'distance_km': 62.2, 'geo_conflict_km': 62.2}
 ```
 
-The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed** — you cannot refute a claim on evidence you do not have — and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.4% to 88.1%; what that number can and cannot tell you is set out in full on [the place benchmark](place-benchmark.md), where it is called a consistency check rather than validation.
+The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed**. You cannot refute a claim on evidence you do not have, and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.4% to 88.1%; what that number can and cannot tell you is set out in full on [the place benchmark](place-benchmark.md), where it is called a consistency check rather than validation.
 
 ### Also in resolve
 
-`resolve.resolve_entities` is the older clustering path over extracted entities: it attempts Splink via the `arche-core[resolve]` extra once there are ten or more entities, and falls back to fuzzy matching plus union-find with the name equivalence lexicon otherwise. `arche.link` is a function, not a module, and it resolves entity lists from several of *your* sources into one identity graph — resolution across your own data, not linkage to somebody else's registry. `TokenFrequencyTable.default()` loads the population frequency table for persons, and `default(domain="artist")` a 500k-artist MusicBrainz sample.
+`resolve.resolve_entities` is the older clustering path over extracted entities: it attempts Splink via the `arche-core[resolve]` extra once there are ten or more entities, and falls back to fuzzy matching plus union-find with the name equivalence lexicon otherwise. `arche.link` is a function, not a module, and it resolves entity lists from several of *your* sources into one identity graph. Resolution across your own data, not linkage to somebody else's registry. `TokenFrequencyTable.default()` loads the population frequency table for persons, and `default(domain="artist")` a 500k-artist MusicBrainz sample.
 
 ### What resolve does not do
 
-- **`pairwise(entity="place")` raises** — `NotImplementedError: pairwise entity='place' is not available yet; person only. Use crosswalk(...) for place lists.` The same holds for products: there is no product pack.
+- **`pairwise(entity="place")` raises**. `NotImplementedError: pairwise entity='place' is not available yet; person only. Use crosswalk(...) for place lists.` The same holds for products: there is no product pack.
 - **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`, and defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack, and the measured 13-pair gain on the Kano benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding.
 - **A declared `id_family` does not mint an `entity_id`.** `Declaration.binding_fields()` exists, but `ids.identity_binding_key` is not declaration-aware and matches arche's own fixed identifier names.
 - **No collective or graph-based resolution.** Clustering under transitive closure is the open remainder of the inference half and is gated post-beta, not implied by anything shipped.
@@ -163,11 +163,11 @@ The distant pair is demoted to `review` and carries `geo_conflict_km` as the rea
 | `audit` | Log the decision, leave the text untouched |
 | `retain` | Allowlist; pass through unchanged |
 
-Six statute packs ship as YAML at `arche/policy/statutes/`: `NDPA-2023` (Nigeria), `GDPR` (EU/EEA), `HIPAA-SAFE-HARBOR` (US health), `KENYA-DPA`, `POPIA` (South Africa) and `GHANA-DPA`. Every category in every pack carries a statute-section citation. Each pack declares a `review_status` separately from its `version`, because "we finished it" and "someone official checked it" are different claims — all six are `self-reviewed`, none claims regulator review, and the loader fails closed on a pack that claims it without naming a reviewer. Three packs still carry a stale `v0.1-scaffold` version label that understates their completeness; correcting them is outstanding in our roadmap.
+Six statute packs ship as YAML at `arche/policy/statutes/`: `NDPA-2023` (Nigeria), `GDPR` (EU/EEA), `HIPAA-SAFE-HARBOR` (US health), `KENYA-DPA`, `POPIA` (South Africa) and `GHANA-DPA`. Every category in every pack carries a statute-section citation. Each pack declares a `review_status` separately from its `version`, because "we finished it" and "someone official checked it" are different claims. All six are `self-reviewed`, none claims regulator review, and the loader fails closed on a pack that claims it without naming a reviewer. Three packs still carry a stale `v0.1-scaffold` version label that understates their completeness; correcting them is outstanding in our roadmap.
 
-One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(overlays=["EU-AI-ACT"])`. It is not a per-field statute — the AI Act governs the system, not the field — so it asserts at document level whether the run met a record-keeping (Art 12), transparency (Art 50) or data-minimisation (GDPR Art 5(1)(c) / Art 25) obligation and stamps the result into `Result.metadata`. Its own YAML states the boundary: evidence the operator presents, not a compliance certificate.
+One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(overlays=["EU-AI-ACT"])`. It is not a per-field statute. The AI Act governs the system, not the field, so it asserts at document level whether the run met a record-keeping (Art 12), transparency (Art 50) or data-minimisation (GDPR Art 5(1)(c) / Art 25) obligation and stamps the result into `Result.metadata`. Its own YAML states the boundary: evidence the operator presents, not a compliance certificate.
 
-`guard.EgressGuard` wraps a statute-aware `Pipeline` so nothing crosses a boundary a policy did not permit. All four of its teeth default to deny: no statute means no permission; an undeclared cross-border transfer is refused with the statute cited; a provider outside the allow-list is refused; and any exception becomes a refusal rather than a fallthrough that emits the original text. The projection guarantee is that no raw *detected* value appears in any output field — which, as the detect section above makes clear, is not the same as no PII appearing. The worked example is [on the architecture page](architecture.md#5-the-egress-guard-fail-closed-four-teeth).
+`guard.EgressGuard` wraps a statute-aware `Pipeline` so nothing crosses a boundary a policy did not permit. All four of its teeth default to deny: no statute means no permission; an undeclared cross-border transfer is refused with the statute cited; a provider outside the allow-list is refused; and any exception becomes a refusal rather than a fallthrough that emits the original text. The projection guarantee is that no raw *detected* value appears in any output field, which, as the detect section above makes clear, is not the same as no PII appearing. The worked example is [on the architecture page](architecture.md#5-the-egress-guard-fail-closed-four-teeth).
 
 `arche.render` masks by default when a resolved record is displayed, and attributes marked `restricted` in a [declaration](../how-to/declare-your-schema.md) remain usable as match evidence and are never disclosable. `arche compare` on the CLI produces a masked-by-default HTML report.
 
@@ -176,7 +176,7 @@ One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(o
 - **`Pipeline.process` does not write to `graph.audit`.** It builds an audit view in memory and returns it on the `Result`. Persisting it is a wiring step you do, not a thing that happens.
 - **The SQLite audit log is append-only by convention.** `prev_hash` and `signature` columns exist so hash-chaining can land without a migration, and nothing populates them. `export_signed()` proves a bundle was not altered after signing; it does not prove no row was removed before.
 - **`protect.py` is not the `protect` verb.** It is a v0.1 Presidio wrapper reachable only through the deprecated lazy surface. The verb is implemented by `policy` + `guard` + `render`, and renaming the module is a breaking change waiting for v0.4.
-- **The overlapping-span corruption** described under detect is a `protect` bug as much as a detect one — it is in `policy.apply_policy`.
+- **The overlapping-span corruption** described under detect is a `protect` bug as much as a detect one. It is in `policy.apply_policy`.
 
 ---
 
@@ -186,13 +186,13 @@ One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(o
 
 Three properties are worth knowing before you write verification code, and all three are covered in depth on [the attest page](attest.md).
 
-- **`valid` is not `trusted`.** `valid` says the signature matches the key that was resolved; only `trusted` says that key came from somewhere the caller controls. `sign.jws.verify()` now fails closed — `allow_did_key_from_kid` defaults to `False`, where it defaulted to `True` through v0.3.0a1. The higher-level `verify_attestation()` and `verify_sd_jwt()` deliberately still fall back to the self-asserted key and report `trusted=False` rather than refusing, which keeps offline inspection working and moves the burden to you.
+- **`valid` is not `trusted`.** `valid` says the signature matches the key that was resolved; only `trusted` says that key came from somewhere the caller controls. `sign.jws.verify()` now fails closed. `allow_did_key_from_kid` defaults to `False`, where it defaulted to `True` through v0.3.0a1. The higher-level `verify_attestation()` and `verify_sd_jwt()` deliberately still fall back to the self-asserted key and report `trusted=False` rather than refusing, which keeps offline inspection working and moves the burden to you.
 - **`reproducible` is derived from the decision's pins**, not from the signing format. A decision built from a hosted model's extraction attests `reproducible: False`, and so does anything depending on a live provider response.
-- **Keyless ids are not PII-free.** `reference_id` and `decision_id` are hashes over normalised attributes, and a bare SHA-256 of an eleven-digit NIN is brute-forceable, so `attest` refuses to sign a keyless decision by default. Supply an `issuer_key` and the ids become HMAC pseudonyms — stable per issuer, unlinkable across issuers.
+- **Keyless ids are not PII-free.** `reference_id` and `decision_id` are hashes over normalised attributes, and a bare SHA-256 of an eleven-digit NIN is brute-forceable, so `attest` refuses to sign a keyless decision by default. Supply an `issuer_key` and the ids become HMAC pseudonyms. Stable per issuer, unlinkable across issuers.
 
 ### What attest does not do
 
-`did:key` is the only DID method implemented; there is no `did:web` resolution, no key-provider abstraction, and no HSM or PKCS#11 signing. EdDSA is the only algorithm. Post-quantum hybrid signing is designed and not built — there is no `arche-core[pqc]` extra. PAdES and JSON-LD VC were considered and rejected for the base wheel, with the reasoning recorded rather than left implicit.
+`did:key` is the only DID method implemented; there is no `did:web` resolution, no key-provider abstraction, and no HSM or PKCS#11 signing. EdDSA is the only algorithm. Post-quantum hybrid signing is designed and not built. There is no `arche-core[pqc]` extra. PAdES and JSON-LD VC were considered and rejected for the base wheel, with the reasoning recorded rather than left implicit.
 
 ---
 
@@ -200,7 +200,7 @@ Three properties are worth knowing before you write verification code, and all t
 
 `arche.adapters` ships, and it is new enough to be easy to misread. An adapter asks a third party a question and brings back a witnessed observation. It never returns a merge decision: `ProviderEvidence.verdict` is one of `corroborates`, `contradicts`, `inconclusive`, and `match` and `different` are conspicuously absent from that list, because a geocoder is not entitled to an opinion about identity.
 
-Two rules constrain adapters beyond that. Every adapter is an **egress destination** — sending a citizen's address to a geocoder *is* a cross-border transfer — so adapters route through `EgressGuard` and the statute pack decides whether a reference may be sent at all. And a **provenance firewall** keeps provider responses out of the data packs, the frequency tables and the benchmark: every evidence object carries a licence class, and only `cc0`, `gers` and `user-owned` may be ingested. `odbl-attribution` is not on that list, so OpenStreetMap-derived evidence can inform a single decision and can never enter a pack. Because a live API response cannot be replayed by a stranger, adapter pins declare `reproducible: False` and the attestation says so.
+Two rules constrain adapters beyond that. Every adapter is an **egress destination**. Sending a citizen's address to a geocoder *is* a cross-border transfer, so adapters route through `EgressGuard` and the statute pack decides whether a reference may be sent at all. And a **provenance firewall** keeps provider responses out of the data packs, the frequency tables and the benchmark: every evidence object carries a licence class, and only `cc0`, `gers` and `user-owned` may be ingested. `odbl-attribution` is not on that list, so OpenStreetMap-derived evidence can inform a single decision and can never enter a pack. Because a live API response cannot be replayed by a stranger, adapter pins declare `reproducible: False` and the attestation says so.
 
 One adapter is implemented, for Nominatim, and it is lazy-imported so nothing pulls `httpx` until you use it.
 
@@ -210,7 +210,7 @@ One adapter is implemented, for Nominatim, and it is lazy-imported so nothing pu
 
 Stated so adopters can hold us to scope.
 
-**No registry or DPI linking.** Connecting a resolved reference to OpenCRVS, MOSIP, DHIS2, OpenG2P or FHIR has no implementation. There is no `arche.link` module and no registry adapter. This is a sequencing decision: an adapter that is not integration-tested against a running instance is scaffolding, and scaffolding in an identity library is worse than an honest gap. When it opens, its shape is already fixed by two rules enforced elsewhere — a verdict from an external registry is evidence and never a decision, and every adapter is an egress destination.
+**No registry or DPI linking.** Connecting a resolved reference to OpenCRVS, MOSIP, DHIS2, OpenG2P or FHIR has no implementation. There is no `arche.link` module and no registry adapter. This is a sequencing decision: an adapter that is not integration-tested against a running instance is scaffolding, and scaffolding in an identity library is worse than an honest gap. When it opens, its shape is already fixed by two rules enforced elsewhere. A verdict from an external registry is evidence and never a decision, and every adapter is an egress destination.
 
 One distinction survives whatever ships: registry *linking* (this reference co-refers with that registry record) is not identity *proofing* (the presenting party **is** that record's subject). arche does the first. The second needs possession, biometrics, or consent, and is not a library's job.
 
@@ -232,7 +232,7 @@ The same logic runs one step further, and it is why registry linking is gated be
 
 ## What's next
 
-- [How arche works](how-it-works.md) — the same four verbs as a single worked example
-- [Architecture](architecture.md) — the internal layering, and which components may conclude anything
-- [Attest: the signature on the decision](attest.md) — `valid` versus `trusted`, in full
-- [The place benchmark](place-benchmark.md) — what the veto threshold was tuned against, and the limits of that measurement
+- [How arche works](how-it-works.md). The same four verbs as a single worked example
+- [Architecture](architecture.md). The internal layering, and which components may conclude anything
+- [Attest: the signature on the decision](attest.md). `valid` versus `trusted`, in full
+- [The place benchmark](place-benchmark.md). What the veto threshold was tuned against, and the limits of that measurement
