@@ -734,6 +734,42 @@ def load_type_vocab(domain: str) -> dict[str, str]:
     return vocab
 
 
+def compare_categories(cat_a: str, cat_b: str) -> float:
+    """Compare two categorical labels — normalised exact match, 1.0 or 0.0.
+
+    For closed vocabularies where a value means one thing: an entity class
+    (``SITE`` / ``OPERATOR``), a tier, a status. Case, surrounding whitespace
+    and internal separators are normalised, so ``washing_station``,
+    ``Washing Station`` and ``WASHING-STATION`` are one value.
+
+    Deliberately **not** in ``_DISTINCTIVE_KINDS``, and that is the whole point
+    of it existing rather than reusing ``id``. Two records agreeing that both
+    are a ``SITE`` is not evidence they are the *same* site — a low-entropy
+    field shared by thousands of records must never clear the distinctive gate.
+    An identifier is distinctive by construction; a class is the opposite.
+
+    Its intended use is therefore as a pure discriminator, weighted at zero and
+    refuting on disagreement::
+
+        {"field": "entity_class", "kind": "category",
+         "weight": 0.0, "refutes_below": 1.0}
+
+    That is the only mechanism that separates a site from its operator, which
+    is the largest false-merge risk in supply-chain data: ``Nyeri Hill
+    Factory`` and ``Nyeri Hill Tea Factory Co Ltd`` share a name *and* a
+    coordinate, so every string and spatial signal points the wrong way, and
+    stripping the type token makes them *more* similar rather than less. Only a
+    declared class refutes it, and only when both sides declare one — an absent
+    class refutes nothing, exactly as absent coordinates cannot fire
+    ``veto_km``.
+    """
+    norm_a = re.sub(r"[\s_\-]+", " ", cat_a).strip().casefold()
+    norm_b = re.sub(r"[\s_\-]+", " ", cat_b).strip().casefold()
+    if not norm_a or not norm_b:
+        return 0.0
+    return 1.0 if norm_a == norm_b else 0.0
+
+
 def compare_dates(date_a: str, date_b: str) -> float:
     """Compare two date strings.  Simple normalised exact match for now."""
     # Strip everything except digits

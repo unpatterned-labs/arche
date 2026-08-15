@@ -159,7 +159,73 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "name", "kind": "spec", "weight": 0.5,
          "category": "electronics", "refutes_below": 0.5},
     ],
+    # Organisations: companies, cooperatives, unions, institutional bodies.
+    # EXPERIMENTAL — shipped without an accuracy number, deliberately. There is
+    # no public organisation benchmark vendored here yet and no adjudicated
+    # African organisation-name set anywhere, so any figure quoted today would
+    # be recall on a self-built label set, which is the error `data/er_bench/
+    # SOURCES.md` already records the cost of (0.85 real precision against the
+    # ~0.95 the recall figures implied).
+    #
+    # Ships with a population frequency table built from GLEIF (CC0) — see
+    # datasets/organisations_dataops/SOURCES.md. It knows that `Limited`,
+    # `Holdings` and `Central` are ordinary corporate tokens, which is what
+    # stops a shared generic name clearing the distinctive gate. It knows
+    # nothing about West African cooperative naming — LEI lists 51 entities
+    # for the world's largest cocoa producer — so it must never be cited as
+    # evidence for a claim about African organisation names.
+    "organisation": [
+        # `placename`, not `name`: organisation names must never consult the
+        # person equivalence lexicon. Fatima≡Fatouma is a fact about people,
+        # not about two businesses named after two different people — and
+        # merging two companies is a commercial and legal error, not a
+        # near-miss. Same reasoning as `place`, and it binds harder here.
+        {"field": "name", "kind": "placename", "weight": 2.0,
+         "strip_type": "organization"},
+        {"field": "name", "kind": "tftoken", "weight": 2.0,
+         "strip_type": "organization"},
+        # Legal form and aggregation-node vocabulary — `Ltd`, `SARL`,
+        # `Cooperative Society`, `Farmers Union`, `Washing Station`, `Factory`,
+        # `Estate`. Ships at weight 0.0 like `place`'s type comparator:
+        # visible in the evidence, deliberately uncalibrated until measured on
+        # labelled pairs. Its real work is upstream — the vocabulary strips the
+        # shared form so `tftoken` compares "Kuapa Kokoo" rather than letting
+        # "Cooperative Union Ltd" carry the score.
+        {"field": "name", "kind": "type", "domain": "organization", "weight": 0.0},
+        # A company registration number is the national-ID analogue and the
+        # only exact identity signal most supplier files carry.
+        {"field": "registration_id", "kind": "id", "weight": 3.0},
+        # The site/operator discriminator — the largest false-merge risk in
+        # supply-chain data, and the one nothing else can catch. `Nyeri Hill
+        # Factory` (site) and `Nyeri Hill Tea Factory Co Ltd` (its operator)
+        # share a name AND a coordinate, so name, tftoken and geo all point the
+        # wrong way at once, and stripping the type token leaves them MORE
+        # alike. Only a declared class refutes it.
+        #
+        # weight 0.0 + refutes_below 1.0 is a pure discriminator: disagreement
+        # demotes to `review`, agreement adds nothing. `category` is not a
+        # distinctive kind, so two records both being SITE can never clear the
+        # gate on that alone. A missing class refutes nothing, exactly as
+        # absent coordinates cannot fire `veto_km` — so the comparator costs
+        # callers who do not carry the field precisely nothing.
+        {"field": "entity_class", "kind": "category", "weight": 0.0,
+         "refutes_below": 1.0},
+        {"field": "address", "kind": "address", "weight": 1.0},
+        # Geo is weak evidence for a party and carries NO veto, unlike `place`.
+        # A registered office and an operational site are legitimately far
+        # apart, so distance cannot refute a company; and a site sits on top of
+        # its operator, so proximity cannot confirm one either. It informs a
+        # reviewer and barely scores.
+        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 0.5,
+         "decay_km": 5.0},
+    ],
 }
+
+# American spelling accepted for the same pack — `organization` is the more
+# common form globally and in the type vocabulary's own domain key, while this
+# codebase writes `organisation` in prose. Guessing wrong should not be an
+# error a caller has to debug; both names are the same list object.
+ENTITY_PACKS["organization"] = ENTITY_PACKS["organisation"]
 
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather
 # than self-calibration (small artist catalogs mislead a self-calibrated table
@@ -171,7 +237,15 @@ ENTITY_PACKS: dict[str, list[dict]] = {
 # table, where facility words are unseen and therefore read as *rare*: two
 # "General Hospital" records 4.4 km apart cleared the distinctiveness gate
 # with the same evidence as two sharing a genuinely distinctive name.
-_PACK_TF_DOMAIN: dict[str, str] = {"artist": "artist", "place": "place"}
+_PACK_TF_DOMAIN: dict[str, str] = {
+    "artist": "artist", "place": "place",
+    # Both spellings, because both are keys of ENTITY_PACKS. Without a
+    # shipped table the pack self-calibrated over the two lists being
+    # linked, which is not a population: fourteen records cannot know
+    # that "Central" is ordinary, so `Central Cooperative Society` in
+    # two districts merged on a shared generic token.
+    "organisation": "organisation", "organization": "organisation",
+}
 
 
 

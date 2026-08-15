@@ -78,6 +78,7 @@ _DEFAULT_RESOURCES = {
     "person": "name_frequencies.json.gz",
     "artist": "artist_frequencies.json.gz",
     "place": "place_frequencies.json.gz",
+    "organisation": "organisation_frequencies.json.gz",
 }
 #: Phrase (bigram) tables that accompany a unigram table. A name whose every
 #: token is ordinary can still be distinctive as a PHRASE: `london`, `bridge`
@@ -89,6 +90,7 @@ _DEFAULT_BUILDERS = {
     "person": "datasets/names_dataops/build_name_frequencies.py",
     "artist": "datasets/artists_dataops/build_artist_frequencies.py",
     "place": "datasets/places_dataops/build_place_frequencies.py",
+    "organisation": "datasets/organisations_dataops/build_organisation_frequencies.py",
 }
 # Process-wide cache for the packaged default tables (they are immutable).
 _DEFAULT_CACHE: dict[str, TokenFrequencyTable] = {}
