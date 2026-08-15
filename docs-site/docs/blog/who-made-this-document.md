@@ -123,4 +123,4 @@ None of this is really about PDFs. An API response, a database export, a CSV som
 
 The document case is just where the question is easiest to see, because the file goes to the trouble of telling you who made it, and you get to decide whether to believe it.
 
-*Related: [the document lane](../concepts/document-lane.md) · [three PDFs and a question](three-pdfs-and-a-question.md) · [the roadmap's provenance ladder](../concepts/roadmap.md)*
+*Related: [the document lane](../concepts/document-lane.md) · [three PDFs and a question](three-pdfs-and-a-question.md) · [re-verify a decision](../how-to/re-verify-a-decision.md)*
