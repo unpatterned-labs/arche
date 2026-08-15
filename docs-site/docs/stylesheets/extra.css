@@ -737,3 +737,62 @@
   background: #6b5410;
   color: #f7efd6;
 }
+
+/* Collapsible example blocks. Native <details> rather than a Material
+   admonition: the admonition indents its body four spaces, and md_in_html does
+   not process HTML at that indentation, so every container div came out
+   wrapped in a stray <p>. Owning the element also lets the summary read as the
+   affordance it is. */
+details.arche-examples {
+  border: 1px solid var(--arche-line);
+  border-radius: 10px;
+  margin: 1.4rem 0;
+  padding: 0;
+  background: var(--arche-surface);
+  overflow: hidden;
+}
+
+details.arche-examples > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.7rem 1rem 0.7rem 2.1rem;
+  position: relative;
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--arche-green-700);
+  background: var(--arche-green-100);
+  border-bottom: 1px solid transparent;
+}
+
+details.arche-examples > summary::-webkit-details-marker { display: none; }
+
+details.arche-examples > summary::before {
+  content: "\25B8";                       /* right-pointing triangle */
+  position: absolute;
+  left: 0.95rem;
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+details.arche-examples[open] > summary::before { transform: rotate(90deg); }
+details.arche-examples[open] > summary { border-bottom-color: var(--arche-line); }
+
+details.arche-examples > summary:hover { background: var(--arche-green-100); filter: brightness(0.97); }
+details.arche-examples > summary:focus-visible { outline: 2px solid var(--arche-green-500); outline-offset: -2px; }
+
+details.arche-examples > .arche-pairs,
+details.arche-examples > .arche-candidates { margin: 0.9rem 1rem; }
+
+details.arche-examples > .arche-candidates { border: none; padding: 0; }
+
+details.arche-examples > p.arche-note {
+  margin: 0 1rem 0.95rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--arche-ink-muted);
+}
+
+[data-md-color-scheme="slate"] details.arche-examples > summary {
+  color: var(--arche-ink);
+  background: rgba(47, 111, 99, 0.18);
+}
