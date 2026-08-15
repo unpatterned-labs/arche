@@ -80,6 +80,7 @@ organization:
   COOPERATIVE:
     description: Cooperative society (e.g. cocoa/farmer cooperatives).
     synonyms:
+      - co-operative society
       - cooperative society
       - co-operative
       - cooperative
@@ -89,3 +90,101 @@ organization:
     synonyms:
       - non-governmental organisation
       - ngo
+  # --- Agricultural supply chains (cocoa, coffee, tea) -------------------
+  # The aggregation node differs by commodity — society for cocoa, washing
+  # station for coffee, factory or estate for tea — but the shape is the same:
+  # a named site, operated by a legal entity, aggregating from many
+  # smallholders. Stripping the form leaves the distinctive part ("Kuapa
+  # Kokoo", not the shared "Farmers Cooperative Union Ltd").
+  #
+  # Stripping the form does NOT separate a site from its operator: "Nyeri Hill
+  # Factory" and "Nyeri Hill Tea Factory Co Ltd" both reduce toward "Nyeri
+  # Hill". Only a declared entity_class refutes that pair — see the `category`
+  # comparator.
+  UNION:
+    description: Union of cooperatives or growers — a tier above the society, and never the same entity as its members.
+    synonyms:
+      - farmers co-operative union
+      - farmers cooperative union
+      - cooperative union
+      - co-operative union
+      - farmers union
+      - farmers' union
+      - growers union
+      - union of cooperatives
+  SACCO:
+    description: Savings and credit cooperative (East Africa); frequently the payment vehicle for a growers' group rather than the grower itself.
+    synonyms:
+      - savings and credit cooperative
+      - sacco
+  BUYING_COMPANY:
+    description: Licensed/produce buying company — the regulated intermediary that buys from farmers (Ghana cocoa).
+    synonyms:
+      - licensed buying company
+      - produce buying company
+      - buying company
+      - lbc
+  ESTATE:
+    description: Estate or plantation — a large contiguous production holding, common in tea and coffee. A site, not its operating company.
+    synonyms:
+      - estate
+      - plantation
+      - tea estate
+      - coffee estate
+  FACTORY:
+    description: Processing factory — the tea aggregation node (Kenya/KTDA smallholder factories). A site, not its operating company.
+    synonyms:
+      - tea factory
+      - processing factory
+      - factory
+  WASHING_STATION:
+    description: Coffee washing station / wet mill — where cherry is aggregated and a lot first acquires an identity.
+    synonyms:
+      - coffee washing station
+      - washing station
+      - wet mill
+      - cws
+  MILL:
+    description: Dry mill or huller — later-stage coffee processing.
+    synonyms:
+      - dry mill
+      - huller
+      - mill
+  ASSOCIATION:
+    description: Growers' or producers' association, often unregistered.
+    synonyms:
+      - growers association
+      - producers association
+      - farmers association
+      - association
+  ENTERPRISE:
+    description: Enterprise / ventures / trading — the most common informal African business suffix, and frequently a sole trader (see the personal-data boundary).
+    synonyms:
+      - enterprises
+      - enterprise
+      - ventures
+      - trading company
+  # Further legal forms, so a European counterparty's own records normalise
+  # on the same footing as the African ones they are being joined to.
+  BV:
+    description: Besloten vennootschap (Netherlands) — common for EU cocoa and coffee importers.
+    synonyms:
+      - besloten vennootschap
+      - b.v.
+      - bv
+  GMBH:
+    description: Gesellschaft mit beschränkter Haftung (Germany/Austria).
+    synonyms:
+      - gmbh
+  PTY:
+    description: Proprietary limited (South Africa, Australia).
+    synonyms:
+      - proprietary limited
+      - pty ltd
+      - pty
+  SA_CORP:
+    description: Société anonyme / sociedade anónima — Francophone and Lusophone public company.
+    synonyms:
+      - societe anonyme
+      - société anonyme
+      - sociedade anonima

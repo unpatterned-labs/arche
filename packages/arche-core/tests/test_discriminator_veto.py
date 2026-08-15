@@ -215,14 +215,31 @@ class TestGeneralisation:
         and changelog, so enabling `refutes_below` on any of them is a separate,
         separately-measured decision rather than a side effect.
 
-        `product_electronics` is exempt because it declares refutation as its
-        *identity contract* — a purchasable variant, where a capacity or pack
-        size difference means a different product — and it shipped with that
-        contract from its first release, so there is no earlier number to move.
+        Two packs are exempt, by one principle: refutation is part of the
+        identity contract they shipped with on their first release, so there is
+        no earlier number for it to move.
+
+        `product_electronics` — a purchasable variant, where a capacity or pack
+        size difference means a different product.
+
+        `organisation` — the party as named on a document, where sameness of
+        *site* is not sameness of party. `Nyeri Hill Factory` and `Nyeri Hill
+        Tea Factory Co Ltd` share a name and a coordinate, so every string and
+        spatial signal points the wrong way and only a declared `entity_class`
+        refutes them. That pack also ships with **no published accuracy number
+        at all**, deliberately, so this guard has nothing to protect there yet.
+        When one is published, this exemption should be revisited rather than
+        inherited.
         """
         from arche.resolve import ENTITY_PACKS
 
-        established = set(ENTITY_PACKS) - {"product_electronics"}
+        # By list identity, so the `organization` spelling alias is covered
+        # without having to remember it here.
+        exempt = [ENTITY_PACKS["product_electronics"], ENTITY_PACKS["organisation"]]
+        established = {
+            name for name, specs in ENTITY_PACKS.items()
+            if not any(specs is e for e in exempt)
+        }
         for name in established:
             for spec in ENTITY_PACKS[name]:
                 assert "refutes_below" not in spec, (

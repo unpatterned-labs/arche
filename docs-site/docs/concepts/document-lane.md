@@ -32,7 +32,7 @@ The whole design follows from one rule: **a proposer's confidence is never suffi
 
 ## What that buys, concretely
 
-Run the Nigerian detector set over a British bank statement and it reports **36 tax identification numbers**. Every one is a Bolt ride reference or a Viator transaction ID — ten-digit numbers, which is what a Nigerian TIN looks like.
+Run the Nigerian detector set over a British bank statement and it reports **36 tax identification numbers**. Every one is a Bolt ride reference or a Viator transaction ID. Ten-digit numbers, which is what a Nigerian TIN looks like.
 
 Three things are true at once, and the lane keeps them apart:
 
@@ -52,7 +52,7 @@ There are three, and each exists because crossing it caused a real bug.
 
 **Between a score and a decision.** Two documents in this repo score **0.9974** and are not merged, while a pair scoring **0.9903** is. The gate requires agreement on something *rare*, and `Dennis A. Irorere` against `Dennis Irorere` does not clear it. A score says how consistent two records look; a decision says whether anyone has earned a merge.
 
-**Between inference and law.** `jurisdictions.infer` proposes a country from postcodes, registrars, currency and company forms. It cannot establish that a country's law *applies* to your processing — that turns on establishment, on where your data subjects are, and on sector. Selecting a jurisdiction chooses a **policy template**; it does not perform a legal analysis.
+**Between inference and law.** `jurisdictions.infer` proposes a country from postcodes, registrars, currency and company forms. It cannot establish that a country's law *applies* to your processing. That turns on establishment, on where your data subjects are, and on sector. Selecting a jurisdiction chooses a **policy template**; it does not perform a legal analysis.
 
 ---
 
@@ -67,7 +67,7 @@ jurisdiction="GB"     0 false detections,     and the email is NOT masked
 
 "Correcting" the jurisdiction would have taken the headline error count from 36 to zero **by switching protection off**, because a Pipeline with no statute returns text unredacted.
 
-So inference could not ship alone. It shipped with a baseline floor that applies when an *inferred* jurisdiction has no pack — a conservative default whose every citation reads, in words, that it is not law. The measured result is 36 → 0 **and** the document still redacted.
+So inference could not ship alone. It shipped with a baseline floor that applies when an *inferred* jurisdiction has no pack. A conservative default whose every citation reads, in words, that it is not law. The measured result is 36 → 0 **and** the document still redacted.
 
 That ordering is the point: a number that improves because a feature stopped working is not an improvement.
 
@@ -75,7 +75,7 @@ That ordering is the point: a number that improves because a feature stopped wor
 
 ## Abstention is an output
 
-Four of the seven real PDFs in this repo produce no jurisdiction at all. Two of three document pairs come back `review` rather than a merge. On the place benchmark, auto-match recall is 0.71 while *surfaced* recall is 0.97 — the missing pairs are queued, not lost.
+Four of the seven real PDFs in this repo produce no jurisdiction at all. Two of three document pairs come back `review` rather than a merge. On the place benchmark, auto-match recall is 0.71 while *surfaced* recall is 0.97. The missing pairs are queued, not lost.
 
 None of that is failure. A system that always answers cannot be wrong in any detectable way, and a review queue is the mechanism that converts an unjustifiable merge into a human glance. What matters is that the queue is small enough to work and that every item in it says why it is there.
 
@@ -83,10 +83,10 @@ None of that is failure. A system that always answers cannot be wrong in any det
 
 ## Reading a decision afterwards
 
-Every verdict carries the factors that produced it and a `decision_id` — a content hash over the evidence and the pinned inputs, with no timestamp and no randomness. Anyone holding the same inputs recomputes the same id.
+Every verdict carries the factors that produced it and a `decision_id`. A content hash over the evidence and the pinned inputs, with no timestamp and no randomness. Anyone holding the same inputs recomputes the same id.
 
-That is what makes a decision checkable months later rather than merely stored, and it is why the inputs that *change* a decision — the frequency tables, the jurisdiction, the ruleset version — are named in the pins. An unpinned scoring input makes a `decision_id` claim a reproducibility it does not have.
+That is what makes a decision checkable months later rather than merely stored, and it is why the inputs that *change* a decision. The frequency tables, the jurisdiction and the ruleset version are all named in the pins. An unpinned scoring input makes a `decision_id` claim a reproducibility it does not have.
 
 ---
 
-*Next: [zero to hero with documents](../tutorials/zero-to-hero-documents.md) — the whole lane on four real invoices, in one page. Or [the architecture](architecture.md) for how the layers are wired.*
+*Next: [zero to hero with documents](../tutorials/zero-to-hero-documents.md). The whole lane on four real invoices, in one page. Or [the architecture](architecture.md) for how the layers are wired.*

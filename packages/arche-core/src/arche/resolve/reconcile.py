@@ -56,6 +56,7 @@ from arche.resolve._gate import (
 )
 from arche.resolve._matcher import (
     compare_addresses,
+    compare_categories,
     compare_containment,
     compare_dates,
     compare_emails,
@@ -94,6 +95,11 @@ _FIELD_COMPARATORS = {
     # different things on two paths is exactly the confusion the declaration
     # layer exists to remove.
     "date": compare_dates,
+    # Closed-vocabulary categorical (entity class, tier, status). Absent
+    # from _DISTINCTIVE_KINDS on purpose: agreeing that two records are
+    # both a SITE is not evidence they are the same site. Intended as a
+    # weight-0 `refutes_below` discriminator.
+    "category": compare_categories,
 }
 
 # Comparator kinds whose fields carry free text worth reranking on (also the
@@ -120,13 +126,57 @@ def _text_values(
          "strip_qualifier": True},
         {"field": "name", "kind": "qualifier",  "weight": 1.0},
 
-    It is opt-in because it changes what a comparator compares, and therefore
-    every number a pack has published.
+    ``strip_type`` is the same idea for entity *form*. Given a type-vocabulary
+    domain it removes the recognised type token and compares the residual, so a
+    text comparator judges "Kuapa Kokoo" rather than letting the shared
+    "Cooperative Union Ltd" carry the score:
+
+        {"field": "name", "kind": "tftoken", "weight": 2.0,
+         "strip_type": "organization"},
+
+    Without it the vocabulary only feeds the ``type`` comparator's own
+    agree/disagree, and the shared form still inflates every name-like
+    comparator alongside it — which is the failure the vocabulary exists to
+    prevent. Stripping to an empty residual leaves the comparator inapplicable
+    rather than comparing empty strings: a record named only for its form
+    ("Produce Buying Company") carries no distinctive name, and saying nothing
+    is the correct answer.
+
+    Both are opt-in because they change what a comparator compares, and
+    therefore every number a pack has published.
     """
     a_val, b_val = str(ra[field]), str(rb[field])
     if spec.get("strip_qualifier"):
-        return split_place_name(a_val)[0], split_place_name(b_val)[0]
+        a_val, b_val = split_place_name(a_val)[0], split_place_name(b_val)[0]
+    domain = spec.get("strip_type")
+    if domain:
+        vocab = load_type_vocab(str(domain))
+        if vocab:
+            a_val = _strip_all_type_tokens(a_val, vocab)
+            b_val = _strip_all_type_tokens(b_val, vocab)
     return a_val, b_val
+
+
+def _strip_all_type_tokens(value: str, vocab: dict[str, str], _max: int = 4) -> str:
+    """Remove every recognised type token, not just the longest one.
+
+    Organisation names stack their forms — ``Cooperative Society Ltd`` is two,
+    ``Farmers Cooperative Union Ltd`` is arguably three — where facility names
+    rarely do (``Primary Health Centre`` is one). :func:`normalize_type_token`
+    removes a single token by design, and changing that would move every number
+    the ``place`` pack has published, so the repetition lives here instead,
+    reached only through the opt-in ``strip_type``.
+
+    Bounded at ``_max`` passes: a vocabulary entry that somehow matched its own
+    output would otherwise spin, and no real name stacks more forms than that.
+    Stops early when a pass changes nothing.
+    """
+    for _ in range(_max):
+        canonical, residual = normalize_type_token(value, vocab)
+        if canonical is None or residual == value:
+            break
+        value = residual
+    return value
 
 
 def _field_sim(

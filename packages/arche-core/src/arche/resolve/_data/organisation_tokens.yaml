@@ -1,0 +1,202 @@
+# organisation_tokens.yaml — the curated layer over the organisation frequency table.
+#
+# What it is: the hand-editable half of organisation distinctiveness. The counts
+# in `organisation_frequencies.json.gz` are measured over a corpus; this file is
+# where a person who knows the domain corrects what the corpus got wrong. Both
+# are inputs to the same artefact, and
+# `datasets/organisations_dataops/build_organisation_frequencies.py` applies
+# this file last, so a curated entry always wins over a measured count.
+#
+# Why it exists, concretely. The measured table is built from GLEIF LEI data,
+# and LEI registration follows participation in financial markets. So it counts:
+#
+#     limited  5223      central       40
+#     holdings  750      society       19
+#     company  1420      cooperative   10
+#     gmbh     1389      farmers        1
+#
+# One occurrence of "farmers" in 52,875 organisation names. The measured table
+# therefore concludes that `farmers` and `cooperative` are *rare* — which would
+# let two unrelated "X Farmers Cooperative Society" records clear the
+# distinctiveness gate on those words alone. That is the same failure the place
+# pack met with `PHC` (4 occurrences in 51,022 Nigerian facility names), and it
+# has the same cause and the same fix: no amount of extra corpus repairs it,
+# because the corpus does not contain cooperatives. Somebody who has read a
+# cocoa or coffee supplier list has to say it, and this is where they say it.
+#
+# This file is consequently where arche's African-context calibration lives for
+# organisations. GLEIF supplies global corporate statistics; it structurally
+# cannot supply West African cooperative vocabulary. This can.
+#
+# Scope discipline — read before adding an entry:
+#
+#   An entry here changes which organisations get merged. `generic_tokens` is
+#   for words that carry no identity in this domain — a legal form, a facility
+#   type, a commodity. `frequency_overrides` is a last resort and every entry
+#   needs a `reason` a stranger can check.
+#
+#   NEVER add a distinctive proper name. `kuapa`, `sefwi`, `gicherori` and
+#   `wiawso` are exactly the tokens that SHOULD stay rare — they are what tells
+#   one cooperative from another, and marking them generic would destroy the
+#   pack's ability to match anything. A test asserts they are absent from the
+#   measured table for the same reason.
+#
+#   A commodity word is generic; a place word usually is not. `cocoa` says
+#   nothing about which cooperative you are looking at. `sefwi` does.
+#
+# Contributor notes:
+#   - Tokens are matched after case-folding and diacritic-stripping.
+#   - Adding an entry is a DATA edit, not a code change. Rebuild with
+#     `python datasets/organisations_dataops/build_organisation_frequencies.py`
+#     which re-reads the cached corpus and does not re-fetch.
+#   - Open a "Data correction or addition" issue if something here is wrong.
+#     Having worked with a supplier list is the qualification that matters.
+#   - Sources, licences and intent: datasets/organisations_dataops/SOURCES.md
+
+version: v0.1
+
+# ── Tunables ────────────────────────────────────────────────────────────────
+settings:
+  # A token listed in `generic_tokens` is forced to at least this relative
+  # frequency, which caps its distinctiveness below DISTINCTIVE_FLOOR (0.75).
+  # Same value as the place pack, for the same reason: generic, not zero, so a
+  # generic word still contributes a little to a weighted comparison.
+  generic_min_rel_freq: 1.0e-3
+
+# ── Generic tokens ──────────────────────────────────────────────────────────
+# Words that say what KIND of organisation this is, never WHICH one.
+generic_tokens:
+  # Legal forms. Anglophone, Francophone, Lusophone and the European forms an
+  # importer's own records carry — a Ghanaian cooperative is routinely joined
+  # against a Dutch B.V., and both sides must normalise on the same footing.
+  - limited
+  - ltd
+  - plc
+  - inc
+  - llc
+  - corp
+  - company
+  - co
+  - sarl
+  - sa
+  - sas
+  - bv
+  - nv
+  - gmbh
+  - ag
+  - pty
+  - cc
+  - spa
+  - srl
+  - lda
+  - oy
+  - ab
+
+  # Cooperative and grower structures. This block is the whole point of the
+  # file: GLEIF counts `cooperative` 10 times and `farmers` once, so without
+  # these entries the measured table treats them as identifying.
+  - cooperative
+  - cooperatives
+  - coop
+  - society
+  - societies
+  - union
+  - farmers
+  - farmer
+  - growers
+  - grower
+  - producers
+  - producer
+  - association
+  - sacco
+  - group
+  - groups
+  - members
+
+  # Aggregation nodes — the site words. Generic by definition: they name the
+  # stage of processing, not the party. `Factory` is what a thing is; `Nyeri
+  # Hill` is which one.
+  - estate
+  - estates
+  - plantation
+  - plantations
+  - factory
+  - factories
+  - washing
+  - station
+  - stations
+  - mill
+  - mills
+  - huller
+  - warehouse
+  - depot
+  - store
+  - stores
+
+  # Trade and intermediary vocabulary.
+  - buying
+  - produce
+  - trading
+  - traders
+  - trade
+  - exporters
+  - exporter
+  - export
+  - exports
+  - importers
+  - import
+  - imports
+  - marketing
+  - commodities
+  - commodity
+  - supply
+  - supplies
+  - agro
+  - agric
+  - agricultural
+  - agriculture
+  - enterprise
+  - enterprises
+  - ventures
+  - services
+  - holdings
+  - holding
+  - international
+  - global
+  - general
+
+  # Commodity words. A commodity says nothing about which party you are looking
+  # at — every cocoa cooperative in Ghana has "cocoa" available to it. Place
+  # words are deliberately NOT here; see the scope note above.
+  - cocoa
+  - cacao
+  - coffee
+  - tea
+  - produce
+  - crop
+  - crops
+
+  # Positional and descriptive words that read as identifying to a measured
+  # table but distinguish nothing. `central` at 40 occurrences is the case that
+  # motivated this pack's regression test.
+  - central
+  - centre
+  - center
+  - national
+  - regional
+  - district
+  - zonal
+  - north
+  - south
+  - east
+  - west
+  - upper
+  - lower
+  - new
+  - old
+
+# ── Frequency overrides ─────────────────────────────────────────────────────
+# Last resort. `token`, `count`, and a `reason` a stranger can check. Prefer
+# `generic_tokens` — it asserts a judgement about the domain, where an override
+# asserts a number, and a number invites the question "measured how?"
+frequency_overrides: []

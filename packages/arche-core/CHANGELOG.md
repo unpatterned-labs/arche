@@ -9,6 +9,41 @@ The document lane, the product lane, and the `EgressGuard` security fix that
 published version until this ships.
 
 
+### Added — an experimental organisation entity lane
+
+`ENTITY_PACKS["organisation"]` (`"organization"` accepted for the same pack) — companies, cooperatives, unions and institutional bodies. Built for cross-party supplier reconciliation in cocoa, coffee and tea chains, where the aggregation node differs by commodity (society, washing station, factory or estate) but its shape does not: a named site, operated by a legal entity, aggregating from many smallholders.
+
+**Identity contract:** the legal or institutional party, as it would be named on a document evidencing a transaction. Sameness of *site*, membership, ownership, management, certificate or payment destination is **not** sameness of party — each of those is a relationship, and belongs in an edge rather than a merge.
+
+**First accuracy number, on a public labelled set with pre-declared criteria.** Measured on ER_Magellan Fodors-Zagats (946 labelled pairs, 110 positives) — business listings from two restaurant guides, the closest organisation-shaped task in a public, baselined entity-matching suite:
+
+| | precision | recall | F1 | false merges | missed |
+|---|---|---|---|---|---|
+| **`organisation` pack** | 0.9626 | 0.9364 | **0.9493** | **4** | 7 |
+| `person` pack | 0.9863 | 0.6545 | 0.7869 | 1 | 38 |
+| token-sort baseline | 0.8333 | 0.9545 | 0.8898 | 21 | 5 |
+
+The three criteria were written down before the run and all pass: **+0.1624** F1 over the `person` pack (needed +0.10), **+0.0595** over token-sort (needed +0.05), and **4 false merges against token-sort's 21**. The token-sort comparison is the meaningful one — a fivefold reduction in false merges while gaining F1 — because "beats the person pack on organisations" only establishes the pack is genuinely calibrated rather than renamed. The margin on criterion 2 is thin and is reported as such.
+
+**What this number is not.** 946 pairs is small; the set is near-saturated (published learned baselines report ~100 F1); and it is Anglophone US restaurant listings. **It says nothing whatever about African organisation names** and must never be cited as if it did. The benchmark that would settle that is OpenSanctions Pairs — 755,540 analyst-labelled pairs, 31 countries, cross-script names — which is CC-BY-NC and requires a purchased licence for commercial use.
+
+The benchmark data is fetched, never vendored: neither Magellan nor DeepMatcher states redistribution terms for the data (the code is BSD), so `datasets/organisations_dataops/bench_organisation.py` ships and the data does not.
+
+**A population frequency table ships with it**, closing the gap the first draft of this entry declared open. Built from GLEIF LEI Level 1 data (**CC0 1.0**, a public domain dedication) — 52,875 organisation name forms across a census of 20 African jurisdictions plus a shallow sample of 45 more. `Central Cooperative Society` in two districts now scores `distinctive_max` 0.138 and routes to review, where it previously merged at 1.0; a genuinely rare shared name (`Kuapa Kokoo Farmers Union`) still matches at 0.808, so this discriminates on rarity rather than merely becoming more conservative.
+
+**The table has two halves, and the curated one is where African calibration lives.** `_data/organisation_tokens.yaml` is hand-editable and applied last, so a curated entry always beats a measured count — the same mechanism as `place_tokens.yaml`, for the same reason. It is not a convenience: GLEIF counts `farmers` **once** in 52,875 organisation names, because LEI registration follows financial-market participation and cooperatives do not register LEIs. Measured alone the table concludes `farmers` is a rare, identifying token, which would let two unrelated `X Farmers Cooperative Society` records clear the distinctiveness gate on that word. No larger pull fixes it; someone who has read a supplier list has to assert it. Editing the YAML is a data change, and rebuilding reuses a cached corpus, so it takes seconds and no network.
+
+The one rule the file must obey, enforced by tests in both directions: never mark a distinctive proper name generic. `kuapa`, `sefwi`, `gicherori` and `kericho` are exactly the tokens that must stay rare — they are what tells one cooperative from another. A commodity word (`cocoa`) is generic; a place word (`sefwi`) is not.
+
+Stated plainly because it bounds what may be claimed: this table knows **corporate** naming and knows **nothing** about West African cooperative naming — LEI lists 51 entities for Côte d'Ivoire, the world's largest cocoa producer. It must never be cited as evidence for a claim about African organisation names. See `datasets/organisations_dataops/SOURCES.md` for the full licence comparison, including why Open Food Facts (ODbL, share-alike propagates to derived databases) cannot be vendored while Trase (CC BY, attribution only) can and is the planned second table.
+
+Two supporting primitives, both additive and opt-in, so no existing pack's published numbers move:
+
+- **`kind: "category"`** — a closed-vocabulary categorical comparator (normalised exact match). Deliberately **not** a distinctive kind: two records agreeing they are both a `SITE` is not evidence they are the *same* site. Its purpose is the site-versus-operator discriminator, the largest false-merge risk in supply-chain data — `Nyeri Hill Factory` and `Nyeri Hill Tea Factory Co Ltd` share a name *and* a coordinate, so name, token and geo signals all point the wrong way at once, and only a declared `entity_class` refutes them.
+- **`strip_type: "<domain>"`** on a comparator spec — removes recognised type tokens before comparison, so a name comparator judges `Kuapa Kokoo` rather than letting a shared `Cooperative Union Ltd` carry the score. Unlike `normalize_type_token`, it strips *every* recognised form rather than the longest one, because organisation names stack them where facility names do not.
+
+The `organization` type vocabulary grows from 4 forms to 21, covering cooperative/union/SACCO/licensed-buying-company/estate/factory/washing-station/mill plus European legal forms, so a counterparty's own records normalise on the same footing as the African ones they are joined to.
+
 ### Added — extraction provenance on document decisions
 
 A decision derived from a document now records what produced it — `artifact_sha256`, `parser`, `parser_version`, `text_sha256`, `ocr` — on `ParsedDocument.provenance` and `DocumentReport.provenance`. These enter the pins **before** `decision_id` is hashed, so the id moves when the input bytes, the parser version, the rendering, or the OCR setting moves.

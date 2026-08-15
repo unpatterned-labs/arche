@@ -6,6 +6,17 @@
 
 Two rows, two Nigerian registries. One says **"Karfi Health Post"** with coordinates that put it just off the Kano–Zaria road. The other says **"Karfi Primary Health Centre"**, a little over two kilometres away. Same facility, or neighbours?
 
+<div class="arche-pairs">
+<div class="pair review">
+  <div class="pair-records">
+    <code>Karfi Health Post              11.9960, 8.5170</code>
+    <code>Karfi Primary Health Centre    11.9782, 8.5093</code>
+  </div>
+  <div class="pair-verdict">review</div>
+</div>
+<p class="pair-why"><strong>2.2 km apart · different facility tiers · nearly identical names</strong> — every signal you would match on is arguing with the others.</p>
+</div>
+
 If you trust the coordinates, they are different places; two kilometres is not GPS jitter. If you trust the names, they nearly agree, except one is a Health Post and the other a Primary Health Centre, and in the Nigerian health system those are different tiers of facility. Every signal you would match on is arguing with the others.
 
 Here is the resolution, and it took local knowledge, not better math: the facility was upgraded. The health post became a PHC, the name changed with the tier, and the two coordinates were captured years apart by different field teams, one standing at the gate and one at the junction where the access road starts. One place, two references, and the disagreement between them is not noise. It is history.
@@ -26,7 +37,7 @@ The second book on my shelf is Deirdre Mask's *The Address Book*, and its centra
 
 House numbering arrives in Europe in the 1700s as an instrument of taxation, conscription, and policing. And here is the detail that connects it straight to our work: Mask reports that in 1700s England, some ninety percent of men shared one of just eight first names. John, William, Henry and their five brothers had collided so completely that a name alone could not identify anyone. States had tried fixing names before, imposing hereditary surnames and keeping parish registers, and the collisions kept coming. House numbering attacked the problem from the other side: pin each person to a numbered place, and an ambiguous name becomes resolvable.
 
-In [Talburt's vocabulary](er-activities.md), that is the moment the address became an *identity attribute*. The address was the state's sharpest join key yet, adopted precisely because the name-frequency problem we still fight today (agreeing on "Ibrahim" in Kano is weak evidence; agreeing on "Gyaranya" is strong) had already broken identification centuries earlier. Frequency-weighted matching and the postal address are two answers to the same collision, three hundred years apart.
+In [Talburt's vocabulary](../concepts/er-activities.md), that is the moment the address became an *identity attribute*. The address was the state's sharpest join key yet, adopted precisely because the name-frequency problem we still fight today (agreeing on "Ibrahim" in Kano is weak evidence; agreeing on "Gyaranya" is strong) had already broken identification centuries earlier. Frequency-weighted matching and the postal address are two answers to the same collision, three hundred years apart.
 
 Mask ends with a warning that maps cleanly onto Relph. Systems like what3words assign every three-metre square on earth a three-word code, and it works, in the sense that a drone can find you, and several postal services have adopted it. But a grid code is pure space: no community speaks it, no history attaches to it, and even where a post office signs up, the code lives in an app rather than in neighbours' heads. It is also owned: a private company holds the grid, the wordlist, and the licence, which is the exact inverse of the shared, verifiable knowledge that made addresses work. Keep that thought; it comes back when we get to "behind the Total filling station."
 
@@ -38,11 +49,28 @@ Consider what you are to a shop you have never walked into. You are an account, 
 
 That handoff deserves more attention than it gets, because it is the one step in the chain with no digital fallback. The order is bits. The payment is bits. Fraud scoring, the recommendation that produced the order, the confirmation mail, the tracking page with the little moving dot: bits, all of it, and each of those steps can be retried, cached, replicated, or rolled back. The last hundred metres cannot. It happens once, in the street, and nothing upstream can compensate for getting it wrong.
 
-I would resist calling that meeting a *point*, though, and not out of pedantry — the geometry is precisely the thing that fails. Call it a **seam**. A seam is where two materials that were made separately have to be joined, and it is where things tear. The delivery does not fail because the coordinate was wrong in the fourth decimal place. It fails because two parties do not share a representation of the same place: the customer holds one ("the blue gate after the mosque, ask for Mama Ngozi"), the system holds another (a pin someone dropped on a roof from a satellite image), and the rider has to reconcile the two with the engine running. Precision is not the missing ingredient. A shared, checkable representation is. That is the same claim the rest of this post makes about matching, arriving from the other direction.
+I would resist calling that meeting a *point*, though, and not out of pedantry. The geometry is precisely the thing that fails. Call it a **seam**. A seam is where two materials that were made separately have to be joined, and it is where things tear. The delivery does not fail because the coordinate was wrong in the fourth decimal place. It fails because two parties do not share a representation of the same place: the customer holds one ("the blue gate after the mosque, ask for Mama Ngozi"), the system holds another (a pin someone dropped on a roof from a satellite image), and the rider has to reconcile the two with the engine running. Precision is not the missing ingredient. A shared, checkable representation is. That is the same claim the rest of this post makes about matching, arriving from the other direction.
 
-The seam runs both ways, and the two directions fail differently, which is the part I find most useful to hold on to. **Digital to physical** — a parcel, a dispatched ambulance, a meter installation, a ballot box — fails **loudly**. The package does not arrive, somebody calls, a refund is issued, a complaint is logged, and the failure has a price attached to it within the hour. **Physical to digital** — proof of address for a bank account, a census enumeration, a facility register, a tax roll — fails **silently**. You are simply not in the file, and nobody phones to tell you that you were left out of the sampling frame. Loud failures attract engineering budget. Silent ones compound for a decade and then get called a data gap, at which point they are described as a measurement problem rather than the exclusion they actually were.
+The seam runs both ways, and the two directions fail differently, which is the part I find most useful to hold on to.
 
-Commerce has of course noticed the seam and is busy fixing it, privately. Riders keep notes. Apps let you drop your own pin and save it. Platforms build internal place graphs out of successful deliveries, so that the eleventh parcel to your house lands more easily than the first. All of that works, and every bit of it is a place representation — an unusually good one, learned from physical outcomes rather than declared by a surveyor. It is also owned, unshared, and non-portable, which puts it in exactly the position Mask puts what3words in: a functioning answer that only one party can read. Your address becomes solved inside one company's logistics stack and stays unsolved everywhere else. The ambulance still cannot find you. So does the electoral commission, the meter reader, and the next platform you sign up to, each of which will rediscover your blue gate from scratch.
+<div class="arche-split">
+<div class="loud">
+<h4>Digital to physical</h4>
+<p class="verdict">Fails loudly</p>
+<p>A parcel, a dispatched ambulance, a meter installation, a ballot box.</p>
+<p>The package does not arrive, somebody calls, a refund is issued, a complaint is logged. The failure has a price attached to it within the hour, so it attracts engineering budget.</p>
+</div>
+<div class="silent">
+<h4>Physical to digital</h4>
+<p class="verdict">Fails silently</p>
+<p>Proof of address for a bank account, a census enumeration, a facility register, a tax roll.</p>
+<p>You are simply not in the file, and nobody phones to tell you that you were left out of the sampling frame. It compounds for a decade and is then called a data gap.</p>
+</div>
+</div>
+
+That second column is the one worth sitting with. **A silent failure gets described as a measurement problem when it was an exclusion**, and by the time anyone notices, the people missing from the file have been missing long enough that their absence looks like a fact about the world rather than a fact about the collection.
+
+Commerce has of course noticed the seam and is busy fixing it, privately. Riders keep notes. Apps let you drop your own pin and save it. Platforms build internal place graphs out of successful deliveries, so that the eleventh parcel to your house lands more easily than the first. All of that works, and every bit of it is a place representation. An unusually good one, learned from physical outcomes rather than declared by a surveyor. It is also owned, unshared, and non-portable, which puts it in exactly the position Mask puts what3words in: a functioning answer that only one party can read. Your address becomes solved inside one company's logistics stack and stays unsolved everywhere else. The ambulance still cannot find you. So does the electoral commission, the meter reader, and the next platform you sign up to, each of which will rediscover your blue gate from scratch.
 
 One honest correction to my own frame before it gets too tidy. **The address is not the only bridge, and in much of the world it is not the primary one.** The phone number does an enormous amount of this work: one-time passwords, mobile money, and most tellingly the call the rider makes from the junction. Delivery in Lagos or Nairobi is in practice a two-stage protocol, where the address gets you to the neighbourhood and a voice call gets you to the door. Biometrics run the seam in the opposite direction, binding a physical body to a digital record. So the claim I will actually defend is the narrower one: **place is the bridge for anything that has to arrive**, and the phone call is the fallback protocol we fall back on precisely when the place representation was not good enough to carry the handoff alone. Counting how often that fallback fires is a decent measure of how badly a place is represented.
 
@@ -58,7 +86,7 @@ Nobody won on distance. The [top solutions](https://www.kaggle.com/competitions/
 
 Read with a geographer's squint, that is the matching community rediscovering Relph: space proposes, place decides. A Kaggle leaderboard cannot prove a philosophy, but it is striking how exactly the winning feature sets recapitulate the theory.
 
-arche's [place pack](https://github.com/unpatterned-labs/arche/tree/main/datasets) is that lesson written down as declared comparators rather than learned weights, because our whole thesis is [shipping representation as inspectable data](representation-engine.md). Five signals, each carrying one piece of the theory:
+arche's [place pack](https://github.com/unpatterned-labs/arche/tree/main/datasets) is that lesson written down as declared comparators rather than learned weights, because our whole thesis is [shipping representation as inspectable data](../concepts/representation-engine.md). Five signals, each carrying one piece of the theory:
 
 - **Geo** is haversine distance under an exponential decay, deliberately a supporting signal and never a decision gate. The decay is forgiving because field coordinates are noisy; two points 2 km apart still register a nonzero nudge (about 0.26 under the default decay, a number you can read straight out of the code). And space does get to propose, literally: candidate generation blocks on spatial cells, so nearby pairs are the ones offered for comparison in the first place.
 - **Containment** compares the *named hierarchy*: state, LGA, settlement, from a point-in-polygon join against admin boundaries. Agreement at the finest shared level is strong supporting evidence; disagreement at the state level zeroes the signal, and any containment conflict pushes a would-be match to human review instead of an automatic merge. Nothing auto-vetoes; the map gets a voice, not a gavel. This comparator is Relph in code: it matches on the names people gave the land, not the numbers the satellite gave it.
@@ -66,13 +94,13 @@ arche's [place pack](https://github.com/unpatterned-labs/arche/tree/main/dataset
 - **Token frequency** carries the eight-names lesson: agreement on a token is worth what its rarity says it is worth, measured over the corpus being linked. That is the same move [Robin Linacre's uk_address_matcher](https://github.com/RobinL/uk_address_matcher) makes on UK addresses, where "HIGH" and "STREET" are near-worthless and a rare token decides the match; both systems calibrate rarity from the data in front of them instead of guessing.
 - **Address**, for when there is one, weighted knowing that shared city names alone are weak.
 
-None of this is exotic. It is the Foursquare winners' feature set, written down as data instead of learned weights. And an honest status note: the place pack is younger than the person pack, and writing this argument down exposed gaps in the code that have since been closed — the type comparator as its own declared slot, place-calibrated decay, a lexicon-free place-name comparator, and union blocking so a true match whose coordinates disagree by kilometres still reaches the comparators. Being able to find your own gaps by reading the representation is exactly what shipping it as inspectable data is supposed to make possible.
+None of this is exotic. It is the Foursquare winners' feature set, written down as data instead of learned weights. And an honest status note: the place pack is younger than the person pack, and writing this argument down exposed gaps in the code that have since been closed. The type comparator as its own declared slot, place-calibrated decay, a lexicon-free place-name comparator, and union blocking so a true match whose coordinates disagree by kilometres still reaches the comparators. Being able to find your own gaps by reading the representation is exactly what shipping it as inspectable data is supposed to make possible.
 
 ## Places drift, so decisions carry dates
 
 Relph's deepest observation is temporal: time makes place, and time keeps remaking it. States split, LGAs are redrawn, settlements get absorbed, facilities get upgraded, and the filling station that anchors everyone's directions eventually closes while the junction keeps its name for a generation. Karfi Health Post genuinely *was* a different reference than Karfi PHC; the entity moved underneath both.
 
-This is why arche never emits a bare yes. Every decision carries its evidence: which representation version, which comparators, which thresholds, decided *when*. At trust boundaries a decision can be [signed](attest.md), and the signature does not claim "these are eternally the same place." It claims "given this evidence and this representation, this was the decision," which is the only claim a system can honestly make about entities that have histories. The place crosswalk used to return its evidence unsigned; it no longer does. Every crosswalk edge now carries a `decision_id` hashed over its evidence and provenance pins, and `sign_edges` puts a signature on exactly that claim. Attestation is how software admits that place identity is temporal.
+This is why arche never emits a bare yes. Every decision carries its evidence: which representation version, which comparators, which thresholds, decided *when*. At trust boundaries a decision can be [signed](../concepts/attest.md), and the signature does not claim "these are eternally the same place." It claims "given this evidence and this representation, this was the decision," which is the only claim a system can honestly make about entities that have histories. The place crosswalk used to return its evidence unsigned; it no longer does. Every crosswalk edge now carries a `decision_id` hashed over its evidence and provenance pins, and `sign_edges` puts a signature on exactly that claim. Attestation is how software admits that place identity is temporal.
 
 The boundaries drift too, and that cuts at us: the containment signal is only as current as the admin polygons it joined against, and GADM, GRID3, and Overture genuinely disagree on some Nigerian LGA lines. So the boundary layer's vintage is one more thing a decision has to pin rather than assume, which is an argument the drift makes for us.
 
@@ -86,15 +114,21 @@ That is why the same engine that resolves facilities renders [masked by default]
 
 ## Madina junction, again
 
-In [the representation essay](representation-engine.md) we used the address "behind the Total filling station, Madina junction" as an example of what breaks Western address parsers. I want to end by reading it the other way, because after Relph and Mask it is not a broken address at all.
+In [the representation essay](../concepts/representation-engine.md) we used the address "behind the Total filling station, Madina junction" as an example of what breaks Western address parsers. I want to end by reading it the other way, because after Relph and Mask it is not a broken address at all.
 
 It is a rich place description. It has a landmark anchor, an implied containment (Madina, Accra), a spatial relation, and a verification community: thousands of people can confirm it, correct it, and navigate by it. It is *more* place-like than "Flat 2, 12 High Street", not less. What it lacks is not information. What it lacks is a system willing to represent it.
 
-Billions of people live at places that are named but not addressed, and the cost of that is not inconvenience. It is that the seam does not close for them. The order can be placed, the payment clears, the digital half runs perfectly — and then the last hundred metres has to be improvised over the phone, every time, by two people who have no shared way to name the same gate. Whatever cannot be improvised over the phone simply does not get delivered: not the parcel, and not the ambulance, the meter, the enumerator, or the ballot.
+Billions of people live at places that are named but not addressed, and the cost of that is not inconvenience. It is that the seam does not close for them. The order can be placed, the payment clears, the digital half runs perfectly, and then the last hundred metres has to be improvised over the phone, every time, by two people who have no shared way to name the same gate. Whatever cannot be improvised over the phone simply does not get delivered: not the parcel, and not the ambulance, the meter, the enumerator, or the ballot.
 
 The machinery above (names weighted by rarity, containment hierarchies, landmark anchors, types split from identities, decisions signed with their dates) is what taking those places seriously looks like in software. The satellite sees space. People make place. We match the second one.
 
 ---
+
+## Notes
+
+1. The Karfi pair is real and sits in the Kano crosswalk. The resolution, that the facility was upgraded and the two coordinates were captured years apart by different field teams, came from someone who knew the district. No amount of additional signal in the data would have produced it.
+2. "Roughly a quarter of accepted matches sit more than two kilometres apart" is measured on the Nigeria facility crosswalks rather than estimated. It is also the reason the shipped configuration treats distance as a constraint that can refute rather than a score that can decide.
+3. The loud-versus-silent asymmetry is the part of this essay I would most like someone to argue with. It is an observation rather than a measurement, and if it is right it implies that the places where identity infrastructure fails hardest are precisely the places least likely to generate a bug report.
 
 ## References
 
@@ -107,10 +141,10 @@ The machinery above (names weighted by rarity, containment hierarchies, landmark
 - Yves-Alexandre de Montjoye, César A. Hidalgo, Michel Verleysen, Vincent D. Blondel, "Unique in the Crowd: The privacy bounds of human mobility," *Scientific Reports* 3, 1376, 2013.
 - Peter Christen, *Data Matching: Concepts and Techniques for Record Linkage, Entity Resolution, and Duplicate Detection*, Springer, 2012.
 - Peter Christen, Thilina Ranbaduge, Rainer Schnell, *Linking Sensitive Data: Methods and Techniques for Practical Privacy-Preserving Information Sharing*, Springer, 2020.
-- John R. Talburt, *Entity Resolution and Information Quality*, Morgan Kaufmann, 2011. The entities-vs-references discipline, [audited against arche here](er-activities.md).
-- [Foursquare — Location Matching](https://www.kaggle.com/competitions/foursquare-location-matching), Kaggle, 2022; [1st place solution writeup](https://www.kaggle.com/competitions/foursquare-location-matching/writeups/re-waiwai-1st-place-solution); [Theo Viel's solution](https://github.com/TheoViel/kaggle_foursquare); [Foursquare's own post-mortem](https://foursquare.com/resources/blog/developer/finding-the-right-poi-match/).
+- John R. Talburt, *Entity Resolution and Information Quality*, Morgan Kaufmann, 2011. The entities-vs-references discipline, [audited against arche here](../concepts/er-activities.md).
+- [Foursquare. Location Matching](https://www.kaggle.com/competitions/foursquare-location-matching), Kaggle, 2022; [1st place solution writeup](https://www.kaggle.com/competitions/foursquare-location-matching/writeups/re-waiwai-1st-place-solution); [Theo Viel's solution](https://github.com/TheoViel/kaggle_foursquare); [Foursquare's own post-mortem](https://foursquare.com/resources/blog/developer/finding-the-right-poi-match/).
 - Robin Linacre, [uk_address_matcher](https://github.com/RobinL/uk_address_matcher). Token-frequency address matching over a national corpus.
 - H. B. Newcombe, J. M. Kennedy, S. J. Axford, A. P. James, "Automatic Linkage of Vital Records," *Science* 130(3381), 954-959, 1959. An early foundation of record linkage, and where frequency-based agreement weights first appear.
 - The reading notes this post grew from: [systems-that-decide-what-matters, spatial identity](https://github.com/denironyx/systems-that-decide-what-matters/tree/main/04-spatial-identity).
 
-*Related: [the representation engine](representation-engine.md) · [the five ER activities](er-activities.md) · [place resolution at scale (NG + UK)](../tutorials/place_resolution_at_scale.md) · [attest: the signature on the decision](attest.md).*
+*Related: [the representation engine](../concepts/representation-engine.md) · [the five ER activities](../concepts/er-activities.md) · [place resolution at scale (NG + UK)](../tutorials/place_resolution_at_scale.md) · [attest: the signature on the decision](../concepts/attest.md).*

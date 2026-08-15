@@ -6,7 +6,7 @@
 
 Two clinics in Kano file a monthly return with the same health ministry. One of them writes a patient's name **Fatima Abdullahi**. The other writes **Fatuma Abdulahi**. Both record the same eleven-digit National Identification Number. A person glancing at the pair says "same woman, spelled twice" without effort. A database says nothing at all, because the strings do not match. And a system that simply merged every pair sharing a number would, sooner or later, merge two different people because somebody mistyped a digit.
 
-arche lives in the space between those answers. It describes itself in four verbs — **detect · resolve · protect · attest** — and this page runs that one record through all four, in order, with the real output of every step printed underneath it. Nothing below is pseudocode; every block was executed to produce the text that follows it.
+arche lives in the space between those answers. It describes itself in four verbs. **detect · resolve · protect · attest**, and this page runs that one record through all four, in order, with the real output of every step printed underneath it. Nothing below is pseudocode; every block was executed to produce the text that follows it.
 
 <div class="flow" markdown>
 <div class="flow__step" markdown>
@@ -64,7 +64,7 @@ NAME_099000a2 NAME_e38a0fcd, NIN [NIN], phone PHONE_d3100c11.
 
 Read the first three columns as a sentence. `PII-2-NIN` is a label from the Pan-African PII Taxonomy, a published list of categories rather than a name we invented at the call site. `high` is a sensitivity tier. **`NDPA-2023 s.30, NIMC Act s.27` is the part most detection libraries do not have**: the section of the Nigeria Data Protection Act, and of the NIMC Act that governs the National Identification Number specifically, under which that field is being treated. `Pipeline(jurisdiction="NG")` loaded the Nigerian statute pack; passing `"ZA"` would have loaded POPIA and produced different sections and, where the two laws differ, different actions.
 
-The redacted line shows two of the six actions a statute may choose. The NIN was **masked** — replaced by a category placeholder, `[NIN]`, and gone for good. The name and the phone were **tokenized** — replaced by a deterministic, non-reversible token. The difference matters more than it looks: the same phone number produces the same `PHONE_d3100c11` in every document you process with the same salt, so you can still count how many returns mention one patient without ever holding their number. A mask throws that link away; a token keeps the link and drops the value. Which one a field gets is the statute's call, not the detector's.
+The redacted line shows two of the six actions a statute may choose. The NIN was **masked**. Replaced by a category placeholder, `[NIN]`, and gone for good. The name and the phone were **tokenized**. Replaced by a deterministic, non-reversible token. The difference matters more than it looks: the same phone number produces the same `PHONE_d3100c11` in every document you process with the same salt, so you can still count how many returns mention one patient without ever holding their number. A mask throws that link away; a token keeps the link and drops the value. Which one a field gets is the statute's call, not the detector's.
 
 Now the second clinic's line, through the same pipeline:
 
@@ -118,7 +118,7 @@ factors  : {'name': 0.9053, 'national_id': 1.0, 'name_tf': 0.0}
 gate     : {'distinctive_cleared': True, 'clearing_signal': 'national_id', 'floor': 0.75}
 ```
 
-A `Reference` is one record's worth of claims about one thing, and `from_record` turns an ordinary dictionary into one. The `factors` are the per-field evidence: the two names are 0.905 similar, the two national IDs are identical, and `name_tf` — a measure of how *distinctive* the words the names share are, weighted against how common those words are in the population — is **0.0**, because "Fatima Abdullahi" and "Fatuma Abdulahi" share no token at all once you compare them literally. The shared identifier is carrying this decision on its own, and the `gate` says so out loud: `clearing_signal: national_id`.
+A `Reference` is one record's worth of claims about one thing, and `from_record` turns an ordinary dictionary into one. The `factors` are the per-field evidence: the two names are 0.905 similar, the two national IDs are identical, and `name_tf`. A measure of how *distinctive* the words the names share are, weighted against how common those words are in the population, is **0.0**, because "Fatima Abdullahi" and "Fatuma Abdulahi" share no token at all once you compare them literally. The shared identifier is carrying this decision on its own, and the `gate` says so out loud: `clearing_signal: national_id`.
 
 Three outcomes are possible on the `identity` axis: `same_entity`, `different`, and `review`. The third one is the point of the product.
 
@@ -148,9 +148,9 @@ factors  : {'national_id': 1.0}
 gate     : {'distinctive_cleared': True, 'clearing_signal': 'national_id', 'floor': 0.75}
 ```
 
-Look at that carefully, because it surprises almost everyone. The two records share an exact national ID. The score is **0.9999**. The distinctive-signal gate **cleared**. And arche still refuses to say they are the same person. `same_entity` requires three things at once — the score, a distinctive signal, and *at least two fields that actually agreed* — and here only one field was ever compared, so the third condition fails and the decision lands in `review` with a recommended action of `no_op`. One number is not a person. If that identifier was mistyped, or belongs to a shared household account, or was reused by a registry, there is nothing in these two records that would catch it.
+Look at that carefully, because it surprises almost everyone. The two records share an exact national ID. The score is **0.9999**. The distinctive-signal gate **cleared**. And arche still refuses to say they are the same person. `same_entity` requires three things at once. The score, a distinctive signal, and *at least two fields that actually agreed*, and here only one field was ever compared, so the third condition fails and the decision lands in `review` with a recommended action of `no_op`. One number is not a person. If that identifier was mistyped, or belongs to a shared household account, or was reused by a registry, there is nothing in these two records that would catch it.
 
-Abstention is a feature that costs something, and it is worth being clear about the trade: arche will hand you pairs a naive join would have merged silently, and a human has to look at them. In exchange, a merge that does come back carries evidence you can read, and a wrong merge is the expensive failure — it fuses two people's records, and unpicking that afterwards is very much harder than glancing at a queue.
+Abstention is a feature that costs something, and it is worth being clear about the trade: arche will hand you pairs a naive join would have merged silently, and a human has to look at them. In exchange, a merge that does come back carries evidence you can read, and a wrong merge is the expensive failure. It fuses two people's records, and unpicking that afterwards is very much harder than glancing at a queue.
 
 ---
 
@@ -195,11 +195,11 @@ raw names in the attestation: False
 
 Four fields in that output are doing separate jobs, and conflating any two of them is how people end up trusting something they should not.
 
-**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls** — here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](attest.md) shows the forged case side by side with the genuine one.
+**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls**. Here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](attest.md) shows the forged case side by side with the genuine one.
 
 **`reproducible: True` is a claim about replay**, and it is derived from what actually fed the decision rather than from the signing format. The engine's own path is deterministic, so this decision replays byte for byte. Had the two records been extracted by a hosted language model, the extraction step could not be replayed by a stranger, and the attestation would say `reproducible: False` instead of quietly implying otherwise.
 
-**And no raw name is in the artefact.** An attestation carries the decision, the numeric evidence, the gate, and content-addressed identifiers — not the person. That is what makes it shareable with a regulator, an auditor, or a counterparty who has no business seeing the underlying records.
+**And no raw name is in the artefact.** An attestation carries the decision, the numeric evidence, the gate, and content-addressed identifiers, not the person. That is what makes it shareable with a regulator, an auditor, or a counterparty who has no business seeing the underlying records.
 
 ---
 
@@ -211,12 +211,12 @@ One paragraph, because this is the whole claim. You started with a line of text 
 
 ## What this page did not show
 
-It showed one pair. Real work is usually two *lists* — `resolve.crosswalk` links them at scale, and for places it enforces a geographic veto that demotes a pair to `review` when the coordinates are too far apart no matter how well the names match. It used arche's built-in field names; a [declaration](../how-to/declare-your-schema.md) lets you keep your own schema and state what your fields mean. It said nothing about sending data to a third party, which is what `arche.guard.EgressGuard` exists to refuse by default.
+It showed one pair. Real work is usually two *lists*. `resolve.crosswalk` links them at scale, and for places it enforces a geographic veto that demotes a pair to `review` when the coordinates are too far apart no matter how well the names match. It used arche's built-in field names; a [declaration](../how-to/declare-your-schema.md) lets you keep your own schema and state what your fields mean. It said nothing about sending data to a third party, which is what `arche.guard.EgressGuard` exists to refuse by default.
 
 It also showed detection working. Detection is where arche's coverage is most uneven, and this page deliberately left the inventory to a page that can be exhaustive about it.
 
-- [The identity lifecycle](lifecycle.md) — verb by verb: what ships, what is gated, and what does not exist. The page to read before you rely on any of the above.
-- [Architecture](architecture.md) — how the code is layered, and which components are permitted to conclude anything.
-- [Attest: the signature on the decision](attest.md) — what a signature does and does not prove.
-- [A representation engine, not an inference engine](representation-engine.md) — why `name_tf` was 0.0, and why that is the interesting number.
-- [Entity resolution tutorial](../tutorials/entity_resolution.md) — the same ideas with your hands on the keyboard.
+- [The identity lifecycle](lifecycle.md). Verb by verb: what ships, what is gated, and what does not exist. The page to read before you rely on any of the above.
+- [Architecture](architecture.md). How the code is layered, and which components are permitted to conclude anything.
+- [Attest: the signature on the decision](attest.md). What a signature does and does not prove.
+- [A representation engine, not an inference engine](representation-engine.md). Why `name_tf` was 0.0, and why that is the interesting number.
+- [Entity resolution tutorial](../tutorials/entity_resolution.md). The same ideas with your hands on the keyboard.

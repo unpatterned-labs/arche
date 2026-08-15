@@ -4,9 +4,9 @@
 
 ---
 
-The engine finds the entities, resolves who or what they are, and decides which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check. Internally that is four layers, and this page is about how they compose: **detect** finds candidate references, **resolve** decides which real-world thing each denotes, **protect** applies whatever policy you have selected, and **attest** signs the result.
+The engine finds the entities, resolves who or what they are, and decides which records are the same thing, with the evidence, the refutations, and a signed decision you can re-check. Internally that is four layers, and this page is about how they compose: **detect** finds candidate references, **resolve** decides which real-world thing each denotes, **protect** applies whatever policy you have selected, and **attest** signs the result.
 
-Those four verbs are a good account of what you can *do* with arche. They are not how the code is layered, and a page that draws them as four boxes with arrows between them would be the same mistake this page is replacing. The previous version of this page described five substrates — detect, policy, sign, audit, workflow — flowing one into the next. Two of the four headline verbs did not appear in it at all, and the page carried a note apologising for covering "the detection half". When an architecture diagram needs a note explaining which half of the product it omits, the diagram is wrong.
+Those four verbs are a good account of what you can *do* with arche. They are not how the code is layered, and a page that draws them as four boxes with arrows between them would be the same mistake this page is replacing. The previous version of this page described five substrates. Detect, policy, sign, audit, workflow. Flowing one into the next. Two of the four headline verbs did not appear in it at all, and the page carried a note apologising for covering "the detection half". When an architecture diagram needs a note explaining which half of the product it omits, the diagram is wrong.
 
 **The organising principle is authority: what a component is permitted to conclude.** Almost everything in arche produces evidence and is forbidden to reach a verdict. A small, named set of components reaches verdicts, and each one has a written combination law. Attestation then binds a verdict to the evidence and the versions that produced it. The four verbs cut across those layers rather than stacking on top of each other.
 
@@ -65,23 +65,23 @@ A `Reference` is one record's worth of claims about one thing: a list of `Attrib
 
 The distinction it encodes is the one that carries the whole engine: **identity attributes versus descriptive attributes.** Agreement on a common name is weak evidence. Agreement on a distinctive identifier is strong. An `IdentityAttribute` is the subset that can tell one entity from another; everything else describes.
 
-References arrive from two directions. `Reference.from_record(record)` is the structured path — you already have rows. `arche.extract` and `arche.ensemble` are the unstructured path — you have prose. Both land in the same shape, so the resolution engines never need to know which one you used.
+References arrive from two directions. `Reference.from_record(record)` is the structured path. You already have rows. `arche.extract` and `arche.ensemble` are the unstructured path. You have prose. Both land in the same shape, so the resolution engines never need to know which one you used.
 
 ### `ids`: the canonicalisation everything signable passes through
 
 Every identifier arche emits is a pure function of its inputs. `ids.py` fixes what "the same inputs" means:
 
-- **Canonical JSON** — sorted keys, compact separators, and no raw floats. Every float is rendered as a fixed 4-decimal string, so a hash does not depend on which machine computed it.
+- **Canonical JSON**. Sorted keys, compact separators, and no raw floats. Every float is rendered as a fixed 4-decimal string, so a hash does not depend on which machine computed it.
 - **NFKD-normalised strings**, through the same normaliser the matcher compares with.
 - **No timestamps** in the reproducible core.
 
-That yields `document_content_id`, `reference_id`, `decision_id` — and one deliberately different thing, `entity_id`, which is an HMAC pseudonym keyed to the issuer. The reason is stated in the module: a bare SHA-256 of an eleven-digit NIN is brute-forceable, so anything derived from a low-entropy identifier and intended to be shared is keyed, not hashed. Keyless ids remain useful locally, but they are pseudonymous personal data, not "PII-free", and `attest` refuses to sign them by default.
+That yields `document_content_id`, `reference_id`, `decision_id`, and one deliberately different thing, `entity_id`, which is an HMAC pseudonym keyed to the issuer. The reason is stated in the module: a bare SHA-256 of an eleven-digit NIN is brute-forceable, so anything derived from a low-entropy identifier and intended to be shared is keyed, not hashed. Keyless ids remain useful locally, but they are pseudonymous personal data, not "PII-free", and `attest` refuses to sign them by default.
 
 ### `declare.Declaration`: one YAML, five derived artefacts
 
 This is arguably the most important architectural idea in the product, and the old page did not mention it.
 
-Splink wants same-schema tables. Senzing wants its attribute dictionary. arche wants *your* schema, plus a statement of what your fields mean. One YAML assigns each field a role from a small closed vocabulary — `identifies`, `describes`, `ignore`, plus the orthogonal `restricted` axis — and from that single artefact arche derives:
+Splink wants same-schema tables. Senzing wants its attribute dictionary. arche wants *your* schema, plus a statement of what your fields mean. One YAML assigns each field a role from a small closed vocabulary. `identifies`, `describes`, `ignore`, plus the orthogonal `restricted` axis, and from that single artefact arche derives:
 
 | Derived from the declaration | Used by |
 |---|---|
@@ -93,7 +93,7 @@ Splink wants same-schema tables. Senzing wants its attribute dictionary. arche w
 
 The pin is what makes the declaration architectural rather than convenient. Reformatting the YAML does not change it; changing a weight does. It enters the decision hash, so the same two records under a different declaration produce a different `decision_id`. The representation is part of the claim.
 
-Validation is deliberately unforgiving — unknown keys and typo'd roles are errors, each naming the offender — because a misspelled key in a file that governs disclosure must never silently mean "unrestricted".
+Validation is deliberately unforgiving. Unknown keys and typo'd roles are errors, each naming the offender, because a misspelled key in a file that governs disclosure must never silently mean "unrestricted".
 
 ```python
 from arche.canonical import Reference
@@ -137,7 +137,7 @@ factors         : {'name': 0.7826, 'national_id': 1.0, 'name_tf': 0.3677}
 declaration pin in the decision: fisheries-landings@1.2.0:sha256:28f13195e89a25e3
 ```
 
-Two things in that output are worth reading rather than skimming. The warning is the declaration layer telling you a real limitation to your face: the pairwise engine has one identifier slot, your declaration named two identifier fields, and only the first is used on that path. And `clearing_signal: national_id` is the slot name, not a claim about the vessel — the pairwise matcher's slots were named for the person pack and a declared `kind: id` routes into them.
+Two things in that output are worth reading rather than skimming. The warning is the declaration layer telling you a real limitation to your face: the pairwise engine has one identifier slot, your declaration named two identifier fields, and only the first is used on that path. And `clearing_signal: national_id` is the slot name, not a claim about the vessel. The pairwise matcher's slots were named for the person pack and a declared `kind: id` routes into them.
 
 ---
 
@@ -156,11 +156,11 @@ Two things in that output are worth reading rather than skimming. The warning is
 
 Four of those deserve a note.
 
-**Detectors detect; statutes decide.** A `Detection` carries a category, a span, a `regulatory_citation` and a `sensitivity_tier`. What happens to it — mask, tokenize, drop, generalize, audit, retain — is the statute's call, not the detector's.
+**Detectors detect; statutes decide.** A `Detection` carries a category, a span, a `regulatory_citation` and a `sensitivity_tier`. What happens to it, whether that is mask, tokenize, drop, generalize, audit or retain, is the statute's call rather than the detector's.
 
 **Comparators score; gates decide.** A comparator returning 1.0 on a name is saying "these strings are identical", which is a fact about strings. Whether that permits a merge is a separate question with a separate answer, and the answer depends on how *distinctive* the shared token is in the population being reconciled.
 
-**Providers fetch references; arche resolves.** `adapters/` is new in this line and its `__init__.py` states four rules. An adapter returns `ProviderEvidence` — candidates in canonical form plus provenance — and nothing an adapter says auto-merges. Every adapter is an egress destination, because sending a citizen's address to a geocoder *is* a cross-border transfer, so adapters route through `EgressGuard` and the statute pack decides whether a reference may be sent at all. And there is a **provenance firewall**: provider responses never feed the data packs, the frequency tables, or the benchmark, because the moment they do, those assets inherit the most restrictive licence in the chain. Every evidence object carries a `licence`, `may_enter_packs()` accepts open classes only, and `pin()` declares `reproducible: False` — a decision that depends on a live API response cannot be replayed by a stranger, and the attestation has to say so.
+**Providers fetch references; arche resolves.** `adapters/` is new in this line and its `__init__.py` states four rules. An adapter returns `ProviderEvidence`. Candidates in canonical form plus provenance, and nothing an adapter says auto-merges. Every adapter is an egress destination, because sending a citizen's address to a geocoder *is* a cross-border transfer, so adapters route through `EgressGuard` and the statute pack decides whether a reference may be sent at all. And there is a **provenance firewall**: provider responses never feed the data packs, the frequency tables, or the benchmark, because the moment they do, those assets inherit the most restrictive licence in the chain. Every evidence object carries a `licence`, `may_enter_packs()` accepts open classes only, and `pin()` declares `reproducible: False`. A decision that depends on a live API response cannot be replayed by a stranger, and the attestation has to say so.
 
 **Models propose; validators dispose.** The LLM lane is a proposer like any other. It fills a declaration-derived schema; the same deterministic validators then check every field. `arche.llm.harness` exists to *grade* a model against the engine, not to defer to it.
 
@@ -181,13 +181,13 @@ This is the short list. Each entry has a combination law written down in the cod
 | Gate clears when | A distinctive-*kind* comparator reaches the floor **and**, for name-like kinds, what the two names share is itself rare | A genuinely **rare** shared name token exists |
 | Output | Edges with `decision_id` and evidence | A signable `CoReferenceDecision` |
 
-They share their primitives — comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant, all in `resolve/_matcher.py`, `_tokenfreq.py` and `_gate.py`. They now also share the *principle* behind the gate, which they did not until recently, and the story is worth telling because it is what this page is for.
+They share their primitives. Comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant, all in `resolve/_matcher.py`, `_tokenfreq.py` and `_gate.py`. They now also share the *principle* behind the gate, which they did not until recently, and the story is worth telling because it is what this page is for.
 
-Coref has always required a rare shared token, so two identical **common** names cannot clear it. Crosswalk took the maximum over its distinctive comparators, and a `placename` comparator returning 1.0 on two identical strings cleared the gate on its own — carrying no claim about rarity at all. The consequence was measurable and bad: two facilities named "General Hospital" 4.4 km apart merged with **exactly the same score and evidence** as two sharing a genuinely distinctive name.
+Coref has always required a rare shared token, so two identical **common** names cannot clear it. Crosswalk took the maximum over its distinctive comparators, and a `placename` comparator returning 1.0 on two identical strings cleared the gate on its own. Carrying no claim about rarity at all. The consequence was measurable and bad: two facilities named "General Hospital" 4.4 km apart merged with **exactly the same score and evidence** as two sharing a genuinely distinctive name.
 
 The root cause was not the gate but the corpus. No place frequency table shipped, so the place pack fell through to the *person* table, where `hospital`, `health`, `clinic` and `centre` are unseen and therefore read as **rare**. Both halves are now fixed: a place table is built from CC0 and CC-BY sources across twenty countries and four sectors, and the crosswalk gate prices name-like similarity by the rarity of what the names actually share.
 
-Two details of that fix are load-bearing. It consults distinctiveness **only against a population-scale table** — over a small self-calibrated corpus a token seen twice scores 0.71, below the floor, so the gate would refuse everything; callers passing their own corpus table keep the previous behaviour exactly. And rarity is measured two ways combined with `max` — a literally shared rare token, *or* a rare residual on both sides once generic words are stripped — because requiring literal overlap alone demoted 19 true matches whose identifying word differed by a single letter (`Kalahaddi` / `Kalahadi`) at zero distance. The measured cost of the final version on the Kano crosswalk is **2 pairs moved from `match` to `review`, and none lost**.
+Two details of that fix are load-bearing. It consults distinctiveness **only against a population-scale table**. Over a small self-calibrated corpus a token seen twice scores 0.71, below the floor, so the gate would refuse everything; callers passing their own corpus table keep the previous behaviour exactly. And rarity is measured two ways combined with `max`. A literally shared rare token, *or* a rare residual on both sides once generic words are stripped, because requiring literal overlap alone demoted 19 true matches whose identifying word differed by a single letter (`Kalahaddi` / `Kalahadi`) at zero distance. The measured cost of the final version on the Kano crosswalk is **2 pairs moved from `match` to `review`, and none lost**.
 
 The scores from the two engines are still not comparable. That part is on purpose.
 
@@ -232,7 +232,7 @@ score   : 0.805 -> decision: review
 evidence: {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.025, 'distance_km': 11.06, 'geo_conflict_km': 11.06}
 ```
 
-That is the architecture in one edge. Two byte-identical names, every name comparator at 1.0, a score of 0.805 comfortably over the 0.7 threshold — and the edge still lands in `review`, carrying the distance that put it there. No weight could have produced that outcome; only a constraint could.
+That is the architecture in one edge. Two byte-identical names, every name comparator at 1.0, a score of 0.805 comfortably over the 0.7 threshold, and the edge still lands in `review`, carrying the distance that put it there. No weight could have produced that outcome; only a constraint could.
 
 The threshold was set by a sweep, and what it can and cannot tell you is documented honestly in [the place benchmark](place-benchmark.md): LGA agreement moves 78.4% → 88.1%, and that number is a consistency check against a weak label, not validation.
 
@@ -260,7 +260,7 @@ Six statute packs ship as YAML at `arche/policy/statutes/`:
 | `POPIA.yaml` | South Africa | `v0.1-scaffold` | `self-reviewed` |
 | `GHANA-DPA.yaml` | Ghana | `v0.1-scaffold` | `self-reviewed` |
 
-Every category in every pack carries a statute-section citation. The two labels are independent by design: `version` is a claim about our work, `review_status` a claim about the world — who vouches for the mappings. No pack claims `regulator-reviewed`, and the loader fails closed on one that does so without naming a reviewer. The three `v0.1-scaffold` labels remain in the shipped YAML; they understate packs that are complete, and correcting them is outstanding in our roadmap.
+Every category in every pack carries a statute-section citation. The two labels are independent by design: `version` is a claim about our work, `review_status` a claim about the world. Who vouches for the mappings. No pack claims `regulator-reviewed`, and the loader fails closed on one that does so without naming a reviewer. The three `v0.1-scaffold` labels remain in the shipped YAML; they understate packs that are complete, and correcting them is outstanding in our roadmap.
 
 ### 5. The egress guard: fail-closed, four teeth
 
@@ -306,7 +306,7 @@ cross-border : cross-border transfer without a permitted basis (declared=None, p
 citation     : NDPA-2023 cross-border transfer rules
 ```
 
-The projection guarantee is precise, and worth stating precisely: **no raw *detected* value appears in any output field.** Dropped categories are removed; everything else becomes a strong keyed token from `arche._tokens` — deliberately not the 32-bit masking token `policy.engine` uses, which is fine for masking and far too small for anything an outside party will hold. The guarantee does not extend to PII no detector found. In the output above, "Adesola Okonkwo" survives because the base rule-based pass does not carry a person-name detector for this jurisdiction; the guard cannot tokenise a span nobody proposed.
+The projection guarantee is precise, and worth stating precisely: **no raw *detected* value appears in any output field.** Dropped categories are removed; everything else becomes a strong keyed token from `arche._tokens`. Deliberately not the 32-bit masking token `policy.engine` uses, which is fine for masking and far too small for anything an outside party will hold. The guarantee does not extend to PII no detector found. In the output above, "Adesola Okonkwo" survives because the base rule-based pass does not carry a person-name detector for this jurisdiction; the guard cannot tokenise a span nobody proposed.
 
 ---
 
@@ -353,7 +353,7 @@ Thirty-odd modules, grouped by the layer they belong to. This is the whole surfa
 | Compose | `workflow` (`Pipeline`, `DSARWorkflow`), `resolve/metrics` |
 | Legacy v0.1 shelf | `audit` (in-memory), `governance`, `protect`, `types`, `models`, `config`, `graph.networkx_view` |
 
-Detection coverage, since it is the number most often asked for: 26 ID patterns in `detect._africa.ids.ID_PATTERNS`, across the four launch jurisdictions (NG: NIN, BVN, TIN, RC, PVC, driver's licence; KE: national ID, KRA PIN, NHIF; ZA: SA ID with full Luhn and DOB/gender/citizenship decode, tax reference, passport; GH: Ghana Card, SSNIT, TIN) plus eleven further African countries (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ). Phone normalisation runs through `phonenumbers` for E.164 across all 30+ African networks. Neural NER (GLiNER2) is the opt-in `arche-core[detect]` extra and is never on the critical path — the base wheel is rule-based and CPU-only by design.
+Detection coverage, since it is the number most often asked for: 26 ID patterns in `detect._africa.ids.ID_PATTERNS`, across the four launch jurisdictions (NG: NIN, BVN, TIN, RC, PVC, driver's licence; KE: national ID, KRA PIN, NHIF; ZA: SA ID with full Luhn and DOB/gender/citizenship decode, tax reference, passport; GH: Ghana Card, SSNIT, TIN) plus eleven further African countries (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ). Phone normalisation runs through `phonenumbers` for E.164 across all 30+ African networks. Neural NER (GLiNER2) is the opt-in `arche-core[detect]` extra and is never on the critical path. The base wheel is rule-based and CPU-only by design.
 
 ---
 
@@ -364,7 +364,7 @@ Stated so nobody has to discover it by reading source.
 - **`protect.py` is not the `protect` verb.** It is a v0.1 Presidio wrapper (`detect_pii`, `redact`) reachable only through the deprecated lazy surface. The verb `protect` is implemented by `policy` + `guard` + `render`. The module name is a trap, and renaming it is a breaking change waiting for v0.4.
 - **Three audit paths exist.** `graph.audit` is the SQLite one and the one to use. `arche.audit` is the v0.1 in-memory log. `governance.py` carries a hand-maintained sensitivity map that will drift from the statute YAML; it is not exported from `arche/__init__.py` and nothing outside its own tests calls it.
 - **`Pipeline.process` does not write to `graph.audit`.** It builds its audit view in memory and returns it on the `Result`. Persisting it is a wiring step, not a missing feature, but today an audit log only fills up if you emit to it.
-- **A declared `id_family` does not yet mint an `entity_id`.** `Declaration` exposes `binding_fields()`, but `ids.identity_binding_key` is not declaration-aware — it matches arche's own fixed identifier names. In the sample at the top of this page the merge is correct and `entity_id` is `None`.
+- **A declared `id_family` does not yet mint an `entity_id`.** `Declaration` exposes `binding_fields()`, but `ids.identity_binding_key` is not declaration-aware. It matches arche's own fixed identifier names. In the sample at the top of this page the merge is correct and `entity_id` is `None`.
 - **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim` only, and it defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack. The measured 13-pair gain in [the place benchmark](place-benchmark.md) came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding work.
 - **`arche.detect` is a callable module.** `detect(text)` forwards to the pipeline while `arche.detect.ng.ids` is a real subpackage. The docstrings disagree with each other about whether this is temporary; the class docstring carries the later decision, which is that it stays as the documented Level-2 API.
 
@@ -386,8 +386,8 @@ Stated so adopters can hold us to scope.
 
 ## What's next
 
-- [How arche works](how-it-works.md) — the walkthrough of a single `Pipeline` call
-- [Attest: the signature on the decision](attest.md) — what a signature does and does not prove
-- [A representation engine, not an inference engine](representation-engine.md) — why the spine is shaped this way
-- [The place benchmark](place-benchmark.md) — what the veto threshold was tuned against, and what that measurement cannot tell you
-- [Declare your schema](../how-to/declare-your-schema.md) — the declaration layer, end to end
+- [How arche works](how-it-works.md). The walkthrough of a single `Pipeline` call
+- [Attest: the signature on the decision](attest.md). What a signature does and does not prove
+- [A representation engine, not an inference engine](representation-engine.md). Why the spine is shaped this way
+- [The place benchmark](place-benchmark.md). What the veto threshold was tuned against, and what that measurement cannot tell you
+- [Declare your schema](../how-to/declare-your-schema.md). The declaration layer, end to end

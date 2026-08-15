@@ -561,3 +561,579 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Record-pair comparison cards
+   --------------------------------------------------------------------------
+   Two records as a reader would meet them, and the verdict beside them.
+
+   Three verdicts, not two. A component that can only say yes or no cannot
+   express the thing arche is for: `review` is a first-class answer and has to
+   look like an answer rather than a warning.
+
+   Material styles every <details> as an admonition: blue rule, tinted panel,
+   its own icon plus a chevron. Left alone that fights this component and you
+   get two markers on one summary bar, so the chrome is reset explicitly here
+   rather than layered over.
+   ========================================================================== */
+
+/* --- the collapsible shell ------------------------------------------------ */
+
+.md-typeset details.arche-examples {
+  background: var(--arche-surface);
+  border: 1px solid var(--arche-line);
+  border-radius: 10px;
+  box-shadow: none;
+  color: inherit;
+  font-size: inherit;
+  margin: 1.6rem 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.md-typeset details.arche-examples > summary {
+  background: var(--arche-surface-sunken);
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 600;
+  list-style: none;
+  margin: 0;
+  padding: 0.7rem 2.4rem 0.7rem 1rem;
+  position: relative;
+}
+
+/* Material draws its own icon and chevron. Both go, so the single marker
+   below is the only one on the bar. */
+.md-typeset details.arche-examples > summary::before,
+.md-typeset details.arche-examples > summary::-webkit-details-marker {
+  content: none;
+  display: none;
+}
+
+.md-typeset details.arche-examples > summary::after {
+  background: none;
+  color: var(--arche-ink-muted);
+  content: "\203A";
+  font-size: 1.1rem;
+  font-weight: 400;
+  height: auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transition: transform 0.15s ease;
+  width: auto;
+}
+
+.md-typeset details.arche-examples[open] > summary::after {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.md-typeset details.arche-examples[open] > summary {
+  border-bottom-color: var(--arche-line);
+}
+
+.md-typeset details.arche-examples > summary:focus-visible {
+  outline: 2px solid var(--arche-green-500);
+  outline-offset: -2px;
+}
+
+/* --- the cards ------------------------------------------------------------ */
+
+.arche-pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.9rem 1rem;
+}
+
+.arche-pairs .pair {
+  align-items: center;
+  background: var(--arche-surface);
+  border: 1px solid var(--arche-line);
+  border-left: 3px solid var(--arche-line);
+  border-radius: 7px;
+  display: flex;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.arche-pairs .pair-records {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.arche-pairs .pair-records code {
+  background: var(--arche-surface-sunken);
+  border-radius: 4px;
+  display: block;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  padding: 0.4rem 0.55rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* One compact pill, icon and word together. */
+.arche-pairs .pair-verdict {
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.62rem;
+  font-weight: 700;
+  gap: 0.3rem;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.arche-pairs .pair-verdict::before {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.arche-pairs .pair.match { border-left-color: var(--arche-verdict-match); }
+.arche-pairs .pair.match .pair-verdict { color: var(--arche-verdict-match); }
+.arche-pairs .pair.match .pair-verdict::before { content: "\2713"; }
+
+.arche-pairs .pair.review { border-left-color: var(--arche-verdict-review); }
+.arche-pairs .pair.review .pair-verdict { color: var(--arche-verdict-review); }
+.arche-pairs .pair.review .pair-verdict::before { content: "?"; }
+
+.arche-pairs .pair.different { border-left-color: var(--arche-verdict-refused); }
+.arche-pairs .pair.different .pair-verdict { color: var(--arche-verdict-refused); }
+.arche-pairs .pair.different .pair-verdict::before { content: "\2715"; }
+
+.md-typeset .arche-pairs .pair-why {
+  border-left: 2px solid var(--arche-line);
+  color: var(--arche-ink-muted);
+  font-size: 0.73rem;
+  line-height: 1.6;
+  margin: 0.1rem 0 0.7rem 1.1rem;
+  padding-left: 0.8rem;
+}
+
+.md-typeset .arche-pairs .pair-why strong {
+  color: var(--arche-ink);
+  font-weight: 600;
+}
+
+/* --- candidate ranking ---------------------------------------------------- */
+
+.arche-candidates { margin: 0.9rem 1rem; }
+
+.md-typeset .arche-candidates .cand-label {
+  color: var(--arche-ink-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.3rem;
+  text-transform: uppercase;
+}
+
+.arche-candidates code {
+  background: var(--arche-surface-sunken);
+  border-radius: 4px;
+  display: block;
+  font-size: 0.74rem;
+  overflow-x: auto;
+  padding: 0.4rem 0.55rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.md-typeset .arche-candidates ol { margin: 0.3rem 0 0; }
+.md-typeset .arche-candidates li { margin: 0.3rem 0; }
+
+.arche-candidates li.chosen code {
+  background: var(--arche-green-100);
+  border: 1px solid var(--arche-verdict-match);
+}
+
+.md-typeset .arche-candidates mark {
+  background: #ffe9a8;
+  border-radius: 3px;
+  color: inherit;
+  font-weight: 700;
+  padding: 0 0.15em;
+}
+
+.md-typeset details.arche-examples > p.arche-note {
+  color: var(--arche-ink-muted);
+  font-size: 0.75rem;
+  line-height: 1.65;
+  margin: 0 1rem 0.9rem;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .arche-pairs .pair {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.arche-examples > summary {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-md-color-scheme="slate"] .arche-candidates li.chosen code {
+  background: rgba(47, 111, 99, 0.22);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .arche-candidates mark {
+  background: #6b5410;
+  color: #f7efd6;
+}
+
+/* ==========================================================================
+   Reading-path bar
+   --------------------------------------------------------------------------
+   Sits at the top of any page belonging to an ordered set, and answers the
+   question a reader arriving from a search result cannot otherwise answer:
+   what comes before this, what continues it, and where am I in the sequence.
+
+   Numbering the headings *inside* a page does not solve that. It tells you
+   the order of the sections you are already reading and says nothing about
+   the order of the documents.
+   ========================================================================== */
+
+.arche-path {
+  align-items: center;
+  border: 1px solid var(--arche-line);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  gap: 0.15rem 0.4rem;
+  margin: 0 0 1.8rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--arche-surface-sunken);
+}
+
+.arche-path .path-label {
+  color: var(--arche-ink-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-right: 0.35rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.md-typeset .arche-path a {
+  color: var(--arche-ink-muted);
+  text-decoration: none;
+}
+
+.md-typeset .arche-path a:hover {
+  color: var(--arche-green-500);
+  text-decoration: underline;
+}
+
+/* The page you are on: stated rather than linked, so the bar reads as a
+   position and not as another set of links to click. */
+.arche-path .here {
+  background: var(--arche-green-100);
+  border-radius: 4px;
+  color: var(--arche-green-700);
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+}
+
+.arche-path .sep {
+  color: var(--arche-line);
+  user-select: none;
+}
+
+[data-md-color-scheme="slate"] .arche-path {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-md-color-scheme="slate"] .arche-path .here {
+  background: rgba(47, 111, 99, 0.28);
+  color: var(--arche-ink);
+}
+
+/* ==========================================================================
+   Identity-attribute map
+   --------------------------------------------------------------------------
+   An annotated diagram: the thing in the middle, leader lines out to the
+   attributes a record carries, each coloured by the job it does.
+
+   Three roles, because two is the mistake this diagram exists to correct.
+   An attribute is not simply "identifying or not". A third of them switch
+   sides depending on the granularity you declared, and that switch is where
+   product matching goes wrong.
+
+   Inline SVG rather than an image: it scales, it themes with the page, it
+   needs no JavaScript, and the labels are selectable text.
+   ========================================================================== */
+
+.arche-attrmap {
+  margin: 1.6rem 0;
+}
+
+.arche-attrmap svg {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* The subject in the middle. */
+.arche-attrmap .subject {
+  fill: var(--arche-surface-sunken);
+  stroke: var(--arche-ink-muted);
+  stroke-width: 1.5;
+}
+
+.arche-attrmap .subject-label {
+  fill: var(--arche-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.arche-attrmap .subject-sub {
+  fill: var(--arche-ink-muted);
+  font-size: 10.5px;
+}
+
+/* Leader lines and their attribute chips. */
+.arche-attrmap .lead {
+  fill: none;
+  stroke-width: 1.25;
+}
+
+.arche-attrmap .chip {
+  rx: 4;
+  stroke-width: 1.25;
+}
+
+.arche-attrmap .chip-text {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.arche-attrmap .chip-note {
+  font-size: 9.5px;
+  fill: var(--arche-ink-muted);
+}
+
+/* Role 1: carries identity. Agreeing here is real evidence. */
+.arche-attrmap .identity .lead   { stroke: var(--arche-verdict-match); }
+.arche-attrmap .identity .chip   { fill: var(--arche-green-100); stroke: var(--arche-verdict-match); }
+.arche-attrmap .identity .chip-text { fill: var(--arche-green-700); }
+
+/* Role 2: depends on the granularity you declared. */
+.arche-attrmap .depends .lead    { stroke: var(--arche-verdict-review); stroke-dasharray: 4 3; }
+.arche-attrmap .depends .chip    { fill: none; stroke: var(--arche-verdict-review); }
+.arche-attrmap .depends .chip-text { fill: var(--arche-verdict-review); }
+
+/* Role 3: describes, never identifies. Agreeing here is worth nothing. */
+.arche-attrmap .describes .lead  { stroke: var(--arche-line); }
+.arche-attrmap .describes .chip  { fill: none; stroke: var(--arche-line); }
+.arche-attrmap .describes .chip-text { fill: var(--arche-ink-muted); }
+
+/* Legend under the diagram. */
+.arche-attrmap .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  font-size: 0.7rem;
+  margin-top: 0.7rem;
+  padding: 0 0.2rem;
+}
+
+.arche-attrmap .legend span {
+  align-items: center;
+  color: var(--arche-ink-muted);
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.arche-attrmap .legend i {
+  border-radius: 3px;
+  display: inline-block;
+  height: 0.62rem;
+  width: 0.62rem;
+}
+
+.arche-attrmap .legend .k-identity  { background: var(--arche-green-100); border: 1.5px solid var(--arche-verdict-match); }
+.arche-attrmap .legend .k-depends   { border: 1.5px dashed var(--arche-verdict-review); }
+.arche-attrmap .legend .k-describes { border: 1.5px solid var(--arche-line); }
+
+[data-md-color-scheme="slate"] .arche-attrmap .identity .chip {
+  fill: rgba(47, 111, 99, 0.25);
+}
+
+[data-md-color-scheme="slate"] .arche-attrmap .identity .chip-text {
+  fill: var(--arche-ink);
+}
+
+[data-md-color-scheme="slate"] .arche-attrmap .legend .k-identity {
+  background: rgba(47, 111, 99, 0.25);
+}
+
+/* ==========================================================================
+   Tier stack
+   --------------------------------------------------------------------------
+   Durand's three tiers of identity data, as three bands.
+
+   The first attempt drew this as a subject in the middle with leader lines to
+   labelled chips. Wrong shape twice over: the notes collided with the lines at
+   any realistic label length, and tiers are a *hierarchy*, so spokes said
+   nothing about the ordering that is the entire point. Bands say it for free.
+
+   HTML and CSS rather than SVG, so the text wraps, the layout reflows on a
+   phone, and nothing depends on hand-placed coordinates.
+   ========================================================================== */
+
+.arche-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.6rem 0;
+}
+
+.arche-tiers .tier {
+  border: 1px solid var(--arche-line);
+  border-left: 4px solid var(--arche-line);
+  border-radius: 8px;
+  padding: 0.75rem 0.95rem;
+  background: var(--arche-surface);
+}
+
+.arche-tiers .tier-head {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.55rem;
+  margin-bottom: 0.55rem;
+}
+
+.arche-tiers .tier-n {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.arche-tiers .tier-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--arche-ink);
+}
+
+.arche-tiers .tier-life {
+  color: var(--arche-ink-muted);
+  font-size: 0.72rem;
+}
+
+.arche-tiers .tier-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.arche-tiers .tier-items span {
+  border: 1px solid var(--arche-line);
+  border-radius: 5px;
+  font-size: 0.73rem;
+  padding: 0.22rem 0.5rem;
+  background: var(--arche-surface-sunken);
+}
+
+/* Tier 1: yours, and durable. */
+.arche-tiers .t1 { border-left-color: var(--arche-verdict-match); }
+.arche-tiers .t1 .tier-n { color: var(--arche-verdict-match); }
+.arche-tiers .t1 .tier-items span {
+  border-color: var(--arche-verdict-match);
+  background: var(--arche-green-100);
+}
+
+/* Tier 2: lent by a relationship, and it expires with the relationship. */
+.arche-tiers .t2 { border-left-color: var(--arche-verdict-review); }
+.arche-tiers .t2 .tier-n { color: var(--arche-verdict-review); }
+.arche-tiers .t2 .tier-items span { border-color: var(--arche-verdict-review); }
+
+/* Tier 3: assigned to you by someone you never contracted with. */
+.arche-tiers .t3 { border-left-color: var(--arche-verdict-refused); }
+.arche-tiers .t3 .tier-n { color: var(--arche-verdict-refused); }
+.arche-tiers .t3 .tier-items span {
+  border-style: dashed;
+  border-color: var(--arche-verdict-refused);
+}
+
+.arche-tiers .tier-foot {
+  color: var(--arche-ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  margin-top: 0.55rem;
+}
+
+[data-md-color-scheme="slate"] .arche-tiers .t1 .tier-items span {
+  background: rgba(47, 111, 99, 0.22);
+}
+
+/* ==========================================================================
+   Split panel
+   --------------------------------------------------------------------------
+   Two things that look symmetrical and are not. Used for failure directions
+   that carry very different consequences, where a table would give them equal
+   visual weight and lose the argument.
+   ========================================================================== */
+
+.arche-split {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr 1fr;
+  margin: 1.6rem 0;
+}
+
+.arche-split > div {
+  border: 1px solid var(--arche-line);
+  border-top: 3px solid var(--arche-line);
+  border-radius: 8px;
+  padding: 0.85rem 0.95rem;
+}
+
+.arche-split h4 {
+  font-size: 0.68rem !important;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  margin: 0 0 0.15rem !important;
+  text-transform: uppercase;
+}
+
+.md-typeset .arche-split p {
+  font-size: 0.76rem;
+  line-height: 1.6;
+  margin: 0.45rem 0 0;
+}
+
+.arche-split .verdict {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--arche-ink);
+}
+
+.arche-split .loud { border-top-color: var(--arche-verdict-review); }
+.arche-split .loud h4 { color: var(--arche-verdict-review); }
+.arche-split .silent { border-top-color: var(--arche-verdict-refused); }
+.arche-split .silent h4 { color: var(--arche-verdict-refused); }
+
+@media screen and (max-width: 44.9375em) {
+  .arche-split { grid-template-columns: 1fr; }
+}
