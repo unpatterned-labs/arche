@@ -12,6 +12,39 @@ This is a funded, named problem. The WHO runs a Geolocated Health Facilities Dat
 
 We ran the reconciliation for one Nigerian state and measured where the work actually is. The answer surprised us, and it changed what we think the product is.
 
+## What a broken list costs, in things that are not data
+
+That sentence about vaccines, coverage and payment is doing a lot of work, so it is worth unpacking before the measurements start. A master facility list is not a reference document. It is the thing that decides who gets sent what.
+
+Follow each kind of error into what it does after it leaves the spreadsheet.
+
+| What the list gets wrong | What happens next |
+|---|---|
+| **One clinic recorded twice** | its allocation splits across two part-orders, and neither arrives whole |
+| **One clinic recorded twice** | it counts twice in the denominator, so district coverage reads worse than it is |
+| **Two clinics merged into one** | one of them stops existing administratively and is supplied for nobody |
+| **A clinic in no list at all** | never allocated, never counted, never missed |
+| **Coordinates wrong by kilometres** | an outreach team spends a morning at a junction |
+| **Tier mislabelled** | a health post is tasked with a service it has no staff or cold chain for |
+
+None of those is a data quality problem in the sense that phrase usually carries. Each one is a delivery that did not happen, and the last column is where the cost actually lands.
+
+## One of these gets noticed and one does not
+
+Look at rows one and four again, because they fail in opposite directions and only one of them generates a complaint.
+
+**A duplicate is eventually loud.** Somebody receives two deliveries, or a finance officer queries a payment made twice for the same facility, or a supervisor visits and finds a clinic that is already stocked. It produces a query, the query produces a correction, and the correction is logged as a data fix.
+
+**An omission is silent.** A facility absent from the master list is not under-supplied in a way that raises a ticket. It is invisible, and invisibility does not complain. The people it serves experience it as *there are never vaccines here*, which they reasonably take to be a fact about their clinic rather than a fact about a row missing from a file in Abuja.
+
+Which produces the rule this whole reconciliation runs on:
+
+> **The failure that nobody reports is the one that compounds.** A tool tuned only against the errors that generate complaints will get steadily better at duplicates and never learn that it is dropping facilities.
+
+That asymmetry is also why a matcher that guesses is worse here than one that refuses. Guessing produces both failures at once: it merges clinics that are not the same, and it silently drops the pairs it could not see. Refusing produces a queue, and a queue is at least a list of things somebody can look at.
+
+Keep the two directions in mind through the numbers below. Almost every design decision in the rest of this post is an attempt to buy down the silent one without inflating the loud one.
+
 ## The setup
 
 Two lists for Kano State, both public:
@@ -241,6 +274,7 @@ The WHO's Geolocated Health Facilities Data initiative exists to fix exactly thi
 
 ## Notes
 
-1. The labels behind the accuracy figures are analyst judgements by name and location, not a registry-expert gold standard. A ministry or a domain expert adjudicating the sample is the step that would turn these into certified numbers, and the sample ships with the code so that is possible.
-2. Kano and London report recall, not a false-merge rate, because neither has a complete mapping. When a benchmark with complete ground truth first arrived, measured precision was 0.85 against the ~0.95 the recall figures had implied.
-3. Restraint is the result worth quoting from this work, not the headline percentage. A tool reporting a confident 90% match rate on Edo's data would be lying.
+1. The consequence table is structural rather than a record of specific incidents. Each row is what a duplicate, an omission or a bad coordinate does to an allocation process, not a claim that a named facility suffered it on a named date.
+2. The labels behind the accuracy figures are analyst judgements by name and location, not a registry-expert gold standard. A ministry or a domain expert adjudicating the sample is the step that would turn these into certified numbers, and the sample ships with the code so that is possible.
+3. Kano and London report recall, not a false-merge rate, because neither has a complete mapping. When a benchmark with complete ground truth first arrived, measured precision was 0.85 against the ~0.95 the recall figures had implied.
+4. Restraint is the result worth quoting from this work, not the headline percentage. A tool reporting a confident 90% match rate on Edo's data would be lying.
