@@ -10,15 +10,31 @@ name: arche-core release
 # that did not exist. A tag that only appears once PyPI has accepted the file
 # means a tag can no longer promise a release that is not there.
 #
+# The run picks its own mode from two facts, so recovering from a half-finished
+# release does not need a different workflow or a hand-made tag:
+#
+#   on index?   tagged?   what happens
+#   ---------   -------   --------------------------------------------------
+#   no          no        full release: test, build, publish, then tag
+#   yes         no        TAG-ONLY: rebuild, prove this commit reproduces the
+#                         published wheel, tag it. Nothing is uploaded.
+#   yes         yes       refuse, there is nothing to do
+#   no          yes       refuse, a tag with no release is the bad state
+#
+# The tag-only route exists because this workflow produced that state itself:
+# an early version ran an index-availability check *after* the upload, so a
+# slow index failed the job and the tag step never ran, leaving 0.4.0a1 on PyPI
+# with no tag. A recovery path that verifies before it tags is better than a
+# human running `git tag` and hoping they are on the right commit.
+#
 # The other guards exist because a release is the one workflow where a
 # confusing failure is expensive:
 #   - the version you type must match `_version.py`, so a stale branch cannot
 #     publish something you did not intend
-#   - the version must not already be on the index, because PyPI answers a
-#     duplicate upload with a 400 that reads like a credentials problem
-#   - the tag must not already exist
-#   - the full test matrix must pass, not a spot check
-#   - the built wheel is opened and inspected before anything leaves the runner
+#   - the changelog must mention the version
+#   - the full test matrix must pass on a real release, not a spot check
+#   - the built wheel is opened, installed into a clean venv, and used before
+#     anything leaves the runner
 #
 # Secrets required:
 #   PYPI_TOKEN       for target: pypi
@@ -53,6 +69,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       version: ${{ steps.check.outputs.version }}
+      mode: ${{ steps.mode.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,41 +93,64 @@ jobs:
           fi
           echo "version=$PKG" >> "$GITHUB_OUTPUT"
 
-      - name: Tag does not already exist
+      - name: Decide what this run has to do
+        id: mode
         run: |
           set -euo pipefail
-          TAG="arche-core-v${{ steps.check.outputs.version }}"
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-            echo "::error::Tag $TAG already exists. Releasing over it would make the tag ambiguous."
-            exit 1
-          fi
-          echo "Tag $TAG is free."
+          V="${{ steps.check.outputs.version }}"
+          TAG="arche-core-v$V"
 
-      - name: Version is not already on the index
-        run: |
-          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then TAGGED=yes; else TAGGED=no; fi
+
           if [ "${{ inputs.target }}" = "pypi" ]; then
             URL="https://pypi.org/pypi/arche-core/json"
           else
             URL="https://test.pypi.org/pypi/arche-core/json"
           fi
-          # A 404 means the project has never been published there, which is fine.
-          CODE=$(curl -s -o /tmp/idx.json -w "%{http_code}" "$URL" || true)
-          if [ "$CODE" = "200" ]; then
-            python - <<'PY'
-          import json, os, sys
-          data = json.load(open("/tmp/idx.json"))
-          want = os.environ["WANT"]
-          if want in data.get("releases", {}):
-              sys.exit(f"::error::{want} is already on the index. PyPI does not allow "
-                       f"re-uploading a version; bump _version.py instead.")
-          print(f"{want} is not on the index yet.")
-          PY
+          # Fail closed. An earlier version treated any non-200 as "not
+          # published", so a network blip would have chosen the release path
+          # and tried to re-upload an existing version, which PyPI answers with
+          # a 400 that reads like a credentials failure. Only two answers are
+          # trustworthy here: 200 with a parsed body, or a definite 404.
+          CODE=$(curl -sS -o /tmp/idx.json -w "%{http_code}" --retry 3 --retry-delay 2 "$URL" || echo "000")
+          case "$CODE" in
+            200)
+              PUBLISHED=$(WANT="$V" python -c "
+          import json, os
+          rels = json.load(open('/tmp/idx.json')).get('releases', {})
+          print('yes' if os.environ['WANT'] in rels else 'no')
+          ")
+              ;;
+            404)
+              PUBLISHED=no      # project has never been published on this index
+              ;;
+            *)
+              echo "::error::Could not determine whether $V is on the index (HTTP $CODE). Refusing to guess."
+              exit 1
+              ;;
+          esac
+
+          echo "version=$V  published=$PUBLISHED  tagged=$TAGGED"
+
+          # Four states, and only two of them are work. The published-but-not-
+          # tagged case is a real one rather than a hypothetical: it is what an
+          # earlier version of this workflow produced, by failing a job *after*
+          # the upload had already succeeded. Recovering from it must not
+          # require hand-crafting a tag, because a hand-crafted tag is exactly
+          # the thing nobody can later verify.
+          if [ "$PUBLISHED" = yes ] && [ "$TAGGED" = yes ]; then
+            echo "::error::$V is already published and already tagged. Nothing to do. Bump _version.py for a new release."
+            exit 1
+          elif [ "$PUBLISHED" = yes ] && [ "$TAGGED" = no ]; then
+            echo "mode=tag-only" >> "$GITHUB_OUTPUT"
+            echo "::notice::$V is on the index but has no tag. This run will verify that this commit produced the published artifact, then tag it. Nothing will be uploaded."
+          elif [ "$PUBLISHED" = no ] && [ "$TAGGED" = yes ]; then
+            echo "::error::Tag $TAG exists but $V is not on the index. That is the state this workflow exists to prevent; investigate before proceeding."
+            exit 1
           else
-            echo "Project not found on the index (HTTP $CODE). First publish."
+            echo "mode=release" >> "$GITHUB_OUTPUT"
+            echo "::notice::$V is unpublished and untagged. Full release."
           fi
-        env:
-          WANT: ${{ steps.check.outputs.version }}
 
       - name: Changelog mentions this version
         run: |
@@ -125,6 +165,10 @@ jobs:
   test:
     name: pytest ${{ matrix.python-version }}
     needs: verify
+    # A tag-only run publishes nothing, so re-running the suite cannot change
+    # its outcome. What that run has to prove is that this commit produced the
+    # artifact already on the index, and the build job proves it directly.
+    if: needs.verify.outputs.mode == 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -141,6 +185,9 @@ jobs:
   build:
     name: Build and inspect the artifacts
     needs: [verify, test]
+    # `test` is skipped on a tag-only run, and a skipped need would otherwise
+    # skip this job too.
+    if: always() && !cancelled() && needs.verify.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -256,6 +303,59 @@ jobs:
           print(f"  verdict: {res['matches'][0]['decision']}")
           PY
 
+      - name: This commit must be what was published
+        if: needs.verify.outputs.mode == 'tag-only'
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          # Tagging an already-published version is only safe if this commit is
+          # the one that produced it. Otherwise the tag points at code nobody
+          # ever shipped, which is worse than no tag at all.
+          #
+          # Compare member CONTENTS, not the wheel's own hash: a zip embeds
+          # timestamps, so two builds of identical source almost never hash the
+          # same. Normalise newlines too, because a wheel built on Windows
+          # carries CRLF where a Linux build carries LF, and that alone made a
+          # local check report 63 false differences out of 65.
+          python - <<PY
+          import hashlib, io, json, sys, urllib.request, zipfile
+
+          V = "$V"
+          with urllib.request.urlopen("https://pypi.org/pypi/arche-core/json", timeout=60) as r:
+              meta = json.load(r)
+          url = next(f["url"] for f in meta["releases"][V] if f["filename"].endswith(".whl"))
+          with urllib.request.urlopen(url, timeout=120) as r:
+              pub = zipfile.ZipFile(io.BytesIO(r.read()))
+          loc = zipfile.ZipFile(f"dist/arche_core-{V}-py3-none-any.whl")
+
+          def norm(b): return b.replace(b"\r\n", b"\n")
+          # RECORD hashes every other member, so it differs whenever anything
+          # does and carries no information of its own.
+          skip = ("RECORD", "WHEEL")
+
+          pn = {i.filename for i in pub.infolist() if not i.is_dir()}
+          ln = {i.filename for i in loc.infolist() if not i.is_dir()}
+          problems = []
+          for name in sorted(pn - ln):
+              problems.append(f"missing locally: {name}")
+          for name in sorted(ln - pn):
+              problems.append(f"extra locally:   {name}")
+          for name in sorted(pn & ln):
+              if name.endswith(skip):
+                  continue
+              if norm(pub.read(name)) != norm(loc.read(name)):
+                  problems.append(f"content differs: {name}")
+
+          if problems:
+              print(f"::error::This commit does not reproduce the published {V}.")
+              for p in problems[:20]:
+                  print(f"  {p}")
+              if len(problems) > 20:
+                  print(f"  ... and {len(problems) - 20} more")
+              sys.exit(1)
+          print(f"This commit reproduces the published {V} exactly. Safe to tag.")
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -268,6 +368,9 @@ jobs:
   publish:
     name: Publish to ${{ inputs.target }}
     needs: [verify, test, build]
+    # Skipped entirely on a tag-only run: the artifact is already on the index
+    # and re-uploading it is not possible anyway.
+    if: needs.verify.outputs.mode == 'release' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Configure this environment in repo settings with required reviewers if
@@ -321,10 +424,16 @@ jobs:
 
   tag:
     name: Tag the released commit
-    needs: [verify, publish]
-    # Only tag what actually reached PyPI. A rehearsal on TestPyPI leaves no
-    # tag behind, because it is not a release.
-    if: inputs.target == 'pypi'
+    needs: [verify, build, publish]
+    # Only tag what actually reached PyPI, so a TestPyPI rehearsal leaves no
+    # tag behind. Two routes get here: a publish that just succeeded, or a
+    # tag-only run whose build proved this commit reproduces what is already
+    # on the index. `publish` is skipped on the second route, and a skipped
+    # need would otherwise skip this job too.
+    if: >-
+      !cancelled() && inputs.target == 'pypi'
+      && needs.build.result == 'success'
+      && (needs.publish.result == 'success' || needs.verify.outputs.mode == 'tag-only')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -337,7 +446,12 @@ jobs:
           TAG="arche-core-v${{ needs.verify.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "arche-core ${{ needs.verify.outputs.version }} (published to PyPI)"
+          if [ "${{ needs.verify.outputs.mode }}" = "tag-only" ]; then
+            MSG="arche-core ${{ needs.verify.outputs.version }} (on PyPI; tag added afterwards, commit verified to reproduce the published wheel)"
+          else
+            MSG="arche-core ${{ needs.verify.outputs.version }} (published to PyPI by this run)"
+          fi
+          git tag -a "$TAG" -m "$MSG"
           git push origin "$TAG"
           echo "Tagged $TAG."
 
