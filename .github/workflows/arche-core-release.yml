@@ -214,6 +214,48 @@ jobs:
         env:
           WANT: ${{ needs.verify.outputs.version }}
 
+      - name: Smoke-test the wheel from disk
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          # Install the exact file that is about to be published, into a clean
+          # interpreter, and use it. This replaces an earlier post-publish
+          # check against the index, which was wrong twice over: it ran after
+          # the point of no return, so it could not prevent anything, and it
+          # gated the tag job on index propagation, so a slow index produced a
+          # published-but-untagged release. That is the failure this workflow
+          # exists to make impossible.
+          uv venv /tmp/smoke
+          uv pip install --python /tmp/smoke/bin/python \
+            "dist/arche_core-${V}-py3-none-any.whl"
+
+          /tmp/smoke/bin/python - <<PY
+          import sys
+          import arche
+          from arche.resolve import ENTITY_PACKS, crosswalk
+          from arche.resolve._tokenfreq import TokenFrequencyTable
+
+          assert arche.__version__ == "$V", f"installed {arche.__version__}, expected $V"
+
+          # Being present in the zip is not the same as loading. The data files
+          # are the part most likely to be packaged wrong, so open one.
+          tf = TokenFrequencyTable.default("organisation")
+          assert tf.population_scale, "organisation table is not population-scale"
+
+          # And run the engine end to end from a clean install, so a broken
+          # import chain or a missing vocabulary surfaces here rather than in
+          # somebody's first five minutes with the package.
+          res = crosswalk(
+              [{"id": "a", "name": "Sefwi Wiawso Cooperative Society"}],
+              [{"id": "b", "name": "Sefwi Wiawso Co-operative Society Ltd"}],
+              entity="organisation", id_field="id",
+          )
+          assert res["matches"], "no candidate pair produced"
+          print(f"arche {arche.__version__} installs, loads its data, and resolves.")
+          print(f"  packs: {sorted(set(ENTITY_PACKS))}")
+          print(f"  verdict: {res['matches'][0]['decision']}")
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -264,25 +306,18 @@ jobs:
             uv publish --publish-url https://test.pypi.org/legacy/ "$WHL" "$SDIST"
           fi
 
-      - name: Confirm it is installable from the index
+      - name: Record where it landed
         run: |
-          set -euo pipefail
           V="${{ needs.verify.outputs.version }}"
-          if [ "${{ inputs.target }}" = "pypi" ]; then EXTRA=""; else
-            EXTRA="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
+          if [ "${{ inputs.target }}" = "pypi" ]; then
+            URL="https://pypi.org/project/arche-core/$V/"
+          else
+            URL="https://test.pypi.org/project/arche-core/$V/"
           fi
-          # The index takes a moment to serve a new file.
-          for i in 1 2 3 4 5 6; do
-            if uv pip install --system $EXTRA "arche-core==$V" 2>/dev/null; then
-              INSTALLED=$(python -c "import arche; print(arche.__version__)")
-              echo "Installed $INSTALLED from the index."
-              [ "$INSTALLED" = "$V" ] || { echo "::error::Index served $INSTALLED, expected $V"; exit 1; }
-              exit 0
-            fi
-            echo "Not servable yet, retrying in 20s ($i/6)"; sleep 20
-          done
-          echo "::error::Published, but $V was not installable after two minutes. Check the index before tagging."
-          exit 1
+          echo "Published $V to ${{ inputs.target }}: $URL"
+          echo "- Published \`$V\` to ${{ inputs.target }}: $URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "  Indexes take a few minutes to serve a new file. That is normal and is not checked here, deliberately: see the smoke test in the build job, which verifies the same artifact *before* it is published." >> "$GITHUB_STEP_SUMMARY"
 
   tag:
     name: Tag the released commit
