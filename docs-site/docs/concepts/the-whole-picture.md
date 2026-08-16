@@ -108,12 +108,12 @@ Three answers, not two: `same_entity`, `review`, `different`. And a second axis.
 
 ## What has been measured
 
-Four results, four different things. **Read the caveats column as part of the number, not as a footnote.**
+Five results, five different things, and they are not all the same kind of thing. Three are public benchmarks with ground truth someone else wrote. One is an internal ablation. **Read the caveats column as part of the number, not as a footnote.**
 
 | What | Baseline | arche | Read it as |
 |---|---|---|---|
 | **Name equivalence**<br/>58 pairs, 18 categories | Jaro–Winkler @ 0.80<br/>F1 **0.8493** | F1 **0.9880** | Recall 0.738 → **0.976**, precision held at 1.000. **A demo, not a benchmark** — 58 pairs, and from v0.1.0. Needs re-running. |
-| **Name frequency**<br/>60 positives, 60 hard negatives | arche **minus the frequency signal** | false merges **40% → 0%** | The safety result. But zero observed errors means the test did not observe one, and **we built the negatives**. |
+| **Name frequency**<br/>60 positives, 60 hard negatives<br/>**an ablation, not a benchmark** | arche **minus the frequency signal** | false merges **40% → 0%** | Zero observed errors means the test did not observe one. **We built the negatives**, and the set is not in this repository. |
 | **Scale (Febrl 4)**<br/>10,000 records, truth known | — (absolute) | precision **1.0** | Bought by sending ~12% to `review`. **Precision on the cases we chose to answer.** |
 | **Multilingual detection**<br/>48 cases, 6 languages | Presidio **37/48** | **47/48** | On African government IDs specifically, Presidio scored **2/25**. n=48 is not superiority. |
 | **Organisation lane**<br/>946 labelled pairs | token-sort F1 **0.8898** | F1 **0.9493** | False merges **21 → 4**. Public set, criteria declared before the run. Anglophone restaurant listings — **says nothing about African organisation names**. |
@@ -122,9 +122,11 @@ Four results, four different things. **Read the caveats column as part of the nu
 
 This matters more than the numbers, because a benchmark with a badly chosen baseline proves nothing.
 
-**The rule: change exactly one thing.** The frequency benchmark is the clearest case. The baseline is not a strawman, it is **arche with the frequency signal switched off**. Same data, same comparator, same threshold. So the 40 → 0 result cannot be explained by anything else in the pipeline.
+**The rule: change exactly one thing.** The frequency ablation is the clearest case. The baseline is not a strawman, it is **arche with the frequency signal switched off**. Same data, same comparator, same threshold. So the 40 → 0 result cannot be explained by anything else in the pipeline.
 
 The hard negatives are hard on purpose: pairs sharing a *common* surname exactly with different given names, against positives sharing a *distinctive* surname. Both classes share one token and differ on another, so a frequency-blind matcher literally cannot separate them.
+
+Which is also the reason to discount it. The row with the cleanest experimental design has the weakest evidence behind it, and those two facts have the same cause: we built the negatives around the exact failure the signal was written to fix. A test constructed that way is close to guaranteed to pass, so 0% tells you the signal is connected, not that it holds up on names nobody chose in advance.
 
 ---
 
@@ -134,6 +136,7 @@ A page of wins with no losses is marketing. This section is the reason to trust 
 
 - **The sets are small.** 58 and 120 pairs. Real benchmarks are orders of magnitude larger.
 - **We built the hardest ones ourselves.** When the same team designs the negatives and the solution, the benchmark is vulnerable to target leakage and favourable case construction. Independent construction would be better.
+- **The frequency result cannot be re-run from this repository.** The organisation lane ships its benchmark script and the result file it produced, so anyone can re-run it and check the 0.9493 for themselves. The frequency ablation ships neither the set nor the script. Until it does, read 40 → 0 as something we are telling you rather than something you can verify, and weight it accordingly.
 - **`review` is not precommitted.** Abstention is only principled under a selective-risk policy: thresholds fixed on validation data, review budget fixed in advance, and end-to-end performance reported *including* deferred cases. We report precision 1.0 without costing the 12%. Until that is fixed, the number is narrower than it reads.
 - **No head-to-head against frontier models.** The most important missing experiment, and the one most likely to prove us wrong.
 - **The `score` is not a probability.** It assumes a uniform prior that is never right, and it is carried into signed artifacts. A project arguing for honest assertions cannot ship a field that overclaims.

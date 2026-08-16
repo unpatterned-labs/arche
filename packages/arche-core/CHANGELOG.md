@@ -2,17 +2,50 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [Unreleased]
+
+### Changed — a results row that claimed more than it had earned
+
+The name-frequency row in the README is now labelled **an ablation, not a
+benchmark**. It reports 40% false merges falling to 0% against the same engine
+with the frequency signal switched off. That self-ablation is the cleanest
+baseline in the table and the weakest evidence in it, for one reason: the 60
+negatives were built around the exact failure the signal exists to fix, so
+passing is close to guaranteed by construction. It shows the signal is wired up,
+not that it generalises.
+
+It is also the only row that cannot be re-run from this repository. The
+organisation lane ships `bench_organisation.py` and the result file it produced,
+so anyone can check the 0.9493 themselves. The ablation ships neither the set nor
+the script, and the document the research notes cite for it does not exist in
+this repo or in its history.
+
+The table header changed from `Benchmark` to `What`, because it was listing an
+internal ablation alongside public benchmarks under a word only some of them had
+earned. The same relabelling is applied to `concepts/the-whole-picture`, whose
+"what we have not proven" section now records that the result is not
+independently checkable.
+
+This correction missed `0.4.0a2`, which had already been published. A PyPI long
+description cannot be edited in place, so the uncorrected row stays on the index
+under that version until the next release supersedes it.
+
+---
+
 ## [0.4.0a2] — 2026-08-16
 
-**Metadata only. No code or data changed.**
+**Metadata only. No behaviour changed.**
 
 That is stated first because it is checkable and because a version bump usually
 implies otherwise. A fresh build was compared member by member against the
 published `0.4.0a1` wheel, with newlines normalised so a Windows build could be
-compared against a Linux one: every code and data file was byte-identical, and
-`METADATA` was the sole difference. The bump exists because a package
-description, its keywords and its long description are part of what PyPI serves
-and cannot be corrected in place once a version is published.
+compared against a Linux one. Of 151 files, exactly two differ: `METADATA`, and
+`_version.py`, which holds the version string and therefore cannot not change in
+a version bump. Every other code and data file is byte-identical.
+
+The bump exists because a package description, its keywords and its long
+description are part of what PyPI serves and cannot be corrected in place once a
+version is published.
 
 ### Changed — how the package describes itself
 

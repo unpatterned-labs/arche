@@ -77,12 +77,12 @@ A recipient checks two independent things: the signature, which establishes who 
 
 Published whichever way it falls, with the caveats attached rather than in a footnote.
 
-| Benchmark | Baseline | arche | Read it as |
+| What | Baseline | arche | Read it as |
 |---|---|---|---|
 | **Leipzig DBLP–ACM** | — | precision **0.9506**, recall 0.9960 | Complete ground truth, so the 115 false merges are visible and counted |
 | **Leipzig Abt-Buy** (products) | name only, F1 0.3443 | F1 **0.7883**, precision 0.9707 | 62 false merges down to 22 |
 | **Organisation lane** | token-sort F1 0.8898 | F1 **0.9493** | False merges 21 → 4. Anglophone restaurant listings, so it says nothing about African organisation names |
-| **Name frequency** | frequency-blind matching, 40% false merges | **0%** | The safety result. We built the negatives, and zero observed errors is not zero risk |
+| **Name frequency** *(ablation, not a benchmark)* | the same engine with the frequency signal switched off, 40% false merges | **0%** | A constructed 60/60 set we built ourselves. Shows the signal is wired up correctly, not that it generalises |
 | **Multilingual detection** | Presidio 37/48 | **47/48** | On African government IDs specifically, Presidio scored 2/25. n=48 is not superiority |
 
 The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/concepts/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
