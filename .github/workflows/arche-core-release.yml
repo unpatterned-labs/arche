@@ -1,0 +1,318 @@
+name: arche-core release
+
+# Manual release of `arche-core` to PyPI (or TestPyPI for a rehearsal).
+#
+# Ordering note, and it is the whole reason this file is shaped the way it is:
+# **the tag is created after the upload succeeds, never before.** This project
+# has already been burned once the other way round. `0.3.0a2` was versioned,
+# changelogged, and cited by SECURITY.md as the release carrying a fix, and it
+# was never published, so the advisory told readers to upgrade to something
+# that did not exist. A tag that only appears once PyPI has accepted the file
+# means a tag can no longer promise a release that is not there.
+#
+# The other guards exist because a release is the one workflow where a
+# confusing failure is expensive:
+#   - the version you type must match `_version.py`, so a stale branch cannot
+#     publish something you did not intend
+#   - the version must not already be on the index, because PyPI answers a
+#     duplicate upload with a 400 that reads like a credentials problem
+#   - the tag must not already exist
+#   - the full test matrix must pass, not a spot check
+#   - the built wheel is opened and inspected before anything leaves the runner
+#
+# Secrets required:
+#   PYPI_TOKEN       for target: pypi
+#   TEST_PYPI_TOKEN  for target: testpypi
+#
+# Worth considering later: PyPI Trusted Publishing (OIDC) removes the
+# long-lived token entirely and is the current recommendation. It needs a
+# publisher configured on the PyPI project side, so it is a change to make
+# deliberately rather than as part of a release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release. Must match packages/arche-core/src/arche/_version.py exactly (e.g. 0.4.0a1)."
+        required: true
+        type: string
+      target:
+        description: "Where to publish. Rehearse on testpypi first."
+        required: true
+        default: testpypi
+        type: choice
+        options: [testpypi, pypi]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify the release is safe to make
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # tags, so the duplicate-tag check can see them
+
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+
+      - name: Version input matches the package
+        id: check
+        run: |
+          set -euo pipefail
+          FILE="packages/arche-core/src/arche/_version.py"
+          PKG=$(python -c "import re,pathlib; print(re.search(r'__version__\s*=\s*[\"\x27]([^\"\x27]+)', pathlib.Path('$FILE').read_text()).group(1))")
+          IN="${{ inputs.version }}"
+          echo "requested: $IN"
+          echo "in $FILE : $PKG"
+          if [ "$PKG" != "$IN" ]; then
+            echo "::error::Version mismatch. You asked for '$IN' but $FILE says '$PKG'. Bump the file, or type the version it already has."
+            exit 1
+          fi
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
+
+      - name: Tag does not already exist
+        run: |
+          set -euo pipefail
+          TAG="arche-core-v${{ steps.check.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag $TAG already exists. Releasing over it would make the tag ambiguous."
+            exit 1
+          fi
+          echo "Tag $TAG is free."
+
+      - name: Version is not already on the index
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.target }}" = "pypi" ]; then
+            URL="https://pypi.org/pypi/arche-core/json"
+          else
+            URL="https://test.pypi.org/pypi/arche-core/json"
+          fi
+          # A 404 means the project has never been published there, which is fine.
+          CODE=$(curl -s -o /tmp/idx.json -w "%{http_code}" "$URL" || true)
+          if [ "$CODE" = "200" ]; then
+            python - <<'PY'
+          import json, os, sys
+          data = json.load(open("/tmp/idx.json"))
+          want = os.environ["WANT"]
+          if want in data.get("releases", {}):
+              sys.exit(f"::error::{want} is already on the index. PyPI does not allow "
+                       f"re-uploading a version; bump _version.py instead.")
+          print(f"{want} is not on the index yet.")
+          PY
+          else
+            echo "Project not found on the index (HTTP $CODE). First publish."
+          fi
+        env:
+          WANT: ${{ steps.check.outputs.version }}
+
+      - name: Changelog mentions this version
+        run: |
+          set -euo pipefail
+          V="${{ steps.check.outputs.version }}"
+          if ! grep -q "\[$V\]" packages/arche-core/CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '[$V]' section. A release with no changelog entry is one nobody can read later."
+            exit 1
+          fi
+          echo "Changelog has an entry for $V."
+
+  test:
+    name: pytest ${{ matrix.python-version }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: true        # a release should stop at the first failure
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install ${{ matrix.python-version }}
+      - run: uv sync --all-packages
+      - run: uv run --no-sync pytest packages/arche-core/tests -q --tb=short
+
+  build:
+    name: Build and inspect the artifacts
+    needs: [verify, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+
+      - name: Build sdist and wheel
+        run: |
+          set -euo pipefail
+          # `uv build` writes to the WORKSPACE root dist/, not to
+          # packages/arche-core/dist/, because the root pyproject declares a
+          # [tool.uv.workspace] with arche-core as a member. Clearing it first
+          # means a cache restore or a repeated build can never leave an older
+          # version sitting beside this one, which matters because the steps
+          # below name files explicitly rather than globbing the directory.
+          rm -rf dist
+          uv build --package arche-core
+          ls -l dist
+          COUNT=$(ls dist | wc -l)
+          [ "$COUNT" = "2" ] || { echo "::error::Expected exactly 2 artifacts, found $COUNT"; exit 1; }
+
+      - name: Inspect what is actually in the wheel
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          WHEEL="dist/arche_core-${V}-py3-none-any.whl"
+          test -f "$WHEEL" || { echo "::error::Expected $WHEEL, got: $(ls dist)"; exit 1; }
+          python - <<PY
+          import zipfile, sys
+          w = zipfile.ZipFile("$WHEEL")
+          names = w.namelist()
+          size = sum(i.file_size for i in w.infolist())
+          print(f"{len(names)} files, {size/1024/1024:.1f} MB uncompressed")
+
+          # Data assets ship inside the wheel rather than being downloaded at
+          # runtime. A wheel that builds but omits them installs cleanly and
+          # then fails on the first resolve, which is the worst failure shape.
+          required = [
+              "arche/resolve/_data/name_frequencies.json.gz",
+              "arche/resolve/_data/place_frequencies.json.gz",
+              "arche/resolve/_data/organisation_frequencies.json.gz",
+              "arche/resolve/_data/organisation_tokens.yaml",
+              "arche/resolve/type_tokens.yaml",
+              "arche/py.typed",
+          ]
+          missing = [r for r in required if r not in names]
+          if missing:
+              sys.exit("::error::Wheel is missing required data: " + ", ".join(missing))
+          print("All required data assets present.")
+          PY
+
+      - name: Check the built metadata agrees with the tag
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          uv run --with twine --no-project twine check \
+            "dist/arche_core-${V}-py3-none-any.whl" "dist/arche_core-${V}.tar.gz"
+          python - <<'PY'
+          import pathlib, re, os, sys, zipfile
+          v = os.environ["WANT"]
+          whl = next(pathlib.Path("dist").glob("*.whl"))
+          meta = zipfile.ZipFile(whl).read(
+              next(n for n in zipfile.ZipFile(whl).namelist() if n.endswith("METADATA"))
+          ).decode()
+          got = re.search(r"^Version: (.+)$", meta, re.M).group(1).strip()
+          if got != v:
+              sys.exit(f"::error::Wheel metadata says {got}, expected {v}")
+          print(f"Wheel metadata version is {got}.")
+          PY
+        env:
+          WANT: ${{ needs.verify.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist/arche_core-${{ needs.verify.outputs.version }}-py3-none-any.whl
+            dist/arche_core-${{ needs.verify.outputs.version }}.tar.gz
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: Publish to ${{ inputs.target }}
+    needs: [verify, test, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Configure this environment in repo settings with required reviewers if
+    # you want a human approval step between "build passed" and "it is public".
+    environment: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ inputs.target == 'pypi' && secrets.PYPI_TOKEN || secrets.TEST_PYPI_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${UV_PUBLISH_TOKEN:-}" ]; then
+            echo "::error::No token. Set PYPI_TOKEN (or TEST_PYPI_TOKEN) in repository secrets."
+            exit 1
+          fi
+          V="${{ needs.verify.outputs.version }}"
+          WHL="dist/arche_core-${V}-py3-none-any.whl"
+          SDIST="dist/arche_core-${V}.tar.gz"
+          test -f "$WHL" && test -f "$SDIST" || { echo "::error::Missing $WHL or $SDIST"; exit 1; }
+          # Named explicitly, never a glob over dist/. A glob uploads whatever
+          # else is sitting in the directory, and this project has a version
+          # (0.3.0a2) that was deliberately never released and must not reach
+          # the index. Naming the files makes that impossible rather than
+          # unlikely.
+          if [ "${{ inputs.target }}" = "pypi" ]; then
+            uv publish "$WHL" "$SDIST"
+          else
+            uv publish --publish-url https://test.pypi.org/legacy/ "$WHL" "$SDIST"
+          fi
+
+      - name: Confirm it is installable from the index
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          if [ "${{ inputs.target }}" = "pypi" ]; then EXTRA=""; else
+            EXTRA="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
+          fi
+          # The index takes a moment to serve a new file.
+          for i in 1 2 3 4 5 6; do
+            if uv pip install --system $EXTRA "arche-core==$V" 2>/dev/null; then
+              INSTALLED=$(python -c "import arche; print(arche.__version__)")
+              echo "Installed $INSTALLED from the index."
+              [ "$INSTALLED" = "$V" ] || { echo "::error::Index served $INSTALLED, expected $V"; exit 1; }
+              exit 0
+            fi
+            echo "Not servable yet, retrying in 20s ($i/6)"; sleep 20
+          done
+          echo "::error::Published, but $V was not installable after two minutes. Check the index before tagging."
+          exit 1
+
+  tag:
+    name: Tag the released commit
+    needs: [verify, publish]
+    # Only tag what actually reached PyPI. A rehearsal on TestPyPI leaves no
+    # tag behind, because it is not a release.
+    if: inputs.target == 'pypi'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create and push the tag
+        run: |
+          set -euo pipefail
+          TAG="arche-core-v${{ needs.verify.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "arche-core ${{ needs.verify.outputs.version }} (published to PyPI)"
+          git push origin "$TAG"
+          echo "Tagged $TAG."
+
+      - name: Summary
+        run: |
+          {
+            echo "### arche-core ${{ needs.verify.outputs.version }} released"
+            echo ""
+            echo "- Published to PyPI and confirmed installable"
+            echo "- Tagged \`arche-core-v${{ needs.verify.outputs.version }}\`"
+            echo ""
+            echo "Remaining by hand: draft the GitHub Release notes from CHANGELOG.md."
+          } >> "$GITHUB_STEP_SUMMARY"
