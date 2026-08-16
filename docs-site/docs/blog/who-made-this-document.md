@@ -17,6 +17,37 @@ That number is the whole problem with how document verification is usually discu
 
 ---
 
+## A Tuesday, and six documents you were asked to believe
+
+That statistic sounds like someone else's problem until you notice how many documents you accepted this week on nothing but their appearance.
+
+An invoice arrives from a supplier you have used for three years. Same layout, same logo, same reference format, and a line saying they have changed banks, so please use the new account details below. A candidate sends a CV with a degree certificate attached. A prospective tenant sends a payslip. A contractor sends an insurance certificate before starting work. Someone requests a refund and attaches a receipt. A signed contract comes back by email with a signature image on the last page.
+
+Six documents, each of which caused you to do something: pay, hire, let, permit, refund, commit.
+
+Now be honest about what you actually checked.
+
+| The document | What you really checked | What would have caught a good fake |
+|---|---|---|
+| **Invoice, new bank details** | it looked like their invoices | nothing you did |
+| **Degree certificate** | the university exists | nothing you did |
+| **Payslip** | the figure was plausible | nothing you did |
+| **Insurance certificate** | it had a policy number on it | nothing you did |
+| **Receipt for a refund** | the total matched the claim | nothing you did |
+| **Signed contract** | there was a signature image | nothing you did |
+
+The right-hand column is the same three words six times, and the first row is the one that empties bank accounts. Redirected-invoice fraud is one of the most costly categories of business crime anywhere, and it does not require breaking anything. It requires a PDF that looks like the last one, which is not a high bar, because **a PDF is a layout format and not a claim anybody signed**.
+
+## What you are actually doing when a document "looks right"
+
+Here is the part worth sitting with. When you glance at that invoice and think *yes, that is from them*, you are not checking nothing. You are running a real test, and it is a surprisingly sophisticated one.
+
+You are comparing the document against every previous document from that sender that you can remember: the layout, the fonts, the way the reference number is formatted, where the totals sit, the phrasing of the payment terms. You are performing a **structural fingerprint check**, from memory, under time pressure, on a sample size of however many of their invoices you happen to recall.
+
+That is rung 2 on the ladder below. Not rung 0, where the file simply asserts who made it, and nowhere near rung 3, where cryptography would settle it. Everybody is already doing the interesting middle rung, by eye, and doing it badly, and **nobody has automated the thing everybody is doing.**
+
+Which reframes the gap in this post. It is not that document verification is unsolved and exotic. It is that the check people genuinely rely on is a pattern match a machine would do better, and the check the tooling offers is a signature almost no real document carries.
+
 ## "Verify" is four different questions
 
 When someone asks whether a document is real, they could mean any of these, and they have wildly different strengths.
@@ -116,6 +147,16 @@ That path is measurable with benchmarks we already run. Rung 3 is not, because w
 **Not shipping.** A boolean `verify()`. There is no rung at which a single true/false is honest, and a function with that name would be used as though there were.
 
 ---
+
+## Back to the invoice
+
+Run Tuesday again with what actually exists today.
+
+The invoice arrives. The producer field says a browser printed it, and every previous invoice from that supplier was emitted by an enterprise reporting system. That is not proof of anything, and it is a question worth asking before moving money, and it costs one line of code to ask.
+
+That is the whole honest offer. Not *this document is genuine*, which nothing available can tell you, but *this document is not shaped like the others from this sender, and here is the specific difference.* A signal that routes a payment to a human rather than blocking it, and states its own weakness on the way past.
+
+The distance between that and real verification is the distance between rung 1 and rung 3, and pretending otherwise is how people end up trusting a field anyone can type.
 
 ## The same ladder is everywhere
 
