@@ -2,11 +2,48 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [0.4.0a1] — unreleased
+## [0.4.0a2] — 2026-08-16
+
+**Metadata only. No code or data changed.**
+
+That is stated first because it is checkable and because a version bump usually
+implies otherwise. A fresh build was compared member by member against the
+published `0.4.0a1` wheel, with newlines normalised so a Windows build could be
+compared against a Linux one: every code and data file was byte-identical, and
+`METADATA` was the sole difference. The bump exists because a package
+description, its keywords and its long description are part of what PyPI serves
+and cannot be corrected in place once a version is published.
+
+### Changed — how the package describes itself
+
+The project is positioned as what it is: entity resolution for messy data from
+sources that never agreed on identifiers, covering people, places,
+organisations and products, and reading documents as well as records. Africa is
+described as where the calibration is deepest rather than as the limit of where
+the engine runs, because the organisation frequency table is built from company
+registrations across 65 jurisdictions and the product work is benchmarked on US
+retail catalogues.
+
+The README now covers work that shipped in `0.4.0a1` and went undocumented on
+the front page: the five entity packs, `resolve_documents` as a first-class
+entry point, extraction provenance, and how a third party re-checks a signed
+decision. It also corrects a figure that would have been wrong in public, where
+the Leipzig DBLP–ACM result was about to be quoted as an F1 when 0.9506 is the
+**precision** (recall 0.9960, 115 false merges visible under a complete
+mapping).
+
+### Removed — a keyword advertising software that does not exist
+
+`MCP` was listed among the package keywords. There is no MCP server in this
+package and none in the wheel. The roadmap had already corrected the same claim
+elsewhere; the index entry was the last place it survived.
+
+---
+
+## [0.4.0a1] — 2026-08-15
 
 The document lane, the product lane, and the `EgressGuard` security fix that
-`0.3.0a2` was going to carry before it was superseded. `0.3.0a1` remains the only
-published version until this ships.
+`0.3.0a2` was going to carry before it was superseded.
 
 
 ### Added — an experimental organisation entity lane

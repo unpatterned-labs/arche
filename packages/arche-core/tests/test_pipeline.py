@@ -47,7 +47,13 @@ def test_version():
     # should require touching a test rather than happening as a side effect.
     #
     # Moved 0.3.0a2 -> 0.4.0a1 in 2026-08. `0.3.0a2` was versioned, changelogged
-    # and merged but never published, and was superseded before it could be —
+    # and merged but never published, and was superseded before it could be,
     # while `SECURITY.md` told readers to upgrade to it. Both that advisory and
     # the changelog now say so rather than quietly renumbering.
-    assert __version__ == "0.4.0a1"
+    #
+    # 0.4.0a1 -> 0.4.0a2 is a metadata-only release. Comparing a fresh build
+    # against the published 0.4.0a1 wheel showed every code and data member
+    # byte-identical; only METADATA differed. The bump exists because the
+    # package description, keywords and long description are part of what
+    # PyPI serves, and those cannot be corrected in place.
+    assert __version__ == "0.4.0a2"
