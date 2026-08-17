@@ -182,6 +182,7 @@ nav:
     # written but never added here, so they existed on the site and could not
     # be navigated to; `mkdocs build` reports those under "not included in the
     # nav configuration" rather than as an error, which is easy to scroll past.
+    - The number we could not reproduce: blog/the-number-we-could-not-reproduce.md
     - You do not need an account to buy bread: blog/you-do-not-need-an-account-to-buy-bread.md
     - Who acted?: blog/who-acted.md
     - The join nobody sells: blog/the-join-nobody-sells.md

@@ -108,25 +108,35 @@ Three answers, not two: `same_entity`, `review`, `different`. And a second axis.
 
 ## What has been measured
 
-Five results, five different things, and they are not all the same kind of thing. Three are public benchmarks with ground truth someone else wrote. One is an internal ablation. **Read the caveats column as part of the number, not as a footnote.**
+Five results, and they are not the same kind of thing. One is a public labelled benchmark someone else built and baselined (organisation). One is a public corpus with known truth (Febrl). One is an ablation whose negatives come from a public register but whose positives we generated (name frequency). Two are sets we wrote ourselves (name equivalence, multilingual detection). **Read the caveats column as part of the number, not as a footnote.**
 
 | What | Baseline | arche | Read it as |
 |---|---|---|---|
 | **Name equivalence**<br/>58 pairs, 18 categories | Jaro–Winkler @ 0.80<br/>F1 **0.8493** | F1 **0.9880** | Recall 0.738 → **0.976**, precision held at 1.000. **A demo, not a benchmark** — 58 pairs, and from v0.1.0. Needs re-running. |
-| **Name frequency**<br/>60 positives, 60 hard negatives<br/>**an ablation, not a benchmark** | arche **minus the frequency signal** | false merges **40% → 0%** | Zero observed errors means the test did not observe one. **We built the negatives**, and the set is not in this repository. |
-| **Scale (Febrl 4)**<br/>10,000 records, truth known | — (absolute) | precision **1.0** | Bought by sending ~12% to `review`. **Precision on the cases we chose to answer.** |
-| **Multilingual detection**<br/>48 cases, 6 languages | Presidio **37/48** | **47/48** | On African government IDs specifically, Presidio scored **2/25**. n=48 is not superiority. |
+| **Name frequency**<br/>1,114 observed negatives<br/>1,500 constructed positives | arche **minus the frequency signal**<br/>precision **0.162**, 7,705 false merges | precision **0.946**<br/>**41** false merges | Real voter records, and re-runnable. The effect is far larger than we used to claim, and it has a cost we never mentioned: recall **48%**. |
+| **Scale (Febrl 4)**<br/>10,000 records, truth known | name and address only<br/>precision **0.921**, 282 false merges | precision **1.000**<br/>with the synthetic ID in play | The 1.0 reproduces exactly, and is largely a **key join**. Withhold the identifier and the engine resolves 65.7% rather than 87.7%. |
+| **Multilingual detection**<br/>48 cases, 6 languages | Presidio **37/48** | **47/48** | **We cannot re-run this.** The set is not in the repo and nothing computes the number. Unverified until rebuilt. |
 | **Organisation lane**<br/>946 labelled pairs | token-sort F1 **0.8898** | F1 **0.9493** | False merges **21 → 4**. Public set, criteria declared before the run. Anglophone restaurant listings — **says nothing about African organisation names**. |
 
 ### How the baselines were chosen
 
 This matters more than the numbers, because a benchmark with a badly chosen baseline proves nothing.
 
-**The rule: change exactly one thing.** The frequency ablation is the clearest case. The baseline is not a strawman, it is **arche with the frequency signal switched off**. Same data, same comparator, same threshold. So the 40 → 0 result cannot be explained by anything else in the pipeline.
+**The rule: change exactly one thing.** The frequency ablation is the clearest case. The baseline is not a strawman, it is **arche with the frequency signal switched off**. Same data, same comparator, same threshold. So the difference cannot be explained by anything else in the pipeline.
 
-The hard negatives are hard on purpose: pairs sharing a *common* surname exactly with different given names, against positives sharing a *distinctive* surname. Both classes share one token and differ on another, so a frequency-blind matcher literally cannot separate them.
+### The frequency row used to say something else
 
-Which is also the reason to discount it. The row with the cleanest experimental design has the weakest evidence behind it, and those two facts have the same cause: we built the negatives around the exact failure the signal was written to fix. A test constructed that way is close to guaranteed to pass, so 0% tells you the signal is connected, not that it holds up on names nobody chose in advance.
+Until August 2026 this row read **40% → 0%, recall held at 1.00**, on 60 positives and 60 negatives we wrote ourselves. That number was not reproducible. The set was never committed, no script computed it, and the document this page cited for it did not exist. It has been replaced by [`bench_name_frequency.py`](https://github.com/unpatterned-labs/arche/blob/main/datasets/names_dataops/bench_name_frequency.py), which anyone can run.
+
+The negatives are now **observed rather than written**: 1,114 pairs of real people from the North Carolina voter register who share a surname, differ in first name, and differ in birth year. Nobody chose how confusable their given names would be. The positives are still constructed, and the script says so on every line that reports them.
+
+Two things came out of re-running it properly, and the second is why the row is worth trusting now.
+
+**The effect is much larger than we claimed.** Not 40% of pairs wrongly merged but 7,705 wrong edges against 1,114 negatives, because a frequency-blind matcher run over two lists does not merely confuse a pair, it links nearly everything to nearly everything. Precision 0.162 against 0.946.
+
+**And it costs recall, which the old claim denied outright.** "Recall held at 1.00" was wrong. Measured against same-person pairs differing only by a dropped middle name, the frequency-aware engine matches **48%**. The rest go to `review`. That is defensible — abstention is the design — but reporting a safety gain while asserting the cost was zero was not.
+
+One more thing surfaced that we had not looked for. `person` is missing from the pack-to-table map, so `crosswalk(entity="person")` never loads the shipped population table and self-calibrates over the two lists instead. We expected that to be a defect. On this benchmark it is not: the self-calibrated default scores **F1 0.637** against the population table's **0.577**, buying 7 points of recall for 1.7 points of precision. The gap is real and unresolved, and it is recorded here rather than quietly fixed.
 
 ---
 
@@ -134,9 +144,11 @@ Which is also the reason to discount it. The row with the cleanest experimental 
 
 A page of wins with no losses is marketing. This section is the reason to trust the rest.
 
-- **The sets are small.** 58 and 120 pairs. Real benchmarks are orders of magnitude larger.
-- **We built the hardest ones ourselves.** When the same team designs the negatives and the solution, the benchmark is vulnerable to target leakage and favourable case construction. Independent construction would be better.
-- **The frequency result cannot be re-run from this repository.** The organisation lane ships its benchmark script and the result file it produced, so anyone can re-run it and check the 0.9493 for themselves. The frequency ablation ships neither the set nor the script. Until it does, read 40 → 0 as something we are telling you rather than something you can verify, and weight it accordingly.
+- **Some sets are small.** The name-equivalence set is 58 pairs. The frequency ablation is now 2,614, but its top band holds only 11 negatives, because Alamance County has just 11 surnames carried by 500 or more people. Read that band as noise.
+- **We built some of them ourselves.** When the same team designs the negatives and the solution, a benchmark is vulnerable to target leakage and favourable case construction. The frequency negatives are no longer ours; its positives still are, and so is the whole name-equivalence set.
+- **The frequency ablation is one county in one country.** Alamance County, North Carolina: US naming, US population structure. It says nothing about whether the effect holds on a Nigerian, Ghanaian or Kenyan register, which is exactly where this project claims its calibration is deepest. That benchmark does not exist and this is not it.
+- **The multilingual result is not re-runnable and may not be recoverable.** The 48-case set is not in this repository and nothing here computes 47/48. The organisation lane, the frequency ablation, Febrl and Leipzig all ship a script and a committed result file. This one does not, and until the set is rebuilt it should be read as an assertion rather than a measurement. The same is true of the 58-pair name-equivalence set.
+- **Three of our own numbers turned out to measure something other than the sentence around them.** Febrl's precision 1.0 reproduces exactly, and reaches 1.0 largely by joining on a synthetic near-unique identifier; withhold it and precision is 0.921. Leipzig's 0.9506 is the configuration with a discriminator declared on `year`, where out of the box the same pipeline scores 0.8500. The frequency claim omitted a recall cost of roughly half. None of these was fabricated. Each was a real run whose configuration stopped travelling with the number, which is a failure mode worth naming because it is quiet and it recurs.
 - **`review` is not precommitted.** Abstention is only principled under a selective-risk policy: thresholds fixed on validation data, review budget fixed in advance, and end-to-end performance reported *including* deferred cases. We report precision 1.0 without costing the 12%. Until that is fixed, the number is narrower than it reads.
 - **No head-to-head against frontier models.** The most important missing experiment, and the one most likely to prove us wrong.
 - **The `score` is not a probability.** It assumes a uniform prior that is never right, and it is carried into signed artifacts. A project arguing for honest assertions cannot ship a field that overclaims.

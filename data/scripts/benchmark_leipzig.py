@@ -155,6 +155,28 @@ def main() -> int:
     print(f"  {base['fp'] - veto['fp']} false merges removed, "
           f"{base['tp'] - veto['tp']} true matches lost")
 
+    # Emit the result beside the other lanes' result files. Without this the
+    # published 0.9506 is a number in a README that a reader has to take on
+    # trust, and it is easy to miss that it is the *refuting* configuration:
+    # out of the box, with no discriminator declared, precision is 0.8500.
+    import json as _json
+    out = _REPO / "data" / "er_bench" / "benchmark_leipzig_result.json"
+    out.write_text(_json.dumps({
+        "benchmark": "Leipzig DBLP-ACM (complete mapping)",
+        "source_url": ("https://dbs.uni-leipzig.de/research/projects/"
+                       "benchmark-datasets-for-entity-resolution"),
+        "records_dblp": len(dblp), "records_acm": len(acm),
+        "true_pairs": len(truth),
+        "configurations": {
+            "out_of_the_box": base,
+            "year_refutes_below_0.99": veto,
+        },
+        "note": "0.9506 is the refuting configuration and requires the caller "
+                "to declare refutes_below on year. Out of the box the same "
+                "pipeline scores 0.8500 with 391 false merges.",
+    }, indent=2, default=float), encoding="utf-8")
+    print(f"  -> {out.name}")
+
     # The refutation evidence: how clean is `year` as a discriminator, and how
     # much of the false-merge mass does it separate?
     by_title: dict[str, list[dict]] = {}

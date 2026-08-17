@@ -1,0 +1,36 @@
+{
+  "benchmark": "Febrl 4 (ANU), via the recordlinkage package",
+  "what_it_is": "synthetic record linkage with exact complete truth; a scale and abstention test, not evidence about real registers",
+  "source_url": "https://raw.githubusercontent.com/J535D165/recordlinkage/master/recordlinkage/datasets/febrl/",
+  "records_a": 5000,
+  "records_b": 5000,
+  "claimed_since_v0_1": {
+    "precision": 1.0,
+    "auto_resolved": 0.877,
+    "surfaced": 0.962
+  },
+  "configurations": {
+    "name + address": {
+      "pairs_truth": 5000,
+      "true_merges": 3285,
+      "false_merges": 282,
+      "precision": 0.9209,
+      "auto_resolved": 0.657,
+      "surfaced": 0.9486
+    },
+    "name + address + soc_sec_id": {
+      "pairs_truth": 5000,
+      "true_merges": 4384,
+      "false_merges": 0,
+      "precision": 1.0,
+      "auto_resolved": 0.8768,
+      "surfaced": 0.9624
+    }
+  },
+  "criteria": {
+    "precision_at_least_0_99": false,
+    "auto_resolved_within_10pt": false,
+    "surfaced_within_10pt": true
+  },
+  "verdict": "FAIL"
+}

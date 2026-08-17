@@ -79,11 +79,11 @@ Published whichever way it falls, with the caveats attached rather than in a foo
 
 | What | Baseline | arche | Read it as |
 |---|---|---|---|
-| **Leipzig DBLP–ACM** | — | precision **0.9506**, recall 0.9960 | Complete ground truth, so the 115 false merges are visible and counted |
+| **Leipzig DBLP–ACM** | out of the box, precision 0.8500, 391 false merges | precision **0.9506**, recall 0.9960 | Complete ground truth, so false merges are counted rather than estimated. The gain is not default: it needs one declared discriminator on `year` |
 | **Leipzig Abt-Buy** (products) | name only, F1 0.3443 | F1 **0.7883**, precision 0.9707 | 62 false merges down to 22 |
 | **Organisation lane** | token-sort F1 0.8898 | F1 **0.9493** | False merges 21 → 4. Anglophone restaurant listings, so it says nothing about African organisation names |
-| **Name frequency** *(ablation, not a benchmark)* | the same engine with the frequency signal switched off, 40% false merges | **0%** | A constructed 60/60 set we built ourselves. Shows the signal is wired up correctly, not that it generalises |
-| **Multilingual detection** | Presidio 37/48 | **47/48** | On African government IDs specifically, Presidio scored 2/25. n=48 is not superiority |
+| **Name frequency** *(ablation)* | the same engine with the frequency signal off: precision 0.162, 7,705 false merges | precision **0.946**, 41 false merges | 1,114 real same-surname pairs from a public voter register. Recall is the cost: **48%** on same-person pairs differing by a dropped middle name |
+| **Multilingual detection** | Presidio 37/48 | **47/48** | **Not re-runnable.** The 48-case set is not in this repo and nothing here computes the number. Unverified until rebuilt |
 
 The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/concepts/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
 

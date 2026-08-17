@@ -2,6 +2,8 @@
 
 ## Latest
 
+- **[The number we could not reproduce](the-number-we-could-not-reproduce.md)** — we went looking for the evidence behind our own headline result and it was not there. What we built instead disagreed with us three times, and the one we found and chose not to fix.
+
 - **[You do not need an account to buy bread](you-do-not-need-an-account-to-buy-bread.md)** — most relationships should end, and the web cannot express that. What decentralised identity fixes, and the parts of it where a linking engine has no business at all.
 
 - **[Who acted?](who-acted.md)** — agents are being built as if they are people, and they are closer to driving licences. Why the digital twin rents you a substance it also owns, and why agents are the strongest force for centralised identity since the platform login.

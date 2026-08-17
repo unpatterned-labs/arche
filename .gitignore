@@ -98,3 +98,12 @@ DESIGN.md
 /review_queue.csv
 /headtohead.json
 datasets/data/_cache/
+
+# Real voter-registration records fetched by
+# datasets/names_dataops/bench_name_frequency.py. Public record, but it is
+# real people's names, addresses and birth years: fetched, never committed.
+datasets/names_dataops/_ncvr_cache/
+
+# Febrl 4 synthetic linkage data fetched by
+# datasets/names_dataops/bench_febrl.py. Synthetic, but fetched not vendored.
+datasets/names_dataops/_febrl_cache/

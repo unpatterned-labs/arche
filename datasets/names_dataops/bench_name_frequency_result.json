@@ -1,0 +1,199 @@
+{
+  "benchmark": "NCVR Alamance County (NC public voter register)",
+  "what_it_is": "three-arm ablation of the person pack's tftoken comparator: absent, self-calibrated (the shipped default), and the shipped population table. Negatives observed, positives constructed.",
+  "source_url": "https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter1.zip",
+  "registrations": 141163,
+  "seed": 20260816,
+  "negatives": 1114,
+  "positives": 1500,
+  "bands": {
+    "blind": {
+      "very common": {
+        "positives": 300,
+        "negatives": 11,
+        "true_merges": 285,
+        "false_merges": 1087,
+        "recall": 0.95,
+        "precision": 0.2077,
+        "f1": 0.3409,
+        "false_merge_rate": 98.8182
+      },
+      "common": {
+        "positives": 300,
+        "negatives": 203,
+        "true_merges": 300,
+        "false_merges": 1509,
+        "recall": 1.0,
+        "precision": 0.1658,
+        "f1": 0.2845,
+        "false_merge_rate": 7.4335
+      },
+      "uncommon": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 300,
+        "false_merges": 1743,
+        "recall": 1.0,
+        "precision": 0.1468,
+        "f1": 0.2561,
+        "false_merge_rate": 5.81
+      },
+      "rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 300,
+        "false_merges": 1618,
+        "recall": 1.0,
+        "precision": 0.1564,
+        "f1": 0.2705,
+        "false_merge_rate": 5.3933
+      },
+      "very rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 300,
+        "false_merges": 1748,
+        "recall": 1.0,
+        "precision": 0.1465,
+        "f1": 0.2555,
+        "false_merge_rate": 5.8267
+      }
+    },
+    "shipped": {
+      "very common": {
+        "positives": 300,
+        "negatives": 11,
+        "true_merges": 96,
+        "false_merges": 14,
+        "recall": 0.32,
+        "precision": 0.8727,
+        "f1": 0.4683,
+        "false_merge_rate": 1.2727
+      },
+      "common": {
+        "positives": 300,
+        "negatives": 203,
+        "true_merges": 142,
+        "false_merges": 4,
+        "recall": 0.4733,
+        "precision": 0.9726,
+        "f1": 0.6368,
+        "false_merge_rate": 0.0197
+      },
+      "uncommon": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 155,
+        "false_merges": 7,
+        "recall": 0.5167,
+        "precision": 0.9568,
+        "f1": 0.671,
+        "false_merge_rate": 0.0233
+      },
+      "rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 163,
+        "false_merges": 5,
+        "recall": 0.5433,
+        "precision": 0.9702,
+        "f1": 0.6966,
+        "false_merge_rate": 0.0167
+      },
+      "very rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 164,
+        "false_merges": 11,
+        "recall": 0.5467,
+        "precision": 0.9371,
+        "f1": 0.6905,
+        "false_merge_rate": 0.0367
+      }
+    },
+    "population": {
+      "very common": {
+        "positives": 300,
+        "negatives": 11,
+        "true_merges": 77,
+        "false_merges": 4,
+        "recall": 0.2567,
+        "precision": 0.9506,
+        "f1": 0.4042,
+        "false_merge_rate": 0.3636
+      },
+      "common": {
+        "positives": 300,
+        "negatives": 203,
+        "true_merges": 115,
+        "false_merges": 2,
+        "recall": 0.3833,
+        "precision": 0.9829,
+        "f1": 0.5516,
+        "false_merge_rate": 0.0099
+      },
+      "uncommon": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 130,
+        "false_merges": 5,
+        "recall": 0.4333,
+        "precision": 0.963,
+        "f1": 0.5977,
+        "false_merge_rate": 0.0167
+      },
+      "rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 146,
+        "false_merges": 3,
+        "recall": 0.4867,
+        "precision": 0.9799,
+        "f1": 0.6503,
+        "false_merge_rate": 0.01
+      },
+      "very rare": {
+        "positives": 300,
+        "negatives": 300,
+        "true_merges": 150,
+        "false_merges": 10,
+        "recall": 0.5,
+        "precision": 0.9375,
+        "f1": 0.6522,
+        "false_merge_rate": 0.0333
+      }
+    }
+  },
+  "overall": {
+    "blind": {
+      "true_merges": 1485,
+      "false_merges": 7705,
+      "recall": 0.99,
+      "precision": 0.1616,
+      "f1": 0.2778,
+      "false_merge_rate": 6.9165
+    },
+    "shipped": {
+      "true_merges": 720,
+      "false_merges": 41,
+      "recall": 0.48,
+      "precision": 0.9461,
+      "f1": 0.6369,
+      "false_merge_rate": 0.0368
+    },
+    "population": {
+      "true_merges": 618,
+      "false_merges": 24,
+      "recall": 0.412,
+      "precision": 0.9626,
+      "f1": 0.577,
+      "false_merge_rate": 0.0215
+    }
+  },
+  "criteria": {
+    "population_beats_blind": true,
+    "recall_within_10pt": false,
+    "shipped_behaves_like_population": true
+  },
+  "verdict": "FAIL"
+}

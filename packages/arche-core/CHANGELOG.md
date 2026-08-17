@@ -2,7 +2,19 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [0.4.0a3] — 2026-08-16
+
+**Documentation and benchmarks. No behaviour changed.**
+
+Every published accuracy number was audited against something that runs. Three
+of the five did not survive contact with their own evidence, one is now known
+to be unverifiable, and the corrections are below. No source file outside
+`_version.py` changed, so a decision made by `0.4.0a2` and one made by this
+release are byte-identical.
+
+`0.4.0a2` went to the index carrying an uncorrected frequency claim. That is
+why this release exists: a PyPI long description cannot be edited in place, and
+the front page of the package was the last place the old number still stood.
 
 ### Changed — a results row that claimed more than it had earned
 
@@ -22,13 +34,95 @@ this repo or in its history.
 
 The table header changed from `Benchmark` to `What`, because it was listing an
 internal ablation alongside public benchmarks under a word only some of them had
-earned. The same relabelling is applied to `concepts/the-whole-picture`, whose
-"what we have not proven" section now records that the result is not
-independently checkable.
+earned.
 
 This correction missed `0.4.0a2`, which had already been published. A PyPI long
 description cannot be edited in place, so the uncorrected row stays on the index
 under that version until the next release supersedes it.
+
+### Added — `datasets/names_dataops/bench_name_frequency.py`
+
+The frequency claim is now re-runnable, and re-running it changed every number
+in it. The benchmark links two lists drawn from the North Carolina voter
+register: **1,114 observed negatives** (real people sharing a surname, differing
+in first name and birth year, so duplicate registrations cannot be mislabelled)
+and 1,500 constructed positives. Three arms — the `person` pack without its
+`tftoken` comparator, the shipped default, and the pack with the population
+table loaded explicitly. Deterministic under a fixed seed; the register is
+fetched at run time and never vendored, because it holds real names and
+addresses.
+
+| arm | false merges | precision | recall | F1 |
+|---|---|---|---|---|
+| frequency-blind | 7,705 | 0.162 | 0.990 | 0.278 |
+| shipped default | 41 | 0.946 | 0.480 | 0.637 |
+| population table | 24 | 0.963 | 0.412 | 0.577 |
+
+The old claim was wrong in both directions. The benefit is far larger than
+40% → 0% suggested: a frequency-blind matcher run across two lists does not
+confuse the occasional pair, it links nearly everything to nearly everything.
+And "recall held at 1.00" was simply false — measured on same-person pairs
+differing only by a dropped middle name, recall is **0.480**.
+
+The run **fails one of its three pre-declared criteria** and is published that
+way. The failing criterion asks the frequency-aware arm to stay within 10 points
+of the blind arm's recall, which is a bad criterion, because the blind arm
+reaches 0.990 recall at 0.162 precision by merging almost everything. The
+criterion is left failing rather than rewritten into a pass; the recall cost it
+points at is real either way.
+
+### Known — the `person` pack does not load its shipped population table
+
+`_PACK_TF_DOMAIN` maps `artist`, `place` and `organisation` to shipped
+frequency tables. `person` is absent, so `crosswalk(entity="person")` self-
+calibrates over the two lists being linked and never reads
+`name_frequencies.json.gz`, despite that table shipping in the wheel and
+reporting `population_scale=True`. This is the same defect the `organisation`
+pack was given a map entry to fix.
+
+It is recorded rather than fixed because the benchmark does not support calling
+it a regression: the self-calibrated default scores **F1 0.637** against the
+population table's **0.577** on this data, trading 1.7 points of precision for 7
+points of recall. Changing the mapping would change `decision_id` values for
+every person-pack decision, so it needs its own evidence rather than an
+assumption.
+
+### Added — `datasets/names_dataops/bench_febrl.py`
+
+The Febrl 4 claim — precision 1.0, 87.7% auto-resolved, 96.2% surfaced, carried
+since v0.1 — now runs. It reproduces **exactly**: all three figures land on the
+published values.
+
+What it reproduces is the point. Febrl ships `soc_sec_id`, a near-unique
+synthetic identifier, and with that field in play the engine is substantially
+joining on a key rather than resolving names. Withhold it and the same pipeline
+scores precision **0.921** with 282 false merges, auto-resolving 65.7% instead
+of 87.7%. The number was never wrong. The configuration simply stopped
+travelling with it, while the prose around it described a representation engine
+working at scale.
+
+The script declares the name-and-address configuration as its headline and
+**fails two of its three pre-declared criteria**, published that way, because
+those criteria asked the harder configuration to hit the easier one's figures.
+
+### Changed — Leipzig 0.9506 is not the out-of-the-box number
+
+`data/scripts/benchmark_leipzig.py` now writes a committed result file, and it
+records both configurations. Out of the box the pipeline scores precision
+**0.8500** with 391 false merges. The published **0.9506** requires the caller
+to declare `refutes_below` on `year`. Both are real; only one was quoted, with
+an em dash in the baseline column implying there was nothing to compare against.
+
+### Known — the multilingual result cannot be re-run
+
+`47/48` against Presidio's `37/48` has been quoted since v0.2. The 48-case set
+is not in this repository and nothing here computes the number. It is now
+labelled unverified in the README and in `the-whole-picture` rather than left
+sitting beside four figures that can be checked. The same applies to the
+58-pair name-equivalence set.
+
+Rebuilding it is tracked work. Until then it is an assertion, and it is marked
+as one.
 
 ---
 

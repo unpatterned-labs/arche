@@ -191,7 +191,7 @@ The math above is commodity and we say so plainly: the three-verdict model is 19
 - **Refusal-aware evaluation.** Christen's discipline gives precision/recall on labelled pairs; we add `over_guess` and `missed_by_abstention` as first-class metrics, so an evaluated extractor (including your LLM) is priced on when it should have stayed silent.
 - **African calibration as first-class data.** The classical results assume populations someone already tabulated. We ship the tables nobody shipped: measured name frequencies, a 3 km decay calibrated on African facility data, landmark-address grammar, cultural equivalences. Kept *out* of the place lane where they would cause false merges. That last decision is representation too.
 
-None of these is a new theorem. All of them are choices the papers leave open, and they are where the 40% → 0% false-match result on arche's name-frequency evaluation set actually came from.
+None of these is a new theorem. All of them are choices the papers leave open, and they are where arche's measured [name-frequency result](the-whole-picture.md#the-frequency-row-used-to-say-something-else) comes from: precision 0.162 to 0.946 on 1,114 real same-surname pairs, at a recall cost the page states rather than hides.
 
 ## What we don't claim
 
