@@ -119,10 +119,10 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 | | |
 |---|---|
 | [The whole picture](https://unpatterned-labs.github.io/arche/concepts/the-whole-picture/) | what is built, what is measured, what is not proven |
-| [Sameness and similarity](https://unpatterned-labs.github.io/arche/concepts/sameness-and-similarity/) | why a matcher cannot observe identity, and whether frontier models change that |
-| [arche in practice](https://unpatterned-labs.github.io/arche/concepts/arche-in-practice/) | what changes about your working day |
+| [Quickstart](https://unpatterned-labs.github.io/arche/getting-started/quickstart/) | install, then a first result |
+| [How it works](https://unpatterned-labs.github.io/arche/concepts/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
 | [What matching looks like](https://unpatterned-labs.github.io/arche/concepts/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
-| [Entities](https://unpatterned-labs.github.io/arche/concepts/entities/) | which attributes identify a person, place, product or organisation |
+| [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/) | check a signed decision you did not issue |
 | [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | ten, from first call to supplier reconciliation |
 
 ## Contributing

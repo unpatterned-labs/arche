@@ -124,6 +124,21 @@ sitting beside four figures that can be checked. The same applies to the
 Rebuilding it is tracked work. Until then it is an assertion, and it is marked
 as one.
 
+### Changed — the README's documentation links now point only at pages that will survive
+
+The docs are being reorganised along the lines Splink uses: a user guide that
+answers questions people have *while using the tool*, with the essays about what
+identity is moving to a personal site where they belong. Several concept pages
+will not survive that move.
+
+A PyPI long description cannot be edited in place, so any link baked into this
+release is permanent. Three of the six pointed at pages scheduled to move
+(`sameness-and-similarity`, `arche-in-practice`, `entities`) and have been
+repointed at Quickstart, How it works, and Re-verify a decision, which are
+staying and are more useful on a package front page anyway. Every remaining doc
+link in this wheel's metadata resolves to a page that survives the
+reorganisation.
+
 ---
 
 ## [0.4.0a2] — 2026-08-16
