@@ -1,0 +1,52 @@
+{
+  "decision_ids_sha256": "d87b53d974cefb231348ef124acdc9e2d9f38cc83ca7d9b8991a24c8edb64fe8",
+  "decisions": {
+    "match": 180,
+    "review": 180
+  },
+  "review_fields": [
+    "review_outcome",
+    "reviewer",
+    "reviewed_at",
+    "reason"
+  ],
+  "review_outcomes": [
+    "same_entity",
+    "different",
+    "unresolved"
+  ],
+  "rows": 360,
+  "schema": "arche.facility_adjudication_pack.v1",
+  "sources": [
+    {
+      "decisions": {
+        "match": 60,
+        "review": 60
+      },
+      "path": "C:\\Users\\Dee\\AppData\\Local\\Temp\\arche-edo-facility-evaluation-20260819\\adjudication_sample.csv",
+      "rows": 120,
+      "sha256": "25e9e12cbd796239c3dc3e7f1159c0d3c0acfeeda924b777bc92329ee8164c55",
+      "state": "Edo"
+    },
+    {
+      "decisions": {
+        "match": 60,
+        "review": 60
+      },
+      "path": "C:\\Users\\Dee\\AppData\\Local\\Temp\\arche-kano-facility-evaluation-20260819\\adjudication_sample.csv",
+      "rows": 120,
+      "sha256": "1156a50095012434371ba5033778b7509bdcbd3929ab874886aa27589c75c424",
+      "state": "Kano"
+    },
+    {
+      "decisions": {
+        "match": 60,
+        "review": 60
+      },
+      "path": "C:\\Users\\Dee\\AppData\\Local\\Temp\\arche-ondo-facility-evaluation-20260819\\adjudication_sample.csv",
+      "rows": 120,
+      "sha256": "4750f4c35044ec29077b8607130119bad6323a938837a0ad24179ee50fb6cf4c",
+      "state": "Ondo"
+    }
+  ]
+}
