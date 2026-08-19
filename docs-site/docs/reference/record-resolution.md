@@ -39,6 +39,9 @@ Candidates below `threshold - review_margin` are omitted. A candidate that
 otherwise reaches `match` can be downgraded to `review` by a conflict or a
 distinctive-evidence gate.
 
+Read the [decision contract](decision-contract.md) before sending these results
+to a downstream workflow.
+
 ## `pairwise(a, b, *, entity="person", **kwargs)`
 
 Resolve one direct person pair.

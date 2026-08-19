@@ -1,290 +1,528 @@
 score,distance_km,osm_name,grid3_name,decision_id
-0.6984,0.38,Gurduba Health Post,Gurduba Primary Health Care,xwd:sha256:b5970ec22ca1965296ad78c38698bb87408a4939bb4e99b4e987e4d54b96aa43
-0.6949,0.04,Lambu Primary Health Centre,Lambu Basic Health Center,xwd:sha256:8f4f96f34fb6a62595c96250963837ade9a09b9d1c9f2e5ceb9d56689a2caf0d
-0.6926,0.02,Dawaki General Hospital,Dawakin Kudu General Hospital,xwd:sha256:6a8a3215966161b4f99189fc539349075fee32d487ab85a980b26a0255664761
-0.6910,0.00,Tsalle Health Post,Tsalle Primary Health Care Center,xwd:sha256:5cd131f1bd7ab87dece157853becab5441fd4b98db31375c83d8d54c95ae239b
-0.6890,0.99,Tariwa Primary Health Centre,Tariwa Health Post,xwd:sha256:b585cb856f302f411bbd6531b3402ed8c7bfc9f9ea6b056fcb065fc3135ee1ae
-0.6861,2.64,Jibga Fulani Health Post,Jibga Health Post,xwd:sha256:fabcb2cc6570a40c32980fcea0511670fc03afb69b1af9cefaedc161ab114394
-0.6839,0.14,Sauna Kawaji Health Post,Sauna Primary Health Center,xwd:sha256:f8e825c1ce422b937a54317fdfa348bb89e0174b544cdcd63c995295c9e6d970
-0.6832,0.13,National Orthopaedic Hospital,Dala National Orthophedic Hospital,xwd:sha256:febe82af13880489d889b87d282b58a199d865901f82c4e1423cef5f5572e926
-0.6802,0.05,Dawaki General Hospital,Dawakin Tofa General Hospital,xwd:sha256:dbbad19becc119beab043eaad231568cde1117167b385e7e49aaa2443c4163fe
-0.6755,0.05,Dadin Kowa Primary Health Centre,Dadin Kowa Nursing and Maternity Home,xwd:sha256:5f45e55f734f2a01487de0c82a1ddfb8be287c36ec928996fa9380f4b9a688c4
-0.6718,0.02,Gwarmai Health Post,Gwarmai (Bebeji) Primary Health Center,xwd:sha256:46c184cc52a69f8f2d907cd6e21a9162b6edeb49bf0c12c5b5406cb374ed51ab
-0.6717,0.02,Gwarmai Health Post,Gwarmai (Bebeji) Primary Health Center,xwd:sha256:170ac4dd47b2a8645f567464885f9b913e058290f2dbdf68d67d6e862a52e1fe
-0.6711,2.27,Yammawa Health Post,Yammawa Wanzamai Health Post,xwd:sha256:cd68b52926fc874d56e595c1f7c55b19245b2a190f4e4032be209fcebfdce1b5
-0.6710,0.00,Unguwar Malam Amadu Health Post,Unguwar Mallam Ahmadu Health Post,xwd:sha256:dcad0b809bd86a97902b91ab41d532d3881581a2fa93a2c3f52387074561960b
-0.6696,0.92,RIMIN KEBE MEDICINE STORE,Rimin Kebe Health Clinic,xwd:sha256:3a6b582af4509db40b764408272e1681e5f74b91348d49c201c92fae4355ef48
-0.6693,1.75,Kafin Lemo Health Clinic,Kafin Lemu Health Clinic,xwd:sha256:19746097912382fd1a8452b9ccff4f02dbc2e0969e3c006347a876e16fffac01
-0.6643,0.00,Yakasai Health Post,Yakasai (Dawakin Tofa) Health Clinic,xwd:sha256:3803c3501ef6774f45db7ce0857580683a2ada7b4476842a0075ada19ede78d1
-0.6637,1.15,Yola Primary Health Centre,Yola Health Post,xwd:sha256:699f7da4b193a8ccfd496a9f4ad26ee32bca88654ebaca74efd32c9c2b886bd2
-0.6636,0.01,Jauben Health Post,Jaube Health Post,xwd:sha256:e840af26ed0ae318b7cf8a689969b091b7ffb0f9095551c1a5b5e73117215fbb
-0.6626,0.04,An Nur Specialist Hospital,Al Noury Hospital Specialist,xwd:sha256:ca5ffdfff6ceabf776668933f55d1562c6f33853d298111182ab177f64fec431
-0.6609,0.00,Tabani Health Post,Tabanni Health Post,xwd:sha256:8e88f39060ebde0eeff468da2d1da891067f2be7baacb353fb43636fc8b6fda7
-0.6608,0.00,Yaan'Awaki Health Post,Yan Awaki (Tyw) Health Post,xwd:sha256:b9806733e443d26f08356b32be980b18ff4a90cf6a276cbf3994ee11b4db07b0
-0.6607,0.05,DALAL CLINIC,Dalal (Ungo) Health Clinic,xwd:sha256:348744241862e8f44164219b36bd1118ccea64720dca18972dc003c98dea7cc5
-0.6603,0.02,Patricia General Hospital,Patricia Maternity Clinic,xwd:sha256:018a0963dd3f4847388317148afc2951624987be78e528fe7d4b4733c9741503
-0.6596,0.00,Baguja Health Post,Bagujan Health Post,xwd:sha256:7cd55ac5621160c10d9a3952ef5799c18788a16ac0402a89db19b7c4674d45e5
-0.6579,0.00,Kalahaddi Health Post,Kalahadi Health Post,xwd:sha256:87b4388085be7a9586a59201bc97bc7547f0587cd7d64624e7037a34233b3f40
-0.6578,0.00,Gajida Health Post,Gadija Health Post,xwd:sha256:bcfc946fc3fc7e55342bdaa336eced0800f77ed15f533c94f2bb9f3ca9f99842
-0.6570,0.00,Jujin Health Post,Juji Health Post,xwd:sha256:205addae5700da89f7c0153983ff238f7623430792d7b707c606fea79d1b6b2a
-0.6563,0.01,Yauwra Health Post,Yaura Health Post,xwd:sha256:6b1cac98346027f2ecf4ed60348d4af04af9b61bea54c1cc85c8afdfa72626a8
-0.6556,0.00,Daradau Health Post,Daraudau Health Post,xwd:sha256:4b93f6b03adb3bceeb979cd07d6abe266372177007413d75852069ee459626e9
-0.6555,0.00,Takau Health Post,Takai Health Post,xwd:sha256:f5cffc6022fb3c56feab69b6650999b8ca33e081598a1cd0add1069cf635fd94
-0.6549,0.01,Maigari Health Post,Magari Health Post,xwd:sha256:ee69a591dc359552e7ef4312e266e4fe80a0414dc70b9f802b222bd8713b56fd
-0.6547,0.17,Sabon Layin Kara Health Post,Sabin Layin Kara Model Primary Health Center,xwd:sha256:1988d03dd6b1eae13c1eed1c3648ba534b9a6df95ccd6dfc7814d9c798038dcc
-0.6542,1.61,Garko Primary Health Centre,Garko Dukawa Primary Health Center,xwd:sha256:093cdcd868b2b4099b0ec27ba4b8220e6caa7fb087c43db0210e832a47eade1d
-0.6540,0.01,Achilafiya Health Post,Acilafiya Health Post,xwd:sha256:01ea4acaf0c00b104f2502c37a26e3a264bb62edd6531e3a95a2e056979d9c3f
-0.6533,0.00,Ganji Health Post,Gamji Health Post,xwd:sha256:84654d91acf41800ae3c4a1172f8c40786279fb4d9f09c7fbe138e9509b8c64f
-0.6532,0.00,Danzabua Primary Health Centre,Danzabuwa Primary Health Center,xwd:sha256:04df6c57eb2cfeab8e8766dcd792861c9699f677302d7864bd406e65762ad23d
-0.6530,0.01,Nigerian Air Force Primary Health Centre,465 Nigerian Air Force Base Hospital,xwd:sha256:8320f63811bd586b5dbb77b39fa0dcf2c916668f2a4565c404ed3d150e916f5d
-0.6524,0.00,Danmadaki Health Post,Danmaidaki Health Post,xwd:sha256:ad8d19066c558a47f2d7253fed99924f9d15ed57d4411d0caf0ce6ecd0a3fadd
-0.6524,0.00,Dankunkuru Health Post,Dakunkuru Health Post,xwd:sha256:00e2fb0b64d7531e1aa3ab7f633cc583da8a47d8704c5888474d5ae8ef362073
-0.6522,5.29,Karshi Health Post,Karshi Health Clinic,xwd:sha256:da60e1e10c442af429f63cd40f2cc01fc205bb3d8e4d139e0ef6f57c04a3b396
-0.6516,0.01,Gandurwawa Primary Health Centre,Gadurwawa Primary Health Center,xwd:sha256:0964ece0eb24f4b766ca5694297be06cf5f59eabacc3d6b5a4698ee6a2b2df4d
-0.6515,0.00,Munsira Health Post,Muntsira Health Post,xwd:sha256:567c2dd33ae22f31a35995e24787bc171568ad258028bd3d0d349067219a3a05
-0.6514,0.00,Gammo M.P.H.C Primary Health Centre,Gammo Primary Health Center,xwd:sha256:1a7c186b1ded8fb078fc2afb40df64de9abd7d4689f0894af34873ee41d6db0a
-0.6514,0.00,Kwuidawa Health Post,Kuidawa Health Post,xwd:sha256:929021899015ef1de6d72fff477e1c0d3177f275fb97e1df6e192d65ba3224e0
-0.6510,18.36,Tattarawa Primary Health Centre,Tattarawa Primary Health Center,xwd:sha256:d9e85d0fed45d786b9df2584b0937f18df2b08876049460cd7cca8e0e5f34a98
-0.6506,0.10,Malikawa Garu Health Post,Malikawar Garu Primary Health Center,xwd:sha256:72227292b94fa45abc079c75d02fa59204aeb7cf942efe19919cac6d6c4390ba
-0.6504,0.00,Dunbule Health Post,Dumbule Health Post,xwd:sha256:92c3edb7c7d74722cd05841cbe0a1baf25570c6817c2c8a018bce71815f0ca1c
-0.6503,28.04,Gayawa Primary Health Centre,Gayawa Primary Health Center,xwd:sha256:a21f6b4d47bb7d127d2799ae89e1b6c3e1905865538487ef364d185dac676db0
-0.6503,0.02,Masu Primary Health Centre,Massu Primary Health Center,xwd:sha256:c1c6110775ca82b7e7dd15a1288ea2c4739fdd913d31fe5e5b2bc15dceba2c55
-0.6493,0.01,Gagarame Health Post,Gagarami Health Post,xwd:sha256:26ce670be3e043cba2de4b492bd75c0f1ed652af3aa91708b81914bb183209e6
-0.6492,10.11,Yola Primary Health Centre,Yola Primary Health Center,xwd:sha256:e7ff618244dd7d2e7430897d36123c9bbe60ba345dbd61c20ad177c529eb5f03
-0.6487,0.01,Dalal Mahuta Health Post,Dallal Mahuta Health Clinic,xwd:sha256:57ad662774460890038f05405a6b63cf239a118d921ceea77084230cdc19965b
-0.6482,105.46,Falgore Primary Health Centre,Falgore Primary Health Center,xwd:sha256:5fb80e8a21cf531b3573ccc79e3bcff1ee85f771221d2e2fde1e1ef3f8e8db71
-0.6480,82.59,Burji Primary Health Centre,Burji Primary Health Center,xwd:sha256:d4397575842e87597c95bdb482e9936cfc04a59791445d51e1c5979aa06e2b62
-0.6480,82.54,Karfi Primary Health Centre,Karfi Primary Health Center,xwd:sha256:2d77cf26028c58e12ab0cb97c523980c9088dd85a2adcf6c9654155bc761a572
-0.6480,82.59,Burji Primary Health Centre,Burji Primary Health Center,xwd:sha256:8a1f21d10a3034f25af657831b5de10a0f4311091cb3d4b6e813fd68fa8840b4
-0.6478,0.85,Gama Health Post,Gama Health Clinic and Maternity,xwd:sha256:f58f7dab5c9bead9912878f24c215bc0b5a92950c4ba22be5c28d7705be9cf1e
-0.6466,0.05,Ajingi Primary Health Centre,Ajingi Cottage Hospital,xwd:sha256:6cf312ce635aa24ec4fe263297113b038eb719b0b1f04ff3cf9f37ad0c9b09c1
-0.6452,41.89,Chiromawa Primary Health Centre,Chiromawa Primary Health Center,xwd:sha256:0deca18cb76f6eb71426ba65b757968a252eb278bc5c6009b47ef77e37c3b38f
-0.6452,41.90,Chiromawa Primary Health Centre,Chiromawa Primary Health Center,xwd:sha256:fb2ea2695860b848ff393a40660c63f044679da23ca3315912297e7be1379379
-0.6438,0.91,Rijiyar Lemo Primary Health Centre,Rijiyar Lemo Maternity and  Child Health Clinic,xwd:sha256:f930a01e143e23f9ac3dd738cfe996f1d044b8ff92053d90dde8cdca52419fc4
-0.6432,0.00,Dungurmi Health Post,Dangurmi Health Post,xwd:sha256:4886ae4f7e316f1e8eb736538b03445e07522da6decd7ec49fd256f28dfe4e28
-0.6428,2.02,Bagadawa Health Post,Nassarawar Bagadawa Health Post,xwd:sha256:8fd32df1d12c6aa538c48fbd10077d050377f8d96b361fdd6c814ebf0fcc8ca7
-0.6425,2.27,Yammawa Gamji Health Post,Yammawa Ganji Health Post,xwd:sha256:7b6589a7d26b7110b184d80d917cb23fb7a1adf2f1f2858de41121a619f2ea03
-0.6424,0.06,Yanmamman Health Post,Yammamman Health Post,xwd:sha256:987b829bbfe21b4aaba301145cb50ea9b53dd6a8107aafd836092d313d8340bd
-0.6423,0.00,Shawu Health Post,Shawa Health Post,xwd:sha256:62cb009069d0907c006f6a18fde3b21cf78bc17034f3735e5a874ea13b5fe301
-0.6418,0.01,Durbunde Primary Health Centre,Durbinde Primary Health Center,xwd:sha256:d9c1866d70fa02cc9e23e77116ad451b228692744be500bb7ce824004a28fe70
-0.6418,86.41,Tudun Wada Health Post,Tudun Wada Ggss Health Post,xwd:sha256:7dba809ddd11532dd4b41ce653ed0690119dbecdf366a9efc7e3e37b95b15e1d
-0.6416,69.31,Goron Dutse Health Post,Goron Dutse Community Health Post,xwd:sha256:e0715d9b9949fc6a59635d2be4a56c2d02c6524ab8ba4e0277ff931908b941e9
-0.6415,0.01,Karmami Primary Health Centre,Karmami Maternity and  Child Health Clinic,xwd:sha256:d88ba89cae6f223a21025e455985538581d1c787265a03a9083f17ff282c5710
-0.6409,0.04,Armed Forces,Nigerian Armed Forces Hospital Specialist,xwd:sha256:b1ddcff76434aeb80b3487172cd28cc1e44566ae262ca3c98d89f3f82803683d
-0.6407,0.49,Hotoro Primary Health Centre,Hotoro South Health Clinic,xwd:sha256:cdc63ce7b2e01ab698ae7db8642b78cf4a4b6d23a8c8780ddd61472b48444ce2
-0.6405,69.75,Yalwa Primary Health Centre,Yalwa Primary Health Center,xwd:sha256:46de86548680211779f0be92dd9728990f133ab090e38c13d382c5de6347fa84
-0.6402,1.39,Hotoro Primary Health Centre,Hotoro Danmarke Primary Health Clinic,xwd:sha256:7b78fa8defe1e8aa1486ef30ae8f446d1094a3d75c645c37e80b2ffdaf09effa
-0.6401,0.00,Belli Health Post,Balli Health Post,xwd:sha256:788f9ed0f0096564efb6efbe817e00c959ccef91112d10ebe4dab0ed187071da
-0.6400,0.00,Fagwalo Health Post,Fagolo Health Post,xwd:sha256:ebe7ba6912b199707919c4ee68db1c2b236d700a537c72ed847be9e5b7daaec5
-0.6395,0.00,Fanidau Health Post,Fan'Idau Health Post,xwd:sha256:e34b4341302d93da84a8ca3f34fdb6a1a3cd5a0bf4082e2cc23697e4ba5ac466
-0.6394,0.00,Umbarum Health Post,Umbara Health Post,xwd:sha256:2418918da3f75e6a3e84cac2930cd5c46402fb2d0bac078c15035160d6ee28e7
-0.6387,0.00,Ririwai Primary Health Centre,Riruwai Primary Health Center,xwd:sha256:8fdf023a2e20ea3d610219fbd3a0c862413cb0206ff0e878e18b66bc9b89eca3
-0.6385,0.02,Dawaki Health Post,Rano Dawaki Health Clinic,xwd:sha256:f9fd3fa66e78519e580fc0bed00c6fa45cf03aeca3ab4ba238e4c83c3df9fcbe
-0.6381,0.00,Sambauna Primary Health Centre,Sanbauna Primary Health Center,xwd:sha256:b5f8beeab304f82f39860a30d83071d390cc6dfb12e8e00bdd0d50d6c53834a5
-0.6379,0.00,Kafinmaiko Health Post,Kafin Maiko Health Post,xwd:sha256:b5f30511cdea68062ea32c64e95a812561933fca97c172b86bc2928e87c77731
-0.6376,19.69,Sabon Gari Doka Health Post,Sabon Doka Health Post,xwd:sha256:16c6cac23f7e2ef9c99f6c776bf1152a1c1dfc9fa28bf3a42cd3d6d1e2dc90f9
-0.6375,0.25,Bichi General Hospital,Bichi Excellence Service Hospital Maternity,xwd:sha256:dc3ef2a25c7f2a3b661d17acbb9422a6367916edede44732726e02c8d2e711a3
-0.6372,6.90,Dausayi Health Post,Dausayi Health Clinic,xwd:sha256:b6505eb3b453edbe4272ebd33076848370f1d62a0e00ef83ae30eef4839bb867
-0.6368,0.93,Rijiyar Lemo Maternal and Child Health,Rijiyar Lemo Model Primary Health Center,xwd:sha256:88e110db593c90fa0ba1fc048a19fb225ddacc35e645c4896fabe30f603e2efd
-0.6363,0.00,Garko Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:addbf0863eaea64896990cdb64766c288bdcb3ea255eeea2792c89aa47315b10
-0.6359,0.32,Tsanyawa Primary Health Centre,Tsanyawa Ecwa Clinic,xwd:sha256:9f7f8f8d833dd9f1de0680ec367d83f41bb2b5763bedc34c1da50b0e32576368
-0.6306,20.33,Bachirawa Health Post,Bachirawa Health Center,xwd:sha256:808e895cbe4cff3b1395c0d3777b11f2bdaa4341b58e476739261b5c9b97a307
-0.6304,0.00,Kwachiri Primary Health Centre,Kwacire Primary Health Center,xwd:sha256:a8f2d64234b0c3dc548731f5f0c03cb6104f8068264633181e8b8e08051dec88
-0.6296,11.99,Kadafa Health Post,Kadafa Health Center,xwd:sha256:d67f02eef20b47b2118731b18ca0303ef1377ec360a113bf48c89dcea36ce783
-0.6294,0.04,Danhassan Primary Health Centre,Dan Hassan Primary Health Center,xwd:sha256:2749007dacd41766268dc314147b5afed312071a6227cfe382d2a99d81a42129
-0.6288,15.33,Gargari Health Post,Gargari Health Center,xwd:sha256:07e0e99310a5d54ebe93e761e325a58da455af26f529e7fa997afb35c74ad24e
-0.6263,0.00,Jigawa Satame Health Post,Jigawar Satam Health Post,xwd:sha256:c858af2c1978e9ea0b4e10b3f90e3614d09e2a5b469e36020915dab3758d47f2
-0.6259,40.40,Badodo Health Post,Badodo Health Center,xwd:sha256:18d003e6f37b1ba0153d177897ef44bde7a178c3a475f661da65b77f3db846a2
-0.6257,0.00,Dala Health Post,Dala Primary Health Care Center,xwd:sha256:cc6fa12593dab9437f8bd4b525f1b427f8979692f9c1331d79cd655522db7985
-0.6256,0.04,Kudurun Health Post,Kundirin Health Post,xwd:sha256:588ed8c542b3ef24bb9fa7bf7b3be7e105dd7bd72f6b0c42201124201b1c2b21
-0.6237,0.00,Unguwar Turaki Health Post,Unguwarturaki Health Post,xwd:sha256:c938c6ee733155e09a04978119e8bcef19916437aa5be8f7e2f11e791d5ee748
-0.6234,35.08,Butu Butu Health Post,Butu Butu Health Center,xwd:sha256:99841d41d861bd1af53e178cc5a25287ad1d10f8ce5746b54e13237b2f8bd32c
-0.6234,0.02,Sani Mashal Primary Health Centre,Sani Marshal Memorial Maternity and Child Health Centre,xwd:sha256:eb4b4fd76df16fbd0cb917e17586252c5f7d82ca242587fd023b59561cf26663
-0.6227,16.95,Romi Health Post,Romi Health Center,xwd:sha256:8366dcc100bd51a35935a5f114e7585872ea3c68a19b45bfffa658ab81be9e87
-0.6222,0.03,Abdullahi Muhammad Wase General Hospital;Kano Emergency Operations Center,Mohammed Abdullahi Wase General Hospital,xwd:sha256:49f20f151c765ed33d453823e59a5489d035a3ea10cf246b7248df729995898e
-0.6220,0.01,Yako Primary Health Centre,Yako Basic Health Clinic,xwd:sha256:436588a630a8fd4ca0aa61f6443e89162a31bbd54cdbd91ff4333ce82d4546c8
-0.6215,0.00,Kafin Sidda Health Post,Kafinsidda Health Post,xwd:sha256:4ac336d0b26cc98000beb32faf87e2e7d06585ba2cc697f2c5a73a2478768f8a
-0.6214,0.02,Yako Primary Health Centre,Yako Basic Health Clinic,xwd:sha256:46e52be8f6f996a70998b3a09375e1ed1327fe3eb5ddbb954822c22ac2bf3c4f
-0.6214,17.30,Gabari Health Post,Gabari Health Center,xwd:sha256:ffcf4a949e9ded104df61d96606f5293d72eeb89d89f95a69fe472fef6d0b599
-0.6200,62.54,Kantudu Health Post,Kantudu Health Clinic,xwd:sha256:30e133d59e6673187c9ac5f748dfb626e15e350d9e0edd093edb0d4be89b6413
-0.6197,0.00,Kazar Daw Health Post,Kazardawa Health Post,xwd:sha256:0d15cd7e592e18af37073ef6a756d34f3f7a693e5df159a9777d95989c076798
-0.6196,2.91,Shuwaki Primary Health Centre,Shuwaki Model Primary Health Center,xwd:sha256:ea1eedb47c65ba64003d8c6c857bcf7940313cd086c30a0504ae991e05596ab1
-0.6191,0.00,Tashar Basa Health Post,Tasharbasa Health Post,xwd:sha256:a10bfe809852db136f69c3a62d8c6e3b3d87b43b9a66ef8df6f2527cec1815f6
-0.6184,97.11,Yan Kau Health Post,Kau Kau Health Post,xwd:sha256:768e51a71851fc82255b7aefc8896463b5b34b9f218135a47d709662674e835e
-0.6184,1.40,Gezawa Health Post,Gezawa General Hospital,xwd:sha256:b1ae64fe61bf76b3cbf1f115cd63ae1ae3b4e549f995769208cdb2d302b2abaf
-0.6171,54.92,Tumfafi Health Post,Tumfafi Health Clinic,xwd:sha256:ba62f150a2e9adf3593d103b5a3778c3ca7974b3dd214d43e77c05da277f6fc2
-0.6171,54.20,Tumfafi Health Post,Tumfafi Health Clinic,xwd:sha256:8902b5149fe0bf831d96f9fa543a16ef0411d9e619c7dce1ede82b043d94b6f6
-0.6169,0.02,Gurungawa Health Post,Gurun Gawa Health Post,xwd:sha256:cf6f7d5f8e85ca0a76243e3e183bb4dbbec5a3fca48e1a406538ee165687801e
-0.6167,0.00,Hawadin Galadima Primary Health Centre,Hauwaden Galadima Health Post,xwd:sha256:77eccee6f335982b5ec0c39b0f45e20e751db5db9012903432ac8830083cf923
-0.6165,0.01,Fadi Sonka Health Post,Fadisonka Health Post,xwd:sha256:2b5ff189b2c46437a1688b6c8642de7934c22fef368ce874526c2bd868f3736e
-0.6164,13.12,Marke Health Post,Marke Health Center,xwd:sha256:ba75f658275b905e23be640b97c13b0204a57a59b854106a414678eff33562a1
-0.6163,0.00,Sarigarin Health Post,Sari Girin Health Post,xwd:sha256:eb02744a7d82bcc9ccfd02b1b4ae2049b1a7a1e75c34b2657a1d523e2183b096
-0.6159,0.00,Yankwada Health Post,Yan Kwada Health Post,xwd:sha256:94f95db8c73606dc7bf90c32bcd08eedc98e73c83361c5ce14dcdc00ed8cc51b
-0.6159,9.14,Kadawa Health Post,Kadawa Health Clinic,xwd:sha256:9b32a185ae007fd279f914af46b8a8caca7f60271df18487218d4d843a9bc926
-0.6157,3.87,Maimakawa Health Post,Maimakawa Primary Health Center,xwd:sha256:791d401db0c39411e542f008039e88debbb05c08aba2391c76fb10f1c7b2dae0
-0.6156,66.54,Kirya Health Post,Kirya Health Clinic,xwd:sha256:92a8cb2677d8aa2f96123ab0b9eb47e2c862593dadf36d0bd1650dbb5830ff25
-0.6156,0.00,Yankamaye Health Post,Yan Kamaye Health Post,xwd:sha256:0a8f839dd399f9d5829bc12d595a0fa0398838c828fc67eb7014057aa04a8142
-0.6154,0.00,Yangwarzo Health Post,Yan Gwarzo Health Post,xwd:sha256:2ae218ae145566997517e5d0d1c59f1cad2ec8ffd490882d5257b09e213b13fa
-0.6152,16.52,Kadawa Health Post,Kadawa Health Center,xwd:sha256:46c8d46c425f41dcab2210ce1c5a7d73b9c6a018b8fcd3698b374875497081bc
-0.6150,44.49,Badawa Health Post,Badawa Health Clinic,xwd:sha256:7f3cb0557dafe470f22bac75108efafbf9eb4fe1ee70f6caeacdb756d88e313e
-0.6150,4.43,Jigawa Satame Health Post,Satame Health Post,xwd:sha256:56a4cb2bb2446ac9169bb7bd814d390b3fbd67a0aa601848cd400c506851cc69
-0.6147,0.00,Makamauta Primary Health Centre,Makanwata Primary Health Clinic,xwd:sha256:6612d2c93d8fb3da49741c763dc756532a0b54468b388e780e33b1e72d57dff0
-0.6147,0.03,Mesaburmi Health Post,Mesar Burmi Health Post,xwd:sha256:c55a58f55ec32764269820ba164397d9bfc5a6ebbc42c8b9e62624d6b1f523f8
-0.6140,70.22,Goron Dutse Health Post,Goron Dutse Primary Health Center,xwd:sha256:8ce0d64e0a7979b75fb862e09c7dd4da6bc56a6ff9e38ecd878def5ef6b7d7f6
-0.6137,0.01,Wurobagga Primary Health Centre,Wuro Bagga Primary Health Center,xwd:sha256:ef6e0f2761db9b06d5c759eb7bb2e85682d6c50e50e6df9ff6edf08e96aa67e3
-0.6130,0.00,Mesatud Health Post,Mesar Tudu Health Post,xwd:sha256:034046eec4384d91bef5f4880cb43cad6fe9266c2c66e1150f00a85c467776ee
-0.6130,0.00,Proposed Paediatric Hospital,New H B Paediatric Hospital,xwd:sha256:9367df1b58af99efabf444a588c09879e3214efeab347b443f703915485865ac
-0.6128,36.27,Kawaji Health Post,Kawaji Health Clinic,xwd:sha256:01eaec0f35130dd9ab328bfdc051bedc21ea6e2e0e8674fb42a6201f7c34ed76
-0.6128,74.68,Kaleku Health Post,Kaleku Health Clinic,xwd:sha256:eab90157b3228976a79d988378f9eabb9ab728b9f4f3896b0c02579ebe5155f3
-0.6127,42.60,Baure Health Post,Baure Health Clinic,xwd:sha256:18e46bc0aa38b951313eff6a3940a0b1870b9004ac2539b267cb922b9a623c02
-0.6120,0.73,Dawaki General Hospital,Dawaki Primary Health Center,xwd:sha256:bdfc52fe6e41f17615f35290812080ff975bce91c47cfbb04400e2ec2c42d73e
-0.6117,0.00,Yankamaye Primary Health Centre,Yan Kamaye Primary Health Center,xwd:sha256:129dc91d859bb025676daf64c2eaaed3717c25075649966b884d73b09f7939a4
-0.6109,0.01,Yandadi Primary Health Centre,Yan Dadi Primary Health Center,xwd:sha256:9bb9f81674c23c4f1d0da74a3bb096b2107257faae3d5c9fd790d833472b199e
-0.6106,0.00,Yatsi Health Post,Gyauro Health Post,xwd:sha256:a6f45d65c3349a838fb4899d8f16e3e68510e0c9cd13ac31321beca1aa967f81
-0.6105,0.00,Maitsidau Primary Health Centre,Mai Tsidau Primary Health Center,xwd:sha256:9477752af68b4d345a9cf8818bf74b8fcb7d0322f378ca7f13318f835616db00
-0.6104,34.10,Yautar Kudu Primary Health Centre,Yautar Kudu Health Post,xwd:sha256:1ee556dbc2273f514a40f751b599e67da5a870cf628222eea9f67ff5bb8b32fa
-0.6103,98.63,Dambazau Health Post,Dambazau Yamma Health Post,xwd:sha256:e3ba2a79f1683de4080264462a259592c867bbf795bd058d647e81d7331b38c9
-0.6100,0.00,Rimaye Health Post,Rimayen Rake Health Post,xwd:sha256:50297b1471a01bf6f8951df3b9c835e201c570e6837586c1079059abd89e3bbb
-0.6099,82.01,Galadimawa Health Post,Galadimawa (Kku) Health Post,xwd:sha256:31e742a0ce2c5aca2bac26a9f9a90d28339e3bde6bbf2bd6f622a4a2651d6711
-0.6097,0.07,Yankifi Health Post,Yan Kifi Health Post,xwd:sha256:26ee55dcd134a4f33dd33730d5aa921cfb2686a0686d4e7970ac29421aaf5b98
-0.6096,0.03,Kiru General Hospital,Kiru Primary Health Center,xwd:sha256:4e7a4804d2d1a5faf8c0a779718f13fe33d6d2a63ed0aa9a96a9b3b119ba7a44
-0.6094,28.68,Jauben Health Post,Jauben Yamma Health Post,xwd:sha256:449236cb01a5e933d05da171f31fdd70d18d4e7c6e6345f34726597e83486f11
-0.6094,35.23,Jauben Health Post,Jauben Yamma Health Post,xwd:sha256:3fc69545759e4dc56d99ffb129dba2b7c760a8223e7bc0b2c0e230e3fbda49b2
-0.6093,60.68,Dorayi Babba Health Post,Dorayi Health Post,xwd:sha256:193d80517580ce5d0bce29adb6fce10ae2f5659e2ab53952306787e9ac4bcdac
-0.6092,62.27,Ba'Awa Health Post,Ba'Awa Primary Health Center,xwd:sha256:78ff008406b229fb4745db3f3f7d4d180fb94fd4abd678a96c92051cd8908171
-0.6069,16.78,Amarawa Health Post,Amarawa (Wra) Health Post,xwd:sha256:84b38f77c0cb82c9142e9f492845894a756186c0ac61b65c887decd6aa0d404a
-0.6064,1.82,Lambu Primary Health Centre,Lambu Basic Health Center,xwd:sha256:5f9b96adcbcff7b6fd81d3dbe565087057a6fcbdebf8462b4727ca8c43e8fcae
-0.6048,0.42,Chedi Maidala Health Post,Chedi Mai Dala Primary Health Center,xwd:sha256:a46088f9f8bc20b654ad18507e5b032d18ab175b904464281832cc715baf6221
-0.6034,17.61,Zango Health Post,Zango Health Clinic,xwd:sha256:02f22eadd17496522369105dd976fc623ae1bda00d701ebffa64bc30344756ab
-0.6029,61.89,Dalal Health Post,Dalal Health Clinic,xwd:sha256:bb77e79c649e94747bf32ae4643ef5a2654ce40db4b0636e584130341e929015
-0.6029,44.75,Dalal Health Post,Dalal Health Clinic,xwd:sha256:4d7b8361570f1dc26af23d792368bc93de4f65cf20c81109d62f054d1bbdef45
-0.6023,0.12,Jirago Health Post,Jiragon Makera Health Post,xwd:sha256:1edb1b4e516aa138ef9120b966dc6a86b61320beb1c1f689736f573bc7b983a6
-0.6020,8.02,Doka Health Post,Sabon Doka Health Post,xwd:sha256:dbdf72d577110d7169464d076cee1949494777573bbf2d6f0c62e55feddc2ff7
-0.6015,0.89,Fuskar Gabas Primary Health Centre,Fuskar Arewa Health Post,xwd:sha256:123b691b90c995a6fac01b91a4614e6898f72e632f07ea80f729121f6c426b96
-0.6009,1.05,Kano Emergency Operations Center,Kano Primary Health Center,xwd:sha256:abd6b67bba7596c433bf64fe2ca246774d55ecdefd94c4ea9454258f016c05ce
-0.6003,0.00,Nasarawa Health Post,Nassarawa (Tyw) Health Post,xwd:sha256:a7b3f6b13f733d9fb80a7a727a2686c2c4cee6f4662a61f8af455233b766111f
-0.6002,71.90,Gabari Health Post,Gabari (Kku) Health Post,xwd:sha256:c548f052628fd05197d3c22bf28966e68179f8b7405150707c0e5aff8d89027d
-0.5976,19.22,Gachi Kedi Health Post,Gachi Health Post,xwd:sha256:83bb26979ab9432bcf936185035b7200f0ab46a25861b48d9488efcabcc012c3
-0.5970,0.02,Dalal Primary Health Centre,Dalal (Ungo) Health Clinic,xwd:sha256:6391a50ea76b7a1258e53fea502dee8143b4dceb6cf2ccc8729b34e044c62c9d
-0.5968,0.01,Getso Primary Health Centre,Getso Cottage Hospital,xwd:sha256:85fd9fde7b89b2e93b7fa081eadaaebbbbf35851e36e8197ffb4364e85045ab4
-0.5963,52.48,Zango Health Post,Zango 2 Health Post,xwd:sha256:527594aac8ea25bc79a9d52211b5cbb0026b1c40d126287851c12ac446ffd596
-0.5963,44.94,Zango Health Post,Zango 2 Health Post,xwd:sha256:018f553a7edf4fd207479c2266678ce93791c8c59139ddae0200831ad2b907fa
-0.5945,0.01,Kirya Health Post,Zaura Health Post,xwd:sha256:b859a7c8e7a68908447fbc46f0e91b1cbeb1eed1dfd97eae01cee430e610fdcb
-0.5926,37.27,Yama Health Post,Yama Kanawa Health Post,xwd:sha256:539d4e1474fbb3aebf3cdc938ede26727980785831f308e2aeb234f4f3e77acf
-0.5924,6.02,Marke Health Post,Dogon Marke Health Post,xwd:sha256:8c6104eb1a79b750a72ae2e46062910bbcd2f1f088f43a6436c834bd154bdc96
-0.5906,13.65,Kawari Health Post,Kawari (Gya) Health Post,xwd:sha256:7ce7cdabe093adc61cdfcaa67b09038471a1b7f8f6867755e0c0144237b039c0
-0.5902,0.69,Dawaki General Hospital,Dawaki West Health Clinic,xwd:sha256:0ec69f0a2a93a5ca0bb8151168ba772ed0a184c5aaa4e1313a192505c1db533c
-0.5899,4.05,Zango I Health Post,Zango 2 Health Post,xwd:sha256:c31ddcbda6476bc15418a83b6ebae9a8db3cbbdcefecd48146504dd8d073bf92
-0.5896,65.55,Yalwa Health Post,Yalwa Karama Health Post,xwd:sha256:ccff6e1108e059fb2fd425456be59c16a38102cde86ad143455f00d4551e684a
-0.5896,145.39,Yalwa Karama Health Post,Yalwa Health Post,xwd:sha256:3b4fd92a942b390295572893f80c58d3192f6373a6422566bfc73d7d5e2d823e
-0.5895,0.00,Immuali Health Post,Imam Wali Health Post,xwd:sha256:53e44ea3fd429d9d81c88b251e2abe7323aac1ed5863421445052bf46f3cdd9d
-0.5893,16.03,Zango I Health Post,Zango Health Post,xwd:sha256:a9d3f004c5c3f8144bd973de3f6863b18e2613ac6a614408bddf046f07f14d7d
-0.5890,1.22,Wudil General Hospital,Wudil Primary Health Center,xwd:sha256:a07ec1959d21c21db60c1c6c8e2db884e84e8943526a949db7a16b2e2eee9dba
-0.5884,54.16,Zango Health Post,Zango 1 Health Post,xwd:sha256:64da095d3677da087eae48cf432317fadbf9326d9bfbe18b63a0dc6e7803f053
-0.5884,23.73,Zango I Health Post,Zango Health Post,xwd:sha256:eb1fcc88ca3d0ef91c68ab1010c29a73ba68ce839b7c8a5bd0ab4d6d130c5d1d
-0.5884,45.38,Zango Health Post,Zango 1 Health Post,xwd:sha256:bc5b4f6895981b2326a6cc95990c88aaaed5fa123c2bc3645d9ce191dfe9c33c
-0.5883,22.06,Doka Health Post,Sabon Doka Health Post,xwd:sha256:dd16eb288c1dc849bdfd175d5d2ba177478b673920800b8f9b07a01504df9c9e
-0.5881,97.96,Tudun Kaya Health Post,Kaya Health Post,xwd:sha256:b1e06bd9b92485340025c51952607515433a112567cdfa3843a5a72cc7e2cf6f
-0.5881,97.93,Kaya Health Post,Tudun Kaya Health Post,xwd:sha256:5579b395c522039dbcd8d45ff93b2bce467c2d8f3384d8c338c76c656b65e723
-0.5877,0.00,Kara-Dagaji Health Post,Karadagaji Health Center,xwd:sha256:74c3e8cfdd9e4e7d2812213df3fad4f30885628aeb0a3473150099a98e70c483
-0.5874,0.00,Kwandarma Health Post,Tunkunawa Health Post,xwd:sha256:621c646899c408c6b153f17167e9d5c18bbd5a0bd60685b92ac16878973c5ca5
-0.5873,20.14,Yammawa Health Post,Yammawa Wanzari Health Post,xwd:sha256:c2edfc6160de1839679aaee107a18d0e0b640b4214bd9972391ea525ee4b49d9
-0.5867,15.37,Doka Health Post,Doka Dawa Health Post,xwd:sha256:181fd6f7ae0782433212458bf8b48395dfe8303610290faddc3a325e5087f1fa
-0.5862,9.88,Gwarmai Health Post,Hayin Gwarmai Health Post,xwd:sha256:7250b0070d691e10c8b1107ced9121dba8f40821ed5aab9c29209401be7800ca
-0.5862,9.88,Gwarmai Health Post,Hayin Gwarmai Health Post,xwd:sha256:c05c9b839c8d194bfb0987e70ac89b10d1ce324702312a58042c035c7ff3aa1b
-0.5858,14.92,Zango II Health Post,Zango Health Post,xwd:sha256:7e5c99f7c7d0a47e48ae6e16081b3e2ac3a289a69e767319872c76be1038745d
-0.5855,35.63,Doka Health Post,Doka Dawa Health Post,xwd:sha256:92586ef086714a9d24cf85daa14c025ff952f78d3b35dddc3b46fc5ff3a38426
-0.5850,59.29,Nasarawa Health Post,Nasarawa Godaji Health Post,xwd:sha256:eff5f71cc535ee379f523f90e3e4d66129b84e7ca8c4caffa280bb65042c119c
-0.5846,21.10,Zango II Health Post,Zango Health Post,xwd:sha256:26f9174270891663794b99aa4308b23270a5d44d5ecb85e0d8cfba483090fd14
-0.5841,17.61,Zango Health Post,Zango (Mjb) Health Post,xwd:sha256:1a4afbf97f7d0b956d639bd85a22f193bc8765aa82c5401aca35989d6f72fcff
-0.5841,1.55,Bebeji General Hospital,Bebeji Sunusi Lamido Sunusi Hospital,xwd:sha256:c2d4a7a3d5cf2bdd813740c7cc4556a990628f861643c8496afecd0897e516e7
-0.5837,0.05,Yartofa Health Post,Yar Tofa (Wra) Health Post,xwd:sha256:d990fde0d30047fb756103c4694e86357fca660dc656fee9a46ec28710b4db59
-0.5835,1.78,Patricia General Hospital,Sumaila General Hospital,xwd:sha256:6f5bae67ecf74b66636e59f2a0dc1da948356aefc854bbfd3e43041f7af83254
-0.5830,83.91,Koya Health Post,Koya (Gwarzo) Health Post,xwd:sha256:d200d67fbf207721c860c92c3c94b2e825c670ed64b9e8ace05d8976eabf992d
-0.5827,0.49,Danrirmi Health Post,Dan Rimi Health Post,xwd:sha256:8169ca4e5f98e1ded0de9c38d7e34f8c140a58e7b575db010a1fa69dd2a44170
-0.5825,4.05,Zango II Health Post,Zango 1 Health Post,xwd:sha256:ca635f0d7be8dbb8161b738924712e6f6272013cb72f4dcf58e673d4c2350701
-0.5824,0.00,Kailani Health Post,Achilafiya Health Post,xwd:sha256:b46cd0d9c2dd9cd88cdda4d8e176ec6a48ef436e32329b9edc7c9e7f03dd787f
-0.5813,0.00,Hago Primary Health Centre,Sabon Layin Hago Health Post,xwd:sha256:15f1766ad39833dcdbb47733e70459706b742e821514b7a58b3461bbfd5952a7
-0.5809,48.06,Kadawa Health Post,Kadawa Ciki Health Post,xwd:sha256:5395fe68f942fcc0be8d7720ca1fcdd218bd13425cfcbd93e4ff57c7d5ae3285
-0.5801,89.60,Dalal Mahuta Health Post,Dalal Health Post,xwd:sha256:7915bc4bb12e6683529318f79100427e5b2e1b8cd9d599a4350463b3955b62c7
-0.5792,0.00,Yan Bawa Health Post,Yanbawa (Makoda) Health Post,xwd:sha256:e4ce7a05476b341994f8e85b16848d53ab4dec1eccd15adc4d52be34791aed10
-0.5790,6.18,Durba Health Post,Dunkuran Durba Health Post,xwd:sha256:53ca7da771179a51347356ee4adbc05421d467dd086976583fa73fd22c3a38f5
-0.5789,0.00,Danshado Health Post,Yan Shadu Health Post,xwd:sha256:d08262a7019ac84ac3f7da8339d5efe05540959990a8b8a124bb7530b7706593
-0.5786,0.00,Yartofa Health Post,Yar Tofa (Bagwai) Health Post,xwd:sha256:8506e825ab21026dba0f72196a75103021595b4c316ade107d3969d0127a3e52
-0.5785,39.92,Sabon Layin Kara Health Post,Sabon Layin Hago Health Post,xwd:sha256:d8ade5a8f6acfd7ec8bdfaead8e56d41af94a719fc6b186018d8afba9844d429
-0.5773,161.73,Faruruwa Primary Health Centre,Faruruwa Primary Health Care Center,xwd:sha256:0902ef262118d2581189a99d15f245368f11698d854a024e28b292061af099f0
-0.5769,7.54,Marke Health Post,Joben Marke Health Post,xwd:sha256:17c2fa4c2d8afb04980b5cd92041ac0d19c8c606179ad3fb50c906d12474691b
-0.5767,2.08,Doka Health Post,Sabon Garin Doka Health Post,xwd:sha256:c366916682511d6c1727a9d50ce1b790132f20f7bd6cbf67ca57f4b45b401fd8
-0.5761,0.23,Kanye Health Post,Gude Health Post,xwd:sha256:1def7060742daaa5c6c3579a6f09ee9fe750f9bc3dee276e7f95e8ff800c7b1e
-0.5760,0.90,Dala Health Post,Dala National Orthophedic Hospital,xwd:sha256:87f6b0178934951b4531eed798a02b6efaa5e7a799bc4390015d507d49ece0b6
-0.5759,6.77,Taddangari Primary Health Centre,Taddangari Health Post,xwd:sha256:79e89211d99d76a9aaea0fca2ceab971c169803bf714602b7462be411893417a
-0.5756,85.56,Dalal Health Post,Dalal (Mak) Health Post,xwd:sha256:103e89e5fd3fdc8c4b3c9d5350d56e4771b2f7e0095b7c9baf626f56de9cbe67
-0.5756,37.56,Yalwa Health Post,Yalwa (Ran) Health Post,xwd:sha256:8207bbf4fa1ac458663257760c5fd896f3f6700bb09485e59f74ccd02ea933af
-0.5748,1.14,Universal Specialist Hospital,Saymays Hospital Specialist,xwd:sha256:8e00b26732d6f4d0f4e26500c3a51a5e6b381f8eb9ad190f6592918efdaacad5
-0.5747,11.45,Yammawa Gamji Health Post,Gamji Health Post,xwd:sha256:f9112af09db9a074b97982759d3f6d74321aee1a92714f97715915aef066a6fc
-0.5735,12.45,Ganji Health Post,Yammawa Ganji Health Post,xwd:sha256:a9478ce9bc105a3ca27d9818fd5b807584c917aac1e3615f98f5efbc692122eb
-0.5735,1.21,Zaura Babba Primary Health Centre,Zaura Danbaba Health Post,xwd:sha256:bc9b1274624e1caa5f6fb7ecc956dd42e5bec9b58ab386838ae6b2d638cb9e99
-0.5730,89.56,Unguwar Tofa Health Post,Tofa Health Post,xwd:sha256:83cabaa46b0cfe04f894969a65570f6392e0ddb8848882a657657adecd1d8b50
-0.5730,58.76,Unguwar Tofa Health Post,Tofa Health Post,xwd:sha256:8a5670aafaed45620472adb405889ca795c45ffe5f79a0b4d0ea0fff03168438
-0.5727,0.57,Chiranchi Health Post,Charity Health Post,xwd:sha256:82a44cc70b76d56a0d66e173680c89eca614895fdf54d4f19118374a60f7da06
-0.5725,55.55,Rafin Tsamiya Health Post,Tsamiya Health Post,xwd:sha256:c1da4c2e3388a8a52c5c081a52d69b965637306ca91a95d456a3ee23f2fd4357
-0.5723,3.50,Dokar Sati Health Post,Dokar Goma Health Post,xwd:sha256:61b648a7aedcca6c152205c9e3054e798fd4361e818f4efb7e6f1fc80e0b2178
-0.5723,0.01,Kofar Chiri Primary Health Centre,Kafinchiri Primary Health Center,xwd:sha256:e0a65ba7247c669829163d89bd1253e5ff735cd03a5d0588492a7d6638c25455
-0.5720,1.92,National Orthopaedic Hospital,Trinity Orthopaedic Hospital,xwd:sha256:545b22ae2e2daaeed4be7722f98a425d95991112991a17a94d88ee4a1b31fcd1
-0.5720,1.22,Dawanau Primary Health Centre,Dawanau Psychiatric Hospital,xwd:sha256:2c760c440aa12a27a84fa122de51518032477e7ca3d532b672b7aba7e8950ec5
-0.5720,0.07,Proposed Paediatric Hospital,Sheikh Isyaka Rabiu Paediatric Hospital,xwd:sha256:86ddecccc554d9687d51706da86fe42e5f1dea349023e79a9a235afed08bc867
-0.5707,1.26,Tudun Wada Health Post,Tudun Murtala Health Center,xwd:sha256:af8d271cf758a19bdaef68028ac40b270813e601c3886abf27de9cceaef4ec5e
-0.5698,6.28,Rigana Primary Health Centre,Rigana Health Post,xwd:sha256:a2ff32fc59031140ddac986d5e4a25d2685bbd113b563e14738dcfc339e9ae41
-0.5694,0.04,Akth Primary Health Centre,Kumbotso Primary Health Center,xwd:sha256:6d16407bc2246bb51c30849c26d603825dc2f19dd55f90d3cbaeca63e6bfc0a3
-0.5693,3.46,Unguwar Tofa Health Post,Unguwar Munana Health Post,xwd:sha256:123208eabb5ca594535a5d4335e221e7ee415935b74dda7a26407894ce1ecd97
-0.5681,5.80,Bari Primary Health Centre,Bari Model Primary Health Center,xwd:sha256:421e8c38cee365ce1633657761715c8c87f64b8605012e8fdc1205a7e5a92a27
-0.5679,0.05,Kailani Health Post,Cikin Gari Health Post,xwd:sha256:3a0a5e0c9d197cd04349e6b96fc045535ae159d773da37a1effda726535a992a
-0.5679,0.66,Baure Health Post,Kaleku Health Post,xwd:sha256:aeb4a58a0221caf05973aa7e83c877f4e7f1f4146e7cdbb898e6699e8000cf54
-0.5679,0.00,Jaube Health Post,Joben Marke Health Post,xwd:sha256:87d20effeceed5963e5547bef7f91b622a382d3abe1266fecef9e13492668194
-0.5679,37.34,Sauna Kawaji Health Post,Kawaji Health Post,xwd:sha256:2037694882e3dee5f092b80567aec9205a9a485dc0dfaf213acc0fb891a4b39f
-0.5677,1.40,Hotoro Danmarke Health Post,Hotoro Arewa Primary Health Center,xwd:sha256:7dc4f87665ef9de7a2e53c064a3b708db1a8aeb59fd12c136c96dda744680379
-0.5666,0.51,Jajira Health Post,Daradau Health Post,xwd:sha256:e0039de22920b93c251d9ec0ee89181e27c557a9bf8b8fefe921838a3baf95f1
-0.5662,0.92,Kadawa Gate Primary Health Centre,Kadawa Quarters (Gnm) Health Post,xwd:sha256:130f5607f415ad8d0f99baf07c923d4b7c6b852a1dcd747a2b2ee2a425645f1a
-0.5654,2.42,Sabon Gari Doka Health Post,Doka Health Post,xwd:sha256:46c52d90ca7dd0e87f4b6387b28c33aa6b09191919f35971d58953203f18ed8c
-0.5652,1.52,Dawanau Primary Health Centre,Dawanau Clinic and Maternity,xwd:sha256:c0e8ef150f443909131b49784abb1ebf1bec446de3a6f295f2b8843e94e6a29b
-0.5650,1.49,Janguza Primary Health Centre,Janguza Barrack Clinic,xwd:sha256:828446330043c1b651814f2412de3bae6660e592b83022e88ecc432be8194bee
-0.5647,3.92,Chalawa Primary Health Centre,Chalawa Basic Health Center,xwd:sha256:2a43b29766e6a9b905e983b7a7149a0bcec8800e127ad8562ecf7ed06d0769de
-0.5637,114.41,Kawo Health Post,Dogon Kawo Health Post,xwd:sha256:59128034d53d3e46df688f1cea81b703d89e0f46dcff6976c4619a3712fe7cfe
-0.5635,1.94,Tsakiya Health Post,Tsamiya Health Post,xwd:sha256:b2f10b10157c29d8b870931b132fade75aa509e5c15d0a025f7eed3db09e561a
-0.5634,1.79,Dugurawa Health Post,Dusurawa Health Post,xwd:sha256:c4c72ae7099487811851143def9231201bfd0b85d2df288592482ebd069ed186
-0.5632,0.00,Masaurari Health Post,Ginzo Health Post,xwd:sha256:e56d2b503453e045ef74104c2da36aacd644232787e62557d631a88f959f9b9d
-0.5630,0.70,Aminu Kano Teaching Hospital,Kano Dental Hospital,xwd:sha256:85b9bfdbf91c37df153d795b1b89243ad21254d730a74e5a2c9ee0fe613853dd
-0.5622,0.24,Ahip Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:89fb85aa067563a434f1cfa75738eb1c553337f6a3f73f5d466d1c5c866dcd29
-0.5621,40.41,Mazan Gudu Health Post,Mazan Kudu Health Post,xwd:sha256:b4372bcbf9f44c70dab50a12f17c27179f0359ab3abb8a9feea4e2843f42e982
-0.5621,87.58,Tudun Wada Health Post,Tudun Wada Government College Health Post,xwd:sha256:5ccce6a9b9db17ee028d391e8aaa977b81040b7af523e377c1ef718c1805d101
-0.5617,2.05,Dorayi Babba Health Post,Dorayi Karama Health Clinic,xwd:sha256:3d53dd723183f6bb9c494df621d6d01ec8af7266eb429287bb736c1c21a2ae4b
-0.5604,41.01,Wari Health Post,Wari Hospital,xwd:sha256:ec31856280a0ac69f07c421134f9b52a4e8780254c45ab7baf5fec579bb4cd37
-0.5595,86.93,Tudun Wada Health Post,Tudun Wada General Hospital,xwd:sha256:c543b2cb95c5e8fd3304547bb3f0aefafd86b47c2a489ec60e856ae2d4c87832
-0.5590,20.25,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:b563496fc7c2e0518ae84b9a6aa02cbf71b18b813db97ae4842676d2f74a3719
-0.5588,48.45,Kawo Health Post,Fagen Kawo Health Post,xwd:sha256:bd7e91c139dcae5fac2ba1890e8426167ed97d1657915ee51d11c22615436337
-0.5588,48.45,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:13cd8221a6ac5ec3dace2a0463a2f034704093dcf5a870662ab78134e7d3b85c
-0.5588,58.84,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:f5801f2d7ba0e55b2a462cf9aa6fd558017100fd73e131e36b8cc7eff4da283e
-0.5582,0.61,Gaya South Health Post,Gaya Primary Health Center,xwd:sha256:01ba5ba771ec49392187ed03b1a4c318c8382c000eaf50bbd778fe16aa88cec0
-0.5582,0.01,Hawandawaki Health Post,Danbare Health Post,xwd:sha256:0ae9acb122bdc9048152fb4739f314e04a68b02843802c5a43ab484037aee987
-0.5569,0.09,Taddangari Primary Health Centre,Kyuta Primary Health Center,xwd:sha256:94d3eb6e69034828623e97309a5f6bdf46f46eb2e3e9c8587f426c741582c33e
-0.5568,0.00,Madaci Health Post,Madachi Health Clinic,xwd:sha256:d7662569fc34cc8a2d2cc3dd8e224ba358f81a73d655f13f36bd5ccba9fb3344
-0.5553,1.76,Fuskar Gabas Primary Health Centre,Fuskar Yamma Health Clinic,xwd:sha256:7cf0d2800933a906909d3e899f10330a231f13d3a78c2034cceaaba43ec528bc
-0.5543,1.24,Zaura Babba Primary Health Centre,Zaura Health Post,xwd:sha256:0ee4769602b9aabba644728a4b685649ead2f6eb76b3e71468421fa3d79a5e63
-0.5540,1.60,Garko Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:e3c0d938b6aa42b7455cbc3d103bb1a3ca5d465498e219a0b3937b2919aa6cb5
-0.5533,0.00,SSS Dawakin Tofa Health Post,Dawakin Tofa Science Secondary School Clinic,xwd:sha256:81da9b77148d2088f680785c47ff9c402abec351aacb216420da8afbe3b56eda
-0.5531,20.76,Zangon Mata Health Post,Zagon Mata Health Post,xwd:sha256:87ab6105030d936987192bd5d007838da83656121d42d4adac34d30e1b3cebeb
-0.5529,70.97,Indabo Health Post,Indabo Primary Health Center,xwd:sha256:ca8b72377d6b2b3ae3f10da4d6467d9264ea4fddd39d57a3e3578e44f7cf8c18
-0.5528,0.00,Mai Aduwa Health Post,Yallada Health Post,xwd:sha256:730023003334929e3ed9ebe0b1c76c0839129481ea2041e2833dec5163c7cb3a
-0.5526,105.46,Falgore Health Post,Falgore Primary Health Center,xwd:sha256:a37866a297aa432d2fae7fd0e5ccda10d9b9b127600c900c5c2371df52ec0adf
-0.5526,66.64,Hausawa Health Post,Hausawa Primary Health Center,xwd:sha256:37c02faea4b11caf95499749978c28a451fb225d795a011bf9f16c635ad91fd6
-0.5526,39.45,Tarauni Health Post,Tarauni Primary Health Center,xwd:sha256:22518282969520c596e7bc46e455a3fc2ae5ea78c7f210ab21f8e1aac469ca35
-0.5523,1.11,Kariya Health Post,Gera Health Post,xwd:sha256:04d81c76f0d2c57c91280b9d1d039f59b90132a91cfb3229928e0a345b314d2e
-0.5520,111.88,Dogon Marke Health Post,Dogon Kawo Health Post,xwd:sha256:375be4694ca5fd1b86ec9756b22f00c74721dd98e96ad50bc8474a8fa43fddbd
-0.5514,0.81,Badume Health Post,Gwamai Health Post,xwd:sha256:a3a93348c32fe893d42bdccb29a28f7dc337e2169569559b992ffb8cc7539b0f
-0.5514,1.45,SSS Dawakin Tofa Health Post,Dawakin Tofa General Hospital,xwd:sha256:4ad073931ea6e2205a1863b5f02956b9516ad365c3c3cd11fdac941c5a812e4f
-0.5513,0.08,Tofa Primary Health Centre,Tofa Community Hospital,xwd:sha256:5928ccc8308795ce7a77d1d70c365cae171d458f7227562797561fd6f68cd4e1
-0.5509,40.54,Kaya Health Post,Dawan Kaya Health Post,xwd:sha256:02d6c7172541e6245e1193069601cca04f06b334d15f8529f9cc837d289965af
-0.5509,40.54,Dawon Kaya Health Post,Kaya Health Post,xwd:sha256:1a907b3898292c989287ca9d110d35c3aaa653c89f9dce43d4240ee7c727533a
-0.5509,87.37,Tudun Wada Health Post,Tudun Wada Mch Health Clinic,xwd:sha256:52652b1b788a4f649a33882e45e1b4540e86ec576a4166f096f414ad5473bd33
-0.5502,73.25,Hayin Gwarmai Health Post,Hayin Gada Health Post,xwd:sha256:63174e8101495ba30821d40a837924d57a6f74360ea3c940a999700e98bf0872
-0.5501,0.21,Bono Health Post,Borno Health Care,xwd:sha256:0ab435d58706a12a732c2d80c91ff1e5bedfe0694b879d679f8a60b9bcfb07eb
+0.8050,11.06,Kauyen Adam Health Post,Kauyen Adam Health Post,xwd:sha256:87429058315a18c2679242265bd5c50e24e9b485a98d14721024d598ad40afc8
+0.8044,11.48,Tukuibi Health Post,Tukuibi Health Post,xwd:sha256:c3f535a5f928b75fe96f96f0fd07a0fd77a68d7b5aa5a2f0750ca43f3cff1e79
+0.8012,15.44,Kaleku Health Post,Kaleku Health Post,xwd:sha256:7adaedce3da7c4440a391024f38ba9c63dbde237b79e984ae86e3361eebd4f04
+0.8007,16.80,Agalawa Health Post,Agalawa Health Post,xwd:sha256:5fbdf6c9e60de4d8c265280fb5996d4e0db0424efab9f9315a113dd395c1eb2b
+0.8004,18.77,Jaube Health Post,Jaube Health Post,xwd:sha256:023c057a3d4cffa29a522d14cb05463bf4828fceb1bc46307a74c45076fa968a
+0.8004,18.32,Bagadawa Health Post,Bagadawa Health Post,xwd:sha256:de5f4773b6a3aa4a888b4d55a5ed62da16afa450997394b788330235eafc8c4f
+0.8003,19.34,Dausayi Health Post,Dausayi Health Post,xwd:sha256:5c2149aca85af4cd25adcba75b84453645a16d3fb05e25680e4013d96d46ef46
+0.8002,21.42,Kariya Health Post,Kariya Health Post,xwd:sha256:9c1ef3430fae348e44d998d536cc2cfc82654e84779047402aa8aa2e2e8b9009
+0.8002,21.40,Doka Health Post,Doka Health Post,xwd:sha256:4c2ce18b14a8d5b0c4ab7fbdb5ff562fede8c3ee3d50e773bfc5dbcf494795a1
+0.8002,21.35,Yakasai Health Post,Yakasai Health Post,xwd:sha256:a7f8e8ff2d68678fee9400eb383691a6f0b9c1d193081c9933c407bbe1be486e
+0.8002,20.81,Doka Health Post,Doka Health Post,xwd:sha256:4f4d84ffe462b119cfbcab1d2a2726edea1fdc50447b18667193fd7b88dca3cb
+0.8001,23.18,Yola Health Post,Yola Health Post,xwd:sha256:92b1ed585567ce42ba056d88b9f7825427b8d8edf2934377b9eae94c7146089f
+0.8001,23.63,Geza Health Post,Geza Health Post,xwd:sha256:e4ce1a0e4a8fcbcd31d0e169606d017e6116db7950a835484740d97d01ab0018
+0.8001,24.30,Jemomi Health Post,Jemomi Health Post,xwd:sha256:0f7c4e64b9aef2ea2c16a11fab3be37c668fbf06781de185e24beb837aa69397
+0.8001,24.23,Kuru Health Post,Kuru Health Post,xwd:sha256:2f5ceed281e09173cd82d39a62b28844f3f574d663027a3ab24dc54edf11cd0c
+0.8000,102.72,Unguwar Liman Health Post,Unguwar Liman Health Post,xwd:sha256:db11258dcd5b9ffe20d585893f3572ab6a2cc71176d62fa637742b9fb56f48a5
+0.8000,74.63,Kaleku Health Post,Kaleku Health Post,xwd:sha256:20363889aa3a1e0a4c8df27bcb383d4d54059d55c7f3d0065cb62b47b9ee78c6
+0.8000,61.19,Kaleku Health Post,Kaleku Health Post,xwd:sha256:f344f0cfff8bed6b01aa674a8573eb89291f8bf57380754e24df306a9ee726b0
+0.8000,29.37,Masanawa Health Post,Masanawa Health Post,xwd:sha256:f24034b9cddb4bf10b8d5222576603afcac157755e7f07c087cee8514d24550d
+0.8000,67.86,Walawa Health Post,Walawa Health Post,xwd:sha256:e7d708815f1432f9f2493ed34b0c813c8a1e6b67316b629381c36e02159770b3
+0.8000,129.22,Maraku Health Post,Maraku Health Post,xwd:sha256:95945c94b71766354c8ca9d62e2c968d99205e0868248400c0a93678d6b5aa10
+0.8000,95.77,Yalwa Health Post,Yalwa Health Post,xwd:sha256:bbee4eb533af568a29a6ac95951ce32cfc326f38a0ba0f616cf3a0f598398a0c
+0.8000,114.61,Malamawa Health Post,Malamawa Health Post,xwd:sha256:a5f3e044114fff87e94b2f90166af50425aaa35f450b65375ca1cb72b7b45375
+0.8000,129.21,Maraku Health Post,Maraku Health Post,xwd:sha256:7e60d8209fa6ad74db003538188139007cfb15937bd849a114a51952c64f28cd
+0.8000,44.47,Kirya Health Post,Kirya Health Post,xwd:sha256:c20073017a58a50a9576363b666f30a20c8f5ee2ac3004c89c432b2b789719a2
+0.8000,33.44,Yola Health Post,Yola Health Post,xwd:sha256:ac742869fe3021c66f02e79f7025af6e0ece9cfe1312145d3c0e02a5759457b3
+0.8000,70.13,Yola Health Post,Yola Health Post,xwd:sha256:afaf797820801a6c35997d31c15a85b058ca4187dd9823d4e2bae890de62cb4a
+0.8000,28.15,Kwarkiya Health Post,Kwarkiya Health Post,xwd:sha256:302ab7703b82d4329b8a5c89c061912b3a71b3314155e7af256e9b281924e828
+0.8000,27.29,Garke Health Post,Garke Health Post,xwd:sha256:2e11e9eff8c806568aefdb93f5db4d944acc1be964d9294cd6d8229c0c9a63fd
+0.8000,28.86,Kankarawa Health Post,Kankarawa Health Post,xwd:sha256:0fb49dde12ff5de5772908a54b2a80abf0da031ecf8ce7b97b25ffb4f1c4bccd
+0.8000,26.31,Danbawa Health Post,Danbawa Health Post,xwd:sha256:78349d76e4c68fcc3ea940146511dadb2dfdd2eed604cd8355bbddd870395f54
+0.8000,32.12,Sarbi Health Post,Sarbi Health Post,xwd:sha256:a769bc3aebe63aec817a79d3e0b3784c6c2903c27dc6f4479c33efcc8d8c571d
+0.8000,38.17,Zango Health Post,Zango Health Post,xwd:sha256:82a36f536e928f7d967c6c3dc1c3439bdbc95d9ddc1f86b130682dc4be0e3e0f
+0.8000,32.42,Zango Health Post,Zango Health Post,xwd:sha256:a8a31d6a6e413387b001aef6a26de8bada05a014346b075fd9db91182634d397
+0.8000,49.13,Tabanni Health Post,Tabanni Health Post,xwd:sha256:c24ec13cc6fd30cac6a59e17c00e242db0fda959caea618e818ff0cef8d6ca90
+0.8000,26.44,Unguwar Rimi Health Post,Unguwar Rimi Health Post,xwd:sha256:ce9a20ea11416b21db5aeb7774c641061ea20f2ffa9643dd67df2d6d4355dbdb
+0.8000,93.82,Rinji Health Post,Rinji Health Post,xwd:sha256:5e5db5bc0e91cc7b5d3f83ec5fadff0c4403a9cfdae29d568dabafdc163d83df
+0.8000,122.51,Kwajale Health Post,Kwajale Health Post,xwd:sha256:9157a046a6f94aa89c3262f4877483de4992796b2e77f37cccac97ec25ae1a2a
+0.8000,72.33,Hausawa Health Post,Hausawa Health Post,xwd:sha256:46e2cf8b71e3afe439f57d921b584115cc83def1596475cbfa116917e585d2a9
+0.8000,43.65,Kunkurawa Health Post,Kunkurawa Health Post,xwd:sha256:9a1c7816af60c182b5e7487bd41da556d3a911179d8831a9b2cff7d4a065d6a2
+0.8000,51.37,Nasarawa Health Post,Nasarawa Health Post,xwd:sha256:cb6062d1319d35b225413c55983578391d35027ba1a6a43e714732f6ba91279c
+0.8000,143.02,Yan Bawa Health Post,Yan Bawa Health Post,xwd:sha256:638f7e184ce75a31675c9800e504996868ecff20a18f5f228ef66a8642182e82
+0.8000,95.05,Kurna Health Post,Kurna Health Post,xwd:sha256:6b11456180d0ba3e9a03844da179c91a035d41849fa7ceffc34b316b7d9a2b3f
+0.8000,35.58,Yumbu Health Post,Yumbu Health Post,xwd:sha256:8c97add0d4d51ee0aa121b49e45cf825177a8e4c5454b40320bee4cb5f574d34
+0.8000,34.38,Shana Health Post,Shana Health Post,xwd:sha256:58ca25bf7b2780c8a7e9e574fd9b228a9ceb989feab739d7722499a5212d81ad
+0.8000,75.85,Koya Health Post,Koya Health Post,xwd:sha256:159ff14c8bfd67f667257f245c9cd91a424b7e0606921ffd084df19a9150456f
+0.8000,40.27,Badawa Health Post,Badawa Health Post,xwd:sha256:957a0acc5f42cb972ad7c4fc7201aefe923a70f8c7ec318eede03a33b7123158
+0.8000,96.23,Yama Health Post,Yama Health Post,xwd:sha256:a20b5e50ec3ddf192cbd12a6c1afac63643ca41dacb70f97805124f763c51a36
+0.8000,39.34,Tarauni Health Post,Tarauni Health Post,xwd:sha256:7d2e5af3ddda14e4cdddd491f32d45af1ebe6775ed5d5cb246c87831625c38a1
+0.8000,39.34,Dadin Duniya Health Post,Dadin Duniya Health Post,xwd:sha256:a3aea25c72c9af80799a2373188eeccf4d4ddc874f268401ec26c5dc3c6c721e
+0.8000,54.14,Kawo Health Post,Kawo Health Post,xwd:sha256:393af3503344060e9b4e8c0f4dec2037591889513cbb128a7f7a510b3c9de71f
+0.8000,36.66,Kawo Health Post,Kawo Health Post,xwd:sha256:d5f22e6c5a3d5309feb24cf165aa485d96f3f682380b42bb826086ca632d5c3f
+0.8000,38.29,Santsi Health Post,Santsi Health Post,xwd:sha256:69d44d679bbcf72e1836d681547fe22b36aee003039259e65e8f7788317a0907
+0.8000,74.47,Chikawa Health Post,Chikawa Health Post,xwd:sha256:2d4aa6a16dba759c24b9e1b7bff4ce06f4788aaad5474b50d1d7889653141c9c
+0.8000,39.32,Chikawa Health Post,Chikawa Health Post,xwd:sha256:e4afbf76da70fc15e025d42956488ad6ef88a67f62638ae2973a6b896d3a6418
+0.8000,39.93,Tankarau Health Post,Tankarau Health Post,xwd:sha256:e25e6dd3fa7d24fee5cfe868ca931432ceaa94f569398721c15a315425eb4148
+0.8000,37.92,Gumawa Health Post,Gumawa Health Post,xwd:sha256:d3ebd4a49d18fa9a32c94cfff04937e74f6c63811524aeacdb794dcd272671ef
+0.8000,30.10,Zango Health Post,Zango Health Post,xwd:sha256:d296ed38c98383f82539f7fac65b8b5027ec14f90eec7d8b3e960ded09748ae8
+0.8000,29.53,Zango Health Post,Zango Health Post,xwd:sha256:081184eb708b91541a00b8cc39b9f48a268cd545eb350574537da10c0f0b0a1a
+0.8000,90.23,Gezawa Health Post,Gezawa Health Post,xwd:sha256:affa67b5ad5eca0e6bc80eba5ce8d87905fd77643e89ca792a037fd351b1453e
+0.8000,32.96,Gezawa Health Post,Gezawa Health Post,xwd:sha256:cf4876b842f1411c640ea984af6d0a85433afad7f0e793ea326d54b91e5f7b00
+0.8000,30.13,Wasai Health Post,Wasai Health Post,xwd:sha256:3bbe9a47bc8dfe856ceb29c5a33d5b5d5862be3a709db776fa9789b5b666df08
+0.8000,30.64,Daradau Health Post,Daradau Health Post,xwd:sha256:a35e0b074c4b199a2692f0d58a8e2e327e893085fa73aa65565e973f7d117807
+0.8000,31.30,Tsalle Health Post,Tsalle Health Post,xwd:sha256:5cfe6d799a4deafe1eb21f099e3b5049a1033f3b7b3344007c8d6c7e44b079a4
+0.8000,85.52,Dalal Health Post,Dalal Health Post,xwd:sha256:c2831a718b100e305a01bcfdadb6c92ca6e70b383d9bdd308c82da66d48ea8df
+0.8000,61.90,Katsinawa Health Post,Katsinawa Health Post,xwd:sha256:1c67a1162cf73fc33ac3a7df70d84bb2257a339d481f2ccfb385fe44cc4a5505
+0.8000,27.07,Kantama Babba Health Post,Kantama Babba Health Post,xwd:sha256:549548bb2b70e79d3c7fb85d4e258e28211adcf39d989b8610a146511d07fcbf
+0.8000,38.39,Gera Health Post,Gera Health Post,xwd:sha256:bb56cc6c45d14ed8615d19aca9e826c5aeacaa39cb7a3a5eb1f3d7b3fedf8ff3
+0.8000,34.01,Gajida Health Post,Gajida Health Post,xwd:sha256:6c8b6e9a99a4c563a597d6c0003784c1059cc25bf2d1fc8265f2caff8656c731
+0.8000,52.26,Tsaraka Health Post,Tsaraka Health Post,xwd:sha256:a35ed7751207ab76600c76876eba5442c5ea85daf7c0cfd0a85002bfb07aa20b
+0.8000,36.24,Kawaji Health Post,Kawaji Health Post,xwd:sha256:000ae0e2cccc64bbdbbbef022ca062d703fa9ccd68781b3ad698634da10a85ab
+0.8000,67.86,Walawa Health Post,Walawa Health Post,xwd:sha256:9a022c41d9f43a90cbff1ffd98379f1bf6e3116e104cbabc4c935cbe4f78a314
+0.6993,0.00,Takau Health Post,Takai Health Post,xwd:sha256:4c6223c1d576293260a834856cee7ebe32f6c1cdee1d8bbea37cd58819d8daab
+0.6983,0.01,Maigari Health Post,Magari Health Post,xwd:sha256:b8a3d448f55c694043a24ff0fa08dd56ba1b621cac7b18391a325bb2265b861f
+0.6976,0.54,Kore Primary Health Centre,Kore Health Post,xwd:sha256:2f26bcc5a668dca03a47907637f90a92c0f1acbfa61fcb56878027333fc8b2c6
+0.6970,0.00,Ganji Health Post,Gamji Health Post,xwd:sha256:b37dbf7a635122857b9bc691d81712f28143dfb9b8ac69bef85203e0b8735eae
+0.6941,0.58,Gulu Primary Health Centre,Gulu Health Post,xwd:sha256:b960ff5596ee50e19a06c6c67211645a8f54bdb33ff37fa3a46a77db47646337
+0.6922,11.38,DALAL CLINIC,Dalal Health Clinic,xwd:sha256:7a34327243dcfc0fdb10cb7ab59b36f472ef175699cdcf432981ef1e53a16a45
+0.6922,0.00,Umbarum Health Post,Umbara Health Post,xwd:sha256:e523951b65bd325c43e92570e24fe8ac1fb9ffa2694eaee0249c31660fcaeeed
+0.6914,0.00,Shawu Health Post,Shawa Health Post,xwd:sha256:b3abcc4de9784e30b0c922e41677bf8e8a9444c19211f4b67931e74af6172613
+0.6897,69.31,Goron Dutse Health Post,Goron Dutse Community Health Post,xwd:sha256:145dd9b60aad3e4caaf655b553efb9e0dd95dad6ac64d3c13052bf496f2a484e
+0.6884,0.99,Tariwa Primary Health Centre,Tariwa Health Post,xwd:sha256:7fea54324d0a85cc8358c5764f266246673dff232b5d3b70bac81fc701547c79
+0.6871,0.00,Belli Health Post,Balli Health Post,xwd:sha256:bcef7b436f929ed53573d1af1ca29c8404227ca5a0e7ded291628f20999e5a64
+0.6869,0.00,Gammo M.P.H.C Primary Health Centre,Gammo Primary Health Center,xwd:sha256:5143c33c9b2a76dc91a8b25d3bcb9ce636d8255c739aaeb5c9bc4284b3bf40f5
+0.6849,0.04,Kudurun Health Post,Kundirin Health Post,xwd:sha256:a4d34656a0f7a1bff70e8498df3af1fbc015900f19116e7dabcca86b0503ba9b
+0.6842,0.00,Yaan'Awaki Health Post,Yan Awaki (Tyw) Health Post,xwd:sha256:507c97726164d4d21988b09ccf0361c91bd3a5d0804309bdaf2a43e385e790d7
+0.6827,0.00,Fagwalo Health Post,Fagolo Health Post,xwd:sha256:62d23122658bbee8c2b58e8d583f55be6bd0f2c0cc985c9a3d5a7aefcfffce55
+0.6819,2.02,Bagadawa Health Post,Nassarawar Bagadawa Health Post,xwd:sha256:3087b487442dbeac0891777aa942ce9632112f47486216ae6832164c4c2088a8
+0.6812,0.00,Fanidau Health Post,Fan'Idau Health Post,xwd:sha256:ae51f7de4e82c1e608c5457e7b768c546d0f987428e4433f59eaef4dd91503bd
+0.6810,0.14,Sauna Kawaji Health Post,Sauna Primary Health Center,xwd:sha256:8ce2f08bb0a48149633984dbbf25b4d292a9f9eb103947259c14b1cfc3a35cee
+0.6809,1.75,Kafin Lemo Health Clinic,Kafin Lemu Health Clinic,xwd:sha256:67cb47c59c75014b05ee6887a0aa26fd8b7b820c513c3eb67208afb2bc92717e
+0.6807,0.05,Dadin Kowa Primary Health Centre,Dadin Kowa Nursing and Maternity Home,xwd:sha256:9bfcbc79fcde7cb5b1812fe94f9e1970682c7b766bbedd93b8fa1ae17b323970
+0.6806,4.05,Zango I Health Post,Zango 2 Health Post,xwd:sha256:0998d01abd81210b94270b6a6ac81ed165c83586dc3fcd0ebe7e9c73f49f15e5
+0.6803,0.00,Danzabua Primary Health Centre,Danzabuwa Primary Health Center,xwd:sha256:8c7af482529a5cb51b42c940666ed1b3cb244e0d9af7f1317063be9e76070dac
+0.6790,16.03,Zango I Health Post,Zango Health Post,xwd:sha256:934667b28820a4b233f90db9f738960c1d8e01538c46b9f5fccc4c8ec9885360
+0.6787,0.01,Gandurwawa Primary Health Centre,Gadurwawa Primary Health Center,xwd:sha256:4ab3ad229e3f61db670852123dc8874bc59f84fb8267222239d4bc99695b1b2c
+0.6781,23.73,Zango I Health Post,Zango Health Post,xwd:sha256:dc58d06e7bd78c40523cf0f61983652cdc44cd76630aac38a7bdf3e0cba2ba8c
+0.6777,0.00,Kafinmaiko Health Post,Kafin Maiko Health Post,xwd:sha256:5094494029d57eb1d00dce5234a53ea6d3ae152dc21f217ec88eb98822069c2d
+0.6776,4.05,Zango II Health Post,Zango 1 Health Post,xwd:sha256:97e27bbd07382bcae9cd4c6d0e8361f898c1e2490ebf9d90920179a1e54ebc8f
+0.6765,0.49,Hotoro Primary Health Centre,Hotoro South Health Clinic,xwd:sha256:0052c85eccba29a4dc8f5cb0fa6ac010245397e889716a8f37498808498847b1
+0.6754,0.02,Gwarmai Health Post,Gwarmai (Bebeji) Primary Health Center,xwd:sha256:b1481a06b4b88feb74fc72092268a001157fea54ef83bc69ea255b59b77d4add
+0.6753,0.02,Gwarmai Health Post,Gwarmai (Bebeji) Primary Health Center,xwd:sha256:362046554d52f76ead35e71e22df1c9ba5185e8a4ad589261b9b5c7e529d8632
+0.6753,54.16,Zango Health Post,Zango 1 Health Post,xwd:sha256:65a093d28a5a5fceaedb51cca1beb3a146b32b309999d40e1f7d25dac5285801
+0.6753,45.38,Zango Health Post,Zango 1 Health Post,xwd:sha256:9fb9f1a02cfef4e9d620f2f9a0682442b03e4731705dae990850ae77d766e09a
+0.6746,14.92,Zango II Health Post,Zango Health Post,xwd:sha256:afb19c46bb94978fb816ee68287506b2f71c2e3e9241d455d8506d0efda7ea00
+0.6738,0.02,Masu Primary Health Centre,Massu Primary Health Center,xwd:sha256:7cd85cbdc546cd49c2cdac5247fdb394dff775786ee4efaae101190698e42049
+0.6735,2.27,Yammawa Gamji Health Post,Yammawa Ganji Health Post,xwd:sha256:429c87fc8fcdb2dacd58251bb4eceebfd2010b139d83e5c2bb6dbd8ba0387a27
+0.6734,21.10,Zango II Health Post,Zango Health Post,xwd:sha256:40befb669730b4f6b106409f759a00fe187a10ec3ebeebc48c6a3bcf57773ede
+0.6733,52.48,Zango Health Post,Zango 2 Health Post,xwd:sha256:e7544c7f85e82222f623a5bf0fe22c9658cff86987b4158708448412f759f525
+0.6733,44.94,Zango Health Post,Zango 2 Health Post,xwd:sha256:4692f2d2fc386903829bd3b75bde4cdc673525ed45cc358eb8e025675b41fc9a
+0.6722,18.36,Tattarawa Primary Health Centre,Tattarawa Primary Health Center,xwd:sha256:aeba5c052ebf36ba8d03381cd5f2de4b45ce3b993f638347932b8613e10f4ff6
+0.6715,105.46,Falgore Primary Health Centre,Falgore Primary Health Center,xwd:sha256:dee19c0bb2ffc03827994d52c9271f77ff6f45896c4df84a1f0fb7c1acc886c2
+0.6710,28.04,Gayawa Primary Health Centre,Gayawa Primary Health Center,xwd:sha256:1802f166bbc118998ea666d7076a6136e259632fa6ead6dbd50b9b94693bc420
+0.6703,0.02,Dawaki General Hospital,Dawakin Kudu General Hospital,xwd:sha256:e6426271a41904309a4ce05c67acd853b9904003db26866c6cfbdc6435c80124
+0.6701,1.61,Garko Primary Health Centre,Garko Dukawa Primary Health Center,xwd:sha256:5783eaf98e43247d2e0a699c686c0c4b1b955c2ca94968ad76662fd3c7e1795c
+0.6698,0.02,Patricia General Hospital,Patricia Maternity Clinic,xwd:sha256:57c2832e2a89fcffe5320da236b556c64955ac9fe0e4b025349cb65862ec4f6f
+0.6697,41.89,Chiromawa Primary Health Centre,Chiromawa Primary Health Center,xwd:sha256:dba2be9ad423678241820c3ca53a3ae07f3388ba45727d1a2768a54068fb1c8b
+0.6697,41.90,Chiromawa Primary Health Centre,Chiromawa Primary Health Center,xwd:sha256:f31ab482edfc6171a5b5953a1d5ae5b8ba1115fa742eb8687b82e3a47d10e409
+0.6691,82.59,Burji Primary Health Centre,Burji Primary Health Center,xwd:sha256:697008cbaf41815b424b773781fbe52f5321521396392a3bad2530143ecd3dc8
+0.6691,82.59,Burji Primary Health Centre,Burji Primary Health Center,xwd:sha256:0b5da4645829676a1427b5c0417c2990310a96d332506c7db45fd90c32b62ff9
+0.6689,0.01,Durbunde Primary Health Centre,Durbinde Primary Health Center,xwd:sha256:aa530db7f96d56b7825ec521b69e66f7d8f1e17656514ff4286dd4c691b7478c
+0.6681,10.11,Yola Primary Health Centre,Yola Primary Health Center,xwd:sha256:f1ec36ddd34a96dd6b89468ff4389d02117a06357086068f85da6b7f55d89e67
+0.6676,0.17,Sabon Layin Kara Health Post,Sabin Layin Kara Model Primary Health Center,xwd:sha256:353144a2c1e2bdac74849157b36bebe9d83c5af96dab2107983b1df82b9501fd
+0.6675,82.54,Karfi Primary Health Centre,Karfi Primary Health Center,xwd:sha256:e5eb417b7df25ca4f1e5962415897393b5d8fcd41c6175bfcb9c202a4ddbea8e
+0.6669,0.05,DALAL CLINIC,Dalal (Ungo) Health Clinic,xwd:sha256:4757bb971e58d83c676c7f416b1761db84b43b6279d2ef9b118ce3c25506592c
+0.6661,0.91,Rijiyar Lemo Primary Health Centre,Rijiyar Lemo Maternity and  Child Health Clinic,xwd:sha256:fd9870d7c31acc9a437446c2e864f7834fdf34d4fe46fa21d4ab2248c045ee08
+0.6658,0.04,An Nur Specialist Hospital,Al Noury Hospital Specialist,xwd:sha256:480c5bbb1c22c5cea11f6de97be1a6934bfe958b027d747370f76f6214857fec
+0.6644,69.75,Yalwa Primary Health Centre,Yalwa Primary Health Center,xwd:sha256:0878a6faa3285754a83543cec8eeadc4d9eeea46148a9754f5481744a556f386
+0.6638,0.93,Rijiyar Lemo Maternal and Child Health,Rijiyar Lemo Model Primary Health Center,xwd:sha256:885c2e7eafb742bb8e4334816380a14e3f90f298368d8e270d4c5bcb9777a825
+0.6637,0.00,Unguwar Turaki Health Post,Unguwarturaki Health Post,xwd:sha256:cd00b43642f0593642793ad67401296c0b9ac8c24b2871e76a7d5b0e27f05150
+0.6631,19.69,Sabon Gari Doka Health Post,Sabon Doka Health Post,xwd:sha256:accc258bc8be6878316cc09ffa3c4b6c40400611272875db4efbae61d78b719a
+0.6625,0.92,RIMIN KEBE MEDICINE STORE,Rimin Kebe Health Clinic,xwd:sha256:82609ad225d21d3544782031c17ec68103f688ccad52c1b1f00a168e6bf6eec1
+0.6625,0.00,Yakasai Health Post,Yakasai (Dawakin Tofa) Health Clinic,xwd:sha256:4e5e14e6366febc5cc452a45188038e780a68fb420b0d729ecc8204af5c70b8c
+0.6624,0.00,Kazar Daw Health Post,Kazardawa Health Post,xwd:sha256:81138227d2fdbb33b14ef0ee91c5446509a9ea7c135c6101af0066b215644f6a
+0.6622,0.00,Ririwai Primary Health Centre,Riruwai Primary Health Center,xwd:sha256:1df38b9d09905ccf2e12f266eab87051bc167646996066d5162887ae8bfc386e
+0.6613,0.00,Kafin Sidda Health Post,Kafinsidda Health Post,xwd:sha256:3221a62919ae6c16ffd085087ca40c829e5596501f5d90a92b05a342db81b576
+0.6613,0.00,Yatsi Health Post,Gyauro Health Post,xwd:sha256:0069663452e11b0bef454d523b8241b43b9a28a71372ddebda4f0aa520706db8
+0.6601,0.00,Sambauna Primary Health Centre,Sanbauna Primary Health Center,xwd:sha256:a24b94c28c6396c139aa60e25064755d40d4e0ee1d16a6a35b5c035e6007bf5b
+0.6598,0.00,Tashar Basa Health Post,Tasharbasa Health Post,xwd:sha256:aec569a4ef084502fc76744c996e1306df127953ebda3f03d92e41a554229616
+0.6595,0.01,Fadi Sonka Health Post,Fadisonka Health Post,xwd:sha256:4ab4405ac33030e45a9612a1fefb41481870abb59ff4f0463eefd5e3754bf950
+0.6592,1.15,Yola Primary Health Centre,Yola Health Post,xwd:sha256:e7706ac912d2db49492f16f15f65600b87796249179d190ccb8522f31b4db263
+0.6589,1.39,Hotoro Primary Health Centre,Hotoro Danmarke Primary Health Clinic,xwd:sha256:90a0c6efa3b94af117f53f3d51a4df79929a19257d23e929ac5e733569b3febd
+0.6584,86.41,Tudun Wada Health Post,Tudun Wada Ggss Health Post,xwd:sha256:177ffff44aded49f3515ed3dbed59fd15e2f659655a40c3dd3fe73957f8d79cb
+0.6575,0.00,Kwachiri Primary Health Centre,Kwacire Primary Health Center,xwd:sha256:ab7e2cc5534484e742e8ebe4a7a52c07abaa3da28ac4f1fd6458a86f5faa21a3
+0.6571,0.00,Garko Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:2886c947554a68bad6f6dbb89805865c2dab7eb117e71f828e198b36f7132747
+0.6570,0.02,Gurungawa Health Post,Gurun Gawa Health Post,xwd:sha256:2ab76897d86338bb3e0fe92596a6d34064bbb52b1f35574c9a22af0cc61c2c30
+0.6562,0.05,Ajingi Primary Health Centre,Ajingi Cottage Hospital,xwd:sha256:53b350d5bb1c22696a0a11d003fe2d9723d3c0a84a110fd34c7f1d0bb21e4b4c
+0.6561,0.00,Sarigarin Health Post,Sari Girin Health Post,xwd:sha256:443b7c02d5a1e83d9c31c468591687945d061dbe0ea0a0fe11da3c9562bac9c6
+0.6559,0.01,Nigerian Air Force Primary Health Centre,465 Nigerian Air Force Base Hospital,xwd:sha256:9d5e5b448f37b893caa51389aed5bdd9a047096717f53093fdbde00b7e7b0840
+0.6557,0.13,National Orthopaedic Hospital,Dala National Orthophedic Hospital,xwd:sha256:14800ce1ace11d217532cdd0fc72e92889367d1d2dc19cd709fb84f6668f66bb
+0.6551,0.00,Yankwada Health Post,Yan Kwada Health Post,xwd:sha256:b608ac36386414c0b9623630c52b7fc0f1efbcdf730649c3ba531f882bf5f508
+0.6545,0.05,Dawaki General Hospital,Dawakin Tofa General Hospital,xwd:sha256:f9b0769638636cd0545d36ce5bf12ae93b9e4e53001ad44760f9c5f1f2eb4c3b
+0.6543,0.00,Jigawa Satame Health Post,Jigawar Satam Health Post,xwd:sha256:5d567ae02d7e6054eceb7dce29c4d3b141ebf0ccfc905155b41384c07dd3026e
+0.6531,0.00,Mesatud Health Post,Mesar Tudu Health Post,xwd:sha256:f06eca898aaa3eda70a11e97d02f99a99a5e5424dff7cde49ee73fa2cf68a4d8
+0.6520,0.00,Yangwarzo Health Post,Yan Gwarzo Health Post,xwd:sha256:8a4889481c183b83b250cd1a36eef8445243e5b71035f7b66de3923bd84ace69
+0.6516,0.01,Dalal Mahuta Health Post,Dallal Mahuta Health Clinic,xwd:sha256:6f49e76330da7fd62dd3801ec2d937a499182b5bb77371ca784e5eb722f7cd4e
+0.6513,0.01,Yako Primary Health Centre,Yako Basic Health Clinic,xwd:sha256:35d94f250f06783525e8446cdaf2064630d07d8c41f85115df690ed6dcc9f653
+0.6513,0.03,Mesaburmi Health Post,Mesar Burmi Health Post,xwd:sha256:924303c9f8a8b6ab4c3254d9b159ae9c953be7a7cdd5679fe8219ade20453d64
+0.6506,0.02,Yako Primary Health Centre,Yako Basic Health Clinic,xwd:sha256:761484547d57d439f46b1b09cc463b08f64975436dbc505367e23bb903ef7fd9
+0.6505,0.10,Malikawa Garu Health Post,Malikawar Garu Primary Health Center,xwd:sha256:9de94a2236a9bc3a826bb0d45baf488003c36de053793550b77095a649e56e0b
+0.6503,2.91,Shuwaki Primary Health Centre,Shuwaki Model Primary Health Center,xwd:sha256:a35f7dcefd9ba236e2c7040ea238a2199743b5eaae9141e4be5c90ed0811d1b7
+0.6500,0.25,Bichi General Hospital,Bichi Excellence Service Hospital Maternity,xwd:sha256:a64d3b1a2c2379bfc509f453bc024da1e9854282de3b9e92f93981c20a881041
+0.6494,0.00,Rimaye Health Post,Rimayen Rake Health Post,xwd:sha256:566bf9f040aabfc0c3a1a857887f7e9a6f18e9bb14ee43140f694f57f935beb2
+0.6489,0.07,Yankifi Health Post,Yan Kifi Health Post,xwd:sha256:e2d0b558c96cc8c0db23e87b5fc2a75ce56e279c96f21ea7937f0e62e902eafc
+0.6487,0.00,Yankamaye Health Post,Yan Kamaye Health Post,xwd:sha256:f9c3a257e035bf33179daa2ce5a9462e5e8cbca56155364ad98496b6fe67597c
+0.6485,0.01,Karmami Primary Health Centre,Karmami Maternity and  Child Health Clinic,xwd:sha256:2ca55031eda400c43a80c6b17bf96c1d74dfaa4d34911ec77197ca5da4081165
+0.6479,0.04,Danhassan Primary Health Centre,Dan Hassan Primary Health Center,xwd:sha256:f5ce3b3857b7141aba4f39d06758020a616ad1110ec89635065486afd1aa78f4
+0.6454,0.85,Gama Health Post,Gama Health Clinic and Maternity,xwd:sha256:6bc0b597ca0f9fd172d9753aa0b0391d8106d784b59b75e7a378929673766244
+0.6431,4.43,Jigawa Satame Health Post,Satame Health Post,xwd:sha256:f965a3605ad1c1d27e596c37e32c0d03dd6d728eff69bc476bdcca25db825dbe
+0.6424,0.02,Dawaki Health Post,Rano Dawaki Health Clinic,xwd:sha256:3329149d2e3dbc2a118922d47e7bb08b4b8fa1870a3dc6920eaf049534afc90f
+0.6420,0.04,Armed Forces,Nigerian Armed Forces Hospital Specialist,xwd:sha256:bad1dbb11bb5f0516abf062b71db6cadfbbb59eadab96dbb07aa98231008451c
+0.6405,0.00,Makamauta Primary Health Centre,Makanwata Primary Health Clinic,xwd:sha256:0b410d27fdcd28d54a338542c9a73fffaf3f0118732372d9d4dcba81775ec9f9
+0.6401,0.00,Kwandarma Health Post,Tunkunawa Health Post,xwd:sha256:b071b9914c4072601795f497d9611965c7fb752aeda67920e45f0500a5559db2
+0.6401,0.12,Jirago Health Post,Jiragon Makera Health Post,xwd:sha256:22d5100c63f035787fbf036f1e9c0ecdbc408b8aedf613ff37a42b0762c9e13f
+0.6399,1.82,Lambu Primary Health Centre,Lambu Basic Health Center,xwd:sha256:dfec1ac71c212be7b2390bc6e501a4142fc23fc655141f77648e94887d569d28
+0.6369,0.00,Dala Health Post,Dala Primary Health Care Center,xwd:sha256:f5819823eddefbf1ed8851ed7754b02fcfcf5b01dd6617799dd7eeb6c3587d59
+0.6368,0.00,Nasarawa Health Post,Nassarawa (Tyw) Health Post,xwd:sha256:aaaa2b2459c8e3ba18f9933f303a4e8c457fe4cda178b876a825fed76037d519
+0.6366,98.63,Dambazau Health Post,Dambazau Yamma Health Post,xwd:sha256:3b1cb4e7e34feae751b6fe26c0c0969eedd1acd8d7acd6cc5104a51edba31cb5
+0.6364,0.01,Wurobagga Primary Health Centre,Wuro Bagga Primary Health Center,xwd:sha256:9758fb8fbd2dcdd806fbda0622c14faa353287e15e7bbc29767aa8d381d663ae
+0.6363,0.01,Kirya Health Post,Zaura Health Post,xwd:sha256:967fd7cbe10a9b6b9eda66246192d33b6ae2837a7f241c12875e60cef16c061e
+0.6359,0.02,Sani Mashal Primary Health Centre,Sani Marshal Memorial Maternity and Child Health Centre,xwd:sha256:e3fa240d73ee8ca7937267bf0bf05f36b218769c759d6264b30bdedac24ef08b
+0.6349,5.29,Karshi Health Post,Karshi Health Clinic,xwd:sha256:d40b8e78b3055b13611bac6c823f08f7a9a17f06a44f54830aece97c89f84737
+0.6330,65.55,Yalwa Health Post,Yalwa Karama Health Post,xwd:sha256:95c28d356e84f980cb9ef58f101914da229ae8aef5088e3bc25344bab7a0461a
+0.6330,145.39,Yalwa Karama Health Post,Yalwa Health Post,xwd:sha256:854b0aedd582d7e2e9ccbd7ca0ebb6e2437c886f49002d18bf67ceabc43d7044
+0.6329,28.68,Jauben Health Post,Jauben Yamma Health Post,xwd:sha256:2b38cea0023d5c0374f3d415d4e034456acecf5c0d22aa98e6527839ecddba40
+0.6329,35.23,Jauben Health Post,Jauben Yamma Health Post,xwd:sha256:ed02c4be72f688701f4775b266e1083df1271dc4a6bd78ad9440cbdfb58644fb
+0.6322,48.06,Kadawa Health Post,Kadawa Ciki Health Post,xwd:sha256:00eb9ed7da327d4e445426b53b3762d02317321af079f87b73f3f11cd3e3fc67
+0.6317,0.32,Tsanyawa Primary Health Centre,Tsanyawa Ecwa Clinic,xwd:sha256:a6e41a154e89fa2bccb7c4a64142023edb03cd70a18316eef494169be88539ea
+0.6313,0.00,Immuali Health Post,Imam Wali Health Post,xwd:sha256:05d050a4a983b674beb41ca174a301797693b9a8825540ac168cc62fc2dd57a1
+0.6308,60.68,Dorayi Babba Health Post,Dorayi Health Post,xwd:sha256:9ac5dbc6bc22889dbe166afb0369af325a04280a1a0380218c3f87f1f96dd15a
+0.6302,20.14,Yammawa Health Post,Yammawa Wanzari Health Post,xwd:sha256:5ec6c6913abf519a26be48654a00d5570aad3050e1a20324c089c4cc92a93f6a
+0.6278,0.57,Chiranchi Health Post,Charity Health Post,xwd:sha256:6eb0fd749d23351a7294d62fd5d25c65bb1fa7570334c0fa870989fc9a2b0a08
+0.6275,97.11,Yan Kau Health Post,Kau Kau Health Post,xwd:sha256:1c78519ecb62fb2c55b1b0663e0bbe6683c8c5a41a72c6fe397669f8bad3000f
+0.6275,0.00,Maitsidau Primary Health Centre,Mai Tsidau Primary Health Center,xwd:sha256:5bcd0c7749eaf054e71f08d3c3fdeb9c5cc95d9874e9f8f28afb17a3af9cd78e
+0.6263,17.61,Zango Health Post,Zango (Mjb) Health Post,xwd:sha256:82653f1fcf680d95678881bb551fcb970d926745f2833c1f6464a2c5ebf37612
+0.6262,0.03,Abdullahi Muhammad Wase General Hospital;Kano Emergency Operations Center,Mohammed Abdullahi Wase General Hospital,xwd:sha256:cc5a9194472215707f7e79255269e714dc2f20e666a94449556b1d77de9e3b46
+0.6259,0.01,Yandadi Primary Health Centre,Yan Dadi Primary Health Center,xwd:sha256:882c50c0e801b7696cfc83cf7b48177be4651957d9eef9d267fc082708f0e8e2
+0.6254,82.01,Galadimawa Health Post,Galadimawa (Kku) Health Post,xwd:sha256:9561ef304c3d1b0bfba5e4b017587946143f937b9f9ef8ea89657c5767990b53
+0.6254,0.00,Proposed Paediatric Hospital,New H B Paediatric Hospital,xwd:sha256:3723801eb076da6b73bac28e643b0a63ce977213e7c4a604bf7702cb5ca807ab
+0.6252,6.02,Marke Health Post,Dogon Marke Health Post,xwd:sha256:cf3b96e5ca960838ed6cc0ccd575486019ae5a81e6948634fff68a89673dec7f
+0.6250,0.00,Kailani Health Post,Achilafiya Health Post,xwd:sha256:839640ff365f15535db26b76b214087de29f2011c475a8ef0395e4ed00237690
+0.6249,6.18,Durba Health Post,Dunkuran Durba Health Post,xwd:sha256:a0fe65b45903407a70b5c2fda3a134298e17f69aaee86c1fe4e77d7fc5d68c78
+0.6248,0.00,Hawadin Galadima Primary Health Centre,Hauwaden Galadima Health Post,xwd:sha256:d356a4bd5d4ef06d69a45e18391c43787d044c5efadb721b4ae3638c1d50d069
+0.6248,0.00,Yankamaye Primary Health Centre,Yan Kamaye Primary Health Center,xwd:sha256:4084c59cdf5a93e5d45053f7358ec7ddb3ced7b5dbe781537b8784e7a0eaa2c4
+0.6242,15.37,Doka Health Post,Doka Dawa Health Post,xwd:sha256:a84cdac6dd33eaf04c1cf68cbd0d5e3d2e082da92ad935ea3d5122d7c35986ad
+0.6240,8.02,Doka Health Post,Sabon Doka Health Post,xwd:sha256:1c8ea9cdc6d394bc81da5a6dacf65353726dc4adeae77ce59dc23dcd8b31b555
+0.6239,0.49,Danrirmi Health Post,Dan Rimi Health Post,xwd:sha256:763e720f9e3ddd7af7b3bc49a32a02916397557aa99ef749f8c05c7c63d413d9
+0.6234,0.73,Dawaki General Hospital,Dawaki Primary Health Center,xwd:sha256:615d444b9ef203c3ecb54e68006c79e9cf59b476073f041e01bdcc93ccb3214e
+0.6232,13.65,Kawari Health Post,Kawari (Gya) Health Post,xwd:sha256:2d064d63275de9df73f5060e46ee5c400703afdaa079cfd14c3d92452bf6a38e
+0.6230,35.63,Doka Health Post,Doka Dawa Health Post,xwd:sha256:38e09ede325b61d567cb84adcdb08f73e8d7c86cbb691feab17b0d735a0571b9
+0.6230,16.78,Amarawa Health Post,Amarawa (Wra) Health Post,xwd:sha256:4ed9efa63916ea27a52425d4099b33156494550c9a653bd64d0fc474836bbd41
+0.6224,19.22,Gachi Kedi Health Post,Gachi Health Post,xwd:sha256:f83f5b67773aff48dc526b7ac85aca8715fe5ba605f52f872ca2e82bec2cddcf
+0.6218,0.00,Danshado Health Post,Yan Shadu Health Post,xwd:sha256:654630b1be8564b8ac065d5ca3e5225860a76f0fef87f4c37896520a6727de70
+0.6216,6.90,Dausayi Health Post,Dausayi Health Clinic,xwd:sha256:e9c79724fec45dbd0682ca7b9620d1c9f8de70d4c3167515de3a755dfb462ec6
+0.6210,0.23,Kanye Health Post,Gude Health Post,xwd:sha256:9d474f03cb62a45aab9403af86b790e920c80663377490e55f79c79b64e21675
+0.6209,0.02,Dalal Primary Health Centre,Dalal (Ungo) Health Clinic,xwd:sha256:5382b20ef62e4f3993ba32ba15216828de5eb8352ae24d0aed1f32d0ee02fff8
+0.6206,1.79,Dugurawa Health Post,Dusurawa Health Post,xwd:sha256:5d4ee3c522bc8a0f47593f9a7359bc713fee5d67f76f5bb9556b7cde9531c0cd
+0.6206,20.33,Bachirawa Health Post,Bachirawa Health Center,xwd:sha256:4d85670b9c6d3cbac969e35822d532e609e341b577fef342dfc422d07eefa908
+0.6194,11.99,Kadafa Health Post,Kadafa Health Center,xwd:sha256:54ceecfe2277fb8a2d20a2d457102b944cadfe75d097968063043bd3056405b5
+0.6187,71.90,Gabari Health Post,Gabari (Kku) Health Post,xwd:sha256:b927feb651d8f523c33985a5789847b8b889f37d33fec857853175ea4a244411
+0.6187,15.33,Gargari Health Post,Gargari Health Center,xwd:sha256:ead0e41f2a417735bfadf2c7aec395fb74ccc942105ca4d8fc06cd423f99f9e9
+0.6174,0.01,Hawandawaki Health Post,Danbare Health Post,xwd:sha256:c0954af53bd58f6424776753c0be301c2b6d92e86995c022ec9596047cea570a
+0.6167,37.27,Yama Health Post,Yama Kanawa Health Post,xwd:sha256:ab582a5d2704eb0ae3fe7900cb9332da8617eb053df6c3a49761f0a143006040
+0.6167,0.42,Chedi Maidala Health Post,Chedi Mai Dala Primary Health Center,xwd:sha256:7f9572a35a1ca3efa250a0db749fd15dcc3ac1c574178ceb2cfb04bd61fad00a
+0.6150,85.56,Dalal Health Post,Dalal (Mak) Health Post,xwd:sha256:84d705d2d98fd685c383a38f371adb2664de6636a305acb7325e2ab12ff73212
+0.6146,40.40,Badodo Health Post,Badodo Health Center,xwd:sha256:842b77b4a50acc3444a0017efec1d73c7e33df9080d6e11c468d6a247185b4ae
+0.6145,1.40,Gezawa Health Post,Gezawa General Hospital,xwd:sha256:50d6c86b71221f69e03bad8bd2f7132f8f0ec1b985af48942e92f9955fef71c7
+0.6141,9.88,Gwarmai Health Post,Hayin Gwarmai Health Post,xwd:sha256:5d3085f88d4e0e55e5f77eae2888f0ec23c19c9785f39f0dbf7f203181bd2278
+0.6141,9.88,Gwarmai Health Post,Hayin Gwarmai Health Post,xwd:sha256:dac77f251adca25df7508a8c646f693b5810414ddbfaaa56e876b03c2cda8980
+0.6132,17.30,Gabari Health Post,Gabari Health Center,xwd:sha256:a9de6a5721d5c2ccc8bb5832132a2c9e2f9529f713656a4429695bed8ccf69dc
+0.6130,35.08,Butu Butu Health Post,Butu Butu Health Center,xwd:sha256:dc0699c86ffe5f6278f986d2dbfe72e1f1010a2691e2da49197f1d47ba80ea81
+0.6127,0.69,Dawaki General Hospital,Dawaki West Health Clinic,xwd:sha256:f48580b560b99558b9f0ff7d0fad0b60add911abc65e1cb49ef2b2250e7e42ba
+0.6123,59.29,Nasarawa Health Post,Nasarawa Godaji Health Post,xwd:sha256:b030d90ee37c569bca941f4d6edd0d259317ca1ba7e8f5c1d32d564f5e4233b2
+0.6122,37.56,Yalwa Health Post,Yalwa (Ran) Health Post,xwd:sha256:2156b3f47f006d5f534b14aa131bd6e3ddfa3974066d6383b7e356a6d3325a4b
+0.6122,16.95,Romi Health Post,Romi Health Center,xwd:sha256:846ad79a5edd5e5ad150191499a2cf82454a6c680990e572ce5139d195125594
+0.6116,3.87,Maimakawa Health Post,Maimakawa Primary Health Center,xwd:sha256:fab337038f341ee4205aedc21d7e4f21aaa7e6a3b973ef95dce34f50c6d50977
+0.6113,0.05,Yartofa Health Post,Yar Tofa (Wra) Health Post,xwd:sha256:a9d6febe995ea08928d31dcfe02d9b0ba60dfd9e1e4022e0aefde304daad6e1b
+0.6108,0.03,Kiru General Hospital,Kiru Primary Health Center,xwd:sha256:31f87d07f79255723af01a235d6a9d871f78d40d6908571b813ed5a316fc7747
+0.6104,22.06,Doka Health Post,Sabon Doka Health Post,xwd:sha256:7a26e8eb1148bf2c3a75875f901d5c93ef6ed749aec0daf1841528f577b39893
+0.6101,0.00,Yan Bawa Health Post,Yanbawa (Makoda) Health Post,xwd:sha256:8424e791f93c009bf6c6eb1cef1394ea33325cd767d5ac65baf2b18f81395777
+0.6094,89.60,Dalal Mahuta Health Post,Dalal Health Post,xwd:sha256:1d759249fb27ee2be91b9cad3397d8d05e5b94a61cde3f61470f826e932be6b0
+0.6093,0.51,Jajira Health Post,Daradau Health Post,xwd:sha256:4e01cd9798541974b12bf68f5d1461666539d425152e13f0b5412128d72e973c
+0.6093,16.52,Kadawa Health Post,Kadawa Health Center,xwd:sha256:752f3459078cddf30b4baed9848cf595feb7f934ba762607e20e82f27364d2af
+0.6091,87.58,Tudun Wada Health Post,Tudun Wada Government College Health Post,xwd:sha256:267802018eb196a4160ff2ee46a1290339a4d5080764e5a15ac08877bb1bcc50
+0.6090,0.66,Baure Health Post,Kaleku Health Post,xwd:sha256:a2119478bfda7b3d032139afdf6f01461f0ebe7696dc990b15f2ae3c11d1f90f
+0.6089,0.89,Fuskar Gabas Primary Health Centre,Fuskar Arewa Health Post,xwd:sha256:d539723c77ad5e3c80a3fd954dff14ad790cfc26dc813c83d1f1e225099a6da6
+0.6086,3.50,Dokar Sati Health Post,Dokar Goma Health Post,xwd:sha256:11993c6028409c5bf8faed8cc9ef4d0ecb920faa9918f5fec96fc2eb37a2117e
+0.6085,3.46,Unguwar Tofa Health Post,Unguwar Munana Health Post,xwd:sha256:d76b5045bdb1e7873e4ba90e7e935d0d935fca0280e62ba0cb6c586e82062cc6
+0.6084,161.73,Faruruwa Primary Health Centre,Faruruwa Primary Health Care Center,xwd:sha256:c23a5b45e53549f4942a68e7d7402097cdc8a3e1264a8f5be0c556354d5aca5f
+0.6070,0.00,Yartofa Health Post,Yar Tofa (Bagwai) Health Post,xwd:sha256:140da5c9ccdabc91746745c9020ca836f4a6c5018d23c719f05c0e61b3836e29
+0.6069,1.94,Tsakiya Health Post,Tsamiya Health Post,xwd:sha256:06d1374d76fedba6cd82665a5ea57ef0d920ba3eec41bd408152e782d4e2f9e1
+0.6067,13.12,Marke Health Post,Marke Health Center,xwd:sha256:46c26efd558d7fe49835d6a50e51dc3c550bb3fd309312bdceaf921ee7ce9773
+0.6065,55.55,Rafin Tsamiya Health Post,Tsamiya Health Post,xwd:sha256:c6adfaa49ef5ee4280550efb24c5fe182a5867a937e93c5a2183b1782a55226c
+0.6065,2.08,Doka Health Post,Sabon Garin Doka Health Post,xwd:sha256:165a580fe56a9337daee35800c0f015783f1fabf03651ec82c8f84d061bd6f38
+0.6062,70.22,Goron Dutse Health Post,Goron Dutse Primary Health Center,xwd:sha256:ca04b85b137aaf0c5870dae81e157d797abbba76d64330a24ac189e7c32f9f46
+0.6059,0.00,Masaurari Health Post,Ginzo Health Post,xwd:sha256:2a83992031f91517ef3d948a0c536f8f8b6f568c9c21aa05766b9d5c0c9ae2b4
+0.6055,0.05,Kailani Health Post,Cikin Gari Health Post,xwd:sha256:5a2d1261429862cecca19a2829ab48eca4ea01560d6d6f423fa12144c95525d8
+0.6054,34.10,Yautar Kudu Primary Health Centre,Yautar Kudu Health Post,xwd:sha256:a2d244211b6345ac77353b5f81bee67ecec70e8edc44159ed30e22fcc0e68e8e
+0.6049,97.96,Tudun Kaya Health Post,Kaya Health Post,xwd:sha256:ea7f3891c46350ca51a0936c21a9174e5f58e9630633f7c3a8afdd65318b4e05
+0.6049,97.93,Kaya Health Post,Tudun Kaya Health Post,xwd:sha256:c61222717239ae011a2dbfc938bb015b059ef5bf5566d398fd1bafb41d57a33f
+0.6048,0.01,Getso Primary Health Centre,Getso Cottage Hospital,xwd:sha256:f934330bfe747c933113a6173d93a67cdc99b481f6b37b405169528ad814ea1b
+0.6040,9.14,Kadawa Health Post,Kadawa Health Clinic,xwd:sha256:e914b87c8e2e55258a9f47a69e8cdcf7b738f401a7202bf068b2bef88c30d9da
+0.6034,7.54,Marke Health Post,Joben Marke Health Post,xwd:sha256:693ccf6d5ab32319987b15d05f9bc3d1c281455585019990f6a799a8636d1512
+0.6029,0.00,Kara-Dagaji Health Post,Karadagaji Health Center,xwd:sha256:80a051e5696b6662d7d12619f203e95e4c476358f5fc6b5fd7cfc514f4314b9b
+0.6025,1.05,Kano Emergency Operations Center,Kano Primary Health Center,xwd:sha256:2ea0e3d105a8e14afe355a811ccb57ab6d30ba6b0606fb9be98e86cf9fa48b73
+0.6015,0.00,Jaube Health Post,Joben Marke Health Post,xwd:sha256:18dce68931e0b0e046820ebd0a8f996d46f01cf983c72a6f8528d04c34c318e2
+0.6014,62.54,Kantudu Health Post,Kantudu Health Clinic,xwd:sha256:67aa7f0d6cbe13d2a718a8111d9145e4f7f759de3e7caf09ca7c641da6935ecc
+0.6013,54.92,Tumfafi Health Post,Tumfafi Health Clinic,xwd:sha256:4c55b89dc943908c4236ce808e3e58f0a70d9f04457ebca82eaa6855794f693d
+0.6013,54.20,Tumfafi Health Post,Tumfafi Health Clinic,xwd:sha256:eb93a51c6f693afdca57ed4da086df2a68771bfe8ea50bf44c57dfb70ee1030b
+0.6003,83.91,Koya Health Post,Koya (Gwarzo) Health Post,xwd:sha256:8de236795a2a1bbee67a6743723b2a518fe83ecdc2d93c68bb72d8f5fe09327f
+0.5995,36.27,Kawaji Health Post,Kawaji Health Clinic,xwd:sha256:19408fe4346f6b08ba83d53430c1234f5ce9fc105750916bbeac4c264510a44e
+0.5995,74.68,Kaleku Health Post,Kaleku Health Clinic,xwd:sha256:2438eb7622b94973bea089e1357c5d660247f1eca8376b80f126d077ea102786
+0.5993,1.22,Wudil General Hospital,Wudil Primary Health Center,xwd:sha256:9a608273afca215ad7786131d396e0345390f20bdd648e7fd5b7f2dfef287815
+0.5991,40.54,Dawon Kaya Health Post,Kaya Health Post,xwd:sha256:f0b64a7d98db755f31f0b2e147821c15df7a0c3d6855d3c3f47bfea53b50200c
+0.5987,44.49,Badawa Health Post,Badawa Health Clinic,xwd:sha256:efb4c7872cb0bffaba6b7e149b0448a508532f18fac8a061da1ba5ddfdb71b2c
+0.5979,2.42,Sabon Gari Doka Health Post,Doka Health Post,xwd:sha256:a0791b830530732724bd8f9d1d32e8ff88caea7da76fc56bbe22e30067b436d2
+0.5975,1.11,Kariya Health Post,Gera Health Post,xwd:sha256:17f617f9a759c4a2281b8bc0907431a854b5ab66924581ef85b993b7e2f2df99
+0.5973,66.54,Kirya Health Post,Kirya Health Clinic,xwd:sha256:5585d705754bd7755dea1313a58f29f1c6c6cd2f48183c01265cd327fd357ca8
+0.5970,1.71,Kwa Health Post,Kwarkiya Health Post,xwd:sha256:714149d4d436eafcf24655433d88b967396e5f9e4ae6bbe2fc79b74b1ed60882
+0.5969,3.92,Chalawa Primary Health Centre,Chalawa Basic Health Center,xwd:sha256:fdaa93843b7a3f4be69e14535de0fa6eb864917cfc5ac6eb4c9094eba418f2d3
+0.5955,37.34,Sauna Kawaji Health Post,Kawaji Health Post,xwd:sha256:4b06d89ce8938f61ca14ea7e12692195a7dbe3cdf13fa0da38bc1dea9d580d04
+0.5950,114.41,Kawo Health Post,Dogon Kawo Health Post,xwd:sha256:71af93e90f9455723a7661ceb7854899a8812b0daec271dd638ce62021127f4d
+0.5944,42.60,Baure Health Post,Baure Health Clinic,xwd:sha256:cf83dc2d952cd040161f9db3b89f6dd89b6a3278fc1015c2ca8ee2b7ab4e2beb
+0.5940,39.92,Sabon Layin Kara Health Post,Sabon Layin Hago Health Post,xwd:sha256:764a4396a77f6c5115b5ec7e004d01613b2c5f72ab791c5fcb65ac3eb9a689aa
+0.5937,0.00,Mai Aduwa Health Post,Yallada Health Post,xwd:sha256:b51ab03c62d9928b65895e3f568b201a4d2a1c6d78b508a0c834270b5381cbdc
+0.5936,61.89,Dalal Health Post,Dalal Health Clinic,xwd:sha256:b00fd64dd1c16ee49dd6efd380569033c9559836e59d5926e0a1ed2ce1d935c1
+0.5936,44.75,Dalal Health Post,Dalal Health Clinic,xwd:sha256:34836b21ba3a97d3536022e37cbd24bd832dafb3ff49388f54d592afbe881232
+0.5932,89.56,Unguwar Tofa Health Post,Tofa Health Post,xwd:sha256:273d028e3e012a68e6edcd1eb23456c8ef07a8266d1c8c0ab92d1c212bcb635a
+0.5932,58.76,Unguwar Tofa Health Post,Tofa Health Post,xwd:sha256:146206b2101ea4e115d91283b981b99cb26eaa5631975f6a64724e3021ee8276
+0.5928,0.04,Akth Primary Health Centre,Kumbotso Primary Health Center,xwd:sha256:ac9f7b6f8e95a01074a829b510a630fd6afce8a828a1db3c99f7f3bd729110b4
+0.5927,54.16,Zango I Health Post,Zango (Mjb) Health Post,xwd:sha256:8445699b16e8ea35d494330ad312aca1cc04e5143fc1508fbd5f313f99e6e723
+0.5927,0.81,Badume Health Post,Gwamai Health Post,xwd:sha256:456585f0ef7fd2ae29abe01e06c365e9bd279f3fef879c816e598ed9f6fc721f
+0.5918,5.80,Bari Primary Health Centre,Bari Model Primary Health Center,xwd:sha256:d324df97e1ce25b96c0afa6b30f38f6938c9f34af7b5f7ff16aae21a0df87132
+0.5915,23.30,Zabainawar Dansudu Health Post,Zabairawa Dansudu Health Post,xwd:sha256:26bb643d8389120275b6d0b3c285b2636828b75fc8c6b26ed936f5b5fc29c900
+0.5913,0.02,Gundutse Health Post,Gainawa A Health Post,xwd:sha256:1892351d16522b330755295e47b3a850fbd117f9e24809e7585dcc92e04470b1
+0.5910,1.92,National Orthopaedic Hospital,Trinity Orthopaedic Hospital,xwd:sha256:ec7cde25fce01b4401f0dc43b364c4ae5329412de24607a6170e4a7f2afd6c68
+0.5901,62.27,Ba'Awa Health Post,Ba'Awa Primary Health Center,xwd:sha256:34d94eef6386b1f39acc00dc65adfb5b296ac783439120efee39c856a34f958f
+0.5900,0.01,Kofar Chiri Primary Health Centre,Kafinchiri Primary Health Center,xwd:sha256:b613548643be11971de0209c52a2bd490940c5dfb037e1cfeac62d96d0bb7e4a
+0.5896,17.61,Zango Health Post,Zango Health Clinic,xwd:sha256:4ea662ff92126cade9817f4efd52525350e76932547c03f2fe00e3d7b9171736
+0.5890,1.55,Bebeji General Hospital,Bebeji Sunusi Lamido Sunusi Hospital,xwd:sha256:5bd5d0f1983943f4708ed5f0cb9b21eb414f2cedf2b8a69276f760f02faa773d
+0.5885,52.48,Zango II Health Post,Zango (Mjb) Health Post,xwd:sha256:33559beb24254d5169ecb8a617820fe466468a735fa0c6c63eaa54c69f9c8320
+0.5880,0.90,Dala Health Post,Dala National Orthophedic Hospital,xwd:sha256:dc4a8dca1801d79f7824b7893018a22b932ac9fd65b98d8db38aac48281bc9b5
+0.5879,11.11,Dansudu Health Post,Zabairawa Dansudu Health Post,xwd:sha256:9109ee91f03a2e3df6a4d434cb3fb17414c02e718fa995cd3d926f70bf25c17c
+0.5877,0.62,Tuga Health Post,Bagadawa Health Post,xwd:sha256:c6db48e9815735865582fcbf7f75a9bc0a82da1d2ab42cd00ae746f36f25db4d
+0.5874,35.42,Yar Zabaina Health Post,Yar Sabaina Health Post,xwd:sha256:3e5445e2f618d0543ce015c86b9b61758b9a87263f191e89afab07d4d2c2a551
+0.5867,0.30,Kanye Health Post,K Mahanta Health Post,xwd:sha256:1b60284525583cc8bbf520c75b329d884a68adb1de722538b5b33ded6a3137f5
+0.5862,40.41,Mazan Gudu Health Post,Mazan Kudu Health Post,xwd:sha256:ee0c29c9bd770b1207892d985193faf4dabfd3c5cd6f86c2c4702634ff2d4f20
+0.5858,0.50,Aisami Health Post,Mangorori Health Post,xwd:sha256:4e997b42980d0973ef33f21852318c737e49300323cce93e12e8d1484d984752
+0.5857,11.45,Yammawa Gamji Health Post,Gamji Health Post,xwd:sha256:f7bd176296cfc939fe45c47edf84787682c97afdb7b05bc024079d235430b252
+0.5852,40.54,Kaya Health Post,Dawan Kaya Health Post,xwd:sha256:9b969013481ede62d7a9c53c3a0eb29be37fef947b637b503bbfeaf9b08a3175
+0.5848,1.46,Dankunkuru Health Post,Dausara Health Post,xwd:sha256:9037b02c204d586004b5439cebd4536f6a11a167c50fcc32c9fa21e9a9cbe40c
+0.5847,0.92,Kadawa Gate Primary Health Centre,Kadawa Quarters (Gnm) Health Post,xwd:sha256:c2d613111e25b9e005f1408c6c9de885b4625d4e89b99279a77b7f9c8f6005e3
+0.5846,1.66,Kwa Health Post,Kankarawa Health Post,xwd:sha256:0856405705fca08777ea52737203d513252a194916a59529d5e53fd68223868c
+0.5844,1.22,Dawanau Primary Health Centre,Dawanau Psychiatric Hospital,xwd:sha256:66ea112a50dacee786e56038793023bf10dbc47b9e161465c01565214fdd2eee
+0.5843,0.01,Rinji Health Post,Dan Maliki Health Post,xwd:sha256:f285a9f0b1f68d8eee81fd5e15313492b29a168ce62287bdaa64927eda05e95f
+0.5842,20.25,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:c81977a8f5fffce63e9b87c2051a8478d6967af139d7ce9685627f8b4fab9ff1
+0.5840,48.45,Kawo Health Post,Fagen Kawo Health Post,xwd:sha256:078d4e62c82e603743e9fde2cee6bc3494859a94f7ac787b802d521f24b4fafb
+0.5840,48.45,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:d009ec223255f5c88d98db7dce49e0480a81e5a9731c46dd35a52a648ab91b85
+0.5840,58.84,Fagen Kawo Health Post,Kawo Health Post,xwd:sha256:912730cbc3644df7fe4138ecea527ed46325c04ca215679124af341415cdfa8b
+0.5836,0.87,Danmaliki Health Post,Diso Health Post,xwd:sha256:e6067ad3d5b950998db054e90c4a541298135cd57540bad7e56baffc527ba675
+0.5832,0.00,SSS Dawakin Tofa Health Post,Dawakin Tofa Science Secondary School Clinic,xwd:sha256:34bce7751e8ad135446daa55df0f684da4b0a2dbafb2864a9c518e50914d33bb
+0.5830,12.45,Ganji Health Post,Yammawa Ganji Health Post,xwd:sha256:6a0b0d01d3c0118f4d850f1ee5b188e6c0565f42e5942a1a0b2cea8fadcb16d2
+0.5829,0.00,Hago Primary Health Centre,Sabon Layin Hago Health Post,xwd:sha256:7c629bf03205e78ec1ee6eb584b6620ae16831a6571a25c842db15848f05f704
+0.5823,0.26,Katsinawa Health Post,Gezawa Health Post,xwd:sha256:dc05ae3dcf7504b4427c90e3b6feaf5324c2e228a2985d79181f9d7d9b9d5fa5
+0.5815,1.45,Kalahaddi Health Post,Kala Haddi Health Post,xwd:sha256:a82ace3f954d34b48249863304f9f898fa7da03bc5cb1430c8ab115f71ba6410
+0.5808,1.26,Tudun Wada Health Post,Tudun Murtala Health Center,xwd:sha256:35804e374101b3fc399842b002c4e1698a6b30d929bbd2feafdadeb4bc8b0b42
+0.5805,1.97,Baguja Health Post,Gumawa Health Post,xwd:sha256:10ab9050b675b4ba4ca46a5cf77465716c55962d0d9303644533ac3d15754ff6
+0.5802,1.21,Zaura Babba Primary Health Centre,Zaura Danbaba Health Post,xwd:sha256:f2e4a1f5bc42609f15fba56731227a511914c6747aa4153cbd79df193e1cff60
+0.5802,0.24,Ahip Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:cecf805525b1c086b4dae507f4e661087169825890267192e6bb8c355eb72497
+0.5801,0.73,Gajida Health Post,Dandalama Health Post,xwd:sha256:72d93bd325325089b4c8f6634046371908d4a9be43c26898849fe1b530920755
+0.5799,1.57,Baguja Health Post,Tarda Health Post,xwd:sha256:327a5c6913788ba64978372ade0b112b65b5330c9c57dde01de10acbb5721091
+0.5796,0.85,Dausayi Health Post,Tofa Health Post,xwd:sha256:fd43b615c50477bb62c50a6becef27d03de9fdb980f24b8720eb0791818b2aa8
+0.5787,0.61,Gaya South Health Post,Gaya Primary Health Center,xwd:sha256:c3881e9ca126f282c28a0640c8554528dcb9242d896c3d7768446ea0c48b7c35
+0.5787,2.27,Kanye Health Post,Kanyarwaja Health Post,xwd:sha256:ad6eb2a137c805af65902be6e2b66810c55196fa9dcc205f41b93fae15a4eb5b
+0.5785,20.76,Zangon Mata Health Post,Zagon Mata Health Post,xwd:sha256:d7126428880efcb9971370ceb483603f211cc484aaf7852999685ad7463d9245
+0.5785,0.17,Durun Health Post,Sharifai Health Post,xwd:sha256:f2d532aaf0cf5cf5fb7e6bebcb2b16e66e4069bc9548561c9732fae4e644d296
+0.5778,1.20,Yakasai Health Post,Kuidawa Health Post,xwd:sha256:12c1e78a024cff5d041a1a015e8fd2c23b2e9bcdcaa1b1dfb4434cb2eaa9de81
+0.5773,19.56,Yammawa Wanzari Health Post,Yammawa Wanzamai Health Post,xwd:sha256:193c8b6b2b3cbeb617c6ae220c13d7312f0d1cf38909e256a0790888de659b3b
+0.5773,2.06,Gargari Health Post,Gwamai Health Post,xwd:sha256:bf6529a3bd136bb824d69c88348bdd1b7f3acf1c2e6b3212fa94e31ad5519fdf
+0.5772,2.06,Gwamai Health Post,Gargari Health Post,xwd:sha256:f48610145939fe5de33d8122d4b5e3a02edaa38120a5904d0c783799f9ea1dc2
+0.5772,0.08,Tofa Primary Health Centre,Tofa Community Hospital,xwd:sha256:b981cc67b264c1253047a3bbc42535bfdf18f278d9c59408901cf44f8328699d
+0.5769,7.84,Tudun Bojuwa Health Post,Tudun Wada Health Post,xwd:sha256:00a644cc1d2e66879f884093fd54e10d9a1a482637e454d15ec9093195eeb5d1
+0.5767,1.40,Hotoro Danmarke Health Post,Hotoro Arewa Primary Health Center,xwd:sha256:83654b0dca81cc7fb12f2947f4c744532dff0b4674c15734f7f5fe7cc41dfd21
+0.5765,26.92,Zabainawar Dansudu Health Post,Dansudu Health Post,xwd:sha256:f1d05d0e2b9ea5144f1e458b4fd92bae826cbf31a3e96403f333d09f5d66d25e
+0.5765,26.92,Dansudu Health Post,Zabainawar Dansudu Health Post,xwd:sha256:dca35fdc3a65b991caa9498a4c01c30480bd924011f69a7cd3741660f34045d1
+0.5764,0.70,Aminu Kano Teaching Hospital,Kano Dental Hospital,xwd:sha256:db128638aeccd0033e32205806f7acbb038238d2274a205a010dd9d1af7dd55e
+0.5764,1.70,Gyaranya Health Post,Garke Health Post,xwd:sha256:9db8f33e17633024130111b5bb00e6bb17792648a23d560ec130b495fa91601b
+0.5764,1.73,Gunda Health Post,Tarunu Health Post,xwd:sha256:d9fd23dc6b3a6d7f2f5334c608aade4e8a6f54cde9922ad83a5bcba385629172
+0.5763,1.52,Sarkakiya Health Post,Jirgabawa Health Post,xwd:sha256:30f40ac4c14f8f4ce3f880e1560914f6f7c5b31e96bf41f8e0852b62baf71cfe
+0.5753,6.77,Taddangari Primary Health Centre,Taddangari Health Post,xwd:sha256:4f82043d5fe4de098eaa660ac2fcddf2daf29d223c3e5c321828a9e1ffc9a3fa
+0.5750,1.67,Dalal Health Post,Dalangashi Health Post,xwd:sha256:45c5b1dfbab627dc73de7cf79de95806a6bd465481a48bec61ddb639bf409dec
+0.5749,1.65,Dausayi Health Post,Gadan Health Post,xwd:sha256:222cab7c0485e8802c2256e9cbf1995358309bb6ad3b65f4f5fe72f7d6884027
+0.5749,1.60,Garko Primary Health Centre,Garko Ahip Family Health Clinic,xwd:sha256:32950dd3db7dee1e2516f7beb6d70585e023a7bd3d2bd07777a8ba9d07f648c6
+0.5748,0.09,Taddangari Primary Health Centre,Kyuta Primary Health Center,xwd:sha256:885fc3bf37481c067a286bdb3dd3e40a80ee5f6c180c7a086898dff69ec1a4e2
+0.5744,75.02,Tudun Kaya Health Post,Tudun Wada Health Post,xwd:sha256:d55854ac4cfc345301a9321e0082db3f2e79caf27321cecba6c1b5c1b97b18f4
+0.5744,3.20,Chedi Maidala Health Post,Chedi Babbar Ruga Health Post,xwd:sha256:790cd6245e3e64f67459400383ca17e3bb49701518c9e32e1c1b1768ddc5b078
+0.5744,75.00,Tudun Wada Health Post,Tudun Kaya Health Post,xwd:sha256:6f2c23587256764be90d5e6db52e26bc2e5010291b71f607b17402a5c79ce1f5
+0.5739,75.29,Sabon Ruwa Health Post,Saban Ruwa Health Post,xwd:sha256:6466a6953b09cdf7a12b1e6126ae05317ca65bbac1d684d5ffa12c06064786eb
+0.5737,103.61,Malikawa Sarari Health Post,Sarari Health Post,xwd:sha256:2316389886844e1a90e964d931591581a252be4f8fa8fd023d6a1b8d46be4c57
+0.5736,2.05,Dorayi Babba Health Post,Dorayi Karama Health Clinic,xwd:sha256:db757a425a07aaf482154135352ea13993e5897ea570b81c08558274f6be4979
+0.5734,0.72,Baguja Health Post,Alharini Health Post,xwd:sha256:b3d7ea7b2877a1c7972e15e7ca2413e7bc5e79de47f1118d4c96767a3cf96298
+0.5732,0.07,Proposed Paediatric Hospital,Sheikh Isyaka Rabiu Paediatric Hospital,xwd:sha256:695a22730d0805503c846569c56cd89e8f1c02526e6f39e5c9d2e5add13ddd82
+0.5731,87.37,Tudun Wada Health Post,Tudun Wada Mch Health Clinic,xwd:sha256:43ab8806c6b550f6b83cf01b20f346506006f26c21b7c92b82b5e3f665f53a0a
+0.5729,73.25,Hayin Gwarmai Health Post,Hayin Gada Health Post,xwd:sha256:cb989c454546c780bdfdc385b6098e0e9bfe5948598a559683578ad510f8f37c
+0.5724,24.02,Damfamin Tofa Health Post,Tofa Health Post,xwd:sha256:6545118e62a56c88d257e099cf90c6f4425333f0342190d58ca26f8ddc01df5a
+0.5723,41.99,Damfamin Tofa Health Post,Tofa Health Post,xwd:sha256:d23c022a976f7b7e8fafb59dae28cde32f23a749476690f2a77de239acd5f493
+0.5722,1.49,Janguza Primary Health Centre,Janguza Barrack Clinic,xwd:sha256:fce48119992d0ad915bc2cc0bff087cca75aef3d36995f3a1ee1d0a46dd8ac66
+0.5721,0.00,Madaci Health Post,Madachi Health Clinic,xwd:sha256:5d73262371e85c086b034ddfcec304414172085e9634a41321ab0eec141f5001
+0.5720,57.32,Unguwar Bai Health Post,Unguwar Gai Health Post,xwd:sha256:7782ad0c023046110c5762d415388093d4bc31a6c6c869dc6b0a80c6c3204926
+0.5711,2.01,Jajira Health Post,Jogana Health Post,xwd:sha256:2821dc6280280158e41cc21bdfc8b21a624ca246395499bb8467fbce1f5d4331
+0.5704,1.52,Dawanau Primary Health Centre,Dawanau Clinic and Maternity,xwd:sha256:a01abc051a39c403e882a6840dcc3c3026cdc0cc1bf5e609759ed69a3fc54863
+0.5700,48.20,Kadawa Primary Health Centre,Kadawa Gate Primary Health Center,xwd:sha256:d3bb08f01d5cf493baf846850adfc7f73754800750ba2eb9edd3d6b0ec297a76
+0.5693,1.76,Fuskar Gabas Primary Health Centre,Fuskar Yamma Health Clinic,xwd:sha256:0815805896e0d9e4d2ca87fdad4d00601bf29c5ddc8e7fac862a2d9b6c201150
+0.5693,1.25,Kwami Health Post,Jaube Health Post,xwd:sha256:55cb15d4f72f7fb0b667aebf446b0f024df8c95b7b2e3e7fe03154dbe22632a6
+0.5693,105.96,Unguwar Bai Health Post,Unguwar Mani Health Post,xwd:sha256:f19a768ddd27d0f74f856337d077809322a963da7e829604972e0754fe76ac1c
+0.5691,6.28,Rigana Primary Health Centre,Rigana Health Post,xwd:sha256:c70aa9ef91de4b864c1a4818730b8ddacf29f3bc453cbdc3639341da11329f54
+0.5688,42.09,Bakin Ruwa Health Post,Sabon Ruwa Health Post,xwd:sha256:5aa0e5d41038919e7e98fc8d3946a19b861c5c8b1159505b8df7b997b68124c8
+0.5686,1.57,Tarda Health Post,Bagujan Health Post,xwd:sha256:7b8173d4473643879e60ca1e48491bb1afc8562c64b9f93eaf0393de425eec30
+0.5684,0.00,Gawon Bature Health Post,Muraye Health Post,xwd:sha256:a02e53662beb80c58f0f19e7400e03da4b7eb8fb9a2fab2106548c1cb08dad36
+0.5683,20.14,Yammawa Wanzari Health Post,Yammawa Ganji Health Post,xwd:sha256:7abdcbd8da5aa61e249c5fa9cb0806ed2df9903f463d90e320e39120ab24f661
+0.5682,79.45,Unguwar Bai Health Post,Unguwar Kwari Health Post,xwd:sha256:e9c4e984c10a52039b902c3455a1925d9e88f36439c00fe430f206bda9766e63
+0.5680,111.88,Dogon Marke Health Post,Dogon Kawo Health Post,xwd:sha256:6965b70a9585e579432bef88b07d35b62a0e09cbd58a5d264df14563ea4afb26
+0.5677,77.44,Kauyen Liman Health Post,Kauyen Adam Health Post,xwd:sha256:0d638aec79480e6a22e2d9c0e221a4ebe6df2bb82993b1c05a41f9795c136563
+0.5677,88.01,Kauyen Liman Health Post,Kauyen Adam Health Post,xwd:sha256:27390df74fe99996597f849915e443dd8c2dd1e43ce95a6c230b44574165f067
+0.5677,77.44,Kauyen Adam Health Post,Kauyen Liman Health Post,xwd:sha256:49ae64b8d99e2e8c2514452acd8f5884b00b2f6a67d1c973c782c2622030b27d
+0.5675,105.25,Tudun Magaji Health Post,Tudun Wada Health Post,xwd:sha256:a8d4a33e30437667719c98fb87cb932c123da6cd8460f793444acc0b7ca0d7c1
+0.5675,105.27,Tudun Wada Health Post,Tudun Magaji Health Post,xwd:sha256:0a88b08ff22a468697f8d141dd7e5d52f7472fccbf27b89c1af34c7a7ddbbaa9
+0.5674,0.51,Hotoro South Health Post,Hotoro Arewa Primary Health Center,xwd:sha256:2733b0184a90cd43f4f417f214c8a0da0724efaeb0a5b45b5bdc88ac0d004b43
+0.5671,23.51,Dan Itache Health Post,Dan Itace Health Post,xwd:sha256:ee109679df65e45945494ffdc29a3d2a08bd1cd004ebc4611fba4792710866bc
+0.5669,3.20,Chedi Bubba Ruga Health Post,Chedi Maidala Health Post,xwd:sha256:02455493be9026e30918cebd43284b9573dbebd331dc036dd75158be6d37623d
+0.5668,69.43,Dutsen Karya Health Post,Dutsen Garma Health Post,xwd:sha256:ae25a801d305f61689918acaba730d5e990a169199513d9052f4f549ef2410b3
+0.5664,1.45,SSS Dawakin Tofa Health Post,Dawakin Tofa General Hospital,xwd:sha256:54c988197bbbb558ead03e8925c4fe8928e8b2c0325f75874d3d2e9b15e63ff6
+0.5663,0.21,Bono Health Post,Borno Health Care,xwd:sha256:174a73140f3cbfa623f650767aad7c445fae41b03ef51d530028471b5b341b6d
+0.5661,1.78,Patricia General Hospital,Sumaila General Hospital,xwd:sha256:8fb477cc256f069b260b23e2746946db085c652a241ec1d8b2014d4a270071ce
+0.5660,0.81,Yakasai Health Post,Yama Kanawa Health Post,xwd:sha256:a2768ddddd8cd157b523fc74a446a2cfd253ad3235d73018d64308feba98fefc
+0.5659,1.14,Universal Specialist Hospital,Saymays Hospital Specialist,xwd:sha256:9ef6be044cb3adbe4c5d2f25c0017e97e7e8453f840cd8a1d7a62ca62e47deed
+0.5657,115.74,Unguwar Bai Health Post,Unguwar Kuka Health Post,xwd:sha256:a7048c33080bc5b26d85c7e13f649370c29f2ec66df6f6231ac389f91f7b073e
+0.5655,1.00,Mekwandira Health Post,Mai Kwandara Health Post,xwd:sha256:f914ba204a4a78bdde0fb1623ac01281cffe1e771901f49206f6d39490ffbc6e
+0.5655,1.71,Sarkakiya Health Post,Garke Health Post,xwd:sha256:23bfe1898cb852bb46b84192a8f0f9ce788e37d38a8cfa68e82c2cdd90feb251
+0.5654,3.40,Tangaji Health Post,Tangajiyo Health Post,xwd:sha256:8b298b66cb42f7897d57869ab1f6ce8d5939e4e910c864e5fd99491b6ba3bef5
+0.5650,2.34,Ginsawa Health Post,Dusurawa Health Post,xwd:sha256:4eebe79b1d993ed4ed1608c6b55f36727c52801cac594e0a0f63207812094f0b
+0.5650,158.56,Yan Bawa Health Post,Yan Kwada Health Post,xwd:sha256:59e459056be0a7d23dd112147aca2f2fd6b2e290cda598da4c1a39389cd74611
+0.5650,76.76,Yan Bawa Health Post,Yan Kwada Health Post,xwd:sha256:c4e500b42a82d01ff642342f15fdd92103eb2ded81137d45dda2dcf666ff03f8
+0.5647,35.18,Tudun Magaji Health Post,Tudun Kaya Health Post,xwd:sha256:102e048b27983bb62ea7a5650704b82fe8f012ca538a6b60ba9006c2dadceb3f
+0.5647,35.16,Tudun Kaya Health Post,Tudun Magaji Health Post,xwd:sha256:fd07f01397521ae4d384616bbbd40f276d5b5ea8f6981945e502a93beafad1c3
+0.5646,1.24,Jauben Health Post,Kwami Health Post,xwd:sha256:b7850d4f4eb3a0b3aec45ffba90b52ed7e259efdb2dea2c27be44662cea4c0de
+0.5646,1.88,Dungurawa Health Post,Gudau Health Post,xwd:sha256:adc1ce5e986e85407e32e9c7ad98155e02b7d8dd22dd969625e800c86ccc8645
+0.5644,113.62,Yar Zabaina Health Post,Yar Fulani Health Post,xwd:sha256:a22730b11bb4a2fc5be55b096515c9988ec363fcc7ca9bbcd19b93f7106f8767
+0.5643,6.54,Unguwar Tofa Health Post,Unguwar Kuka Health Post,xwd:sha256:abd02e33226f2c7a73cbb4e029b84d3676e096bf2d2943f911745e3c89577bc3
+0.5643,0.01,Yammawa Wanzari Health Post,Zago Health Post,xwd:sha256:62b4863ecd0690ebd420c1abda7c73610c293be87a515795283f0c6bd965a513
+0.5641,39.78,Sabon Ruwa Health Post,Sabon Doka Health Post,xwd:sha256:f30aa37ef2187b6fb4b3021f8e9f6c4b71bf92030a3673fcc28af8562a110a06
+0.5637,58.15,Yan Kau Health Post,Yan Dake Health Post,xwd:sha256:1e368ba69508e8192c712dbbf1cd26c1c8733aacbd3dd43ecbc6f50a8cb6b7ae
+0.5634,0.01,Zawa Chiki Primary Health Centre,Zawachiki Health Post,xwd:sha256:36a0d323703fcfd230e8be217cbea739569a61bdff69eec798948b485c150f05
+0.5631,51.11,Tudun Bojuwa Health Post,Tudun Gunsau Health Post,xwd:sha256:76db8ea989a93255f2d36a5a707ec2ac7717d7fc606cfc49516ee3c524177f91
+0.5630,100.07,Unguwar Bai Health Post,Unguwar Labi Health Post,xwd:sha256:67efd644e74c68e1355cd665eb5bfca12b680b1dd525085f4b183d68989a63ae
+0.5627,19.04,Unguwar Rimi Health Post,Dan Rimi Health Post,xwd:sha256:77b5e4d9bd46d48c34277deab863cbee77716fd2e634ea161feabacdea025186
+0.5627,2.38,Roba Health Post,Gyauro Health Post,xwd:sha256:0944c88f0b75daaa6e615e5628458456907dd67a0f9ace3fac536c8fb35c5650
+0.5625,59.10,Unguwar Liman Health Post,Unguwar Labi Health Post,xwd:sha256:d00106e0938a3633ab72fb6a206e2bd57a16c09b58d5db4db7159372ba316112
+0.5625,0.00,Kafin Dabga Health Post,Zungurau Health Post,xwd:sha256:c2c6255e7d30fc9f495cd0457272f5c8f4c1857b70866f6c1c82aef745b197f0
+0.5621,0.60,Karshi Health Post,Kauyen Liman Health Post,xwd:sha256:453f70a34394aa0618266aaca7cf5eb897a673345055e1b107de1a08b5721fb3
+0.5620,6.59,Rimin-Bai Health Post,Rimin Dako Health Post,xwd:sha256:8c78a909017955b8e748139a7a3bb70b38ea4aa973814f4c8ef232b97a6adc1d
+0.5620,1.36,Balan Health Post,Wari Health Post,xwd:sha256:783f1540eef06942c811191a5d18cc1bcb8ca753fe848b17046c5f281b9275b3
+0.5619,51.34,Unguwar Liman Health Post,Unguwar Mani Health Post,xwd:sha256:0b824be35f090cf303ac6b2f123a06c8a784beb21568b7bec0785d5a811a7b53
+0.5618,1.46,Gulbi Health Post,Gargari Health Post,xwd:sha256:0140040709eddd428518bc28901a09525818d06ff1df809cef4d8d7b2c7e8173
+0.5618,1.46,Gargari Health Post,Gulbi Health Post,xwd:sha256:9b09320ff9bd139c413a2e1cd902b2e4b3aab4d0bf9e55af5b959e456c98d965
+0.5614,1.18,Rimin-Bai Health Post,Gera Health Post,xwd:sha256:7eba61468a054e5ac68182037e2e560d1a6eb94a2d92b1d09333ac8cbdaca7b0
+0.5609,16.95,Dutsen Karya Health Post,Dutsen Dorawa Health Post,xwd:sha256:5582669d73fcda30175fdcc4148c3ad0b1451c41c3b0e49573b75d619e4c8114
+0.5604,50.28,Unguwar Liman Health Post,Unguwar Munana Health Post,xwd:sha256:bd8ed8dac796360e6ddb055106c0219a64ba29f5a2ca6288ef6077d2a38d5999
+0.5604,19.56,Yammawa Gamji Health Post,Yammawa Wanzari Health Post,xwd:sha256:33d97f5f2bc7432843c896238c4608789d9d26771ca5e92b32d98162e4120cd2
+0.5600,64.46,Zangon Mata Health Post,Zangon Majema Health Post,xwd:sha256:f0cdbc9b7ab95cd527ffa200f6dedcffd8ac2a4a14176a1379e7d1e9cb05366c
+0.5598,101.07,Yan Bawa Health Post,Yan Dake Health Post,xwd:sha256:52e579130543cf2abb20fb880921560f54ebd9287807001ede8116b899582312
+0.5598,42.77,Yan Bawa Health Post,Yan Dake Health Post,xwd:sha256:115aaf4e3a54f5adbacf3547d86d68028d8f6851d17cf96ef682615c89043b41
+0.5597,100.24,Unguwar Bai Health Post,Unguwar Bakke Health Post,xwd:sha256:37527f7279b21e578b8fe166857cc9f98251131b8f5ad6c6c6cd6305a4467978
+0.5596,25.58,Kadawa Primary Health Centre,Kadawa Health Center,xwd:sha256:6b02b9f977abe46e27b84a654d5285d42aa575342ef800316e0fa750eb6b0934
+0.5595,45.40,Dutsen Karya Health Post,Dutsen Amare Health Post,xwd:sha256:69c21a53a9535bd3d52c4fd54c76df1a2d6f23a61c2431e5cf18e7a85e17d36f
+0.5593,29.78,Unguwar Turaki Health Post,Unguwar Tofa Health Post,xwd:sha256:6fcf0111fa720e210d2d2d85bb46726d28942097e8b8c2f5241699aceec827a0
+0.5590,42.69,Unguwar Bai Health Post,Unguwar Duniya Health Post,xwd:sha256:df507f18e64544f6e3c913c3af6cd0a09277f6e9f9aac9c25032f2041dfe75ab
+0.5590,1.61,Dungurawa Health Post,Kwarkiya Health Post,xwd:sha256:e34f3112d1083e7bc9290c124ce533f0a318596c90d7e04f9b1d0978eaf173b4
+0.5585,2.40,Bagadawa Health Post,Abdakaya Health Post,xwd:sha256:9b585ff0d3ab5c2d78396b60c6e8b711f23ac243efaab6dd223118ca0e3bc242
+0.5584,1.44,Jauben Health Post,Yola Health Post,xwd:sha256:6b220ced5389b9eb44d99d751e12083f6d99aa5c8ffee7a96df58aeef158cec3
+0.5584,0.50,Dawaki General Hospital,Dawaki Clinic and Maternity,xwd:sha256:e48c842aac5859b608e7985faa018a40aaccf5980a232ced66ae91860dd10585
+0.5583,70.98,Unguwar Rimi Health Post,Unguwar Bai Health Post,xwd:sha256:0078d2c17713308efcb274cbccc4cd6abc995cc0ec26b8ac821903b18764d952
+0.5583,47.50,Unguwar Bai Health Post,Unguwar Rimi Health Post,xwd:sha256:9f409b00d0403ffb3127ce4ccc02a184082c1a635adee44e64109d5167d15ebd
+0.5582,11.88,Unguwar Rimi Health Post,Unguwar Kwari Health Post,xwd:sha256:525e62c235794d7120d9ad7d7df7ad6d36cf59a926d61711ff58db81c9d9e611
+0.5582,1.24,Zaura Babba Primary Health Centre,Zaura Health Post,xwd:sha256:cef5a4a89a253fb96a548f40ba6cea5989c40ccba09d24afef59b07a19434cc4
+0.5581,62.10,Dan Dake Health Post,Dan Isa Health Post,xwd:sha256:574c3f1aa30813406b2702b9e6ff253ffbe15bc5a1107c7225aadf0839fbb31c
+0.5579,139.39,Unguwar Bai Health Post,Unguwar Dawa Health Post,xwd:sha256:6e21dd0dde6e174d71d5d85d488cb91f2462c997b6a2b224be2e80c4aff39467
+0.5578,59.77,Zangon Barebari Health Post,Zangon Majema Health Post,xwd:sha256:10ce50344475f7191bf22319cc6b232784f1919f9c80d200b62f8287cbb33490
+0.5577,1.32,Gajida Health Post,Danbazau Health Post,xwd:sha256:81ae2a05a591b228c88a324086407f3329f67dbd3d1745f761242f77b18ba6f0
+0.5577,0.02,Gama Health Post,Jejin Kudu Health Post,xwd:sha256:210dd4feda12c417095b3c2c700750aa72ddfa7dc696ea1efed51d72d78055c6
+0.5575,152.42,Unguwar Liman Health Post,Unguwar Bai Health Post,xwd:sha256:3eafd4d082ecb26c969895eb9389ca9d6adda5c0814cef9216bd1b57d6631571
+0.5575,32.85,Unguwar Rimi Health Post,Unguwar Kudu Health Post,xwd:sha256:44f94d502a1f2f3d88c1e16ab5f9db12eb237fc47761f09dd90b51db96b6a2ba
+0.5575,59.50,Unguwar Bai Health Post,Unguwar Liman Health Post,xwd:sha256:b7d1d714a0ab95508773aa8df8ccf06d3aa4c1748e696ec8817e48c4de00058d
+0.5575,152.42,Unguwar Bai Health Post,Unguwar Liman Health Post,xwd:sha256:9ff5af659c4c86f96b18f90f7defa4bef5954b0e74518df43b79fb02c7d891af
+0.5570,1.31,Kaleku Health Post,Zoza Health Post,xwd:sha256:4207d061e4bde16c5b4103990609116ef37c38981264e33960334ff9ce9f46df
+0.5564,1.19,Yammata Health Post,Bachirawa Health Post,xwd:sha256:ce64b129896852a837d5a01f0288d4df0ac45036f7e71bd972bb32d7b87fafc2
+0.5563,2.52,Doka Health Post,Dansudu Health Post,xwd:sha256:c21a69672a00f78ab50f0312cfccaa289a7e9c0061aef50fa1cd7d2e44de4044
+0.5562,14.88,Unguwar Liman Health Post,Unguwar Dawa Health Post,xwd:sha256:d5ed3e78d44bf7541a835436881f916a0cd2f08b2034feda0f19478e388da1e9
+0.5561,0.92,Hotoro Danmarke Health Post,Hotoro South Health Clinic,xwd:sha256:0d0f749e91bb96ad2eaf513f49e55be31ca6521d64fa72dade1ca580fd6047ea
+0.5557,126.19,Dan Amale Health Post,Dan Malam Health Post,xwd:sha256:051787ab93edb4d6ae902dc800a5991ca960af9b445b280bd95145e80d3d8385
+0.5557,1.12,Kawaji Health Post,Haye Health Post,xwd:sha256:22b90bad5616e54ce76e904bab942f64288dce96a6b03e52b47cd5a63c19a183
+0.5556,40.80,Tashar Basa Health Post,Tashar Kadiri Health Post,xwd:sha256:d00ae12cf03b5ca1d893ccdc4d5730f23dd87ec28ced7bd0ebf35796e1b77e3a
+0.5556,1.90,Kunnawa Health Post,Gwamai Health Post,xwd:sha256:9ab4264e8a5cfde3150775dfa1cf27a841dbb878cafee1d6826d6d16e4dbb2aa
+0.5556,1.90,Gwamai Health Post,Kunnawa Health Post,xwd:sha256:0abe1abff0cae32734c3ddbfa6860bbaf340a38f9b6a5df3d34d739f50a97395
+0.5554,38.94,Unguwar Rimi Health Post,Unguwar Mani Health Post,xwd:sha256:c92d7f3a7c39aa4c0038684b45d08fcab28034aea4803f7e5f80281be8dbb448
+0.5553,77.71,Kauyen Mahuta Health Post,Marken Mahuta Health Post,xwd:sha256:ac431d7f00a8677324fc86e37472c5cb77a549e421c3f7cc838f290a2acc0d57
+0.5552,86.93,Tudun Wada Health Post,Tudun Wada General Hospital,xwd:sha256:7c25047c3f2fbfc09ca35ff4fb5367afedea417ffe51783a590b1b90e0ef7a89
+0.5550,72.60,Yalwa Karama Health Post,Yalwa (Ran) Health Post,xwd:sha256:80916a0ff41a604b05cfd16aab22023703a10f1db368a9228d2bacc9b1695602
+0.5547,60.45,Unguwar Rimi Health Post,Unguwar Gai Health Post,xwd:sha256:c40f985e72f00696c4cc55748bec2fe05d9ef5e4e64a8cc3dad6d79f1d338108
+0.5546,105.80,Unguwar Liman Health Post,Unguwar Rimi Health Post,xwd:sha256:11e7bd8e93b4de9759e3798c0532b72f4ecf23fed6e285a10c94f244225d4044
+0.5546,53.86,Unguwar Rimi Health Post,Unguwar Liman Health Post,xwd:sha256:a456c9b58857d65bdf70aae9d35937f7ac71eea5002e693bfdb44ae41584a770
+0.5546,89.97,Unguwar Rimi Health Post,Unguwar Liman Health Post,xwd:sha256:e263807b156a85291df6d3ecebc09dd0c2fb67dc5833940ca794bba65edeeeeb
+0.5542,55.58,Yar Zabaina Health Post,Yar Kanya Health Post,xwd:sha256:452ae43bd7308733299c35d667b60b8a001f64212b312f5ede63b0055fd2e118
+0.5541,111.46,Unguwar Bai Health Post,Unguwar Munana Health Post,xwd:sha256:407b73d881bfb6354aad7e979d7198bd8a8351ffb5e6756f5c52ab268c867e95
+0.5540,109.52,Unguwar Liman Health Post,Unguwar Gai Health Post,xwd:sha256:b84b1e37dc820c6d248304fb2819288ef24fe8ee0dc5e0903c756f27649d9482
+0.5540,37.61,Unguwar Rimi Health Post,Unguwar Makera Health Post,xwd:sha256:cbcf1a738459cea8cae05a75fda1db780ba40a36930bcb9581126ffc47daf99c
+0.5539,44.05,Yan Kau Health Post,Yan Bawa Health Post,xwd:sha256:a0a4f8447606c6ccbd3e78c5564ee53c00117419c055997f8e04b6e1c97dbf81
+0.5538,21.47,Rimin Dako Health Post,Rimin Zakara Health Post,xwd:sha256:5c0a564e22b7cd9fa14c4d7cfd62333cdaba7cf79c84620b00f277c37436a81b
+0.5538,164.30,Yan Bawa Health Post,Yan Kamaye Health Post,xwd:sha256:c6623cc6cfa5c8f545b045c0f1303e55b0e4bdd46e5ea7154a851d8de535f384
+0.5538,69.54,Yan Bawa Health Post,Yan Kamaye Health Post,xwd:sha256:cf82e3941a05219d52b020e9200aa951d7ea530887d1f5ac9bc1b235f724fdf6
+0.5536,76.25,Unguwar Tofa Health Post,Unguwar Gyartai Health Post,xwd:sha256:3701deb93b2856d6b25821d4363b55c9fe4c3735d7a89e70a6cbe46fc07185b5
+0.5536,99.15,Unguwar Bai Health Post,Unguwar Makera Health Post,xwd:sha256:c0f96c0c793cc8c5ef1ebc2b33d79d9bf4aef5d9c4a6bf03a0bc058281265334
+0.5536,76.26,Unguwar Gyartai Health Post,Unguwar Tofa Health Post,xwd:sha256:7da4f3031d8d2611b0406992b034874225036f8a6a50a2e7fd26c472d142fa77
+0.5535,98.74,Unguwar Bai Health Post,Unguwar Kaka Health Post,xwd:sha256:04e841f1e7563fcbee77967ccd98ada4cea0458c6a6fd6bd499f042ce4b59300
+0.5534,14.61,Dan Isa Health Post,Dan Murna Health Post,xwd:sha256:182541441705040bc2505423d52d1e18f52927e642755fcc1b6572225507206f
+0.5533,1.80,Jigar Health Post,Yawurma Health Post,xwd:sha256:2f35d0d06bb95dc7b12014ff5c917875c6329af50438835a37a9aa4f144df1db
+0.5533,1.80,Yawurma Health Post,Jigar Health Post,xwd:sha256:4bfe7419875443de5addeb7a817821cbb3ba35a9f9643a368d9530e0640a7642
+0.5533,43.08,Goron Dutse Health Post,Yan Dutse Health Post,xwd:sha256:2388704d89765b2ab869e32a66929d750cc36c4f0ca9a373ae01ae1ffc2c2382
+0.5533,41.04,Goron Dutse Health Post,Yan Dutse Health Post,xwd:sha256:0d0b7ee792e605350ac3561fcf83e858f814ec611096a06c16bad502be8ebb51
+0.5529,66.68,Kara Primary Health Centre,Kara Health Center,xwd:sha256:ec87b6c48103b5359a99b7b2d53208aa17a94548ba8491efabbd5b76dfdee3e6
+0.5529,129.64,Yan Kau Health Post,Yan Kwada Health Post,xwd:sha256:22ac28397bbfb3f0f5d3fa7363209730aedbec6bad0d376aedcba9172ee6c53a
+0.5529,0.69,Tsanyawa Primary Health Centre,Rage Primary Health Center,xwd:sha256:91e12b62abb138f4860f99d924c49824404ed775a9823af0b8d9dd8ed444d0f1
+0.5528,69.31,Unguwar Turaki Health Post,Unguwar Gyartai Health Post,xwd:sha256:149d6a7b68cb27ee1e55393d75a1736b8ec5441516e9c4700728823cc6c804c0
+0.5528,2.49,Ginsawa Health Post,Dausayi Health Post,xwd:sha256:e4dcbb640ed8aa704480de4cc9c3b985805a671582535e210e6f38a9d9bb7ac2
+0.5527,21.41,Yalwa Primary Health Centre,Yalwa (Dal) Primary Health Center,xwd:sha256:125ec94896443bc63d3c0e555eb5580301933e8793ad5b89dcf54b785b3c4686
+0.5526,1.80,Danguguwa Health Post,Zango Health Post,xwd:sha256:e4ef73c9d2fb57f02b6cc7094ef9fabb2bb0995be83562a4c9383d9bf54c9aba
+0.5526,9.51,Dan Isa Health Post,Dan Maliki Health Post,xwd:sha256:8ffad6a3cda3ea6f975bd3b4cf64eb1fbe5baa1ea5742a7bf82d6d36c95a7188
+0.5524,48.23,Hayin Gwarmai Health Post,Hayin Bango Health Post,xwd:sha256:df45810da997ff60e372c13b51bfef229280dd931fb856eaf840d7e61edefa90
+0.5524,101.49,Tudun Bojuwa Health Post,Tudun Magaji Health Post,xwd:sha256:204786458ece02b939f6ab62cad533d3d73aabfe060f06ba00f85e37f630b8c2
+0.5523,80.38,Chiromawa Primary Health Centre,Chiromawa Health Clinic,xwd:sha256:c48bc2fda6a0d712a1b21120b5d27447518f668635ef5dbaab77d975c4b67798
+0.5523,44.10,Chiromawa Primary Health Centre,Chiromawa Health Clinic,xwd:sha256:63fc217adc297cf101448b034dfc1060e2aa5c39d779e1b40811b4be24e308d9
+0.5523,10.03,SSS Dawakin Tofa Health Post,Gabari (Dawakin Tofa) Health Post,xwd:sha256:0371a52827f3d00116fc0c3e13e8c71d042f03cc21abda6ef0ba88c8be9f0ba0
+0.5521,29.84,Kauyen Mahuta Health Post,Kauyen Adam Health Post,xwd:sha256:f2f3e4cf0b61cc6af92c1b485e6509e51a872f04775bf0cb7b9a5aba707cf047
+0.5521,40.88,Kauyen Mahuta Health Post,Kauyen Adam Health Post,xwd:sha256:ad04d551fe3b2491d3c1c96e7c9f40d9c406511a28f496560ae94c17d6930261
+0.5521,131.48,Yan Bawa Health Post,Yan Lami Health Post,xwd:sha256:cc7f6fd30586887728ba214e6808a939c6295a11865791b48e9910af49b8d2e8
+0.5521,70.82,Unguwar Bai Health Post,Unguwar Kudu Health Post,xwd:sha256:68c3682507bc0a85025ebad8c5cff77c13c5eed17ba6791295cd0961fb8503ce
+0.5521,29.38,Yan Bawa Health Post,Yan Lami Health Post,xwd:sha256:0baf28ca902bf68412ee0b1e85cb6cf0cba3933f082b83e0768ec6d8d0a12911
+0.5521,4.01,Fango Health Post,Zango Health Post,xwd:sha256:4d4bc389531555779fa8a5aa6a42171b58100dff8692f559b97e8e2f4ea9ab95
+0.5521,31.04,Dan Isa Health Post,Dan Rimi Health Post,xwd:sha256:70bcf98556c7da43ea2387299297d735044e4bbc921c8c92a628f880a9ddefaf
+0.5520,69.96,Tudun Bojuwa Health Post,Tudun Kaya Health Post,xwd:sha256:4cda1afea87beec4de0f37ae8aadb577f703055ce3f822c89749346f0371bc5b
+0.5519,147.69,Yan Bawa Health Post,Yan Shadu Health Post,xwd:sha256:40342ffe8f72b7153e0a70d1ded905d751f094e1679ac040431cf2fd1e5e7eb7
+0.5519,85.63,Yan Bawa Health Post,Yan Shadu Health Post,xwd:sha256:af017c83dbe258ff210805cae8ed44de60bc8f5c3ea8c615ea2c026bea692222
+0.5517,105.46,Falgore Health Post,Falgore Primary Health Center,xwd:sha256:4d03ce6b3e2d33703195e71789a6f997523bec32c5ac837cb834eef4fe0d2ad1
+0.5517,0.53,Hawadin Bango Primary Health Centre,Hayin Bango Health Post,xwd:sha256:3b569cb6d8ec8ccb73c895564f9c3ed61f07d87799b370626287e28231d42cc8
+0.5517,1.69,Sarkakiya Health Post,Kaleku Health Post,xwd:sha256:c9993ca62be9b7bd3814afd37bc7c64efaa748eebd2daa347cd4c1dde96e17af
+0.5517,65.55,Yalwa Karama Health Post,Yalwa (Kku) Health Post,xwd:sha256:a9d3a3d21a2fd22cee29e48958a99bde872d37b2821649e058093eade3a51f70
+0.5516,1.70,Kaleku Health Post,Sarkakiya Health Post,xwd:sha256:1c03037840ecaa0fc8356457e9cabc07c8be042c4d465260c8d06b2f506b9ce7
+0.5514,122.63,Yan Kau Health Post,Yan Shadu Health Post,xwd:sha256:b868efd6b026857157d0034b0d724ca09ea1b0fc2c3b58c7f0ee2d618f3cef27
+0.5514,2.01,Yakasai Health Post,Sabo Health Post,xwd:sha256:a9e01531c9262fb2f222e82143cf1920490604f7564ae28d88bf7da09ff31188
+0.5513,109.75,Unguwar Liman Health Post,Unguwar Duniya Health Post,xwd:sha256:613bcc63a64adee9591cb2ab2674427acc74a0b8a4a70f2b7b5e64da14e6b9bc
+0.5513,42.50,Unguwar Rimi Health Post,Unguwar Munana Health Post,xwd:sha256:ab3b6578281f4566fb1f95cb7ab7da007c5dbd4141db8902048ac9ac45f9a44b
+0.5504,53.70,Unguwar Liman Health Post,Unguwar Kaka Health Post,xwd:sha256:bfea4288b3844ee374072e7bc3a54f95160306e15bd57b20f21c0a92f7b61920
+0.5503,1.50,Gezawa Health Post,Sararin Gezawa Health Clinic,xwd:sha256:351a07e7679b3ccb71273160d59567bd4f9b656fd2db21a8d43e98e23891a8ca
+0.5502,89.83,Unguwar Liman Health Post,Unguwar Kwari Health Post,xwd:sha256:6c7ce11d42cd9fecba217d0a353071eb5872ee71ce22a13a0c2cfa21d46508b1
+0.5502,16.52,Rimin-Bai Health Post,Rimin Kebe Health Post,xwd:sha256:77f3f69c179e137f12238d0ff978ca60482a807fcf17f9be8ad407baf5f47554
+0.5502,11.85,Rimin Dako Health Post,Rimin Kebe Health Post,xwd:sha256:1ca7579cae84029de14031f4f245536164911cb79b313164e80b33836e11e67b
+0.5502,40.01,Gabasawa Primary Health Centre,Gabasawa Health Care,xwd:sha256:73edc86eabfb247c74af8a3a40fe255ea7e50bad781ff989881c6b720780b58a

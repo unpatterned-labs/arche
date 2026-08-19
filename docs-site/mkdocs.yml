@@ -72,11 +72,15 @@ nav:
     - Installation: getting-started/installation.md
     - Resolve two lists: getting-started/quickstart.md
   - Guides:
+    - Reconcile health facilities: guides/facility-reconciliation.md
+    - Resolve people across documents: guides/documents-to-decision.md
     - Prepare your data: guides/prepare-data.md
     - Interpret a decision: guides/interpret-decisions.md
     - Places and products in action: guides/places-and-products.md
     - Accuracy and scope: guides/accuracy-and-scope.md
   - Reference:
+    - How arche works: reference/how-arche-works.md
+    - Decision contract: reference/decision-contract.md
     - Record resolution API: reference/record-resolution.md
   - Contribute: contributing.md
 

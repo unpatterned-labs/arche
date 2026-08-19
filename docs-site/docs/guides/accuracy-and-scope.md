@@ -44,4 +44,5 @@ the same candidate set and decision policy.
 
 See [places and products in action](places-and-products.md) for a runnable
 place-resolution tour and an evaluation against the public Abt-Buy electronics
-benchmark.
+benchmark. The [notebook release evidence](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/RELEASE_EVIDENCE.md)
+records the exercised notebook set, data paths, and current scope.

@@ -60,4 +60,6 @@ promote it to a match solely because its score is high.
 - [Prepare your data](../guides/prepare-data.md)
 - [Interpret a decision](../guides/interpret-decisions.md)
 - [See places and products in action](../guides/places-and-products.md)
+- [Reconcile health facilities](../guides/facility-reconciliation.md)
+- [Resolve people across documents](../guides/documents-to-decision.md)
 - [Read the record-resolution reference](../reference/record-resolution.md)

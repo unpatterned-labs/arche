@@ -282,8 +282,17 @@ def bench(label, comps, b=None):
     print(f"  {label:<28} P={p:.4f}  R={r:.4f}  F1={2*p*r/(p+r):.4f}  (TP {tp}, FP {fp})")
 
 
+""")
+
+code("""
 bench("name only (baseline)", NAME)
+""")
+
+code("""
 bench("+ description", NAME + [{"field": "description", "kind": "tftoken", "weight": 1.0}])
+""")
+
+code("""
 bench("+ manufacturer", NAME + [{"field": "manufacturer", "kind": "name", "weight": 1.0}])
 """)
 
@@ -316,7 +325,6 @@ print()
 
 B4 = [{"id": r["id"], "name": strip_brand_prefix(r["name"], brands)[0],
        "description": "", "manufacturer": ""} for r in goo]
-bench("baseline", NAME)
 bench("publisher prefix stripped", NAME, b=B4)
 """)
 

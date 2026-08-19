@@ -103,6 +103,14 @@ def test_crosswalk_place_pack_links_facilities():
     assert out["blocking"]["candidate_pairs"] <= 4
 
 
+def test_crosswalk_contract_returns_candidate_edges_not_non_matches():
+    out = resolve.crosswalk(_FACILITIES_A, _FACILITIES_B, entity="place", block=None)
+    assert {edge["decision"] for edge in out["matches"]} <= {"match", "review"}
+    assert all({"a_id", "b_id", "score", "evidence", "decision_id"} <= edge.keys()
+               for edge in out["matches"])
+    assert ("A2", "B2") not in {(edge["a_id"], edge["b_id"]) for edge in out["matches"]}
+
+
 def test_crosswalk_requires_pack_or_comparators():
     with pytest.raises(ValueError, match="entity="):
         resolve.crosswalk(_FACILITIES_A, _FACILITIES_B)
@@ -115,6 +123,21 @@ def test_crosswalk_person_pack_runs():
     people_b = [{"id": "P2", "name": "Ngozi Okonkwo", "phone": "0803 123 4567"}]
     out = resolve.crosswalk(people_a, people_b, entity="person", block=None)
     assert out["matches"] and out["matches"][0]["decision"] in ("match", "review")
+
+
+def test_pairwise_contract_keeps_identity_and_action_separate():
+    same = resolve.pairwise(
+        Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
+        Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
+        jurisdiction="NG",
+    )
+    different = resolve.pairwise(
+        Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
+        Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "10987654321"}),
+        jurisdiction="NG",
+    )
+    assert (same.identity, same.action) == ("same_entity", "merge")
+    assert (different.identity, different.action) == ("different", "no_op")
 
 
 def test_explicit_comparators_override_pack():

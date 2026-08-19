@@ -1,6 +1,6 @@
 <div class="arche-hero" markdown>
 
-# Resolve messy records with inspectable evidence.
+# Know what's real.
 
 <p class="arche-hero__sub">Link people, places, organisations, and products with evidence, not just similarity scores.</p>
 
@@ -66,4 +66,7 @@ packs, evidence, abstention, and reproducible decision artifacts.
 - [Prepare your data](guides/prepare-data.md)
 - [Interpret a decision](guides/interpret-decisions.md)
 - [See places and products in action](guides/places-and-products.md)
+- [Reconcile health facilities](guides/facility-reconciliation.md)
+- [Resolve people across documents](guides/documents-to-decision.md)
+- [Understand how arche works](reference/how-arche-works.md)
 - [Read the accuracy and scope notes](guides/accuracy-and-scope.md)
