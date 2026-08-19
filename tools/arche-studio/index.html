@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arche studio</title>
+<style>
+  :root{
+    --ink:#12161c; --dim:#5b6675; --line:#dfe4ea; --bg:#f7f8fa; --card:#fff;
+    --match:#0f7b4f; --review:#a76a00; --diff:#a5271c; --none:#6b7280;
+    --bar:#3b6fd4; --bar-bg:#e8edf6;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+    --ink:#e7ebf0; --dim:#95a1b2; --line:#2a3240; --bg:#10141a; --card:#161c25;
+    --match:#3fbd85; --review:#e0a13a; --diff:#e0685c; --none:#8b95a5;
+    --bar:#6f9bf0; --bar-bg:#222b38;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{border-bottom:1px solid var(--line);background:var(--card);padding:14px 20px;
+         display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  h1{font-size:16px;margin:0;letter-spacing:-.01em}
+  h1 span{color:var(--dim);font-weight:400}
+  nav{display:flex;gap:4px;margin-left:auto}
+  nav button{font:inherit;border:1px solid transparent;background:none;color:var(--dim);
+             padding:6px 14px;border-radius:7px;cursor:pointer}
+  nav button[aria-selected=true]{background:var(--bg);border-color:var(--line);color:var(--ink);font-weight:600}
+  main{max-width:1160px;margin:0 auto;padding:20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:0 0 11px}
+  label{display:block;font-size:12px;color:var(--dim);margin:9px 0 3px}
+  input,select,textarea{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);
+        border-radius:7px;background:var(--bg);color:var(--ink)}
+  .fieldrow{display:grid;grid-template-columns:34% 1fr auto;gap:6px;margin-bottom:6px;align-items:center}
+  .fieldrow input:first-child{color:var(--dim)}
+  .x{border:1px solid var(--line);background:var(--bg);color:var(--dim);border-radius:6px;
+     cursor:pointer;padding:6px 9px;font:inherit;line-height:1}
+  .actions{display:flex;gap:9px;align-items:center;margin:16px 0;flex-wrap:wrap}
+  button.go{font:inherit;font-weight:600;background:var(--ink);color:var(--card);border:0;
+            padding:10px 20px;border-radius:8px;cursor:pointer}
+  button.ghost{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);
+               padding:9px 15px;border-radius:8px;cursor:pointer}
+  .verdict{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:13px}
+  .badge{font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+         padding:6px 13px;border-radius:999px;color:#fff}
+  .b-match{background:var(--match)} .b-review{background:var(--review)}
+  .b-different{background:var(--diff)} .b-no_candidate{background:var(--none)}
+  .score{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+  .ev{display:grid;grid-template-columns:32% 1fr 58px;gap:8px;align-items:center;
+      margin:5px 0;font-variant-numeric:tabular-nums}
+  .ev .k{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis}
+  .track{background:var(--bar-bg);border-radius:4px;height:9px;overflow:hidden}
+  .fill{background:var(--bar);height:100%;border-radius:4px}
+  .ev .v{text-align:right;font-size:13px}
+  .why{margin-top:14px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);
+       border-radius:8px;font-size:14px}
+  .why b{display:block;margin-bottom:4px}
+  .meta{margin-top:11px;font-size:11.5px;color:var(--dim);word-break:break-all;line-height:1.7}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+  tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg)}
+  tbody tr[aria-selected=true]{background:var(--bar-bg)}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
+  .err{color:var(--diff);margin-top:11px;font-size:14px}
+  .hint{color:var(--dim);font-size:13px;margin-top:8px}
+  .scroll{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .kv{font-size:13px;margin:3px 0}.kv b{color:var(--dim);font-weight:500}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>arche studio <span>&nbsp;decide whether two records are the same thing</span></h1>
+  <nav>
+    <button id="tab-compare" aria-selected="true" onclick="showTab('compare')">Compare</button>
+    <button id="tab-review"  aria-selected="false" onclick="showTab('review')">Review queue</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ───────────────────────────── COMPARE ───────────────────────────── -->
+  <section id="pane-compare">
+    <div class="grid">
+      <div class="card">
+        <h2>Record A</h2>
+        <div id="fa"></div>
+        <button class="x" onclick="addField('a')">+ field</button>
+      </div>
+      <div class="card">
+        <h2>Record B</h2>
+        <div id="fb"></div>
+        <button class="x" onclick="addField('b')">+ field</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="go" onclick="compare()">Compare</button>
+      <label style="margin:0">entity</label>
+      <select id="entity" style="width:auto"></select>
+      <button class="ghost" onclick="loadExample()">Load an example</button>
+    </div>
+
+    <div class="card" id="result" style="display:none"></div>
+    <div class="err" id="cerr"></div>
+  </section>
+
+  <!-- ───────────────────────────── REVIEW ───────────────────────────── -->
+  <section id="pane-review" class="hide">
+    <div class="actions">
+      <label style="margin:0">pack</label>
+      <select id="pack" style="width:auto" onchange="loadPack()"></select>
+      <label style="margin:0">show</label>
+      <select id="filter" style="width:auto" onchange="renderRows()">
+        <option value="all">everything</option>
+        <option value="review" selected>needs review</option>
+        <option value="match">auto-matched</option>
+        <option value="unmarked">not yet marked</option>
+      </select>
+      <span class="hint" id="packmeta"></span>
+    </div>
+
+    <div class="scroll"><table>
+      <thead><tr><th>decision</th><th>score</th><th>A</th><th>B</th><th>marked</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h2>The pair</h2><div id="pair" class="hint">Pick a row above.</div></div>
+      <div class="card" id="revev"><h2>Evidence</h2><div class="hint">Pick a row above.</div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Your call</h2>
+      <div class="actions">
+        <button class="ghost" onclick="mark('same_entity')">Same entity</button>
+        <button class="ghost" onclick="mark('different')">Different</button>
+        <button class="ghost" onclick="mark('unresolved')">Cannot tell</button>
+      </div>
+      <label>Reason (kept with the decision)</label>
+      <input id="reason" placeholder="what settled it, or what is missing">
+      <div class="grid" style="margin-top:12px">
+        <div><label>Reviewer</label><input id="reviewer" placeholder="your name"></div>
+        <div style="display:flex;align-items:flex-end"><button class="go" onclick="saveReview()">Save labelled copy</button></div>
+      </div>
+      <div class="hint">Writes a new <code>_reviewed.csv</code> beside the pack. The original is never touched.</div>
+      <div class="err" id="rerr"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function showTab(t){
+  for (const k of ["compare","review"]) {
+    $("#tab-"+k).setAttribute("aria-selected", String(k===t));
+    $("#pane-"+k).classList.toggle("hide", k!==t);
+  }
+}
+
+/* ---------------------------------------------------------------- compare */
+function fieldRow(side, k="", v=""){
+  const d = document.createElement("div");
+  d.className = "fieldrow";
+  d.innerHTML = `<input value="${esc(k)}" placeholder="field">
+                 <input value="${esc(v)}" placeholder="value">
+                 <button class="x">&times;</button>`;
+  d.querySelector("button").onclick = () => d.remove();
+  $("#f"+side).appendChild(d);
+}
+const addField = side => fieldRow(side);
+
+function record(side){
+  const o = {};
+  for (const r of $("#f"+side).querySelectorAll(".fieldrow")) {
+    const [k, v] = r.querySelectorAll("input");
+    if (k.value.trim()) o[k.value.trim()] = v.value;
+  }
+  return o;
+}
+
+const EXAMPLES = [
+  {entity:"place",  a:{name:"Karfi Health Post",     lat:"12.0421", lon:"8.5231"},
+                    b:{name:"Karfi Primary Health Centre", lat:"12.0605", lon:"8.5188"}},
+  {entity:"person", a:{name:"Mamadou Diallo"}, b:{name:"Mohamed Jallow"}},
+  {entity:"person", a:{name:"John Smith"},     b:{name:"John Evelyn Smith"}},
+  {entity:"place",  a:{name:"Co-op Academy Leeds", lat:"53.8008", lon:"-1.5491"},
+                    b:{name:"Co-op Academy Woodlands", lat:"53.8102", lon:"-1.5602"}},
+];
+let exi = 0;
+function loadExample(){
+  const e = EXAMPLES[exi++ % EXAMPLES.length];
+  $("#fa").innerHTML = ""; $("#fb").innerHTML = "";
+  for (const [k,v] of Object.entries(e.a)) fieldRow("a",k,v);
+  for (const [k,v] of Object.entries(e.b)) fieldRow("b",k,v);
+  $("#entity").value = e.entity;
+}
+
+/* Plain English for the verdict. This is the part a reviewer actually reads. */
+function why(r){
+  const d = r.decision, dm = r.distinctive_max, fl = r.distinctive_floor;
+  if (d === "no_candidate")
+    return ["Not even considered", r.note || "Blocking never proposed this pair, so no comparator ran."];
+  if (d === "match")
+    return ["Merged", `Enough evidence agreed, and at least one signal was distinctive enough to carry it (${fmt(dm)} against a floor of ${fmt(fl)}).`];
+  if (d === "review") {
+    if (dm != null && fl != null && dm < fl)
+      return ["Held for a human", `The fields agree, but nothing that agreed is <b>distinctive</b>. The strongest signal scored ${fmt(dm)} against a floor of ${fmt(fl)}, so the agreement could be coincidence. Common names do this.`];
+    return ["Held for a human", "The score landed in the margin where the engine is not willing to assert either answer."];
+  }
+  return ["Kept apart", "Too little agreed to propose these as the same thing."];
+}
+const fmt = x => (x == null ? "n/a" : Number(x).toFixed(3));
+
+function evidencePanel(r){
+  const [head, body] = why(r);
+  const ev = Object.entries(r.evidence || {}).sort((x,y)=>y[1]-x[1]);
+  const bars = ev.map(([k,v]) => {
+    const num = typeof v === "number";
+    const pct = num ? Math.max(0, Math.min(1, k === "distance_km" ? 0 : v)) * 100 : 0;
+    return `<div class="ev"><div class="k">${esc(k)}</div>
+      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+      <div class="v">${num ? v.toFixed(3) : esc(v)}</div></div>`;
+  }).join("");
+  return `<div class="verdict">
+      <span class="badge b-${esc(r.decision)}">${esc(r.decision).replace("_"," ")}</span>
+      <span class="score">${r.score != null ? Number(r.score).toFixed(3) : ""}</span>
+    </div>
+    ${bars || '<div class="hint">No comparator produced evidence.</div>'}
+    <div class="why"><b>${head}</b>${body}</div>
+    ${r.decision_id ? `<div class="meta">decision_id ${esc(r.decision_id)}<br>${
+      Object.entries(r.pins||{}).map(([k,v])=>esc(k)+" "+esc(v)).join("<br>")}</div>` : ""}`;
+}
+
+async function compare(){
+  $("#cerr").textContent = "";
+  const body = {entity: $("#entity").value, a: record("a"), b: record("b")};
+  const res = await fetch("/api/compare", {method:"POST", headers:{"Content-Type":"application/json"},
+                                           body: JSON.stringify(body)});
+  const r = await res.json();
+  if (r.error) { $("#result").style.display="none"; $("#cerr").textContent = r.error; return; }
+  $("#result").style.display = "block";
+  $("#result").innerHTML = "<h2>Decision</h2>" + evidencePanel(r);
+}
+
+/* ----------------------------------------------------------------- review */
+let PACK = null, SEL = null;
+const MARKS = {};
+
+async function loadPacks(){
+  const packs = await (await fetch("/api/packs")).json();
+  $("#pack").innerHTML = packs.length
+    ? packs.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${p.rows})</option>`).join("")
+    : '<option value="">no packs found</option>';
+  if (packs.length) loadPack();
+}
+
+async function loadPack(){
+  const id = $("#pack").value; if (!id) return;
+  PACK = await (await fetch("/api/pack?id=" + encodeURIComponent(id))).json();
+  if (PACK.error) { $("#rerr").textContent = PACK.error; return; }
+  $("#packmeta").innerHTML = `${PACK.rows.length} rows &middot; integrity ${esc(PACK.digest)}`;
+  SEL = null; renderRows();
+}
+
+const sideText = (row, p) => PACK.fields.filter(f => f.startsWith(p+"_"))
+    .map(f => row[f]).filter(Boolean).slice(0,2).join(" · ");
+
+function visible(){
+  const f = $("#filter").value;
+  return PACK.rows.filter(r =>
+    f === "all" ? true :
+    f === "unmarked" ? !(MARKS[r.decision_id] || r.review_outcome) :
+    r.decision === f);
+}
+
+function renderRows(){
+  if (!PACK) return;
+  const [pa, pb] = PACK.sides;
+  $("#rows").innerHTML = visible().map(r => {
+    const m = MARKS[r.decision_id]?.outcome || r.review_outcome || "";
+    return `<tr onclick="pick('${esc(r.decision_id)}')" aria-selected="${SEL===r.decision_id}">
+      <td><span class="pill b-${esc(r.decision)}">${esc(r.decision)}</span></td>
+      <td>${esc(Number(r.score).toFixed(3))}</td>
+      <td>${esc(sideText(r, pa))}</td>
+      <td>${esc(sideText(r, pb))}</td>
+      <td>${esc(m)}</td></tr>`;
+  }).join("") || '<tr><td colspan="5" class="hint">Nothing matches that filter.</td></tr>';
+}
+
+function pick(id){
+  SEL = id; renderRows();
+  const r = PACK.rows.find(x => x.decision_id === id); if (!r) return;
+  const [pa, pb] = PACK.sides;
+  const side = p => PACK.fields.filter(f => f.startsWith(p+"_"))
+      .map(f => `<div class="kv"><b>${esc(f.slice(p.length+1))}</b> ${esc(r[f]) || "&mdash;"}</div>`).join("");
+  $("#pair").innerHTML = `<div class="grid" style="gap:12px">
+      <div><h2>${esc(pa)}</h2>${side(pa)}</div>
+      <div><h2>${esc(pb)}</h2>${side(pb)}</div></div>`;
+  let ev = {}; try { ev = JSON.parse(r.evidence || "{}"); } catch {}
+  $("#revev").innerHTML = "<h2>Evidence</h2>" + evidencePanel({
+    decision: r.decision, score: Number(r.score), evidence: ev,
+    distinctive_max: r.distinctive_max ? Number(r.distinctive_max) : null,
+    distinctive_floor: 0.75, decision_id: r.decision_id, pins: {}});
+  $("#reason").value = MARKS[id]?.reason || r.reason || "";
+}
+
+function mark(outcome){
+  if (!SEL) { $("#rerr").textContent = "Pick a row first."; return; }
+  $("#rerr").textContent = "";
+  MARKS[SEL] = {outcome, reason: $("#reason").value};
+  renderRows();
+}
+
+async function saveReview(){
+  $("#rerr").textContent = "";
+  const res = await fetch("/api/review", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({pack: $("#pack").value, reviewer: $("#reviewer").value, marks: MARKS})});
+  const r = await res.json();
+  $("#rerr").style.color = r.error ? "" : "var(--match)";
+  $("#rerr").textContent = r.error || `Wrote ${r.written} (${r.rows_marked} rows marked).`;
+}
+
+/* ------------------------------------------------------------------ init */
+(async () => {
+  const ents = await (await fetch("/api/entities")).json();
+  $("#entity").innerHTML = ents.map(e => `<option${e==="place"?" selected":""}>${esc(e)}</option>`).join("");
+  loadExample();
+  loadPacks();
+})();
+</script>
+</body>
+</html>

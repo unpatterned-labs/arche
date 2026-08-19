@@ -73,6 +73,9 @@ nav:
     - Resolve two lists: getting-started/quickstart.md
   - Guides:
     - Reconcile health facilities: guides/facility-reconciliation.md
+    - Compare records, review a queue: guides/review-log.md
+    - Prepare health and care locations: guides/uk-health-and-care.md
+    - Reconcile schools in England: guides/school-reconciliation.md
     - Resolve people across documents: guides/documents-to-decision.md
     - Prepare your data: guides/prepare-data.md
     - Interpret a decision: guides/interpret-decisions.md

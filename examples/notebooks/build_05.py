@@ -190,6 +190,95 @@ for k, e in pred.items():
 """)
 
 md("""
+### What you would get without any of this
+
+A number on its own says nothing. Here is the same truth set scored by the
+things people actually reach for first, over every one of the 86,487 possible
+pairs.
+
+One arm needs explaining. arche sees coordinates and the string baselines do
+not, so a straight comparison would flatter it for reasons that have nothing to
+do with matching. The **arche, names only** arm removes the coordinates and
+runs the same pack on names alone, which separates "the representation is
+better" from "it had more inputs".
+""")
+
+code("""
+import re
+from rapidfuzz import fuzz
+
+def toks(s):
+    return {t for t in re.split(r"[^a-z0-9]+", s.casefold()) if t}
+
+# Count distinct pairs, not hits. The Wikidata pull carries the same wd_id on
+# more than one row (380 rows, 273 entities), so a counter scores one truth pair
+# several times and can push recall above 1.0. Sets are the only safe shape here.
+def sweep(label, decide):
+    hit, miss = set(), set()
+    for a in osm:
+        for b in wd:
+            k = (a["osm_id"], b["wd_id"])
+            if decide(a["name"], b["name"]):
+                (hit if k in truth else miss).add(k)
+    return label, len(hit), len(miss)
+
+def jaccard(x, y):
+    tx, ty = toks(x), toks(y)
+    return len(tx & ty) / len(tx | ty) if tx and ty else 0.0
+
+rows = [
+    sweep("exact name (casefold)", lambda x, y: x.casefold().strip() == y.casefold().strip()),
+    sweep("token Jaccard >= 0.5",  lambda x, y: jaccard(x, y) >= 0.5),
+    sweep("token_set_ratio >= 90", lambda x, y: fuzz.token_set_ratio(x, y) >= 90),
+]
+
+# arche, names only: same pack, coordinates withheld
+An = [{"name": r["name"]} for r in osm]
+Bn = [{"name": r["name"]} for r in wd]
+pn = {(osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e
+      for e in crosswalk(An, Bn, entity="place")["matches"]}
+def arche_arm(label, predictions):
+    hit = {k for k, e in predictions.items() if e["decision"] == "match" and k in truth}
+    miss = {k for k, e in predictions.items() if e["decision"] == "match" and k not in truth}
+    return label, len(hit), len(miss)
+
+rows.append(arche_arm("arche, names only", pn))
+rows.append(arche_arm("arche, name + coords", pred))
+
+print(f"{'approach':<24}{'precision':>10}{'recall':>9}{'F1':>8}{'false merges':>14}")
+for label, tp, fp in rows:
+    prec = tp / (tp + fp) if tp + fp else 0.0
+    rec = tp / len(truth)
+    f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0.0
+    print(f"{label:<24}{prec:>10.3f}{rec:>9.3f}{f1:>8.3f}{fp:>14,}")
+print()
+print("False merges here are matches outside the 87 labelled pairs. The label")
+print("set is not complete, so some are real hospitals nobody labelled. That")
+print("cuts the same way for every row, which is what makes the column")
+print("comparable even though it is not a clean error count.")
+""")
+
+md("""
+The fuzzy baselines behave exactly as the argument predicts. Loosening from
+exact to token overlap takes recall from 0.709 to 0.965 and drops precision
+from 0.859 to 0.182, turning 10 false merges into 372. **One threshold cannot
+fix both directions at once.**
+
+Now the part that does not flatter us. On F1, **arche with names only does not
+beat exact matching** (0.769 against 0.777). It is a different trade, not a
+better one: recall 0.930 against 0.709, precision 0.656 against 0.859. It finds
+a third more of the true pairs and pays for them.
+
+If your sources spell things identically, exact matching is a perfectly good
+answer and you do not need any of this. That is worth saying plainly, because
+the case for representation is not that it wins everywhere.
+
+What moves it clearly ahead here is the coordinates: 0.854, the best of the
+five, at the highest recall of any arm that keeps precision above 0.7. The
+lesson is not "arche beats string matching". It is that **a single signal, of
+any kind, runs out** — and the engine's job is combining several without
+letting any one of them decide alone.
+
 Both remaining abstentions are the right answer rather than a gap.
 `Memorial Hospital` is a generic stem — it appears four times in *each* source.
 `Nuffield Health Highgate Hospital` against `Highgate Private Hospital` is brand

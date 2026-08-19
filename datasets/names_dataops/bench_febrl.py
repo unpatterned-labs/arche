@@ -55,7 +55,7 @@ Published whichever way they fall.
 
 Licence
 -------
-Febrl data is fetched at run time into a gitignored cache, never vendored. The
+Febrl data is fetched at run time into `data/_cache/`, which is gitignored, never vendored. The
 data is synthetic and contains no real people, so this is a licence courtesy
 rather than a privacy requirement.
 
@@ -72,7 +72,7 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parents[1]
-CACHE = _HERE / "_febrl_cache"
+CACHE = _REPO / "data" / "_cache" / "febrl"
 BASE = ("https://raw.githubusercontent.com/J535D165/recordlinkage/"
         "master/recordlinkage/datasets/febrl/")
 FILES = ("dataset4a.csv", "dataset4b.csv")

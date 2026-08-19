@@ -96,6 +96,21 @@ The first UK pilot should select one nation and one service type, preserve ODS
 codes and CQC location IDs, and route organisational relationships such as a
 provider operating several sites to a separate relationship model.
 
+### England health and care source intake
+
+The CQC care directory is the first intake source. Its 19 August 2026 export
+contains 57,080 regulated-location records. It has CQC location and provider
+IDs, names, addresses, postcodes, service types, local authorities, regions,
+and source URLs. It is not a universal physical-site master: CQC locations can
+be management bases.
+
+Stage one exact service type at a time with
+`data/scripts/stage_cqc_care_directory.py`. The script keeps the untouched CSV
+and writes a manifest containing the exact source URL, retrieval time, licence,
+reported production date, and SHA-256 hashes. The first scoped population is
+`Hospital`, with 782 records in that export. It is ready for source comparison
+and review design, not a crosswalk or accuracy claim.
+
 ## Third health-facility lane: United States
 
 Use Medicare-certified hospitals only for the first US lane. CMS publishes the

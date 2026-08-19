@@ -123,7 +123,7 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 | [How it works](https://unpatterned-labs.github.io/arche/tutorials/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
 | [What matching looks like](https://unpatterned-labs.github.io/arche/tutorials/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
 | [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/) | check a signed decision you did not issue |
-| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | ten, from first call to supplier reconciliation |
+| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | 13, from first call to crosswalking a national register |
 
 ## Contributing
 

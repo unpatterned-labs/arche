@@ -99,11 +99,11 @@ DESIGN.md
 /headtohead.json
 datasets/data/_cache/
 
-# Real voter-registration records fetched by
-# datasets/names_dataops/bench_name_frequency.py. Public record, but it is
-# real people's names, addresses and birth years: fetched, never committed.
-datasets/names_dataops/_ncvr_cache/
+# Every fetched-not-vendored source lands here: NCVR voter records, Febrl,
+# GIAS establishments, OSM pulls. Some of it is real people's names and
+# addresses, all of it is large, and none of it belongs in the repo. The
+# scripts that fetch it re-fetch on a cold cache.
+data/_cache/
 
-# Febrl 4 synthetic linkage data fetched by
-# datasets/names_dataops/bench_febrl.py. Synthetic, but fetched not vendored.
-datasets/names_dataops/_febrl_cache/
+# arche studio writes a labelled copy beside the pack it reviewed.
+data/review_packs/**/*_reviewed.csv

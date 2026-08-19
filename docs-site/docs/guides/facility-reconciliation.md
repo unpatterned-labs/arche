@@ -48,6 +48,10 @@ and check stable facility codes and source dates where available. Escalate a
 closure, relocation, duplicate source row, or unclear provenance rather than
 forcing a binary result.
 
+Use the [local review log](review-log.md) to filter candidates, inspect their
+evidence, and download a separately labelled copy. It does not overwrite the
+original adjudication pack.
+
 The [place validation plan](https://github.com/unpatterned-labs/arche/blob/main/data/PLACE_VALIDATION_PLAN.md)
 contains the pinned Nigeria baseline, the 360-pair sample location, and the UK,
 US, and schools next-stage plan.

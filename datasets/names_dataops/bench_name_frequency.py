@@ -128,7 +128,7 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parents[1]
-CACHE = _HERE / "_ncvr_cache"
+CACHE = _REPO / "data" / "_cache" / "ncvr"
 NCVR_URL = "https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter1.zip"
 SEED = 20260816
 PER_BAND = 300
