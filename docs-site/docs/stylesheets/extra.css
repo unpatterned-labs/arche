@@ -4,7 +4,7 @@
    this request fails. */
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
 
-/* arche documentation — design system.
+/* arche documentation design system.
    Source of truth for these decisions: DESIGN.md at the repo root.
 
    The previous stylesheet was 80 lines: a green header, a few heading
@@ -13,7 +13,7 @@
    system that works in both schemes and carries meaning in colour. */
 
 /* ------------------------------------------------------------------ *
- * Tokens — light
+ * Tokens: light
  * ------------------------------------------------------------------ */
 
 :root {
@@ -28,7 +28,7 @@
   --arche-green-500: #2f6f63;
   --arche-green-100: #e4efea;
 
-  /* Verdict states. See DESIGN.md — `review` is amber because abstention is
+  /* Verdict states. See DESIGN.md: `review` is amber because abstention is
      the product thesis, not a failure. Colouring it red would say the
      opposite of what the engine is for. */
   --arche-verdict-match: #2f6f63;
@@ -47,7 +47,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Tokens — dark. Surfaces are redesigned, not inverted; the accent is
+ * Tokens: dark. Surfaces are redesigned, not inverted; the accent is
  * lifted so it keeps contrast against a dark ground.
  * ------------------------------------------------------------------ */
 
@@ -107,7 +107,7 @@
  *
  * Material sets the root to 125%, so 1rem = 20px. The previous system used
  * 0.78rem body (15.6px) inside an 880px column, which is ~100 characters per
- * line — well past comfortable. Prose is capped to a measure below; tables
+ * line, well past comfortable. Prose is capped to a measure below; tables
  * and code are deliberately exempt, because truncating a code line is worse
  * than a wide block.
  * ------------------------------------------------------------------ */
@@ -133,7 +133,7 @@
   letter-spacing: -0.01em;
 }
 
-/* h1 was 31.2px against a 24.4px h2 — a 1.28x step reads as no hierarchy at
+/* h1 was 31.2px against a 24.4px h2: a 1.28x step reads as no hierarchy at
    all. 42/28 restores a legible jump. */
 .md-typeset h1 {
   font-size: 2.1rem;
@@ -215,7 +215,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Verdict states — the abstention palette
+ * Verdict states: the abstention palette
  *
  * Used wherever a decision is displayed, in prose or in output. Markup:
  *   <span class="verdict verdict--review">review</span>
@@ -244,7 +244,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Home page — hero and the four-verb strip
+ * Home page: hero and the four-verb strip
  *
  * Deliberately not a three-column icon grid. It is a linear pipeline,
  * because that is what the product is.
@@ -329,7 +329,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Pipeline flow — the four verbs as an ordered sequence
+ * Pipeline flow: the four verbs as an ordered sequence
  *
  * These were a fenced code block, which said "this is output you can
  * copy" when it is actually the shape of the product. A numbered rule-
@@ -395,7 +395,7 @@
 }
 
 /* A pair of records shown with the verdict each one earned. Used where
-   two identical strings get different answers — the argument that no
+   two identical strings get different answers, the argument that no
    amount of reading the text can settle. */
 
 .pairs { border-top: 1px solid var(--arche-line-strong, var(--arche-line)); margin: 1.8rem 0; }
@@ -430,11 +430,11 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Layer stack — the authority diagram on the architecture page
+ * Layer stack: the authority diagram on the architecture page
  *
  * This was ASCII art in a code fence: unreadable on a phone, invisible
  * to a screen reader, and it re-flowed into nonsense whenever the font
- * fell back. The accent edge is not decoration — it marks the one band
+ * fell back. The accent edge is not decoration: it marks the one band
  * that is permitted to conclude something, which is the whole argument
  * of the page.
  *
@@ -544,7 +544,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * Motion — functional only, and off entirely when the reader asks.
+ * Motion: functional only, and off entirely when the reader asks.
  * ------------------------------------------------------------------ */
 
 .md-typeset a {

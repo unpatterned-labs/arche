@@ -1,17 +1,11 @@
 site_name: arche
-# "Composes with Splink" was the old tail of this line. It described one
-# deprecated function and nothing else in the package: pairwise, crosswalk and
-# reconcile import zero splink. See tutorials/arche_vs_alternatives.md.
-site_description: Know what's real. The open engine for messy, multilingual data - find the entities, resolve who they actually are, protect them under the law that applies, and sign every decision. The representation layer record linkage needs - equivalence packs, frequency tables, identifier grammars and statute packs, shipped as inspectable data. Composes with Presidio and GLiNER as detector backends.
+site_description: Link people, places, organisations, and products with evidence, not just similarity scores.
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
 
 theme:
   name: material
-  # Both schemes, with a toggle. The site previously shipped `default` only,
-  # so a reader with a dark system theme got a full-brightness page and no way
-  # to change it. Palette values live in stylesheets/extra.css; see DESIGN.md.
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -28,48 +22,32 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
   font:
-    # Instrument Serif carries the headings because this is a product about
-    # records, names and statutes, and a serif says "record" in a way no
-    # grotesque does. Instrument Sans is its native companion. See DESIGN.md.
     text: Instrument Sans
     code: JetBrains Mono
   features:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
-    - navigation.sections
     - navigation.top
-    # Previous / next links in the page footer, driven by nav order. A
-    # reader landing mid-way through a sequence otherwise has no way to
-    # tell what precedes a page or what continues it.
     - navigation.footer
-    - navigation.indexes
     - content.code.copy
-    - content.code.annotate
-    - content.tabs.link
     - search.suggest
     - search.highlight
     - toc.follow
   icon:
     repo: fontawesome/brands/github
 
-# Working drafts. `.gitignore` keeps these out of git; it does NOT keep them
-# out of the built site — mkdocs renders everything under docs/, so without
-# this they publish to /concepts/drafts/ and are reachable by URL from anyone
-# who builds and deploys a working copy. Their unresolved cross-links also
-# abort `--strict`. Excluded here so the intent lives in config rather than
-# depending on a second file to mean something it does not mean.
+# Alpha documentation is intentionally small. The excluded pages remain in the
+# repository as working material, but do not form part of the public product
+# promise until their examples and claims have been revalidated.
 exclude_docs: |
-  concepts/drafts/
-  # Internal planning that is gitignored, so a CI build from a clean checkout
-  # never sees it. This guard is for the other path: a local `mkdocs gh-deploy`
-  # would find the files on disk and publish them. Both belong in the
-  # development repo, not on a public site.
-  concepts/roadmap.md
-  concepts/roadmap_old.md
-  concepts/arche-6month-roadmap-h2-2026.md
-  concepts/arche-phase0-mining-plan.md
-  concepts/arche-direction-and-5-year-vision.md
+  about/
+  api/
+  blog/
+  concepts/
+  cookbooks/
+  how-to/
+  tutorials/
 
 extra_css:
   - stylesheets/extra.css
@@ -77,15 +55,7 @@ extra_css:
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  # Without `custom_fences`, a ```mermaid block is just a fenced code block:
-  # superfences hands it to the highlighter and the reader gets the diagram's
-  # source, with line numbers, instead of a diagram. Material loads mermaid.js
-  # itself once the fence is registered.
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
@@ -98,82 +68,17 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
-  - Getting started:
+  - Get started:
     - Installation: getting-started/installation.md
-    - Quick start: getting-started/quickstart.md
-    - Introducing arche: tutorials/introducing-arche.md
-  # Tutorials teach by building something; how-to guides answer "how do I do X".
-  # These were one "Guides" heading, which meant a reader looking for a recipe
-  # had to scroll past five walkthroughs to find it. Splink separates them and
-  # the split is worth copying.
-  - Tutorials:
-    - How arche works: tutorials/how-it-works.md
-    - arche in practice: tutorials/arche-in-practice.md
-    - What matching looks like: tutorials/what-matching-looks-like.md
-    - The document lane: tutorials/document-lane.md
-    - Why arche and when to use it: tutorials/arche_vs_alternatives.md
-    - Entity resolution: tutorials/entity_resolution.md
-    - Place resolution at scale (NG + UK): tutorials/place_resolution_at_scale.md
-    - Person resolution at scale (scored): tutorials/person_resolution_at_scale.md
-    - Artist resolution (Afrobeats x West): tutorials/artist_resolution.md
-    - Matching products: tutorials/products.md
-    - Zero to hero with documents: tutorials/zero-to-hero-documents.md
-    # These four were filed under Blog. Each teaches the reader to run
-    # something and ends with output, which makes them tutorials wearing a
-    # blog costume. Moved rather than cross-linked so the URL matches the job.
-    - The same clinic, three spellings: tutorials/reconciling-nigerias-health-facilities.md
-    - A place is not a point: tutorials/a-place-is-not-a-point.md
-    - Three PDFs and a question: tutorials/three-pdfs-and-a-question.md
-    - Who made this document?: tutorials/who-made-this-document.md
-    - Sign, share, extract: tutorials/sign_share_extract.md
-    - Data Subject Access Requests (DSAR): tutorials/citizen_dsar.md
-  - How-to guides:
-    - Match African names: how-to/match-african-names.md
-    - Extract from invoice: how-to/extract-from-invoice.md
-    - Declare your schema (your fields, our roles): how-to/declare-your-schema.md
-    - Bring your own LLM (arche grades it): how-to/bring-your-own-llm.md
-    - Extract places with spatial roles: how-to/extract-places-with-roles.md
-    - Read the crosswalk output: how-to/read-crosswalk-output.md
-    - Verify a merge against an external source: how-to/verify-with-external-sources.md
-    # Sits directly after it: that page corroborates a decision against outside
-    # data, this one checks the artifact itself. Readers arrive looking for
-    # "verify" and get sent to whichever of the two they actually meant.
-    - Re-verify a decision (and read someone else's): how-to/re-verify-a-decision.md
-    - Attest, sign a decision: how-to/attest.md
-  - Cookbooks:
-    - Nigerian fintech KYC: cookbooks/fintech-kyc.md
-    - South African health export: cookbooks/health-export.md
-    - Journalist PII scan: cookbooks/journalist-scan.md
-    - Civil-society audit: cookbooks/civil-society-audit.md
-    - Streamlit stakeholder demo: cookbooks/streamlit-demo.md
+    - Resolve two lists: getting-started/quickstart.md
+  - Guides:
+    - Prepare your data: guides/prepare-data.md
+    - Interpret a decision: guides/interpret-decisions.md
+    - Places and products in action: guides/places-and-products.md
+    - Accuracy and scope: guides/accuracy-and-scope.md
   - Reference:
-    - Overview: api/index.md
-    # Points at pipeline.md, not resolve.md. resolve.md documented an
-    # `audit_log=` parameter that does not exist and three Result methods
-    # that were never implemented; pipeline.md is the verified reference and
-    # had been orphaned from the nav. resolve.md is a consolidation candidate.
-    - Pipeline: api/pipeline.md
-    - detect(): api/detect.md
-    - crosswalk(), pairwise(), sign_edges(): api/crosswalk.md
-    - addr - addresses, spatial roles, grading: api/addr.md
-    - Architecture: api/architecture.md
-    - The identity lifecycle: api/lifecycle.md
-    - The five ER activities: api/er-activities.md
-    - The maths underneath: api/the-maths-underneath.md
-    - Example scripts: https://github.com/unpatterned-labs/arche/tree/main/examples
-    - Pan-African PII Taxonomy: https://github.com/unpatterned-labs/arche/tree/main/datasets/pan-african-pii-taxonomy
-  # The claim this project makes, and the measurements behind it. Kept small
-  # and separate so it is obvious which pages are argument and which are
-  # instructions.
-  - About:
-    - The whole picture: about/the-whole-picture.md
-    - A representation engine, not an inference engine: about/representation-engine.md
-    - The place benchmark: about/place-benchmark.md
-  - Blog:
-    - blog/index.md
-    - The number we could not reproduce: blog/the-number-we-could-not-reproduce.md
-    - The join nobody sells: blog/the-join-nobody-sells.md
-    - Similar is not the same: blog/similar-is-not-the-same.md
+    - Record resolution API: reference/record-resolution.md
+  - Contribute: contributing.md
 
 extra:
   social:
