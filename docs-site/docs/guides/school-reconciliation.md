@@ -1,8 +1,11 @@
-# Reconcile schools in England
+# Reconcile schools
 
 You have an authoritative register and a map somebody else made. Neither
 carries the other's identifiers. This is the shape of most reconciliation work,
-and this guide runs it end to end on public English school data.
+and this guide runs it end to end on public school data.
+
+The England example below is a labelled benchmark. The Nigeria example at the
+end is a three-source reconciliation with a review pack, not an accuracy claim.
 
 The [England schools notebook](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/13_england_schools.ipynb)
 stages both sources, runs one call, and scores the result against 282 labels
@@ -114,3 +117,84 @@ auto-match rate against known-true pairs and not complete recall. It is one
 local authority. And it compares against currently open establishments only, so
 it never meets a school whose URN changed underneath it, which is the harder
 problem and needs a historical GIAS export.
+
+## Nigeria: where exact matching becomes the dangerous option
+
+The [Nigeria schools notebook](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/14_nigeria_schools.ipynb)
+runs the same process as notebook 13, step for step, on two independent
+surveys of the same schools.
+
+Leeds says exact name matching is safe. Precision 0.992, two false merges. If
+that were the general lesson, none of this project would be necessary.
+
+Run the same methods on the [Nigeria schools register](https://grid3.gov.ng/)
+and it inverts.
+
+```bash
+python data/scripts/nigeria_school_false_merges.py     --csv Schools_in_Nigeria.csv --out data/nigeria_school_false_merges_result.json
+```
+
+### Why this is measurable without labels
+
+The Nigeria sources carry no pair labels, which is why this guide used to make
+no accuracy claim. But one class of label is free and certain: **two schools in
+different states are not the same school.**
+
+That gives 400 pairs which share a name *exactly* and sit in different states.
+Nobody constructed them and nobody chose them to flatter a result. Every method
+below is scored on pairs it should never merge.
+
+```text
+method                      false merges     rate
+exact name (casefold)                400   100.0%
+token Jaccard >= 0.5                 400   100.0%
+token_set_ratio >= 90                399    99.8%
+arche (name + coords)                  2     0.5%
+```
+
+arche routed **397 of 400 to review** rather than merging them or throwing them
+away.
+
+### Read the construction honestly
+
+These pairs were selected *because* they share a name, so exact matching
+merging all 400 is true by construction. That is not a trick, it is the finding.
+The question is how often that construction is available, and the register
+answers it:
+
+```text
+distinct names            98,248 of 107,670
+names held by >1 school    3,959
+records sharing a name    13,381  (12%)
+
+  200x  COMMUNITY PRIMARY SCHOOL             across 21 states
+  120x  LGEA PRIMARY SCHOOL                  across 11 states
+   99x  NOMADIC PRIMARY SCHOOL               across 24 states
+```
+
+Two hundred schools are called `COMMUNITY PRIMARY SCHOOL`. In Leeds, two
+schools sharing a name exactly were nearly always the same school. Here they
+are nearly always different ones, and one in eight records is exposed to it.
+
+### What changed, and what did not
+
+The maths did not change. The comparator did not change. What changed is that
+Nigerian school names are built from generic words, so a name carries almost no
+distinguishing information and the thing that decides is what the name is
+*worth*, not how similar two strings are.
+
+That is the whole argument this project makes, and it is why the Leeds result
+matters as much as this one. On standardised names arche buys you very little
+over exact matching. On these names it is the difference between 2 errors and
+400.
+
+### What this does not measure
+
+**Recall.** There are no positive labels here, so a method that refuses
+everything would score perfectly. The Leeds run is the control: the same
+engine, on labelled data, reaches recall 0.986. Without that number beside it,
+this table would only prove that abstaining is safe.
+
+**arche is not clean either.** It merged 2 of the 400. Those two are in the
+result file, and they are the ones worth reading.
+

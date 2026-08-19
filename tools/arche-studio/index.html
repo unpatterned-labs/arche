@@ -3,335 +3,705 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>arche studio</title>
+<title>arche studio (alpha)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#12161c; --dim:#5b6675; --line:#dfe4ea; --bg:#f7f8fa; --card:#fff;
-    --match:#0f7b4f; --review:#a76a00; --diff:#a5271c; --none:#6b7280;
-    --bar:#3b6fd4; --bar-bg:#e8edf6;
-  }
-  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-    --ink:#e7ebf0; --dim:#95a1b2; --line:#2a3240; --bg:#10141a; --card:#161c25;
-    --match:#3fbd85; --review:#e0a13a; --diff:#e0685c; --none:#8b95a5;
-    --bar:#6f9bf0; --bar-bg:#222b38;
-  }}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-       font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{border-bottom:1px solid var(--line);background:var(--card);padding:14px 20px;
-         display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
-  h1{font-size:16px;margin:0;letter-spacing:-.01em}
-  h1 span{color:var(--dim);font-weight:400}
-  nav{display:flex;gap:4px;margin-left:auto}
-  nav button{font:inherit;border:1px solid transparent;background:none;color:var(--dim);
-             padding:6px 14px;border-radius:7px;cursor:pointer}
-  nav button[aria-selected=true]{background:var(--bg);border-color:var(--line);color:var(--ink);font-weight:600}
-  main{max-width:1160px;margin:0 auto;padding:20px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:820px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px}
-  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:0 0 11px}
-  label{display:block;font-size:12px;color:var(--dim);margin:9px 0 3px}
-  input,select,textarea{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);
-        border-radius:7px;background:var(--bg);color:var(--ink)}
-  .fieldrow{display:grid;grid-template-columns:34% 1fr auto;gap:6px;margin-bottom:6px;align-items:center}
-  .fieldrow input:first-child{color:var(--dim)}
-  .x{border:1px solid var(--line);background:var(--bg);color:var(--dim);border-radius:6px;
-     cursor:pointer;padding:6px 9px;font:inherit;line-height:1}
-  .actions{display:flex;gap:9px;align-items:center;margin:16px 0;flex-wrap:wrap}
-  button.go{font:inherit;font-weight:600;background:var(--ink);color:var(--card);border:0;
-            padding:10px 20px;border-radius:8px;cursor:pointer}
-  button.ghost{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);
-               padding:9px 15px;border-radius:8px;cursor:pointer}
-  .verdict{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:13px}
-  .badge{font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;
-         padding:6px 13px;border-radius:999px;color:#fff}
-  .b-match{background:var(--match)} .b-review{background:var(--review)}
-  .b-different{background:var(--diff)} .b-no_candidate{background:var(--none)}
-  .score{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
-  .ev{display:grid;grid-template-columns:32% 1fr 58px;gap:8px;align-items:center;
-      margin:5px 0;font-variant-numeric:tabular-nums}
-  .ev .k{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis}
-  .track{background:var(--bar-bg);border-radius:4px;height:9px;overflow:hidden}
-  .fill{background:var(--bar);height:100%;border-radius:4px}
-  .ev .v{text-align:right;font-size:13px}
-  .why{margin-top:14px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);
-       border-radius:8px;font-size:14px}
-  .why b{display:block;margin-bottom:4px}
-  .meta{margin-top:11px;font-size:11.5px;color:var(--dim);word-break:break-all;line-height:1.7}
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
-  th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-  tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg)}
-  tbody tr[aria-selected=true]{background:var(--bar-bg)}
-  .pill{font-size:11px;padding:2px 8px;border-radius:999px;color:#fff}
-  .err{color:var(--diff);margin-top:11px;font-size:14px}
-  .hint{color:var(--dim);font-size:13px;margin-top:8px}
-  .scroll{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:8px}
-  .kv{font-size:13px;margin:3px 0}.kv b{color:var(--dim);font-weight:500}
-  .hide{display:none}
+/* ─────────────────────────────────────────────────────────────────────────
+   arche studio. Editorial, print-restrained. Typography and whitespace do
+   the work: no cards, no shadows, no gradients, no icons.
+
+   THE RULE. Body text is always ink. The accent never appears as running
+   copy. It appears only as: the active nav mark, the rule above a verdict,
+   the mark on an extracted place, the marker on a selected row, an input's
+   focus state, and the rule beside an error or the alpha disclaimer.
+
+   A dense table is not a departure from Tufte, it is the point of him. The
+   grid carries every column a pack has, at high data-ink, ruled not boxed.
+   ───────────────────────────────────────────────────────────────────────── */
+:root{
+  --paper:#FFFFF8; --ink:#111111; --muted:#5C5C54;
+  --rule:#E0E0D4; --accent:#A33B1F; --code:#F4F4EC;
+  /* Semantic, and deliberately quiet. These mark a verdict, never prose. */
+  --ok:#2F6B4F; --hold:#8A6410; --no:#9B2C1E;
+  --serif:"Source Serif 4",Iowan Old Style,Palatino,"Palatino Linotype",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --frame:1720px; --measure:68ch; --margin-col:240px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-optical-sizing:auto;font-size:19px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.wrap{max-width:var(--frame);margin:0 auto;padding:0 30px}
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+header{border-bottom:1px solid var(--rule)}
+.masthead{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap;padding:26px 0 0}
+h1{font-size:25px;line-height:1.22;font-weight:600;margin:0;letter-spacing:-.01em}
+.alpha{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--accent);border:1px solid var(--accent);padding:2px 7px;position:relative;top:-2px}
+.dek{font-size:15px;line-height:1.45;color:var(--muted);margin:0}
+.disclaim{font-size:13.5px;line-height:1.55;color:var(--muted);margin:15px 0 0;
+          border-left:2px solid var(--accent);padding-left:14px;max-width:104ch}
+.disclaim b{color:var(--ink);font-weight:600}
+nav{display:flex;gap:30px;margin-top:20px}
+nav button{font-family:var(--serif);font-size:13px;line-height:1.3;font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--muted);background:none;border:0;
+  border-bottom:2px solid transparent;padding:0 0 9px;cursor:pointer;transition:color .18s}
+nav button:hover{color:var(--ink)}
+nav button[aria-current=true]{color:var(--ink);border-bottom-color:var(--accent)}
+
+main{padding:30px 0 90px}
+section[hidden]{display:none}
+.measure{max-width:var(--measure)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) var(--margin-col);gap:46px;align-items:start}
+@media(max-width:1150px){.split{grid-template-columns:1fr}}
+.margin{font-size:15px;line-height:1.45;color:var(--muted);position:sticky;top:24px}
+.margin p{margin:0 0 13px}
+.margin b{color:var(--ink);font-weight:600}
+.label{font-size:13px;line-height:1.3;font-weight:600;letter-spacing:.11em;
+       text-transform:uppercase;color:var(--muted);margin:0 0 13px}
+.rule{border:0;border-top:1px solid var(--rule);margin:30px 0}
+p.lede{margin:0 0 26px}
+
+/* ── controls ─────────────────────────────────────────────────────────── */
+input,select,textarea{font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--ink);
+  background:transparent;border:0;border-bottom:1px solid var(--rule);padding:6px 0;width:100%;
+  border-radius:0;transition:border-color .18s}
+input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:#A9A99E}
+select{font-size:15px;cursor:pointer}
+textarea{font-size:17px;line-height:1.6;resize:vertical;min-height:150px;
+  border:1px solid var(--rule);padding:14px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+@media(max-width:760px){.pair{grid-template-columns:1fr}}
+.fieldrow{display:grid;grid-template-columns:158px 1fr 22px;gap:12px;align-items:center;margin-bottom:9px}
+.fieldrow input:first-child{font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.drop{border:0;background:none;color:var(--muted);font-family:var(--serif);font-size:19px;
+  line-height:1;cursor:pointer;padding:0}
+.drop:hover{color:var(--accent)}
+button.act{font-family:var(--serif);font-size:13px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink);background:none;border:1px solid var(--ink);
+  padding:10px 20px;cursor:pointer;transition:background .18s,color .18s}
+button.act:hover{background:var(--ink);color:var(--paper)}
+button.quiet{border-color:var(--rule);color:var(--muted)}
+button.quiet:hover{background:none;border-color:var(--ink);color:var(--ink)}
+.row{display:flex;gap:13px;align-items:center;flex-wrap:wrap;margin:24px 0 0}
+.row.tight{margin:0}
+.stat{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.working{margin-top:22px;font-size:17px;color:var(--muted);font-style:italic}
+button[disabled]{opacity:.45;cursor:progress}
+
+/* ── verdict + evidence ───────────────────────────────────────────────── */
+.verdict{border-top:2px solid var(--accent);padding-top:14px;margin-top:28px}
+.vhead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.vword{font-size:25px;line-height:1.22;font-weight:600}
+.vscore{font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+   text-align:left;padding:0 0 7px;border-bottom:1px solid var(--rule);white-space:nowrap}
+th.num,td.num{text-align:right}
+th+th,td+td{padding-left:18px}
+td{padding:8px 0;border-bottom:1px solid var(--rule);font-size:17px;vertical-align:middle}
+td.num{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums}
+.ev-table{margin-top:18px;max-width:660px}
+.bar{display:block;height:2px;background:var(--rule);position:relative;width:100%}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ink);display:block}
+td.barcell{width:44%;padding-right:24px}
+.note{margin-top:22px;font-size:19px;max-width:var(--measure)}
+.meta{margin-top:18px;font-family:var(--mono);font-size:12.5px;line-height:1.7;
+  color:var(--muted);word-break:break-all}
+.err:not(:empty){margin-top:18px;font-size:17px;color:var(--ink);
+  border-left:2px solid var(--accent);padding-left:14px}
+
+/* ── the grid ─────────────────────────────────────────────────────────── */
+.gridwrap{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  overflow:auto;max-height:54vh;margin-top:8px}
+table.grid{width:max-content;min-width:100%}
+table.grid th{position:sticky;top:0;background:var(--paper);z-index:2;padding:11px 0 9px;
+  cursor:pointer;user-select:none;box-shadow:inset 0 -1px 0 var(--rule);border-bottom:0}
+table.grid th:hover{color:var(--ink)}
+table.grid th .sort{color:var(--accent);font-family:var(--mono);font-size:9px;margin-left:5px}
+table.grid th+th,table.grid td+td{padding-left:24px}
+table.grid td{padding:9px 0;font-size:15px;white-space:nowrap;max-width:300px;
+  overflow:hidden;text-overflow:ellipsis}
+table.grid td.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
+table.grid td.num{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+table.grid tbody tr{cursor:pointer;transition:background .12s}
+table.grid tbody tr:hover{background:var(--code)}
+table.grid tbody tr[aria-selected=true]{background:var(--code)}
+table.grid tbody tr[aria-selected=true] td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.dt{font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.d-match{color:var(--ok)}.d-review{color:var(--hold)}
+.d-different,.d-no_candidate{color:var(--no)}
+.vword.d-match,.vword.d-review,.vword.d-different,.vword.d-no_candidate{color:inherit}
+.vrule-match{border-top-color:var(--ok)!important}
+.vrule-review{border-top-color:var(--hold)!important}
+.vrule-different,.vrule-no_candidate{border-top-color:var(--no)!important}
+.spark{display:inline-flex;gap:2px;align-items:flex-end;height:13px}
+.spark i{width:4px;background:var(--ink);display:block;min-height:1px}
+.cols{display:none;flex-wrap:wrap;gap:9px 20px;margin-top:14px;padding:14px 0;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.cols.open{display:flex}
+.cols label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;
+  cursor:pointer;letter-spacing:.03em;font-family:var(--mono);font-size:12px}
+.cols input{width:auto;margin:0;accent-color:var(--accent)}
+.searchbox{max-width:260px}
+
+/* ── places ───────────────────────────────────────────────────────────── */
+.passage{background:var(--code);border:1px solid var(--rule);padding:22px 24px;margin-top:24px;
+  font-size:19px;line-height:1.85;max-width:var(--measure)}
+mark{background:none;color:var(--ink);padding:0 1px;border-bottom:2px solid var(--accent);
+  transition:background .14s}
+mark.lit{background:#F2E3DE}
+mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--accent);vertical-align:super;margin-left:2px}
+.dz{border:1px dashed var(--rule);padding:16px;text-align:center;color:var(--muted);font-size:15px;
+  margin-top:13px;max-width:var(--measure);transition:border-color .18s,color .18s}
+.dz.over{border-color:var(--accent);color:var(--ink)}
+.kv{font-size:15px;line-height:1.5;margin:4px 0}
+.kv b{color:var(--muted);font-weight:400;font-size:12px;letter-spacing:.07em;text-transform:uppercase;
+  display:inline-block;min-width:122px}
 </style>
 </head>
 <body>
-<header>
-  <h1>arche studio <span>&nbsp;decide whether two records are the same thing</span></h1>
+
+<header><div class="wrap">
+  <div class="masthead">
+    <h1>arche studio</h1><span class="alpha">alpha</span>
+    <p class="dek">Read what the matcher decided, and why.</p>
+  </div>
+  <p class="disclaim"><b>Experimental, and for us.</b> This is an internal reading tool for our
+    own matches and review queues. It is not a product, it has no authentication, and the
+    decisions it shows are alpha-quality. Nothing here is an adjudication until a person
+    checks the evidence and signs their name to it.</p>
   <nav>
-    <button id="tab-compare" aria-selected="true" onclick="showTab('compare')">Compare</button>
-    <button id="tab-review"  aria-selected="false" onclick="showTab('review')">Review queue</button>
+    <button id="t-compare" aria-current="true">Compare</button>
+    <button id="t-places"  aria-current="false">Spatial roles</button>
+    <button id="t-redact"  aria-current="false">Redact</button>
+    <button id="t-verify"  aria-current="false">Verify</button>
+    <button id="t-review"  aria-current="false">Review queue</button>
   </nav>
-</header>
+</div></header>
 
-<main>
-  <!-- ───────────────────────────── COMPARE ───────────────────────────── -->
-  <section id="pane-compare">
-    <div class="grid">
-      <div class="card">
-        <h2>Record A</h2>
-        <div id="fa"></div>
-        <button class="x" onclick="addField('a')">+ field</button>
-      </div>
-      <div class="card">
-        <h2>Record B</h2>
-        <div id="fb"></div>
-        <button class="x" onclick="addField('b')">+ field</button>
-      </div>
-    </div>
+<main class="wrap">
 
-    <div class="actions">
-      <button class="go" onclick="compare()">Compare</button>
-      <label style="margin:0">entity</label>
-      <select id="entity" style="width:auto"></select>
-      <button class="ghost" onclick="loadExample()">Load an example</button>
-    </div>
 
-    <div class="card" id="result" style="display:none"></div>
-    <div class="err" id="cerr"></div>
-  </section>
-
-  <!-- ───────────────────────────── REVIEW ───────────────────────────── -->
-  <section id="pane-review" class="hide">
-    <div class="actions">
-      <label style="margin:0">pack</label>
-      <select id="pack" style="width:auto" onchange="loadPack()"></select>
-      <label style="margin:0">show</label>
-      <select id="filter" style="width:auto" onchange="renderRows()">
-        <option value="all">everything</option>
-        <option value="review" selected>needs review</option>
-        <option value="match">auto-matched</option>
-        <option value="unmarked">not yet marked</option>
+<!-- ═══════════════════════════════════════════════════════════ REDACT ══ -->
+<section id="s-redact" hidden>
+ <div class="split">
+  <div>
+    <p class="lede measure">Run a record through detection and policy. The
+      interesting column is not the redaction, it is the citation: which section
+      of which statute said to remove it.</p>
+    <p class="label">Record</p>
+    <textarea id="rtext" style="max-width:var(--measure)"
+      placeholder="Paste a record. A name, an ID, a phone number, an address."></textarea>
+    <div class="row">
+      <button class="act" id="b-redact">Redact</button>
+      <select id="juris" style="width:auto">
+        <option value="NG" selected>NG · NDPA-2023</option>
+        <option value="ZA">ZA · POPIA</option>
+        <option value="KE">KE · Kenya DPA</option>
+        <option value="GH">GH · Ghana DPA</option>
+        <option value="EU">EU · GDPR</option>
+        <option value="US">US · HIPAA Safe Harbor</option>
       </select>
-      <span class="hint" id="packmeta"></span>
+      <button class="act quiet" id="b-rexample">Another example</button>
     </div>
+    <div id="rout"></div><div class="err" id="rderr"></div>
+  </div>
+  <aside class="margin">
+    <p><b>Six closed actions.</b> mask, tokenize, generalize, retain, drop, and
+      refuse. Every one carries the section that chose it.</p>
+    <p>Notice <i>retain</i>. A statute that permits keeping something is doing as
+      much work as one that removes it, and a redactor that only ever deletes has
+      not read the law.</p>
+    <p>The detected value is never returned to this page. A redaction view that
+      echoes what it redacted has defeated itself.</p>
+  </aside>
+ </div>
+</section>
 
-    <div class="scroll"><table>
-      <thead><tr><th>decision</th><th>score</th><th>A</th><th>B</th><th>marked</th></tr></thead>
-      <tbody id="rows"></tbody>
-    </table></div>
-
-    <div class="grid" style="margin-top:16px">
-      <div class="card"><h2>The pair</h2><div id="pair" class="hint">Pick a row above.</div></div>
-      <div class="card" id="revev"><h2>Evidence</h2><div class="hint">Pick a row above.</div></div>
+<!-- ═══════════════════════════════════════════════════════════ VERIFY ══ -->
+<section id="s-verify" hidden>
+ <div class="split">
+  <div>
+    <p class="lede measure">Paste a signed decision. Two checks run, and they
+      fail differently, which is what makes the pair worth having.</p>
+    <p class="label">Compact JWS</p>
+    <textarea id="vtext" style="max-width:var(--measure);font-family:var(--mono);font-size:13px"
+      placeholder="eyJhbGciOiJFZERTQSIsImtpZCI6..."></textarea>
+    <div class="row">
+      <button class="act" id="b-verify">Verify</button>
+      <button class="act quiet" id="b-vexample">Sign one to try</button>
     </div>
+    <div id="vout"></div><div class="err" id="verr"></div>
+  </div>
+  <aside class="margin">
+    <p><b>The signature</b> establishes who issued it, and that nothing changed
+      since. It says nothing about whether the decision was any good.</p>
+    <p><b>The recomputed id</b> establishes that the id is the honest address of
+      <i>this</i> evidence, rather than one lifted from a more favourable
+      decision.</p>
+    <p><b>A known gap.</b> Only a <i>pairwise</i> decision can be recomputed. A
+      crosswalk edge carries its evidence but not the gate and veto structure the
+      id is hashed over, so its id cannot be re-derived from the artifact alone.
+      The tool says so rather than passing it.</p>
+  </aside>
+ </div>
+</section>
 
-    <div class="card" style="margin-top:16px">
-      <h2>Your call</h2>
-      <div class="actions">
-        <button class="ghost" onclick="mark('same_entity')">Same entity</button>
-        <button class="ghost" onclick="mark('different')">Different</button>
-        <button class="ghost" onclick="mark('unresolved')">Cannot tell</button>
+<!-- ═══════════════════════════════════════════════════════════ REVIEW ══ -->
+<section id="s-review" hidden>
+  <div class="row tight">
+    <select id="pack" style="width:auto"></select>
+    <select id="filter" style="width:auto">
+      <option value="review" selected>Needs review</option>
+      <option value="all">Everything</option>
+      <option value="match">Auto-matched</option>
+      <option value="unmarked">Not yet marked</option>
+    </select>
+    <input id="q" class="searchbox" placeholder="search any field">
+    <button class="act quiet" id="b-cols">Columns</button>
+    <span class="stat" id="pmeta"></span>
+  </div>
+
+  <div class="cols" id="colpick"></div>
+
+  <div class="gridwrap"><table class="grid">
+    <thead><tr id="ghead"></tr></thead><tbody id="gbody"></tbody>
+  </table></div>
+
+  <div class="split" style="margin-top:28px">
+    <div>
+      <div id="pairout"><p class="dek">Choose a row to see the pair and its evidence.</p></div>
+      <div id="revout"></div>
+      <div id="callbox" hidden>
+        <hr class="rule">
+        <p class="label">Your call</p>
+        <div class="row tight">
+          <button class="act quiet" id="b-same">Same entity</button>
+          <button class="act quiet" id="b-diff">Different</button>
+          <button class="act quiet" id="b-unres">Cannot tell</button>
+        </div>
+        <div class="pair" style="margin-top:22px;max-width:900px">
+          <div><p class="label">Reason</p><input id="reason" placeholder="what settled it, or what is missing"></div>
+          <div><p class="label">Reviewer</p><input id="reviewer" placeholder="your name"></div>
+        </div>
+        <div class="row"><button class="act" id="b-save">Save labelled copy</button></div>
+        <div class="err" id="rerr"></div>
       </div>
-      <label>Reason (kept with the decision)</label>
-      <input id="reason" placeholder="what settled it, or what is missing">
-      <div class="grid" style="margin-top:12px">
-        <div><label>Reviewer</label><input id="reviewer" placeholder="your name"></div>
-        <div style="display:flex;align-items:flex-end"><button class="go" onclick="saveReview()">Save labelled copy</button></div>
-      </div>
-      <div class="hint">Writes a new <code>_reviewed.csv</code> beside the pack. The original is never touched.</div>
-      <div class="err" id="rerr"></div>
     </div>
-  </section>
+    <aside class="margin">
+      <p><b>Three refusals.</b></p>
+      <p>It will not overwrite the matcher's output. Saving writes a new
+        <span style="font-family:var(--mono);font-size:13px">_reviewed.csv</span> beside the pack.</p>
+      <p>It will not save anonymously. An unattributed adjudication cannot be audited.</p>
+      <p>It shows an integrity digest over the pack's decision ids, so a pack edited
+        between matching and reviewing gives itself away.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ COMPARE ══ -->
+<section id="s-compare">
+ <div class="split">
+  <div>
+    <p class="lede measure">Two records, any fields. The engine returns a decision, the
+      evidence behind it, and its reason for holding back when it does.</p>
+    <div class="pair" style="max-width:1150px">
+      <div><p class="label">Record A</p><div id="fa"></div>
+        <button class="drop" id="b-add-a">+</button></div>
+      <div><p class="label">Record B</p><div id="fb"></div>
+        <button class="drop" id="b-add-b">+</button></div>
+    </div>
+    <div class="row">
+      <button class="act" id="b-compare">Compare</button>
+      <select id="entity" style="width:auto"></select>
+      <button class="act quiet" id="b-example">Another example</button>
+    </div>
+    <div id="cout"></div><div class="err" id="cerr"></div>
+  </div>
+  <aside class="margin" id="cmargin"></aside>
+ </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ PLACES ══ -->
+<section id="s-places" hidden>
+ <div class="split">
+  <div>
+    <p class="lede measure">A place mention is not only a place. <i>From Karfi to Kano</i>
+      names two, and the difference between them is the meaning of the sentence.
+      Swap them and the consignment goes backwards.</p>
+    <p class="label">Text</p>
+    <textarea id="ptext" style="max-width:var(--measure)"
+      placeholder="Paste a dispatch note, a delivery instruction, a clause."></textarea>
+    <div class="dz" id="dz">Or drop a file here. Plain text, or a PDF, DOCX, PPTX, XLSX.</div>
+    <div class="row">
+      <button class="act" id="b-extract">Read it</button>
+      <button class="act quiet" id="b-pexample">Another example</button>
+      <span class="stat" id="pcount"></span>
+    </div>
+    <div id="pout"></div><div class="err" id="perr"></div>
+  </div>
+  <aside class="margin">
+    <p><b>Five roles.</b> Origin, destination, via, location, and unknown.</p>
+    <p>The cue word decides. <i>From</i> marks an origin, <i>via</i> a waypoint,
+      <i>in</i> a location. Where cues conflict the role is left unknown rather than guessed.</p>
+    <p><b>Watch it get one wrong.</b> In the first example, <i>deliver to the central
+      warehouse in Kano</i> comes back as a <i>location</i>. The nearer <i>in</i> beats
+      <i>deliver to</i>. The rules are a cue lexicon, not a parser.</p>
+  </aside>
+ </div>
+</section>
+
 </main>
 
 <script>
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const n3=x=>x==null?"n/a":Number(x).toFixed(3);
+const tab=t=>{for(const k of["compare","places","redact","verify","review"]){
+  $("#t-"+k).setAttribute("aria-current",String(k===t));$("#s-"+k).hidden=k!==t;}};
 
-function showTab(t){
-  for (const k of ["compare","review"]) {
-    $("#tab-"+k).setAttribute("aria-selected", String(k===t));
-    $("#pane-"+k).classList.toggle("hide", k!==t);
-  }
-}
-
-/* ---------------------------------------------------------------- compare */
-function fieldRow(side, k="", v=""){
-  const d = document.createElement("div");
-  d.className = "fieldrow";
-  d.innerHTML = `<input value="${esc(k)}" placeholder="field">
-                 <input value="${esc(v)}" placeholder="value">
-                 <button class="x">&times;</button>`;
-  d.querySelector("button").onclick = () => d.remove();
-  $("#f"+side).appendChild(d);
-}
-const addField = side => fieldRow(side);
-
-function record(side){
-  const o = {};
-  for (const r of $("#f"+side).querySelectorAll(".fieldrow")) {
-    const [k, v] = r.querySelectorAll("input");
-    if (k.value.trim()) o[k.value.trim()] = v.value;
-  }
-  return o;
-}
-
-const EXAMPLES = [
-  {entity:"place",  a:{name:"Karfi Health Post",     lat:"12.0421", lon:"8.5231"},
-                    b:{name:"Karfi Primary Health Centre", lat:"12.0605", lon:"8.5188"}},
-  {entity:"person", a:{name:"Mamadou Diallo"}, b:{name:"Mohamed Jallow"}},
-  {entity:"person", a:{name:"John Smith"},     b:{name:"John Evelyn Smith"}},
-  {entity:"place",  a:{name:"Co-op Academy Leeds", lat:"53.8008", lon:"-1.5491"},
-                    b:{name:"Co-op Academy Woodlands", lat:"53.8102", lon:"-1.5602"}},
-];
-let exi = 0;
-function loadExample(){
-  const e = EXAMPLES[exi++ % EXAMPLES.length];
-  $("#fa").innerHTML = ""; $("#fb").innerHTML = "";
-  for (const [k,v] of Object.entries(e.a)) fieldRow("a",k,v);
-  for (const [k,v] of Object.entries(e.b)) fieldRow("b",k,v);
-  $("#entity").value = e.entity;
-}
-
-/* Plain English for the verdict. This is the part a reviewer actually reads. */
-function why(r){
-  const d = r.decision, dm = r.distinctive_max, fl = r.distinctive_floor;
-  if (d === "no_candidate")
-    return ["Not even considered", r.note || "Blocking never proposed this pair, so no comparator ran."];
-  if (d === "match")
-    return ["Merged", `Enough evidence agreed, and at least one signal was distinctive enough to carry it (${fmt(dm)} against a floor of ${fmt(fl)}).`];
-  if (d === "review") {
-    if (dm != null && fl != null && dm < fl)
-      return ["Held for a human", `The fields agree, but nothing that agreed is <b>distinctive</b>. The strongest signal scored ${fmt(dm)} against a floor of ${fmt(fl)}, so the agreement could be coincidence. Common names do this.`];
-    return ["Held for a human", "The score landed in the margin where the engine is not willing to assert either answer."];
-  }
-  return ["Kept apart", "Too little agreed to propose these as the same thing."];
-}
-const fmt = x => (x == null ? "n/a" : Number(x).toFixed(3));
-
-function evidencePanel(r){
-  const [head, body] = why(r);
-  const ev = Object.entries(r.evidence || {}).sort((x,y)=>y[1]-x[1]);
-  const bars = ev.map(([k,v]) => {
-    const num = typeof v === "number";
-    const pct = num ? Math.max(0, Math.min(1, k === "distance_km" ? 0 : v)) * 100 : 0;
-    return `<div class="ev"><div class="k">${esc(k)}</div>
-      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-      <div class="v">${num ? v.toFixed(3) : esc(v)}</div></div>`;
-  }).join("");
-  return `<div class="verdict">
-      <span class="badge b-${esc(r.decision)}">${esc(r.decision).replace("_"," ")}</span>
-      <span class="score">${r.score != null ? Number(r.score).toFixed(3) : ""}</span>
-    </div>
-    ${bars || '<div class="hint">No comparator produced evidence.</div>'}
-    <div class="why"><b>${head}</b>${body}</div>
-    ${r.decision_id ? `<div class="meta">decision_id ${esc(r.decision_id)}<br>${
-      Object.entries(r.pins||{}).map(([k,v])=>esc(k)+" "+esc(v)).join("<br>")}</div>` : ""}`;
-}
-
-async function compare(){
-  $("#cerr").textContent = "";
-  const body = {entity: $("#entity").value, a: record("a"), b: record("b")};
-  const res = await fetch("/api/compare", {method:"POST", headers:{"Content-Type":"application/json"},
-                                           body: JSON.stringify(body)});
-  const r = await res.json();
-  if (r.error) { $("#result").style.display="none"; $("#cerr").textContent = r.error; return; }
-  $("#result").style.display = "block";
-  $("#result").innerHTML = "<h2>Decision</h2>" + evidencePanel(r);
-}
-
-/* ----------------------------------------------------------------- review */
-let PACK = null, SEL = null;
-const MARKS = {};
+/* ═══════════════════════════════════════════════════════════════ grid ══ */
+let PACK=null,SEL=null,SORT={k:null,d:1},HIDE=new Set();const M={};
+const ID_RE=/(^|_)(id|code|uuid)$|decision_id/i, NUM_RE=/score|distance|distinctive|_km$/i;
 
 async function loadPacks(){
-  const packs = await (await fetch("/api/packs")).json();
-  $("#pack").innerHTML = packs.length
-    ? packs.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${p.rows})</option>`).join("")
-    : '<option value="">no packs found</option>';
-  if (packs.length) loadPack();
+  const p=await(await fetch("/api/packs")).json();
+  $("#pack").innerHTML=p.length?p.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")
+    :'<option value="">no packs found</option>';
+  if(p.length)loadPack();
 }
-
 async function loadPack(){
-  const id = $("#pack").value; if (!id) return;
-  PACK = await (await fetch("/api/pack?id=" + encodeURIComponent(id))).json();
-  if (PACK.error) { $("#rerr").textContent = PACK.error; return; }
-  $("#packmeta").innerHTML = `${PACK.rows.length} rows &middot; integrity ${esc(PACK.digest)}`;
-  SEL = null; renderRows();
+  const id=$("#pack").value;if(!id)return;
+  PACK=await(await fetch("/api/pack?id="+encodeURIComponent(id))).json();
+  if(PACK.error){$("#rerr").textContent=PACK.error;return;}
+  // Open on the columns a reviewer reads. Everything else is one click away.
+  HIDE=new Set(PACK.fields.filter(f=>/^(decision_id|evidence|reviewed_at|reviewer|reason)$/.test(f)));
+  SEL=null;$("#callbox").hidden=true;cols();draw();
 }
-
-const sideText = (row, p) => PACK.fields.filter(f => f.startsWith(p+"_"))
-    .map(f => row[f]).filter(Boolean).slice(0,2).join(" · ");
-
+const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
+function cols(){
+  $("#colpick").innerHTML=PACK.fields.map(f=>
+    `<label><input type="checkbox" ${HIDE.has(f)?"":"checked"} onchange="flip('${esc(f)}')">${esc(f)}</label>`).join("");
+}
+function flip(f){HIDE.has(f)?HIDE.delete(f):HIDE.add(f);draw();}
 function visible(){
-  const f = $("#filter").value;
-  return PACK.rows.filter(r =>
-    f === "all" ? true :
-    f === "unmarked" ? !(MARKS[r.decision_id] || r.review_outcome) :
-    r.decision === f);
+  const f=$("#filter").value,q=($("#q").value||"").toLowerCase();
+  return PACK.rows.filter(r=>{
+    const ok=f==="all"?true:f==="unmarked"?!(M[r.decision_id]||r.review_outcome):r.decision===f;
+    if(!ok)return false;
+    if(!q)return true;
+    return PACK.fields.some(k=>String(r[k]??"").toLowerCase().includes(q));});
 }
-
-function renderRows(){
-  if (!PACK) return;
-  const [pa, pb] = PACK.sides;
-  $("#rows").innerHTML = visible().map(r => {
-    const m = MARKS[r.decision_id]?.outcome || r.review_outcome || "";
+// Several pack columns hold small JSON objects. A reviewer reads a path, not
+// a serialisation, so render {admin1:"Edo",admin2:"Akoko-Edo"} as Edo > Akoko-Edo.
+function pretty(v){
+  const s=String(v??"");
+  if(!s.startsWith("{"))return s;
+  try{const o=JSON.parse(s.replace(/'/g,'"'));
+    const vals=Object.values(o).filter(x=>x!==null&&x!=="");
+    return vals.length?vals.join(" › "):s;}catch{return s;}
+}
+function sortBy(k){SORT=SORT.k===k?{k,d:-SORT.d}:{k,d:1};draw();}
+function sparkline(json){
+  let ev={};try{ev=JSON.parse(json||"{}")}catch{}
+  const ks=Object.keys(ev).filter(k=>typeof ev[k]==="number"&&!/distance/.test(k)).sort();
+  if(!ks.length)return"";
+  return `<span class="spark" title="${esc(ks.map(k=>k+" "+ev[k].toFixed(2)).join(", "))}">`
+    +ks.map(k=>`<i style="height:${Math.max(1,Math.min(1,ev[k])*13)}px"></i>`).join("")+"</span>";
+}
+function draw(){
+  if(!PACK)return;
+  const fs=shown();
+  $("#ghead").innerHTML=fs.map(f=>{
+    const num=NUM_RE.test(f)?' class="num"':'';
+    const arr=SORT.k===f?`<span class="sort">${SORT.d>0?"▲":"▼"}</span>`:"";
+    return `<th${num} onclick="sortBy('${esc(f)}')">${esc(f)}${arr}</th>`;}).join("")
+    +'<th>evidence</th><th>marked</th>';
+  let rows=visible();
+  if(SORT.k)rows=[...rows].sort((a,b)=>{
+    const x=a[SORT.k]??"",y=b[SORT.k]??"",nx=parseFloat(x),ny=parseFloat(y);
+    return ((!isNaN(nx)&&!isNaN(ny))?nx-ny:String(x).localeCompare(String(y)))*SORT.d;});
+  $("#gbody").innerHTML=rows.map(r=>{
+    const cells=fs.map(f=>{const v=r[f]??"";
+      if(NUM_RE.test(f))return `<td class="num">${v===""?"":Number(v).toFixed(3)}</td>`;
+      if(f==="decision")return `<td class="dt d-${esc(v)}">${esc(v)}</td>`;
+      if(ID_RE.test(f))return `<td class="mono" title="${esc(v)}">${esc(v)}</td>`;
+      return `<td title="${esc(v)}">${esc(pretty(v))}</td>`;}).join("");
+    const m=M[r.decision_id]?.outcome||r.review_outcome||"";
     return `<tr onclick="pick('${esc(r.decision_id)}')" aria-selected="${SEL===r.decision_id}">
-      <td><span class="pill b-${esc(r.decision)}">${esc(r.decision)}</span></td>
-      <td>${esc(Number(r.score).toFixed(3))}</td>
-      <td>${esc(sideText(r, pa))}</td>
-      <td>${esc(sideText(r, pb))}</td>
-      <td>${esc(m)}</td></tr>`;
-  }).join("") || '<tr><td colspan="5" class="hint">Nothing matches that filter.</td></tr>';
+      ${cells}<td>${sparkline(r.evidence)}</td><td class="dt">${esc(m)}</td></tr>`;}).join("")
+    ||`<tr><td colspan="${fs.length+2}"><span class="dek">Nothing matches.</span></td></tr>`;
+  $("#pmeta").textContent=`${rows.length} of ${PACK.rows.length} rows · `
+    +`${fs.length} of ${PACK.fields.length} columns · integrity ${PACK.digest}`;
 }
 
+/* ══════════════════════════════════════════════════════ evidence panel ══ */
+const WORD={match:"Merged",review:"Held for a human",different:"Kept apart",no_candidate:"Never considered"};
+function why(r){
+  const d=r.decision,dm=r.distinctive_max,fl=r.distinctive_floor;
+  if(d==="no_candidate")return r.note||"Blocking never proposed this pair, so no comparator ran.";
+  if(d==="match")return `Enough agreed, and something distinctive carried it: ${n3(dm)} against a floor of ${n3(fl)}.`;
+  if(d==="review"){
+    if(dm!=null&&fl!=null&&dm<fl)
+      return `The fields agree, but nothing that agreed is <b>distinctive</b>. The strongest signal scored ${n3(dm)} against a floor of ${n3(fl)}, so the agreement could be coincidence.`;
+    return "The score landed in the margin where the engine will not assert either answer.";}
+  return "Too little agreed to propose these as one thing.";
+}
+function panel(r){
+  const ev=Object.entries(r.evidence||{}).sort((a,b)=>b[1]-a[1]);
+  const rows=ev.map(([k,v])=>{const num=typeof v==="number",
+    pct=num?Math.max(0,Math.min(1,k==="distance_km"?0:v))*100:0;
+    return `<tr><td>${esc(k)}</td><td class="barcell"><span class="bar"><i style="width:${pct}%"></i></span></td>
+      <td class="num">${num?v.toFixed(3):esc(v)}</td></tr>`;}).join("");
+  return `<div class="verdict vrule-${esc(r.decision)}"><div class="vhead">
+      <span class="vword"><span class="dt d-${esc(r.decision)}" style="font-size:11px;margin-right:9px">&#9632;</span>${WORD[r.decision]||esc(r.decision)}</span>
+      <span class="vscore">score ${n3(r.score)}</span></div></div>
+    ${rows?`<table class="ev-table"><thead><tr><th>Signal</th><th class="barcell"></th><th class="num">Value</th></tr></thead><tbody>${rows}</tbody></table>`:""}
+    <p class="note">${why(r)}</p>
+    ${r.decision_id?`<p class="meta">${esc(r.decision_id)}<br>${
+      Object.entries(r.pins||{}).map(([k,v])=>esc(k)+" "+esc(v)).join("<br>")}</p>`:""}`;
+}
 function pick(id){
-  SEL = id; renderRows();
-  const r = PACK.rows.find(x => x.decision_id === id); if (!r) return;
-  const [pa, pb] = PACK.sides;
-  const side = p => PACK.fields.filter(f => f.startsWith(p+"_"))
-      .map(f => `<div class="kv"><b>${esc(f.slice(p.length+1))}</b> ${esc(r[f]) || "&mdash;"}</div>`).join("");
-  $("#pair").innerHTML = `<div class="grid" style="gap:12px">
-      <div><h2>${esc(pa)}</h2>${side(pa)}</div>
-      <div><h2>${esc(pb)}</h2>${side(pb)}</div></div>`;
-  let ev = {}; try { ev = JSON.parse(r.evidence || "{}"); } catch {}
-  $("#revev").innerHTML = "<h2>Evidence</h2>" + evidencePanel({
-    decision: r.decision, score: Number(r.score), evidence: ev,
-    distinctive_max: r.distinctive_max ? Number(r.distinctive_max) : null,
-    distinctive_floor: 0.75, decision_id: r.decision_id, pins: {}});
-  $("#reason").value = MARKS[id]?.reason || r.reason || "";
+  SEL=id;draw();$("#callbox").hidden=false;
+  const r=PACK.rows.find(x=>x.decision_id===id);if(!r)return;
+  const[a,b]=PACK.sides;
+  const side=p=>PACK.fields.filter(f=>f.startsWith(p+"_"))
+    .map(f=>`<p class="kv"><b>${esc(f.slice(p.length+1))}</b>${esc(pretty(r[f]))||"&mdash;"}</p>`).join("");
+  $("#pairout").innerHTML=`<div class="pair" style="max-width:1150px">
+    <div><p class="label">${esc(a)}</p>${side(a)}</div>
+    <div><p class="label">${esc(b)}</p>${side(b)}</div></div>`;
+  let ev={};try{ev=JSON.parse(r.evidence||"{}")}catch{}
+  $("#revout").innerHTML=panel({decision:r.decision,score:Number(r.score),evidence:ev,
+    distinctive_max:r.distinctive_max?Number(r.distinctive_max):null,
+    distinctive_floor:0.75,decision_id:r.decision_id,pins:{}});
+  $("#reason").value=M[id]?.reason||r.reason||"";
+}
+function mark(o){
+  if(!SEL){$("#rerr").textContent="Choose a row first.";return;}
+  $("#rerr").textContent="";M[SEL]={outcome:o,reason:$("#reason").value};draw();
+}
+async function save(){
+  $("#rerr").textContent="";
+  const r=await(await fetch("/api/review",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value,marks:M})})).json();
+  $("#rerr").innerHTML=r.error||`Wrote <span style="font-family:var(--mono);font-size:15px">${esc(r.written)}</span> — ${r.rows_marked} rows marked.`;
 }
 
-function mark(outcome){
-  if (!SEL) { $("#rerr").textContent = "Pick a row first."; return; }
-  $("#rerr").textContent = "";
-  MARKS[SEL] = {outcome, reason: $("#reason").value};
-  renderRows();
+/* ════════════════════════════════════════════════════════════ compare ══ */
+function fieldRow(side,k="",v=""){
+  const d=document.createElement("div");d.className="fieldrow";
+  d.innerHTML=`<input value="${esc(k)}" placeholder="field"><input value="${esc(v)}" placeholder="value"><button class="drop">&minus;</button>`;
+  d.querySelector("button").onclick=()=>d.remove();$("#f"+side).appendChild(d);}
+const addField=s=>fieldRow(s);
+const record=s=>{const o={};for(const r of $("#f"+s).querySelectorAll(".fieldrow")){
+  const[k,v]=r.querySelectorAll("input");if(k.value.trim())o[k.value.trim()]=v.value;}return o;};
+const EX=[
+ {entity:"place",note:"Byte-identical names. Perfect score. Still held.",
+  a:{name:"General Hospital"},b:{name:"General Hospital"}},
+ {entity:"place",note:"One facility, upgraded to a new tier, measured years apart.",
+  a:{name:"Karfi Health Post",lat:"12.0421",lon:"8.5231"},
+  b:{name:"Karfi Primary Health Centre",lat:"12.0605",lon:"8.5188"}},
+ {entity:"person",note:"One Fula surname, split by a colonial spelling border.",
+  a:{name:"Mamadou Diallo"},b:{name:"Mohamed Jallow"}},
+ {entity:"person",note:"Same person, one form shorter.",
+  a:{name:"John Evelyn Smith"},b:{name:"John Smith"}},
+ {entity:"place",note:"An academy chain. The brand is two thirds of each name.",
+  a:{name:"Co-op Academy Leeds",lat:"53.8008",lon:"-1.5491"},
+  b:{name:"Co-op Academy Woodlands",lat:"53.8102",lon:"-1.5602"}}];
+let ei=0;
+function example(){const e=EX[ei++%EX.length];
+  $("#fa").innerHTML="";$("#fb").innerHTML="";
+  for(const[k,v]of Object.entries(e.a))fieldRow("a",k,v);
+  for(const[k,v]of Object.entries(e.b))fieldRow("b",k,v);
+  $("#entity").value=e.entity;
+  $("#cmargin").innerHTML=`<p><b>This pair.</b></p><p>${esc(e.note)}</p>`;}
+async function compare(){
+  $("#cerr").textContent="";
+  // Never leave a click unacknowledged. The engine can take a moment.
+  $("#cout").innerHTML='<p class="working">comparing…</p>';
+  $("#b-compare").disabled=true;
+  try{
+  const r=await(await fetch("/api/compare",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({entity:$("#entity").value,a:record("a"),b:record("b")})})).json();
+  if(r.error){$("#cout").innerHTML="";$("#cerr").textContent=r.error;return;}
+  $("#cout").innerHTML=panel(r);
+  }catch(e){$("#cout").innerHTML="";$("#cerr").textContent="request failed: "+e.message;}
+  finally{$("#b-compare").disabled=false;}}
+
+/* ═════════════════════════════════════════════════════════════ places ══ */
+const PEX=[
+ "Collect the consignment from Karfi Health Post, travelling via Ungwan Rimi junction, and deliver to the central warehouse in Kano.",
+ "The goods are to be picked up at the Tema Port bonded shed and moved to Kumasi, transiting Nsawam.",
+ "Patient was transferred from Alamance Regional to the trauma unit in Greensboro on the night of the 14th."];
+let pi=0;
+const pexample=()=>{$("#ptext").value=PEX[pi++%PEX.length];count();};
+const count=()=>$("#pcount").textContent=`${$("#ptext").value.length} characters`;
+function places(d){
+  const ms=(d.mentions||[]).filter(m=>m.span).sort((a,b)=>a.span[0]-b.span[0]);
+  let out="",cur=0;
+  ms.forEach((m,i)=>{out+=esc(d.text.slice(cur,m.span[0]));
+    out+=`<mark data-i="${i}" onmouseenter="lit(${i},1)" onmouseleave="lit(${i},0)">${esc(d.text.slice(m.span[0],m.span[1]))}<sup>${esc(m.role)}</sup></mark>`;
+    cur=m.span[1];});
+  out+=esc(d.text.slice(cur));
+  const rows=ms.map((m,i)=>`<tr data-i="${i}" onmouseenter="lit(${i},1)" onmouseleave="lit(${i},0)">
+    <td class="dt">${esc(m.role)}</td><td>${esc(m.text)}</td>
+    <td>${esc(m.cue_phrase||m.cue||"")}</td><td class="num">${n3(m.confidence)}</td></tr>`).join("");
+  return `<div class="passage">${out}</div>
+    ${ms.length?`<table class="ev-table"><thead><tr><th>Role</th><th>Place</th><th>Cue</th><th class="num">Confidence</th></tr></thead><tbody>${rows}</tbody></table>`
+      :`<p class="note">No place mentions with a spatial cue. The reader looks for cue words, so a bare list of names yields nothing.</p>`}
+    <p class="meta">read ${d.chars} characters from ${esc(d.source)}</p>`;}
+function lit(i,on){for(const el of document.querySelectorAll(`mark[data-i="${i}"], tr[data-i="${i}"]`)){
+  el.classList.toggle("lit",!!on);if(el.tagName==="TR")el.style.background=on?"var(--code)":"";}}
+const post=async b=>await(await fetch("/api/extract",{method:"POST",
+  headers:{"Content-Type":"application/json"},body:JSON.stringify(b)})).json();
+async function extract(){
+  $("#perr").textContent="";
+  $("#pout").innerHTML='<p class="working">reading…</p>';
+  $("#b-extract").disabled=true;
+  try{
+  const d=await post({text:$("#ptext").value});
+  if(d.error){$("#pout").innerHTML="";$("#perr").textContent=d.error;return;}
+  $("#pout").innerHTML=places(d);
+  }catch(e){$("#pout").innerHTML="";$("#perr").textContent="request failed: "+e.message;}
+  finally{$("#b-extract").disabled=false;}}
+const dz=$("#dz");
+dz.ondragover=e=>{e.preventDefault();dz.classList.add("over");};
+dz.ondragleave=()=>dz.classList.remove("over");
+dz.ondrop=async e=>{e.preventDefault();dz.classList.remove("over");
+  const f=e.dataTransfer.files[0];if(!f)return;
+  dz.textContent=`reading ${f.name} ...`;
+  const b64=await new Promise(res=>{const r=new FileReader();
+    r.onload=()=>res(r.result.split(",")[1]);r.readAsDataURL(f);});
+  const d=await post({filename:f.name,b64});
+  dz.textContent="Or drop a file here. Plain text, or a PDF, DOCX, PPTX, XLSX.";
+  if(d.error){$("#perr").textContent=d.error;return;}
+  $("#ptext").value=d.text;count();$("#pout").innerHTML=places(d);};
+
+/* ═════════════════════════════════════════════════════════════ redact ══ */
+const REX=[
+ "Adamu Musa, NIN 12345678901, phone 08031234567, 12 Broad Street Lagos.",
+ "Patient Chidinma Okeke, BVN 22345678901, seen at Karfi Primary Health Centre on 3 March.",
+ "Applicant: Thabo Nkosi, SA ID 8001015009087, 44 Long Street, Cape Town."];
+let ri=0;
+const rexample=()=>{$("#rtext").value=REX[ri++%REX.length];};
+function redactView(d){
+  const rows=(d.rows||[]).map(r=>`<tr>
+    <td class="dt">${esc(r.category||"")}</td>
+    <td class="dt d-${r.action==="retain"?"match":r.action==="drop"?"different":"review"}">${esc(r.action||"")}</td>
+    <td class="mono">${esc(r.applied||"")}</td>
+    <td>${esc(r.citation||"")}</td>
+    <td class="dt">${esc(r.sensitivity||"")}</td></tr>`).join("");
+  return `<div class="passage">${esc(d.redacted)}</div>
+    ${rows?`<table class="ev-table" style="max-width:920px"><thead><tr>
+      <th>Category</th><th>Action</th><th>Written instead</th><th>Cited section</th><th>Sensitivity</th>
+      </tr></thead><tbody>${rows}</tbody></table>`
+     :`<p class="note">Nothing matched a detector under this jurisdiction.</p>`}
+    <p class="meta">${esc(d.jurisdiction)} · ${(d.rows||[]).length} policy decisions</p>`;
+}
+async function redact(){
+  $("#rderr").textContent="";
+  $("#rout").innerHTML='<p class="working">reading the statute…</p>';
+  $("#b-redact").disabled=true;
+  try{
+    const d=await(await fetch("/api/redact",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text:$("#rtext").value,jurisdiction:$("#juris").value})})).json();
+    if(d.error){$("#rout").innerHTML="";$("#rderr").textContent=d.error;return;}
+    $("#rout").innerHTML=redactView(d);
+  }catch(e){$("#rout").innerHTML="";$("#rderr").textContent="request failed: "+e.message;}
+  finally{$("#b-redact").disabled=false;}
 }
 
-async function saveReview(){
-  $("#rerr").textContent = "";
-  const res = await fetch("/api/review", {method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({pack: $("#pack").value, reviewer: $("#reviewer").value, marks: MARKS})});
-  const r = await res.json();
-  $("#rerr").style.color = r.error ? "" : "var(--match)";
-  $("#rerr").textContent = r.error || `Wrote ${r.written} (${r.rows_marked} rows marked).`;
+/* ═════════════════════════════════════════════════════════════ verify ══ */
+function check(ok,head,body){
+  const cls=ok===true?"match":ok===false?"different":"review";
+  return `<div class="verdict vrule-${cls}" style="margin-top:22px"><div class="vhead">
+    <span class="vword"><span class="dt d-${cls}" style="font-size:11px;margin-right:9px">&#9632;</span>${esc(head)}</span>
+    </div></div><p class="note">${body}</p>`;
+}
+function verifyView(d){
+  const s=d.signature||{},r=d.recompute||{};
+  let out=check(s.valid,
+    s.valid?"Signature valid":"Signature does not verify",
+    s.valid
+      ? `Nothing has changed since it was signed. The key is <b>${esc(s.key_source||"unknown")}</b>${
+          s.trusted?" and trusted":", so this establishes integrity but <b>not</b> who issued it"}.
+         ${s.kid?`<br><span class="meta">${esc(s.kid)}</span>`:""}`
+      : "The payload does not match the signature. It was altered after signing, or signed by a different key.");
+  if(r.possible===true){
+    out+=check(r.agrees,
+      r.agrees?"Identifier recomputes":"Identifier does not match its evidence",
+      r.agrees
+        ? "The id is the honest address of this evidence. Recomputing it from the payload gives back the value it claims."
+        : `Claimed <span class="mono">${esc(String(r.claimed).slice(0,28))}</span> but this evidence hashes to <span class="mono">${esc(String(r.recomputed).slice(0,28))}</span>. The id came from somewhere else.`);
+  }else{
+    out+=check(null,"Identifier cannot be recomputed",
+      `${esc(r.note||"")} Missing from the artifact: <span class="mono">${esc((r.missing||[]).join(", "))}</span>`);
+  }
+  const p=d.payload||{};
+  out+=`<p class="meta">payload carries: ${Object.keys(p).map(k=>esc(k)).join(" · ")}</p>`;
+  return out;
+}
+async function doVerify(){
+  $("#verr").textContent="";
+  $("#vout").innerHTML='<p class="working">checking…</p>';
+  $("#b-verify").disabled=true;
+  try{
+    const d=await(await fetch("/api/verify",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({jws:$("#vtext").value})})).json();
+    if(d.error){$("#vout").innerHTML="";$("#verr").textContent=d.error;return;}
+    $("#vout").innerHTML=verifyView(d);
+  }catch(e){$("#vout").innerHTML="";$("#verr").textContent="request failed: "+e.message;}
+  finally{$("#b-verify").disabled=false;}
+}
+async function signOne(){
+  $("#verr").textContent="";
+  const d=await(await fetch("/api/sign_demo",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({})})).json();
+  if(d.error){$("#verr").textContent=d.error;return;}
+  $("#vtext").value=d.jws;
 }
 
-/* ------------------------------------------------------------------ init */
-(async () => {
-  const ents = await (await fetch("/api/entities")).json();
-  $("#entity").innerHTML = ents.map(e => `<option${e==="place"?" selected":""}>${esc(e)}</option>`).join("");
-  loadExample();
-  loadPacks();
+/* ═══════════════════════════════════════════════════════════════ init ══ */
+// Wired here rather than with inline onclick. An inline handler resolves its
+// call against a scope chain that includes the element and the document, which
+// makes shadowing possible and failures silent. These are unambiguous.
+const on=(id,ev,fn)=>{const el=$("#"+id);if(el)el.addEventListener(ev,fn);};
+on("t-compare","click",()=>tab("compare"));
+on("t-places","click",()=>tab("places"));
+on("t-redact","click",()=>tab("redact"));
+on("t-verify","click",()=>tab("verify"));
+on("t-review","click",()=>tab("review"));
+on("b-redact","click",redact);
+on("b-rexample","click",rexample);
+on("b-verify","click",doVerify);
+on("b-vexample","click",signOne);
+on("b-add-a","click",()=>addField("a"));
+on("b-add-b","click",()=>addField("b"));
+on("b-compare","click",compare);
+on("b-example","click",example);
+on("b-extract","click",extract);
+on("b-pexample","click",pexample);
+on("b-cols","click",()=>$("#colpick").classList.toggle("open"));
+on("b-same","click",()=>mark("same_entity"));
+on("b-diff","click",()=>mark("different"));
+on("b-unres","click",()=>mark("unresolved"));
+on("b-save","click",save);
+on("pack","change",loadPack);
+on("filter","change",draw);
+on("q","input",draw);
+$("#ptext").addEventListener("input",count);
+(async()=>{
+  const e=await(await fetch("/api/entities")).json();
+  $("#entity").innerHTML=e.map(x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
+  example();pexample();rexample();loadPacks();
 })();
 </script>
 </body>

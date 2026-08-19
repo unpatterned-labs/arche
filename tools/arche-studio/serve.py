@@ -16,15 +16,26 @@ That matters because the people who most need to look at a match decision are
 often not the people who can install a Python package. A reviewer with a laptop
 and a browser is the audience.
 
-Two modes, one renderer
------------------------
+Three modes, one renderer
+-------------------------
 * **Compare** takes two records and shows the decision, the evidence behind it,
   and the gate that produced it. Ad hoc, no files needed.
+* **Spatial roles** reads pasted text or an attached document and marks which
+  places are origins, destinations, waypoints and locations.
 * **Review** loads an adjudication pack and walks it, recording an outcome per
   row.
 
-Both draw the same evidence panel, because a reviewer and an engineer should be
-looking at the same thing.
+All three draw the same evidence panel, because a reviewer and an engineer
+should be looking at the same thing.
+
+Typefaces
+---------
+`index.html` links Source Serif 4 and JetBrains Mono from Google Fonts. That is
+the one external request the tool makes, and it is a real change from the
+earlier version, which had none. Offline the page falls back to a local serif
+stack and stays entirely usable; only the typography changes. If you need a
+hard air gap, download the two families and swap the `<link>` for a
+`@font-face` block.
 
 Safety
 ------
@@ -41,7 +52,7 @@ import json
 import sys
 import threading
 import webbrowser
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -131,6 +142,180 @@ def _compare(payload: dict) -> dict:
             "pins": res.get("pins", {})}
 
 
+def _extract(payload: dict) -> dict:
+    """Spatial roles from pasted text, or from an attached document.
+
+    A place mention is not just a place. "From Karfi to Kano" contains two
+    mentions and the difference between them is the whole meaning of the
+    sentence. Swapping origin and destination is the most literal way there is
+    to get a delivery wrong.
+    """
+    from arche.addr import extract_places
+
+    text = payload.get("text") or ""
+    source = "pasted text"
+    if payload.get("b64"):
+        import base64
+        import tempfile
+        name = payload.get("filename") or "attachment"
+        raw = base64.b64decode(payload["b64"])
+        suffix = Path(name).suffix.lower()
+        if suffix in (".txt", ".md", ".csv", ""):
+            text = raw.decode("utf-8", "replace")
+        else:
+            from arche.doc import parse
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as fh:
+                fh.write(raw)
+                tmp = fh.name
+            try:
+                doc = parse(tmp)
+                text = getattr(doc, "text", None) or str(doc)
+            finally:
+                Path(tmp).unlink(missing_ok=True)
+        source = name
+    if not text.strip():
+        raise ValueError("nothing to read: paste some text or attach a file")
+
+    out = []
+    for m in extract_places(text):
+        d = m.to_dict() if hasattr(m, "to_dict") else {}
+        out.append({
+            "text": m.text, "role": m.role,
+            "confidence": round(float(m.confidence or 0), 3),
+            "cue": m.cue, "cue_phrase": getattr(m, "cue_phrase", None),
+            "cue_rule": getattr(m, "cue_rule", None),
+            "span": list(m.span) if getattr(m, "span", None) else None,
+            "cue_span": list(m.cue_span) if getattr(m, "cue_span", None) else None,
+            "jurisdiction": getattr(m, "jurisdiction", None),
+            "address": d.get("address"),
+        })
+    return {"source": source, "chars": len(text), "text": text, "mentions": out}
+
+
+def _redact(payload: dict) -> dict:
+    """Run a record through detect + policy and show what the statute removes.
+
+    The interesting column is not the redaction, it is the citation. A system
+    that removes a national ID without being able to say which section told it
+    to has not complied with anything, it has just deleted a number.
+    """
+    from arche import Pipeline
+
+    text = payload.get("text") or ""
+    if not text.strip():
+        raise ValueError("nothing to redact: paste some text first")
+    juris = payload.get("jurisdiction") or "NG"
+    res = Pipeline(jurisdiction=juris).process(text)
+
+    # The policy outcome is the row worth showing: it names the action, the
+    # statute and the section, and what was written in place of the value.
+    # Join it back to its detection so the span can be highlighted in the text.
+    by_id = {}
+    for d in getattr(res, "detections", []) or []:
+        by_id[getattr(d, "id", None)] = d
+
+    rows = []
+    for o in getattr(res, "policy_outcomes", []) or []:
+        d = by_id.get(getattr(o, "detection_id", None))
+        span = getattr(o, "span", None) or (getattr(d, "start", None), getattr(d, "end", None))
+        tier = getattr(d, "sensitivity_tier", None)
+        rows.append({
+            "category": getattr(o, "category", None),
+            "action": getattr(o, "action", None),
+            "applied": getattr(o, "applied_value", None),
+            "citation": getattr(o, "statute_reference", None),
+            "statute": getattr(o, "statute_id", None),
+            "statute_version": getattr(o, "statute_version", None),
+            "rationale": getattr(o, "rationale", None),
+            "span": list(span) if span and span[0] is not None else None,
+            "detector": getattr(d, "detector", None),
+            "identity_class": getattr(d, "identity_class", None),
+            "sensitivity": getattr(tier, "value", tier),
+            # The value itself is deliberately NOT returned. A redaction view
+            # that echoes the thing it redacted has defeated its own purpose.
+        })
+    return {"jurisdiction": juris, "original": text,
+            "redacted": getattr(res, "redacted_text", ""),
+            "rows": rows,
+            "document_hash": getattr(res, "document_hash", None)}
+
+
+def _verify(payload: dict) -> dict:
+    """Two independent checks on a signed decision, and one honest limit.
+
+    * The **signature** says who issued it and that nothing changed since.
+    * The **recomputed id** says the id is the honest address of *this*
+      evidence rather than one lifted from a more favourable decision.
+
+    They fail differently, which is what makes the pair worth having. The
+    second check only works on a `pairwise` decision: a `crosswalk` edge
+    carries `evidence` but not the `factors`/`gate`/`vetoes`/`jurisdiction`
+    that `decision_id` hashes, so its id cannot be recomputed from the
+    artifact alone. That is reported rather than glossed.
+    """
+    from arche.sign import verify as verify_jws
+
+    token = (payload.get("jws") or "").strip()
+    if not token:
+        raise ValueError("paste a compact JWS to verify")
+
+    out: dict = {"signature": {}, "recompute": {}}
+    v = verify_jws(token, allow_did_key_from_kid=True)
+    out["signature"] = {
+        "valid": bool(getattr(v, "valid", False)),
+        "trusted": bool(getattr(v, "trusted", False)),
+        "key_source": getattr(v, "key_source", None),
+        "kid": getattr(v, "kid", None),
+    }
+    body = dict(getattr(v, "payload", {}) or {})
+    out["payload"] = body
+
+    need = ("reference_id_a", "reference_id_b", "factors", "gate",
+            "vetoes", "jurisdiction", "pins")
+    missing = [k for k in need if k not in body]
+    if missing:
+        out["recompute"] = {
+            "possible": False, "missing": missing,
+            "note": ("This artifact does not carry the inputs the id is hashed "
+                     "over, so the id cannot be recomputed from it. Crosswalk "
+                     "edges have this shape; pairwise decisions do not."),
+        }
+        return out
+
+    from arche.ids import decision_id
+    claimed = body.get("decision_id")
+    got = decision_id(
+        reference_id_a=body["reference_id_a"], reference_id_b=body["reference_id_b"],
+        decision=body.get("identity") or body.get("decision"),
+        factors=body["factors"], gate=body["gate"], vetoes=body["vetoes"],
+        jurisdiction=body["jurisdiction"], pins=body["pins"])
+    out["recompute"] = {"possible": True, "claimed": claimed,
+                        "recomputed": got, "agrees": got == claimed}
+    return out
+
+
+def _sign_demo(_payload: dict) -> dict:
+    """A freshly signed edge, so Verify has something real to chew on.
+
+    The key is generated per call and thrown away, which is why the result
+    verifies as `self-asserted` rather than trusted. That is the honest state
+    for a demo: integrity provable, issuer not.
+    """
+    from arche.resolve import crosswalk
+    from arche.resolve.reconcile import sign_edges
+    from arche.sign import generate_keypair
+
+    k = generate_keypair()
+    res = crosswalk([{"id": "a", "name": "Karfi Health Post", "lat": "12.0421", "lon": "8.5231"}],
+                    [{"id": "b", "name": "Karfi Primary Health Centre", "lat": "12.0605",
+                        "lon": "8.5188"}],
+                    entity="place", id_field="id")
+    edges = sign_edges(res, private_key=k.private_key, kid=k.did_key)
+    if not edges:
+        raise ValueError("nothing signable: the demo pair produced no edge")
+    return {"jws": edges[0]["jws"], "decision_id": edges[0]["decision_id"]}
+
+
 def _save_review(payload: dict) -> dict:
     pack_id = payload["pack"]
     path = (PACKS / pack_id).resolve()
@@ -147,7 +332,7 @@ def _save_review(payload: dict) -> dict:
         raise ValueError("a reviewer name is required; an unattributed "
                          "adjudication cannot be audited")
     marks = payload.get("marks") or {}
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     n = 0
     for r in rows:
         m = marks.get(r.get("decision_id", ""))
@@ -169,6 +354,14 @@ def _save_review(payload: dict) -> dict:
     out = path.with_name(path.stem + "_reviewed.csv")
     out.write_text(buf.getvalue(), encoding="utf-8", newline="")
     return {"written": str(out.relative_to(REPO)).replace("\\", "/"), "rows_marked": n}
+
+
+class Studio(ThreadingHTTPServer):
+    # Default is True, which on Windows lets a second `serve.py` bind the same
+    # port and sit behind the first one. The old process keeps answering, so an
+    # edit to this file appears to do nothing. Fail loudly instead.
+    allow_reuse_address = False
+    daemon_threads = True
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -200,7 +393,8 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:  # surfaced in the UI rather than the console
-            self._json({"error": f"{type(exc).__name__}: {exc}"}, 400)
+            self._json({"error": str(exc) if isinstance(exc, ValueError)
+                             else f"{type(exc).__name__}: {exc}"}, 400)
 
     def do_POST(self) -> None:
         u = urlparse(self.path)
@@ -209,23 +403,57 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(n) or b"{}")
             if u.path == "/api/compare":
                 self._json(_compare(payload))
+            elif u.path == "/api/extract":
+                self._json(_extract(payload))
+            elif u.path == "/api/redact":
+                self._json(_redact(payload))
+            elif u.path == "/api/verify":
+                self._json(_verify(payload))
+            elif u.path == "/api/sign_demo":
+                self._json(_sign_demo(payload))
             elif u.path == "/api/review":
                 self._json(_save_review(payload))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:
-            self._json({"error": f"{type(exc).__name__}: {exc}"}, 400)
+            self._json({"error": str(exc) if isinstance(exc, ValueError)
+                             else f"{type(exc).__name__}: {exc}"}, 400)
+
+
+def _warm() -> None:
+    """Import arche and touch the packs before anyone clicks anything.
+
+    The first call costs three to four seconds: importing the engine, then
+    loading the shipped frequency tables. Paid at boot it is invisible. Paid on
+    the first click it looks like a broken button, which is exactly how it read
+    before this existed.
+    """
+    try:
+        from arche.resolve import crosswalk
+        crosswalk([{"id": "a", "name": "warm up"}], [{"id": "b", "name": "warm up"}],
+                  entity="place", id_field="id")
+        from arche.addr import extract_places
+        extract_places("from a to b")
+        print("  engine warm", flush=True)
+    except Exception as exc:  # never let a warmup failure stop the server
+        print(f"  warmup skipped: {exc}", flush=True)
 
 
 def main() -> int:
     if not (HERE / "index.html").exists():
         print("index.html is missing next to serve.py", file=sys.stderr)
         return 1
-    srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+    try:
+        srv = Studio(("127.0.0.1", PORT), Handler)
+    except OSError as exc:
+        print(f"  port {PORT} is already in use: {exc}", file=sys.stderr)
+        print("  another arche studio is probably running. Stop it first.", file=sys.stderr)
+        return 1
     url = f"http://127.0.0.1:{PORT}"
     print(f"  arche studio  ->  {url}")
     print(f"  review packs  ->  {PACKS}")
     print("  ctrl-c to stop")
+    threading.Thread(target=_warm, daemon=True).start()
     threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         srv.serve_forever()

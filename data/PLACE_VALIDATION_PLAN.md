@@ -136,6 +136,26 @@ shown to have independently collected location data. Treat academy conversion,
 relocation, closure, and predecessor-successor links as explicit states, not
 matching errors.
 
+## Nigeria schools: three-source reconciliation
+
+`Schools_in_Nigeria_524370204688734996.csv` is a supplied 2020 school
+inventory with 107,670 records, source fields, administrative geography, and
+coordinates. It does not share a school identifier with OpenStreetMap or
+Overture Maps. Use it as the operating inventory for a reconciliation exercise,
+not a labelled benchmark.
+
+`data/scripts/stage_nigeria_schools.py` accepts the supplied file path and
+stages a state, LGA, or ward-sized slice together with an OSM Overpass reply and
+a pinned Overture Places release. It keeps source hashes, OSM's ODbL status,
+and Overture's per-record source licences in a gitignored directory.
+
+The first Opebi, Ikeja, Lagos slice on 19 August 2026 had 23 inventory schools,
+2 named OSM schools, and 46 Overture school-classified places. OSM coverage was
+too sparse to evaluate there. The Overture comparison produced 6 `match` and
+12 `review` candidates from 1,058 possible pairs. These counts do not measure
+performance. The review pack contains a plausible Senior versus Junior Grammar
+School false-merge risk, which is why the next step is adjudication.
+
 ## Gates before a public accuracy claim
 
 1. Pin source files and document their lineage and licence.

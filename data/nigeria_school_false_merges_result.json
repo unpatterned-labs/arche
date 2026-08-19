@@ -1,0 +1,17 @@
+{
+  "source": "Schools_in_Nigeria_524370204688734996.csv",
+  "records": 107670,
+  "seed": 20260819,
+  "negative_pairs": 400,
+  "distinct_names": 98248,
+  "names_shared": 3959,
+  "records_sharing_a_name": 13381,
+  "false_merges": {
+    "exact name (casefold)": 400,
+    "token Jaccard >= 0.5": 400,
+    "token_set_ratio >= 90": 399,
+    "arche (name + coords)": 2
+  },
+  "arche_routed_to_review": 397,
+  "what_this_does_not_measure": "recall; there are no positive labels"
+}

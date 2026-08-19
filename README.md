@@ -114,6 +114,28 @@ Runs offline by default. Nothing leaves the machine unless you configure a backe
 
 We mean this literally. Entity resolution has two halves. The mathematics of combining evidence is solved, has a founding paper from 1969, and has excellent free software in [Splink](https://moj-analytical-services.github.io/splink/). arche is about the other half: what the records look like when they are compared, what counts as agreement, and what agreement is worth. Every gain claimed here is a gain in representation, and none of it is a better estimator.
 
+## Look at a decision
+
+`arche studio` is a local reading tool. Three files, the standard library, no
+framework and no install beyond `arche-core` itself.
+
+```bash
+python tools/arche-studio/serve.py     # opens http://127.0.0.1:8765
+```
+
+Five modes over one evidence panel:
+
+| | |
+|---|---|
+| **Compare** | two ad-hoc records, the decision, and a plain sentence saying why it held back |
+| **Spatial roles** | paste text or drop a document; origins, destinations and waypoints marked with the cue that decided each |
+| **Redact** | run a record through a statute pack and see the action, the cited section, and what was written instead |
+| **Verify** | check a signed decision two ways: the signature, and whether its id recomputes from its own evidence |
+| **Review queue** | a dense grid over an adjudication pack, sortable and searchable, marking outcomes to a labelled copy |
+
+It is alpha, says so on the page, binds to `127.0.0.1`, and has no
+authentication. It is a tool for reading our own queues, not a product.
+
 ## Documentation
 
 | | |
@@ -123,7 +145,7 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 | [How it works](https://unpatterned-labs.github.io/arche/tutorials/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
 | [What matching looks like](https://unpatterned-labs.github.io/arche/tutorials/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
 | [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/) | check a signed decision you did not issue |
-| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | 13, from first call to crosswalking a national register |
+| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | 14, from first call to crosswalking a national register |
 
 ## Contributing
 

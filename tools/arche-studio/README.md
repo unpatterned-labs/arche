@@ -1,7 +1,7 @@
 # arche studio
 
-Compare two records, or work a review queue. Three files, no dependencies
-beyond `arche-core` itself.
+Compare two records, read spatial roles out of a document, or work a review
+queue. Three files, no Python dependencies beyond `arche-core` itself.
 
 ```bash
 python tools/arche-studio/serve.py
@@ -14,12 +14,18 @@ It opens `http://127.0.0.1:8765` for you.
 ```
 tools/arche-studio/
 ├── serve.py      a local server, standard library only
-├── index.html    the entire interface, one file, no CDN
+├── index.html    the entire interface, one file
 └── README.md     this
 ```
 
-That is the whole thing. There is no build step, no `pip install`, no
-framework, and no network access. `index.html` is readable top to bottom.
+That is the whole thing. No build step, no `pip install`, no framework.
+`index.html` is readable top to bottom.
+
+It makes exactly one external request: two typefaces from Google Fonts. An
+earlier version made none, and that was worth giving up for a page that reads
+like a page. Offline it falls back to a local serif stack and stays fully
+usable; only the typography changes. For a hard air gap, download Source Serif
+4 and JetBrains Mono and swap the `<link>` for a `@font-face` block.
 
 This matters because the people who most need to look at a match decision are
 often not the people who can install a Python package. A reviewer with a laptop
@@ -62,6 +68,22 @@ report a perfect score while doing it.
 `Load an example` cycles through four pairs worth understanding: a Nigerian
 facility upgraded to a new tier, two spellings of one Fula surname, a dropped
 middle name, and two schools from the same academy chain.
+
+## Spatial roles
+
+Paste a dispatch note or drop a document. The tool marks every place mention
+with the role its cue implies, and shows the cue that decided it.
+
+*From Karfi to Kano* names two places, and the difference between them is the
+meaning of the sentence. Swap them and the consignment goes backwards.
+
+Watch it get one wrong, on purpose: in the first example, *deliver to the
+central warehouse in Kano* comes back as a **location**, not a destination. The
+nearer `in` cue beats `deliver to`. The rules are a cue lexicon, not a parser,
+and the margin note says so rather than hiding it.
+
+Plain text is read directly. PDF, DOCX, PPTX and XLSX go through the document
+lane, which needs `arche-core[doc]`.
 
 ## Review queue
 
