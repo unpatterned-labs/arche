@@ -42,6 +42,10 @@ They answer different questions and have different output shapes.
    transitivity, conflict handling, and review rules.
 5. Do not interpret `score` as a calibrated probability.
 
+See [review and evaluate a crosswalk](../guides/review-and-evaluate.md) for a
+portable review-outcome shape and the conditions required to make accuracy
+claims.
+
 This is the alpha consumer contract for `arche-core` 0.4.0a3. Any incompatible
 change should be called out in the release notes before a downstream system is
 expected to adopt it.

@@ -55,6 +55,11 @@ the records describe different entities.
 Use `review` as a queue for an accountable human or business process. Do not
 promote it to a match solely because its score is high.
 
+All five standalone scripts, including Pipeline, document resolution, direct
+person comparison, address parsing, and spatial roles, are in [How arche
+works](../reference/how-arche-works.md). They run from an installed package and
+do not require the notebooks.
+
 ## Next steps
 
 - [Prepare your data](../guides/prepare-data.md)

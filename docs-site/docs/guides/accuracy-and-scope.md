@@ -42,6 +42,9 @@ the populations it claims to serve. It should be compared with plain string
 matching, established probabilistic linkage, and model-assisted matching under
 the same candidate set and decision policy.
 
+See [review and evaluate a crosswalk](review-and-evaluate.md) for the minimum
+review artifact and evaluation conditions.
+
 See [places and products in action](places-and-products.md) for a runnable
 place-resolution tour and an evaluation against the public Abt-Buy electronics
 benchmark. The [notebook release evidence](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/RELEASE_EVIDENCE.md)

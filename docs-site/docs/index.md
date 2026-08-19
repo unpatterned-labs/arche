@@ -40,6 +40,30 @@ pip install arche-core
 
 Then follow [Resolve two lists](getting-started/quickstart.md).
 
+## Run a first script
+
+Save this as `first_crosswalk.py`, then run `python first_crosswalk.py`. It
+uses only the installed package, not a notebook or a repository checkout.
+
+```python
+from arche.resolve import crosswalk
+
+left = [{"id": "registry-1", "name": "Gyaranya Health Post", "lat": 11.90, "lon": 8.50}]
+right = [{"id": "survey-1", "name": "Gyaranya Health Post", "lat": 11.94, "lon": 8.50}]
+
+edge = crosswalk(left, right, entity="place")["matches"][0]
+print(edge["decision"], edge["score"], edge["evidence"])
+```
+
+```text
+match 0.8454 {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0,
+'geo': 0.227, 'distance_km': 4.45}
+```
+
+See [How arche works](reference/how-arche-works.md) for standalone scripts for
+Pipeline, document resolution, direct person comparison, address parsing, and
+spatial roles.
+
 ## Scope for alpha
 
 arche is alpha software. Its APIs and calibration can change. Do not use it to

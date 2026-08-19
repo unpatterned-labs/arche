@@ -41,3 +41,6 @@ An agent may extract fields, propose candidates, or explain returned evidence.
 It must not silently convert `review` to `match`. Give the agent a constrained
 tool call, redacted inputs by default, and an explicit escalation path for
 human review.
+
+To record reviewer outcomes and evaluate a labelled crosswalk, see [review and
+evaluate a crosswalk](review-and-evaluate.md).
