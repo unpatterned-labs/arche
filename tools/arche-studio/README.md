@@ -107,6 +107,39 @@ audited, so the save is refused without one.
 shown in the header. If someone edits the pack between matching and reviewing,
 the digest moves.
 
+
+## Deploying it
+
+Short answer: don't, not as it stands.
+
+It binds to `127.0.0.1` and has no authentication, no CSRF protection, and no
+per-user anything. `POST /api/review` writes a file. Bound to `0.0.0.0` that
+becomes a remote write, and the only thing standing in front of it is the path
+check that keeps writes inside `data/review_packs/`. That is a guard against a
+mistake, not against an attacker.
+
+Three honest options, in order of how much they cost:
+
+**Run it locally, per person.** What it was built for. The data is already on
+that machine; the tool is three files and needs no install. This is the
+recommended answer and it stays the recommended answer for longer than you
+would expect.
+
+**Put it behind an auth proxy.** Tailscale, Cloudflare Access, `oauth2-proxy`.
+Zero code change, real access control, identity borrowed from something that
+already does it properly. If two or three people need to work the same queue,
+this is the answer, and the reviewer name field stops being an honesty system.
+
+**Build multi-user properly.** Sessions, per-user state, an audit trail of who
+saw which record, and a threat model. That is a different project with
+different obligations, and it should be a decision rather than a drift.
+
+One thing that would need fixing before any network exposure: the reviewer name
+is typed by the person reviewing. Locally that is fine, because the only person
+who can type it is the person sitting there. Behind a proxy it should come from
+the proxy's identity header, not from a text box, or the audit trail records
+whatever someone felt like typing.
+
 ## What it is not
 
 Not a service. It binds to `127.0.0.1` and is meant to be run on the machine

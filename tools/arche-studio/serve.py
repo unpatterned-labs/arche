@@ -259,6 +259,25 @@ def _verify(payload: dict) -> dict:
     if not token:
         raise ValueError("paste a compact JWS to verify")
 
+    # Tell the caller what they actually pasted. Handing a decision_id to a
+    # signature check and answering "does not verify" is a confident wrong
+    # answer, which is the failure mode this whole project argues against.
+    bare = token.split(":")[-1]
+    if token.startswith(("xwd:", "dec:", "ref:")) or (
+            len(bare) == 64 and all(c in "0123456789abcdef" for c in bare.lower())):
+        raise ValueError(
+            "That is a decision id, not a signed decision. An id is the address "
+            "of a decision; a JWS is the decision itself, signed. Ids cannot be "
+            "verified on their own: there is nothing in them to check a "
+            "signature against. Use 'Sign one to try', or pass an edge through "
+            "sign_edges() and paste the 'jws' field.")
+    if token.count(".") != 2:
+        raise ValueError(
+            "That is not a compact JWS. A compact JWS is three base64url "
+            f"segments separated by dots (header.payload.signature); this has "
+            f"{token.count('.') + 1}. If you have a signed edge, paste its "
+            "'jws' field rather than the whole object.")
+
     out: dict = {"signature": {}, "recompute": {}}
     v = verify_jws(token, allow_did_key_from_kid=True)
     out["signature"] = {
