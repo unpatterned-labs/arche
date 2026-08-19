@@ -12,7 +12,7 @@ Change the stakes and it is the same bug. A mother brings her daughter to three 
 
 arche exists for that gap. It finds the entities in a document or a system, works out which real-world thing each one refers to, protects them under the law that applies, and signs every decision so it can be defended later.
 
-This post is the practical introduction. [The part intelligence doesn't make cheaper](the-part-intelligence-doesnt-make-cheaper.md) is the argument for why it should exist; [The same clinic, three spellings](reconciling-nigerias-health-facilities.md) is the measurement on real national data.
+This post is the practical introduction. The part intelligence doesn't make cheaper is the argument for why it should exist; [The same clinic, three spellings](reconciling-nigerias-health-facilities.md) is the measurement on real national data.
 
 ## Install
 
@@ -170,7 +170,7 @@ We reconciled Kano State's health facility list against OpenStreetMap. 685 recor
 
 And before any of that, a plain dictionary lookup on exact names already solved most of the list.
 
-Read those numbers honestly: **most of a reconciliation needs no product at all.** The value is concentrated in the boundary between "safe to merge" and "a human needs to look at this". [The full write-up](reconciling-nigerias-health-facilities.md) has the method, its five stated limitations, and the case where it demonstrably gets a match wrong.
+Read those numbers honestly: **most of a reconciliation needs no product at all.** The value is concentrated in the boundary between "safe to merge" and "a human needs to look at this". The full write-up has the method, its five stated limitations, and the case where it demonstrably gets a match wrong.
 
 ## Why African data first
 
@@ -202,9 +202,9 @@ pip install arche-core
 ```
 
 - [Quick start](../getting-started/quickstart.md). First result in five minutes
-- [How arche works](../concepts/how-it-works.md). The pipeline end to end, for newcomers
+- [How arche works](how-it-works.md). The pipeline end to end, for newcomers
 - [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks). The facility reconciliation, resolving a person across documents, and a head-to-head against a frontier model
-- [The place benchmark](../concepts/place-benchmark.md). How we measure, and how to check whether two datasets you were told are independent actually are
+- [The place benchmark](../about/place-benchmark.md). How we measure, and how to check whether two datasets you were told are independent actually are
 
 Apache-2.0 for the code. The datasets are CC-BY-4.0, apart from the African name-equivalence lexicon, which is CC-BY-NC-SA-4.0 and [under review](https://github.com/unpatterned-labs/arche/blob/main/LICENSING.md).
 

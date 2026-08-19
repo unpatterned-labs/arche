@@ -275,12 +275,12 @@ NominatimError: expected a JSON array, got dict
 
 ## Where this fits
 
-Nominatim is the right first adapter because it is free, keyless, and genuinely independent of the government registries arche reconciles. That last property is worth checking rather than assuming: see [the place benchmark](../concepts/place-benchmark.md#the-independence-test) for a test that catches a "independent" source which is really a re-publication, and for the measurement showing OSM's Kano health facilities are *not* independent of GRID3.
+Nominatim is the right first adapter because it is free, keyless, and genuinely independent of the government registries arche reconciles. That last property is worth checking rather than assuming: see [the place benchmark](../about/place-benchmark.md#the-independence-test) for a test that catches a "independent" source which is really a re-publication, and for the measurement showing OSM's Kano health facilities are *not* independent of GRID3.
 
 Which is the honest caveat on this whole page. Nominatim serves OSM data. For Nigerian health facilities specifically, a Nominatim corroboration of a GRID3-derived coordinate may be corroborating a shared ancestor rather than providing a second opinion. It is a stronger check for settlements and landmarks, where OSM's lineage is genuinely community survey, than for facilities imported from a registry.
 
 ## Next
 
-- [The place benchmark](../concepts/place-benchmark.md) for the independence test and the geographic veto this adapter's `tolerance_km` mirrors
+- The place benchmark for the independence test and the geographic veto this adapter's `tolerance_km` mirrors
 - [Read the crosswalk output](read-crosswalk-output.md) for the evidence structure a verdict attaches to
-- [Bring your own LLM](bring-your-own-llm.md) for the same evidence-not-decisions contract applied to a model
+- Bring your own LLM for the same evidence-not-decisions contract applied to a model

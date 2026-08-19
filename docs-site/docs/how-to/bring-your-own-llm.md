@@ -1,6 +1,6 @@
 # Bring your own LLM: arche grades it
 
-You want the best model doing your extraction. arche's position is not "don't" — it's **models propose, the engine decides, and the signature tells the truth about which was which**.
+You want the best model doing your extraction. arche's position is not "don't", it's **models propose, the engine decides, and the signature tells the truth about which was which**.
 
 This page is that division of labour as working code. Every snippet below was executed against `arche-core` 0.3.0a1 and the output is what it actually printed. Nothing here needs an API key: the model is any callable, which is the point.
 
@@ -11,11 +11,11 @@ This page is that division of labour as working code. Every snippet below was ex
 | Reads messy text into *your* declared fields | Generates the prompt and the JSON Schema from your declaration |
 | Proposes values | Rejects fields you never declared, as violations rather than values |
 | Proposes judgments (`same` / `different` / `unsure`) | Decides deterministically, and grades the model against that decision |
-| — | Signs the result, recording that an unreproducible model was involved |
+| n/a | Signs the result, recording that an unreproducible model was involved |
 
 ## 1. Your declaration is the model's contract
 
-Start from a [declaration](declare-your-schema.md). It generates the prompt, the JSON Schema, and the validation — you do not write a prompt by hand.
+Start from a [declaration](declare-your-schema.md). It generates the prompt, the JSON Schema, and the validation, you do not write a prompt by hand.
 
 ```python
 from arche.declare import Declaration
@@ -24,11 +24,11 @@ from arche.llm.declarative import extract_declared
 decl = Declaration.from_yaml("examples/declarations/fisheries.decl.yaml")
 ```
 
-The generated system prompt names only the fields you declared, and only the ones that carry meaning. Fields marked `role: ignore` are excluded — the model is never asked for them:
+The generated system prompt names only the fields you declared, and only the ones that carry meaning. Fields marked `role: ignore` are excluded, the model is never asked for them:
 
 ```text
 You extract one catch_lot record from text.
-Fields (emit ONLY these; omit any you cannot find — never invent):
+Fields (emit ONLY these; omit any you cannot find - never invent):
 - supplier_name: Trading name of the landing supplier.
 - vessel_id: IMO vessel number, e.g. IMO-9074729.
 - skipper_phone: (identifies)
@@ -44,11 +44,11 @@ Respond with a single JSON object matching this schema exactly:
   ...
 ```
 
-Two details in that schema are deliberate. `additionalProperties: false` says your fields are the whole world. `required: []` is there because **a model told a field is required will invent one** — arche would rather have a gap than a fabrication.
+Two details in that schema are deliberate. `additionalProperties: false` says your fields are the whole world. `required: []` is there because **a model told a field is required will invent one**, arche would rather have a gap than a fabrication.
 
 ## 2. Extract
 
-`complete_fn` is any callable taking a list of messages and returning a string. That is the entire integration surface — bring an SDK client, an HTTP call, a local model, or a stub.
+`complete_fn` is any callable taking a list of messages and returning a string. That is the entire integration surface, bring an SDK client, an HTTP call, a local model, or a stub.
 
 ```python
 ex = extract_declared(
@@ -114,7 +114,7 @@ same_entity 1.0
  'reproducible': False}
 ```
 
-Read that pin carefully, because it is the whole philosophy in one dict. The *extraction* is not reproducible — a hosted model's output never is. The *representation* (the declaration hash) and the *decision maths* (the engine, the gate, the canonical form) are. The signature covers the honest split.
+Read that pin carefully, because it is the whole philosophy in one dict. The *extraction* is not reproducible, a hosted model's output never is. The *representation* (the declaration hash) and the *decision maths* (the engine, the gate, the canonical form) are. The signature covers the honest split.
 
 ### The attestation inherits that honesty
 
@@ -137,7 +137,7 @@ True True False
 
 !!! note "Fixed in 0.3.0a1"
 
-    `reproducible` was previously computed from the *signing mode*, so every JWS attestation claimed `True` — including ones built from LLM extractions whose own pin said `False`, with both claims inside the same artifact. It is now derived from the decision's pins.
+    `reproducible` was previously computed from the *signing mode*, so every JWS attestation claimed `True`, including ones built from LLM extractions whose own pin said `False`, with both claims inside the same artifact. It is now derived from the decision's pins.
 
 ## 4. Grade the model against the engine
 
@@ -160,7 +160,7 @@ pairs = [
 report = grade_pairs(decl, pairs, judge=my_judge)   # judge(a, b) -> "same"|"different"|"unsure"
 ```
 
-With a judge that decides on surname similarity alone — the classic failure:
+With a judge that decides on surname similarity alone, the classic failure:
 
 ```text
 total_pairs     : 3
@@ -176,11 +176,11 @@ Divergence(a_id='', b_id='', engine='different', judge='same', score=0.0843,
            evidence={'name': 1.0, 'national_id': 0.0, 'name_tf': 1.0})
 ```
 
-That single divergence is the two men named Khalid Mehmood. The judge saw identical names and said `same`. The engine scored 0.0843 and said `different` — and the divergence carries **why**: `name: 1.0` (a perfect match) alongside `national_id: 0.0` (a direct contradiction). You are never told only that the model disagreed; you are told what it disagreed with.
+That single divergence is the two men named Khalid Mehmood. The judge saw identical names and said `same`. The engine scored 0.0843 and said `different`, and the divergence carries **why**: `name: 1.0` (a perfect match) alongside `national_id: 0.0` (a direct contradiction). You are never told only that the model disagreed; you are told what it disagreed with.
 
 ### Three honesty rules are built into the harness
 
-**Engine `review` outcomes are abstentions.** Where the engine deliberately does not know, the model is neither right nor wrong, and the pair is excluded from `scored_pairs`. `agreement_rate` is `None` rather than `0.0` when nothing was scorable — there is no grade over zero pairs.
+**Engine `review` outcomes are abstentions.** Where the engine deliberately does not know, the model is neither right nor wrong, and the pair is excluded from `scored_pairs`. `agreement_rate` is `None` rather than `0.0` when nothing was scorable, there is no grade over zero pairs.
 
 **The judge's vocabulary is closed.**
 
@@ -191,11 +191,11 @@ grade_pairs(decl, pairs, judge=lambda a, b: "probably")
 
 **Every divergence carries the engine's evidence**, factor by factor, as above.
 
-For extraction there is no oracle — arche has never seen your fields, so it cannot know the right answer. `grade_extractions` reports the honest contract metrics instead: violation rate and per-field coverage, stamped with the declaration pin.
+For extraction there is no oracle, arche has never seen your fields, so it cannot know the right answer. `grade_extractions` reports the honest contract metrics instead: violation rate and per-field coverage, stamped with the declaration pin.
 
 ## 5. Using a hosted provider instead of a callable
 
-`LLMConfig` covers the common providers. `complete_fn` and `config` are alternatives — pass one.
+`LLMConfig` covers the common providers. `complete_fn` and `config` are alternatives, pass one.
 
 ```python
 from arche.llm import LLMConfig
@@ -208,7 +208,7 @@ ex = extract_declared(text, decl, config=LLMConfig(
 ))
 ```
 
-Providers load lazily — the base install has no LLM dependencies, and nothing is imported until you call one. Errors name the fix:
+Providers load lazily, the base install has no LLM dependencies, and nothing is imported until you call one. Errors name the fix:
 
 ```text
 ValueError:   Unknown LLM provider: 'gpt5'. Supported: anthropic, litellm, ollama, openai
@@ -220,18 +220,18 @@ RuntimeError: Ollama request failed (http://localhost:11434/api/chat): ...
 |---|---|
 | `openai`, `anthropic` | `pip install "arche-core[llm]"` |
 | `litellm` (100+ backends) | `pip install "arche-core[litellm]"` |
-| `ollama` (local) | no extra dependency — plain HTTP |
+| `ollama` (local) | no extra dependency, plain HTTP |
 
 `temperature` defaults to `0.0`. Leave it there. Extraction is not a task where you want sampling variety, and a lower-variance model makes the harness numbers mean something.
 
 ## The boundary, stated plainly
 
-The model never becomes the decider. Its knowledge is real where you need it least — famous entities — and a guess where identity actually lives, in the tail. Its judgments cannot be replayed once a model version retires.
+The model never becomes the decider. Its knowledge is real where you need it least, famous entities, and a guess where identity actually lives, in the tail. Its judgments cannot be replayed once a model version retires.
 
 So arche gives it the two jobs it is genuinely best at: reading messy text into your schema, and proposing judgments the engine then grades. The gate, the veto, and the signature stay deterministic. If the model is good, the harness shows it, with numbers. If it isn't, the harness shows that too.
 
 ## Next
 
-- [Declare your schema](declare-your-schema.md) — where the contract comes from
-- [Read the crosswalk output](read-crosswalk-output.md) — what the engine returns at scale
-- [Extract places with spatial roles](extract-places-with-roles.md) — the same grade-your-own-extractor pattern, with a labelled gold set shipped in the wheel
+- Declare your schema, where the contract comes from
+- [Read the crosswalk output](read-crosswalk-output.md): what the engine returns at scale
+- [Extract places with spatial roles](extract-places-with-roles.md): the same grade-your-own-extractor pattern, with a labelled gold set shipped in the wheel

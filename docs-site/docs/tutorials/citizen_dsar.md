@@ -1,14 +1,14 @@
 # Ask an organisation for everything it holds on you
 
-*A **Data Subject Access Request** — DSAR — is the legal right to demand a copy of every piece of personal data an organisation holds about you, and to be told what it is doing with it. This page generates that letter: the correct statute section for the jurisdiction, the deadline the law gives the recipient, and an Ed25519 signature the receiving data protection officer can check offline.*
+*A **Data Subject Access Request**, or DSAR, is the legal right to demand a copy of every piece of personal data an organisation holds about you, and to be told what it is doing with it. This page generates that letter: the correct statute section for the jurisdiction, the deadline the law gives the recipient, and an Ed25519 signature the receiving data protection officer can check offline.*
 
 ---
 
-The right exists in every jurisdiction arche ships a statute pack for. Nigeria's NDPA-2023 grants it at section 34, South Africa's POPIA at section 23, Kenya's DPA at section 26(a), Ghana's DPA at section 35. On paper a citizen simply asks and the organisation has thirty days — twenty-one in Ghana — to answer.
+The right exists in every jurisdiction arche ships a statute pack for. Nigeria's NDPA-2023 grants it at section 34, South Africa's POPIA at section 23, Kenya's DPA at section 26(a), Ghana's DPA at section 35. On paper a citizen simply asks and the organisation has thirty days, twenty-one in Ghana, to answer.
 
 In practice almost nobody asks, and the reason is bureaucratic rather than legal. Exercising the right means identifying which organisations hold your data, finding each one's data protection officer, drafting a request that cites the correct section of the correct statute, sending it through a channel that counts, tracking the response, and escalating to the regulator when it never arrives. Six steps, each of which quietly assumes you are a lawyer.
 
-`arche.workflow.DSARWorkflow` does steps three and four. It drafts the letter with the right citation and the right deadline, and it signs the draft so the recipient can verify the request came from the holder of a particular key and has not been altered since. You review it and you send it. **It never sends anything itself** — see [dispatch, and why it is draft-only](#dispatch-and-why-it-is-draft-only) at the bottom of the page.
+`arche.workflow.DSARWorkflow` does steps three and four. It drafts the letter with the right citation and the right deadline, and it signs the draft so the recipient can verify the request came from the holder of a particular key and has not been altered since. You review it and you send it. **It never sends anything itself**, see [dispatch, and why it is draft-only](#dispatch-and-why-it-is-draft-only) at the bottom of the page.
 
 ## The workflow
 
@@ -116,7 +116,7 @@ GH  GHANA-DPA    Ghana DPA s.35 (Access to personal data)
 | Kenya DPA | 30 days |
 | Ghana DPA | 21 days |
 
-`draft.deadline` is a timezone-aware datetime computed from the statute pack and stamped into the signed envelope's `expires_at`. Pass `deadline_days=` to shorten it — there is no reason to lengthen it, since the statute already sets the maximum.
+`draft.deadline` is a timezone-aware datetime computed from the statute pack and stamped into the signed envelope's `expires_at`. Pass `deadline_days=` to shorten it, there is no reason to lengthen it, since the statute already sets the maximum.
 
 ```python
 DSARWorkflow(
@@ -207,7 +207,7 @@ no key      valid=True  trusted=False key_source=self-asserted
 pinned key  valid=True  trusted=True  key_source=pinned
 ```
 
-Read those two rows carefully, because the difference is the whole security model. **`valid` says the signature matches the key that was resolved. `trusted` says that key came from somewhere the verifier controls.** With no key supplied, the verifier falls back to the `did:key` the token names about itself — which any impostor can also do, with their own keypair and a matching `kid`. That check proves the letter has not been altered since it was signed. It proves nothing at all about who signed it. [Attest](../concepts/attest.md#valid-is-not-trusted) has the forged-token demonstration.
+Read those two rows carefully, because the difference is the whole security model. **`valid` says the signature matches the key that was resolved. `trusted` says that key came from somewhere the verifier controls.** With no key supplied, the verifier falls back to the `did:key` the token names about itself, which any impostor can also do, with their own keypair and a matching `kid`. That check proves the letter has not been altered since it was signed. It proves nothing at all about who signed it. [Attest](../how-to/attest.md#valid-is-not-trusted) has the forged-token demonstration.
 
 Altering the letter breaks the envelope outright:
 
@@ -234,6 +234,6 @@ The organisation side is also absent: arche drafts requests, it does not help a 
 
 ## What's next
 
-- [Sign, share, extract](sign_share_extract.md) — the envelope primitives this workflow composes
-- [Attest: the signature on the decision](../concepts/attest.md) — why `trusted` is the field to check
-- [API overview](../api/index.md) — the public workflow surface
+- [Sign, share, extract](sign_share_extract.md): the envelope primitives this workflow composes
+- Attest: the signature on the decision, why `trusted` is the field to check
+- [API overview](../api/index.md): the public workflow surface

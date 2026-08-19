@@ -393,7 +393,7 @@ Two honest caveats about scope. **One encoder is not all encoders**. A larger mu
 - Nils Reimers and Iryna Gurevych, "Making Monolingual Sentence Embeddings Multilingual using Knowledge Distillation," *EMNLP*, 2020. The recipe behind the `paraphrase-multilingual-MiniLM` model measured here. [arXiv:2004.09813](https://arxiv.org/abs/2004.09813)
 - Peter Christen, *Data Matching*, Springer, 2012.
 
-*Related: [a representation engine, not an inference engine](../concepts/representation-engine.md) · [a place is not a point](a-place-is-not-a-point.md) · [the place benchmark](../concepts/place-benchmark.md) · [how arche works](../concepts/how-it-works.md).*
+*Related: [a representation engine, not an inference engine](../about/representation-engine.md) · [a place is not a point](../tutorials/a-place-is-not-a-point.md) · [the place benchmark](../about/place-benchmark.md) · [how arche works](../tutorials/how-it-works.md).*
 
 ## Acknowledgements
 

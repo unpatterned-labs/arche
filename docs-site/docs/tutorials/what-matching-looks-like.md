@@ -20,7 +20,7 @@ That third outcome. **review**. Is a first-class answer here, not a failure to r
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 1.00 · tftoken 1.00 · entity_class conflict</strong> — strip the legal form from both and the names are <em>identical</em>: <code>kuapa kokoo</code>. A society and the union above it are different parties, and nothing in the strings can tell you so. Only the declared class refutes it.</p>
+<p class="pair-why"><strong>name 1.00 · tftoken 1.00 · entity_class conflict</strong>, strip the legal form from both and the names are <em>identical</em>: <code>kuapa kokoo</code>. A society and the union above it are different parties, and nothing in the strings can tell you so. Only the declared class refutes it.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Nyeri Hill Factory                    (site)</code>
@@ -28,7 +28,7 @@ That third outcome. **review**. Is a first-class answer here, not a failure to r
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 0.95 · geo 1.00 at 0.0 km · entity_class conflict</strong> — the largest false-merge risk in supply-chain data. The site and the company that operates it share a name <em>and</em> a coordinate, so every string and spatial signal points the wrong way at once, and stripping the shared form leaves them <em>more</em> alike, not less. Merging them destroys the link between a plot and the party accountable for it, which is the only thing a due-diligence chain exists to establish.</p>
+<p class="pair-why"><strong>name 0.95 · geo 1.00 at 0.0 km · entity_class conflict</strong>, the largest false-merge risk in supply-chain data. The site and the company that operates it share a name <em>and</em> a coordinate, so every string and spatial signal points the wrong way at once, and stripping the shared form leaves them <em>more</em> alike, not less. Merging them destroys the link between a plot and the party accountable for it, which is the only thing a due-diligence chain exists to establish.</p>
 <div class="pair match">
   <div class="pair-records">
     <code>Sefwi Wiawso Cooperative Society</code>
@@ -36,7 +36,7 @@ That third outcome. **review**. Is a first-class answer here, not a failure to r
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>score 1.00</strong> — <code>Co-operative Society</code> and <code>Cooperative Society Ltd</code> are two spellings of one legal form. Both reduce to <code>sefwi wiawso</code>, and the form carries none of the score.</p>
+<p class="pair-why"><strong>score 1.00</strong>. <code>Co-operative Society</code> and <code>Cooperative Society Ltd</code> are two spellings of one legal form. Both reduce to <code>sefwi wiawso</code>, and the form carries none of the score.</p>
 <div class="pair match">
   <div class="pair-records">
     <code>Touton Negoce SARL        RC-88421</code>
@@ -44,7 +44,7 @@ That third outcome. **review**. Is a first-class answer here, not a failure to r
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>registration_id 1.00</strong> — a company number is the one exact identity signal most supplier files carry, and it settles the pair without the names having to agree on a format.</p>
+<p class="pair-why"><strong>registration_id 1.00</strong>, a company number is the one exact identity signal most supplier files carry, and it settles the pair without the names having to agree on a format.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Central Cooperative Society</code>
@@ -52,7 +52,7 @@ That third outcome. **review**. Is a first-class answer here, not a failure to r
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>score 1.00 but distinctive_max 0.59</strong> — byte-identical strings, and still not a merge. The score says the names agree; the distinctiveness says agreeing on <code>Central</code> is not evidence of identity, because a population table knows how ordinary that word is. Before the table shipped, this pair merged at 1.00.</p>
+<p class="pair-why"><strong>score 1.00 but distinctive_max 0.59</strong>, byte-identical strings, and still not a merge. The score says the names agree; the distinctiveness says agreeing on <code>Central</code> is not evidence of identity, because a population table knows how ordinary that word is. Before the table shipped, this pair merged at 1.00.</p>
 </div>
 </details>
 ---
@@ -71,7 +71,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>name 0.94 · 0.06 km apart · type match</strong> — one register appends the city, the other does not. The coordinates make the qualifier redundant rather than contradictory.</p>
+<p class="pair-why"><strong>name 0.94 · 0.06 km apart · type match</strong>, one register appends the city, the other does not. The coordinates make the qualifier redundant rather than contradictory.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Royal Infirmary          (Edinburgh)</code>
@@ -79,7 +79,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 1.00 · 282.31 km apart · geo conflict</strong> — identical names, and two different hospitals. Distance is a physical constraint rather than a preference, so it refutes here instead of merely scoring low. Note it demotes to <em>review</em>, never to <em>no</em>: distance says a human must look.</p>
+<p class="pair-why"><strong>name 1.00 · 282.31 km apart · geo conflict</strong>, identical names, and two different hospitals. Distance is a physical constraint rather than a preference, so it refutes here instead of merely scoring low. Note it demotes to <em>review</em>, never to <em>no</em>: distance says a human must look.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>An Nur Specialist Hospital</code>
@@ -87,7 +87,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 0.93 · 0.03 km apart · tftoken 0.25</strong> — the same Arabic name transliterated two ways, 30 metres apart, and arche still declines to merge it automatically. Character overlap is weak and the shared tokens are not rare enough to carry it alone. This is the honest version of a result often quoted as a win: the pair reaches a human with the evidence attached, rather than being silently fused or silently dropped.</p>
+<p class="pair-why"><strong>name 0.93 · 0.03 km apart · tftoken 0.25</strong>, the same Arabic name transliterated two ways, 30 metres apart, and arche still declines to merge it automatically. Character overlap is weak and the shared tokens are not rare enough to carry it alone. This is the honest version of a result often quoted as a win: the pair reaches a human with the evidence attached, rather than being silently fused or silently dropped.</p>
 </div>
 </details>
 ---
@@ -104,7 +104,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 0.91 · phone 1.00</strong> — a shared phone number is strong, and <code>Oluwaseun</code> and <code>Olusegun</code> are two different Yoruba given names, not two spellings of one. A household phone is shared; a name is not. Review is the correct answer and a confident merge would be a wrong one.</p>
+<p class="pair-why"><strong>name 0.91 · phone 1.00</strong>, a shared phone number is strong, and <code>Oluwaseun</code> and <code>Olusegun</code> are two different Yoruba given names, not two spellings of one. A household phone is shared; a name is not. Review is the correct answer and a confident merge would be a wrong one.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Amara Nwosu     12 Awolowo Road, Ikoyi, Lagos</code>
@@ -112,7 +112,7 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>address 1.00 · name 0.70</strong> — same surname, same address, different people. Address is a supporting signal: it amplifies a decision, it never manufactures one.</p>
+<p class="pair-why"><strong>address 1.00 · name 0.70</strong>, same surname, same address, different people. Address is a supporting signal: it amplifies a decision, it never manufactures one.</p>
 </div>
 </details>
 ---
@@ -129,9 +129,9 @@ The same three failure modes, on health facilities in the UK and Nigeria.
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>code 1.00 · name 0.80</strong> — word order, capitalisation and hyphenation all differ. <code>JGS516</code> is a rare code shared by both, and rarity is what makes it identity-bearing rather than merely common ground.</p>
+<p class="pair-why"><strong>code 1.00 · name 0.80</strong>, word order, capitalisation and hyphenation all differ. <code>JGS516</code> is a rare code shared by both, and rarity is what makes it identity-bearing rather than merely common ground.</p>
 </div>
-<p class="arche-note">Not every pair reaches a comparator. <code>SanDisk Cruzer Blade 16GB</code> against the same drive at <code>32GB</code> is never proposed as a candidate at all — they share no rare token, so blocking drops the pair before scoring. The right answer for the wrong reason, and worth knowing when you read a recall figure.</p>
+<p class="arche-note">Not every pair reaches a comparator. <code>SanDisk Cruzer Blade 16GB</code> against the same drive at <code>32GB</code> is never proposed as a candidate at all, they share no rare token, so blocking drops the pair before scoring. The right answer for the wrong reason, and worth knowing when you read a recall figure.</p>
 </details>
 ---
 
@@ -151,7 +151,7 @@ Pairwise matching assumes you already know which two records to compare. Often y
 <li><code>3 ST LEGER COURT GREAT LINFORD MK14 5HA</code></li>
 </ol>
 </div>
-<p class="arche-note">All three share the postcode, and the postcode therefore decides nothing. Candidate 3 is a <em>different building</em> on the same court; candidate 1 shares almost every token in a different arrangement. What separates them is which tokens are rare and which structural role each one plays — <code>HOUSE</code> versus <code>COURT</code> is the distinction the ranking turns on, and it is one token wide.</p>
+<p class="arche-note">All three share the postcode, and the postcode therefore decides nothing. Candidate 3 is a <em>different building</em> on the same court; candidate 1 shares almost every token in a different arrangement. What separates them is which tokens are rare and which structural role each one plays. <code>HOUSE</code> versus <code>COURT</code> is the distinction the ranking turns on, and it is one token wide.</p>
 </details>
 ---
 

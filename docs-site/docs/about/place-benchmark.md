@@ -11,7 +11,7 @@
     pin of every edge the run produced (`shipped:place@sha256:ffd230b66df60188`).
 
     This matters more than a version note usually does. Token rarity is not only
-    a comparator input, it is a **blocking key** — so rebuilding the table
+    a comparator input, it is a **blocking key**, so rebuilding the table
     changes which pairs are proposed for scoring at all, and therefore changes
     the match and review counts even when no threshold moved. A page of numbers
     without the table that produced them is not reproducible.
@@ -417,7 +417,7 @@ Overture         {'fraction_exact': 0.081, 'median_km': 0.05, 'verdict': 'consis
 - **Some exact ties are legitimate.** Two sources that both geocode to a postcode or settlement centroid will agree exactly without either copying the other. Read the *fraction*, not individual pairs.
 - **It detects derivation, not quality.** A derived source can be perfectly good data. It just cannot validate its own ancestor.
 - **Low coverage is not evidence of independence on its own.** A bad matcher also produces low coverage. Read coverage and distance together.
-- **The thresholds are a heuristic**, chosen so this pair of datasets lands on the right side of them. They are not calibrated against a labelled corpus of derived and independent dataset pairs, because no such corpus exists.
+- **The thresholds are a heuristic**: chosen so this pair of datasets lands on the right side of them. They are not calibrated against a labelled corpus of derived and independent dataset pairs, because no such corpus exists.
 
 ## What to take from this page
 
@@ -431,4 +431,4 @@ Overture         {'fraction_exact': 0.081, 'median_km': 0.05, 'verdict': 'consis
 
 - [Verify a merge against an external source](../how-to/verify-with-external-sources.md) for what an actually independent gazetteer can and cannot tell you
 - [Read the crosswalk output](../how-to/read-crosswalk-output.md) for the shape of the evidence the sweep above reads
-- [The same clinic, three spellings](../blog/reconciling-nigerias-health-facilities.md) for the reconciliation this benchmark measures
+- [The same clinic, three spellings](../tutorials/reconciling-nigerias-health-facilities.md) for the reconciliation this benchmark measures

@@ -130,7 +130,7 @@ So "who issued this document?" is an entity-resolution question wearing a securi
 3. Report the verdict *with its evidence*, and abstain when the evidence is thin
 4. Sign the decision so it can be re-checked
 
-Every step there is something we already measure. Step 2 is a crosswalk against a registry, which is what the [places benchmark](../concepts/place-benchmark.md) and the [product lane](../tutorials/products.md) do. Step 3 is the gate that already refuses to merge `Dennis Aibuedefe Irorere` with `Dennis Irorere` on a common given name. Step 4 is `attest`.
+Every step there is something we already measure. Step 2 is a crosswalk against a registry, which is what the [places benchmark](../about/place-benchmark.md) and the [product lane](../tutorials/products.md) do. Step 3 is the gate that already refuses to merge `Dennis Aibuedefe Irorere` with `Dennis Irorere` on a common given name. Step 4 is `attest`.
 
 That path is measurable with benchmarks we already run. Rung 3 is not, because we have no signed documents to test against.
 
@@ -164,4 +164,4 @@ None of this is really about PDFs. An API response, a database export, a CSV som
 
 The document case is just where the question is easiest to see, because the file goes to the trouble of telling you who made it, and you get to decide whether to believe it.
 
-*Related: [the document lane](../concepts/document-lane.md) · [three PDFs and a question](three-pdfs-and-a-question.md) · [re-verify a decision](../how-to/re-verify-a-decision.md)*
+*Related: [the document lane](document-lane.md) · [three PDFs and a question](three-pdfs-and-a-question.md) · [re-verify a decision](../how-to/re-verify-a-decision.md)*

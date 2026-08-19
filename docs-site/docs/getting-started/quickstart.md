@@ -2,7 +2,7 @@
 
 **Know what's real.**
 
-An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.
+An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing, with the evidence, the refutations, and a signed decision you can re-check.
 
 Five minutes, no API key, no account, nothing leaves your machine. Every output below is what the code actually printed.
 
@@ -27,9 +27,9 @@ print(report.table())
 EXTRACTED RECORDS
 document                    name              email               phone      organisation
 -----------------------------------------------------------------------------------------
-Monzo_bank_statement.pdf    Denn***********   —                   7211****   Monz**********
-Invoice-PEDHCF-00012.pdf    Denn*********     deni**************  —          Netl*********
-Paystatement_2025-12.pdf    Denn*********     —                   —          Viat******
+Monzo_bank_statement.pdf    Denn***********   -                   7211****   Monz**********
+Invoice-PEDHCF-00012.pdf    Denn*********     deni**************  -          Netl*********
+Paystatement_2025-12.pdf    Denn*********     -                   -          Viat******
 
 RESOLUTION
 document a                  document b                  verdict        score
@@ -91,7 +91,7 @@ review 0.9656 {'name': 0.8, 'address': 0.4416, 'name_tf': 0.6393}
 dec:sha256:6905b79403b22a17dc471dd2d054882a30ba314c7230e3af9845b27a6d146238
 ```
 
-`name` is string similarity. `name_tf` is the same comparison **weighted by how rare the shared tokens are** — matching on `Irorere` is worth far more than matching on a common given name, because rarity is what identifies.
+`name` is string similarity. `name_tf` is the same comparison **weighted by how rare the shared tokens are**, matching on `Irorere` is worth far more than matching on a common given name, because rarity is what identifies.
 
 `decision_id` is a content hash over the evidence and the inputs. No timestamp, no randomness: anyone holding the same inputs recomputes the same id. That is what makes a verdict checkable months later rather than merely stored.
 
@@ -99,7 +99,7 @@ dec:sha256:6905b79403b22a17dc471dd2d054882a30ba314c7230e3af9845b27a6d146238
 
 ## Two lists instead of two documents
 
-The same engine links two catalogues — a registry against a survey, your customers against a supplier file:
+The same engine links two catalogues, a registry against a survey, your customers against a supplier file:
 
 ```python
 from arche.resolve import crosswalk
@@ -109,11 +109,11 @@ for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
 ```
 
-Packs ship for `person`, `place`, `artist` and `product_electronics`, or bring your own comparators for your schema. Every pack is configuration over one engine, never a fork — the same gate, the same evidence, the same signed decision, with different comparators declared.
+Packs ship for `person`, `place`, `artist` and `product_electronics`, or bring your own comparators for your schema. Every pack is configuration over one engine, never a fork, the same gate, the same evidence, the same signed decision, with different comparators declared.
 
 ### The same call, four kinds of thing
 
-**Places** — two health facilities, where a shared name is not enough on its own and distance can refuse:
+**Places**, two health facilities, where a shared name is not enough on its own and distance can refuse:
 
 ```python
 crosswalk([{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}],
@@ -124,7 +124,7 @@ crosswalk([{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}],
 
 A `veto_km` of 10 km means two facilities sharing a common Hausa name 143 km apart go to `review`, not `match`. Distance is a physical constraint, not a preference.
 
-**People** — a spelling difference that would defeat string matching, rescued by an identifier:
+**People**, a spelling difference that would defeat string matching, rescued by an identifier:
 
 ```python
 from arche.resolve import pairwise
@@ -138,7 +138,7 @@ pairwise(Reference.from_record({"name": "Fatima Abdullahi", "national_id": "1234
 
 Note `name_tf` is **0.0**: those two names share nothing rare, so the name alone would never have earned this. The national identifier did. That is the gate telling you which evidence carried the decision.
 
-**Music** — the same artist under a longer stage name, anchored by an MBID:
+**Music**, the same artist under a longer stage name, anchored by an MBID:
 
 ```python
 crosswalk([{"name": "Fela Kuti",           "mbid": "1f9df192-a621-4f54-8850-2c5373b7eac9"}],
@@ -147,7 +147,7 @@ crosswalk([{"name": "Fela Kuti",           "mbid": "1f9df192-a621-4f54-8850-2c53
 # match 0.8458  {'name': 0.8, 'name_tftoken': 0.66, 'mbid': 1.0}
 ```
 
-**Products** — two retailers describing one camera case, where the identity is a code buried in marketing copy:
+**Products**, two retailers describing one camera case, where the identity is a code buried in marketing copy:
 
 ```python
 crosswalk([{"id": "1", "name": "Canon Deluxe Black Digital Camera Case - 2595B002"}],
@@ -156,7 +156,7 @@ crosswalk([{"id": "1", "name": "Canon Deluxe Black Digital Camera Case - 2595B00
 # match 0.7894  {'name': 0.828, 'name_code': 1.0, 'name_tftoken': 0.33}
 ```
 
-`name` is only 0.828 — the titles genuinely differ, one says "Deluxe Black" and the other "PSC-85 Soft". `name_code` is 1.0 because both carry `2595B002`, and that code appears twice in the whole catalogue. Rarity is what identifies; the marketing copy is noise. This lane is marked **experimental** and calibrated on consumer electronics — see [the product tutorial](../tutorials/products.md) for where it breaks.
+`name` is only 0.828, the titles genuinely differ, one says "Deluxe Black" and the other "PSC-85 Soft". `name_code` is 1.0 because both carry `2595B002`, and that code appears twice in the whole catalogue. Rarity is what identifies; the marketing copy is noise. This lane is marked **experimental** and calibrated on consumer electronics, see [the product tutorial](../tutorials/products.md) for where it breaks.
 
 **These are measured on public benchmarks with complete ground truth**, so false merges are visible rather than assumed:
 
@@ -172,7 +172,7 @@ Reproduce them with `python data/scripts/benchmark_leipzig.py`.
 
 ## What else is in the box
 
-Below the fold on purpose — you do not need any of this on day one.
+Below the fold on purpose, you do not need any of this on day one.
 
 **Documents carry provenance.** `parse()` reads what a file says about itself:
 
@@ -180,7 +180,7 @@ Below the fold on purpose — you do not need any of this on day one.
 from arche.doc import parse
 
 doc = parse("invoice.pdf")
-doc.info.author              # 'Condor Flugdienst GmbH'  — the issuer, free
+doc.info.author              # 'Condor Flugdienst GmbH'  - the issuer, free
 doc.info.producer.family     # 'browser-print' | 'html-renderer' | 'enterprise-report'
 ```
 
@@ -188,13 +188,13 @@ Whether a human printed a document from a browser or a reporting system emitted 
 
 **Data-protection policy, when you need it.** If you are handling personal data under a named regime, `Pipeline(jurisdiction=...)` applies a statute pack that maps each detected category to an action with a citation, and `EgressGuard` decides what may leave your boundary. Packs ship for Nigeria, South Africa, Kenya, Ghana, the EU, the UK and HIPAA.
 
-This is a **policy template keyed to scope you select** — it does not determine which law applies to your processing, because that turns on establishment, on where your data subjects are, and on sector, none of which a country code can decide. → [Detect and govern](../concepts/lifecycle.md)
+This is a **policy template keyed to scope you select**, it does not determine which law applies to your processing, because that turns on establishment, on where your data subjects are, and on sector, none of which a country code can decide. → [Detect and govern](../api/lifecycle.md)
 
 ---
 
 ## Next
 
-- [Is this the same person, across three documents?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/02_same_person_across_documents.ipynb) — the notebook this page opens with
-- [Inside the one call](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/08_inside_the_one_call.ipynb) — every layer, one per cell
-- [What is the false-merge rate?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/06_what_is_the_false_merge_rate.ipynb) — the benchmark that measures precision
-- [Similar is not the same](../blog/similar-is-not-the-same.md) — why embeddings do not settle identity
+- [Is this the same person, across three documents?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/02_same_person_across_documents.ipynb): the notebook this page opens with
+- [Inside the one call](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/08_inside_the_one_call.ipynb): every layer, one per cell
+- [What is the false-merge rate?](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/06_what_is_the_false_merge_rate.ipynb): the benchmark that measures precision
+- [Similar is not the same](../blog/similar-is-not-the-same.md): why embeddings do not settle identity

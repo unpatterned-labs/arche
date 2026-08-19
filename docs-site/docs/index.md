@@ -2,13 +2,13 @@
 
 # Know what's real.
 
-<p class="arche-hero__sub">An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing — with the evidence, the refutations, and a signed decision you can re-check.</p>
+<p class="arche-hero__sub">An open engine for messy data. Find the entities, resolve who or what they are, and decide which records are the same thing, with the evidence, the refutations, and a signed decision you can re-check.</p>
 
 <span class="arche-hero__status">v0.3.0a1 &middot; pre-beta &middot; Apache-2.0</span>
 
 </div>
 
-arche tells you and your agent what — and who — your data is actually talking about. It finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to. It keeps disagreement between sources instead of erasing it, says plainly when it will not decide, and signs every decision so you can re-check it months later.
+arche tells you and your agent what, and who, your data is actually talking about. It finds the entities in any document or system, standardises them for the names and addresses people actually use, and works out which real-world thing each one refers to. It keeps disagreement between sources instead of erasing it, says plainly when it will not decide, and signs every decision so you can re-check it months later.
 
 <div class="arche-verbs" markdown>
 <div class="arche-verb" markdown>
@@ -17,7 +17,7 @@ arche tells you and your agent what — and who — your data is actually talkin
 </div>
 <div class="arche-verb" markdown>
 <p class="arche-verb__name">resolve</p>
-<p class="arche-verb__body">Work out which real-world thing each reference points at — and abstain when the evidence does not support a verdict.</p>
+<p class="arche-verb__body">Work out which real-world thing each reference points at, and abstain when the evidence does not support a verdict.</p>
 </div>
 <div class="arche-verb" markdown>
 <p class="arche-verb__name">protect</p>
@@ -40,13 +40,13 @@ Two of those are one entity wearing different names. One is two entities wearing
 - **It abstains.** When the evidence does not support a verdict, resolution
 returns `review` rather than guessing. An agent that flips two people has a much worse day than one that asks.
 - **Every decision cites its law.** Detections carry a sensitivity tier and the
-specific statute section that classifies them — NDPA-2023, POPIA, Kenya DPA, Ghana DPA, GDPR, or HIPAA Safe Harbor.
+specific statute section that classifies them: NDPA-2023, POPIA, Kenya DPA, Ghana DPA, GDPR, or HIPAA Safe Harbor.
 - **Every decision can be signed** together with the exact representation that
 produced it, so the claim *given this evidence and this representation, this was the decision* is checkable by anyone.
 - **Your schema, not ours.** One YAML declares your fields; arche generates the
 comparators, the masking, and the extraction contract your LLM fills.
 - **Bring any model.** An LLM is a proposer, never the decider. It reads messy
-text into your declared fields — hallucinated fields become violations rather than values — and the engine grades its judgment against a deterministic oracle, counting `review` as an honest abstention rather than a miss. The integration surface is one callable. [Bring your own LLM](how-to/bring-your-own-llm.md).
+text into your declared fields, hallucinated fields become violations rather than values, and the engine grades its judgment against a deterministic oracle, counting `review` as an honest abstention rather than a miss. The integration surface is one callable. [Bring your own LLM](how-to/bring-your-own-llm.md).
 - **Calibrated on the hardest identity data there is.** Africa is where the
 engine was made good, not the limit of where it runs. The name equivalence and frequency data ships as inspectable files you can read and correct.
 - **Lightweight by default.** Heavy ML, Presidio, Splink, and document parsing
@@ -199,8 +199,8 @@ Use this when you need culturally aware name matching before or after PII detect
 - [Match African names](how-to/match-african-names.md)
 - [Extract from an invoice](how-to/extract-from-invoice.md)
 - [Nigerian fintech KYC cookbook](cookbooks/fintech-kyc.md)
-- [Introducing arche v0.2](blog/introducing-arche.md)
-- [Pipeline API reference](api/resolve.md)
+- [Introducing arche v0.2](tutorials/introducing-arche.md)
+- [Pipeline API reference](api/pipeline.md)
 
 ## Licence
 

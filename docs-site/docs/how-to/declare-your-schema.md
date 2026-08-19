@@ -1,6 +1,6 @@
 # Declare your schema: your fields, arche's guarantees
 
-Splink wants structured, same-schema tables. Senzing wants its attribute dictionary. arche wants **your** schema — you just tell it what your fields *mean*. One YAML file assigns each of your fields a role, and from that single declaration arche derives comparators, masking policy, identity binding, an LLM extraction schema, and a pin that hashes into every signed decision.
+Splink wants structured, same-schema tables. Senzing wants its attribute dictionary. arche wants **your** schema, you just tell it what your fields *mean*. One YAML file assigns each of your fields a role, and from that single declaration arche derives comparators, masking policy, identity binding, an LLM extraction schema, and a pin that hashes into every signed decision.
 
 No declaration? Everything works exactly as before, using arche's built-in naming conventions. The declaration is additive.
 
@@ -27,13 +27,13 @@ fields:
   observer_notes: {role: ignore}
 ```
 
-The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (this field can tell one entity from another), `describes` (carried, compared if it has a kind, never identifying), `ignore` (never enters arche at all — the clean escape hatch for free-text columns). **`kind`** picks the comparator. **`id_family`** labels which identifier system a field belongs to, so two declarations that both say `imo` are comparing like with like. Read `decl.binding_fields()` to see the families a declaration declares.
+The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (this field can tell one entity from another), `describes` (carried, compared if it has a kind, never identifying), `ignore` (never enters arche at all, the clean escape hatch for free-text columns). **`kind`** picks the comparator. **`id_family`** labels which identifier system a field belongs to, so two declarations that both say `imo` are comparing like with like. Read `decl.binding_fields()` to see the families a declaration declares.
 
 !!! warning "A declared `id_family` does not yet mint a keyed `entity_id`"
 
     `entity_id` is minted by `arche.ids.identity_binding_key`, which recognises
-    a **fixed** set of identifier names — `national_id`, `nin`, `bvn`,
-    `ghana_card`, `kenya_id`, `sa_id`, `passport`, `phone`, `email` — and does
+    a **fixed** set of identifier names, `national_id`, `nin`, `bvn`,
+    `ghana_card`, `kenya_id`, `sa_id`, `passport`, `phone`, `email`, and does
     not consult your declaration. Two records sharing a declared `imo` resolve
     correctly and the gate clears, but the decision carries `entity_id: None`:
 
@@ -49,7 +49,7 @@ The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (
     binding key to declared families is open work. Until then, treat
     `id_family` as a comparator hint, not as a cross-system join key.
 
-**`restricted: true`** means usable as match evidence, *never* disclosable — even under `--reveal`. **`pii: false`** is the only route to clear-text rendering. **`statute_class`** attaches the governing law: the citation rides every attribute built from that field, and a statute `drop` action forces restriction no matter what the declaration says.
+**`restricted: true`** means usable as match evidence, *never* disclosable, even under `--reveal`. **`pii: false`** is the only route to clear-text rendering. **`statute_class`** attaches the governing law: the citation rides every attribute built from that field, and a statute `drop` action forces restriction no matter what the declaration says.
 
 Validation is deliberately unforgiving: unknown keys, typo'd roles, reserved id families, and unknown statute classes are **errors**, each naming the offender. A typo in a file that governs disclosure must never silently mean "unrestricted."
 
@@ -58,7 +58,7 @@ arche schema validate fisheries.decl.yaml
 # valid: fisheries-landings@1.2.0:sha256:28f13195e89a25e3
 ```
 
-That string is the **pin** — a hash of the normalized declaration. Reformatting the YAML doesn't change it; changing a weight does. It enters every signed decision, so the same records under a different declaration produce a different `decision_id`.
+That string is the **pin**, a hash of the normalized declaration. Reformatting the YAML doesn't change it; changing a weight does. It enters every signed decision, so the same records under a different declaration produce a different `decision_id`.
 
 ## Use it everywhere
 
@@ -68,7 +68,7 @@ That string is the **pin** — a hash of the normalized declaration. Reformattin
 arche compare landings_a.csv landings_b.csv --schema fisheries.decl.yaml --out report.html
 ```
 
-**In Python** — the same declaration drives references, bulk linking, and signable pairwise decisions:
+**In Python**, the same declaration drives references, bulk linking, and signable pairwise decisions:
 
 ```python
 from arche import resolve
@@ -85,9 +85,9 @@ decision = resolve.pairwise(ra, rb, issuer_key=KEY, decl=decl)
 # decision.pins["declaration"] == decl.pin()
 ```
 
-Because `vessel_id` is declared `kind: id`, a shared vessel number clears the distinctive-evidence gate exactly the way a national ID does for a person — and a *conflicting* vessel number vetoes the merge. Your field names survive untouched on every output.
+Because `vessel_id` is declared `kind: id`, a shared vessel number clears the distinctive-evidence gate exactly the way a national ID does for a person, and a *conflicting* vessel number vetoes the merge. Your field names survive untouched on every output.
 
-**Generate the LLM extraction schema** — this is the "bring your own model" contract:
+**Generate the LLM extraction schema**, this is the "bring your own model" contract:
 
 ```bash
 arche schema gen fisheries.decl.yaml --format anthropic   # or openai | json-schema
@@ -103,4 +103,4 @@ ref, violations = decl.validate_record(llm_output)   # names any undeclared fiel
 
 - **Schema freedom is not automatic calibration.** arche's scoring priors were fitted on person data; a fisheries decision is structurally sound (the gate, the veto, and corroboration all apply) but its score is not calibrated for your domain. The report's provenance block says which declaration produced every score. Declared schemas are also the signal for which calibration packs arche grows next.
 - **Two `kind: id` fields**: the signable pairwise path uses the first (declaration order); bulk `crosswalk` uses all of them. The loader warns.
-- The three built-in entity packs are just declarations arche wrote for you — [`person.decl.yaml`, `place.decl.yaml`, `artist.decl.yaml`](https://github.com/unpatterned-labs/arche/tree/main/examples/declarations) round-trip to `ENTITY_PACKS` exactly.
+- The three built-in entity packs are just declarations arche wrote for you, [`person.decl.yaml`, `place.decl.yaml`, `artist.decl.yaml`](https://github.com/unpatterned-labs/arche/tree/main/examples/declarations) round-trip to `ENTITY_PACKS` exactly.

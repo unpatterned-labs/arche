@@ -1,10 +1,10 @@
 # Entity resolution: `pairwise()`, `crosswalk()`, `sign_edges()`
 
-The `arche.resolve` facade has two entry points by use-shape. Their scores are deliberately **not comparable** — different math for different jobs.
+The `arche.resolve` facade has two entry points by use-shape. Their scores are deliberately **not comparable**, different math for different jobs.
 
 ## `resolve.pairwise(a, b, *, entity="person", **kwargs)`
 
-"Are these two the same?" Dispatches on input shape — two Pipeline `Result`s, two canonical `Reference`s, or two raw strings (extract-then-resolve) — and returns a signable `CoReferenceDecision` (Fellegi–Sunter log-odds, exact-id gate, id-conflict veto, statute citations travelling with the evidence). Currently `entity="person"` only; place lists go through `crosswalk`.
+"Are these two the same?" Dispatches on input shape, two Pipeline `Result`s, two canonical `Reference`s, or two raw strings (extract-then-resolve), and returns a signable `CoReferenceDecision` (Fellegi–Sunter log-odds, exact-id gate, id-conflict veto, statute citations travelling with the evidence). Currently `entity="person"` only; place lists go through `crosswalk`.
 
 ```python
 from arche import resolve
@@ -33,7 +33,7 @@ decision_id = 'dec:sha256:a5fde8c138c6157f00c0396ce63f6...'
     `same_entity` / `review` / `different`. `decision.decision` does not
     exist and raises `AttributeError`. The `"match"` / `"review"` /
     `"no_match"` vocabulary belongs to **crosswalk edges**, which are a
-    different object — see `resolve.crosswalk()` below.
+    different object, see `resolve.crosswalk()` below.
 
 !!! warning "A high score is not a merge"
 
@@ -53,9 +53,9 @@ brute-forced back to the source record.
 
 Link or dedupe two record lists at scale. Pass exactly one of:
 
-- `entity=` — a canned pack from `ENTITY_PACKS` (`"person"`, `"place"`, `"artist"`);
-- `decl=` — a [`Declaration`](../how-to/declare-your-schema.md): your fields, generated comparators, your `id_field`, the pin entering every edge;
-- `comparators=` — explicit specs (see kinds below).
+- `entity=`: a canned pack from `ENTITY_PACKS` (`"person"`, `"place"`, `"artist"`);
+- `decl=`: a [`Declaration`](../how-to/declare-your-schema.md): your fields, generated comparators, your `id_field`, the pin entering every edge;
+- `comparators=`: explicit specs (see kinds below).
 
 Key keyword arguments (forwarded to `reconcile`):
 
@@ -85,11 +85,11 @@ Returns:
 }
 ```
 
-Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75 — supporting signals (geo, containment, address) amplify but never manufacture a merge — and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../how-to/read-crosswalk-output.md).
+Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75, supporting signals (geo, containment, address) amplify but never manufacture a merge, and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../how-to/read-crosswalk-output.md).
 
 ## `reconcile.sign_edges(result, *, private_key, kid, decisions=("match", "review"))`
 
-JWS-sign crosswalk edges. Each payload is the edge plus the run's pins under the `arche.crosswalk_edge.v1` schema, so a verifier can recompute the `decision_id` from the signed payload (dropping the `decision_id` field first) and confirm nothing changed. Edges carry ids and numeric evidence only — never raw record values — so the signed artifact is as shareable as the crosswalk output itself.
+JWS-sign crosswalk edges. Each payload is the edge plus the run's pins under the `arche.crosswalk_edge.v1` schema, so a verifier can recompute the `decision_id` from the signed payload (dropping the `decision_id` field first) and confirm nothing changed. Edges carry ids and numeric evidence only, never raw record values, so the signed artifact is as shareable as the crosswalk output itself.
 
 ```python
 from arche.resolve.reconcile import sign_edges
@@ -102,4 +102,4 @@ verify(signed[0]["jws"], public_key=kp.public_key).valid   # True
 
 ## `ENTITY_PACKS`
 
-The canned comparator specs (`person`, `place`, `artist`) — config over one engine, never a fork.
+The canned comparator specs (`person`, `place`, `artist`), config over one engine, never a fork.

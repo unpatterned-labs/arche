@@ -95,4 +95,4 @@ If you run them and get something different from us, that is the most useful thi
 
 ---
 
-*The full ledger, including what is measured, what failed its own criteria, and what remains unverified, is in [the whole picture](../concepts/the-whole-picture.md).*
+*The full ledger, including what is measured, what failed its own criteria, and what remains unverified, is in [the whole picture](../about/the-whole-picture.md).*

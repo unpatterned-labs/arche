@@ -20,7 +20,7 @@ For the deeper substrate APIs, import from the substrate package directly; hand-
 | [`resolve.pairwise` / `resolve.crosswalk` / `sign_edges`](crosswalk.md) | Entity resolution: signable pairwise decisions + list-scale crosswalks | crosswalk.md |
 | [`extract_places` / `grade_places` / `PlaceMention`](addr.md) | Spatial role labeling + the shipped referee | addr.md |
 
-Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is removed; `arche.resolve` is the facade package documented on [crosswalk.md](crosswalk.md).
+Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is removed; `arche.resolve` is the facade package documented on crosswalk.md.
 
 ---
 
@@ -58,7 +58,7 @@ from arche.addr import parse_address, parse_addresses, extract_anchor
 from arche.addr import extract_places, grade_places, load_gold, load_role_pack
 ```
 
-NG/ZA/KE/GH + UK address parsing with landmark anchors, plus spatial role labeling (origin/destination/location/via with cue evidence) and the shipped gold set + refusal-aware grader. Full reference: [addr.md](addr.md).
+NG/ZA/KE/GH + UK address parsing with landmark anchors, plus spatial role labeling (origin/destination/location/via with cue evidence) and the shipped gold set + refusal-aware grader. Full reference: addr.md.
 
 ### Sign + Credentials: `arche.sign`, `arche.credentials`
 
@@ -85,7 +85,7 @@ Ed25519 + did:key + JWS. SD-JWT-VC for wallet ecosystem interop (EUDI Wallet ARF
 from arche.graph.audit import AuditLog, AuditEvent
 ```
 
-SQLite-backed append-only log. PII values never stored — only category labels, spans, document hashes. Signed export bundles for regulator handoff. See PRD §8.2.
+SQLite-backed append-only log. PII values never stored, only category labels, spans, document hashes. Signed export bundles for regulator handoff. See PRD §8.2.
 
 ### Workflows: `arche.workflow`
 
@@ -111,9 +111,9 @@ from arche.resolve import pairwise, crosswalk, ENTITY_PACKS
 from arche.resolve.reconcile import reconcile, sign_edges
 ```
 
-The documented front door has two entry points by use-shape: `pairwise(a, b)` — "are these two the same?" (Fellegi–Sunter + gate, signable `CoReferenceDecision`) — and `crosswalk(list_a, list_b)` — link two lists at scale (union blocking + gate + evidence, per-edge `decision_id`, `sign_edges`). Full reference: [crosswalk.md](crosswalk.md).
+The documented front door has two entry points by use-shape: `pairwise(a, b)`, "are these two the same?" (Fellegi–Sunter + gate, signable `CoReferenceDecision`), and `crosswalk(list_a, list_b)`, link two lists at scale (union blocking + gate + evidence, per-edge `decision_id`, `sign_edges`). Full reference: crosswalk.md.
 
-The legacy classical surface (`resolve_entities`, `resolve_identity_records`, `ResolvedEntity` — fuzzy Fellegi–Sunter with African-name equivalence, optional Splink backend via `arche-core[resolve]`) remains importable; see the [entity resolution tutorial](../tutorials/entity_resolution.md).
+The legacy classical surface (`resolve_entities`, `resolve_identity_records`, `ResolvedEntity`, fuzzy Fellegi–Sunter with African-name equivalence, optional Splink backend via `arche-core[resolve]`) remains importable; see the [entity resolution tutorial](../tutorials/entity_resolution.md).
 
 ### Declarations: `arche.declare`
 
@@ -121,7 +121,7 @@ The legacy classical surface (`resolve_entities`, `resolve_identity_records`, `R
 from arche.declare import Declaration, DeclarationError
 
 decl = Declaration.from_yaml("fisheries.decl.yaml")
-decl.pin()            # "name@version:sha256:<16 hex>" — enters every decision_id
+decl.pin()            # "name@version:sha256:<16 hex>" - enters every decision_id
 decl.comparators()    # the generated entity pack for crosswalk(decl=...)
 decl.json_schema()    # the extraction contract for any LLM (additionalProperties: false)
 decl.tool_def("anthropic")   # or "openai" / "json-schema"
@@ -142,5 +142,5 @@ Models propose, the engine verifies: declaration-driven extraction (`extract_dec
 
 ## See also
 
-- [Quick Start](../getting-started/quickstart.md) — five copy-paste examples.
-- [Why arche & when to use it](../tutorials/arche_vs_alternatives.md) — persona guide + cross-tool benchmark.
+- [Quick Start](../getting-started/quickstart.md): five copy-paste examples.
+- [Why arche & when to use it](../tutorials/arche_vs_alternatives.md): persona guide + cross-tool benchmark.

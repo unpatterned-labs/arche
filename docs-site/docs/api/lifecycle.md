@@ -4,22 +4,22 @@
 
 ---
 
-Three pages on this site describe how work moves through arche, and they answer different questions. [How arche works](how-it-works.md) is the walkthrough. One record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
+Three pages on this site describe how work moves through arche, and they answer different questions. [How arche works](../tutorials/how-it-works.md) is the walkthrough. One record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
 
 The four verbs are **detect · resolve · protect · attest**. An earlier version of this page used Detect → Resolve → Verify → Govern with Link as a fifth, unshipped step. Two of those words were never the shipped vocabulary, and the ordering implied a pipeline that the code does not have. `resolve` and `protect` are independent surfaces, not consecutive stages, and most callers use one without the other.
 
 | Question | Today's answer |
 |---|---|
-| Find government IDs, phones, names, addresses in African text? | Yes — 26 ID patterns across 15 countries, plus cross-cutting detectors |
-| Attach the governing statute section to each finding? | Yes — six packs, every category cited |
-| Decide whether two records are the same person? | Yes — `resolve.pairwise`, signable, with abstention |
-| Link two lists of thousands of records? | Yes — `resolve.crosswalk`, for persons, places and artists |
+| Find government IDs, phones, names, addresses in African text? | Yes, 26 ID patterns across 15 countries, plus cross-cutting detectors |
+| Attach the governing statute section to each finding? | Yes, six packs, every category cited |
+| Decide whether two records are the same person? | Yes, `resolve.pairwise`, signable, with abstention |
+| Link two lists of thousands of records? | Yes, `resolve.crosswalk`, for persons, places and artists |
 | Decide whether two records are the same *place*? | List crosswalk only. `pairwise(entity="place")` raises |
-| Refuse to send personal data to a third party? | Yes — `guard.EgressGuard`, fail-closed |
-| Sign a decision so a stranger can check it offline? | Yes — Ed25519 / JWS / SD-JWT-VC |
-| Prove the audit log has not had rows removed? | **No** — append-only by convention only |
-| Connect a resolved reference to a national registry? | **No** — gated, no adapter of any kind |
-| Serve any of this over MCP? | **No** — no MCP module exists in the wheel or the source tree |
+| Refuse to send personal data to a third party? | Yes, `guard.EgressGuard`, fail-closed |
+| Sign a decision so a stranger can check it offline? | Yes. Ed25519 / JWS / SD-JWT-VC |
+| Prove the audit log has not had rows removed? | **No**, append-only by convention only |
+| Connect a resolved reference to a national registry? | **No**, gated, no adapter of any kind |
+| Serve any of this over MCP? | **No**, no MCP module exists in the wheel or the source tree |
 
 ---
 
@@ -29,15 +29,15 @@ The four verbs are **detect · resolve · protect · attest**. An earlier versio
 
 | Detector package | Finds | In the default set |
 |---|---|---|
-| `ng` / `ke` / `za` / `gh` | Per-country government IDs — NG (NIN, BVN, TIN, RC, voter PVC, driver's licence), KE (national ID, KRA PIN, NHIF), ZA (SA ID with full Luhn and DOB/gender/citizenship decode, tax reference, passport), GH (Ghana Card, SSNIT, TIN) | Yes, for that jurisdiction |
+| `ng` / `ke` / `za` / `gh` | Per-country government IDs: NG (NIN, BVN, TIN, RC, voter PVC, driver's licence), KE (national ID, KRA PIN, NHIF), ZA (SA ID with full Luhn and DOB/gender/citizenship decode, tax reference, passport), GH (Ghana Card, SSNIT, TIN) | Yes, for that jurisdiction |
 | `core` (`_africa`) | Eleven further African countries (RW, TZ, UG, ET, CI, SN, CM, EG, MA, AO, MZ) and phone numbers via `phonenumbers`, E.164 across 30+ networks. 26 ID patterns in total | Yes |
 | `names` | African given names and surnames from an equivalence lexicon | Yes |
-| `locations` | African city gazetteer — 102 cities under 236 lookup keys, aliases included | Yes |
+| `locations` | African city gazetteer, 102 cities under 236 lookup keys, aliases included | Yes |
 | `addr` | Address spans for NG / ZA / KE / GH and the UK: components, landmark anchors, jurisdiction inference | Yes |
 | `ip` | IPv4 and IPv6 via stdlib `ipaddress`, with private / loopback / multicast flagged and `v1.2.3.4` version strings suppressed | Yes |
 | `digital_id` | W3C DIDs across nine methods, Bitcoin (P2PKH, P2SH, bech32), Ethereum with an EIP-55 checksum flag | Yes |
-| `emails` | Email addresses (`PII-3-EMAIL`) | **No — opt-in** |
-| `arche-core[detect]` | GLiNER2-PII for multilingual soft-PII. Never on the critical path | No — optional extra |
+| `emails` | Email addresses (`PII-3-EMAIL`) | **No, opt-in** |
+| `arche-core[detect]` | GLiNER2-PII for multilingual soft-PII. Never on the critical path | No, optional extra |
 
 Every detection carries a `category` from the Pan-African PII Taxonomy, a `sensitivity_tier` of `high` / `moderate` / `low`, a `regulatory_citation` once a statute is applied, and a `confidence` that is deliberately not a uniform 1.0. A rule's base confidence encodes what the shape alone is worth (Ghana Card 0.95, KRA PIN 0.92, NIN 0.55, Kenyan national ID 0.40, because a bare seven-or-eight-digit number is weak evidence) and a passing structural validator raises it. `metadata["validator_status"]` records which check ran.
 
@@ -109,7 +109,7 @@ The scores from the two engines are not comparable, and that is intentional rath
 
 ### Abstention, and the three conditions
 
-`pairwise` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999. The worked output is [on the walkthrough page](how-it-works.md#3-resolve). A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
+`pairwise` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999. The worked output is on the walkthrough page. A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
 
 ### The geographic veto
 
@@ -135,7 +135,7 @@ b_id=0  match    score=0.919  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.
 b_id=1  review   score=0.8  {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.0, 'distance_km': 62.2, 'geo_conflict_km': 62.2}
 ```
 
-The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed**. You cannot refute a claim on evidence you do not have, and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.4% to 88.1%; what that number can and cannot tell you is set out in full on [the place benchmark](place-benchmark.md), where it is called a consistency check rather than validation.
+The distant pair is demoted to `review` and carries `geo_conflict_km` as the reason; it is **never** demoted to `no_match`, because distance says a human must look, not that the answer is no. The coordless record is **never vetoed**. You cannot refute a claim on evidence you do not have, and note that it therefore scores *higher* than the pair 1.56 km apart, which is the honest consequence of not penalising missing data. The threshold was set by a sweep that moved LGA agreement from 78.4% to 88.1%; what that number can and cannot tell you is set out in full on [the place benchmark](../about/place-benchmark.md), where it is called a consistency check rather than validation.
 
 ### Also in resolve
 
@@ -167,7 +167,7 @@ Six statute packs ship as YAML at `arche/policy/statutes/`: `NDPA-2023` (Nigeria
 
 One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(overlays=["EU-AI-ACT"])`. It is not a per-field statute. The AI Act governs the system, not the field, so it asserts at document level whether the run met a record-keeping (Art 12), transparency (Art 50) or data-minimisation (GDPR Art 5(1)(c) / Art 25) obligation and stamps the result into `Result.metadata`. Its own YAML states the boundary: evidence the operator presents, not a compliance certificate.
 
-`guard.EgressGuard` wraps a statute-aware `Pipeline` so nothing crosses a boundary a policy did not permit. All four of its teeth default to deny: no statute means no permission; an undeclared cross-border transfer is refused with the statute cited; a provider outside the allow-list is refused; and any exception becomes a refusal rather than a fallthrough that emits the original text. The projection guarantee is that no raw *detected* value appears in any output field, which, as the detect section above makes clear, is not the same as no PII appearing. The worked example is [on the architecture page](architecture.md#5-the-egress-guard-fail-closed-four-teeth).
+`guard.EgressGuard` wraps a statute-aware `Pipeline` so nothing crosses a boundary a policy did not permit. All four of its teeth default to deny: no statute means no permission; an undeclared cross-border transfer is refused with the statute cited; a provider outside the allow-list is refused; and any exception becomes a refusal rather than a fallthrough that emits the original text. The projection guarantee is that no raw *detected* value appears in any output field, which, as the detect section above makes clear, is not the same as no PII appearing. The worked example is on the architecture page.
 
 `arche.render` masks by default when a resolved record is displayed, and attributes marked `restricted` in a [declaration](../how-to/declare-your-schema.md) remain usable as match evidence and are never disclosable. `arche compare` on the CLI produces a masked-by-default HTML report.
 
@@ -184,10 +184,10 @@ One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(o
 
 `arche.sign` produces Ed25519 / JWS envelopes over a `Pipeline.Result`; `arche.attest` produces an `Attestation` over one co-reference decision; `arche.credentials.sd_jwt` re-frames either as an IETF SD-JWT-VC with selective disclosure and optional holder key binding. Compact serialization only. `resolve.reconcile.sign_edges` does the same job for crosswalk edges at list scale.
 
-Three properties are worth knowing before you write verification code, and all three are covered in depth on [the attest page](attest.md).
+Three properties are worth knowing before you write verification code, and all three are covered in depth on [the attest page](../how-to/attest.md).
 
 - **`valid` is not `trusted`.** `valid` says the signature matches the key that was resolved; only `trusted` says that key came from somewhere the caller controls. `sign.jws.verify()` now fails closed. `allow_did_key_from_kid` defaults to `False`, where it defaulted to `True` through v0.3.0a1. The higher-level `verify_attestation()` and `verify_sd_jwt()` deliberately still fall back to the self-asserted key and report `trusted=False` rather than refusing, which keeps offline inspection working and moves the burden to you.
-- **`reproducible` is derived from the decision's pins**, not from the signing format. A decision built from a hosted model's extraction attests `reproducible: False`, and so does anything depending on a live provider response.
+- **`reproducible` is derived from the decision's pins**: not from the signing format. A decision built from a hosted model's extraction attests `reproducible: False`, and so does anything depending on a live provider response.
 - **Keyless ids are not PII-free.** `reference_id` and `decision_id` are hashes over normalised attributes, and a bare SHA-256 of an eleven-digit NIN is brute-forceable, so `attest` refuses to sign a keyless decision by default. Supply an `issuer_key` and the ids become HMAC pseudonyms. Stable per issuer, unlinkable across issuers.
 
 ### What attest does not do
@@ -232,7 +232,7 @@ The same logic runs one step further, and it is why registry linking is gated be
 
 ## What's next
 
-- [How arche works](how-it-works.md). The same four verbs as a single worked example
-- [Architecture](architecture.md). The internal layering, and which components may conclude anything
-- [Attest: the signature on the decision](attest.md). `valid` versus `trusted`, in full
-- [The place benchmark](place-benchmark.md). What the veto threshold was tuned against, and the limits of that measurement
+- How arche works. The same four verbs as a single worked example
+- Architecture. The internal layering, and which components may conclude anything
+- Attest: the signature on the decision. `valid` versus `trusted`, in full
+- The place benchmark. What the veto threshold was tuned against, and the limits of that measurement

@@ -42,7 +42,7 @@ Here is what the matching looks like. Every verdict below came from running the 
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 1.00 · tftoken 1.00</strong> — strip the legal form and the names are <em>identical</em>. A society and the union above it are different parties, and nothing in the strings says so.</p>
+<p class="pair-why"><strong>name 1.00 · tftoken 1.00</strong>, strip the legal form and the names are <em>identical</em>. A society and the union above it are different parties, and nothing in the strings says so.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Nyeri Hill Factory                (site)</code>
@@ -50,7 +50,7 @@ Here is what the matching looks like. Every verdict below came from running the 
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 0.95 · geo 1.00 at 0.0 km</strong> — the site and the company operating it share a name <em>and</em> a coordinate. Every string and spatial signal points the wrong way at once.</p>
+<p class="pair-why"><strong>name 0.95 · geo 1.00 at 0.0 km</strong>, the site and the company operating it share a name <em>and</em> a coordinate. Every string and spatial signal points the wrong way at once.</p>
 <div class="pair match">
   <div class="pair-records">
     <code>Sefwi Wiawso Cooperative Society</code>
@@ -58,7 +58,7 @@ Here is what the matching looks like. Every verdict below came from running the 
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>score 1.00</strong> — two spellings of one legal form; both reduce to <code>sefwi wiawso</code>.</p>
+<p class="pair-why"><strong>score 1.00</strong>, two spellings of one legal form; both reduce to <code>sefwi wiawso</code>.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Central Cooperative Society</code>
@@ -66,7 +66,7 @@ Here is what the matching looks like. Every verdict below came from running the 
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>score 1.00, distinctive_max 0.59</strong> — byte-identical, and still not a merge. Agreeing on <code>Central</code> is not evidence of identity.</p>
+<p class="pair-why"><strong>score 1.00, distinctive_max 0.59</strong>, byte-identical, and still not a merge. Agreeing on <code>Central</code> is not evidence of identity.</p>
 </div>
 </details>
 
@@ -149,7 +149,7 @@ We would rather find that out from a tea buyer than from a slide.
 
 ---
 
-*Reproduce anything here with [what matching looks like](../concepts/what-matching-looks-like.md), or check a decision yourself with [re-verify a decision](../how-to/re-verify-a-decision.md). The organisation pack, its frequency table and the curated vocabulary all ship in `arche-core` under Apache-2.0.*
+*Reproduce anything here with [what matching looks like](../tutorials/what-matching-looks-like.md), or check a decision yourself with [re-verify a decision](../how-to/re-verify-a-decision.md). The organisation pack, its frequency table and the curated vocabulary all ship in `arche-core` under Apache-2.0.*
 
 ## Acknowledgements
 

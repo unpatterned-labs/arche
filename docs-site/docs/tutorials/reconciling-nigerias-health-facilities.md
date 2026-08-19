@@ -58,7 +58,7 @@ We deliberately did **not** use Nigeria's official registry (NHFR, mirrored on H
 
 !!! warning "Correction, August 2026"
 
-    An earlier version of this post called the OpenStreetMap comparison *independent validation*. It is not. OSM's health facilities for Kano carry the same lineage as GRID3, and we can now show that from the data. Every number below still holds as a **consistency check** between two views of the same territory; none of it is evidence that the matcher is right about the world. The section [Our own circularity, caught with Overture](#our-own-circularity-caught-with-overture) has the measurement, and [the place benchmark](../concepts/place-benchmark.md) has the test that catches it in ten lines.
+    An earlier version of this post called the OpenStreetMap comparison *independent validation*. It is not. OSM's health facilities for Kano carry the same lineage as GRID3, and we can now show that from the data. Every number below still holds as a **consistency check** between two views of the same territory; none of it is evidence that the matcher is right about the world. The section [Our own circularity, caught with Overture](#our-own-circularity-caught-with-overture) has the measurement, and [the place benchmark](../about/place-benchmark.md) has the test that catches it in ten lines.
 
 ## Result: most of it isn't a hard problem
 
@@ -167,7 +167,7 @@ Which means the 88.1% figure in the veto sweep above is a **consistency check, n
 
 The coverage gap is a finding rather than a defect. GRID3 is overwhelmingly rural primary health centres and health posts; Meta's place data covers named, signed, commercial facilities, which skews urban. An independent source can validate the urban tier and says almost nothing about the rural network, which is exactly where a national facility list matters most. Knowing that is more useful than a precision score.
 
-The full method, the caveats, and a `looks_derived()` helper you can point at any two datasets are in [the place benchmark](../concepts/place-benchmark.md).
+The full method, the caveats, and a `looks_derived()` helper you can point at any two datasets are in the place benchmark.
 
 ## The same engine, applied to people
 
@@ -238,7 +238,7 @@ jupyter lab examples/notebooks/
 - **`02_same_person_across_documents.ipynb`**. Three PDFs, one person, using docling for layout-aware extraction and GLiNER for entity recognition. Masking on by default.
 - **`03_llm_vs_arche.ipynb`**. The head-to-head above. Needs `OPENAI_API_KEY` in `.env` and costs a few cents.
 
-Every number in this post is reproducible from this repository. The notebooks cover the crosswalk, the person case and the head-to-head; the veto sweep, the orthography measurement and the independence test are scripts you can paste from [the place benchmark](../concepts/place-benchmark.md), which also runs offline apart from the Overture pull.
+Every number in this post is reproducible from this repository. The notebooks cover the crosswalk, the person case and the head-to-head; the veto sweep, the orthography measurement and the independence test are scripts you can paste from the place benchmark, which also runs offline apart from the Overture pull.
 
 ### A note on the document stack
 
@@ -256,7 +256,7 @@ The shape of the problem is not "match more". It is:
 
 The 111 review cases are the product. They are also the part that currently costs three rounds of expert verification, and the only part anyone would pay to make faster.
 
-And a fourth, which we learned by getting it wrong: **check where your validation source came from before you quote a number off it.** We spotted the circularity in GRID3 versus HDX, published that finding, and then benchmarked against a source with the same problem. Two lines of arithmetic on the matched distances would have caught it. They now live in [the place benchmark](../concepts/place-benchmark.md), and running them on our own work is the only reason this post has a correction rather than a claim.
+And a fourth, which we learned by getting it wrong: **check where your validation source came from before you quote a number off it.** We spotted the circularity in GRID3 versus HDX, published that finding, and then benchmarked against a source with the same problem. Two lines of arithmetic on the matched distances would have caught it. They now live in the place benchmark, and running them on our own work is the only reason this post has a correction rather than a claim.
 
 ---
 

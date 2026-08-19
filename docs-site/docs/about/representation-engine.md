@@ -15,7 +15,7 @@ This page uses [Talburt's](https://doi.org/10.1016/C2009-0-63396-1) vocabulary, 
 
 ### The two halves
 
-**Inference** computes *how likely is it that two references co-refer, given some evidence of agreement?* Pairwise scoring under the standard model (Fellegi–Sunter, 1969; the formula arche's pairwise path implements, worked in bits, is on [the science page](place-identity.md#the-probability-heritage-fellegisunter)) is a solved commodity. Splink runs it over a million records on a laptop, and arche deliberately [does not compete with it](../tutorials/arche_vs_alternatives.md). The open remainder of inference is real: collective and graph-based resolution, clustering under transitive closure. That is exactly the post-beta work arche keeps gated.
+**Inference** computes *how likely is it that two references co-refer, given some evidence of agreement?* Pairwise scoring under the standard model (Fellegi–Sunter, 1969; the formula arche's pairwise path implements, worked in bits, is on [the science page](../api/the-maths-underneath.md#the-probability-heritage-fellegisunter)) is a solved commodity. Splink runs it over a million records on a laptop, and arche deliberately [does not compete with it](../tutorials/arche_vs_alternatives.md). The open remainder of inference is real: collective and graph-based resolution, clustering under transitive closure. That is exactly the post-beta work arche keeps gated.
 
 **Representation** decides *what the references look like when compared*: what counts as agreement, what agreement is worth, and what may be compared at all.
 
@@ -29,10 +29,10 @@ Take the pair that anchors everything arche does: *Diallo* (Francophone spelling
 |---|---|---|
 | Diallo ↔ Jallow | partial string similarity, coincidental not evidential | an [equivalence group](https://github.com/unpatterned-labs/arche/tree/main/datasets): one surname, two orthographies |
 | Damini Ogulu ↔ Burna Boy | zero token overlap | an alias pack: legal name ↔ stage name |
-| "agreement on *Ibrahim*" | a token match — unweighted unless someone supplies a table | a [frequency table](https://github.com/unpatterned-labs/arche/tree/main/datasets): *Ibrahim* is common, weak evidence; *Gyaranya* is rare, strong |
-| "Karfi Health Post" ↔ "Karfi PHC" | partial overlap on one rare token | a type-token vocabulary that isolates the facility-type words and a corpus that knows what *Karfi* is worth — and because the two types disagree, the pair correctly **stays in review**. Representation also decides when *not* to merge |
+| "agreement on *Ibrahim*" | a token match, unweighted unless someone supplies a table | a [frequency table](https://github.com/unpatterned-labs/arche/tree/main/datasets): *Ibrahim* is common, weak evidence; *Gyaranya* is rare, strong |
+| "Karfi Health Post" ↔ "Karfi PHC" | partial overlap on one rare token | a type-token vocabulary that isolates the facility-type words and a corpus that knows what *Karfi* is worth, and because the two types disagree, the pair correctly **stays in review**. Representation also decides when *not* to merge |
 | "behind the Total filling station, Madina junction" | an unparseable string | landmark-grammar address representation |
-| NIN vs phone number | two 11-digit strings | an identifier grammar (format, issuer, checksum where a public spec exists) — plus, separately, the statute pack that governs the field's handling |
+| NIN vs phone number | two 11-digit strings | an identifier grammar (format, issuer, checksum where a public spec exists), plus, separately, the statute pack that governs the field's handling |
 
 Representation decides **what counts as agreement, what agreement is worth, and what may be compared at all**. Inference does the arithmetic afterwards. Supplied with evidence that only representation can create.
 
@@ -48,7 +48,7 @@ Seen through this lens, almost everything in arche is representation, shipped in
 - **Masked-by-default rendering** *(canonical form)*. What a record looks like *when shown*: PII masked unless explicitly revealed, restricted values never.
 - **Canonical signing form** *(canonical form)*. What a decision looks like *when proven*: deterministic canonical JSON, pinned comparators, keyed identifiers. The same evidence always produces the same signable decision, verified via [`attest`](../tutorials/sign_share_extract.md).
 
-The one piece of inference opinion arche does hold is small and deliberate: the **distinctive-evidence gate**. No merge without at least one piece of distinctive agreement, which is how the Febrl4 person benchmark (synthetic, evaluated at the pairwise level where arche's shipped surface lives) holds [zero false merges at 0.877 auto-match recall](../tutorials/person_resolution_at_scale.md). Everything else defers: the Fellegi–Sunter core is intentionally thin, and arche does not claim to improve the maths. [Splink runs the same model better](../tutorials/arche_vs_alternatives.md), with proper EM-estimated parameters. What arche adds is the representation those parameters are estimated *over*. At scale the shipped path is arche's own `crosswalk` with union blocking; Splink is reachable only through the deprecated v0.1 `resolve_entities()`, and no part of `pairwise`, `crosswalk` or the frequency tables imports it.
+The one piece of inference opinion arche does hold is small and deliberate: the **distinctive-evidence gate**. No merge without at least one piece of distinctive agreement, which is how the Febrl4 person benchmark (synthetic, evaluated at the pairwise level where arche's shipped surface lives) holds [zero false merges at 0.877 auto-match recall](../tutorials/person_resolution_at_scale.md). Everything else defers: the Fellegi–Sunter core is intentionally thin, and arche does not claim to improve the maths. Splink runs the same model better, with proper EM-estimated parameters. What arche adds is the representation those parameters are estimated *over*. At scale the shipped path is arche's own `crosswalk` with union blocking; Splink is reachable only through the deprecated v0.1 `resolve_entities()`, and no part of `pairwise`, `crosswalk` or the frequency tables imports it.
 
 In code, the surface is two calls:
 
@@ -86,7 +86,7 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 ## Design consequences
 
-**A new entity type is a representation, not a program.** Persons, places, and artists run on the same crosswalk engine and comparator kit. A new type is configuration plus data: an identity-attribute mapping, equivalence data, frequency calibration. The [artist pack](../tutorials/artist_resolution.md) added no new comparator code at all. (Signable `pairwise` decisions are person-shaped today; extending them is roadmap, not implied.)
+**A new entity type is a representation, not a program.** Persons, places, and artists run on the same crosswalk engine and comparator kit. A new type is configuration plus data: an identity-attribute mapping, equivalence data, frequency calibration. The artist pack added no new comparator code at all. (Signable `pairwise` decisions are person-shaped today; extending them is roadmap, not implied.)
 
 **Engines are swappable below; callers are agnostic above.** Because the representation layer is the contract, the inference backend can be arche's in-memory core today and Splink tomorrow, and the caller can be a script, a pipeline, or an AI agent (through whatever tool layer you wire it into. An MCP server is on the roadmap, not in this release).
 
@@ -104,4 +104,4 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 ---
 
-*Related: [the data packs](https://github.com/unpatterned-labs/arche/tree/main/datasets) (the representations themselves) · [why arche, and when to use it](../tutorials/arche_vs_alternatives.md) (the inference landscape) · [from place to entity](place-identity.md#the-maths-underneath) (the math, worked by hand) · [how arche works](how-it-works.md).*
+*Related: [the data packs](https://github.com/unpatterned-labs/arche/tree/main/datasets) (the representations themselves) · why arche, and when to use it (the inference landscape) · from place to entity (the math, worked by hand) · [how arche works](../tutorials/how-it-works.md).*

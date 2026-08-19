@@ -2,15 +2,6 @@
 
 *You have two lists that are supposed to describe the same things, and they disagree. This page follows that job from opening the files to handing someone an answer they can check.*
 
-<div class="arche-path">
-<span class="path-label">Reading path</span>
-<a href="../the-whole-picture/">1. The whole picture</a>
-<span class="sep">&rsaquo;</span>
-<a href="../sameness-and-similarity/">2. Sameness and similarity</a>
-<span class="sep">&rsaquo;</span>
-<span class="here">3. arche in practice</span>
-</div>
-
 ---
 
 If you only read one paragraph: arche takes your two lists, decides which rows are about the same thing, tells you which ones it will not decide, and writes down why for every single row. The part that is unusual is the last bit. The reasoning is an output, not something you reconstruct afterwards from memory.
@@ -47,7 +38,7 @@ flowchart TB
         AG["<b>Agent</b><br/>tool call<br/><i>(designed, not built)</i>"]
     end
 
-    subgraph ABOVE ["MAY BE WRONG — cheap to be wrong"]
+    subgraph ABOVE ["MAY BE WRONG - cheap to be wrong"]
         direction LR
         D["<b>1 · DETECT</b><br/>what is in this data?<br/>names, IDs, phones, addresses<br/><i>with the statute attached</i>"]
         P["<b>2 · DECLARE + POLICY</b><br/>what may I compare?<br/>your fields → arche's slots<br/>jurisdiction rules applied"]
@@ -100,7 +91,7 @@ Then you read the verdicts, not the count. Every edge carries the evidence that 
   </div>
   <div class="pair-verdict">match</div>
 </div>
-<p class="pair-why"><strong>name 0.94 · 0.06 km apart</strong> — one register appends the city, the other does not. Nothing for you to do. This is the bulk of the file and you should never have to look at it.</p>
+<p class="pair-why"><strong>name 0.94 · 0.06 km apart</strong>, one register appends the city, the other does not. Nothing for you to do. This is the bulk of the file and you should never have to look at it.</p>
 <div class="pair review">
   <div class="pair-records">
     <code>Royal Infirmary          (Edinburgh)</code>
@@ -108,7 +99,7 @@ Then you read the verdicts, not the count. Every edge carries the evidence that 
   </div>
   <div class="pair-verdict">review</div>
 </div>
-<p class="pair-why"><strong>name 1.00 · 282.31 km apart</strong> — identical names, two hospitals. This one is <em>your</em> decision, and the row already tells you which fact to check. That is the difference between a queue and a pile.</p>
+<p class="pair-why"><strong>name 1.00 · 282.31 km apart</strong>, identical names, two hospitals. This one is <em>your</em> decision, and the row already tells you which fact to check. That is the difference between a queue and a pile.</p>
 <div class="pair different">
   <div class="pair-records">
     <code>Valif Pharmacy</code>
@@ -163,7 +154,7 @@ gate: {'distinctive_cleared': False, 'clearing_signal': None, 'floor': 0.75}
 
 Everything agrees perfectly and the answer is still *I don't know*, because no **distinctive** signal cleared. `musa` scores 0.73 against a 0.75 floor. Two identical common names in a city of millions is not evidence of one person. Add a shared phone and it releases as `same_entity | merge | basis: corroborated`: the phone cleared the gate *and* the name independently agreed. A lone phone with nothing else returns `hold`, not `merge`.
 
-The reasoning is in [sameness and similarity](sameness-and-similarity.md). What matters here is the shape: **the score did not decide this. A stated policy did, and you can read the policy.**
+The reasoning is in sameness and similarity. What matters here is the shape: **the score did not decide this. A stated policy did, and you can read the policy.**
 
 ### A place, and a lexicon that must not apply
 
@@ -246,11 +237,11 @@ Named plainly, because these are the gaps a hostile reviewer would find first.
 
 ## Where to go next
 
-This is the last page in the path. Back to **[The whole picture](the-whole-picture.md)** for what is built and measured, or **[Sameness and similarity](sameness-and-similarity.md)** for the argument underneath it.
+This is the last page in the path. Back to **[The whole picture](../about/the-whole-picture.md)** for what is built and measured, or **Sameness and similarity** for the argument underneath it.
 
 ## Related
 
-- [Sameness and similarity](sameness-and-similarity.md). Why the gate exists, and whether frontier models make it redundant
-- [The whole picture](the-whole-picture.md). What is measured, and how the baselines were chosen
+- Sameness and similarity. Why the gate exists, and whether frontier models make it redundant
+- The whole picture. What is measured, and how the baselines were chosen
 - [What matching looks like](what-matching-looks-like.md). The failure modes side by side
 - [Re-verify a decision](../how-to/re-verify-a-decision.md). The third-party checking path

@@ -72,7 +72,7 @@ References arrive from two directions. `Reference.from_record(record)` is the st
 Every identifier arche emits is a pure function of its inputs. `ids.py` fixes what "the same inputs" means:
 
 - **Canonical JSON**. Sorted keys, compact separators, and no raw floats. Every float is rendered as a fixed 4-decimal string, so a hash does not depend on which machine computed it.
-- **NFKD-normalised strings**, through the same normaliser the matcher compares with.
+- **NFKD-normalised strings**: through the same normaliser the matcher compares with.
 - **No timestamps** in the reproducible core.
 
 That yields `document_content_id`, `reference_id`, `decision_id`, and one deliberately different thing, `entity_id`, which is an HMAC pseudonym keyed to the issuer. The reason is stated in the module: a bare SHA-256 of an eleven-digit NIN is brute-forceable, so anything derived from a low-entropy identifier and intended to be shared is keyed, not hashed. Keyless ids remain useful locally, but they are pseudonymous personal data, not "PII-free", and `attest` refuses to sign them by default.
@@ -234,7 +234,7 @@ evidence: {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0, 'geo': 0.025, 'di
 
 That is the architecture in one edge. Two byte-identical names, every name comparator at 1.0, a score of 0.805 comfortably over the 0.7 threshold, and the edge still lands in `review`, carrying the distance that put it there. No weight could have produced that outcome; only a constraint could.
 
-The threshold was set by a sweep, and what it can and cannot tell you is documented honestly in [the place benchmark](place-benchmark.md): LGA agreement moves 78.4% → 88.1%, and that number is a consistency check against a weak label, not validation.
+The threshold was set by a sweep, and what it can and cannot tell you is documented honestly in [the place benchmark](../about/place-benchmark.md): LGA agreement moves 78.4% → 88.1%, and that number is a consistency check against a weak label, not validation.
 
 ### 4. The statute engine
 
@@ -299,7 +299,7 @@ except GuardDenied as exc:
 ```
 
 ```text
-no statute   : no statute configured on the pipeline — no policy means no permission to emit
+no statute   : no statute configured on the pipeline - no policy means no permission to emit
 projection   : Customer Adesola Okonkwo, NIN [NIN:15bcda3f9265f209].
 fields       : [('PII-2-NIN', 'mask', 'high')]
 cross-border : cross-border transfer without a permitted basis (declared=None, permitted=['binding_corporate_rules', 'explicit_consent', 'ndpc_adequacy_assessment', 'standard_contractual_clauses'])
@@ -314,7 +314,7 @@ The projection guarantee is precise, and worth stating precisely: **no raw *dete
 
 The top layer takes a verdict, the evidence that produced it, and the pinned versions of everything involved, and makes the whole thing checkable by someone who was not there. `ids` gives it a reproducible address, `sign` gives it an Ed25519 signature over canonical JSON, `attest` gives it a PII-free claim set, `credentials` gives it a selectively disclosable wallet form.
 
-The one thing to carry over from this page: `valid` answers "does this signature match this key", and only `trusted` answers "did that key come from somewhere I control". → [Attest: the signature on the decision](attest.md).
+The one thing to carry over from this page: `valid` answers "does this signature match this key", and only `trusted` answers "did that key come from somewhere I control". → [Attest: the signature on the decision](../how-to/attest.md).
 
 ---
 
@@ -344,9 +344,9 @@ Thirty-odd modules, grouped by the layer they belong to. This is the whole surfa
 |---|---|
 | Spine | `canonical`, `ids`, `declare`, `_types` |
 | Ingest | `ingest` (URL, SSRF-guarded), `doc` (docling, optional), `workflow._ingest` |
-| Propose — detect | `detect/{ng,ke,za,gh,_africa,gliner,presidio}`, `addr`, `jurisdictions`, `extract`, `ensemble`, `locate` |
-| Propose — compare | `resolve/{_matcher,_block,_tokenfreq,_orthography,_geo,_rerank,_relate}` |
-| Propose — external | `adapters`, `llm` |
+| Propose, detect | `detect/{ng,ke,za,gh,_africa,gliner,presidio}`, `addr`, `jurisdictions`, `extract`, `ensemble`, `locate` |
+| Propose, compare | `resolve/{_matcher,_block,_tokenfreq,_orthography,_geo,_rerank,_relate}` |
+| Propose, external | `adapters`, `llm` |
 | Decide | `resolve/{reconcile,coreference,_gate,places,classical,artists}`, `policy`, `guard` |
 | Attest | `sign`, `attest`, `credentials`, `graph.audit` |
 | Present | `render`, `report`, `cli`, `workflow._format` |
@@ -365,7 +365,7 @@ Stated so nobody has to discover it by reading source.
 - **Three audit paths exist.** `graph.audit` is the SQLite one and the one to use. `arche.audit` is the v0.1 in-memory log. `governance.py` carries a hand-maintained sensitivity map that will drift from the statute YAML; it is not exported from `arche/__init__.py` and nothing outside its own tests calls it.
 - **`Pipeline.process` does not write to `graph.audit`.** It builds its audit view in memory and returns it on the `Result`. Persisting it is a wiring step, not a missing feature, but today an audit log only fills up if you emit to it.
 - **A declared `id_family` does not yet mint an `entity_id`.** `Declaration` exposes `binding_fields()`, but `ids.identity_binding_key` is not declaration-aware. It matches arche's own fixed identifier names. In the sample at the top of this page the merge is correct and `entity_id` is `None`.
-- **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim` only, and it defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack. The measured 13-pair gain in [the place benchmark](place-benchmark.md) came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding work.
+- **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim` only, and it defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack. The measured 13-pair gain in the place benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding work.
 - **`arche.detect` is a callable module.** `detect(text)` forwards to the pipeline while `arche.detect.ng.ids` is a real subpackage. The docstrings disagree with each other about whether this is temporary; the class docstring carries the later decision, which is that it stays as the documented Level-2 API.
 
 ---
@@ -386,8 +386,8 @@ Stated so adopters can hold us to scope.
 
 ## What's next
 
-- [How arche works](how-it-works.md). The walkthrough of a single `Pipeline` call
-- [Attest: the signature on the decision](attest.md). What a signature does and does not prove
-- [A representation engine, not an inference engine](representation-engine.md). Why the spine is shaped this way
-- [The place benchmark](place-benchmark.md). What the veto threshold was tuned against, and what that measurement cannot tell you
+- [How arche works](../tutorials/how-it-works.md). The walkthrough of a single `Pipeline` call
+- Attest: the signature on the decision. What a signature does and does not prove
+- [A representation engine, not an inference engine](../about/representation-engine.md). Why the spine is shaped this way
+- The place benchmark. What the veto threshold was tuned against, and what that measurement cannot tell you
 - [Declare your schema](../how-to/declare-your-schema.md). The declaration layer, end to end

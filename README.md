@@ -85,7 +85,7 @@ Published whichever way it falls, with the caveats attached rather than in a foo
 | **Name frequency** *(ablation)* | the same engine with the frequency signal off: precision 0.162, 7,705 false merges | precision **0.946**, 41 false merges | 1,114 real same-surname pairs from a public voter register. Recall is the cost: **48%** on same-person pairs differing by a dropped middle name |
 | **Multilingual detection** | Presidio 37/48 | **47/48** | **Not re-runnable.** The 48-case set is not in this repo and nothing here computes the number. Unverified until rebuilt |
 
-The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/concepts/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
+The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
 
 ## Why the calibration comes from where it does
 
@@ -118,10 +118,10 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 
 | | |
 |---|---|
-| [The whole picture](https://unpatterned-labs.github.io/arche/concepts/the-whole-picture/) | what is built, what is measured, what is not proven |
+| [The whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/) | what is built, what is measured, what is not proven |
 | [Quickstart](https://unpatterned-labs.github.io/arche/getting-started/quickstart/) | install, then a first result |
-| [How it works](https://unpatterned-labs.github.io/arche/concepts/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
-| [What matching looks like](https://unpatterned-labs.github.io/arche/concepts/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
+| [How it works](https://unpatterned-labs.github.io/arche/tutorials/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
+| [What matching looks like](https://unpatterned-labs.github.io/arche/tutorials/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
 | [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/) | check a signed decision you did not issue |
 | [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | ten, from first call to supplier reconciliation |
 

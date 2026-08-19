@@ -22,7 +22,7 @@ addr.span                   # (0, 29)
 
 ### `extract_anchor(text) -> tuple[str, str] | None`
 
-Recover a standalone landmark anchor and its type — the informal-address case that dominates in much of Africa, where `parse_address` alone would return `None`.
+Recover a standalone landmark anchor and its type, the informal-address case that dominates in much of Africa, where `parse_address` alone would return `None`.
 
 ```python
 from arche.addr import extract_anchor, normalize_landmark
@@ -32,7 +32,7 @@ extract_anchor("behind the Total filling station, Madina Junction")
 normalize_landmark("nyuma ya Total filling station")   # "Total filling station"
 ```
 
-Relation words come from `addr/address_tokens.yaml` (English, Pidgin, Hausa, Yoruba, Igbo, Swahili, French, Portuguese) — extending it is a data contribution, not a code change.
+Relation words come from `addr/address_tokens.yaml` (English, Pidgin, Hausa, Yoruba, Igbo, Swahili, French, Portuguese), extending it is a data contribution, not a code change.
 
 ### `infer_jurisdiction(text) -> tuple[str, float, str]`
 
@@ -67,23 +67,23 @@ for m in extract_places("Pick up from 7B Allen Avenue, Ikeja and deliver to "
 | `address` | the normalized `Address` (or a minimal one for gazetteer/postcode spans) |
 | `jurisdiction`, `jurisdiction_confidence` | inferred per mention |
 
-`to_dict(reveal=False)` is the masked shape: offsets, canonical cue phrase, and component *names* — never address text or component values. This is the shape to hand an agent or any other caller across a trust boundary, since it holds the source text and can slice the offsets itself.
+`to_dict(reveal=False)` is the masked shape: offsets, canonical cue phrase, and component *names*, never address text or component values. This is the shape to hand an agent or any other caller across a trust boundary, since it holds the source text and can slice the offsets itself.
 
 !!! warning "`reveal` defaults to `True`"
 
     `to_dict()` with no argument returns the **unmasked** shape, including the address text. Pass `reveal=False` explicitly when the output crosses a trust boundary.
 
-**Abstention is structural.** No cue, cues conflicting at equal priority, or a negated cue (`"don't deliver to X"`) all yield `role="unknown"` at floor confidence 0.25 — the extractor never guesses a role it cannot evidence.
+**Abstention is structural.** No cue, cues conflicting at equal priority, or a negated cue (`"don't deliver to X"`) all yield `role="unknown"` at floor confidence 0.25, the extractor never guesses a role it cannot evidence.
 
 ### `load_role_pack(path=None) -> RolePack`
 
-Load and validate the cue vocabulary (module-cached; malformed packs raise `RolePackError` naming the offending key). `pack.pin` is `arche.place_roles@v1:sha256:<16 hex>` — cite it with any result. `pack.vocabulary()` is the closed set of phrases a cue may be reported as — useful when you need a caller's output constrained to a fixed vocabulary rather than free text.
+Load and validate the cue vocabulary (module-cached; malformed packs raise `RolePackError` naming the offending key). `pack.pin` is `arche.place_roles@v1:sha256:<16 hex>`, cite it with any result. `pack.vocabulary()` is the closed set of phrases a cue may be reported as, useful when you need a caller's output constrained to a fixed vocabulary rather than free text.
 
 ## The referee
 
 ### `load_gold(name="place_roles_v1") -> list[GoldSentence]`
 
-The labelled gold set shipped **inside the wheel** — 54 sentences (UK + Nigerian, formal + informal + Pidgin, adversarial expected-`unknown` items, and negatives). Entries reference substrings; the loader resolves them to spans and raises on an absent or ambiguous fragment, so the data validates itself.
+The labelled gold set shipped **inside the wheel**, 54 sentences (UK + Nigerian, formal + informal + Pidgin, adversarial expected-`unknown` items, and negatives). Entries reference substrings; the loader resolves them to spans and raises on an absent or ambiguous fragment, so the data validates itself.
 
 ### `grade_places(gold, predictions, *, match="overlap", pack=None) -> PlaceGrade`
 
@@ -100,12 +100,12 @@ grade.abstentions                     # correct_unknown / over_guess / missed_by
 grade.summary()                       # all of the above as a dict
 ```
 
-Refusal-aware scoring: predicting `unknown` where gold committed counts as a false negative and `missed_by_abstention` — **never** a false positive, because a non-answer is not a wrong answer. Predicting a role where gold is `unknown` counts as `over_guess` **and** a false positive: that is the failure this evaluation exists to price. Empty denominators return `None`, never a fake zero.
+Refusal-aware scoring: predicting `unknown` where gold committed counts as a false negative and `missed_by_abstention`, **never** a false positive, because a non-answer is not a wrong answer. Predicting a role where gold is `unknown` counts as `over_guess` **and** a false positive: that is the failure this evaluation exists to price. Empty denominators return `None`, never a fake zero.
 
 ## LLM proposals
 
 ### `arche.llm.extract_places_llm(text, *, config=None, complete_fn=None, model="", rules=None)`
 
-Have a model propose spans/roles/cues; the engine verifies each. Hallucinated spans become `violations` (dropped, never coerced into values); a committed role survives only if its cue is locatable in the source, adjacent to (or inside) the span, and pack-consistent with that role — otherwise the mention is kept and **downgraded** to `unknown`, recorded in `downgrades`. Returns `LLMPlaceExtraction` with `.mentions`, `.violations`, `.downgrades`, and `.pins()` (`model`, `prompt_sha256`, `pack`, `reproducible: False`).
+Have a model propose spans/roles/cues; the engine verifies each. Hallucinated spans become `violations` (dropped, never coerced into values); a committed role survives only if its cue is locatable in the source, adjacent to (or inside) the span, and pack-consistent with that role, otherwise the mention is kept and **downgraded** to `unknown`, recorded in `downgrades`. Returns `LLMPlaceExtraction` with `.mentions`, `.violations`, `.downgrades`, and `.pins()` (`model`, `prompt_sha256`, `pack`, `reproducible: False`).
 
 Because the output is `PlaceMention`s, `grade_places` scores a model with no adapter code.

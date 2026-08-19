@@ -301,7 +301,7 @@ def verify(
         hint = (
             "No trusted key available: pass public_key=, or a resolver=. "
             "To verify a token's integrity without authenticating its "
-            "issuer, pass allow_did_key_from_kid=True — but note that a "
+            "issuer, pass allow_did_key_from_kid=True, but note that a "
             "self-asserted key proves nothing about who signed."
         )
         return VerificationResult(

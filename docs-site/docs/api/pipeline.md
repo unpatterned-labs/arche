@@ -9,17 +9,17 @@ from arche import Pipeline
 
 `jurisdiction` takes an ISO 3166-1 alpha-2 code. Statute packs ship for `NG`, `ZA`, `KE`, `GH`, `GB`, the EU/EEA member states, and `US` via an explicit `statute="HIPAA-SAFE-HARBOR"`.
 
-**Everywhere else, no statute resolves — and a Pipeline with no statute returns `redacted_text` unchanged.** That is the behaviour `on_uncovered` exists to control:
+**Everywhere else, no statute resolves, and a Pipeline with no statute returns `redacted_text` unchanged.** That is the behaviour `on_uncovered` exists to control:
 
 | value | effect |
 |---|---|
 | `"silent"` (default) | today's behaviour; no statute, nothing redacted, no warning |
 | `"warn"` | same, plus a warning naming the jurisdiction and the consequence |
-| `"baseline"` | apply arche's conservative floor — **not the law of any country**, and every citation it emits says so |
+| `"baseline"` | apply arche's conservative floor, **not the law of any country**, and every citation it emits says so |
 
 Selecting a jurisdiction chooses a **policy template**. It does not determine which law applies to your processing, which turns on establishment, on where your data subjects are, and on sector.
 
-`arche.resolve_documents()` infers the jurisdiction per document by default and passes `on_uncovered="baseline"` when it inferred one, because detecting the right country would otherwise switch protection off. → [the document lane](../concepts/document-lane.md)
+`arche.resolve_documents()` infers the jurisdiction per document by default and passes `on_uncovered="baseline"` when it inferred one, because detecting the right country would otherwise switch protection off. → [the document lane](../tutorials/document-lane.md)
 
 
 pipeline = Pipeline(jurisdiction="NG")
@@ -62,7 +62,7 @@ Source: [`packages/arche-core/src/arche/workflow/_primitive.py`](https://github.
 | `statute` | `str \| None` | `None` | Explicit statute YAML name (`"NDPA-2023"`, `"POPIA"`, `"KENYA-DPA"`, `"GHANA-DPA"`). Overrides the jurisdiction-implied statute. If neither `jurisdiction` nor `statute` is given, no policy is applied and raw detections are returned. |
 | `detectors` | `list[str] \| None` | `None` | Which detector packages to run. When omitted and `jurisdiction` is set, defaults to `["<cc>", "names", "locations", "ip", "digital_id", "addr", "core"]`. When `jurisdiction` is missing, defaults to `["africa", "names", "locations", "ip", "digital_id", "addr", "core"]`. |
 | `address_parsing` | `bool` | `False` | Forward-compatibility hook for `arche.addr.parse_address`. The `"addr"` detector package already runs by default; this flag is reserved for future opt-in semantics. |
-| `audit` | `bool` | `True` | When `True`, emit per-detection and per-policy-decision entries into `Result.audit_log`. PII values are never recorded — only category labels, span offsets, document hashes, statute references, and timestamps. |
+| `audit` | `bool` | `True` | When `True`, emit per-detection and per-policy-decision entries into `Result.audit_log`. PII values are never recorded, only category labels, span offsets, document hashes, statute references, and timestamps. |
 | `tokenize_salt` | `str` | `""` | Per-deployment salt for the `tokenize` policy action. Different salts across organisations prevent token re-identification when redacted documents cross trust boundaries. Pass a stable per-org secret from your environment, not a literal. |
 
 ### Methods
@@ -75,13 +75,13 @@ The internal pipeline runs in five phases (per the source): detect → statute-a
 
 #### `process_file(source: str | Path) -> Result`
 
-Convenience: parse a file via `arche.doc.parse` (PDF / DOCX / PPTX / XLSX / HTML via docling — requires `arche-core[doc]`) then run `process()` on the extracted text. The returned `Result` carries `metadata["source_file"]` and `metadata["num_pages"]` for provenance.
+Convenience: parse a file via `arche.doc.parse` (PDF / DOCX / PPTX / XLSX / HTML via docling, requires `arche-core[doc]`) then run `process()` on the extracted text. The returned `Result` carries `metadata["source_file"]` and `metadata["num_pages"]` for provenance.
 
 Raises `DoclingNotInstalledError` (from `arche.doc`) if the optional extra is not installed.
 
 #### `describe() -> dict[str, Any]`
 
-Return a structured description of what this pipeline will do. Useful for logging / introspection — the dict carries `jurisdiction`, `statute`, `detectors`, `address_parsing`, `audit`.
+Return a structured description of what this pipeline will do. Useful for logging / introspection, the dict carries `jurisdiction`, `statute`, `detectors`, `address_parsing`, `audit`.
 
 ```python
 pipeline = Pipeline(jurisdiction="NG", tokenize_salt="bank_2026")
@@ -122,12 +122,12 @@ class Result:
 | `addresses` | `list[Address]` | Reserved for forward-compatibility. Address detections currently surface as `Detection` rows with `category="PII-4-ADDRESS"`; this list is empty in v0.2.0a3. |
 | `policy_outcomes` | `list[PolicyOutcome]` | One row per detection that the statute mapped to a closed action (`mask` / `tokenize` / `drop` / `generalize` / `audit` / `retain`). Carries `category`, `action`, `statute_id`, `statute_reference`, `span`, `detection_id`. |
 | `redacted_text` | `str` | The input text after policy actions have been applied. Safe to log, share, or persist. |
-| `audit_log` | `list[dict]` | When `audit=True`, one dict per detection event (`event_type="detection"`) and one per policy decision (`event_type="policy"`). PII-free by construction — category labels, span offsets, document hash, statute reference. Each dict also has `timestamp` (ISO 8601 UTC). |
+| `audit_log` | `list[dict]` | When `audit=True`, one dict per detection event (`event_type="detection"`) and one per policy decision (`event_type="policy"`). PII-free by construction, category labels, span offsets, document hash, statute reference. Each dict also has `timestamp` (ISO 8601 UTC). |
 | `metadata` | `dict[str, Any]` | Pipeline configuration snapshot: `jurisdiction`, `statute_id`, `statute_version`, `detectors`, `address_parsing`, `audit`, `pipeline_version`. When `process_file` was used, also `source_file` and `num_pages`. |
 
 ### Persisting the audit log to SQLite
 
-`Pipeline` builds `Result.audit_log` as an in-memory list of plain dicts. Persisting to SQLite is the caller's job — wire it via the `arche.graph.audit` substrate:
+`Pipeline` builds `Result.audit_log` as an in-memory list of plain dicts. Persisting to SQLite is the caller's job, wire it via the `arche.graph.audit` substrate:
 
 ```python
 from arche.graph.audit import AuditEvent, AuditLog
@@ -152,7 +152,7 @@ for text in batch_of_documents:
     record_result(audit, result, document_id=result.document_hash)
 ```
 
-This is the same pattern the cookbooks use — see [Nigerian fintech KYC](../cookbooks/fintech-kyc.md) and [SQLite audit log example](https://github.com/unpatterned-labs/arche/blob/main/examples/05_audit_log.py).
+This is the same pattern the cookbooks use, see [Nigerian fintech KYC](../cookbooks/fintech-kyc.md) and [SQLite audit log example](https://github.com/unpatterned-labs/arche/blob/main/examples/05_audit_log.py).
 
 ---
 
@@ -178,17 +178,17 @@ class Detection:
 
 | Field | Type | What's in it |
 |---|---|---|
-| `id` | `str` | Stable identifier for cross-referencing in `policy_outcomes` and `audit_log`. Shape: `det:<detector-slug>:<start>:<end>` — e.g. `det:nin:4:15`, `det:phone:23:36`. |
-| `category` | `str` | Pan-African PII Taxonomy v0.1 label — e.g. `"PII-2-NIN"`, `"PII-1-NAME"`, `"PII-3-PHONE"`, `"PII-4-ADDRESS"`, `"PII-5-CRYPTO_WALLET"`. |
-| `text` | `str` | The actual matched substring from the input. The original PII value — keep this off your wire and out of your logs. |
+| `id` | `str` | Stable identifier for cross-referencing in `policy_outcomes` and `audit_log`. Shape: `det:<detector-slug>:<start>:<end>`, e.g. `det:nin:4:15`, `det:phone:23:36`. |
+| `category` | `str` | Pan-African PII Taxonomy v0.1 label, e.g. `"PII-2-NIN"`, `"PII-1-NAME"`, `"PII-3-PHONE"`, `"PII-4-ADDRESS"`, `"PII-5-CRYPTO_WALLET"`. |
+| `text` | `str` | The actual matched substring from the input. The original PII value, keep this off your wire and out of your logs. |
 | `start` | `int` | Inclusive character offset into the input text. |
 | `end` | `int` | Exclusive character offset. |
 | `confidence` | `float` | `1.0` for structurally validated detections (Luhn-checked SA ID, NIN pattern + length + prefix). Lower for shape-only matches. |
-| `detector` | `str` | Producer string — e.g. `"rule:ng_nin"`, `"phonenumbers:NG"`, `"rule:addr_parser"`, `"gliner"` when the optional `[detect]` extra is active. |
-| `identity_class` | `str` | One of `foundational` / `functional` / `federated` / `inferred` — the four-class identity-class distinction from the Pan-African PII Taxonomy. |
+| `detector` | `str` | Producer string, e.g. `"rule:ng_nin"`, `"phonenumbers:NG"`, `"rule:addr_parser"`, `"gliner"` when the optional `[detect]` extra is active. |
+| `identity_class` | `str` | One of `foundational` / `functional` / `federated` / `inferred`, the four-class identity-class distinction from the Pan-African PII Taxonomy. |
 | `sensitivity_tier` | `SensitivityTier` | `HIGH` / `MODERATE` / `LOW`, populated from the loaded statute at detection time. Defaults to `MODERATE` for standalone detector calls that bypass `Pipeline` (no statute loaded means no tier mapping). |
 | `regulatory_citation` | `str \| None` | The specific statute section (`"NDPA-2023 s.29"`, `"NDPA-2023 s.30, NIMC Act s.27"`) the loaded statute cites for this category. `None` for standalone detector calls. |
-| `metadata` | `dict[str, Any]` | Detector-specific extras. For `addr` detections: `street`, `city`, `region`, `country`. For per-country IDs: whatever the country-specific detector chose to expose (varies — see the relevant `arche.detect.<cc>` module). |
+| `metadata` | `dict[str, Any]` | Detector-specific extras. For `addr` detections: `street`, `city`, `region`, `country`. For per-country IDs: whatever the country-specific detector chose to expose (varies, see the relevant `arche.detect.<cc>` module). |
 
 Reading the tier + citation that v0.2 ships:
 
@@ -283,7 +283,7 @@ print(f"{len(result.detections)} detections")
 print(result.metadata["source_file"], result.metadata["num_pages"])
 ```
 
-`Result` is a plain dataclass — for JSON / CSV / Pydantic serialization patterns.
+`Result` is a plain dataclass, for JSON / CSV / Pydantic serialization patterns.
 
 ---
 

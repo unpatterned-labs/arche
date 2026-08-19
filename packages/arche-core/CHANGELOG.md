@@ -4,13 +4,27 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [0.4.0a3] — 2026-08-16
 
-**Documentation and benchmarks. No behaviour changed.**
+**Documentation, benchmarks, and two cosmetic output changes.**
 
 Every published accuracy number was audited against something that runs. Three
 of the five did not survive contact with their own evidence, one is now known
-to be unverifiable, and the corrections are below. No source file outside
-`_version.py` changed, so a decision made by `0.4.0a2` and one made by this
-release are byte-identical.
+to be unverifiable, and the corrections are below.
+
+Compared member by member against the published `0.4.0a2` wheel, three source
+files differ: `_version.py`, and the two below. No matching logic changed, so
+the same inputs still produce the same `decision_id`.
+
+### Changed — two user-visible strings that contained an em-dash
+
+Both are cosmetic and both are listed because they are visible to users, which
+makes "no behaviour changed" the wrong description however small they are.
+
+- `doc/_documents.py` printed an em-dash in the extracted-records table where a
+  field was empty. It now prints a hyphen. The four pages that show that table
+  were updated in the same change, because the alternative was documentation
+  that no longer matched the output.
+- `sign/jws.py` had an em-dash inside the "no trusted key available" hint. The
+  sentence is reworded; the guidance is identical.
 
 `0.4.0a2` went to the index carrying an uncorrected frequency claim. That is
 why this release exists: a PyPI long description cannot be edited in place, and

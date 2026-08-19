@@ -183,7 +183,7 @@ class DocumentReport:
             lines += ["EXTRACTED RECORDS", header, "-" * len(header)]
             for doc, rec in self.records.items():
                 row = f"{doc[:width]:<{width}}  " + "  ".join(
-                    f"{show(rec.get(f, '')) if rec.get(f) else '—':<22}"
+                    f"{show(rec.get(f, '')) if rec.get(f) else '-':<22}"
                     for f in fields
                 )
                 lines.append(row)

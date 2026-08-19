@@ -1,6 +1,6 @@
 # Zero to hero: documents
 
-Four invoices in a folder. By the end of this page you will have gone from files on disk to typed records, to verdicts about who they refer to, to a signed decision you can re-check next year — and you will have seen the engine get one of them wrong, which is the part worth staying for.
+Four invoices in a folder. By the end of this page you will have gone from files on disk to typed records, to verdicts about who they refer to, to a signed decision you can re-check next year, and you will have seen the engine get one of them wrong, which is the part worth staying for.
 
 Everything below is real output from `data/doc_bench/`, four invoices from four unrelated companies. Values are masked because that is the default.
 
@@ -23,10 +23,10 @@ print(report.table())
 EXTRACTED RECORDS
 document           name              email                  phone       organisation
 ------------------------------------------------------------------------------------
-invoice_10.pdf     ANDR********      —                      86-0******  Sher****************
+invoice_10.pdf     ANDR********      -                      86-0******  Sher****************
 invoice_12_ak.pdf  MRS ************  andr*****************  7263****    Cond****************
-invoice_27.pdf     —                 —                      91-2******  Meri****************
-invoice_6_ak.pdf   Andr********      erik*****************  —           RIDG****************
+invoice_27.pdf     -                 -                      91-2******  Meri****************
+invoice_6_ak.pdf   Andr********      erik*****************  -           RIDG****************
 
 RESOLUTION
 document a              document b              verdict        score
@@ -66,9 +66,9 @@ That is the third time this shape has appeared in arche, and it is worth naming 
 
 | Lane | One source adds | The other does not |
 |---|---|---|
-| places | a trailing region — `Petra (Jordan)` vs `Petra` | |
-| products | a leading publisher — `vivendi-universal games inc swat 4` vs `swat 4` | |
-| people | a leading honorific — `MRS <name>` vs `<name>` | |
+| places | a trailing region, `Petra (Jordan)` vs `Petra` | |
+| products | a leading publisher, `vivendi-universal games inc swat 4` vs `swat 4` | |
+| people | a leading honorific, `MRS <name>` vs `<name>` | |
 
 In each case the extra token is not part of the identity, and in each case it does two kinds of damage at once: it dilutes agreement between records of the same thing, and it manufactures agreement between different things that share the affix.
 
@@ -87,7 +87,7 @@ doc.info.author            # the issuing company, straight from the PDF header
 doc.info.page_count        # 1
 ```
 
-The producer tells you how a file came to exist — `browser-print` means a human printed it, `html-renderer` means a server rendered it, `enterprise-report` means a reporting system emitted it. Different provenance, different trust, no cryptographic manifest required.
+The producer tells you how a file came to exist, `browser-print` means a human printed it, `html-renderer` means a server rendered it, `enterprise-report` means a reporting system emitted it. Different provenance, different trust, no cryptographic manifest required.
 
 Treat every one of those fields as a **claim by the file**. `producer` and `author` are trivially forged by anyone who can write a PDF.
 
@@ -107,7 +107,7 @@ invoice_27.pdf     ABSTAIN   US leads but only on weak or corroborating evidence
 invoice_6_ak.pdf   ABSTAIN   US leads but only on weak or corroborating evidence
 ```
 
-One document names its own jurisdiction — a German commercial register entry is close to conclusive. **Three abstain**, because a currency symbol and a timestamp are not enough to choose a legal regime, and guessing would be worse than declining.
+One document names its own jurisdiction, a German commercial register entry is close to conclusive. **Three abstain**, because a currency symbol and a timestamp are not enough to choose a legal regime, and guessing would be worse than declining.
 
 An explicit `jurisdiction=` always wins, and any disagreement with the document's own evidence is recorded in `report.jurisdiction_conflicts` rather than left silent.
 
@@ -172,7 +172,7 @@ report.decisions[0]["decision_id"]
 # 'dec:sha256:6905b79403b22a17dc471dd2d054882a30ba314c7230e3af9845b27a6d146238'
 ```
 
-A content hash over the evidence and the pinned inputs. No timestamp, no randomness — anyone holding the same inputs recomputes the same id. That is what makes a verdict checkable later rather than merely stored, and it is why the inputs that *change* a decision are named in the pins.
+A content hash over the evidence and the pinned inputs. No timestamp, no randomness, anyone holding the same inputs recomputes the same id. That is what makes a verdict checkable later rather than merely stored, and it is why the inputs that *change* a decision are named in the pins.
 
 ---
 
@@ -180,8 +180,8 @@ A content hash over the evidence and the pinned inputs. No timestamp, no randomn
 
 **You have** four files turned into typed records, verdicts with the evidence behind them, jurisdictions proposed from the documents themselves, and a decision you can re-verify.
 
-**You do not have** a system that found every true match. It missed one, for a reason it showed you rather than hid. When that happens the fixes are ordinary and in that order: check what the extractor put in the `name` field, look at `name_tf` to see whether the shared tokens were rare enough to earn a merge, and work the review queue — which exists precisely because the alternative is a merge nobody can defend.
+**You do not have** a system that found every true match. It missed one, for a reason it showed you rather than hid. When that happens the fixes are ordinary and in that order: check what the extractor put in the `name` field, look at `name_tf` to see whether the shared tokens were rare enough to earn a merge, and work the review queue, which exists precisely because the alternative is a merge nobody can defend.
 
 If a number on this page does not reproduce on your machine, that is a bug and we want the issue.
 
-*Next: [the document lane](../concepts/document-lane.md) for what decides what · [matching products](products.md) for the same engine on catalogues.*
+*Next: [the document lane](document-lane.md) for what decides what · [matching products](products.md) for the same engine on catalogues.*

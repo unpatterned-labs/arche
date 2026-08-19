@@ -83,7 +83,7 @@ NAME_099000a2 NAME_e38a0fcd, NIN [NIN].
 Fatuma NAME_ae1ee794, NIN [NIN].
 ```
 
-**"Fatuma" came through in the clear.** Name detection on the base wheel is a lexicon of African given names and surnames, and this spelling is not in it. That is not a bug to be embarrassed about so much as the first thing a newcomer needs to internalise: protection can only act on what detection proposed, so the coverage of the detectors *is* the strength of the guarantee. The full inventory of what is and is not detected today is on [the lifecycle page](lifecycle.md), and it is worth reading before you deploy anything.
+**"Fatuma" came through in the clear.** Name detection on the base wheel is a lexicon of African given names and surnames, and this spelling is not in it. That is not a bug to be embarrassed about so much as the first thing a newcomer needs to internalise: protection can only act on what detection proposed, so the coverage of the detectors *is* the strength of the guarantee. The full inventory of what is and is not detected today is on [the lifecycle page](../api/lifecycle.md), and it is worth reading before you deploy anything.
 
 ---
 
@@ -195,7 +195,7 @@ raw names in the attestation: False
 
 Four fields in that output are doing separate jobs, and conflating any two of them is how people end up trusting something they should not.
 
-**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls**. Here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](attest.md) shows the forged case side by side with the genuine one.
+**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls**. Here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](../how-to/attest.md) shows the forged case side by side with the genuine one.
 
 **`reproducible: True` is a claim about replay**, and it is derived from what actually fed the decision rather than from the signing format. The engine's own path is deterministic, so this decision replays byte for byte. Had the two records been extracted by a hosted language model, the extraction step could not be replayed by a stranger, and the attestation would say `reproducible: False` instead of quietly implying otherwise.
 
@@ -215,8 +215,8 @@ It showed one pair. Real work is usually two *lists*. `resolve.crosswalk` links 
 
 It also showed detection working. Detection is where arche's coverage is most uneven, and this page deliberately left the inventory to a page that can be exhaustive about it.
 
-- [The identity lifecycle](lifecycle.md). Verb by verb: what ships, what is gated, and what does not exist. The page to read before you rely on any of the above.
-- [Architecture](architecture.md). How the code is layered, and which components are permitted to conclude anything.
-- [Attest: the signature on the decision](attest.md). What a signature does and does not prove.
-- [A representation engine, not an inference engine](representation-engine.md). Why `name_tf` was 0.0, and why that is the interesting number.
+- The identity lifecycle. Verb by verb: what ships, what is gated, and what does not exist. The page to read before you rely on any of the above.
+- [Architecture](../api/architecture.md). How the code is layered, and which components are permitted to conclude anything.
+- Attest: the signature on the decision. What a signature does and does not prove.
+- [A representation engine, not an inference engine](../about/representation-engine.md). Why `name_tf` was 0.0, and why that is the interesting number.
 - [Entity resolution tutorial](../tutorials/entity_resolution.md). The same ideas with your hands on the keyboard.

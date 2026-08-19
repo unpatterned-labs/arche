@@ -2,15 +2,6 @@
 
 *Where this came from, what is actually built, what has been measured, and what we have not proven. The shortest complete account. Start here.*
 
-<div class="arche-path">
-<span class="path-label">Reading path</span>
-<span class="here">1. The whole picture</span>
-<span class="sep">&rsaquo;</span>
-<a href="../sameness-and-similarity/">2. Sameness and similarity</a>
-<span class="sep">&rsaquo;</span>
-<a href="../arche-in-practice/">3. arche in practice</a>
-</div>
-
 ---
 
 ## The problem, in one sentence
@@ -84,7 +75,7 @@ flowchart LR
 
 Turn the threshold up and you fix problem 2 while making problem 1 worse. Turn it down and the reverse. **One dial cannot fix both**, and the two fixes are different kinds of object.
 
-That is why arche ships data, not just code. The [full argument, including where it is contestable](sameness-and-similarity.md), is a page of its own. A single well-specified frequency-aware model could in principle address both, and the honest claim is about what is shippable and measurable rather than what is mathematically irreducible.
+That is why arche ships data, not just code. The full argument, including where it is contestable, is a page of its own. A single well-specified frequency-aware model could in principle address both, and the honest claim is about what is shippable and measurable rather than what is mathematically irreducible.
 
 ---
 
@@ -94,11 +85,11 @@ Version **0.4.0a1**. Five entity packs ship: `person`, `place`, `artist`, `produ
 
 | Layer | What it answers |
 |---|---|
-| **Detect** | what is in this data — names, IDs, phones, addresses, with the governing statute attached |
-| **Declare + policy** | what may be compared — your fields mapped to slots, jurisdiction rules applied |
-| **Represent** | what counts as agreement and what it is worth — packs, frequency tables, vocabularies |
-| **Resolve** | same or not — score, then the distinctive-signal gate |
-| **Attest** | can this be proven later — signed, recomputable by a third party |
+| **Detect** | what is in this data, names, IDs, phones, addresses, with the governing statute attached |
+| **Declare + policy** | what may be compared, your fields mapped to slots, jurisdiction rules applied |
+| **Represent** | what counts as agreement and what it is worth, packs, frequency tables, vocabularies |
+| **Resolve** | same or not, score, then the distinctive-signal gate |
+| **Attest** | can this be proven later, signed, recomputable by a third party |
 
 Three answers, not two: `same_entity`, `review`, `different`. And a second axis. Believing two records match and *fusing* them are different acts, so `same_entity + hold` is a valid outcome.
 
@@ -112,11 +103,11 @@ Five results, and they are not the same kind of thing. One is a public labelled 
 
 | What | Baseline | arche | Read it as |
 |---|---|---|---|
-| **Name equivalence**<br/>58 pairs, 18 categories | Jaro–Winkler @ 0.80<br/>F1 **0.8493** | F1 **0.9880** | Recall 0.738 → **0.976**, precision held at 1.000. **A demo, not a benchmark** — 58 pairs, and from v0.1.0. Needs re-running. |
+| **Name equivalence**<br/>58 pairs, 18 categories | Jaro–Winkler @ 0.80<br/>F1 **0.8493** | F1 **0.9880** | Recall 0.738 → **0.976**, precision held at 1.000. **A demo, not a benchmark**, 58 pairs, and from v0.1.0. Needs re-running. |
 | **Name frequency**<br/>1,114 observed negatives<br/>1,500 constructed positives | arche **minus the frequency signal**<br/>precision **0.162**, 7,705 false merges | precision **0.946**<br/>**41** false merges | Real voter records, and re-runnable. The effect is far larger than we used to claim, and it has a cost we never mentioned: recall **48%**. |
 | **Scale (Febrl 4)**<br/>10,000 records, truth known | name and address only<br/>precision **0.921**, 282 false merges | precision **1.000**<br/>with the synthetic ID in play | The 1.0 reproduces exactly, and is largely a **key join**. Withhold the identifier and the engine resolves 65.7% rather than 87.7%. |
 | **Multilingual detection**<br/>48 cases, 6 languages | Presidio **37/48** | **47/48** | **We cannot re-run this.** The set is not in the repo and nothing computes the number. Unverified until rebuilt. |
-| **Organisation lane**<br/>946 labelled pairs | token-sort F1 **0.8898** | F1 **0.9493** | False merges **21 → 4**. Public set, criteria declared before the run. Anglophone restaurant listings — **says nothing about African organisation names**. |
+| **Organisation lane**<br/>946 labelled pairs | token-sort F1 **0.8898** | F1 **0.9493** | False merges **21 → 4**. Public set, criteria declared before the run. Anglophone restaurant listings, **says nothing about African organisation names**. |
 
 ### How the baselines were chosen
 
@@ -134,7 +125,7 @@ Two things came out of re-running it properly, and the second is why the row is 
 
 **The effect is much larger than we claimed.** Not 40% of pairs wrongly merged but 7,705 wrong edges against 1,114 negatives, because a frequency-blind matcher run over two lists does not merely confuse a pair, it links nearly everything to nearly everything. Precision 0.162 against 0.946.
 
-**And it costs recall, which the old claim denied outright.** "Recall held at 1.00" was wrong. Measured against same-person pairs differing only by a dropped middle name, the frequency-aware engine matches **48%**. The rest go to `review`. That is defensible — abstention is the design — but reporting a safety gain while asserting the cost was zero was not.
+**And it costs recall, which the old claim denied outright.** "Recall held at 1.00" was wrong. Measured against same-person pairs differing only by a dropped middle name, the frequency-aware engine matches **48%**. The rest go to `review`. That is defensible, abstention is the design, but reporting a safety gain while asserting the cost was zero was not.
 
 One more thing surfaced that we had not looked for. `person` is missing from the pack-to-table map, so `crosswalk(entity="person")` never loads the shipped population table and self-calibrates over the two lists instead. We expected that to be a defect. On this benchmark it is not: the self-calibrated default scores **F1 0.637** against the population table's **0.577**, buying 7 points of recall for 1.7 points of precision. The gap is real and unresolved, and it is recorded here rather than quietly fixed.
 
@@ -165,7 +156,7 @@ The shipped frequency tables are built from public sources with checked licences
 |---|---|---|
 | Person names | US Census 2010 surnames (162,253) + African names lexicon via Wikidata/ParaNames (13,342) | public domain · CC BY 4.0 |
 | Places | Nigerian facility registries | open data |
-| Organisations | GLEIF LEI Level 1 — 52,875 name forms | **CC0 1.0** |
+| Organisations | GLEIF LEI Level 1, 52,875 name forms | **CC0 1.0** |
 
 Census counts run to millions and African counts top out near a thousand, so each source is normalised to a common total before merging. Otherwise Census drowns the African signal.
 
@@ -181,7 +172,7 @@ Three projects have independently converged on the same architectural bet: **shi
 
 | Project | Domain | Ships |
 |---|---|---|
-| [`uk_address_matcher`](https://www.robinlinacre.com/address_matching/) | UK addresses | the technique — and explicitly *rejects* Fellegi–Sunter for addresses |
+| [`uk_address_matcher`](https://www.robinlinacre.com/address_matching/) | UK addresses | the technique, and explicitly *rejects* Fellegi–Sunter for addresses |
 | [`whereabouts`](https://github.com/ajl2718/whereabouts) | AU / US addresses | prebuilt country databases |
 | **arche** | people, places, products, organisations | frequency tables, equivalence packs and vocabularies in the wheel |
 
@@ -223,9 +214,9 @@ In dependency order, and the first item is not engineering.
 
 | If you want | Read |
 |---|---|
-| Why a matcher can never say *same*, and whether AI changes that | [Sameness and similarity](sameness-and-similarity.md) |
-| What changes about your working day | [arche in practice](arche-in-practice.md) |
-| The failure modes, side by side, with real verdicts | [What matching looks like](what-matching-looks-like.md) |
+| Why a matcher can never say *same*, and whether AI changes that | Sameness and similarity |
+| What changes about your working day | [arche in practice](../tutorials/arche-in-practice.md) |
+| The failure modes, side by side, with real verdicts | [What matching looks like](../tutorials/what-matching-looks-like.md) |
 | How someone else checks your decision | [Re-verify a decision](../how-to/re-verify-a-decision.md) |
 | To just use it | `pip install arche-core` |
 
@@ -251,4 +242,4 @@ The name data builds on [ParaNames](https://arxiv.org/abs/2104.00558) and Wikida
 
 ## Where to go next
 
-Next in this path: **[Sameness and similarity](sameness-and-similarity.md)**, on why the hard part is hard and whether a frontier model dissolves it.
+Next in this path: **Sameness and similarity**, on why the hard part is hard and whether a frontier model dissolves it.

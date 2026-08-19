@@ -13,9 +13,9 @@ It is deliberately **not** a five-stage pipeline diagram. Boxes and arrows sugge
 | Proposer | Offers | How wrong it is allowed to be |
 |---|---|---|
 | `doc.parse` | text, tables, markdown | A scan with no text layer yields nothing, and that is an outcome, not an error |
-| `doc.read_metadata` | title, author, producer, dates | Every field is a **claim by the file** — `producer` and `author` are trivially forged |
+| `doc.read_metadata` | title, author, producer, dates | Every field is a **claim by the file**, `producer` and `author` are trivially forged |
 | `jurisdictions.infer` | a country, or an abstention | Abstains on thin or conflicting evidence; an explicit `jurisdiction=` always wins |
-| `detect` | spans with categories and confidence | May over-fire freely — for redaction, over-firing is the safe direction |
+| `detect` | spans with categories and confidence | May over-fire freely, for redaction, over-firing is the safe direction |
 | `extract` | names, organisations, places | Recognition, with a confidence attached, never validation |
 
 **Deciders** act on what the proposers offered, and their output is what you are held to.
@@ -89,4 +89,4 @@ That is what makes a decision checkable months later rather than merely stored, 
 
 ---
 
-*Next: [zero to hero with documents](../tutorials/zero-to-hero-documents.md). The whole lane on four real invoices, in one page. Or [the architecture](architecture.md) for how the layers are wired.*
+*Next: [zero to hero with documents](../tutorials/zero-to-hero-documents.md). The whole lane on four real invoices, in one page. Or [the architecture](../api/architecture.md) for how the layers are wired.*

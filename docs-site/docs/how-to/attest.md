@@ -64,7 +64,7 @@ genuine, pinned key                valid=True  trusted=True  key_source=pinned
 FORGED, self-asserted key          valid=True  trusted=False key_source=self-asserted
 FORGED, pinned key                 valid=False trusted=False key_source=pinned
 
-No trusted key available: pass public_key=, or a resolver=. To verify a token's integrity without authenticating its issuer, pass allow_did_key_from_kid=True — but note that a self-asserted key proves nothing about who signed.
+No trusted key available: pass public_key=, or a resolver=. To verify a token's integrity without authenticating its issuer, pass allow_did_key_from_kid=True - but note that a self-asserted key proves nothing about who signed.
 ```
 
 Read rows two and four together. They are indistinguishable on `valid`. Only `trusted` separates the genuine issuer from the impostor, and it does so in both directions. **Check `trusted`, not `valid`, whenever the signature is meant to prove *who* signed.**
@@ -289,8 +289,8 @@ NIST ratified ML-DSA (FIPS 204) in August 2024 and hybrid Ed25519 + ML-DSA is th
 - **Tamper-evident artefacts.** A signed attestation binds the decision, its numeric evidence, and the pins. A signed envelope binds the document hash, the detections and the policy outcomes. The *log* is not tamper-evident.
 - **Offline integrity checking.** No network, no PKI, no resolver.
 - **Authenticated issuance, when you supply the key.** `trusted`, not `valid`.
-- **PII-safe sharing by default**, enforced: keyless decisions are refused, JWS cleartext PII is refused, and `restricted` attributes are never disclosable.
-- **An honest reproducibility flag**, derived from what actually fed the decision.
+- **PII-safe sharing by default**. Enforced: keyless decisions are refused, JWS cleartext PII is refused, and `restricted` attributes are never disclosable.
+- **An honest reproducibility flag**: derived from what actually fed the decision.
 - **Holder-controlled disclosure** with replay defence, via key-bound SD-JWT-VC.
 - **Sovereignty.** A library, not an issuer. No arche root key exists.
 
@@ -298,7 +298,7 @@ NIST ratified ML-DSA (FIPS 204) in August 2024 and hybrid Ed25519 + ML-DSA is th
 
 ## What's next
 
-- [Architecture](architecture.md). The layer this one sits on top of
+- [Architecture](../api/architecture.md). The layer this one sits on top of
 - [Sign, share, extract](../tutorials/sign_share_extract.md). The envelope path end to end
 - [Citizen DSAR](../tutorials/citizen_dsar.md). Attestation inside a statutory workflow
-- [A place is not a point](../blog/a-place-is-not-a-point.md). Why the claim is scoped to a representation and a moment
+- [A place is not a point](../tutorials/a-place-is-not-a-point.md). Why the claim is scoped to a representation and a moment
