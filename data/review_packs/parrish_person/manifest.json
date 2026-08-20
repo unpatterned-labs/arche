@@ -1,0 +1,48 @@
+{
+  "arche_version": "0.4.0a4",
+  "blocking": {
+    "candidate_pairs": 7361,
+    "reduction_ratio": 0.9753,
+    "strategies": {
+      "coordless_a": 986,
+      "coordless_b": 302,
+      "h3": 0,
+      "id": 0,
+      "token": 7361
+    }
+  },
+  "decision_ids_sha256": "4aef69f2d85859500ef323794e94d624397595550a28e4555703df3213d13472",
+  "decisions": {
+    "match": 267,
+    "review": 66
+  },
+  "disclosure": "revealed (working copy)",
+  "entity": "person",
+  "generated": "2026-08-20T07:02:24Z",
+  "meta": {
+    "benchmark": "Parrish R RecordLinkage",
+    "true_pairs": 294
+  },
+  "pins": {
+    "block": "union",
+    "comparators_sha256": "8d1e03d23fa6b8a6",
+    "distinctive_floor": 0.75,
+    "engine": "crosswalk.v1",
+    "review_margin": 0.15,
+    "tf": "self-calibrated",
+    "threshold": 0.7
+  },
+  "review_fields": [
+    "review_outcome",
+    "reviewer",
+    "reviewed_at",
+    "reason"
+  ],
+  "review_outcomes": [
+    "same_entity",
+    "different",
+    "unresolved"
+  ],
+  "rows": 333,
+  "schema": "arche.review_pack.v1"
+}

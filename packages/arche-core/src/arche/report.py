@@ -270,3 +270,169 @@ def crosswalk_report(
   share artifact. Print this page for a PDF copy.</footer>
 </div></body></html>
 """
+
+
+# ===================================================================
+# Review packs — the artifact a reviewer adjudicates
+# ===================================================================
+
+# The four columns a reviewer fills, and the only vocabulary the outcome column
+# accepts. Kept identical to `tools/arche-studio/state.py`: a pack whose
+# outcomes the studio rejects is a pack nobody can adjudicate.
+REVIEW_FIELDS = ("review_outcome", "reviewer", "reviewed_at", "reason")
+REVIEW_OUTCOMES = ("same_entity", "different", "unresolved")
+PACK_SCHEMA = "arche.review_pack.v1"
+
+
+def review_pack(
+    result: dict,
+    records_a: list[dict],
+    records_b: list[dict],
+    *,
+    out_dir: Any,
+    reveal: bool = False,
+    sides: tuple[str, str] = ("a", "b"),
+    entity: str | None = None,
+    decisions: tuple[str, ...] = ("match", "review"),
+    id_field: str = "id",
+    decl=None,
+    meta: dict[str, Any] | None = None,
+) -> dict:
+    """Write a crosswalk ``result`` as a review pack, and return its manifest.
+
+    The machine-readable sibling of :func:`crosswalk_report`. That one produces
+    an artifact to *read*; this produces one to *work*, in the shape
+    ``tools/arche-studio`` opens::
+
+        out_dir/pack.csv        one row per decision, four blank review columns
+        out_dir/manifest.json   what was run, and a digest of the decision ids
+
+    Point the studio at the directory and the pack appears in its picker.
+
+    Columns are ``decision_id``, ``decision``, ``score``, then the two sides
+    prefixed by ``sides`` (``a_name``, ``b_name``, ...), then ``evidence`` as
+    JSON, then the four empty review columns. The studio infers which columns
+    belong to which side from those prefixes, so two records that share a field
+    name stay distinguishable.
+
+    **Masked by default, like the report.** A pack is a file that gets copied
+    around, so the fail-safe applies here too: record values pass through
+    :func:`arche.render.render`, and record ids that look like national
+    identifiers are refused outright. But a masked pack is close to useless for
+    the thing a pack is *for*, since nobody can judge whether two people are the
+    same when both names are redacted. Pass ``reveal=True`` for a working copy
+    and keep it local. ``data/review_packs/`` is the intended home.
+
+    ``decisions`` selects which rows to write. The default carries ``match`` and
+    ``review`` and drops ``no_match``, because a queue of things the engine
+    already rejected is not a queue. Pass a wider tuple to audit those too.
+    """
+    import csv
+    import hashlib
+    import json
+    from pathlib import Path
+
+    if len(sides) != 2 or sides[0] == sides[1]:
+        raise ValueError(f"sides must be two distinct prefixes, got {sides!r}")
+    for side in sides:
+        if not side or "_" in side:
+            raise ValueError(
+                f"side prefix {side!r} must be non-empty and contain no "
+                "underscore: the reviewer UI splits column names on the first "
+                "underscore to tell the two records apart"
+            )
+    if decl is not None and id_field == "id":
+        id_field = decl.id_field
+    if not reveal:
+        hot = _sensitive_ids(records_a, id_field) + _sensitive_ids(records_b, id_field)
+        if hot:
+            raise ValueError(
+                f"{hot} record id(s) look like sensitive identifiers "
+                "(9+ digit runs, the shape of a national ID). A pack carries "
+                "row ids in plain text, so this would leak them. Use a "
+                "surrogate row id column, or write a revealed working copy "
+                "locally with reveal=True."
+            )
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    by_a = {str(r.get(id_field)): r for r in records_a}
+    by_b = {str(r.get(id_field)): r for r in records_b}
+    edges = [e for e in result.get("matches", []) if e.get("decision") in decisions]
+
+    def shown(rec: dict | None) -> dict:
+        if rec is None:
+            return {}
+        return render(rec, reveal=True if reveal else [id_field], decl=decl)
+
+    # Column order is fixed rather than derived, so two packs of the same entity
+    # diff against each other cleanly.
+    rows: list[dict[str, Any]] = []
+    side_keys: dict[str, list[str]] = {sides[0]: [], sides[1]: []}
+    for edge in edges:
+        rec_a = shown(by_a.get(str(edge.get("a_id"))))
+        rec_b = shown(by_b.get(str(edge.get("b_id"))))
+        row: dict[str, Any] = {
+            "decision_id": edge.get("decision_id", ""),
+            "decision": edge.get("decision", ""),
+            "score": edge.get("score", ""),
+            "distinctive_max": edge.get("distinctive_max", ""),
+        }
+        evidence = edge.get("evidence") or {}
+        if "distance_km" in evidence:
+            row["distance_km"] = evidence["distance_km"]
+        for prefix, rec, rid in ((sides[0], rec_a, edge.get("a_id")),
+                                 (sides[1], rec_b, edge.get("b_id"))):
+            row[f"{prefix}_{id_field}"] = rid
+            for k, v in rec.items():
+                if k == id_field:
+                    continue
+                row[f"{prefix}_{k}"] = v
+                if f"{prefix}_{k}" not in side_keys[prefix]:
+                    side_keys[prefix].append(f"{prefix}_{k}")
+        row["evidence"] = json.dumps(evidence, sort_keys=True)
+        for name in REVIEW_FIELDS:
+            row[name] = ""
+        rows.append(row)
+
+    head = ["decision_id", "decision", "score", "distinctive_max"]
+    if any("distance_km" in r for r in rows):
+        head.append("distance_km")
+    fields = (head
+              + [f"{sides[0]}_{id_field}"] + sorted(side_keys[sides[0]])
+              + [f"{sides[1]}_{id_field}"] + sorted(side_keys[sides[1]])
+              + ["evidence", *REVIEW_FIELDS])
+
+    with (out / "pack.csv").open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        for r in rows:
+            writer.writerow({f: r.get(f, "") for f in fields})
+
+    ids = [str(r["decision_id"]) for r in rows]
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r["decision"]] = counts.get(r["decision"], 0) + 1
+    manifest: dict[str, Any] = {
+        "schema": PACK_SCHEMA,
+        "generated": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "arche_version": _version(),
+        "entity": entity,
+        "rows": len(rows),
+        "decisions": counts,
+        "disclosure": "revealed (working copy)" if reveal else "masked",
+        "review_fields": list(REVIEW_FIELDS),
+        "review_outcomes": list(REVIEW_OUTCOMES),
+        # The studio digests the decision ids of the pack it loads. An edited
+        # pack, or one row quietly dropped, stops matching this.
+        "decision_ids_sha256": hashlib.sha256(
+            "\n".join(sorted(ids)).encode()).hexdigest(),
+        # Enough to say which engine produced this.
+        "pins": result.get("pins") or {},
+        "blocking": result.get("blocking") or {},
+    }
+    if meta:
+        manifest["meta"] = meta
+    (out / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest

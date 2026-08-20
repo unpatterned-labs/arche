@@ -258,6 +258,13 @@ md("""
 `crosswalk(entity="person")` applies the shipped person pack. Read the evidence
 keys on the result before reading the score, because they say what was actually
 compared.
+
+**This benchmark changed the pack.** Up to `0.4.0a3` the person pack declared
+name, a token-frequency view of the name, `national_id`, `phone`, `email` and
+`address`. These files carry none of the last four, so the pack was a name-only
+matcher that never looked at the birth date it was handed, and it scored 219
+true against 14 false: less precise than the R tutorial. `0.4.0a4` added a date
+comparator, and the cell below is the pack as it now ships.
 """)
 
 code('''
@@ -294,23 +301,22 @@ results["shipped"] = score(best_per_sample(shipped, {"match"}), "arche shipped p
 ''')
 
 md("""
-**The evidence dict holds `name` and `name_tftoken`, and nothing else.**
+**`birth_date` is in the evidence dict now, and that is the whole difference.**
 
-The shipped person pack declares six comparators: name, a token-frequency view
-of the name, `national_id`, `phone`, `email` and `address`. These files carry
-none of the last four. So on this data the pack is a name-only matcher, and it
-was never shown the date of birth it was handed.
+The 14 false positives the old pack made were each a real child matched to a
+different real child with the same name and a different birthday. Every one of
+them is separable by looking at two dates, which is what the pack now does.
 
-That is the whole story of its false positives. Every one is a real child
-matched to a different real child with the same name and a different birthday.
+What survives is worth more attention than what was fixed.
 """)
 
 code('''
 fps = [(bid, aid) for bid, aid in best_per_sample(shipped, {"match"}).items()
        if aid != bid]
 bb = {r["ID"]: r for r in b}
-print(f"{len(fps)} false positives, all of this shape:\\n")
-for bid, aid in fps[:5]:
+print(f"{len(fps)} false positive(s) left, against 14 before the pack could "
+      f"see a date.\\n")
+for bid, aid in fps:
     s, picked = bb[bid], byid[aid][0]
     real = byid[bid][0] if bid in byid else None
     print(f"  sample   {s['GivenName']:<10}{s['FamilyName']:<12}{s['DOB']}")
@@ -320,23 +326,31 @@ for bid, aid in fps[:5]:
         print(f"  truth    {real['GivenName']:<10}{real['FamilyName']:<12}{real['DOB']}")
     print()
 
-same_name_diff_dob = sum(
-    1 for bid, aid in fps
-    if bid in byid and byid[aid][0]["DOB"] != byid[bid][0]["DOB"])
-print(f"{same_name_diff_dob} of {len(fps)} would be refuted by comparing the date alone.")
+disagree = [(bid, byid[bid][0]["DOB"], bb[bid]["DOB"]) for bid in truth
+            if bid in byid and byid[bid][0]["DOB"] and bb[bid]["DOB"]
+            and byid[bid][0]["DOB"] != bb[bid]["DOB"]]
+print(f"{len(disagree)} true pairs have dates that disagree at all. The shapes:")
+for bid, x, y in disagree[:5]:
+    print(f"  register {x}   sample {y}")
+print("\\nThose are keying slips, not different people, which is why the")
+print("comparator grades them at 0.35 instead of zeroing them out of sight.")
 ''')
 
 md("""
-## arche, shown the date of birth
+## The option the pack does not take
 
-The pack docstring says the packs are "CONFIG over the same engine, never a
-fork", and to "bring your own comparators= for a different schema". The engine
-already registers a `date` kind, and `refutes_below` turns a comparator into a
-refuter: score under the threshold and the pair is refused regardless of how
-well the names agree.
+`refutes_below` turns a comparator into a refuter: score under the threshold and
+the pair is demoted to review however well the names agree. A date is the
+clearest case for it, and on this set it takes precision to 1.0000.
 
-This is the documented route, not a patched engine. Nothing below changes
-arche's shipped behaviour.
+The shipped pack still does not declare it. `test_discriminator_veto.py` guards
+`place`, `person` and `artist` against gaining refutation as a side effect of an
+unrelated change, on the grounds that each has published numbers a refutation
+would move. Adding the comparator was that unrelated change, so turning
+refutation on stays a separate decision with its own measurement.
+
+It is one line for a caller who wants it, through the documented `comparators=`
+route. Nothing below changes arche's shipped behaviour.
 """)
 
 code('''
@@ -344,7 +358,7 @@ COMPARATORS = [
     {"field": "name", "kind": "name", "weight": 2.0},
     {"field": "name", "kind": "tftoken", "weight": 2.0},
     # A different birthday refutes, however well the names agree.
-    {"field": "birth_date", "kind": "date", "weight": 3.0, "refutes_below": 0.5},
+    {"field": "birth_date", "kind": "date", "weight": 2.0, "refutes_below": 0.5},
 ]
 
 dated = crosswalk(left, right, entity="person", id_field="id",
@@ -356,9 +370,40 @@ print(f"{'method':<32}{'linked':>7}{'TP':>6}{'FP':>5}{'FN':>5}"
 results["parrish"] = score(
     {r["ID"]: hits[0]["ID"] for r, hits in deterministic}, "Parrish deterministic")
 results["shipped"] = score(best_per_sample(shipped, {"match"}), "arche shipped pack")
-results["dated"] = score(best_per_sample(dated, {"match"}), "arche name + DOB")
+results["dated"] = score(best_per_sample(dated, {"match"}), "arche + date refutation")
 results["dated_review"] = score(best_per_sample(dated, {"match", "review"}),
-                                "arche name + DOB, incl. review")
+                                "arche + refutation, incl. review")
+''')
+
+md("""
+## Working the result by hand
+
+The numbers above are an aggregate. Adjudicating is the other half, and it needs
+the pairs in something a person can sit in front of. `review_pack` writes the
+two files `tools/arche-studio` opens.
+
+`reveal=True` because a masked pack cannot be judged: nobody can say whether two
+children are the same when both names are redacted. That makes the output a
+local working file, which is why it lands in `data/review_packs/` and is not
+committed.
+""")
+
+code('''
+from arche.report import review_pack
+
+manifest = review_pack(
+    shipped, left, right,
+    out_dir="../../data/review_packs/parrish_person",
+    sides=("register", "sample"),
+    entity="person",
+    reveal=True,
+    meta={"benchmark": "Parrish R RecordLinkage", "true_pairs": len(truth)},
+)
+for k in ("schema", "rows", "decisions", "disclosure"):
+    print(f"{k:<12} {manifest[k]}")
+print(f"{'pins':<12} {manifest['pins'].get('comparators_sha256')}")
+print()
+print("open it with:  python tools/arche-studio/serve.py")
 ''')
 
 md("""
@@ -396,8 +441,8 @@ code('''
 print(f"{'':32}{'linked':>7}{'TP':>6}{'FP':>5}{'recall':>9}{'F1':>8}")
 for label, key in (("Parrish deterministic", "parrish"),
                    ("arche shipped pack", "shipped"),
-                   ("arche name + DOB", "dated"),
-                   ("arche name + DOB, incl. review", "dated_review")):
+                   ("arche + date refutation", "dated"),
+                   ("arche + refutation, incl. review", "dated_review")):
     r = results[key]
     print(f"{label:<32}{r['linked']:>7}{r['tp']:>6}{r['fp']:>5}"
           f"{r['recall']:>9.4f}{r['f1']:>8.4f}")

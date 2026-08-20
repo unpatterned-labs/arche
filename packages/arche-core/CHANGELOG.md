@@ -4,12 +4,129 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [0.4.0a4] — 2026-08-19
 
-**Benchmarks, documentation, and one change to how places are matched.**
+**Benchmarks, documentation, and two changes to how records are matched.**
 
 `0.4.0a3` was prepared and never shipped. It was scoped and written up as a
 documentation release, and then a matching change landed in the same tree. Its
 changelog would have been false, so the version was skipped rather than
 rewritten. It was never published and never tagged, so nothing points at it.
+
+### Added — `arche.report.review_pack`, a crosswalk result as an adjudication pack
+
+`crosswalk_report` produces an artifact to read. This produces one to work: the
+two files `tools/arche-studio` opens, from any `crosswalk` result.
+
+```python
+from arche.report import review_pack
+
+review_pack(result, records_a, records_b,
+            out_dir="data/review_packs/register_x_survey",
+            sides=("register", "survey"), entity="person", reveal=True)
+```
+
+Writes `pack.csv` and `manifest.json`. Columns are `decision_id`, `decision`,
+`score`, `distinctive_max`, an optional `distance_km`, then each side under its
+own prefix, then `evidence` as JSON, then the four columns a reviewer fills.
+The prefixes are how the studio works out which fields belong to which record
+without being configured, so a prefix containing an underscore is refused
+rather than silently mis-splitting every column.
+
+Only `match` and `review` rows are written by default. A queue of pairs the
+engine already rejected is not a queue; pass `decisions=` to include them.
+
+**Masked by default, like the report it sits beside.** Values pass through the
+masking allowlist and record ids shaped like national identifiers are refused
+outright. A masked pack is also close to useless for the thing a pack is for,
+since nobody can judge two people whose names are both redacted, so `reveal=True`
+is the normal call and the manifest records which one you produced. The point is
+that revealing is a decision somebody made rather than a default nobody saw.
+
+The manifest carries the engine `pins`, so a pack opened months later still
+says which comparator set produced its decisions, and `decision_ids_sha256`,
+which is what the studio's integrity digest is checked against.
+
+### Changed — the `person` pack can now see a date of birth
+
+`ENTITY_PACKS["person"]` declared name, a token-frequency view of the name,
+`national_id`, `phone`, `email` and `address`. It did not declare a date of
+birth, which is close to the most common identifier in person linkage. On any
+source without an id, phone, email or address, the pack was therefore a
+name-only matcher, and it was not looking at a birth date even when handed one.
+
+Reproducing [Jared Parrish's R `RecordLinkage`
+tutorial](https://rstudio-pubs-static.s3.amazonaws.com/1203076_6c678b417f564183a8708e3b4720c6c0.html)
+made the cost visible. Against 294 true pairs and 8 true non-matches, the
+shipped pack scored **219 true and 14 false**, less precise than the
+deterministic exact match it was being compared with. Every one of those 14 was
+two different children sharing a name and holding different birthdays.
+
+The pack now declares `{"field": "birth_date", "kind": "date", "weight": 2.0}`.
+On the same set that is **265 true and 1 false**, precision 0.9399 to 0.9962,
+recall 0.7449 to 0.9014.
+
+Weighted like a name rather than like `national_id`, because a birthday is
+strongly identifying without being unique. Weight 3.0 scored better again
+(274 true, recall 0.9320) and was not taken: tuning a shipped default until it
+peaks on one synthetic benchmark is how a number stops surviving real data.
+
+**No refutation.** A date is exactly the asymmetric signal `refutes_below` was
+built for, and declaring it here measured precision 1.0000 against 0.9962. It is
+still not declared. `test_discriminator_veto.py` guards established packs
+against acquiring refutation as a side effect of some other change, and this is
+some other change. Callers who want it pass `comparators=` with
+`"refutes_below": 0.5`.
+
+### Changed — `compare_dates` reads dates instead of comparing digits
+
+The old implementation stripped non-digits and tested equality, so `6/28/2016`
+scored **0.0** against `2016-06-28`: the same day, written the way two different
+systems write it. Any pack refuting on that would have refuted every true pair
+between two sources that disagreed about date order, which is most pairs of real
+sources. That had to be fixed before the pack could carry a date at all.
+
+Reading is anchored on the four-digit year, the only component that identifies
+itself; the other two are month and day in whichever order makes a real date. So
+`2016-06-28`, `6/28/2016`, `28/6/2016` and `2016-28-06` all read as one day with
+nobody declaring a locale.
+
+Where a date is genuinely ambiguous both readings are kept, and agreement on
+either is agreement. `6/7/2016` against `7/6/2016` scores 1.0, because the
+strings do not say which is meant and inventing a disagreement is worse than
+withholding one. A date with no four-digit year is unreadable on purpose:
+`03/04/05` has six meanings.
+
+Precision is part of the reading. A bare `1994` is a date known to the year, not
+a broken date, and comparing it against `1994-03-02` at day precision would
+manufacture a disagreement out of a difference in what each source recorded.
+Comparison happens at the coarser of the two precisions, which is what keeps the
+DBLP-ACM publication-year discriminator behaving as it did.
+
+One keying slip now scores 0.35 rather than 0.0: within one day, or exactly one
+of year/month/day different. Of the 12 true pairs whose dates disagree in the
+Parrish set, the shapes are the ones you would predict, `2017-01-01` against
+`2016-12-31` and `2018-11-19` against `2018-11-29`. A flat 0.0 dropped those
+pairs below the candidate threshold and out of the result, where a reviewer
+could not see them; 0.35 keeps them visible without letting them confirm.
+
+**This grading has a cost, and it is visible in the one false merge left.**
+`JORGE TORRES 2016-02-23` matched a different `JORGE TORRES 2016-10-23`: one
+component out, so 0.35 rather than 0.0, so the pair stayed above the threshold
+instead of vanishing. Under the old digit comparison it would have scored 0.0
+and been dropped. Grading near misses means some of them are near misses between
+two different people, and this is the trade being made rather than a bug.
+The pack's true match for that record is a register row reading `GORGE`.
+
+**Unreadable is not disagreement.** `compare_dates` still returns 0.0 for an
+unparseable string, because two callers pre-check both sides and need a float.
+The `date` comparator *kind* returns `None` instead, so it drops out of the
+weighted mean and cannot fire `refutes_below`. A record is not punished for a
+format nobody promised.
+
+**Decision ids.** The `person` pack gained a comparator, so its
+`comparators_sha256` moves from `b412742f3b961d45` to `8d1e03d23fa6b8a6` and
+every person decision id changes. Packs that do not declare a `date` comparator
+are unaffected. The `pairwise` path also sees the new grading, so a pair whose
+dates are one slip apart scores differently there too.
 
 ### Changed — administrative disagreement is now weighed against distance
 

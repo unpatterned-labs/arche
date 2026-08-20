@@ -73,6 +73,31 @@ ENTITY_PACKS: dict[str, list[dict]] = {
     "person": [
         {"field": "name", "kind": "name", "weight": 2.0},
         {"field": "name", "kind": "tftoken", "weight": 2.0},
+        # Date of birth. Weighted like a name rather than like `national_id`,
+        # because a birthday is strongly identifying without being unique: in
+        # any large population thousands share one.
+        #
+        # Measured on the Parrish linkage set (294 true pairs, 8 true
+        # non-matches), against the same pack unable to see the date:
+        #
+        #     no date comparator       219 true, 14 false   precision 0.9399
+        #     weight 2.0               265 true,  1 false   precision 0.9962
+        #     weight 2.0 + refutation  259 true,  0 false   precision 1.0000
+        #
+        # All 14 of those false merges were two different children sharing a
+        # name. Weight 3.0 scored higher again (274 true, recall 0.9320) and
+        # was not taken: it is one synthetic benchmark, and tuning a shipped
+        # default until it peaks there is how a number stops surviving contact
+        # with real data.
+        #
+        # `refutes_below` is deliberately NOT declared here, though a date is
+        # exactly the asymmetric signal it was built for. `test_discriminator_
+        # veto.py` guards established packs against gaining refutation as a
+        # side effect of some other change, and this is some other change. It
+        # also measured slightly worse on the only set we have. Callers who
+        # want it pass `comparators=` with `"refutes_below": 0.5`, which is
+        # what `examples/notebooks/15_parrish_record_linkage.ipynb` does.
+        {"field": "birth_date", "kind": "date", "weight": 2.0},
         {"field": "national_id", "kind": "id", "weight": 3.0},
         {"field": "phone", "kind": "phone", "weight": 1.5},
         {"field": "email", "kind": "email", "weight": 1.5},

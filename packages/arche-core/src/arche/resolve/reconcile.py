@@ -72,6 +72,7 @@ from arche.resolve._matcher import (
     haversine_km,
     load_type_vocab,
     normalize_type_token,
+    parse_date_value,
     split_place_name,
 )
 from arche.resolve._productcode import build_code_table, compare_codes, compare_specs
@@ -249,6 +250,19 @@ def _field_sim(
                 spec.get("boundary_km", POSTCODE_BOUNDARY_UNCERTAINTY_KM)
             ),
         )
+    if kind == "date":
+        # A date carries weight and can refute, so an unreadable one must say
+        # nothing rather than 0.0. `compare_dates` returns 0.0 for unreadable
+        # input to keep faith with callers that pre-check both sides; here the
+        # pair is dropped instead, so a field the record never had in a form we
+        # can read cannot be held against it.
+        field = spec.get("field", "birth_date")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        if (parse_date_value(str(ra[field])) is None
+                or parse_date_value(str(rb[field])) is None):
+            return None
+        return compare_dates(str(ra[field]), str(rb[field]))
     if kind == "type":
         # Type-token agreement ("PHC" vs "HOSPITAL") via the domain vocabulary.
         # Inapplicable (None) unless BOTH names yield a recognised type —

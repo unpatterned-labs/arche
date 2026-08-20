@@ -49,19 +49,24 @@ Scored against the truth the tutorial sets aside:
 | method | linked | TP | FP | precision | recall | F1 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Parrish deterministic | 205 | 205 | 0 | 1.0000 | 0.6973 | 0.8216 |
-| arche, shipped person pack | 233 | 219 | **14** | 0.9399 | 0.7449 | 0.8311 |
-| arche, name + date of birth | 274 | 274 | 0 | 1.0000 | 0.9320 | 0.9648 |
-| arche, name + DOB, review included | 288 | 286 | 2 | 0.9931 | 0.9728 | 0.9828 |
+| arche, person pack *before* 0.4.0a4 | 233 | 219 | **14** | 0.9399 | 0.7449 | 0.8311 |
+| arche, shipped person pack | 266 | 265 | 1 | 0.9962 | 0.9014 | 0.9464 |
+| arche, plus date refutation | 259 | 259 | 0 | 1.0000 | 0.8810 | 0.9367 |
 
-Given a date of birth, arche finds 69 more true pairs than the exact key and
-makes no false matches doing it. The 69 are dropped middle names and keying
-errors: `SARI` for `SORRY`, `HANA` for `HANNA`, `LEE` for `LEELEA`.
+Given a date of birth, arche finds 60 more true pairs than the exact key. They
+are dropped middle names and keying errors: `SARI` for `SORRY`, `HANA` for
+`HANNA`, `LEE` for `LEELEA`.
 
-**Read the middle row before the third one.** Out of the box, arche was less
-precise than the R tutorial. The shipped person pack has no date comparator, so
-it never looked at the birthday it was given, and all 14 of its false positives
-are two different children with the same name. See
-[the gap in the person pack](#the-person-pack-has-no-date-comparator) below.
+**Read the second row.** Until 0.4.0a4 the shipped pack was *less precise than
+the R tutorial*, because it declared no date comparator and never looked at the
+birthday it was handed. All 14 of its false positives were two different
+children with the same name. That benchmark is what put a date in the pack, and
+the row is kept here because a page that quietly drops its own bad results is
+not worth reading.
+
+The fourth row adds `refutes_below`, which the shipped pack deliberately does
+not declare. See [refutation is not on by
+default](#refutation-is-not-on-by-default).
 
 One trap for anyone reproducing this: the tutorial's prose names five
 comparison fields, but its own uniqueness table uses four, without middle name.
@@ -129,40 +134,62 @@ benchmark fails its own precision criterion. Published failing.
 
 Script: `datasets/names_dataops/bench_name_frequency.py`.
 
-## Known gaps
+## Notes on the person pack
 
-### The person pack has no date comparator
+### Refutation is not on by default
 
-`ENTITY_PACKS["person"]` declares name, a token-frequency view of the name,
-`national_id`, `phone`, `email` and `address`. It does not declare a date of
-birth, which is close to the most common identifier in person linkage.
+A date is the clearest case of a signal that refutes better than it confirms:
+two people with the same name and different birthdays are two people, however
+alike the names. `refutes_below` exists for exactly that shape, and on the
+Parrish set it takes precision from 0.9962 to 1.0000.
 
-On the Parrish files, which carry no id, phone, email or address, this makes
-the pack a name-only matcher. It produced 14 false positives, every one of them
-a different child with the same name and a different birthday, and every one
-refutable by comparing the two dates.
+The shipped pack still does not declare it. `test_discriminator_veto.py` guards
+`place`, `person` and `artist` against acquiring refutation as a side effect of
+an unrelated change, on the grounds that each has published numbers a
+refutation would move. Adding a comparator was that unrelated change. Turning
+refutation on is a separate decision with its own measurement, and it is one
+line for a caller who wants it:
 
-A `date` comparator kind is registered and reachable through `comparators=`,
-which is how the notebook gets the third row of the table above. It is not in
-the pack. Before it goes in, `compare_dates` needs three things it does not
-currently have:
+```python
+crosswalk(a, b, entity="person", comparators=[
+    {"field": "name", "kind": "name", "weight": 2.0},
+    {"field": "name", "kind": "tftoken", "weight": 2.0},
+    {"field": "birth_date", "kind": "date", "weight": 2.0,
+     "refutes_below": 0.5},
+])
+```
 
-| input | returns | problem |
-| --- | ---: | --- |
-| `6/28/2016` vs `2016-06-28` | 0.0 | same day, different format |
-| missing vs `2016-06-28` | 0.0 | absence scores as disagreement |
-| `2016-06-28` vs `2016-06-29` | 0.0 | one day apart scores like a year apart |
+It also cost recall on the only set we have (0.8810 against 0.9014), which is
+not an argument either way at one data point.
 
-The second is the dangerous one. Paired with `refutes_below`, a missing date
-becomes a refusal, so a record is punished for a field it never had. On the
-Parrish register 8 rows carry no date, and one of them is a true pair.
+### What the date comparator will not do
 
-The third matters more than it looks. Of the 12 true pairs whose dates
-disagree, several are the near misses you would predict: `2017-01-01` against
-`2016-12-31`, `2018-11-18` against `2018-10-18`.
+Reading is anchored on a four-digit year, so a date without one is unreadable
+by design. `03/04/05` has six meanings and the comparator declines rather than
+guessing:
 
-Adding the comparator changes decisions, so it moves decision ids. It belongs
-in a release with a changelog entry, not a patch.
+| input | result |
+| --- | --- |
+| `6/28/2016` vs `2016-06-28` | 1.0, same day |
+| `6/7/2016` vs `7/6/2016` | 1.0, both ambiguous and could agree |
+| `2017-01-01` vs `2016-12-31` | 0.35, one keying slip |
+| `03/04/05` vs anything | abstains, no four-digit year |
+| missing or unreadable | abstains, never refutes |
+
+Ambiguous dates resolving to agreement is a deliberate asymmetry. It withholds
+refutation where the data does not say what it means, which is the same rule
+`boundary_doubt` applies at administrative edges. It will merge two records that
+a locale-aware reader would separate.
+
+Near-miss grading is a fixed 0.35 for "within a day, or one component out". It
+is not a model of how people mistype dates, and the value was chosen to sit
+below agreement and above the candidate threshold, not fitted to anything.
+
+It also costs something, visible in the single false merge that survives above.
+`JORGE TORRES 2016-02-23` matched a different `JORGE TORRES 2016-10-23`: one
+component out, graded 0.35, so the pair stayed above the threshold rather than
+vanishing as it would have under a flat 0.0. Some near misses are near misses
+between two different people. That is the trade, not a defect.
 
 ## Running these
 

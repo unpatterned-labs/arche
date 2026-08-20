@@ -15,6 +15,8 @@ It opens `http://127.0.0.1:8765` for you.
 tools/arche-studio/
 ├── serve.py      a local server, standard library only
 ├── index.html    the entire interface, one file
+├── state.py      append-only adjudication store (SQLite)
+├── keyring.py    this installation's signing key
 └── README.md     this
 ```
 
@@ -94,6 +96,31 @@ reason, save.
 Packs live in `data/review_packs/`. Any CSV works. The tool guesses which
 columns belong to which side from their prefixes, so a pack with `grid3_name`
 and `hfr_name` renders without configuration.
+
+### Getting a match result in here
+
+`arche.report.review_pack` writes the two files this reads, from any
+`crosswalk` result:
+
+```python
+from arche.report import review_pack
+from arche.resolve import crosswalk
+
+result = crosswalk(register, survey, entity="person", id_field="id")
+review_pack(result, register, survey,
+            out_dir="data/review_packs/register_x_survey",
+            sides=("register", "survey"),   # the column prefixes above
+            entity="person",
+            reveal=True)                    # a masked pack cannot be judged
+```
+
+Restart the server, or just reload: the pack picker rereads the directory. Full
+notes, including what `reveal` costs you, are in
+`docs-site/docs/guides/review-log.md`.
+
+The `manifest.json` it writes beside the CSV is what the integrity digest in
+the header is checked against, and it carries the engine `pins`, so a pack
+opened months later still says which comparator set produced it.
 
 Three things are deliberate:
 

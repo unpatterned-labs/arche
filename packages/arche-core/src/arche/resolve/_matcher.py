@@ -39,6 +39,7 @@ import re
 import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import date as _date
 from functools import cache
 from pathlib import Path
 from typing import Any
@@ -972,14 +973,131 @@ def compare_categories(cat_a: str, cat_b: str) -> float:
     return 1.0 if norm_a == norm_b else 0.0
 
 
+# A date that is one keying slip away from agreement. Sits below the score a
+# genuine agreement earns and below the default `refutes_below`, so a near miss
+# demotes to review rather than confirming — but stays far enough above 0.0 to
+# keep the pair above the candidate threshold, where a human can see it. A flat
+# 0.0 dropped those pairs out of the result entirely.
+DATE_NEAR_MISS = 0.35
+
+
+def parse_date_value(value: str) -> tuple[int, set[tuple[int, ...]]] | None:
+    """Read a date at whatever precision it was written to.
+
+    Returns ``(precision, candidates)``, where precision is 3 for a full date,
+    2 for a year and month, 1 for a bare year, and candidates are tuples of
+    that length. ``None`` means "could not read this", which callers must treat
+    as missing evidence rather than as a disagreement.
+
+    Precision is part of the answer because the same comparator kind serves a
+    date of birth and a publication year. A bare ``1994`` is not a broken date,
+    it is a date known to the year, and comparing it against ``1994-03-02`` at
+    day precision would invent a disagreement out of a difference in how much
+    each source recorded.
+
+    Candidates are a **set** because dates are not always decidable. ``6/7/2016``
+    is the 6th of July to most of the world and the 7th of June in the US, and
+    the string does not say which. Rather than guess a locale, both readings are
+    returned and :func:`compare_dates` treats agreement on either as agreement.
+    That withholds refutation where the data is genuinely ambiguous, the same
+    rule ``boundary_doubt`` applies to administrative edges.
+
+    Reading is anchored on the four-digit year, the only component that
+    identifies itself. The other two are month and day in whichever order makes
+    a real date, so ``2016-06-28``, ``6/28/2016``, ``28/6/2016`` and
+    ``2016-28-06`` all read as the same day with nobody declaring a locale.
+    A date with no four-digit year is deliberately unreadable: ``03/04/05`` has
+    six meanings and guessing one is worse than declining.
+    """
+    digits = re.findall(r"\d+", value or "")
+    if len(digits) == 1 and len(digits[0]) == 8:
+        # A stripped ISO date, YYYYMMDD.
+        digits = [digits[0][:4], digits[0][4:6], digits[0][6:]]
+    if not digits:
+        return None
+    nums = [int(x) for x in digits[:3]]
+    years = [i for i, n in enumerate(nums) if n >= 1000]
+    if len(years) != 1:
+        return None
+    year = nums[years[0]]
+    rest = [n for i, n in enumerate(nums) if i != years[0]]
+
+    if not rest:
+        return 1, {(year,)}
+    if len(rest) == 1:
+        month = rest[0]
+        return (2, {(year, month)}) if 1 <= month <= 12 else None
+
+    out: set[tuple[int, ...]] = set()
+    for month, day in (tuple(rest), tuple(reversed(rest))):
+        try:
+            _date(year, month, day)
+        except ValueError:
+            continue
+        out.add((year, month, day))
+    return (3, out) if out else None
+
+
 def compare_dates(date_a: str, date_b: str) -> float:
-    """Compare two date strings.  Simple normalised exact match for now."""
-    # Strip everything except digits
-    digits_a = re.sub(r"[^0-9]", "", date_a)
-    digits_b = re.sub(r"[^0-9]", "", date_b)
-    if not digits_a or not digits_b:
+    """Compare two dates, tolerating format and one keying slip.
+
+    Returns 1.0 when the two strings can name the same day, 0.0 when they
+    plainly name different ones, and a graded value between for the two error
+    shapes that dominate hand-keyed dates.
+
+    **Format is not disagreement.** The previous implementation compared digit
+    strings, so ``6/28/2016`` scored 0.0 against ``2016-06-28``: the same day,
+    written the way two different systems write it. Any pack that refuted on
+    this would have refuted every true pair between two sources that disagreed
+    about date order, which is most pairs of real sources.
+
+    **Neither is a slip of the hand.** Of the 12 true pairs whose dates
+    disagree in the Parrish linkage set, the shapes are the ones you would
+    predict: ``2017-01-01`` against ``2016-12-31``, ``2018-11-18`` against
+    ``2018-10-18``. Scoring those identically to two unrelated people throws
+    away the distinction a reviewer most wants to see.
+
+    Grading, in order:
+
+    ==========================================  =====
+    the two strings can name the same day        1.0
+    within one day, or one component off         0.35
+    anything else                                0.0
+    ==========================================  =====
+
+    An unreadable date returns 0.0 here, for the callers that pre-check both
+    sides. The comparator kind returns ``None`` instead, so an unreadable date
+    abstains rather than refuting.
+    """
+    parsed_a, parsed_b = parse_date_value(date_a), parse_date_value(date_b)
+    if parsed_a is None or parsed_b is None:
+        # Unreadable on one side. Fall back to the old digit comparison so a
+        # caller passing something exotic keeps the previous behaviour.
+        digits_a = re.sub(r"[^0-9]", "", date_a or "")
+        digits_b = re.sub(r"[^0-9]", "", date_b or "")
+        if not digits_a or not digits_b:
+            return 0.0
+        return 1.0 if digits_a == digits_b else 0.0
+
+    # Compare at the precision of the *less* precise side. A year against a
+    # full date is a difference in what was recorded, not a disagreement.
+    precision = min(parsed_a[0], parsed_b[0])
+    cand_a = {c[:precision] for c in parsed_a[1]}
+    cand_b = {c[:precision] for c in parsed_b[1]}
+    if cand_a & cand_b:
+        return 1.0
+    if precision < 3:
+        # Nothing below a full date is precise enough for "one day out" to
+        # mean anything, and a bare year that disagrees simply disagrees.
         return 0.0
-    return 1.0 if digits_a == digits_b else 0.0
+
+    for y_a, m_a, d_a in cand_a:
+        for y_b, m_b, d_b in cand_b:
+            if abs((_date(y_a, m_a, d_a) - _date(y_b, m_b, d_b)).days) <= 1:
+                return DATE_NEAR_MISS
+            if sum(1 for x, y in ((y_a, y_b), (m_a, m_b), (d_a, d_b)) if x != y) == 1:
+                return DATE_NEAR_MISS
+    return 0.0
 
 
 def compare_isbns(isbn_a: str, isbn_b: str) -> float:

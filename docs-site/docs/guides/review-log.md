@@ -51,6 +51,85 @@ Any CSV works. The tool infers which columns belong to which side from their
 prefixes, so a pack with `grid3_name` and `hfr_name` renders without
 configuration.
 
+## Export a match result as a pack
+
+`review_pack` turns any `crosswalk` result into the two files the studio opens.
+
+```python
+from arche.report import review_pack
+from arche.resolve import crosswalk
+
+result = crosswalk(register, survey, entity="person", id_field="id")
+
+review_pack(
+    result, register, survey,
+    out_dir="data/review_packs/register_x_survey",
+    sides=("register", "survey"),   # column prefixes, and the panel headings
+    entity="person",
+    reveal=True,                    # see below before you copy this
+)
+```
+
+That writes:
+
+```
+data/review_packs/register_x_survey/
+  pack.csv        one row per decision, four blank review columns
+  manifest.json   what was run, and a digest of the decision ids
+```
+
+Start the studio and the pack is in the picker:
+
+```sh
+python tools/arche-studio/serve.py
+```
+
+The CSV columns are `decision_id`, `decision`, `score`, `distinctive_max`, then
+each side under its own prefix, then `evidence` as JSON, then the four columns a
+reviewer fills. `distance_km` is added when the evidence carries one.
+
+By default only `match` and `review` rows are written. A queue of pairs the
+engine already rejected is not a queue. Pass
+`decisions=("match", "review", "no_match")` when you want to audit those too.
+
+### Masked by default, and why you will usually override it
+
+A pack is a file that gets copied around, so it follows the same fail-safe as
+`crosswalk_report`, its HTML sibling: values pass through the masking allowlist,
+and record ids that look like national identifiers are refused outright rather
+than laundered.
+
+A masked pack is also close to useless for the thing a pack is *for*. Nobody can
+judge whether two people are the same when both names are redacted. So
+`reveal=True` is normal here, and the thing to be deliberate about is where the
+file goes afterwards. `data/review_packs/` is the intended home, and the
+manifest records which of the two you produced:
+
+```json
+"disclosure": "revealed (working copy)"
+```
+
+If your row ids are themselves sensitive, a national ID or a BVN used as the
+join key, the export refuses in masked mode. Add a surrogate id column rather
+than revealing to get past it.
+
+### The manifest is the reproducibility record
+
+```json
+{
+  "schema": "arche.review_pack.v1",
+  "entity": "person",
+  "rows": 333,
+  "decisions": {"match": 267, "review": 66},
+  "pins": {"comparators_sha256": "8d1e03d23fa6b8a6", "threshold": 0.7, ...},
+  "decision_ids_sha256": "..."
+}
+```
+
+`pins` says which engine and which comparator set produced the decisions, so a
+pack reviewed months later still says what it was. `decision_ids_sha256` is what
+the studio's integrity digest is checked against.
+
 ## What it will not let you do
 
 **Overwrite the matcher's output.** Saving writes a new `_reviewed.csv` beside

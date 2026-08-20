@@ -103,6 +103,7 @@ def test_person_pack_round_trips_from_yaml_shape():
         "fields": {
             "name": {"role": "identifies", "kind": ["name", "tftoken"],
                      "weight": 2.0},
+            "birth_date": {"role": "identifies", "kind": "date", "weight": 2.0},
             "national_id": {"role": "identifies", "kind": "id", "weight": 3.0},
             "phone": {"role": "identifies", "kind": "phone", "weight": 1.5},
             "email": {"role": "identifies", "kind": "email", "weight": 1.5},
