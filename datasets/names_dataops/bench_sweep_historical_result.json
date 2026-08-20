@@ -1,0 +1,71 @@
+{
+  "benchmark": "historical_50k, precision-matched sweep",
+  "records": 50578,
+  "true_pairs": 303961,
+  "arche_settings": "threshold=0.0, review_margin=0.0 so blocking is the only limit; not a production setting",
+  "splink_settings": "predict at match_probability >= 0.01",
+  "engines": {
+    "splink": {
+      "candidates": 241800,
+      "recall_ceiling": 0.6592,
+      "at_precision": {
+        "0.999": {
+          "recall": 0.5136,
+          "threshold": 0.9867,
+          "predicted": 156254
+        },
+        "0.99": {
+          "recall": 0.6063,
+          "threshold": 0.505,
+          "predicted": 186141
+        },
+        "0.98": {
+          "recall": 0.6267,
+          "threshold": 0.2533,
+          "predicted": 194370
+        },
+        "0.95": {
+          "recall": 0.6482,
+          "threshold": 0.0606,
+          "predicted": 206440
+        },
+        "0.9": {
+          "recall": 0.6566,
+          "threshold": 0.0195,
+          "predicted": 220166
+        }
+      }
+    },
+    "arche": {
+      "candidates": 246903,
+      "recall_ceiling": 0.4878,
+      "at_precision": {
+        "0.999": {
+          "recall": 0.2943,
+          "threshold": 0.7857,
+          "predicted": 89557
+        },
+        "0.99": {
+          "recall": 0.5943,
+          "threshold": 0.6288,
+          "predicted": 182461
+        },
+        "0.98": {
+          "recall": 0.6679,
+          "threshold": 0.5791,
+          "predicted": 207145
+        },
+        "0.95": {
+          "recall": 0.8514,
+          "threshold": 0.4672,
+          "predicted": 272397
+        },
+        "0.9": {
+          "recall": 0.9196,
+          "threshold": 0.3961,
+          "predicted": 310553
+        }
+      }
+    }
+  }
+}

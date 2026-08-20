@@ -27,6 +27,18 @@ name: arche-core release
 # with no tag. A recovery path that verifies before it tags is better than a
 # human running `git tag` and hoping they are on the right commit.
 #
+# The GitHub Release is created last, from the changelog, for the same ordering
+# reason: it is a description of something that already happened, so it comes
+# after the tag, which comes after the upload. Notes are cut out of
+# `CHANGELOG.md` rather than written separately, because a second copy of the
+# release notes is the copy nobody updates. Pre-release versions (`a`, `b`,
+# `rc`) are marked as such, so an alpha never shows as "Latest" to somebody who
+# wanted the stable line.
+#
+# Versions released before that job existed have no Release page. Backfill them
+# with `arche-core-github-release.yml`, which describes an existing release and
+# publishes nothing.
+#
 # The other guards exist because a release is the one workflow where a
 # confusing failure is expensive:
 #   - the version you type must match `_version.py`, so a stale branch cannot
@@ -462,6 +474,115 @@ jobs:
             echo ""
             echo "- Published to PyPI and confirmed installable"
             echo "- Tagged \`arche-core-v${{ needs.verify.outputs.version }}\`"
-            echo ""
-            echo "Remaining by hand: draft the GitHub Release notes from CHANGELOG.md."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  github_release:
+    name: Publish the GitHub Release
+    needs: [verify, build, publish, tag]
+    # Last, and deliberately so. The release is a description of something that
+    # already happened: the tag has to exist before it can point at one, and the
+    # tag only exists once PyPI has accepted the file. Running this earlier would
+    # reintroduce, in a different shape, the failure the whole file is built
+    # around — an announcement of a release that is not there.
+    #
+    # `publish` is skipped on a tag-only run, and a skipped need would otherwise
+    # skip this job too.
+    if: >-
+      !cancelled() && inputs.target == 'pypi'
+      && needs.tag.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # the tag the previous job just pushed
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Cut the notes out of the changelog
+        id: notes
+        env:
+          WANT: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          # The changelog is the release notes. Writing them twice means writing
+          # them differently, and the second copy is the one nobody updates.
+          python - <<'PY'
+          import os, pathlib, re, sys
+
+          v = os.environ["WANT"]
+          text = pathlib.Path("packages/arche-core/CHANGELOG.md").read_text(encoding="utf-8")
+
+          # From this version's heading to the next version heading, whatever it
+          # is. Anchored on `## [` so a `### ` subsection can never end a section.
+          m = re.search(
+              rf"^## \[{re.escape(v)}\][^\n]*\n(.*?)(?=^## \[|\Z)",
+              text, re.M | re.S,
+          )
+          if not m:
+              sys.exit(f"::error::CHANGELOG.md has no '## [{v}]' section to cut notes from.")
+          body = m.group(1).strip()
+          if len(body) < 40:
+              sys.exit(
+                  f"::error::The '[{v}]' changelog section is {len(body)} characters. "
+                  "A release announced with empty notes is one nobody can read later."
+              )
+          pathlib.Path("NOTES.md").write_text(body + "\n", encoding="utf-8")
+          print(f"{len(body)} characters of notes, {body.count(chr(10)) + 1} lines.")
+          PY
+
+      - name: Is this a prerelease
+        id: kind
+        env:
+          WANT: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          # PEP 440 pre-release segments. Every arche-core release so far is one
+          # of these, and marking them correctly is what stops GitHub showing an
+          # alpha as "Latest" to somebody who just wants the stable line.
+          if printf '%s' "$WANT" | grep -Eq '(a|b|rc)[0-9]+$'; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create it
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ needs.verify.outputs.version }}
+          PRE: ${{ steps.kind.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          TAG="arche-core-v$V"
+
+          # Re-running a recovery is normal in this workflow, so an existing
+          # release is reported rather than treated as a failure. It is not
+          # overwritten either: notes somebody may have edited by hand are not
+          # this job's to replace.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::A GitHub Release already exists for $TAG. Left untouched."
+            echo "- GitHub Release for \`$TAG\` already existed; not modified." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          ARGS=(--title "arche-core v$V" --notes-file NOTES.md --verify-tag)
+          [ "$PRE" = "true" ] && ARGS+=(--prerelease)
+
+          # The same two files that went to PyPI, attached to the release, so
+          # the artifact is retrievable even if an index entry is ever yanked.
+          gh release create "$TAG" "${ARGS[@]}" \
+            "dist/arche_core-${V}-py3-none-any.whl" \
+            "dist/arche_core-${V}.tar.gz"
+
+          URL=$(gh release view "$TAG" --json url --jq .url)
+          echo "Created $URL"
+          {
+            echo "- GitHub Release: $URL"
+            echo "- Marked prerelease: \`$PRE\`"
+            echo "- Notes taken from the \`[$V]\` section of CHANGELOG.md"
           } >> "$GITHUB_STEP_SUMMARY"

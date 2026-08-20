@@ -18,7 +18,6 @@ cleared the gate for any two facilities both ending "Health Post".
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import TokenFrequencyTable
 from arche.resolve._gate import (
     DISTINCTIVE_FLOOR,
@@ -203,3 +202,44 @@ class TestPurelyAdditive:
         assert tf.weighted_token_sim(a, b, orthography="hausa") == pytest.approx(
             tf.weighted_token_sim(a, b)
         )
+
+
+class TestReachableFromACrosswalkSpec:
+    """Wired into `crosswalk` via the comparator spec, not just callable.
+
+    `orthography` was opt-in on `shared_name_distinctiveness` and
+    `weighted_token_sim` and defaulted to None on both, so no pack ever
+    reached a `crosswalk` call. The measured gain in the place benchmark came
+    from binding the comparator by hand, which meant the shipped path did not
+    have it. Declaring it on the comparator spec is what closes that.
+    """
+
+    A = "Muhammadu Bello Clinic"
+    B = "Muhammad Bello Clinic"
+
+    def _spec(self, orthography):
+        tftoken = {"field": "name", "kind": "tftoken", "weight": 2.0}
+        if orthography:
+            tftoken["orthography"] = orthography
+        return [{"field": "name", "kind": "placename", "weight": 2.0}, tftoken]
+
+    def _edge(self, orthography):
+        from arche.resolve import crosswalk
+        res = crosswalk([{"id": "a", "name": self.A}], [{"id": "b", "name": self.B}],
+                        id_field="id", comparators=self._spec(orthography))
+        return res["matches"][0] if res["matches"] else None
+
+    def test_the_pack_changes_the_token_score(self):
+        plain, folded = self._edge(None), self._edge("hausa")
+        assert plain["evidence"]["name_tftoken"] < folded["evidence"]["name_tftoken"]
+
+    def test_and_that_is_enough_to_change_the_decision(self):
+        """`Muhammadu` and `Muhammad` are one name spelled two ways."""
+        assert self._edge(None)["decision"] == "review"
+        assert self._edge("hausa")["decision"] == "match"
+
+    def test_absent_by_default(self):
+        """Every published pack number was measured without it."""
+        from arche.resolve import ENTITY_PACKS
+        for name, pack in ENTITY_PACKS.items():
+            assert not any("orthography" in spec for spec in pack), name

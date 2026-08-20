@@ -31,6 +31,12 @@ Two lists of dictionaries, one line.
 ```python
 from arche.resolve import crosswalk
 
+# Two rows each, standing in for the full exports.
+osm_rows  = [{"name": "Roundhay School", "lat": "53.8386", "lon": "-1.4996"},
+             {"name": "Allerton High School", "lat": "53.8452", "lon": "-1.5410"}]
+gias_rows = [{"name": "Roundhay School", "lat": "53.8387", "lon": "-1.4995"},
+             {"name": "Allerton High School", "lat": "53.8451", "lon": "-1.5412"}]
+
 osm  = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in osm_rows]
 gias = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in gias_rows]
 

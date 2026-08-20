@@ -74,6 +74,7 @@ Comparator kinds: `name`, `placename` (lexicon-free), `id`, `phone`, `email`, `a
 
 Returns:
 
+<!-- docs-test: fragment -->
 ```python
 {
   "matches": [{"a_id", "b_id", "score", "decision",      # "match" | "review"

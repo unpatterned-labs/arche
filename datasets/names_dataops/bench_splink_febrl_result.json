@@ -1,0 +1,51 @@
+{
+  "benchmark": "Febrl 4, Splink's published recipe reproduced, arche beside it",
+  "splink_published": {
+    "clusters_of_2": 4959,
+    "clusters_of_1": 82,
+    "threshold_match_probability": 0.99
+  },
+  "splink_version": "4.0.16",
+  "true_pairs": 5000,
+  "note": "Splink is run close to its published example rather than tuned; a practitioner would likely do better. Febrl is synthetic, so neither number is evidence about a real register.",
+  "arms": [
+    {
+      "engine": "splink (with soc_sec_id)",
+      "true_merges": 4952,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.9904,
+      "f1": 0.9952,
+      "clusters_of_2": 4952,
+      "clusters_of_1": 96,
+      "edges_above_0.2": 4995
+    },
+    {
+      "engine": "arche (with soc_sec_id)",
+      "true_merges": 4473,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.8946,
+      "f1": 0.9444
+    },
+    {
+      "engine": "splink (without soc_sec_id)",
+      "true_merges": 4768,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.9536,
+      "f1": 0.9762,
+      "clusters_of_2": 4768,
+      "clusters_of_1": 464,
+      "edges_above_0.2": 4951
+    },
+    {
+      "engine": "arche (without soc_sec_id)",
+      "true_merges": 4190,
+      "false_merges": 24,
+      "precision": 0.9943,
+      "recall": 0.838,
+      "f1": 0.9095
+    }
+  ]
+}

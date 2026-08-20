@@ -11,11 +11,16 @@ Link two record lists. Supply one of the following:
 ```python
 from arche.resolve import crosswalk
 
-result = crosswalk(list_a, list_b, entity="place")
+list_a = [{"id": "a1", "name": "Kano Central PHC", "lat": "12.0022", "lon": "8.5920"}]
+list_b = [{"id": "b1", "name": "Kano Central Primary Health Centre",
+           "lat": "12.0024", "lon": "8.5918"}]
+
+result = crosswalk(list_a, list_b, entity="place", id_field="id")
 ```
 
 The result has this shape:
 
+<!-- docs-test: fragment -->
 ```python
 {
     "matches": [
@@ -72,6 +77,7 @@ from arche.sign import generate_keypair
 
 keypair = generate_keypair()
 signed = sign_edges(result, private_key=keypair.private_key, kid=keypair.did_key)
+assert signed
 ```
 
 Read the source and tests for the complete current parameter contract. Alpha

@@ -37,7 +37,8 @@ The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (
     not consult your declaration. Two records sharing a declared `imo` resolve
     correctly and the gate clears, but the decision carries `entity_id: None`:
 
-    ```python
+    <!-- docs-test: fragment -->
+```python
     dec = resolve.pairwise(a, b, decl=fisheries, issuer_key=KEY)
     dec.identity     # 'same_entity'
     dec.score        # 1.0
@@ -95,6 +96,7 @@ arche schema gen fisheries.decl.yaml --format anthropic   # or openai | json-sch
 
 The generated schema sets `additionalProperties: false` (a model cannot emit fields outside your declaration) and `required: []` on purpose: a *required* identifier is an instruction to a language model to invent one, and missing fields already route to review. Validate whatever comes back:
 
+<!-- docs-test: fragment -->
 ```python
 ref, violations = decl.validate_record(llm_output)   # names any undeclared field
 ```

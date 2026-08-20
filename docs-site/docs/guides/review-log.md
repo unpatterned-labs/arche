@@ -3,7 +3,7 @@
 `arche studio` is a small local tool with two jobs: decide whether two records
 are the same thing, and walk an adjudication pack marking outcomes.
 
-It is three files and the standard library. No `pip install`, no framework, no
+It is a handful of files and the standard library. No `pip install`, no framework, no
 network access.
 
 ```bash
@@ -58,6 +58,11 @@ configuration.
 ```python
 from arche.report import review_pack
 from arche.resolve import crosswalk
+
+register = [{"id": "1", "name": "Amara Patel", "birth_date": "2016-06-28"},
+            {"id": "2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
+survey   = [{"id": "1", "name": "Amara Patel", "birth_date": "6/28/2016"},
+            {"id": "2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
 
 result = crosswalk(register, survey, entity="person", id_field="id")
 

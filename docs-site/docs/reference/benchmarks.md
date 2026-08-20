@@ -74,6 +74,112 @@ The five-field key gives 174, not 205.
 
 Notebook: `examples/notebooks/15_parrish_record_linkage.ipynb`.
 
+### Splink, on Febrl 4
+
+[Splink](https://moj-analytical-services.github.io/splink/) is the closest thing
+to a standard in probabilistic record linkage, and it does inference better than
+arche does: Fellegi-Sunter with EM-trained m and u parameters, term frequency
+adjustments, the full apparatus. arche's claim is not that it estimates better,
+it is that most of the available gain sits in what the records look like before
+any estimator sees them. Handing a better estimator the same records is the way
+to test that.
+
+Reproduction first. Splink's published Febrl 4 example reports **4,959 clusters
+of size 2** at a 0.99 match probability, and no accuracy figures. Running its
+recipe here gives **4,952**, 0.14% apart. The precision and recall below are
+computed here, identically for both engines, against the same complete truth.
+
+Both engines are run twice, because Splink's example blocks on and compares
+`soc_sec_id`, a near-unique synthetic identifier. A linkage that has one is a
+much easier problem than one that does not.
+
+| engine | true | false | precision | recall | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Splink, with `soc_sec_id` | 4,952 | 0 | 1.0000 | 0.9904 | 0.9952 |
+| arche, with `soc_sec_id` | 4,473 | 0 | 1.0000 | 0.8946 | 0.9444 |
+| Splink, without | 4,768 | 0 | 1.0000 | 0.9536 | 0.9762 |
+| arche, without | 4,190 | 24 | 0.9943 | 0.8380 | 0.9095 |
+
+**Splink wins both arms, and it is not close.** Same precision or better, and
+roughly ten points more recall. On the harder arm arche also makes 24 false
+merges where Splink makes none.
+
+One thing is worth adding, not as mitigation but because the two engines are
+answering slightly different questions. arche's `match` is an auto-merge and
+everything ambiguous goes to `review` for a human. Counting what it surfaces
+rather than what it merges outright:
+
+| | auto-merged | surfaced (match + review) |
+| --- | ---: | ---: |
+| arche, with `soc_sec_id` | 0.8946 | 0.9692 |
+| arche, without | 0.8380 | 0.9724 |
+
+So most of the recall gap is pairs arche declined to decide rather than pairs it
+missed. That is the behaviour the distinctive-signal gate is for, and on this
+dataset it is costing more than it saves: Splink reaches 0.9904 with perfect
+precision and no queue at all.
+
+**What this does not show.** Febrl is synthetic, its errors came from a
+generator with a model of how people mistype, and Splink was run close to its
+published example rather than tuned by someone who knows it well. A tuned Splink
+would likely do better still. This is not a claim that one tool beats another in
+general; it is the same task run both ways with the code to check it.
+
+Script: `datasets/names_dataops/bench_splink_febrl.py`.
+
+### Splink, on `historical_50k`
+
+Febrl's records were invented by a generator and then corrupted by it. This is
+the harder test: 50,578 records describing 5,156 real UK historical figures from
+Wikidata, with errors introduced afterwards. The names, places and occupations
+are real and distributed the way real ones are, which is the part a generator
+cannot fake and the part arche's thesis is about.
+
+**Not ONS, and why.** ONS runs Splink in production on the 2021 Census, the
+Business Index and the Demographic Index. None of that data is public and no
+accuracy figures on it are published, so there is nothing there to reproduce.
+This is the closest public substitute.
+
+Splink publishes no accuracy number here either; its `deduplicate_50k_synthetic`
+example shows charts only. So what is reproduced is the recipe, its ten blocking
+rules and its comparisons, and the figures below are computed here for both
+engines against the `cluster` column both are blind to. Scored on **pairs**, not
+clusters, so the transitive closure each tool applies afterwards is not what is
+being measured. 303,961 true pairs.
+
+| engine | pairs | precision | recall | F1 | time |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Splink, its own recipe | 153,561 | 0.9992 | 0.5048 | 0.6707 | 20s |
+| arche, shipped `person` pack | 89,035 | 0.9803 | 0.2872 | 0.4442 | 111s |
+| arche, same five fields | 68,031 | 0.9977 | 0.2233 | 0.3649 | 109s |
+
+**Splink wins again, by more than on Febrl, and it is five times faster.**
+
+Two arche arms because Splink is given name, date of birth, postcode, birth
+place and occupation, and the shipped pack has comparators for the first two
+only. Handing arche the same five columns raises its precision to 0.9977 and
+*lowers* its recall to 0.2233. The extra fields tighten it rather than help it,
+which is worth sitting with: more evidence made the engine more conservative,
+not more accurate.
+
+Counting what arche surfaces rather than what it merges:
+
+| | auto recall | surfaced recall | surfaced precision |
+| --- | ---: | ---: | ---: |
+| shipped pack | 0.2872 | 0.4418 | 0.8158 |
+| same five fields | 0.2233 | 0.3725 | 0.9678 |
+
+Even surfacing everything it is unsure about, arche reaches 0.4418 against
+Splink's 0.5048 at near-perfect precision and with no queue for anyone to work.
+
+**What this does not show.** Splink is run close to its published recipe, and
+both engines use a fixed decision point rather than a swept threshold: Splink at
+0.99 match probability, arche at its own defaults. Splink's recall rises at a
+lower threshold and its precision falls. This is one operating point each, not a
+curve, and a tuned Splink would do better still.
+
+Script: `datasets/names_dataops/bench_splink_historical.py`.
+
 ### Python `recordlinkage`, Febrl 4
 
 Febrl 4 is synthetic, 5,000 by 5,000, with complete truth, distributed with the
@@ -134,6 +240,37 @@ benchmark fails its own precision criterion. Published failing.
 
 Script: `datasets/names_dataops/bench_name_frequency.py`.
 
+## The boundary discount does nothing at its default, on this data
+
+`compare_containment` discounts a state-level disagreement by distance, so two
+records either side of a line are not refuted on the strength of a boundary
+file's positional error. The ramp behaves as specified, checked directly:
+
+| separation | score |
+| ---: | ---: |
+| 0.00 km | 0.2000 |
+| 0.50 km | 0.1000 |
+| 0.99 km | 0.0020 |
+| 1.00 km | 0.0000 |
+| 5.00 km | 0.0000 |
+
+The part worth publishing is what happens when it meets real records. On a
+400-pair sample of same-name schools in different Nigerian states, **no pair
+falls inside the 1.0 km band**, so at the shipped default the discount changes
+no decision at all. Widening the band to 5 km lets one pair in, and that pair
+becomes a false merge.
+
+So the feature is currently inert rather than beneficial. That is not an
+argument for widening the band: the one pair a wider band admits is one the
+labels say is wrong. It is an argument that the case the discount was built for,
+a genuine sub-kilometre cross-boundary pair, is rare enough that this dataset
+does not contain a clean example, and the comparator remains unproven on real
+data in the direction it was meant to help.
+
+The counts above come from an ad-hoc sample rather than the committed benchmark,
+which groups names slightly differently and does contain one sub-kilometre pair.
+Treat the direction as the finding, not the exact number.
+
 ## Notes on the person pack
 
 ### Refutation is not on by default
@@ -151,16 +288,81 @@ refutation on is a separate decision with its own measurement, and it is one
 line for a caller who wants it:
 
 ```python
-crosswalk(a, b, entity="person", comparators=[
+from arche.resolve import crosswalk
+
+REFUTING = [
     {"field": "name", "kind": "name", "weight": 2.0},
     {"field": "name", "kind": "tftoken", "weight": 2.0},
     {"field": "birth_date", "kind": "date", "weight": 2.0,
      "refutes_below": 0.5},
-])
+]
+
+# Same name, different birthday: two people, however alike the names.
+res = crosswalk(
+    [{"id": "1", "name": "Angel Gonzalez", "birth_date": "2018-08-16"}],
+    [{"id": "2", "name": "Angel Gonzalez", "birth_date": "2017-08-30"}],
+    entity="person", id_field="id", comparators=REFUTING,
+)
+assert [e["decision"] for e in res["matches"]] != ["match"]
 ```
 
-It also cost recall on the only set we have (0.8810 against 0.9014), which is
-not an argument either way at one data point.
+It also cost recall on that set (0.8810 against 0.9014), which is not an
+argument either way at one data point.
+
+**A second opinion, on NCVR.** The North Carolina voter register was the
+obvious second dataset, and the result is that refutation does nothing there:
+
+| arm | merged | true | false | precision | recall | refuted |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| name only | 741 | 705 | 36 | 0.9514 | 0.4700 | 0 |
+| + year, weighted | 1502 | 1458 | 44 | 0.9707 | 0.9720 | 0 |
+| + year, refuting | 1502 | 1458 | 44 | 0.9707 | 0.9720 | **0** |
+
+The two date arms are identical to the digit, at every assumed error rate. The
+last column says why: **not one pair was ever refuted.** A weight of 2.0 already
+drops a year-disagreeing pair below the candidate threshold, so refutation never
+gets a pair to act on, and declaring it is a no-op.
+
+Contrast Parrish, where 46 pairs were refuted, **14 of them scoring 0.35**. That
+is the near-miss band, and it is where refutation earns its keep: a pair whose
+names match exactly and whose dates are one keying slip apart stays alive on the
+strength of the names, and only refutation demotes it. A bare year has no such
+band. It scores 1.0 or 0.0 and nothing in between, so the case refutation is
+best at cannot arise.
+
+Two cautions about reading NCVR here at all. Its negatives had to be rebuilt:
+`bench_name_frequency.py` selects them for *disagreeing on birth year*, so
+measuring a date comparator against them would have been circular, and this
+script drops that condition. And NCVR carries no date of birth, only a year, so
+it tests refutation on a field roughly a hundred times less selective than the
+one the pack declares.
+
+**The third opinion, on Febrl 4, settles it.** Febrl is the dataset NCVR could
+not be: full dates, corruption introduced by the generator rather than assumed
+by the script, and complete truth. Of its 5,000 true pairs the comparator scores
+4,469 at 1.0, **52 at 0.35**, and 479 at 0.0. The 0.35 row is the near-miss band
+refutation exists to act on, and here it is populated.
+
+| arm | true | false | precision | auto-resolved | refuted |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| name + address | 3,285 | 282 | 0.9209 | 0.6570 | 0 |
+| + date, weighted | 4,190 | 24 | 0.9943 | 0.8380 | 0 |
+| + date, refuting | 4,066 | 24 | 0.9941 | 0.8132 | **307** |
+
+Refutation fires 307 times here, so this is a real test rather than a no-op. It
+costs **124 true merges and prevents not one false merge**: the false count is
+24 either way and precision is unchanged to three decimals. The weight has
+already excluded everything refutation would have caught, and all refutation
+adds is demoting correct matches to a queue.
+
+Note also what the date comparator itself is worth on this arm: **282 false
+merges down to 24**, precision 0.9209 to 0.9943. Adding it to the pack was the
+right call. Adding refutation on top of it is not.
+
+**Conclusion: no change.** The shipped pack declares a date comparator and no
+refutation. Three datasets: a small precision gain on Parrish, nothing at all on
+NCVR, and a clear loss on Febrl. Scripts:
+`bench_date_refutation.py` (NCVR) and `bench_febrl_dates.py` (Febrl).
 
 ### What the date comparator will not do
 

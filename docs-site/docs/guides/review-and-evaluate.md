@@ -50,7 +50,18 @@ evidence. Only an authorised reviewer may set `same_entity` or `different`.
 F1, review queue size, surfaced recall, and false merges.
 
 ```python
+from arche.resolve import crosswalk
 from arche.resolve.metrics import evaluate
+
+result = crosswalk(
+    [{"id": "a1", "name": "Roundhay School", "lat": "53.8386", "lon": "-1.4996"}],
+    [{"id": "b1", "name": "Roundhay School", "lat": "53.8387", "lon": "-1.4995"}],
+    entity="place", id_field="id",
+)
+
+# Pairs you already know the answer for. The matcher never sees them.
+labelled_same_entity_pairs = [("a1", "b1")]
+labelled_different_pairs = []
 
 metrics = evaluate(
     result["matches"],

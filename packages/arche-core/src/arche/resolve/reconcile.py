@@ -303,7 +303,12 @@ def _field_sim(
         a_val, b_val = _text_values(spec, ra, rb, field)
         if not a_val or not b_val:
             return None
-        return tf.weighted_token_sim(a_val, b_val)
+        # `orthography` names a spelling pack ("hausa"), so two renderings of
+        # one name count as the same token rather than two rare ones. Opt-in
+        # per comparator, like `strip_type`: it changes what agreement means,
+        # and therefore every number a pack has published.
+        return tf.weighted_token_sim(
+            a_val, b_val, orthography=spec.get("orthography"))
     field = spec["field"]
     if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
         return None
@@ -436,7 +441,10 @@ def _score_pair(
                     # ("Kalahaddi"/"Kalahadi") shares no literal token and
                     # would otherwise be judged on `health` and `post`.
                     rarity = max(
-                        shared_name_distinctiveness(a_val, b_val, tf),
+                        shared_name_distinctiveness(
+                            a_val, b_val, tf,
+                            orthography=spec.get("orthography"),
+                        ),
                         distinctive_residual(a_val, b_val, tf),
                     )
                     contribution = min(contribution, rarity)

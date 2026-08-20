@@ -1,0 +1,44 @@
+{
+  "benchmark": "splink historical_50k deduplication, arche beside it",
+  "why_not_ons": "ONS runs Splink on the 2021 Census, the Business Index and the Demographic Index, none of it public and no accuracy published, so there is nothing to reproduce",
+  "splink_publishes_no_accuracy_here": "its deduplicate_50k_synthetic example shows charts only; the recipe is reproduced, the numbers are computed here for both engines",
+  "scored_on": "pairs, not clusters, so transitive closure is not measured",
+  "records": 50578,
+  "entities": 5156,
+  "true_pairs": 303961,
+  "splink_version": "4.0.16",
+  "arms": [
+    {
+      "engine": "splink (its own recipe)",
+      "predicted_pairs": 153561,
+      "true_pairs_found": 153440,
+      "false_pairs": 121,
+      "precision": 0.9992,
+      "recall": 0.5048,
+      "f1": 0.6707,
+      "edges_above_0.5": 186120,
+      "threshold": 0.99,
+      "seconds": 19.5
+    },
+    {
+      "engine": "arche (shipped person pack)",
+      "predicted_pairs": 89035,
+      "true_pairs_found": 87283,
+      "false_pairs": 1752,
+      "precision": 0.9803,
+      "recall": 0.2872,
+      "f1": 0.4442,
+      "seconds": 111.0
+    },
+    {
+      "engine": "arche (same five fields)",
+      "predicted_pairs": 68031,
+      "true_pairs_found": 67873,
+      "false_pairs": 158,
+      "precision": 0.9977,
+      "recall": 0.2233,
+      "f1": 0.3649,
+      "seconds": 108.6
+    }
+  ]
+}

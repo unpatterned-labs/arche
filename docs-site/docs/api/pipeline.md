@@ -35,6 +35,7 @@ print(result.redacted_text)
 
 ## `Pipeline`
 
+<!-- docs-test: fragment -->
 ```python
 class Pipeline:
     def __init__(
@@ -99,6 +100,7 @@ pipeline.describe()
 
 ## `Result`
 
+<!-- docs-test: fragment -->
 ```python
 @dataclass
 class Result:
@@ -158,6 +160,7 @@ This is the same pattern the cookbooks use, see [Nigerian fintech KYC](../cookbo
 
 ## `Detection`
 
+<!-- docs-test: fragment -->
 ```python
 @dataclass
 class Detection:

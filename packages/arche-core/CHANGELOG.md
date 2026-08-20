@@ -2,14 +2,34 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [0.4.0a4] — 2026-08-19
+## [0.4.0a5] — 2026-08-20
 
-**Benchmarks, documentation, and two changes to how records are matched.**
+**A date comparator in the `person` pack, and a way to export a match result
+for review.**
 
-`0.4.0a3` was prepared and never shipped. It was scoped and written up as a
-documentation release, and then a matching change landed in the same tree. Its
-changelog would have been false, so the version was skipped rather than
-rewritten. It was never published and never tagged, so nothing points at it.
+### Fixed — `orthography` now reaches `crosswalk`
+
+An orthography pack describes how one language spells one name several ways, so
+`Muhammadu` and `Muhammad` count as one token rather than two rare ones. It was
+opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`
+and defaulted to `None` on both, and nothing threaded it through `reconcile`. No
+pack ever reached a `crosswalk` call, so the gain measured in the place benchmark
+came from binding the comparator by hand and the shipped path did not have it.
+
+Declare it on the comparator, alongside `strip_type` and `strip_qualifier`:
+
+```python
+{"field": "name", "kind": "tftoken", "weight": 2.0, "orthography": "hausa"}
+```
+
+It reaches both places that consult it: the token similarity, and the
+distinctive-signal gate. On `Muhammadu Bello Clinic` against `Muhammad Bello
+Clinic` that moves the token score from 0.380 to 0.645 and the decision from
+`review` to `match`.
+
+**No shipped pack declares it**, and there is a test asserting that. Every
+published pack number was measured without it, and turning it on for a pack is a
+separate decision with its own measurement. Nothing moves unless you ask.
 
 ### Added — `arche.report.review_pack`, a crosswalk result as an adjudication pack
 
@@ -127,6 +147,15 @@ format nobody promised.
 every person decision id changes. Packs that do not declare a `date` comparator
 are unaffected. The `pairwise` path also sees the new grading, so a pair whose
 dates are one slip apart scores differently there too.
+
+## [0.4.0a4] — 2026-08-19
+
+**Benchmarks, documentation, and one change to how places are matched.**
+
+`0.4.0a3` was prepared and never shipped. It was scoped and written up as a
+documentation release, and then a matching change landed in the same tree. Its
+changelog would have been false, so the version was skipped rather than
+rewritten. It was never published and never tagged, so nothing points at it.
 
 ### Changed — administrative disagreement is now weighed against distance
 

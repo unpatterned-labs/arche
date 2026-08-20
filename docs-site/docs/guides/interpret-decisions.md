@@ -20,6 +20,15 @@ probability of being the same entity.
 Inspect the evidence instead:
 
 ```python
+from arche.resolve import crosswalk
+
+result = crosswalk(
+    [{"id": "a", "name": "Kano Central Primary Health Centre",
+      "lat": "12.0022", "lon": "8.5920"}],
+    [{"id": "b", "name": "Kano Central PHC", "lat": "12.0024", "lon": "8.5918"}],
+    entity="place", id_field="id",
+)
+
 for edge in result["matches"]:
     print(edge["decision"])
     print(edge["evidence"])

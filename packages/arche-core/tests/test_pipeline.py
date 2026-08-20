@@ -56,4 +56,7 @@ def test_version():
     # which would have made its changelog false. Skipped rather than rewritten,
     # so the version number and the claim stay in step. Nothing referenced it:
     # it was never on the index and never tagged.
-    assert __version__ == "0.4.0a4"
+    #
+    # 0.4.0a4 shipped and is on the index. 0.4.0a5 carries what landed after it:
+    # the date comparator in the `person` pack, and `report.review_pack`.
+    assert __version__ == "0.4.0a5"

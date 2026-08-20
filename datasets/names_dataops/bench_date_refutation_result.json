@@ -1,0 +1,129 @@
+{
+  "benchmark": "NCVR, refutation on a birth YEAR (not a date of birth)",
+  "what_it_cannot_measure": "refutation on a date of birth: NCVR carries only birth_year, so the near-miss grading a full date gets never fires, and a year is far less selective than a date",
+  "negatives_rebuilt": "the existing benchmark selects negatives for disagreeing on birth year, which would make this circular; here the condition is dropped",
+  "positive_error_rate": "swept, not chosen; NCVR cannot supply the real one",
+  "seed": 20260816,
+  "arms": {
+    "0.0|name only": {
+      "merged": 741,
+      "true_merges": 705,
+      "false_merges": 36,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9514,
+      "recall": 0.47,
+      "f1": 0.6292
+    },
+    "0.0|+ year, weighted": {
+      "merged": 1502,
+      "true_merges": 1458,
+      "false_merges": 44,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9707,
+      "recall": 0.972,
+      "f1": 0.9714
+    },
+    "0.0|+ year, refuting": {
+      "merged": 1502,
+      "true_merges": 1458,
+      "false_merges": 44,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9707,
+      "recall": 0.972,
+      "f1": 0.9714
+    },
+    "0.02|name only": {
+      "merged": 743,
+      "true_merges": 706,
+      "false_merges": 37,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9502,
+      "recall": 0.4707,
+      "f1": 0.6295
+    },
+    "0.02|+ year, weighted": {
+      "merged": 1474,
+      "true_merges": 1432,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9715,
+      "recall": 0.9547,
+      "f1": 0.963
+    },
+    "0.02|+ year, refuting": {
+      "merged": 1474,
+      "true_merges": 1432,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9715,
+      "recall": 0.9547,
+      "f1": 0.963
+    },
+    "0.05|name only": {
+      "merged": 743,
+      "true_merges": 708,
+      "false_merges": 35,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9529,
+      "recall": 0.472,
+      "f1": 0.6313
+    },
+    "0.05|+ year, weighted": {
+      "merged": 1427,
+      "true_merges": 1385,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9706,
+      "recall": 0.9233,
+      "f1": 0.9464
+    },
+    "0.05|+ year, refuting": {
+      "merged": 1427,
+      "true_merges": 1385,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9706,
+      "recall": 0.9233,
+      "f1": 0.9464
+    },
+    "0.1|name only": {
+      "merged": 753,
+      "true_merges": 714,
+      "false_merges": 39,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.9482,
+      "recall": 0.476,
+      "f1": 0.6338
+    },
+    "0.1|+ year, weighted": {
+      "merged": 1353,
+      "true_merges": 1311,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.969,
+      "recall": 0.874,
+      "f1": 0.919
+    },
+    "0.1|+ year, refuting": {
+      "merged": 1353,
+      "true_merges": 1311,
+      "false_merges": 42,
+      "conflicts_flagged": 0,
+      "positives": 1500,
+      "precision": 0.969,
+      "recall": 0.874,
+      "f1": 0.919
+    }
+  }
+}

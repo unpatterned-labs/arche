@@ -1,0 +1,43 @@
+{
+  "benchmark": "Febrl 4, refutation on a full date of birth",
+  "why_this_dataset": "full dates, generator-introduced corruption at a rate the data supplies rather than the script assuming, and complete truth",
+  "what_it_is_not": "synthetic; the errors match a generator's model of typing",
+  "soc_sec_id": "excluded on purpose; with it precision is already 1.0000",
+  "true_pair_date_scores": {
+    "0.0": 479,
+    "0.35": 52,
+    "1.0": 4469
+  },
+  "arms": [
+    {
+      "arm": "name + address",
+      "pairs_truth": 5000,
+      "true_merges": 3285,
+      "false_merges": 282,
+      "precision": 0.9209,
+      "auto_resolved": 0.657,
+      "surfaced": 0.9486,
+      "conflicts_flagged": 0
+    },
+    {
+      "arm": "+ date, weighted",
+      "pairs_truth": 5000,
+      "true_merges": 4190,
+      "false_merges": 24,
+      "precision": 0.9943,
+      "auto_resolved": 0.838,
+      "surfaced": 0.9724,
+      "conflicts_flagged": 0
+    },
+    {
+      "arm": "+ date, refuting",
+      "pairs_truth": 5000,
+      "true_merges": 4066,
+      "false_merges": 24,
+      "precision": 0.9941,
+      "auto_resolved": 0.8132,
+      "surfaced": 0.9724,
+      "conflicts_flagged": 307
+    }
+  ]
+}

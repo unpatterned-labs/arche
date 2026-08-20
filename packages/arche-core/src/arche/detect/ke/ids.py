@@ -1,10 +1,7 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""Kenyan identifier detectors - National ID (Stage 1 base).
-
-Per PRD §4.2 FR-DETECT-4. Future expansion (Day 9 / Week 2): KRA PIN,
-NHIF, passport with per-identifier validators.
+"""KRA PIN, NHIF, passport with per-identifier validators.
 
 Public API::
 

@@ -40,6 +40,11 @@ theme:
 # Alpha documentation is intentionally small. The excluded pages remain in the
 # repository as working material, but do not form part of the public product
 # promise until their examples and claims have been revalidated.
+# Gitignore syntax, so a `!` line publishes one page back out of an excluded
+# directory. The bar for adding a `!` line is that every Python example on the
+# page executes: `test_docs_examples.py` parses this list and runs the examples
+# on whatever is published, so publishing a page puts it under test in the same
+# commit.
 exclude_docs: |
   about/
   api/
@@ -48,6 +53,10 @@ exclude_docs: |
   cookbooks/
   how-to/
   tutorials/
+  !api/addr.md
+  !how-to/match-african-names.md
+  !how-to/read-crosswalk-output.md
+  !tutorials/how-it-works.md
 
 extra_css:
   - stylesheets/extra.css
@@ -55,7 +64,20 @@ extra_css:
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  # The custom fence is what makes ```mermaid a diagram rather than a code
+  # block. Without it the diagrams ship as source, which is what was happening
+  # to the one in about/the-whole-picture.md.
+  #
+  # Note what this costs: Material loads mermaid from `unpkg.com/mermaid@11` at
+  # runtime rather than bundling it, so a page with a diagram makes a
+  # third-party request and shows nothing useful offline. That is the site's
+  # second external dependency after the fonts. To remove it, vendor
+  # mermaid.min.js under docs/javascripts/ and add it to `extra_javascript`.
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
@@ -72,20 +94,25 @@ nav:
     - Installation: getting-started/installation.md
     - Resolve two lists: getting-started/quickstart.md
   - Guides:
-    - Reconcile health facilities: guides/facility-reconciliation.md
-    - Compare records, review a queue: guides/review-log.md
-    - Prepare health and care locations: guides/uk-health-and-care.md
-    - Reconcile schools: guides/school-reconciliation.md
-    - Resolve people across documents: guides/documents-to-decision.md
     - Prepare your data: guides/prepare-data.md
     - Interpret a decision: guides/interpret-decisions.md
     - Review and evaluate a crosswalk: guides/review-and-evaluate.md
     - Places and products in action: guides/places-and-products.md
+    - Prepare health and care locations: guides/uk-health-and-care.md
+    - Reconcile health facilities: guides/facility-reconciliation.md
+    - Compare records, review a queue: guides/review-log.md
+    - Reconcile schools: guides/school-reconciliation.md
+    - Resolve people across documents: guides/documents-to-decision.md
     - Accuracy and scope: guides/accuracy-and-scope.md
   - Reference:
+    - Architecture: reference/architecture.md
     - How arche works: reference/how-arche-works.md
+    - A single call, walked through: tutorials/how-it-works.md
     - Decision contract: reference/decision-contract.md
     - Record resolution API: reference/record-resolution.md
+    - Read a crosswalk result: how-to/read-crosswalk-output.md
+    - Addresses: api/addr.md
+    - Match African names: how-to/match-african-names.md
     - Benchmarks: reference/benchmarks.md
   - Contribute: contributing.md
 

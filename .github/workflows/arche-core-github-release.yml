@@ -1,0 +1,142 @@
+name: arche-core GitHub Release (backfill)
+
+# Create a GitHub Release for a version that is ALREADY published and tagged.
+#
+# `arche-core-release.yml` does this automatically now, as the last job of a
+# release. This file is for the ones that went out before it did: 0.2.0a2,
+# 0.2.0a3, 0.3.0a1, 0.4.0a1, 0.4.0a2 and 0.4.0a4 are all on PyPI, and several
+# are tagged, with no Release page describing any of them.
+#
+# It publishes nothing. It cannot: there is no token here and no build step. The
+# only thing it creates is the description of a release that already happened,
+# which is why it insists on both halves being true first:
+#
+#   - the tag must exist, so the release points at a real commit
+#   - the version must be on PyPI, so the notes describe something installable
+#
+# That second check is the same rule the release workflow is built around. This
+# project has already shipped an advisory pointing at 0.3.0a2, a version that
+# was changelogged and never published. A Release page saying the same thing
+# would be that mistake again with better formatting.
+#
+# The artifacts attached are downloaded from PyPI rather than rebuilt, because
+# for an old version the *published* file is the only one worth attaching. A
+# rebuild from today's tree might not even reproduce it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "An already-published, already-tagged version (e.g. 0.3.0a1)."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    name: Describe an existing release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # tags
+
+      - name: The tag and the release must both already exist
+        env:
+          V: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="arche-core-v$V"
+
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::No tag $TAG. This workflow describes releases that happened; it does not make them. Use arche-core-release.yml."
+            exit 1
+          fi
+
+          CODE=$(curl -sS -o /tmp/idx.json -w "%{http_code}" --retry 3 --retry-delay 2 \
+            "https://pypi.org/pypi/arche-core/json" || echo "000")
+          [ "$CODE" = "200" ] || { echo "::error::Could not read the PyPI index (HTTP $CODE). Refusing to guess."; exit 1; }
+
+          WANT="$V" python - <<'PY'
+          import json, os, sys
+          rels = json.load(open("/tmp/idx.json")).get("releases", {})
+          v = os.environ["WANT"]
+          if v not in rels or not rels[v]:
+              sys.exit(f"::error::{v} is not on PyPI. A Release page for an unpublished version is exactly the state this project has been burned by before.")
+          print(f"{v} is on PyPI with {len(rels[v])} file(s).")
+          PY
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::A GitHub Release already exists for $TAG. Edit it by hand rather than having a workflow overwrite notes somebody may have changed."
+            exit 1
+          fi
+          echo "$TAG is tagged, published, and has no Release yet."
+
+      - name: Cut the notes out of the changelog
+        env:
+          WANT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, pathlib, re, sys
+
+          v = os.environ["WANT"]
+          text = pathlib.Path("packages/arche-core/CHANGELOG.md").read_text(encoding="utf-8")
+          m = re.search(
+              rf"^## \[{re.escape(v)}\][^\n]*\n(.*?)(?=^## \[|\Z)",
+              text, re.M | re.S,
+          )
+          if not m:
+              sys.exit(f"::error::CHANGELOG.md has no '## [{v}]' section to cut notes from.")
+          body = m.group(1).strip()
+          if len(body) < 40:
+              sys.exit(f"::error::The '[{v}]' section is {len(body)} characters. Too little to publish as notes.")
+          pathlib.Path("NOTES.md").write_text(body + "\n", encoding="utf-8")
+          print(f"{len(body)} characters of notes.")
+          PY
+
+      - name: Fetch what was actually published
+        env:
+          WANT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          WANT="$WANT" python - <<'PY'
+          import json, os, pathlib, urllib.request
+
+          v = os.environ["WANT"]
+          rels = json.load(open("/tmp/idx.json"))["releases"][v]
+          for f in rels:
+              target = pathlib.Path("dist") / f["filename"]
+              urllib.request.urlretrieve(f["url"], target)
+              print(f"{f['filename']}  {target.stat().st_size:,} bytes")
+          PY
+          ls -l dist
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="arche-core-v$V"
+          ARGS=(--title "arche-core v$V" --notes-file NOTES.md --verify-tag)
+          if printf '%s' "$V" | grep -Eq '(a|b|rc)[0-9]+$'; then
+            ARGS+=(--prerelease)
+          fi
+          gh release create "$TAG" "${ARGS[@]}" dist/*
+
+          URL=$(gh release view "$TAG" --json url --jq .url)
+          {
+            echo "### Backfilled arche-core $V"
+            echo ""
+            echo "- $URL"
+            echo "- Notes from the \`[$V]\` section of CHANGELOG.md"
+            echo "- Artifacts downloaded from PyPI, not rebuilt"
+          } >> "$GITHUB_STEP_SUMMARY"
