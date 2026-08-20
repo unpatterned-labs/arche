@@ -206,6 +206,85 @@ print(f"arche routed {held} of {len(negatives)} to review rather than deciding."
 """)
 
 md("""
+### The two arche got wrong
+
+Promising that two errors are "worth reading" and then not showing them would be
+the same trick this notebook exists to avoid. Here they are.
+""")
+
+code("""
+idx = {r["uniq_id"]: r for a, b in negatives for r in (a, b)}
+for e in res["matches"]:
+    if e["decision"] == "match" and (e["a_id"], e["b_id"]) in pairs:
+        a, b = idx[e["a_id"]], idx[e["b_id"]]
+        print(f"score {e['score']:.3f}   {a['name']}")
+        print(f"  {a['statename']:<10} / {a['lganame']}")
+        print(f"  {b['statename']:<10} / {b['lganame']}")
+        print(f"  {e['evidence'].get('distance_km')} km apart")
+        print(f"  {e['evidence']}")
+        print()
+""")
+
+md("""
+Look at where they are.
+
+`Tumbu Primary School` sits in **Adamawa** and **Borno**, and the two records are
+**720 metres apart**. `Able God Group Of School` sits in **Ogun** and **Lagos**,
+8.8 km apart, in the two local governments that meet at the boundary between
+them.
+
+Both errors are on a **state border**, and that is not a coincidence. It is a
+flaw in the label rule this notebook is built on.
+
+"Two schools in different states are not the same school" is true as
+administration and shaky as geography. Two records 720 metres apart on either
+side of a line are exactly the case where a boundary file, a GPS reading taken
+at the gate rather than the road, or a school serving both sides, can put one
+school in two states. The rule is safest in the interior and weakest at the
+edge, and any method's errors will concentrate where the rule is weakest.
+
+So the honest reading of `arche: 2 / 400` is **at most two**, and both sit where
+the labels themselves are least trustworthy.
+
+That does not rescue the 100% from the string methods. Those merged schools
+hundreds of kilometres apart on nothing but a shared generic name, and no
+boundary subtlety explains it. But it does mean the gap is a floor rather than a
+measurement.
+
+### The boundary-aware rule, and what it settles
+
+So the rule was rebuilt: a pair counts as a certain negative only if it is in
+different states **and** more than N km apart. Choosing one N would be picking a
+number after seeing results, so every N is reported.
+
+```text
+method                           >0 km       >1 km       >5 km      >25 km
+exact name (casefold)              400         399         399         390
+token Jaccard >= 0.5               400         399         399         390
+token_set_ratio >= 90              399         398         398         389
+arche (name + coords)                2           1           1           0
+(pairs remaining)                  400         399         399         390
+```
+
+Three things fall out, and the first is the one that matters.
+
+**The doubt was smaller than it looked.** Only one pair of 400 sits within a
+kilometre. The median separation is **243 km**. These are not border cases; they
+are schools on opposite sides of the country sharing a generic name.
+
+**The string methods do not move.** 390 of 390 wrong at more than 25 km apart.
+Their errors have nothing to do with boundaries and no threshold rescues them.
+
+**arche's two errors are exactly where the labels are weakest**, and both leave
+as the rule tightens: 2, then 1, then 0. That is the behaviour you want from a
+rule you distrust, and it is why the sensitivity table is worth more than any
+single figure.
+
+The conclusion survives every threshold, which is the only reason it is worth
+stating.
+""")
+
+md("""
 ### Read the construction honestly
 
 These pairs were chosen *because* they share a name, so exact matching failing

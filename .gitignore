@@ -107,3 +107,9 @@ data/_cache/
 
 # arche studio writes a labelled copy beside the pack it reviewed.
 data/review_packs/**/*_reviewed.csv
+
+# arche studio adjudication state.
+data/review_packs/_studio.sqlite3*
+
+# arche studio signing key. Private. Never committed.
+data/review_packs/_studio_key.pem

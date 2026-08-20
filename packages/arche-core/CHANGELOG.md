@@ -2,9 +2,58 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [0.4.0a3] — 2026-08-16
+## [0.4.0a4] — 2026-08-19
 
-**Documentation, benchmarks, and two cosmetic output changes.**
+**Benchmarks, documentation, and one change to how places are matched.**
+
+`0.4.0a3` was prepared and never shipped. It was scoped and written up as a
+documentation release, and then a matching change landed in the same tree. Its
+changelog would have been false, so the version was skipped rather than
+rewritten. It was never published and never tagged, so nothing points at it.
+
+### Changed — administrative disagreement is now weighed against distance
+
+`compare_containment` treated a state-level disagreement as total refutation
+however far apart the two records were. That is right in the interior of a
+country and wrong at every border, where boundary files carry 100 m to 1 km of
+positional error and one school can be recorded on either side of a line.
+
+Disagreement at the coarsest level now returns a neutral score discounted by
+distance: it falls linearly from a small positive value at zero separation to
+exactly zero at `BOUNDARY_UNCERTAINTY_KM`, defaulting to **1.0 km**. Beyond the
+band nothing changes. The default comes from the stated positional accuracy of
+national boundary layers (GADM, OSM relations, COD-AB), not from any pair this
+was tested on.
+
+The ramp is linear with a hard floor rather than an exponential decay, because
+`_score_pair` raises its conflict flag on exactly `0.0`. An exponential never
+reaches zero, so there would be no distance at which prior behaviour resumed.
+
+A new `postcode` comparator applies the same reasoning to postal codes, with a
+0.1 km band sized for a UK unit postcode. It is **not in any shipped pack** and
+refutes only through the existing `refutes_below` mechanism.
+
+**What this cannot do:** the discount can withhold refutation, never manufacture
+a merge. The distinctive-signal gate is untouched, and the discounted value sits
+below the score a genuinely shared `admin1` earns, so a discounted disagreement
+can never read as agreement.
+
+**Decision ids.** The shipped `place` pack is unchanged, so `comparators_sha256`
+is stable and unaffected decisions keep their ids. Ids move only where a
+containment comparator applies, the coarsest level disagrees, both sides carry
+coordinates, and the separation is inside the band.
+
+**Measured, including where it costs.** On 400 same-name cross-state Nigerian
+school pairs, the change costs one false merge (0 to 1) at the 720 m pair the
+benchmark's own labels cannot adjudicate, and leaves the Enugu reconciliation
+untouched at 436 matches either way. It is a correctness claim, not a metric
+win, and the numbers are in `data/nigeria_school_false_merges_result.json`.
+
+**Separately worth knowing:** supplying `admin_path` at all costs 81 of 517
+Enugu matches, a 15.7% drop, from LGA-level disagreements dragging the weighted
+mean. That is existing behaviour rather than a regression, and it is recorded
+here because anyone adding admin data expecting a free precision gain should
+see it first.
 
 Every published accuracy number was audited against something that runs. Three
 of the five did not survive contact with their own evidence, one is now known

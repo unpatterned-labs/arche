@@ -268,6 +268,7 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
     <input id="q" class="searchbox" placeholder="search any field">
     <button class="act quiet" id="b-cols">Columns</button>
     <span class="stat" id="pmeta"></span>
+    <span class="stat" id="marks"></span>
   </div>
 
   <div class="cols" id="colpick"></div>
@@ -384,7 +385,7 @@ async function loadPack(){
   if(PACK.error){$("#rerr").textContent=PACK.error;return;}
   // Open on the columns a reviewer reads. Everything else is one click away.
   HIDE=new Set(PACK.fields.filter(f=>/^(decision_id|evidence|reviewed_at|reviewer|reason)$/.test(f)));
-  SEL=null;$("#callbox").hidden=true;cols();draw();
+  SEL=null;$("#callbox").hidden=true;cols();await loadMarks();draw();
 }
 const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
 function cols(){
@@ -484,14 +485,36 @@ function pick(id){
     distinctive_floor:0.75,decision_id:r.decision_id,pins:{}});
   $("#reason").value=M[id]?.reason||r.reason||"";
 }
-function mark(o){
+// Marks are written through to SQLite immediately. They used to live in M
+// until someone pressed Save, so a refresh lost the work and there was no
+// history of a reviewer changing their mind.
+async function mark(o){
   if(!SEL){$("#rerr").textContent="Choose a row first.";return;}
-  $("#rerr").textContent="";M[SEL]={outcome:o,reason:$("#reason").value};draw();
+  const who=($("#reviewer").value||"").trim();
+  if(!who){$("#rerr").textContent="Put your name in the reviewer field first. An unattributed adjudication cannot be audited.";return;}
+  $("#rerr").textContent="";
+  const r=await(await fetch("/api/mark",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:$("#pack").value,pack_digest:PACK.digest,decision_id:SEL,
+                         outcome:o,reviewer:who,reason:$("#reason").value})})).json();
+  if(r.error){$("#rerr").textContent=r.error;return;}
+  await loadMarks();draw();
+}
+
+async function loadMarks(){
+  const d=await(await fetch("/api/marks?pack="+encodeURIComponent($("#pack").value))).json();
+  if(d.error)return;
+  for(const k of Object.keys(M))delete M[k];
+  for(const [k,v] of Object.entries(d.current||{}))M[k]=v;
+  const s=d.summary||{};
+  $("#marks").textContent=s.marked
+    ? `${s.marked} marked${s.revisions?`, ${s.revisions} revised`:""}`+
+      ` · ${Object.entries(s.by_outcome||{}).map(([k,v])=>k+" "+v).join(" · ")}`
+    : "";
 }
 async function save(){
   $("#rerr").textContent="";
   const r=await(await fetch("/api/review",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value,marks:M})})).json();
+    body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value})})).json();
   $("#rerr").innerHTML=r.error||`Wrote <span style="font-family:var(--mono);font-size:15px">${esc(r.written)}</span> — ${r.rows_marked} rows marked.`;
 }
 

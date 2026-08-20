@@ -66,6 +66,16 @@ sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
 OUTCOMES = ("same_entity", "different", "unresolved")
 
+sys.path.insert(0, str(HERE))
+from state import Store  # noqa: E402  (after sys.path is set)
+
+STATE = Store(PACKS / "_studio.sqlite3")
+
+# One key, created on first run and loaded thereafter. A fresh key per
+# request produces signatures nobody can attribute, which is a checksum
+# with extra steps.
+KEY_PATH = PACKS / "_studio_key.pem"
+
 
 def _packs() -> list[dict]:
     out = []
@@ -313,18 +323,48 @@ def _verify(payload: dict) -> dict:
     return out
 
 
-def _sign_demo(_payload: dict) -> dict:
-    """A freshly signed edge, so Verify has something real to chew on.
+def _identity() -> dict:
+    """What to publish so recipients can move from `valid` to `trusted`.
 
-    The key is generated per call and thrown away, which is why the result
-    verifies as `self-asserted` rather than trusted. That is the honest state
-    for a demo: integrity provable, issuer not.
+    The did:key is the public half and it is the whole identifier. There is no
+    certificate authority and nothing to register: publish it wherever people
+    already trust you to say things.
     """
+    import keyring
+
+    return keyring.public_identity(keyring.load_or_create(KEY_PATH))
+
+
+def _sign_pack(payload: dict) -> dict:
+    """One signature over a whole adjudicated pack.
+
+    Signing every edge separately proves no edge was altered and says nothing
+    about an edge being removed. The manifest carries the row count and the
+    pack digest, so a dropped row changes what was signed.
+    """
+    import keyring
+
+    pack = payload["pack"]
+    loaded = _load_pack(pack)
+    summary = STATE.summary(pack)
+    return keyring.sign_pack_manifest(
+        keyring.load_or_create(KEY_PATH), pack=pack, digest=loaded["digest"],
+        rows=len(loaded["rows"]), outcomes=summary["by_outcome"])
+
+
+def _sign_demo(_payload: dict) -> dict:
+    """A signed edge, so Verify has something real to chew on.
+
+    Signed with this installation's kept key, so the same `did:key` appears
+    every time. A recipient who has pinned that key gets `trusted=True`; one
+    who has not gets `valid=True, trusted=False`, which proves integrity and
+    not authorship. Both are honest, and they are not the same claim.
+    """
+    import keyring
     from arche.resolve import crosswalk
     from arche.resolve.reconcile import sign_edges
-    from arche.sign import generate_keypair
 
-    k = generate_keypair()
+    k = keyring.load_or_create(KEY_PATH)
     res = crosswalk([{"id": "a", "name": "Karfi Health Post", "lat": "12.0421", "lon": "8.5231"}],
                     [{"id": "b", "name": "Karfi Primary Health Centre", "lat": "12.0605",
                         "lon": "8.5188"}],
@@ -333,6 +373,22 @@ def _sign_demo(_payload: dict) -> dict:
     if not edges:
         raise ValueError("nothing signable: the demo pair produced no edge")
     return {"jws": edges[0]["jws"], "decision_id": edges[0]["decision_id"]}
+
+
+def _mark(payload: dict) -> dict:
+    """One adjudication, appended. Survives a refresh, keeps its history."""
+    return STATE.mark(
+        pack=payload["pack"], pack_digest=payload.get("pack_digest", ""),
+        decision_id=payload["decision_id"], outcome=payload.get("outcome", ""),
+        reviewer=payload.get("reviewer", ""), reason=payload.get("reason", ""))
+
+
+def _marks(pack: str) -> dict:
+    """Standing outcomes plus the counts a reviewer wants in the toolbar."""
+    return {"current": {k: {"outcome": v["outcome"], "reason": v["reason"],
+                            "reviewer": v["reviewer"], "marked_at": v["marked_at"]}
+                        for k, v in STATE.current(pack).items()},
+            "summary": STATE.summary(pack)}
 
 
 def _save_review(payload: dict) -> dict:
@@ -350,7 +406,10 @@ def _save_review(payload: dict) -> dict:
     if not reviewer:
         raise ValueError("a reviewer name is required; an unattributed "
                          "adjudication cannot be audited")
-    marks = payload.get("marks") or {}
+    # Read from the store, not from the browser. The store is what survived
+    # the refresh and it is what carries the history.
+    marks = {k: {"outcome": v["outcome"], "reason": v["reason"]}
+             for k, v in STATE.current(pack_id).items()} or (payload.get("marks") or {})
     stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     n = 0
     for r in rows:
@@ -409,6 +468,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_packs())
             elif u.path == "/api/pack":
                 self._json(_load_pack(parse_qs(u.query).get("id", [""])[0]))
+            elif u.path == "/api/identity":
+                self._json(_identity())
+            elif u.path == "/api/marks":
+                self._json(_marks(parse_qs(u.query).get("pack", [""])[0]))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:  # surfaced in the UI rather than the console
@@ -430,6 +493,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_verify(payload))
             elif u.path == "/api/sign_demo":
                 self._json(_sign_demo(payload))
+            elif u.path == "/api/mark":
+                self._json(_mark(payload))
+            elif u.path == "/api/sign_pack":
+                self._json(_sign_pack(payload))
             elif u.path == "/api/review":
                 self._json(_save_review(payload))
             else:

@@ -55,6 +55,8 @@ from arche.resolve._gate import (
     shared_name_distinctiveness,
 )
 from arche.resolve._matcher import (
+    BOUNDARY_UNCERTAINTY_KM,
+    POSTCODE_BOUNDARY_UNCERTAINTY_KM,
     compare_addresses,
     compare_categories,
     compare_containment,
@@ -66,6 +68,7 @@ from arche.resolve._matcher import (
     compare_phones,
     compare_place_names,
     compare_place_qualifiers,
+    compare_postcodes,
     haversine_km,
     load_type_vocab,
     normalize_type_token,
@@ -179,6 +182,28 @@ def _strip_all_type_tokens(value: str, vocab: dict[str, str], _max: int = 4) -> 
     return value
 
 
+def _pair_distance_km(spec: dict[str, Any], ra: dict, rb: dict) -> float | None:
+    """Great-circle distance for a comparator that needs one, or ``None``.
+
+    The categorical geographic comparators (``containment``, ``postcode``)
+    discount a disagreement by how plausibly the pair merely straddles a
+    boundary, which means they need a distance the way ``geo`` does. They read
+    the same ``lat``/``lon`` spec keys with the same defaults, so a schema that
+    already works for ``geo`` needs no extra configuration.
+
+    ``None`` on any missing, unparseable or non-coordinate value: the callers
+    treat that as "no distance evidence" and fall back to undiscounted
+    refutation, so a bad coordinate can never soften a disagreement.
+    """
+    lat, lon = spec.get("lat", "lat"), spec.get("lon", "lon")
+    try:
+        return haversine_km(
+            float(ra[lat]), float(ra[lon]), float(rb[lat]), float(rb[lon]),
+        )
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
 def _field_sim(
     spec: dict[str, Any],
     ra: dict,
@@ -206,7 +231,24 @@ def _field_sim(
         return None
     if kind == "containment":
         field = spec.get("field", "admin_path")
-        return compare_containment(ra.get(field), rb.get(field))
+        return compare_containment(
+            ra.get(field), rb.get(field),
+            distance_km=_pair_distance_km(spec, ra, rb),
+            boundary_km=float(spec.get("boundary_km", BOUNDARY_UNCERTAINTY_KM)),
+        )
+    if kind == "postcode":
+        # Postal-code agreement, boundary-discounted like containment. Absent
+        # on either side is missing evidence, never a disagreement.
+        field = spec.get("field", "postcode")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        return compare_postcodes(
+            str(ra[field]), str(rb[field]),
+            distance_km=_pair_distance_km(spec, ra, rb),
+            boundary_km=float(
+                spec.get("boundary_km", POSTCODE_BOUNDARY_UNCERTAINTY_KM)
+            ),
+        )
     if kind == "type":
         # Type-token agreement ("PHC" vs "HOSPITAL") via the domain vocabulary.
         # Inapplicable (None) unless BOTH names yield a recognised type —
@@ -409,6 +451,15 @@ def _score_pair(
                                 evidence["name_phrase_rarity"] = round(phrase_rarity, 3)
             distinctive_max = max(distinctive_max, contribution)
         if spec["kind"] == "containment" and sim == 0.0:
+            # Exactly 0.0 is `compare_containment`'s undiscounted disagreement:
+            # different coarsest admin units, and either no coordinates or a
+            # separation at/beyond the boundary-uncertainty band. Inside that
+            # band the comparator returns a small positive value instead, so
+            # refutation is withheld exactly where an admin disagreement is a
+            # boundary artefact rather than evidence of difference. That
+            # positive value is capped below the weakest agreement score, so
+            # this branch is the only thing being withheld. No agreement is
+            # manufactured, and the distinctive gate still governs.
             conflict = True
     if den == 0:
         return None

@@ -2,7 +2,7 @@
 
 # Know what's real.
 
-<p class="arche-hero__sub">Link people, places, organisations, and products with evidence, not just similarity scores.</p>
+<p class="arche-hero__sub">An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.</p>
 
 <span class="arche-hero__status">Alpha software · Apache-2.0</span>
 

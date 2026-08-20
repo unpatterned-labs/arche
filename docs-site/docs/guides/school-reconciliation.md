@@ -144,16 +144,27 @@ That gives 400 pairs which share a name *exactly* and sit in different states.
 Nobody constructed them and nobody chose them to flatter a result. Every method
 below is scored on pairs it should never merge.
 
+The rule is boundary-aware: a pair counts only if it is in different states
+**and** more than N km apart. Choosing one N would mean picking a number after
+seeing the results, so every N is reported.
+
 ```text
-method                      false merges     rate
-exact name (casefold)                400   100.0%
-token Jaccard >= 0.5                 400   100.0%
-token_set_ratio >= 90                399    99.8%
-arche (name + coords)                  2     0.5%
+method                           >0 km       >1 km       >5 km      >25 km
+exact name (casefold)              400         399         399         390
+token Jaccard >= 0.5               400         399         399         390
+token_set_ratio >= 90              399         398         398         389
+arche (name + coords)                2           1           1           0
+(pairs remaining)                  400         399         399         390
 ```
 
 arche routed **397 of 400 to review** rather than merging them or throwing them
 away.
+
+Read the columns rather than a single number. Only one pair of 400 sits within a
+kilometre and the median separation is **243 km**, so the border doubt is real
+but small. The string methods do not move: 390 of 390 wrong at over 25 km apart,
+which no boundary subtlety explains. arche's two errors are exactly where the
+labels are weakest, and both leave as the rule tightens.
 
 ### Read the construction honestly
 

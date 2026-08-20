@@ -30,7 +30,7 @@ from arche.ids import canonical_json
 _ROLES = frozenset({"identifies", "describes", "ignore"})
 _KINDS = frozenset(
     {"name", "placename", "id", "phone", "email", "address", "date", "tftoken",
-     "containment", "type"}
+     "containment", "postcode", "type"}
 )
 # Kinds that participate in Tier-1 identity binding (entity_id minting).
 _BINDING_KINDS = ("id", "phone", "email")

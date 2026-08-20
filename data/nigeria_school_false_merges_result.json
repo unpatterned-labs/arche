@@ -1,17 +1,44 @@
 {
-  "source": "Schools_in_Nigeria_524370204688734996.csv",
+  "source": "nigeria_schools.csv",
   "records": 107670,
   "seed": 20260819,
-  "negative_pairs": 400,
+  "label_rule": "different state AND more than N km apart; reported at several N because the threshold is a judgment",
+  "candidate_pairs": 400,
+  "pairs_remaining_by_threshold": {
+    ">0km": 400,
+    ">1km": 399,
+    ">5km": 399,
+    ">25km": 390
+  },
+  "false_merges_by_threshold": {
+    "exact name (casefold)": {
+      ">0km": 400,
+      ">1km": 399,
+      ">5km": 399,
+      ">25km": 390
+    },
+    "token Jaccard >= 0.5": {
+      ">0km": 400,
+      ">1km": 399,
+      ">5km": 399,
+      ">25km": 390
+    },
+    "token_set_ratio >= 90": {
+      ">0km": 399,
+      ">1km": 398,
+      ">5km": 398,
+      ">25km": 389
+    },
+    "arche (name + coords)": {
+      ">0km": 2,
+      ">1km": 1,
+      ">5km": 1,
+      ">25km": 0
+    }
+  },
+  "arche_routed_to_review": 397,
   "distinct_names": 98248,
   "names_shared": 3959,
   "records_sharing_a_name": 13381,
-  "false_merges": {
-    "exact name (casefold)": 400,
-    "token Jaccard >= 0.5": 400,
-    "token_set_ratio >= 90": 399,
-    "arche (name + coords)": 2
-  },
-  "arche_routed_to_review": 397,
   "what_this_does_not_measure": "recall; there are no positive labels"
 }

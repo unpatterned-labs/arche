@@ -634,11 +634,92 @@ def compare_place_qualifiers(name_a: str, name_b: str) -> float | None:
     return compare_place_names(qa, qb)
 
 
+# ── categorical geography: admin units and postal codes ────────────────────
+#
+# Both are labels attached to a point by asking which polygon contains it, and
+# both therefore disagree at boundaries for reasons that have nothing to do
+# with identity. They share one treatment and one vocabulary below.
+#
+# `_CATEGORICAL_NEUTRAL` is the value that means "no comparable evidence".
+# is the value `compare_containment` already returned when no level was
+# comparable on both sides. It sits BELOW the weakest agreement either
+# comparator can award (0.3 for a shared admin1, 0.5 for a shared postcode
+# district), so a discounted disagreement can never be read as agreement,
+# however near the boundary the pair sits.
+_CATEGORICAL_NEUTRAL = 0.2
+
+# How far apart two points can be and still plausibly straddle ONE admin
+# boundary. Derived, not fitted:
+#
+#   * The label comes from a point-in-polygon join, so two joins disagree
+#     whenever the point sits within the boundary layer's own positional error
+#     of the line. National admin layers in common use (GADM, OSM-derived
+#     relations, humanitarian COD-AB) are digitised at scales whose stated
+#     positional accuracy runs from ~100 m to ~1 km, so 1 km is the generous
+#     end of "could be the same side of the line".
+#   * It is 10x tighter than the `place` pack's `veto_km` of 10 km, so
+#     refutation is only ever withheld inside a band where the geo comparator
+#     is itself still scoring the pair as close.
+#
+# Sanity check, NOT the derivation: on the two state-border false merges in the
+# Nigeria school register the band separates them (0.72 km inside, 8.77 km
+# outside). Two observations cannot calibrate a threshold and this one was not
+# calibrated on them.
+BOUNDARY_UNCERTAINTY_KM = 1.0
+
+# The postal-code equivalent, and much tighter because a postal unit is much
+# smaller than a state. A UK unit postcode covers ~15 delivery points, often one
+# side of one street, so two different unit codes 100 m apart routinely straddle
+# one boundary. This default is sized for the FINEST common granularity on
+# purpose: too tight merely restores full refutation (the safe direction), while
+# too wide withholds refutation from pairs that genuinely disagree. Coarser
+# formats need it raised explicitly: roughly 2 km for a GB outward code, a US
+# 5-digit ZIP, or an NG 6-digit code.
+POSTCODE_BOUNDARY_UNCERTAINTY_KM = 0.1
+
+# A shared postcode district with differing units: the same evidence shape as a
+# shared admin2 with differing settlements, and scored between the two.
+_POSTCODE_DISTRICT_AGREEMENT = 0.5
+
+
+def boundary_doubt(distance_km: float | None, boundary_km: float) -> float:
+    """How far to discount a categorical geographic disagreement, in [0, 1].
+
+    Returns 1.0 when the two points are close enough that the disagreement
+    carries no information (a boundary artefact), falling linearly to 0.0 at
+    ``boundary_km``, where the disagreement is taken at face value. Callers
+    multiply :data:`_CATEGORICAL_NEUTRAL` by this, so 1.0 means "score this as
+    no evidence" and 0.0 means "score this as a refutation".
+
+    **Why linear with a hard floor**, rather than the exponential decay
+    :func:`compare_geo` uses. An exponential never reaches zero, so a
+    disagreement would never be refuted in full at any distance, and there
+    would be no distance at which the pre-existing behaviour resumes exactly.
+    The floor gives a checkable point: at and beyond ``boundary_km`` this
+    returns exactly 0.0 and the comparator returns exactly 0.0, which is what
+    it returned before this discount existed.
+
+    Edge cases, all of which fall back to full refutation (0.0) because absent
+    or unusable evidence must never soften a disagreement:
+
+    * ``distance_km is None``: no coordinates on one or both sides.
+    * ``boundary_km <= 0``: the discount is switched off.
+    * a non-finite or negative distance.
+    """
+    if distance_km is None or boundary_km <= 0:
+        return 0.0
+    if not math.isfinite(distance_km) or distance_km < 0:
+        return 0.0
+    return max(0.0, 1.0 - distance_km / boundary_km)
+
+
 def compare_containment(
     path_a: Mapping[str, Any] | None,
     path_b: Mapping[str, Any] | None,
     *,
     levels: tuple[str, ...] = ("admin1", "admin2", "settlement"),
+    distance_km: float | None = None,
+    boundary_km: float = BOUNDARY_UNCERTAINTY_KM,
 ) -> float | None:
     """Admin-containment agreement between two points' admin paths.
 
@@ -648,7 +729,7 @@ def compare_containment(
     similarity in [0, 1], or ``None`` when neither side carries any admin level.
 
     Used as a coarse GATE, not a fine matcher: a disagreement at the coarsest
-    level (different ``admin1``/state) returns 0.0 — strong evidence two nearby
+    level (different ``admin1``/state) returns 0.0, strong evidence two
     points are different places. Downstream, ``reconcile`` demotes any
     would-be match carrying a containment conflict to review rather than
     auto-vetoing it.
@@ -659,6 +740,41 @@ def compare_containment(
     Wada, Unguwar Rimi): two points in the same state but *different* LGAs
     whose settlements merely share a name must not score as co-located — the
     LGA disagreement caps them at the state-level score.
+
+    Boundary awareness
+    ------------------
+    **Administrative disagreement is not distance.** Two records in different
+    states 720 m apart are almost certainly one place whose position falls
+    within the boundary layer's error: a GPS fix at the gate rather than the
+    road, a school serving both sides of a line. Two records in different
+    states 500 km apart are certainly different places. Scoring both at 0.0
+    treats a boundary artefact as proof of difference.
+
+    So when ``distance_km`` is supplied, a coarsest-level disagreement is
+    refuted *in proportion to distance*: it returns
+    ``_CATEGORICAL_NEUTRAL * boundary_doubt(distance_km, boundary_km)``, which
+    is :data:`_CATEGORICAL_NEUTRAL` (the function's own "no comparable
+    evidence" value) at zero distance and falls linearly to exactly 0.0 at
+    ``boundary_km``. ``reconcile`` raises its conflict flag on exactly 0.0, so
+    refutation is *withheld* inside the band and is unchanged outside it.
+
+    This can only ever withhold a refutation; it cannot manufacture one, and it
+    cannot manufacture agreement. The discounted value is capped at 0.2, below
+    the 0.3 awarded for a genuinely shared ``admin1``, so a disagreement never
+    scores as well as the weakest agreement no matter how close the pair is.
+    The distinctive-signal gate is untouched and still governs.
+
+    Edge cases:
+
+    * **No coordinates** (``distance_km is None``): the pre-existing 0.0 and
+      its conflict, unchanged. Absent evidence cannot soften a disagreement,
+      the same rule that stops absent coordinates firing ``veto_km``.
+    * ``boundary_km <= 0`` switches the discount off entirely.
+    * **Mid-hierarchy disagreement is deliberately left alone.** A differing
+      LGA inside an agreeing state already returns the state-level score rather
+      than 0.0, so it never refutes and has nothing to withhold; discounting it
+      further could only *raise* it toward the deeper agreement it did not
+      earn, which would manufacture evidence.
     """
     if not path_a or not path_b:
         return None
@@ -670,13 +786,99 @@ def compare_containment(
             continue  # missing on a side: no evidence at this level, keep walking
         if _normalise_text(str(na)) != _normalise_text(str(nb)):
             if level == levels[0]:
-                return 0.0  # different coarsest unit -> hard disagreement
+                # Different coarsest unit -> disagreement, discounted by how
+                # plausibly the pair merely straddles the boundary. Exactly 0.0
+                # (the pre-existing hard disagreement) once past the band.
+                return _CATEGORICAL_NEUTRAL * boundary_doubt(distance_km, boundary_km)
             # Mid-hierarchy disagreement: stop; award only what agreed above.
-            return best if best is not None else 0.2
+            return best if best is not None else _CATEGORICAL_NEUTRAL
         best = finest_score.get(level, 0.3)
     if best is not None:
         return best
-    return 0.2  # no level comparable on both sides but no conflict -> weak
+    # No level comparable on both sides but no conflict -> weak.
+    return _CATEGORICAL_NEUTRAL
+
+
+# A GB postcode splits into a real two-level hierarchy: an outward code naming
+# a postal district and an inward code naming a unit of ~15 delivery points.
+# ZIP+4 splits the same way. Both splits are defined by the format itself. No
+# prefix is guessed, because for a flat numeric code (NG 6-digit, US ZIP5) a
+# shared prefix carries no containment meaning.
+_GB_POSTCODE = re.compile(r"^([A-Z]{1,2}\d[A-Z\d]?)(\d[A-Z]{2})$")
+_ZIP_PLUS_4 = re.compile(r"^(\d{5})-(\d{4})$")
+
+
+def _postcode_parts(text: str) -> tuple[str, str]:
+    """Split a postal code into ``(district, unit)``; ``unit`` is "" if undefined."""
+    raw = re.sub(r"\s+", "", (text or "").upper())
+    m = _ZIP_PLUS_4.match(raw)
+    if m:
+        return m.group(1), m.group(2)
+    flat = raw.replace("-", "")
+    m = _GB_POSTCODE.match(flat)
+    if m:
+        return m.group(1), m.group(2)
+    return flat, ""
+
+
+def compare_postcodes(
+    code_a: str,
+    code_b: str,
+    *,
+    distance_km: float | None = None,
+    boundary_km: float = POSTCODE_BOUNDARY_UNCERTAINTY_KM,
+) -> float | None:
+    """Postal-code agreement between two records, discounted at boundaries.
+
+    Postal codes have the same property as admin units and the same failure
+    mode: two records with different postcodes 50 m apart sit on a postcode
+    boundary, while two records with different postcodes 30 km apart are
+    different places. UK postcodes, US ZIPs and NG postal codes all behave this
+    way. So a disagreement is refuted *in proportion to distance* by the shared
+    :func:`boundary_doubt` ramp, identically to
+    :func:`compare_containment`. See that docstring for the reasoning and for
+    why the ramp is linear.
+
+    Returns, in ``[0, 1]``, or ``None`` when either side is empty:
+
+    ``1.0``
+        Same code. Normalisation is whitespace-, case- and hyphen-insensitive,
+        so ``SW1A 1AA``, ``sw1a1aa`` and ``SW1A-1AA`` are one code.
+    ``0.5``
+        Same district, different unit (``SW1A 1AA`` vs ``SW1A 2BB``;
+        ``10001-1234`` vs ``10001-5678``). Real proximity evidence, and the
+        reason this comparator parses a hierarchy at all: without it, two
+        records on one street with adjacent unit codes would refute.
+    ``0.2`` down to ``0.0``
+        Different districts, ramped by distance. 0.2 at zero distance means
+        "no evidence"; exactly 0.0 at and beyond ``boundary_km``.
+
+    Unlike ``containment``, this kind does **not** hardwire a conflict flag.
+    Declare ``refutes_below`` on the comparator spec to make it refute, using
+    same generic mechanism every other refuting field uses. A ``None`` return
+    can never fire it, so a missing postcode refutes nothing.
+
+    Edge cases:
+
+    * **Formats are not reconciled across countries.** A GB code is never
+      compared against a ZIP as though they shared a hierarchy; they simply
+      differ, and the distance ramp then decides. Feeding one field two
+      countries' codes is a data-modelling error this cannot repair.
+    * **Partial codes are compared as written.** ``SW1A`` against ``SW1A 1AA``
+      scores 0.5 (district agreement), which is right. ``SW1`` against
+      ``SW1A 1AA`` scores as a disagreement, because ``SW1`` and ``SW1A`` are
+      different outward codes and truncating one to match the other would be
+      guessing.
+    * ``boundary_km <= 0``, absent coordinates, or a non-finite distance all
+      give the undiscounted 0.0.
+    """
+    district_a, unit_a = _postcode_parts(code_a)
+    district_b, unit_b = _postcode_parts(code_b)
+    if not district_a or not district_b:
+        return None
+    if district_a == district_b:
+        return 1.0 if unit_a == unit_b else _POSTCODE_DISTRICT_AGREEMENT
+    return _CATEGORICAL_NEUTRAL * boundary_doubt(distance_km, boundary_km)
 
 
 def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]:

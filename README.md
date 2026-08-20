@@ -2,7 +2,7 @@
 
 **Know what's real.**
 
-An open engine for messy data from sources that never agreed on anything. It finds the entities, works out which records are about the same real-world thing, and gives you a decision you can defend six months later: the evidence, the rule that produced it, and a signature someone who does not trust you can re-check.
+An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.
 
 ```bash
 pip install arche-core

@@ -36,27 +36,57 @@ def test_gate_blocks_merge_without_distinctive_signal():
     assert by_pair[("A1", "B2")]["distinctive_max"] < 0.75
 
 
+_CONTAINMENT_COMPS = [
+    {"field": "name", "kind": "name", "weight": 2.0},
+    {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0},
+    {"kind": "containment", "field": "admin_path", "weight": 1.0},
+]
+_KANO_ANCHOR = [{"id": "A", "name": "General Hospital",
+                 "admin_path": {"admin1": "Kano", "admin2": "Nassarawa"},
+                 "lat": 12.00, "lon": 8.50}]
+
+
 def test_containment_conflict_routes_to_review():
-    a = [{"id": "A", "name": "General Hospital",
-          "admin_path": {"admin1": "Kano", "admin2": "Nassarawa"},
-          "lat": 12.00, "lon": 8.50}]
+    # OTHER sits 1.2 km away, comfortably outside the 1 km boundary-uncertainty
+    # band, so its state disagreement is real evidence rather than a boundary
+    # artefact. Its score (0.612) clears the 0.6 threshold on name and geo
+    # alone, which is the point: only the containment conflict can demote it,
+    # so this test still proves the conflict is what routes it to review.
     b = [
         {"id": "SAME", "name": "General Hospital",
          "admin_path": {"admin1": "Kano", "admin2": "Nassarawa"},
          "lat": 12.001, "lon": 8.50},
         {"id": "OTHER", "name": "General Hospital",
          "admin_path": {"admin1": "Lagos", "admin2": "Ikeja"},
-         "lat": 12.00, "lon": 8.50},
+         "lat": 12.0108, "lon": 8.50},
     ]
-    comps = [
-        {"field": "name", "kind": "name", "weight": 2.0},
-        {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 1.0},
-        {"kind": "containment", "field": "admin_path", "weight": 1.0},
-    ]
-    out = reconcile(a, b, comps, threshold=0.6, block="h3")
+    out = reconcile(_KANO_ANCHOR, b, _CONTAINMENT_COMPS, threshold=0.6,
+                    block="h3")
     by_pair = {(m["a_id"], m["b_id"]): m for m in out["matches"]}
     assert by_pair[("A", "SAME")]["decision"] == "match"
-    assert by_pair[("A", "OTHER")]["decision"] == "review"
+    other = by_pair[("A", "OTHER")]
+    assert other["score"] > 0.6           # would be a match on name+geo alone
+    assert other["evidence"]["admin_path"] == 0.0
+    assert other["decision"] == "review"  # the conflict is what demotes it
+
+
+def test_containment_conflict_at_the_same_point_does_not_route_to_review():
+    # The counterpart, and the behaviour change this pins. Two records at
+    # IDENTICAL coordinates in "different states" is a statement about a
+    # boundary file, not about identity: there is no distance for the
+    # disagreement to be about. Refutation is withheld, so the pair is decided
+    # on its other evidence rather than being demoted on the admin label.
+    b = [{"id": "OTHER", "name": "General Hospital",
+          "admin_path": {"admin1": "Lagos", "admin2": "Ikeja"},
+          "lat": 12.00, "lon": 8.50}]
+    out = reconcile(_KANO_ANCHOR, b, _CONTAINMENT_COMPS, threshold=0.6,
+                    block="h3")
+    edge = {(m["a_id"], m["b_id"]): m for m in out["matches"]}[("A", "OTHER")]
+    assert edge["evidence"]["distance_km"] == 0.0
+    # Scored as "no evidence", never as agreement: below the 0.3 a genuinely
+    # shared admin1 earns, so nothing was manufactured.
+    assert 0.0 < edge["evidence"]["admin_path"] < 0.3
+    assert edge["decision"] == "match"
 
 
 def test_evidence_carries_no_raw_values():

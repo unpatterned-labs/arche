@@ -51,10 +51,9 @@ def test_version():
     # while `SECURITY.md` told readers to upgrade to it. Both that advisory and
     # the changelog now say so rather than quietly renumbering.
     #
-    # 0.4.0a1 -> 0.4.0a2 -> 0.4.0a3 are all metadata-only. Comparing a fresh
-    # build against each published wheel showed every code and data member
-    # byte-identical; only METADATA and this file differed. The bumps exist
-    # because the package description, keywords and long description are part
-    # of what PyPI serves, and those cannot be corrected in place. 0.4.0a3
-    # went out because 0.4.0a2 published an accuracy claim we then disproved.
-    assert __version__ == "0.4.0a3"
+    # 0.4.0a3 was prepared and never published. It was scoped as a
+    # documentation release, then a matching change landed in the same tree,
+    # which would have made its changelog false. Skipped rather than rewritten,
+    # so the version number and the claim stay in step. Nothing referenced it:
+    # it was never on the index and never tagged.
+    assert __version__ == "0.4.0a4"
