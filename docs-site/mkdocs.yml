@@ -86,6 +86,7 @@ nav:
     - How arche works: reference/how-arche-works.md
     - Decision contract: reference/decision-contract.md
     - Record resolution API: reference/record-resolution.md
+    - Benchmarks: reference/benchmarks.md
   - Contribute: contributing.md
 
 extra:
