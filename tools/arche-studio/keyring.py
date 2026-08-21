@@ -90,24 +90,87 @@ def public_identity(keypair: Any) -> dict:
     }
 
 
-def sign_pack_manifest(keypair: Any, *, pack: str, digest: str,
-                       rows: int, outcomes: dict[str, int]) -> dict:
-    """One signature over a whole adjudicated pack.
+def sign_adjudication(keypair: Any, *, pack: str, content_digest: str,
+                      rows: int, marks: dict) -> dict:
+    """Sign what each decision was adjudicated as, not how many of each there were.
 
-    Signing 360 edges separately proves no edge was altered and says nothing
-    about an edge being dropped. Hashing the manifest catches both, because the
-    row count and the pack digest are inside the thing being signed.
+    The previous version signed the pack digest, the row count, and a tally of
+    outcomes. That binds nothing to anything: two adjudications that disagree on
+    every single decision produce identical counts, so they produce an identical
+    signed payload and an identical signature. It proved a pack of 360 rows had
+    180 `same_entity` marks and said nothing about WHICH 180.
+
+    So the ledger is the thing hashed: one row per decision id, carrying the
+    outcome, the reviewer who chose it, and the reason. Sorted by decision id,
+    so the digest describes the adjudication rather than the order somebody
+    happened to work in. `outcomes_sha256` goes inside the signed body, which is
+    what binds decision to outcome.
+
+    The ledger itself is returned alongside, unsigned and in full. A verifier
+    recomputes the digest from it and checks that against the signature; anyone
+    editing one mark has to forge a signature rather than swap a file.
+
+    What this still does not establish is WHO reviewed. `reviewer` is a string
+    somebody typed and `marked_at` comes from the local clock. The signature
+    proves the ledger has not changed since it was signed, by the holder of one
+    key. It does not prove the names in it are real people or the times are
+    true. Read `valid` and `trusted` the same way the rest of arche does.
     """
     from arche.sign import sign as sign_jws
 
+    ledger = sorted(
+        (
+            {
+                "decision_id": did,
+                "outcome": mark.get("outcome", ""),
+                "reviewer": mark.get("reviewer", ""),
+                "reason": mark.get("reason", "") or "",
+                "marked_at": mark.get("marked_at", ""),
+            }
+            for did, mark in marks.items()
+        ),
+        key=lambda r: r["decision_id"],
+    )
+    ledger_canonical = json.dumps(ledger, sort_keys=True,
+                                  separators=(",", ":"), ensure_ascii=False)
+    counts: dict[str, int] = {}
+    for entry in ledger:
+        counts[entry["outcome"]] = counts.get(entry["outcome"], 0) + 1
+
     body = {
-        "schema": "arche.studio.pack-manifest.v1",
+        "schema": "arche.studio.adjudication.v2",
         "pack": pack,
-        "pack_digest": digest,
+        # The CONTENT digest, not the id-membership one. A pack whose names were
+        # edited after signing must not still verify.
+        "pack_content_sha256": content_digest,
         "rows": rows,
-        "outcomes": dict(sorted(outcomes.items())),
+        "marked": len(ledger),
+        # This is the binding. Recompute it from `ledger` to check.
+        "outcomes_sha256": hashlib.sha256(
+            ledger_canonical.encode("utf-8")).hexdigest(),
+        # Kept for reading at a glance. It is a summary of the line above, never
+        # a substitute for it.
+        "outcomes": dict(sorted(counts.items())),
     }
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
     body["manifest_sha256"] = hashlib.sha256(canonical).hexdigest()
-    return {"manifest": body,
+    return {"manifest": body, "ledger": ledger,
             "jws": sign_jws(body, keypair.private_key, kid=keypair.did_key)}
+
+
+def verify_adjudication(signed: dict) -> dict:
+    """Recompute the binding. Does this ledger match this signature's claim?
+
+    Separate from signature verification on purpose: a valid signature over the
+    wrong ledger is the failure this exists to catch.
+    """
+    manifest = signed.get("manifest") or {}
+    ledger = signed.get("ledger") or []
+    canonical = json.dumps(ledger, sort_keys=True,
+                           separators=(",", ":"), ensure_ascii=False)
+    recomputed = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    claimed = manifest.get("outcomes_sha256", "")
+    return {"outcomes_match": recomputed == claimed,
+            "recomputed_outcomes_sha256": recomputed,
+            "claimed_outcomes_sha256": claimed,
+            "marked": len(ledger)}

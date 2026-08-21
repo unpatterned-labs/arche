@@ -110,11 +110,12 @@ This is the manifest the call above writes, not an illustration of one:
     "distinctive_floor": 0.75,
     "tf": "self-calibrated@sha256:739ea1e68c3da830cabfa450277923b43e261aeaaf03903a48358c2e852c8acc"
   },
+  "content_sha256": "...",
   "decision_ids_sha256": "..."
 }
 ```
 
-`pins` says which engine, which comparator set, and which token-frequency table produced the decisions, so a pack reviewed months later still says what it was. `decision_ids_sha256` is what the studio's integrity digest is checked against.
+`pins` says which engine, which comparator set, and which token-frequency table produced the decisions, so a pack reviewed months later still says what it was. `content_sha256` covers every column the matcher wrote, so an edited name or a flipped decision moves it, and it is recomputable from the CSV alone with `arche.report.pack_content_digest`. `decision_ids_sha256` sits beside it and covers membership only: it notices a row added or dropped and nothing inside a row, which is why both are there.
 
 **Read the `tf` line.** `self-calibrated` means the frequency table was built from the two lists you passed, so it describes *this* pair of lists and nothing else. Rarity decides how much a shared name is worth, so the same two records compared inside a different batch can score differently and can land on a different decision. That is what self-calibration is for, and the digest is there so it is visible rather than implied: two packs whose `tf` digests differ were scored against different vocabularies and were never expected to agree.
 
@@ -126,7 +127,7 @@ A pack built with a shipped table pins `shipped:place@sha256:...` instead, and t
 
 **Save anonymously.** A reviewer name is required, because an unattributed adjudication cannot be audited.
 
-**Review a pack that changed underneath you.** The header shows an integrity digest computed over the pack's decision ids. If the file was edited between matching and reviewing, the digest moves.
+**Review a pack that changed underneath you.** The manifest carries `content_sha256` over every column the matcher wrote, so a name edited or a decision flipped between matching and reviewing moves it. The short digest in the header covers the decision ids only, which catches a row added or dropped and not an edit inside one.
 
 ## Scope
 

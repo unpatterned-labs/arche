@@ -100,8 +100,13 @@ def _load_pack(pack_id: str) -> dict:
     fields = list(rows[0].keys()) if rows else []
 
     # Integrity: a pack is only worth reviewing if it is the pack the matcher
-    # produced. The digest covers the decision ids, so an edited pack shows up.
-    ids = [r.get("decision_id", "") for r in rows]
+    # produced. `content_digest` covers every column the matcher wrote, so an
+    # edited name or a flipped decision shows up. `digest` is the short
+    # id-membership one the header has always displayed; it notices a row
+    # added or dropped and nothing inside a row, which is why both are here.
+    from arche.report import pack_content_digest
+
+    content_digest = pack_content_digest(rows, fields)
     digest = hashlib.sha256("\n".join(ids).encode()).hexdigest()[:16]
 
     manifest = None
@@ -120,6 +125,7 @@ def _load_pack(pack_id: str) -> dict:
                    key=lambda p: -len(prefixes[p]))[:2]
 
     return {"rows": rows, "fields": fields, "digest": digest,
+            "content_digest": content_digest,
             "manifest": manifest, "sides": sides, "outcomes": list(OUTCOMES)}
 
 
@@ -338,18 +344,23 @@ def _identity() -> dict:
 def _sign_pack(payload: dict) -> dict:
     """One signature over a whole adjudicated pack.
 
-    Signing every edge separately proves no edge was altered and says nothing
-    about an edge being removed. The manifest carries the row count and the
-    pack digest, so a dropped row changes what was signed.
+    Binds every decision id to the outcome it was given, so a signature says
+    which decisions were adjudicated which way rather than how many of each
+    there were. See `keyring.sign_adjudication`.
     """
     import keyring
 
     pack = payload["pack"]
     loaded = _load_pack(pack)
-    summary = STATE.summary(pack)
-    return keyring.sign_pack_manifest(
-        keyring.load_or_create(KEY_PATH), pack=pack, digest=loaded["digest"],
-        rows=len(loaded["rows"]), outcomes=summary["by_outcome"])
+    return keyring.sign_adjudication(
+        keyring.load_or_create(KEY_PATH), pack=pack,
+        # The CONTENT digest. Signing the id-membership digest let every name in
+        # the pack be rewritten after signing without breaking the signature.
+        content_digest=loaded["content_digest"],
+        rows=len(loaded["rows"]),
+        # Each decision and what it was marked, not a tally. Two adjudications
+        # that disagree on every row used to sign identically.
+        marks=STATE.current(pack))
 
 
 def _sign_demo(_payload: dict) -> dict:

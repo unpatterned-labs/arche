@@ -1,5 +1,5 @@
 {
-  "arche_version": "0.4.0a4",
+  "arche_version": "0.4.0a3",
   "blocking": {
     "candidate_pairs": 7361,
     "reduction_ratio": 0.9753,
@@ -11,6 +11,7 @@
       "token": 7361
     }
   },
+  "content_sha256": "516ef319c5febb42425c9fad7de47c13cba8dc21f5960d85f080d1579fa1064a",
   "decision_ids_sha256": "f61c267d0b0451f36a1582073c737f79d614ad4fb321eca328acd5a31f1edead",
   "decisions": {
     "match": 267,
@@ -18,7 +19,7 @@
   },
   "disclosure": "revealed (working copy)",
   "entity": "person",
-  "generated": "2026-08-21T14:07:16Z",
+  "generated": "2026-08-21T16:45:10Z",
   "meta": {
     "benchmark": "Parrish R RecordLinkage",
     "true_pairs": 294

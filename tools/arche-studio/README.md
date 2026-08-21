@@ -1,7 +1,7 @@
 # arche studio
 
 Compare two records, read spatial roles out of a document, or work a review
-queue. Three files, no Python dependencies beyond `arche-core` itself.
+queue. A handful of files, no Python dependencies beyond `arche-core` itself.
 
 ```bash
 python tools/arche-studio/serve.py
@@ -118,21 +118,23 @@ Restart the server, or just reload: the pack picker rereads the directory. Full
 notes, including what `reveal` costs you, are in
 `docs-site/docs/guides/review-log.md`.
 
-The `manifest.json` it writes beside the CSV is what the integrity digest in
-the header is checked against, and it carries the engine `pins`, so a pack
-opened months later still says which comparator set produced it.
+The `manifest.json` it writes beside the CSV carries both digests and the
+engine `pins`, so a pack opened months later still says which comparator set
+produced it.
 
 Three things are deliberate:
 
 **The original is never written to.** Saving produces a new `_reviewed.csv`
-beside it, so the matcher output and its decision-ID manifest stay intact.
+beside it, so the matcher output and its manifest stay intact.
 
 **A reviewer name is required.** An unattributed adjudication cannot be
 audited, so the save is refused without one.
 
-**The pack carries an integrity digest**, computed over its decision ids and
-shown in the header. If someone edits the pack between matching and reviewing,
-the digest moves.
+**The pack carries two digests.** `content_sha256` in the manifest covers every
+column the matcher wrote, so an edited name or a flipped decision moves it, and
+it is recomputable from the CSV with `arche.report.pack_content_digest`. The
+short digest in the header covers the decision ids only: it catches a row added
+or dropped and nothing inside a row.
 
 
 ## Deploying it
@@ -140,7 +142,9 @@ the digest moves.
 Short answer: don't, not as it stands.
 
 It binds to `127.0.0.1` and has no authentication, no CSRF protection, and no
-per-user anything. `POST /api/review` writes a file. Bound to `0.0.0.0` that
+per-user anything. Binding to localhost is not a security model: a container
+with a published port, a port-forward, or a browser induced into calling it can
+all reach a service that assumed nobody could. `POST /api/review` writes a file. Bound to `0.0.0.0` that
 becomes a remote write, and the only thing standing in front of it is the path
 check that keeps writes inside `data/review_packs/`. That is a guard against a
 mistake, not against an attacker.

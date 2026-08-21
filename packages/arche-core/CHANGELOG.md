@@ -42,6 +42,24 @@ On the Nigerian school register the adapter and the hand recipe both reach 190 t
 
 **Failures raise.** `SplinkBackendError`, never a quiet fall back to another algorithm.
 
+### Fixed — two integrity claims that were weaker than their wording
+
+Both found by an outside review of the review path, and both are the same shape as the pin faults above: the code did something narrower than the sentence describing it.
+
+**A review pack's digest covered its decision ids and nothing else.** `decision_ids_sha256` notices a row added or a row dropped, and misses every edit inside a row. Every name in a pack could be rewritten, a decision flipped, the evidence rewritten, and the digest still matched, while the guide beside it said an edited pack is visible.
+
+The manifest now also carries `content_sha256` over every column the matcher wrote, computed by `arche.report.pack_content_digest` and recomputable from the CSV alone, which is the point: a reviewer who was not there can read the pack and check it. The four review columns are excluded deliberately, because a reviewer filling them in is the pack being used rather than altered, and a digest that moved when somebody did their job would be checked once and then ignored. Rows are sorted first, so re-sorting a pack in a spreadsheet is not an alarm.
+
+`decision_ids_sha256` stays, named for what it is. Membership and content are different questions and both are worth answering.
+
+**A signed pack proved how many of each outcome, not which.** `sign_pack_manifest` signed the pack digest, the row count, and a tally: `{"same_entity": 180, "different": 180}`. Two adjudications that disagree on every single decision produce identical counts, so they produced an identical signed payload and an identical signature. It attested that somebody marked 180 rows one way without saying which 180.
+
+`sign_adjudication` replaces it. The thing hashed is a ledger, one row per decision id carrying the outcome, the reviewer and the reason, sorted by decision id, and its `outcomes_sha256` goes inside the signed body. That is what binds a decision to its outcome. The ledger is returned in full alongside, so `verify_adjudication` can recompute the digest and catch a swapped ledger under a valid signature.
+
+It signs the content digest rather than the id digest, so a pack whose names were edited after signing no longer verifies.
+
+**What this still does not establish is who reviewed.** `reviewer` is a string somebody typed and `marked_at` comes from the local clock. The signature proves the ledger has not changed since it was signed, by the holder of one key. It does not prove the names in it are real people or that the times are true, and the studio README says so where it talks about putting the tool behind an auth proxy.
+
 ### Fixed — `blocking_sha256` identified nothing
 
 It hashed `str()` of the Splink rule objects, which yields `<...BlockingRule object at 0x7f...>`. The pin therefore changed on every run and matched nothing, including itself. It now comes from the saved model's SQL, with a regression test that runs the same input twice.
