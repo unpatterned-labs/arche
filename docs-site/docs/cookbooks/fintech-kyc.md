@@ -76,15 +76,9 @@ async def on_intake_received(intake: IntakeRecord) -> RedactedIntake:
     )
 ```
 
-`AuditLog` has no `emit_pipeline_result` method - the surface is `emit`,
-`emit_many`, `query`, `count`, `compliance_report_markdown`, `export`, and
-`export_signed`. You build the events yourself from `result.detections` and
-`result.policy_outcomes`, as above; `result.audit_log` is a `list[dict]` for
-your own logging pipeline and cannot be passed to `emit_many` directly.
+`AuditLog` has no `emit_pipeline_result` method - the surface is `emit`, `emit_many`, `query`, `count`, `compliance_report_markdown`, `export`, and `export_signed`. You build the events yourself from `result.detections` and `result.policy_outcomes`, as above; `result.audit_log` is a `list[dict]` for your own logging pipeline and cannot be passed to `emit_many` directly.
 
-Written this way the log stores only category labels, span offsets, detector
-names, statute references, and document hashes. PII values are never stored
-(PRD Section 8.2).
+Written this way the log stores only category labels, span offsets, detector names, statute references, and document hashes. PII values are never stored (PRD Section 8.2).
 
 ## What goes to the warehouse, what stays out
 
@@ -109,10 +103,7 @@ bundle = audit.export_signed(
 # Email the bundle (or upload to NDPC portal). The auditor verifies offline.
 ```
 
-`since` / `until` must be `datetime` objects - passing date strings raises
-`AttributeError: 'str' object has no attribute 'isoformat'`. All of
-`export_signed`'s parameters are keyword-only, and it returns a compact JWS
-`str`.
+`since` / `until` must be `datetime` objects - passing date strings raises `AttributeError: 'str' object has no attribute 'isoformat'`. All of `export_signed`'s parameters are keyword-only, and it returns a compact JWS `str`.
 
 The bundle is a JWS envelope binding the audit rows + the statute version + the officer's `did:key`. The auditor verifies cryptographically that nothing changed since signing.
 

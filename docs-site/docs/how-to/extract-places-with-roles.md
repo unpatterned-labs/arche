@@ -73,7 +73,7 @@ grade.per_role["destination"]["f1"]   # per-role F1
 grade.abstentions                     # the honesty numbers
 ```
 
-`grade_places` accepts plain dicts (`{"start", "end", "role", ...}`), so a non-Python extractor's JSON grades against the identical set. Scoring inherits the harness discipline: predicting `unknown` where gold committed is a *non-answer* (counted as `missed_by_abstention`, never a false positive); predicting a role where gold is `unknown` is an **over-guess** and a false positive, that is the failure mode this eval prices. Empty denominators return `None`, never a fake zero. 
+`grade_places` accepts plain dicts (`{"start", "end", "role", ...}`), so a non-Python extractor's JSON grades against the identical set. Scoring inherits the harness discipline: predicting `unknown` where gold committed is a *non-answer* (counted as `missed_by_abstention`, never a false positive); predicting a role where gold is `unknown` is an **over-guess** and a false positive, that is the failure mode this eval prices. Empty denominators return `None`, never a fake zero.
 
 The shipped deterministic extractor is the transparent baseline row: on the v1 set it scores span F1 0.99, per-role F1 0.97–1.0, cue accuracy 1.0, with exactly one documented over-guess (the attributive trap: "the invoice **from our Lagos office**" has a movement-shaped cue and no movement, the known blind spot of cue-based labeling, and a sentence type we deliberately kept in the gold set).
 

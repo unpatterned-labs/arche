@@ -39,13 +39,9 @@ The result has this shape:
 }
 ```
 
-Key options include `threshold`, `review_margin`, `id_field`, and `truth_pairs`.
-Candidates below `threshold - review_margin` are omitted. A candidate that
-otherwise reaches `match` can be downgraded to `review` by a conflict or a
-distinctive-evidence gate.
+Key options include `threshold`, `review_margin`, `id_field`, and `truth_pairs`. Candidates below `threshold - review_margin` are omitted. A candidate that otherwise reaches `match` can be downgraded to `review` by a conflict or a distinctive-evidence gate.
 
-Read the [decision contract](decision-contract.md) before sending these results
-to a downstream workflow.
+Read the [decision contract](decision-contract.md) before sending these results to a downstream workflow.
 
 ## `pairwise(a, b, *, entity="person", **kwargs)`
 
@@ -61,15 +57,11 @@ decision = pairwise(
 print(decision.identity)
 ```
 
-`decision.identity` is `same_entity`, `review`, or `different`. This is a
-different contract from `crosswalk()` and its labels should not be treated as
-interchangeable.
+`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `crosswalk()` and its labels should not be treated as interchangeable.
 
 ## Signing crosswalk edges
 
-Use `sign_edges()` to sign selected crosswalk candidates. The signed payload
-contains the edge and the run pins, allowing a recipient to verify the artifact
-and recompute its decision identifier.
+Use `sign_edges()` to sign selected crosswalk candidates. The signed payload contains the edge and the run pins, allowing a recipient to verify the artifact and recompute its decision identifier.
 
 ```python
 from arche.resolve.reconcile import sign_edges
@@ -80,5 +72,4 @@ signed = sign_edges(result, private_key=keypair.private_key, kid=keypair.did_key
 assert signed
 ```
 
-Read the source and tests for the complete current parameter contract. Alpha
-APIs can change between releases.
+Read the source and tests for the complete current parameter contract. Alpha APIs can change between releases.

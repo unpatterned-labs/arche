@@ -16,9 +16,7 @@ from arche.detect._africa.ids import detect_african_ids
 from arche.detect._africa.phones import normalize_e164, validate_phone
 ```
 
-These per-country detectors return `NationalID` objects - a lighter record than the
-[`Detection`](pipeline.md#detection) the `Pipeline` emits. Fields: `text`, `country`,
-`id_type`, `confidence`, `start`, `end`, `metadata`:
+These per-country detectors return `NationalID` objects - a lighter record than the [`Detection`](pipeline.md#detection) the `Pipeline` emits. Fields: `text`, `country`, `id_type`, `confidence`, `start`, `end`, `metadata`:
 
 ```python
 from arche.detect.ng.ids import detect_nigerian_ids
@@ -28,9 +26,7 @@ detect_nigerian_ids("NIN 12345678901, BVN 22156789012.")[0]
 #            start=21, end=32, metadata={'validator_status': 'format_valid'})
 ```
 
-Run the same text through `Pipeline` to get `Detection` objects carrying the
-[Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml)
-category label, the sensitivity tier, and the statute citation.
+Run the same text through `Pipeline` to get `Detection` objects carrying the [Pan-African PII Taxonomy v0.1](https://github.com/unpatterned-labs/arche/blob/main/datasets/pan-african-pii-taxonomy/v0.1.yaml) category label, the sensitivity tier, and the statute citation.
 
 > Most callers don't need this surface directly - `Pipeline(jurisdiction=...)` calls the right detectors automatically. Use these primitives when you're building your own composition.
 
@@ -75,9 +71,7 @@ validate_phone("+254 712 345 678", default_country="KE")
 #  'region_hint': 'Kenya'}
 ```
 
-The keyword is `default_country`, not `country`, and it defaults to `"NG"`.
-`normalize_e164` returns `str | None`; `validate_phone` returns a `dict`, not a
-tuple.
+The keyword is `default_country`, not `country`, and it defaults to `"NG"`. `normalize_e164` returns `str | None`; `validate_phone` returns a `dict`, not a tuple.
 
 Wraps the `phonenumbers` Python port of libphonenumber. Covers 30+ African telecom networks per PRD FR-DETECT-9.
 
@@ -91,13 +85,9 @@ The GLiNER2 NER backend is available behind the `[detect]` extra:
 pip install arche-core[detect]
 ```
 
-There is **no public API under `arche.detect.gliner` or `arche.detect.presidio`** -
-both packages are empty placeholder namespaces in this release. `import
-arche.detect.gliner` succeeds but the module exports nothing, so any
-`from arche.detect.gliner import ...` line raises `ImportError`.
+There is **no public API under `arche.detect.gliner` or `arche.detect.presidio`** - both packages are empty placeholder namespaces in this release. `import arche.detect.gliner` succeeds but the module exports nothing, so any `from arche.detect.gliner import ...` line raises `ImportError`.
 
-The optional backends are wired in through `backend=` on the extraction entry
-point instead:
+The optional backends are wired in through `backend=` on the extraction entry point instead:
 
 ```python
 from arche.extract import extract
@@ -108,9 +98,6 @@ extract("Call 0803 555 7890", backend="regex")
 extract(text, backend="gliner")   # raises ModuleNotFoundError without [detect]
 ```
 
-`backend` accepts `"auto"` (default - GLiNER when installed, regex otherwise),
-`"auto+llm"`, `"gliner"`, and `"regex"`. Presidio is reached through
-`arche.protect`, which uses it when installed and falls back to regex when it is
-not; it has no `arche.detect.presidio` surface.
+`backend` accepts `"auto"` (default - GLiNER when installed, regex otherwise), `"auto+llm"`, `"gliner"`, and `"regex"`. Presidio is reached through `arche.protect`, which uses it when installed and falls back to regex when it is not; it has no `arche.detect.presidio` surface.
 
 Future model-backed detectors will be documented when they are ready for public evaluation.

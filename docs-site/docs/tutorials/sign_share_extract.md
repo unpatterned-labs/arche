@@ -20,8 +20,7 @@ No external services. No infrastructure. Pure crypto + structured JSON.
 pip install arche-core
 ```
 
-That's the full dependency surface for this tutorial. No extras
-required.
+That's the full dependency surface for this tutorial. No extras required.
 
 ## Step 1 - Process the document
 
@@ -160,7 +159,6 @@ The third party knows the credential was issued by the bank (signature binds the
 
 ## What's next
 
-- [Citizen DSAR tutorial](citizen_dsar.md) - uses the same primitives to
-  generate compliant DSAR letters for NDPA / POPIA / Kenya DPA / Ghana DPA.
+- [Citizen DSAR tutorial](citizen_dsar.md) - uses the same primitives to generate compliant DSAR letters for NDPA / POPIA / Kenya DPA / Ghana DPA.
 - [`arche.sign` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/sign) - signing primitives.
 - [`arche.credentials` source](https://github.com/unpatterned-labs/arche/tree/main/packages/arche-core/src/arche/credentials) - SD-JWT-VC details.

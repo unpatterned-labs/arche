@@ -377,8 +377,20 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     the run's ``pins`` (which include the declaration pin when ``decl=`` is
     used, and the tf table's provenance); sign edges with
     :func:`arche.resolve.reconcile.sign_edges`.
+
+    ``backend="splink"`` swaps the scorer for Splink and keeps everything
+    around it. It additionally requires ``splink_settings=``, a Splink
+    ``SettingsCreator`` you wrote (or the string ``"derive"``, which infers one
+    from the pack, warns, and is best-effort). See
+    :mod:`arche.resolve._splink_backend` for why arche does not pick one for
+    you.
     """
     extra_pins = dict(kwargs.pop("extra_pins", None) or {})
+    # Read early: the token-frequency work below is arche's own scoring input,
+    # and a backend that does not consume it must not pin one. Splink applies
+    # term frequency inside its own name comparisons, so building a table here
+    # and naming it in the pin would claim an input the decision never saw.
+    backend = kwargs.pop("backend", None)
     tf_provenance: str | None = None
     if isinstance(tf, str):
         tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"
@@ -399,6 +411,13 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
                 if isinstance(tf, str) else "provided"
     if comparators is None:
         if entity is None:
+            # One exception: `backend="splink"` with the caller's own
+            # `SettingsCreator` needs no pack at all. The settings already say
+            # what to compare and how, and demanding a comparator pack besides
+            # would be asking for a second description of the same thing.
+            # `splink_settings="derive"` does need one and says so itself.
+            if backend == "splink" and kwargs.get("splink_settings") is not None:
+                return _splink(list_a, list_b, None, extra_pins, kwargs)
             raise ValueError(
                 f"pass entity= (one of {sorted(ENTITY_PACKS)}), decl=, or "
                 "explicit comparators="
@@ -409,7 +428,9 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             raise ValueError(
                 f"unknown entity pack {entity!r}; available: {sorted(ENTITY_PACKS)}"
             ) from None
-    if tf is None and any(c.get("kind") == "tftoken" for c in comparators):
+    if (backend in (None, "arche")
+            and tf is None
+            and any(c.get("kind") == "tftoken" for c in comparators)):
         domain = _PACK_TF_DOMAIN.get(entity or "")
         if domain is not None:
             # This pack's population is not the lists being linked (a small
@@ -466,8 +487,38 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
                              else "self-calibrated")
     if tf_provenance is not None:
         extra_pins.setdefault("tf", tf_provenance)
-    return reconcile(list_a, list_b, comparators, tf=tf,
-                     extra_pins=extra_pins or None, **kwargs)
+
+    # Backend dispatch. The default is arche's own engine and stays that way;
+    # `backend="splink"` swaps the SCORER and keeps everything arche puts around
+    # it (evidence, refusal, pins, decision ids), returning the same result
+    # shape so `review_pack`, `crosswalk_report` and the studio are unaffected.
+    #
+    # It is opt-in because it is a different scoring model with different
+    # provenance: it trains on the corpus, so its pins name a model and a
+    # corpus rather than a comparator set alone. Selecting it is a decision, not
+    # a default somebody inherits.
+    #
+    # It also requires `splink_settings=`. arche will not infer a Splink
+    # configuration from a comparator pack behind the caller's back: a pack
+    # says "compare this as a name" and says nothing about column dtype, date
+    # format or field cardinality, and inferring them measured worse than
+    # arche's own engine. `splink_settings="derive"` opts into the inference
+    # and warns.
+    if backend in (None, "arche"):
+        return reconcile(list_a, list_b, comparators, tf=tf,
+                         extra_pins=extra_pins or None, **kwargs)
+    if backend == "splink":
+        return _splink(list_a, list_b, comparators, extra_pins, kwargs)
+    raise ValueError(
+        f"unknown backend {backend!r}; available: 'arche' (default), 'splink'"
+    )
+
+
+def _splink(list_a, list_b, comparators, extra_pins: dict, kwargs: dict):
+    """Hand off to the Splink backend. One call site, reached from two places."""
+    from arche.resolve._splink_backend import splink_crosswalk
+    return splink_crosswalk(list_a, list_b, comparators,
+                            extra_pins=extra_pins or None, **kwargs)
 
 # The v0.1 callable-module shim (``arche.resolve(text)`` forwarding to the
 # pipeline with a DeprecationWarning) was removed in v0.3.0a1 as promised.

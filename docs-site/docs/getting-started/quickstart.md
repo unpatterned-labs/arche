@@ -1,8 +1,6 @@
 # Resolve two lists
 
-This example links a facility registry to a survey. Each list has a stable row
-identifier, a name, and coordinates. The same approach works for other entity
-packs when their relevant fields are present.
+This example links a facility registry to a survey. Each list has a stable row identifier, a name, and coordinates. The same approach works for other entity packs when their relevant fields are present.
 
 ```python
 from arche.resolve import crosswalk
@@ -31,8 +29,7 @@ for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"])
 ```
 
-The returned candidate is labelled `match` when it clears both the score
-threshold and the distinctive-evidence gate.
+The returned candidate is labelled `match` when it clears both the score threshold and the distinctive-evidence gate.
 
 ```text
 registry-1 survey-7 match
@@ -40,8 +37,7 @@ registry-1 survey-7 match
 
 ## Read the result before acting on it
 
-`result["matches"]` contains only candidates that reached the review floor.
-Each edge contains:
+`result["matches"]` contains only candidates that reached the review floor. Each edge contains:
 
 - `a_id` and `b_id`, the source record identifiers
 - `decision`, either `match` or `review`
@@ -49,16 +45,11 @@ Each edge contains:
 - `evidence`, the per-field comparison results
 - `decision_id`, a reproducible identifier for the evidence and run settings
 
-Pairs below the review floor are not returned. Their absence is not proof that
-the records describe different entities.
+Pairs below the review floor are not returned. Their absence is not proof that the records describe different entities.
 
-Use `review` as a queue for an accountable human or business process. Do not
-promote it to a match solely because its score is high.
+Use `review` as a queue for an accountable human or business process. Do not promote it to a match solely because its score is high.
 
-All five standalone scripts, including Pipeline, document resolution, direct
-person comparison, address parsing, and spatial roles, are in [How arche
-works](../reference/how-arche-works.md). They run from an installed package and
-do not require the notebooks.
+All five standalone scripts, including Pipeline, document resolution, direct person comparison, address parsing, and spatial roles, are in [How arche works](../reference/how-arche-works.md). They run from an installed package and do not require the notebooks.
 
 ## Next steps
 

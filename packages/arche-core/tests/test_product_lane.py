@@ -374,7 +374,7 @@ class TestBenchmarkContract:
     def test_the_published_abt_buy_figures_hold(self, abtbuy):
         """TP 741, FP 22 — the numbers in the CHANGELOG.
 
-        Was TP 728 until 0.4.0a5. The rare-token blocker skipped any token over
+        Was TP 728 until 0.5.0a1. The rare-token blocker skipped any token over
         its cost bound, so a record whose tokens were *all* common got no
         blocking key and was never compared with anything. Keying on pairs of
         over-common tokens recovered 13 true matches here and **no** false ones,

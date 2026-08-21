@@ -89,25 +89,30 @@ def _score_pairs(pairs, n_true, label, extra=None) -> dict:
 
 
 # ---------------------------------------------------------------- splink ----
-def run_splink(a_rows, b_rows, *, with_ssn: bool) -> tuple[list, dict]:
-    import pandas as pd
+SPLINK_COLUMNS = ("given_name", "surname", "date_of_birth", "soc_sec_id",
+                  "street_number", "address_1", "postcode", "state")
+
+
+def splink_record(r: dict) -> dict:
+    """One Febrl row as the columns the Splink recipe compares.
+
+    `bench_backend_compare.py` feeds these to `crosswalk(backend="splink")`,
+    which is the whole point of the adapter: the caller keeps their own schema
+    instead of flattening it into arche's `name` and `address` blobs first.
+    """
+    return {"id": r["rec_id"],
+            **{c: (r.get(c) or None) for c in SPLINK_COLUMNS}}
+
+
+def splink_settings(*, with_ssn: bool):
+    """The hand-written configuration, in one place.
+
+    `bench_backend_compare.py` runs the SAME object through the adapter. A
+    second copy of these settings living over there would be able to drift
+    until the two arms stopped being comparable.
+    """
     import splink.comparison_library as cl
-    from splink import DuckDBAPI, Linker, SettingsCreator, block_on
-
-    def frame(rows):
-        return pd.DataFrame([{
-            "unique_id": r["rec_id"],
-            "given_name": r.get("given_name") or None,
-            "surname": r.get("surname") or None,
-            "date_of_birth": r.get("date_of_birth") or None,
-            "soc_sec_id": r.get("soc_sec_id") or None,
-            "street_number": r.get("street_number") or None,
-            "address_1": r.get("address_1") or None,
-            "postcode": r.get("postcode") or None,
-            "state": r.get("state") or None,
-        } for r in rows])
-
-    df_a, df_b = frame(a_rows), frame(b_rows)
+    from splink import SettingsCreator, block_on
 
     # Splink's own blocking rules from the published example.
     blocking = [
@@ -131,14 +136,17 @@ def run_splink(a_rows, b_rows, *, with_ssn: bool) -> tuple[list, dict]:
         blocking.insert(3, block_on("soc_sec_id"))
         comparisons.append(cl.DamerauLevenshteinAtThresholds("soc_sec_id", [1, 2]))
 
-    settings = SettingsCreator(
+    return SettingsCreator(
         link_type="link_only",
         comparisons=comparisons,
         blocking_rules_to_generate_predictions=blocking,
         retain_intermediate_calculation_columns=False,
     )
-    linker = Linker([df_a, df_b], settings, db_api=DuckDBAPI(),
-                    input_table_aliases=["a", "b"])
+
+
+def splink_train(linker, *, with_ssn: bool) -> None:
+    """The hand-written training recipe, in one place. See `splink_settings`."""
+    from splink import block_on
 
     deterministic = [block_on("given_name", "surname", "date_of_birth")]
     if with_ssn:
@@ -148,6 +156,21 @@ def run_splink(a_rows, b_rows, *, with_ssn: bool) -> tuple[list, dict]:
     linker.training.estimate_u_using_random_sampling(max_pairs=2e6)
     for rule in (block_on("date_of_birth"), block_on("postcode")):
         linker.training.estimate_parameters_using_expectation_maximisation(rule)
+
+
+def run_splink(a_rows, b_rows, *, with_ssn: bool) -> tuple[list, dict]:
+    import pandas as pd
+    from splink import DuckDBAPI, Linker
+
+    def frame(rows):
+        return pd.DataFrame([{"unique_id": r["rec_id"],
+                              **{c: (r.get(c) or None) for c in SPLINK_COLUMNS}}
+                             for r in rows])
+
+    df_a, df_b = frame(a_rows), frame(b_rows)
+    linker = Linker([df_a, df_b], splink_settings(with_ssn=with_ssn),
+                    db_api=DuckDBAPI(), input_table_aliases=["a", "b"])
+    splink_train(linker, with_ssn=with_ssn)
 
     preds = linker.inference.predict(threshold_match_probability=0.2)
     df = preds.as_pandas_dataframe()

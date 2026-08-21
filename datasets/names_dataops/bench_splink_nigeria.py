@@ -144,14 +144,18 @@ def norm(p):
     return (a, b) if a <= b else (b, a)
 
 
-def run_splink(records):
-    import pandas as pd
-    import splink.comparison_library as cl
-    from splink import DuckDBAPI, Linker, SettingsCreator, block_on
+def splink_settings():
+    """The hand-written configuration, in one place.
 
-    df = pd.DataFrame([{"unique_id": r["id"], "name": r["name"],
-                        "lat": r["lat"], "lon": r["lon"]} for r in records])
-    settings = SettingsCreator(
+    `bench_backend_compare.py` runs the SAME object through
+    `crosswalk(backend="splink")`. If the adapter is faithful the two arms
+    produce identical counts, and a second copy of these settings living over
+    there would be able to drift until they no longer did.
+    """
+    import splink.comparison_library as cl
+    from splink import SettingsCreator, block_on
+
+    return SettingsCreator(
         link_type="dedupe_only",
         blocking_rules_to_generate_predictions=[
             # Reaches the negatives, which share a name exactly.
@@ -172,7 +176,12 @@ def run_splink(records):
         ],
         retain_intermediate_calculation_columns=False,
     )
-    linker = Linker(df, settings, db_api=DuckDBAPI())
+
+
+def splink_train(linker):
+    """The hand-written training recipe, in one place. See `splink_settings`."""
+    from splink import block_on
+
     linker.training.estimate_probability_two_random_records_match(
         [block_on("name")], recall=0.5)
     linker.training.estimate_u_using_random_sampling(max_pairs=2e6)
@@ -185,6 +194,16 @@ def run_splink(records):
             linker.training.estimate_parameters_using_expectation_maximisation(rule)
         except Exception as exc:      # noqa: BLE001
             print(f"    EM on {rule} did not converge: {exc}", flush=True)
+
+
+def run_splink(records):
+    import pandas as pd
+    from splink import DuckDBAPI, Linker
+
+    df = pd.DataFrame([{"unique_id": r["id"], "name": r["name"],
+                        "lat": r["lat"], "lon": r["lon"]} for r in records])
+    linker = Linker(df, splink_settings(), db_api=DuckDBAPI())
+    splink_train(linker)
     out = linker.inference.predict(
         threshold_match_probability=0.01).as_pandas_dataframe()
     return [(norm(p), s) for p, s in zip(
