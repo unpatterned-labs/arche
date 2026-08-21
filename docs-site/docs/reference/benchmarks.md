@@ -127,6 +127,53 @@ general; it is the same task run both ways with the code to check it.
 
 Script: `datasets/names_dataops/bench_splink_febrl.py`.
 
+### Splink, on Nigerian school names
+
+The two runs below are on data where a name is a reasonably distinctive thing.
+This is the one where it is not, and it was chosen because it is the case arche
+is designed for: `COMMUNITY PRIMARY SCHOOL` occurs 200 times across 21 states.
+If the representation argument holds anywhere against a strong baseline, it
+holds here.
+
+13,200 records. Negatives are **observed**: 400 pairs sharing a name exactly
+across a state line, and two schools in different states are not one school.
+Positives are **constructed**: one record recorded twice with an ordinary
+recording difference and a jittered coordinate, so the true-merge column is a
+statement about that construction. Both engines face the same construction, and
+both are given name and coordinates.
+
+| engine | true merges of 400 | false merges of 400 |
+| --- | ---: | ---: |
+| Splink, p ≥ 0.99 | 0 | 0 |
+| Splink, p ≥ 0.95 | 1 | 0 |
+| **Splink, p ≥ 0.9** | **190** | **0** |
+| Splink, p ≥ 0.5 | 190 | 12 |
+| **arche, match** | **146** | **2** |
+| arche, match + review | 199 | 393 (queued, not merged) |
+
+**Splink wins on both axes.** At its best operating point it finds 190 true
+merges and makes none of the 400 false ones. arche finds 146 and makes 2.
+
+This is the result that matters most on this page, because this dataset was
+picked to favour arche and did not. The prediction behind the representation
+argument, that a name-frequency-weighted score would over-merge here where a
+distinctive-signal gate would not, is **not** what happened: Splink's term
+frequency adjustments handled the collisions, and it kept more recall doing it.
+
+Two things about arche's last row. `review` is a queue, not a merge, so 393 is
+not a false-merge count; it is the gate surfacing nearly every same-name pair
+for a human. That is the designed behaviour and it is also an operational cost
+nobody should discover later.
+
+**Caveats.** Splink reported one comparison level it could not train
+("Distance less than 2km ... not observed"), which if anything understates it.
+Its probabilities cliff sharply between 0.95 and 0.9, so the operating point
+matters more here than on the other two datasets. And the positives are
+constructed, so read the true-merge column as a control that both engines can
+still find things, not as recall.
+
+Script: `datasets/names_dataops/bench_splink_nigeria.py`.
+
 ### Splink, on `historical_50k`
 
 Febrl's records were invented by a generator and then corrupted by it. This is
@@ -172,13 +219,50 @@ Counting what arche surfaces rather than what it merges:
 Even surfacing everything it is unsure about, arche reaches 0.4418 against
 Splink's 0.5048 at near-perfect precision and with no queue for anyone to work.
 
-**What this does not show.** Splink is run close to its published recipe, and
-both engines use a fixed decision point rather than a swept threshold: Splink at
-0.99 match probability, arche at its own defaults. Splink's recall rises at a
-lower threshold and its precision falls. This is one operating point each, not a
-curve, and a tuned Splink would do better still.
-
 Script: `datasets/names_dataops/bench_splink_historical.py`.
+
+#### The same comparison at matched precision
+
+One operating point each measures two default settings, not two engines. Sweeping
+both and reading recall off at the same precision:
+
+| precision | Splink recall | arche recall | gap |
+| ---: | ---: | ---: | ---: |
+| 0.999 | 0.5131 | 0.1472 | −0.3660 |
+| 0.990 | 0.6060 | 0.2971 | −0.3089 |
+| 0.980 | 0.6265 | 0.3339 | −0.2926 |
+| 0.950 | 0.6481 | 0.4257 | −0.2225 |
+| 0.900 | 0.6565 | 0.4598 | −0.1967 |
+
+Splink is ahead at every precision, by 20 to 37 points of recall. The sweep does
+not rescue arche; it makes the size of the gap legible.
+
+**Where the gap comes from matters more than its size.** A matcher can only
+decide pairs it was shown, so the candidate set bounds everything:
+
+| | candidate pairs | recall ceiling | converted at p=0.99 |
+| --- | ---: | ---: | ---: |
+| Splink | 241,899 | 0.6593 | 91.9% |
+| arche | 246,903 | 0.4878 | 60.9% |
+
+arche generates **more** candidate pairs than Splink and covers **fewer** true
+ones. Its blocking is not too small, it is aimed badly: the same budget spent on
+the wrong pairs. 0.4878 is a hard ceiling no threshold can lift, and it sits
+below Splink's *operating* recall of 0.6060.
+
+The second column is the other half. Splink converts 91.9% of the recall its
+candidates make available; arche converts 60.9%. So arche is behind on both
+axes, and roughly half the gap is candidate generation rather than scoring.
+
+That split is worth stating plainly because the two have different meanings.
+Blocking is machinery, and machinery is fixable. Scoring is where the
+representation argument lives, and 60.9% against 91.9% is not a small deficit
+there either.
+
+Script: `datasets/names_dataops/bench_sweep_historical.py`. arche is run with
+`threshold=0.0, review_margin=0.0` so the curve is limited by blocking rather
+than by the default decision point. That is not a production setting; it exists
+to separate "scored badly" from "never seen".
 
 ### Python `recordlinkage`, Febrl 4
 

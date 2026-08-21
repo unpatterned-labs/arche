@@ -287,6 +287,42 @@ _PACK_TF_DOMAIN: dict[str, str] = {
 
 
 
+def _provided_tf_pin(tf: TokenFrequencyTable) -> str:
+    """Name a caller-supplied token-frequency table, not merely its existence.
+
+    This used to pin the string ``"provided"``. A token-frequency table decides
+    which tokens are rare, and rarity is both a comparator input and a blocking
+    key, so two different tables reach different verdicts on the same pair. The
+    rest of this file already states that rule and follows it for shipped
+    tables, which pin as ``shipped:place@sha256:...``. A caller's own table got
+    the one word, so two runs that could not agree pinned identically, and
+    `decision_id` claimed a reproducibility it did not have.
+
+    Falls back to the bare word only when the table cannot be serialised. That
+    is a weaker claim and it reads as one: no digest means the table was not
+    identified, rather than quietly implying it was.
+    """
+    version = getattr(tf, "version", None)
+    if version:
+        return f"provided@{version}"
+    digest = _tf_digest(tf)
+    return f"provided@sha256:{digest}" if digest else "provided"
+
+
+def _tf_digest(tf: TokenFrequencyTable) -> str | None:
+    """sha256 over the table's canonical form, or ``None`` if it will not serialise.
+
+    The table, not the corpus it came from. The table IS the scoring input, it
+    is an aggregate rather than a copy of the records, and hashing it keeps the
+    pin the same size whether it was built from ten names or ten million.
+    """
+    try:
+        from arche.ids import content_hash
+        return content_hash(tf.to_dict(), prefix="tf").split(":")[-1]
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
 def pairwise(a, b, *, entity: str = "person", **kwargs):
     """Decide whether two records/documents/results refer to the same entity.
 
@@ -347,7 +383,7 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     if isinstance(tf, str):
         tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"
     elif tf is not None:
-        tf_provenance = "provided"
+        tf_provenance = _provided_tf_pin(tf)
     if decl is not None:
         # A declaration IS a user-defined entity pack: generated comparators,
         # its own id_field and tf defaults. Explicit args still win.
@@ -408,7 +444,26 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
             texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
             tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
-            tf_provenance = "self-calibrated"
+            # Name the table this run built, not merely the fact that it built
+            # one. A self-calibrated table is computed FROM THE TWO LISTS, so
+            # the same pair scored in two different batches gets two different
+            # rarities and can get two different decisions. Measured on one
+            # pair: `Ngozi Adeyemi` against `Ngozi Adeyemi Bello` scores 0.7135
+            # and matches among twelve unrelated names, and 0.6608 and goes to
+            # review among twelve other Adeyemis.
+            #
+            # Pinning the bare string `self-calibrated` said a table existed
+            # and not which one, so both of those runs pinned identically while
+            # disagreeing about the answer. That is the same fault the shipped
+            # tables avoid by naming a digest, and it made `decision_id` claim
+            # a reproducibility it did not have.
+            #
+            # With the digest the batch dependence is still real. It is now
+            # VISIBLE: two decisions carrying different tf digests were scored
+            # against different vocabularies and were never expected to agree.
+            digest = _tf_digest(tf)
+            tf_provenance = (f"self-calibrated@sha256:{digest}" if digest
+                             else "self-calibrated")
     if tf_provenance is not None:
         extra_pins.setdefault("tf", tf_provenance)
     return reconcile(list_a, list_b, comparators, tf=tf,

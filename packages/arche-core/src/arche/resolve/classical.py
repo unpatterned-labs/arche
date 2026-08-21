@@ -100,13 +100,23 @@ def resolve_entities(
     entities:
         Raw entities from :func:`arche.extract.extract`.
     use_splink:
-        If ``True`` (default) attempt to use Splink for probabilistic
-        resolution. Falls back to fuzzy matching when Splink is not installed.
+        If ``True`` (default) use Splink for probabilistic resolution when it is
+        installed and there are at least 10 entities to train on. Falls back to
+        fuzzy matching **only** when Splink is absent, which is a configuration
+        choice rather than a failure.
 
     Returns
     -------
     list[ResolvedEntity]
         Deduplicated, merged entity records.
+
+    Raises
+    ------
+    Exception
+        Whatever the Splink backend raised. Errors other than a missing install
+        propagate: a backend that fails part-way must not quietly return output
+        from a different algorithm in the same shape. Pass ``use_splink=False``
+        to choose fuzzy matching deliberately.
     """
     if not entities:
         return []
@@ -117,9 +127,24 @@ def resolve_entities(
         try:
             return _resolve_splink(entities)
         except ImportError:
-            pass
-        except Exception as e:
-            _log.warning("Splink resolution failed, falling back to fuzzy: %s", e)
+            # Splink is an optional extra. Not installing it is a configuration
+            # choice, so falling back is the documented behaviour rather than a
+            # failure — but it is still a different algorithm producing the
+            # result, so it is said out loud rather than logged at debug.
+            _log.info(
+                "Splink is not installed; resolving with fuzzy matching instead. "
+                "Install with: pip install arche-core[resolve]"
+            )
+
+        # Anything else is NOT caught. It used to be, and the result was that a
+        # Splink backend which failed part-way returned fuzzy output in the same
+        # shape, with nothing in the return value saying the algorithm had
+        # changed. For a library whose claim is auditable decisions, silently
+        # swapping the thing that made the decision is the worst available
+        # behaviour: the caller cannot see it, and the output cannot be
+        # distinguished from a run that went as intended.
+        #
+        # A caller who wants the fallback asks for it, with `use_splink=False`.
 
     return _resolve_fuzzy(entities)
 

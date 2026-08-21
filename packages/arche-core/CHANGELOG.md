@@ -7,6 +7,98 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 **A date comparator in the `person` pack, and a way to export a match result
 for review.**
 
+### Fixed — two pins that claimed more reproducibility than they delivered
+
+Both found by an outside review of the resolve lane, and both are the same fault:
+the code states a rule in its own comments and then does not follow it.
+
+**`comparators_sha256` was truncated to 16 hex characters.** Sixty-four bits is
+fine against accident and not fine against anyone who wants two comparator sets
+to pin identically, and the field is named for a digest it was not holding. A pin
+exists so a third party can check which configuration produced a decision, and a
+pin that can be collided on purpose cannot do that. It is now the full digest.
+
+**A self-calibrated table pinned as the word `self-calibrated`.** This is the
+one that matters, because self-calibration is the default for `person` and for
+any pack without a shipped table: the table is built *from the two lists being
+linked*, so the same pair scored in two different batches is scored against two
+different vocabularies.
+
+That is not a bug. It is what self-calibration means, and the docstring says so.
+The bug was that the pin did not admit it. Measured on one pair, `Ngozi Adeyemi`
+against `Ngozi Adeyemi Bello`:
+
+| batch | tftoken | score | decision |
+| --- | ---: | ---: | --- |
+| among twelve unrelated names | 0.627 | 0.7135 | `match` |
+| among twelve other Adeyemis | 0.522 | 0.6608 | `review` |
+
+Same records, same comparators, different answer, and before this fix **both runs
+pinned identically**. `decision_id` is derived from the pins, so it asserted that
+two decisions which disagreed were the same decision.
+
+The pin is now `self-calibrated@sha256:...` over the table's canonical form. The
+batch dependence is unchanged and still real; it is now visible. Two decisions
+carrying different tf digests were scored against different vocabularies and were
+never expected to agree.
+
+**A caller's own token-frequency table pinned as the word `provided`.** A
+frequency table decides which tokens are rare, and rarity is both a comparator
+input and a blocking key, so two different tables reach different verdicts on the
+same pair. `reconcile.py` already says exactly this, and follows it for shipped
+tables, which pin as `shipped:place@sha256:...`. A supplied table got one word,
+so two runs that could not agree pinned identically. It now pins as
+`provided@sha256:...` over the table's canonical form, or `provided@<version>`
+when it carries one. A table that cannot be serialised still pins as `provided`,
+which reads as what it is: not identified.
+
+**Decision ids move for every `crosswalk` call**, because both values are inputs
+to the id. Nothing about how a pair is scored changed.
+
+### Changed — the Splink backend no longer fails quietly
+
+`resolve_entities(use_splink=True)` caught bare `Exception` and returned fuzzy
+results in the same shape, with nothing in the return value saying the algorithm
+had changed. For a library whose claim is auditable decisions that is the worst
+available behaviour: the caller cannot see it, and the output cannot be
+distinguished from a run that went as intended.
+
+A missing Splink install still falls back, because not installing an optional
+extra is a configuration choice rather than a failure, and it now says so at
+`INFO` rather than silently. Every other error propagates. A caller who wants
+fuzzy matching asks for it with `use_splink=False`.
+
+### Fixed — a record whose tokens are all common now gets a blocking key
+
+The rare-token blocker skipped any token whose occurrences would cost more than
+`pair_cap` pairs. That is right on its own: nobody wants to block on `clinic`.
+But a record whose tokens were **all** over the bound then received no key at
+all, and was never compared with anything.
+
+Measured on Splink's `historical_50k`, 50,578 records of real UK people: arche
+generated 246,903 candidate pairs and missed 155,692 true ones. **27,055 of the
+misses had character-for-character identical names** — `nicholas jackson`
+against `nicholas jackson`, same date of birth, never proposed, because
+`nicholas` and `jackson` are each too common to block on. The rare-token blocker
+was discarding the common-name case the rest of the engine exists to adjudicate.
+
+Records whose tokens are all over the bound are now also keyed on **pairs** of
+those tokens. Two common tokens together are not common, which is why every
+mature blocking scheme keys on conjunctions. The same cost bound applies to the
+pair key, so nothing unbounded is admitted.
+
+On `historical_50k` the recall ceiling, the best any threshold could reach,
+goes **0.4878 to 0.5699** for 12.8% more candidate pairs. Splink's ceiling on
+the same data is 0.6593, so this closes about half the gap and does not close
+it.
+
+**It moves a published number.** Abt-Buy goes from TP 728 / FP 22 to **TP 741 /
+FP 22**: thirteen more true matches and not one more false one, so precision is
+0.9707 to 0.9712 and recall 0.6636 to 0.6755. The figures in the `0.4.0a1`
+section below were true for that release and are left as they were.
+
+Blocking is slower for it. On the 50k dedupe, 109s to 218s.
+
 ### Fixed — `orthography` now reaches `crosswalk`
 
 An orthography pack describes how one language spells one name several ways, so

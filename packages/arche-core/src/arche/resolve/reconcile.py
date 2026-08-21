@@ -724,8 +724,13 @@ def reconcile(
 
     pins: dict[str, Any] = {
         "engine": "crosswalk.v1",
-        "comparators_sha256": content_hash(comparators, prefix="cmp")
-        .split(":")[-1][:16],
+        # The FULL digest. This used to be truncated to 16 hex characters, which
+        # is 64 bits: fine against accident, not fine against anyone who wants
+        # two comparator sets to pin identically, and the field is called
+        # `comparators_sha256` so it should hold one. A pin exists so a third
+        # party can check which configuration produced a decision, and a pin
+        # that can be collided on purpose cannot do that.
+        "comparators_sha256": content_hash(comparators, prefix="cmp").split(":")[-1],
         "block": block or "none",
         "threshold": threshold,
         "review_margin": review_margin,

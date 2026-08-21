@@ -120,20 +120,41 @@ than revealing to get past it.
 
 ### The manifest is the reproducibility record
 
+This is the manifest the call above writes, not an illustration of one:
+
 ```json
 {
   "schema": "arche.review_pack.v1",
   "entity": "person",
-  "rows": 333,
-  "decisions": {"match": 267, "review": 66},
-  "pins": {"comparators_sha256": "8d1e03d23fa6b8a6", "threshold": 0.7, ...},
+  "rows": 2,
+  "decisions": {"match": 2},
+  "pins": {
+    "engine": "crosswalk.v1",
+    "comparators_sha256": "8d1e03d23fa6b8a649dca0eac9e0ce6909683f7a89ecf7dadb9de89f44e1f334",
+    "block": "union",
+    "threshold": 0.7,
+    "review_margin": 0.15,
+    "distinctive_floor": 0.75,
+    "tf": "self-calibrated@sha256:739ea1e68c3da830cabfa450277923b43e261aeaaf03903a48358c2e852c8acc"
+  },
   "decision_ids_sha256": "..."
 }
 ```
 
-`pins` says which engine and which comparator set produced the decisions, so a
-pack reviewed months later still says what it was. `decision_ids_sha256` is what
-the studio's integrity digest is checked against.
+`pins` says which engine, which comparator set, and which token-frequency table
+produced the decisions, so a pack reviewed months later still says what it was.
+`decision_ids_sha256` is what the studio's integrity digest is checked against.
+
+**Read the `tf` line.** `self-calibrated` means the frequency table was built
+from the two lists you passed, so it describes *this* pair of lists and nothing
+else. Rarity decides how much a shared name is worth, so the same two records
+compared inside a different batch can score differently and can land on a
+different decision. That is what self-calibration is for, and the digest is
+there so it is visible rather than implied: two packs whose `tf` digests differ
+were scored against different vocabularies and were never expected to agree.
+
+A pack built with a shipped table pins `shipped:place@sha256:...` instead, and
+that one does not move between runs.
 
 ## What it will not let you do
 

@@ -1,0 +1,34 @@
+{
+  "benchmark": "Nigerian school register: names that do not discriminate",
+  "negatives": "observed; two schools in different states are not one school",
+  "positives": "CONSTRUCTED; one record recorded twice, so recall here is a statement about the construction, not about the register",
+  "records": 13200,
+  "seed": 20260816,
+  "splink_version": "4.0.16",
+  "results": {
+    "splink@0.99": {
+      "true": 0,
+      "false": 0
+    },
+    "splink@0.95": {
+      "true": 1,
+      "false": 0
+    },
+    "splink@0.9": {
+      "true": 190,
+      "false": 0
+    },
+    "splink@0.5": {
+      "true": 190,
+      "false": 12
+    },
+    "arche_match": {
+      "true": 146,
+      "false": 2
+    },
+    "arche_surfaced": {
+      "true": 199,
+      "false": 393
+    }
+  }
+}
