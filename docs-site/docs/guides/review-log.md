@@ -121,6 +121,65 @@ This is the manifest the call above writes, not an illustration of one:
 
 A pack built with a shipped table pins `shipped:place@sha256:...` instead, and that one does not move between runs.
 
+## Work a pack without the studio
+
+The studio is one way to adjudicate a pack. It is not the supported way, because it lives in this repository and `pip install arche-core` does not give you it. What the library gives you is the artifact protocol: read a pack, check it is the one the matcher wrote, apply outcomes you arrived at however you liked, and get something an auditor can re-check.
+
+The human part happens wherever suits you. A spreadsheet, a notebook, an internal queue, the studio. None of those need to be arche.
+
+```sh
+arche review validate data/review_packs/register_x_survey
+arche review apply    data/review_packs/register_x_survey outcomes.csv --out adjudication.json
+arche review verify   adjudication.json data/review_packs/register_x_survey
+```
+
+`validate` answers one question: is this the pack the matcher wrote? It checks the content digest, the row count against the manifest, and that every `decision_id` is present and unique. It exits non-zero when the answer is no, so it works as a pipeline step, and `--json` gives a machine-readable report.
+
+### The outcomes file
+
+CSV, JSONL or JSON, one row per decision:
+
+```
+decision_id,outcome,reviewer,reason
+xwd:sha256:ab12...,same_entity,dee,same school, tier renamed
+xwd:sha256:cd34...,different,dee,different LGA
+```
+
+`outcome` must be `same_entity`, `different` or `unresolved`. `reason` and `reviewed_at` are optional. Extra columns are ignored rather than rejected, because a reviewer's own spreadsheet will have some.
+
+**A pack you exported with `reveal=True` and filled in directly is already an outcomes file.** Its four review columns are this schema, and `review_outcome` is accepted as an alias for `outcome`, so there is nothing to rename.
+
+Two rules are enforced rather than suggested. Every outcome must name a reviewer, because an unattributed adjudication cannot be audited. And by default a pack that does not match its manifest is refused, because an adjudication built on it would attest to a document nobody can identify. `--allow-dirty-pack` overrides that when you know why.
+
+### The adjudication
+
+```python
+import csv
+
+from arche.review import apply_outcomes, read_pack, verify_adjudication
+
+PACK = "data/review_packs/register_x_survey"
+
+# Stand-in for the human part: whatever you use to decide, it ends as this file.
+pack = read_pack(PACK)
+with open("outcomes.csv", "w", encoding="utf-8", newline="") as fh:
+    writer = csv.DictWriter(fh, fieldnames=["decision_id", "outcome", "reviewer"])
+    writer.writeheader()
+    for decision_id in pack.decision_ids:
+        writer.writerow({"decision_id": decision_id,
+                         "outcome": "same_entity", "reviewer": "dee"})
+
+adjudication = apply_outcomes(PACK, "outcomes.csv")
+report = verify_adjudication(adjudication, PACK)
+assert report["ok"] and report["outcomes_match"] and report["pack_matches"]
+```
+
+The artifact carries a `ledger`, one row per decision with its outcome, reviewer and reason, and `outcomes_sha256` over that ledger. That digest is the binding: it says which decision got which outcome, where a tally of outcomes would only say how many of each.
+
+It also carries `source_pack_content_sha256`, so it is bound to the content of the pack it was made against and not to a filename. `verify_adjudication` re-checks both halves and they fail separately: an edited ledger gives `ledger-digest-mismatch`, and reading it beside the wrong pack gives `pack-mismatch`.
+
+**What none of this establishes is who reviewed.** `reviewer` is a string somebody typed. The digests prove the artifact has not changed since it was made; they do not prove the names in it are real people. That is an identity problem, and an auth proxy in front of whatever tool does the reviewing is what solves it.
+
 ## What it will not let you do
 
 **Overwrite the matcher's output.** Saving writes a new `_reviewed.csv` beside the pack. The original and its decision-ID manifest stay intact.

@@ -42,6 +42,30 @@ On the Nigerian school register the adapter and the hand recipe both reach 190 t
 
 **Failures raise.** `SplinkBackendError`, never a quiet fall back to another algorithm.
 
+### Added — `arche.review`, so a pack can be worked without cloning the repository
+
+`review_pack` shipped in the wheel and nothing that could read a pack did. A caller who exported their own data got a CSV, a manifest, and no supported way to work them: the only consumer was a local web tool you get by cloning this repository, which is a strange thing to require of somebody who installed a library.
+
+The choice made here is that arche supplies the **artifact protocol** and not the reviewing.
+
+```sh
+arche review validate  data/review_packs/register_x_survey
+arche review apply     data/review_packs/register_x_survey outcomes.csv --out adjudication.json
+arche review verify    adjudication.json data/review_packs/register_x_survey
+```
+
+`read_pack` and `validate_pack` answer one question: is this the pack the matcher wrote? Content digest, row count against the manifest, every `decision_id` present and unique. `validate_pack` never raises and returns a machine-readable report, so it works as a pipeline step; the CLI exits non-zero when the pack is wrong.
+
+`apply_outcomes` binds a file of outcomes to a pack and returns an immutable adjudication. The outcomes file is CSV, JSONL or JSON carrying `decision_id`, `outcome` and `reviewer`, with `reason` and `reviewed_at` optional and extra columns ignored, because a reviewer's own spreadsheet will have some. **A pack exported with `reveal=True` and filled in directly is already an outcomes file**: its four review columns are this schema, and `review_outcome` is accepted as an alias for `outcome`.
+
+Two rules are enforced rather than suggested. Every outcome must name a reviewer, the same rule the studio applies at its save button, because an unattributed adjudication cannot be audited. And a pack that does not match its manifest is refused by default, because an adjudication built on it would attest to a document nobody can identify.
+
+`verify_adjudication` re-checks two things that fail separately: whether the ledger still hashes to what the artifact claims, which catches an edited or swapped ledger, and whether the pack in front of you is the one it was made against, which catches an adjudication read beside the wrong file. `write_reviewed_csv` fills a pack's review columns from an adjudication into a new file, never the original.
+
+**Why this rather than shipping the studio.** A `http.server` inside a pip-installable package is a security surface nobody asked for: localhost is not an isolation boundary once there is a container with a published port, a port-forward, or a browser that can be induced to call it. And a library that acquires a reviewer database acquires concurrency, identity, retention and migration obligations that belong to a workflow product. The artifact protocol makes a spreadsheet, a notebook, an internal queue or the studio equally first-class, and leaves the choice where it belongs.
+
+**What this still does not establish is who reviewed.** `reviewer` is a string somebody typed. The digests prove the artifact has not changed since it was made. They do not prove the names in it are real people.
+
 ### Fixed — two integrity claims that were weaker than their wording
 
 Both found by an outside review of the review path, and both are the same shape as the pin faults above: the code did something narrower than the sentence describing it.
