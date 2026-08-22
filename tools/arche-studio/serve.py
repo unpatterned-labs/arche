@@ -106,6 +106,7 @@ def _load_pack(pack_id: str) -> dict:
     # added or dropped and nothing inside a row, which is why both are here.
     from arche.report import pack_content_digest
 
+    ids = [r.get("decision_id", "") for r in rows]
     content_digest = pack_content_digest(rows, fields)
     digest = hashlib.sha256("\n".join(ids).encode()).hexdigest()[:16]
 
