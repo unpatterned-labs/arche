@@ -178,6 +178,33 @@ def _token_index(records: list[dict], fields: Iterable[str]) -> dict[str, list[i
     return index
 
 
+def _cooccurrence_index(
+    records: list[dict], fields: Iterable[str], tokens: set[str]
+) -> dict[tuple[str, str], list[int]]:
+    """Index records by every unordered pair of their *over-common* tokens.
+
+    Only tokens in ``tokens`` participate, because a record holding even one
+    token under the cost bound is already reachable through it and does not need
+    a second key. Sorted, so ``jackson|nicholas`` is one key however the name
+    was written.
+    """
+    fields = tuple(fields)
+    index: dict[tuple[str, str], list[int]] = {}
+    for i, rec in enumerate(records):
+        present: set[str] = set()
+        for f in fields:
+            value = rec.get(f)
+            if value not in (None, ""):
+                present |= _norm_tokens(value) & tokens
+        if len(present) < 2:
+            continue
+        ordered = sorted(present)
+        for x in range(len(ordered)):
+            for y in range(x + 1, len(ordered)):
+                index.setdefault((ordered[x], ordered[y]), []).append(i)
+    return index
+
+
 def token_candidate_pairs(
     list_a: list[dict],
     list_b: list[dict],
@@ -197,8 +224,39 @@ def token_candidate_pairs(
     fields = tuple(fields)
     index_a = _token_index(list_a, fields)
     index_b = _token_index(list_b, fields)
+    too_common: set[str] = set()
     for tok, a_ids in index_a.items():
         b_ids = index_b.get(tok)
+        if not b_ids:
+            continue
+        if len(a_ids) * len(b_ids) > pair_cap:
+            too_common.add(tok)
+            continue
+        for i in a_ids:
+            for j in b_ids:
+                yield (i, j)
+
+    # Conjunctions, for the records the loop above cannot key at all.
+    #
+    # A token over the cost bound is skipped, which is right on its own: no one
+    # wants to block on "clinic". But a record whose tokens are *all* over the
+    # bound then gets no key, and is never compared with anything. On a register
+    # of 50k UK people that silently dropped 27,055 true pairs whose names were
+    # character-for-character identical: `nicholas jackson` twice over, same date
+    # of birth, never proposed, because `nicholas` and `jackson` are each too
+    # common to block on. The rare-token blocker was discarding exactly the
+    # common-name case the rest of the engine exists to adjudicate.
+    #
+    # Two common tokens together are not common. `nicholas`+`jackson` is rare
+    # even where both halves are ordinary, which is why every mature blocking
+    # scheme keys on conjunctions. The same cost bound then applies to the pair
+    # key, so nothing unbounded is admitted.
+    if not too_common:
+        return
+    pair_a = _cooccurrence_index(list_a, fields, too_common)
+    pair_b = _cooccurrence_index(list_b, fields, too_common)
+    for key, a_ids in pair_a.items():
+        b_ids = pair_b.get(key)
         if not b_ids or len(a_ids) * len(b_ids) > pair_cap:
             continue
         for i in a_ids:

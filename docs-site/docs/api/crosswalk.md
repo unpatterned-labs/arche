@@ -43,11 +43,7 @@ decision_id = 'dec:sha256:a5fde8c138c6157f00c0396ce63f6...'
     entity, and it abstains rather than guessing. `review` is the engine
     working, not failing.
 
-Signing a decision requires a keypair. Calling
-`arche.attest.attest()` on a decision produced without an `issuer_key` raises,
-deliberately:
-a keyless `reference_id` is a hash of the person's attributes and can be
-brute-forced back to the source record. 
+Signing a decision requires a keypair. Calling `arche.attest.attest()` on a decision produced without an `issuer_key` raises, deliberately: a keyless `reference_id` is a hash of the person's attributes and can be brute-forced back to the source record.
 
 ## `resolve.crosswalk(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
 

@@ -116,8 +116,7 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 
 ## Look at a decision
 
-`arche studio` is a local reading tool. Three files, the standard library, no
-framework and no install beyond `arche-core` itself.
+`arche studio` is a local reading tool. Three files, the standard library, no framework and no install beyond `arche-core` itself.
 
 ```bash
 python tools/arche-studio/serve.py     # opens http://127.0.0.1:8765
@@ -133,8 +132,7 @@ Five modes over one evidence panel:
 | **Verify** | check a signed decision two ways: the signature, and whether its id recomputes from its own evidence |
 | **Review queue** | a dense grid over an adjudication pack, sortable and searchable, marking outcomes to a labelled copy |
 
-It is alpha, says so on the page, binds to `127.0.0.1`, and has no
-authentication. It is a tool for reading our own queues, not a product.
+It is alpha, says so on the page, binds to `127.0.0.1`, and has no authentication. It is a tool for reading our own queues, not a product.
 
 ## Documentation
 

@@ -287,6 +287,42 @@ _PACK_TF_DOMAIN: dict[str, str] = {
 
 
 
+def _provided_tf_pin(tf: TokenFrequencyTable) -> str:
+    """Name a caller-supplied token-frequency table, not merely its existence.
+
+    This used to pin the string ``"provided"``. A token-frequency table decides
+    which tokens are rare, and rarity is both a comparator input and a blocking
+    key, so two different tables reach different verdicts on the same pair. The
+    rest of this file already states that rule and follows it for shipped
+    tables, which pin as ``shipped:place@sha256:...``. A caller's own table got
+    the one word, so two runs that could not agree pinned identically, and
+    `decision_id` claimed a reproducibility it did not have.
+
+    Falls back to the bare word only when the table cannot be serialised. That
+    is a weaker claim and it reads as one: no digest means the table was not
+    identified, rather than quietly implying it was.
+    """
+    version = getattr(tf, "version", None)
+    if version:
+        return f"provided@{version}"
+    digest = _tf_digest(tf)
+    return f"provided@sha256:{digest}" if digest else "provided"
+
+
+def _tf_digest(tf: TokenFrequencyTable) -> str | None:
+    """sha256 over the table's canonical form, or ``None`` if it will not serialise.
+
+    The table, not the corpus it came from. The table IS the scoring input, it
+    is an aggregate rather than a copy of the records, and hashing it keeps the
+    pin the same size whether it was built from ten names or ten million.
+    """
+    try:
+        from arche.ids import content_hash
+        return content_hash(tf.to_dict(), prefix="tf").split(":")[-1]
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
 def pairwise(a, b, *, entity: str = "person", **kwargs):
     """Decide whether two records/documents/results refer to the same entity.
 
@@ -324,6 +360,102 @@ def pairwise(a, b, *, entity: str = "person", **kwargs):
     )
 
 
+# What each comparator kind is actually doing, in the one sentence somebody
+# looking at a field list needs. Not documentation of the algorithm — a reason
+# the field is in the pack at all.
+COMPARATOR_NOTES = {
+    "name": "personal-name similarity, tolerant of spelling and of a dropped "
+            "middle name",
+    "placename": "place-name similarity, after the type word is set aside so "
+                 "`General Hospital` and `General Clinic` are not near-matches "
+                 "for sharing `General`",
+    "tftoken": "how rare the shared words are in these two lists. Agreeing on "
+               "an ordinary word is not evidence; agreeing on a rare one is",
+    "type": "the facility or organisation type, compared as a category rather "
+            "than as text",
+    "date": "a date, at whatever precision each side states. A year against a "
+            "full date agrees on the year and claims nothing more",
+    "id": "an exact identifier. Strong when it agrees",
+    "code": "a product or model code",
+    "spec": "a specification drawn out of the name, such as a capacity or size",
+    "phone": "a phone number, normalised before comparison",
+    "email": "an email address",
+    "address": "a postal address, compared by its parts",
+    "category": "a declared class, compared exactly",
+    "geo": "distance between two coordinates",
+    "containment": "whether one administrative path contains the other",
+}
+
+
+def describe_pack(entity: str) -> dict:
+    """What an entity pack reads, and what it does with each field.
+
+    Written for somebody about to hand records to `crosswalk` and wondering
+    which columns will be used. The answer is derivable from the pack itself, so
+    it is derived rather than maintained as prose that goes stale the first time
+    a comparator is added — the `person` pack gained a date comparator in
+    0.5.0a1 and any hand-written list would already have been wrong.
+
+    The important thing it says is what happens to everything else. A field the
+    pack does not name is **ignored, not rejected**: no error, no warning, no
+    effect on the score. That is the right behaviour — records arrive with
+    columns that are nobody's business here — but it is silent, and silent is
+    how somebody spends an afternoon wondering why `occupation` changed nothing.
+    """
+    packs = ENTITY_PACKS
+    if entity not in packs:
+        raise ValueError(
+            f"unknown entity pack {entity!r}; available: "
+            f"{', '.join(sorted(packs))}")
+
+    by_field: dict[str, dict] = {}
+    for comparator in packs[entity]:
+        kind = comparator.get("kind", "")
+        if kind == "geo":
+            # Geo names its columns differently: two of them, and not under
+            # `field`. Presented as the pair it is.
+            field = f"{comparator.get('lat', 'lat')} + {comparator.get('lon', 'lon')}"
+        else:
+            field = comparator.get("field", "")
+        if not field:
+            continue
+        entry = by_field.setdefault(field, {
+            "field": field, "kinds": [], "weight": 0.0,
+            "notes": [], "refutes": False})
+        entry["kinds"].append(kind)
+        entry["weight"] += float(comparator.get("weight", 0.0) or 0.0)
+        note = COMPARATOR_NOTES.get(kind)
+        if note and note not in entry["notes"]:
+            entry["notes"].append(note)
+        if comparator.get("refutes_below") is not None:
+            # Asymmetric: disagreement here can pull a pair down into review.
+            # It never pushes one up, and it never reaches `no_match`.
+            entry["refutes"] = True
+        if kind == "geo":
+            for key in ("decay_km", "veto_km"):
+                if comparator.get(key) is not None:
+                    entry.setdefault("geo", {})[key] = comparator[key]
+
+    fields = sorted(by_field.values(), key=lambda f: (-f["weight"], f["field"]))
+    return {
+        "entity": entity,
+        "fields": fields,
+        # The names a caller can put on a record and have read. Flattened for
+        # the common case of "is this column used?".
+        "field_names": sorted(
+            name
+            for entry in fields
+            for name in (entry["field"].split(" + ") if " + " in entry["field"]
+                         else [entry["field"]])),
+        "ignores_everything_else": True,
+    }
+
+
+def describe_packs() -> dict[str, dict]:
+    """Every pack, described. For a picker that has to explain its options."""
+    return {name: describe_pack(name) for name in sorted(ENTITY_PACKS)}
+
+
 def crosswalk(list_a, list_b, *, entity: str | None = None,
               comparators: list[dict] | None = None, tf=None, decl=None,
               **kwargs):
@@ -341,13 +473,25 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     the run's ``pins`` (which include the declaration pin when ``decl=`` is
     used, and the tf table's provenance); sign edges with
     :func:`arche.resolve.reconcile.sign_edges`.
+
+    ``backend="splink"`` swaps the scorer for Splink and keeps everything
+    around it. It additionally requires ``splink_settings=``, a Splink
+    ``SettingsCreator`` you wrote (or the string ``"derive"``, which infers one
+    from the pack, warns, and is best-effort). See
+    :mod:`arche.resolve._splink_backend` for why arche does not pick one for
+    you.
     """
     extra_pins = dict(kwargs.pop("extra_pins", None) or {})
+    # Read early: the token-frequency work below is arche's own scoring input,
+    # and a backend that does not consume it must not pin one. Splink applies
+    # term frequency inside its own name comparisons, so building a table here
+    # and naming it in the pin would claim an input the decision never saw.
+    backend = kwargs.pop("backend", None)
     tf_provenance: str | None = None
     if isinstance(tf, str):
         tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"
     elif tf is not None:
-        tf_provenance = "provided"
+        tf_provenance = _provided_tf_pin(tf)
     if decl is not None:
         # A declaration IS a user-defined entity pack: generated comparators,
         # its own id_field and tf defaults. Explicit args still win.
@@ -363,6 +507,13 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
                 if isinstance(tf, str) else "provided"
     if comparators is None:
         if entity is None:
+            # One exception: `backend="splink"` with the caller's own
+            # `SettingsCreator` needs no pack at all. The settings already say
+            # what to compare and how, and demanding a comparator pack besides
+            # would be asking for a second description of the same thing.
+            # `splink_settings="derive"` does need one and says so itself.
+            if backend == "splink" and kwargs.get("splink_settings") is not None:
+                return _splink(list_a, list_b, None, extra_pins, kwargs)
             raise ValueError(
                 f"pass entity= (one of {sorted(ENTITY_PACKS)}), decl=, or "
                 "explicit comparators="
@@ -373,7 +524,9 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             raise ValueError(
                 f"unknown entity pack {entity!r}; available: {sorted(ENTITY_PACKS)}"
             ) from None
-    if tf is None and any(c.get("kind") == "tftoken" for c in comparators):
+    if (backend in (None, "arche")
+            and tf is None
+            and any(c.get("kind") == "tftoken" for c in comparators)):
         domain = _PACK_TF_DOMAIN.get(entity or "")
         if domain is not None:
             # This pack's population is not the lists being linked (a small
@@ -408,11 +561,60 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
             fields = {c["field"] for c in comparators if c.get("kind") == "tftoken"}
             texts = [str(r.get(f, "")) for r in [*list_a, *list_b] for f in fields]
             tf = TokenFrequencyTable.from_corpus(t for t in texts if t)
-            tf_provenance = "self-calibrated"
+            # Name the table this run built, not merely the fact that it built
+            # one. A self-calibrated table is computed FROM THE TWO LISTS, so
+            # the same pair scored in two different batches gets two different
+            # rarities and can get two different decisions. Measured on one
+            # pair: `Ngozi Adeyemi` against `Ngozi Adeyemi Bello` scores 0.7135
+            # and matches among twelve unrelated names, and 0.6608 and goes to
+            # review among twelve other Adeyemis.
+            #
+            # Pinning the bare string `self-calibrated` said a table existed
+            # and not which one, so both of those runs pinned identically while
+            # disagreeing about the answer. That is the same fault the shipped
+            # tables avoid by naming a digest, and it made `decision_id` claim
+            # a reproducibility it did not have.
+            #
+            # With the digest the batch dependence is still real. It is now
+            # VISIBLE: two decisions carrying different tf digests were scored
+            # against different vocabularies and were never expected to agree.
+            digest = _tf_digest(tf)
+            tf_provenance = (f"self-calibrated@sha256:{digest}" if digest
+                             else "self-calibrated")
     if tf_provenance is not None:
         extra_pins.setdefault("tf", tf_provenance)
-    return reconcile(list_a, list_b, comparators, tf=tf,
-                     extra_pins=extra_pins or None, **kwargs)
+
+    # Backend dispatch. The default is arche's own engine and stays that way;
+    # `backend="splink"` swaps the SCORER and keeps everything arche puts around
+    # it (evidence, refusal, pins, decision ids), returning the same result
+    # shape so `review_pack`, `crosswalk_report` and the studio are unaffected.
+    #
+    # It is opt-in because it is a different scoring model with different
+    # provenance: it trains on the corpus, so its pins name a model and a
+    # corpus rather than a comparator set alone. Selecting it is a decision, not
+    # a default somebody inherits.
+    #
+    # It also requires `splink_settings=`. arche will not infer a Splink
+    # configuration from a comparator pack behind the caller's back: a pack
+    # says "compare this as a name" and says nothing about column dtype, date
+    # format or field cardinality, and inferring them measured worse than
+    # arche's own engine. `splink_settings="derive"` opts into the inference
+    # and warns.
+    if backend in (None, "arche"):
+        return reconcile(list_a, list_b, comparators, tf=tf,
+                         extra_pins=extra_pins or None, **kwargs)
+    if backend == "splink":
+        return _splink(list_a, list_b, comparators, extra_pins, kwargs)
+    raise ValueError(
+        f"unknown backend {backend!r}; available: 'arche' (default), 'splink'"
+    )
+
+
+def _splink(list_a, list_b, comparators, extra_pins: dict, kwargs: dict):
+    """Hand off to the Splink backend. One call site, reached from two places."""
+    from arche.resolve._splink_backend import splink_crosswalk
+    return splink_crosswalk(list_a, list_b, comparators,
+                            extra_pins=extra_pins or None, **kwargs)
 
 # The v0.1 callable-module shim (``arche.resolve(text)`` forwarding to the
 # pipeline with a DeprecationWarning) was removed in v0.3.0a1 as promised.

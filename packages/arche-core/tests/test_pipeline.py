@@ -57,6 +57,12 @@ def test_version():
     # so the version number and the claim stay in step. Nothing referenced it:
     # it was never on the index and never tagged.
     #
-    # 0.4.0a4 shipped and is on the index. 0.4.0a5 carries what landed after it:
-    # the date comparator in the `person` pack, and `report.review_pack`.
-    assert __version__ == "0.4.0a5"
+    # 0.4.0a4 shipped and is on the index. What landed after it was prepared as
+    # 0.4.0a5 and released as 0.5.0a1: a Splink scoring backend, a date
+    # comparator in the `person` pack, two pin fixes, and `report.review_pack`.
+    # 0.4.0a5 was never published, so renaming it left nothing pointing at it.
+    #
+    # The minor version moved because a replaceable scorer changes what the
+    # library is, not merely what it scores. An alpha suffix says the surface
+    # may still move; it should not be asked to also hide a change of shape.
+    assert __version__ == "0.5.0a1"

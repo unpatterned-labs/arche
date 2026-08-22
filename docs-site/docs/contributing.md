@@ -1,7 +1,6 @@
 # Contribute
 
-arche improves when its comparison data, benchmarks, and decision boundaries
-are challenged in the open.
+arche improves when its comparison data, benchmarks, and decision boundaries are challenged in the open.
 
 The highest-value contributions are:
 
@@ -13,5 +12,4 @@ The highest-value contributions are:
 
 Read the repository's [contribution guide](https://github.com/unpatterned-labs/arche/blob/main/CONTRIBUTING.md) before opening an issue or pull request.
 
-Do not submit personal data, credentials, or sensitive production records to
-the public repository.
+Do not submit personal data, credentials, or sensitive production records to the public repository.

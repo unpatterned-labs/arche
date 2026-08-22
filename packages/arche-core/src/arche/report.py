@@ -13,7 +13,9 @@ fail-safe allowlist, so the artifact people share is the safe one.
 
 from __future__ import annotations
 
+import hashlib as _hashlib
 import html
+import json as _json
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -284,6 +286,36 @@ REVIEW_OUTCOMES = ("same_entity", "different", "unresolved")
 PACK_SCHEMA = "arche.review_pack.v1"
 
 
+def pack_content_digest(rows: list[dict], fields: list[str]) -> str:
+    """sha256 over the matcher's half of a pack: every column a reviewer does not fill.
+
+    The manifest used to carry a digest of the decision ids and nothing else.
+    That detects a row added or dropped and misses every edit inside a row:
+    change every name in the pack, flip a decision, rewrite the evidence, and
+    the id digest still matches. It was a queue-membership digest wearing the
+    word integrity, and the docs around it claimed more than it did.
+
+    This covers content. The four `REVIEW_FIELDS` are excluded deliberately,
+    because a reviewer filling them in is the pack being used rather than
+    altered, and a digest that moved when somebody did their job would be
+    checked once and then ignored.
+
+    Rows are sorted before hashing, so re-sorting a pack in a spreadsheet is not
+    an alarm. Anything that changes a value, adds a row, or drops one is.
+
+    Recomputable from the CSV alone, which is the point: a reviewer who was not
+    there can read the pack, call this, and compare it with the manifest.
+    """
+    covered = [f for f in fields if f not in REVIEW_FIELDS]
+    payload = sorted(
+        ["" if r.get(f) is None else str(r.get(f, "")) for f in covered]
+        for r in rows
+    )
+    canonical = _json.dumps([covered, payload], sort_keys=True,
+                            separators=(",", ":"), ensure_ascii=False)
+    return _hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def review_pack(
     result: dict,
     records_a: list[dict],
@@ -423,8 +455,13 @@ def review_pack(
         "disclosure": "revealed (working copy)" if reveal else "masked",
         "review_fields": list(REVIEW_FIELDS),
         "review_outcomes": list(REVIEW_OUTCOMES),
-        # The studio digests the decision ids of the pack it loads. An edited
-        # pack, or one row quietly dropped, stops matching this.
+        # What is in the pack. Any value changed, any row added or dropped,
+        # moves this. Recomputable from the CSV alone with
+        # `arche.report.pack_content_digest`.
+        "content_sha256": pack_content_digest(rows, fields),
+        # Which decisions are in the pack. Membership only, and named for
+        # what it is: it does not notice an edit inside a row, which is why
+        # the digest above exists.
         "decision_ids_sha256": hashlib.sha256(
             "\n".join(sorted(ids)).encode()).hexdigest(),
         # Enough to say which engine produced this.

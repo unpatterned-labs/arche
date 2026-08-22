@@ -96,6 +96,11 @@ doc = ["docling>=2.0"]
 # (no torch, no system tesseract) — in keeping with the CPU-only base ethos.
 doc-ocr = ["arche-core[doc]", "rapidocr-onnxruntime>=1.3"]
 
+# Parquet review packs. `arche.review.read_pack` reads CSV and JSONL with the
+# standard library; parquet is the one format that needs a dependency, so it is
+# the one format behind an extra.
+parquet = ["pyarrow>=14"]
+
 # --- v0.2 detector backends (PRD §4) ---------------------------------------
 # GLiNER2-PII via ONNX runtime (~250MB). Multilingual soft-PII detection.
 detect = ["gliner>=0.2.8", "onnxruntime>=1.18"]

@@ -181,12 +181,9 @@ Extraction is table stakes. Buy it, borrow it, or run it locally. It is not wher
 
 The risk lives in the three questions after extraction:
 
-- **Which real-world thing does this reference denote?** Not "are these strings
-similar". Similar is not the same. `Rosetta` and `Roulette` are one edit apart and are not the same name.
-- **What is the evidence, and what would refute it?** A merge you cannot explain
-is a merge you cannot defend. Every verdict carries its factors and a content hash you can recompute months later.
-- **What did the system decline to decide?** A tool that never abstains is not
-confident, it is unfalsifiable.
+- **Which real-world thing does this reference denote?** Not "are these strings similar". Similar is not the same. `Rosetta` and `Roulette` are one edit apart and are not the same name.
+- **What is the evidence, and what would refute it?** A merge you cannot explain is a merge you cannot defend. Every verdict carries its factors and a content hash you can recompute months later.
+- **What did the system decline to decide?** A tool that never abstains is not confident, it is unfalsifiable.
 
 That is the whole pitch, and it is why the answer to *"are these three PDFs the same person?"* is **one confirmed match and two cases for a human** rather than a tidy yes.
 

@@ -1,0 +1,164 @@
+{
+  "febrl_no_ssn": [
+    {
+      "engine": "arche",
+      "true_merges": 4191,
+      "false_merges": 42,
+      "precision": 0.9901,
+      "recall": 0.8382,
+      "f1": 0.9078,
+      "arm": "arche",
+      "seconds": 81.2
+    },
+    {
+      "engine": "derived p>=0.99",
+      "true_merges": 2724,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.5448,
+      "f1": 0.7053,
+      "arm": "derived",
+      "seconds": 28.7
+    },
+    {
+      "engine": "derived p>=0.9",
+      "true_merges": 3513,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.7026,
+      "f1": 0.8253,
+      "arm": "derived",
+      "seconds": 28.7
+    },
+    {
+      "engine": "derived p>=0.5",
+      "true_merges": 4476,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.8952,
+      "f1": 0.9447,
+      "arm": "derived",
+      "seconds": 28.7
+    },
+    {
+      "engine": "adapter p>=0.99",
+      "true_merges": 4765,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.953,
+      "f1": 0.9759,
+      "arm": "adapter",
+      "seconds": 15.7
+    },
+    {
+      "engine": "adapter p>=0.9",
+      "true_merges": 4846,
+      "false_merges": 0,
+      "precision": 1.0,
+      "recall": 0.9692,
+      "f1": 0.9844,
+      "arm": "adapter",
+      "seconds": 15.7
+    },
+    {
+      "engine": "adapter p>=0.5",
+      "true_merges": 4917,
+      "false_merges": 4,
+      "precision": 0.9992,
+      "recall": 0.9834,
+      "f1": 0.9912,
+      "arm": "adapter",
+      "seconds": 15.7
+    }
+  ],
+  "hand_configured_reference": {
+    "febrl_no_ssn": {
+      "precision": 1.0,
+      "recall": 0.9531,
+      "runs": [
+        0.9534,
+        0.9528
+      ],
+      "source": "bench_splink_febrl.py, p >= 0.99, unseeded"
+    },
+    "nigeria": {
+      "true": 190,
+      "false": 0,
+      "source": "bench_splink_nigeria.py, p >= 0.9"
+    }
+  },
+  "nigeria": [
+    {
+      "arm": "arche",
+      "at": "match",
+      "true": 146,
+      "false": 2,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 72.5
+    },
+    {
+      "arm": "arche",
+      "at": "match+review",
+      "true": 199,
+      "false": 398,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 72.5
+    },
+    {
+      "arm": "derived",
+      "at": "p>=0.99",
+      "true": 0,
+      "false": 0,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 6.2
+    },
+    {
+      "arm": "derived",
+      "at": "p>=0.9",
+      "true": 190,
+      "false": 0,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 6.2
+    },
+    {
+      "arm": "derived",
+      "at": "p>=0.5",
+      "true": 190,
+      "false": 2,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 6.2
+    },
+    {
+      "arm": "adapter",
+      "at": "p>=0.99",
+      "true": 0,
+      "false": 0,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 4.3
+    },
+    {
+      "arm": "adapter",
+      "at": "p>=0.9",
+      "true": 190,
+      "false": 0,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 4.3
+    },
+    {
+      "arm": "adapter",
+      "at": "p>=0.5",
+      "true": 190,
+      "false": 2,
+      "positives": 200,
+      "negatives": 400,
+      "seconds": 4.3
+    }
+  ]
+}

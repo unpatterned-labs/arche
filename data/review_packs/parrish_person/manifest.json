@@ -1,5 +1,5 @@
 {
-  "arche_version": "0.4.0a4",
+  "arche_version": "0.4.0a3",
   "blocking": {
     "candidate_pairs": 7361,
     "reduction_ratio": 0.9753,
@@ -11,25 +11,26 @@
       "token": 7361
     }
   },
-  "decision_ids_sha256": "4aef69f2d85859500ef323794e94d624397595550a28e4555703df3213d13472",
+  "content_sha256": "516ef319c5febb42425c9fad7de47c13cba8dc21f5960d85f080d1579fa1064a",
+  "decision_ids_sha256": "f61c267d0b0451f36a1582073c737f79d614ad4fb321eca328acd5a31f1edead",
   "decisions": {
     "match": 267,
     "review": 66
   },
   "disclosure": "revealed (working copy)",
   "entity": "person",
-  "generated": "2026-08-20T07:02:24Z",
+  "generated": "2026-08-21T16:45:10Z",
   "meta": {
     "benchmark": "Parrish R RecordLinkage",
     "true_pairs": 294
   },
   "pins": {
     "block": "union",
-    "comparators_sha256": "8d1e03d23fa6b8a6",
+    "comparators_sha256": "8d1e03d23fa6b8a649dca0eac9e0ce6909683f7a89ecf7dadb9de89f44e1f334",
     "distinctive_floor": 0.75,
     "engine": "crosswalk.v1",
     "review_margin": 0.15,
-    "tf": "self-calibrated",
+    "tf": "self-calibrated@sha256:372034bfb1b6c94c6c9ad74e7dfc38c2d2a1a35f9ea0a3d0fb874508b9334116",
     "threshold": 0.7
   },
   "review_fields": [

@@ -7,8 +7,7 @@ pip install arche-core
 python -c "import arche; print(arche.__version__)"
 ```
 
-The core installation is enough for the record-resolution workflow in this
-site.
+The core installation is enough for the record-resolution workflow in this site.
 
 ## Optional extras
 
@@ -23,8 +22,7 @@ Install an extra only when you need its capability.
 | Legacy Splink-backed resolver | `pip install "arche-core[resolve]"` |
 | LLM extraction integrations | `pip install "arche-core[llm]"` |
 
-`crosswalk()` and `pairwise()` do not require the `resolve` extra. That extra
-is for the older Splink-backed resolver path.
+`crosswalk()` and `pairwise()` do not require the `resolve` extra. That extra is for the older Splink-backed resolver path.
 
 ## Install from this repository
 
@@ -35,5 +33,4 @@ uv sync --all-packages
 uv run pytest packages/arche-core/tests -q
 ```
 
-The repository is under active alpha development. Pin a released package
-version for any evaluation that needs to be repeatable.
+The repository is under active alpha development. Pin a released package version for any evaluation that needs to be repeatable.

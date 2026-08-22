@@ -30,7 +30,6 @@ from __future__ import annotations
 import json
 import sys
 import warnings
-from itertools import combinations
 from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent

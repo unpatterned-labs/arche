@@ -372,14 +372,22 @@ class TestBenchmarkContract:
         assert self._auto(a, b, with_ref) == self._auto(a, b, without)
 
     def test_the_published_abt_buy_figures_hold(self, abtbuy):
-        """P=0.9707, R=0.6636, TP 728, FP 22 — the numbers in the CHANGELOG."""
+        """TP 741, FP 22 — the numbers in the CHANGELOG.
+
+        Was TP 728 until 0.5.0a1. The rare-token blocker skipped any token over
+        its cost bound, so a record whose tokens were *all* common got no
+        blocking key and was never compared with anything. Keying on pairs of
+        over-common tokens recovered 13 true matches here and **no** false ones,
+        which is why the figure moved without the precision claim moving with
+        it. The recall claim did move, and this is the file that says so.
+        """
         a, b, truth = abtbuy
         auto = self._auto(a, b, ENTITY_PACKS["product_electronics"])
         tp = len(auto & truth)
         fp = len(auto - truth)
-        assert (tp, fp) == (728, 22)
-        assert round(tp / (tp + fp), 4) == 0.9707
-        assert round(tp / len(truth), 4) == 0.6636
+        assert (tp, fp) == (741, 22)
+        assert round(tp / (tp + fp), 4) == 0.9712
+        assert round(tp / len(truth), 4) == 0.6755
 
     def test_the_stop_list_is_inert_on_the_benchmark(self, abtbuy):
         """The claim that the table, not the stop list, does the work.

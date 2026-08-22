@@ -259,11 +259,11 @@ md("""
 keys on the result before reading the score, because they say what was actually
 compared.
 
-**This benchmark changed the pack.** Up to `0.4.0a3` the person pack declared
+**This benchmark changed the pack.** Until `0.5.0a1` the person pack declared
 name, a token-frequency view of the name, `national_id`, `phone`, `email` and
 `address`. These files carry none of the last four, so the pack was a name-only
 matcher that never looked at the birth date it was handed, and it scored 219
-true against 14 false: less precise than the R tutorial. `0.4.0a4` added a date
+true against 14 false: less precise than the R tutorial. `0.5.0a1` added a date
 comparator, and the cell below is the pack as it now ships.
 """)
 
