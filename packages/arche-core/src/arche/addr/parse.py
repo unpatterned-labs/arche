@@ -1,9 +1,8 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""African address span detection, component parsing, and jurisdiction inference.
-
-Per Stage 1 PRD §5 FR-ADDR-1..10. The v0.2.0a1 MVP focuses on Nigerian
+""" Address span detection, component parsing, and jurisdiction inference.
+ The v0.2.0a1 MVP focuses on Nigerian
 and South African patterns — the two launch jurisdictions with the
 most-distinctive address conventions. Kenya and Ghana are best-effort
 through the shared city gazetteer; the full per-country parser for
@@ -120,7 +119,7 @@ _NUMBER_RE = r"(?P<number>\d{1,4}[A-Za-z]?)"
 # code change.
 _ANCHOR_PREPOSITIONS = [
     "behind", "near", "opposite", "beside", "next to", "in front of",
-    "across from", "after", "before",
+    "across from", "after", "before", "in the vicinity of", "adjacent to", "next door to", "in front of the", "across the street from"
 ]
 # Articles/determiners stripped between the relation word and the landmark.
 _ANCHOR_ARTICLES = ["the"]
@@ -168,11 +167,47 @@ _merge_address_tokens()
 # by a shorter prefix during alternation / prefix stripping.
 _ANCHOR_PREPOSITIONS.sort(key=len, reverse=True)
 _ANCHOR_ARTICLES.sort(key=len, reverse=True)
+# Every word that names a kind of landmark, in one alternation, longest first so
+# "filling station" is tried before "station". Built AFTER
+# `_merge_address_tokens()` so a contributor's `address_tokens.yaml` additions
+# reach the lowercase branch below as well as `_classify_anchor`.
+_ANCHOR_NOUN_RE = "|".join(
+    re.escape(n) for n in sorted(
+        _COMMERCIAL_KEYWORDS | _RELIGIOUS_KEYWORDS | _INFRASTRUCTURE_KEYWORDS,
+        key=len, reverse=True)
+)
+
+# The landmark itself, in two forms.
+#
+# A capitalised phrase is a proper name and needs no further evidence: "behind
+# the Total filling station" is an address because "Total" is a name.
+#
+# A lowercase phrase is the case this originally missed. Informal addresses are
+# frequently written without capitals, and "behind the central mosque, Karfi,
+# Kano State" is the example the project's own positioning uses to explain what
+# a generic parser cannot do. It returned None, because the landmark had to
+# begin with a capital and "central" does not. The religious vocabulary was
+# already correct and simply never got consulted.
+#
+# The fix cannot be to drop that requirement. `_ANCHOR_PREPOSITIONS` includes
+# `after` and `before`, which are ordinary English; admitting any lowercase
+# words after them would read "after the meeting" as an address. So a lowercase
+# landmark is accepted only when it ENDS in a word that names a kind of place,
+# reusing the vocabulary `_classify_anchor` already keys on rather than
+# inventing a second list that could drift from it.
+_ANCHOR_LANDMARK_RE = (
+    r"(?:"
+    r"[A-Z][\w'\-]+(?:\s+[\w'\-]+){0,5}"  # 1-6 capitalised words
+    r"|"
+    r"(?:[a-z][\w'\-]*\s+){0,3}(?:" + _ANCHOR_NOUN_RE + r")\b(?!\s+[a-z])"
+    r")"
+)
+
 _ANCHOR_RE = (
     r"(?P<anchor>"
     r"\b(?:" + "|".join(re.escape(p) for p in _ANCHOR_PREPOSITIONS) + r")\s+"
     r"(?:(?:" + "|".join(re.escape(a) for a in _ANCHOR_ARTICLES) + r")\s+)?"
-    r"[A-Z][\w'\-]+(?:\s+[\w'\-]+){0,5}"  # 1-6 capitalised words
+    + _ANCHOR_LANDMARK_RE +
     r")"
 )
 
