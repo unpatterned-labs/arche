@@ -39,8 +39,14 @@ Paste two records. Pick an entity pack. Get the decision, the evidence behind
 it, and a plain sentence explaining why.
 
 The fields are free-form, so this works for two bare names or for full records
-with coordinates and identifiers. Add a field, name it whatever your data calls
-it, and the pack decides what to do with it.
+with coordinates and identifiers. The margin lists what the chosen pack reads
+and how much each field counts, derived from the pack rather than written out
+by hand — `person` gained a date comparator in 0.5.0a1 and a hand-written list
+would already have been wrong.
+
+A field the pack does not name is **ignored, not rejected**: no error, no
+warning, no change to the score. That is the right behaviour, and it is silent,
+so fields the pack will not read are struck through as you type them.
 
 Worth trying first: two records both named `General Hospital`, entity `place`.
 Byte-identical strings, and the engine holds them:
@@ -71,6 +77,46 @@ report a perfect score while doing it.
 facility upgraded to a new tier, two spellings of one Fula surname, a dropped
 middle name, and two schools from the same academy chain.
 
+## Documents
+
+Drop two or more documents. Every entity is found, everything that identifies
+somebody is hidden, and the column on the right says which section of which
+statute made that call. Then the matcher runs across the documents.
+
+One document tells you a person is mentioned. Two and a matcher tell you whether
+it is the *same* person, which is the question anybody reconciling a register
+against a survey actually has.
+
+Three things are worth watching for.
+
+**`uncovered`.** Under NDPA-2023 a person's *name* draws no rule at all. The
+statute has plenty to say about a national ID and nothing about `Adesola
+Okonkwo`. The tempting reading is that showing it must therefore be fine; that
+is exactly backwards. An uncovered detection is one nobody has decided about, so
+it is hidden here and labelled as this tool's choice rather than a statute's. A
+tool that showed it because no statute objected would turn a gap in coverage
+into a permission.
+
+**`retain`.** A statute that permits keeping something is doing as much work as
+one that removes it. `Kano` stays visible under NDPA s.31, and the citation says
+so. A redactor that only ever deletes has not read the law.
+
+**Reveal is a display control, not a claim.** These are your documents, off your
+disk; you are not being shown anything you did not already have. It is built as
+a display control honestly: the values are not in the page at all until you ask
+for them, so a page that has not asked cannot leak what it never received. The
+alternative — send everything and hide it with CSS — would make "redacted" a
+statement about styling.
+
+The matching runs on the real values either way. Comparing `[PERSON]` against
+`[PERSON]` would score the placeholder, not the person, so the engine sees the
+names and the page does not. You can read the judgement without reading the
+names, which is a useful thing to be able to do in front of a room.
+
+Plain text is read directly. PDF, DOCX, PPTX and XLSX go through the document
+lane, which needs `arche-core[doc]`. Finding a name at all needs a NER backend:
+`arche-core[detect]`.
+
 ## Spatial roles
 
 Paste a dispatch note or drop a document. The tool marks every place mention
@@ -93,9 +139,21 @@ Point it at an adjudication pack and walk it: filter to what needs a human, see
 both records side by side with the same evidence panel, mark an outcome, give a
 reason, save.
 
-Packs live in `data/review_packs/`. Any CSV works. The tool guesses which
-columns belong to which side from their prefixes, so a pack with `grid3_name`
-and `hfr_name` renders without configuration.
+Packs live in `data/review_packs/`. CSV, parquet, JSONL and JSON all work, and
+the same pack in two of those formats produces the same content digest — so an
+adjudication made against one verifies against the other. Parquet needs
+`arche-core[parquet]`.
+
+The tool does not parse them itself. `arche.review.read_pack` does, which is
+also what infers the two sides from the column prefixes, so a pack with
+`grid3_name` and `hfr_name` renders without configuration and the library and
+the tool cannot come to disagree about what a pack is.
+
+Marking a row changes what you see. The `resolved` column carries the standing
+answer — the reviewer's call where there is one, the matcher's otherwise — and
+the *still needs a human* filter drops rows as you settle them, so the queue
+gets shorter as you work it. `1` `2` `3` make the call and `j` `k` move.
+*Cannot tell* is a finding, not a resolution: the row stays in the queue.
 
 ### Getting a match result in here
 

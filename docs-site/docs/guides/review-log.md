@@ -180,6 +180,62 @@ It also carries `source_pack_content_sha256`, so it is bound to the content of t
 
 **What none of this establishes is who reviewed.** `reviewer` is a string somebody typed. The digests prove the artifact has not changed since it was made; they do not prove the names in it are real people. That is an identity problem, and an auth proxy in front of whatever tool does the reviewing is what solves it.
 
+### A pack does not have to be a CSV
+
+`review_pack` writes one, because CSV is what a reviewer can open in anything.
+`read_pack` also reads parquet, JSONL and JSON, so a pipeline that ends in
+parquet does not have to convert before it can be reviewed:
+
+<!-- docs-test: fragment -->
+```python
+from arche.review import read_pack
+
+pack = read_pack("data/decisions.parquet")     # or .jsonl, .json, .csv
+```
+
+Point it at a directory and it looks for `pack.csv` first, then the others, then
+any single readable file — so a directory holding `decisions.parquet` works
+without renaming anything.
+
+**The formats agree on the digest**, which is the property that makes this safe
+rather than merely possible. The same pack written three ways produces one
+`content_sha256`, so an adjudication made against the parquet copy verifies
+against the CSV copy. That requires narrowing the typed formats to the untyped
+one on read: a parquet `1.0` and a CSV `"1.0"` have to hash identically, and
+evidence written as a nested JSON object has to hash the same as evidence
+written as a JSON string. Types are lost, deliberately — a pack is a document to
+be read and adjudicated, not a frame to compute on.
+
+Parquet needs `pip install arche-core[parquet]`. The other formats are standard
+library. A format with no reader is refused rather than sniffed: a pack is
+re-read months later, and a file whose format was guessed is a file whose
+reading cannot be reproduced.
+
+### What the pair now stands as
+
+An adjudication and the matcher's own answer are two different columns, and
+until you combine them nothing tells you where a pair actually landed:
+
+```python
+from arche.review import effective_decision
+
+effective_decision({"decision": "review"}, "same_entity")   # -> "match"
+effective_decision({"decision": "review"}, "different")     # -> "no_match"
+effective_decision({"decision": "match"}, "unresolved")     # -> "review"
+```
+
+The vocabularies stay separate on purpose. `same_entity` is a claim about the
+world and `match` is a claim about what the system will do, so the mapping is
+written down once rather than re-derived wherever a result is displayed.
+
+Note the third line. *Cannot tell* is a **finding**, not the absence of one: a
+reviewer who looked and could not decide has said something, and what they said
+is that this stays held. It must not read as unreviewed.
+
+`write_reviewed_csv` adds `effective_decision` beside `decision` rather than
+overwriting it. Both are worth keeping — what the matcher said is the thing
+being audited, and destroying it to record the audit would be self-defeating.
+
 ### Sending it onward
 
 The pack you just reviewed has real names in it, because it had to. That makes it a local document, and everything downstream of a review — a summary for the programme team, a sample for a partner, an attachment on a ticket — is a copy of it leaving the machine.

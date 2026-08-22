@@ -136,11 +136,52 @@ table.grid tbody tr[aria-selected=true]{background:var(--code)}
 table.grid tbody tr[aria-selected=true] td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .dt{font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
 .d-match{color:var(--ok)}.d-review{color:var(--hold)}
-.d-different,.d-no_candidate{color:var(--no)}
+.d-different,.d-no_candidate,.d-no_match{color:var(--no)}
+/* A decision a person made must not read the same as one the engine made.
+   The accent rule says #A33B1F is a mark and never running copy, so the
+   attribution is a rule and a small caption rather than coloured text. */
+.byhand{display:inline-block;margin-left:9px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.04em;color:var(--muted);border-left:2px solid var(--accent);padding-left:6px}
+table.grid tbody tr.settled td:first-child{box-shadow:inset 3px 0 0 var(--rule)}
+table.grid tbody tr.settled{color:var(--muted)}
 .vword.d-match,.vword.d-review,.vword.d-different,.vword.d-no_candidate{color:inherit}
 .vrule-match{border-top-color:var(--ok)!important}
 .vrule-review{border-top-color:var(--hold)!important}
 .vrule-different,.vrule-no_candidate{border-top-color:var(--no)!important}
+.saved{color:var(--ok);font-weight:600}
+.keys{font-size:13px;color:var(--muted);align-self:center;margin-left:6px}
+.keys b{font-family:var(--mono);font-size:12px;color:var(--ink);font-weight:400;
+  border:1px solid var(--rule);padding:1px 5px;margin:0 1px}
+/* ── documents ─────────────────────────────────────────────────────── */
+.doc{margin-bottom:34px}
+.doctext{font-family:var(--mono);font-size:13.5px;line-height:1.66;white-space:pre-wrap;
+  background:var(--code);padding:15px 17px;margin:0 0 15px;max-width:var(--measure);
+  border-left:2px solid var(--rule)}
+.enttable td{vertical-align:top}
+.etype{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--muted);
+  white-space:nowrap}
+.eval{font-family:var(--mono);font-size:13px}
+/* A hidden value should read as withheld, not as data. The accent marks the
+   fact of withholding; the text itself stays quiet. */
+tr.hid .eval{color:var(--muted);border-left:2px solid var(--accent);padding-left:9px}
+.eact{font-size:14px;white-space:nowrap}
+.ecite{font-size:13px;color:var(--muted)}
+.dz.over{border-color:var(--accent);background:var(--code)}
+.fdesc{margin:0 0 11px;line-height:1.42}
+.fname{font-family:var(--mono);font-size:13px;color:var(--ink)}
+.fweight{font-family:var(--mono);font-size:12px;color:var(--muted);
+  float:right;font-variant-numeric:tabular-nums}
+.fnote{display:block;font-size:14px;color:var(--muted)}
+/* A field the pack will not read. Struck rather than coloured: the accent is
+   a mark, never a status, and this is not an error. */
+.fieldrow.unused input:first-child{text-decoration:line-through;
+  text-decoration-color:var(--muted);color:var(--muted)}
+/* The note needs a column of its own; the row is otherwise three wide. */
+.fieldrow{grid-template-columns:158px 1fr 22px 0}
+.fieldrow.unused{grid-template-columns:158px 1fr 22px auto}
+.fieldrow::after{content:"";font-size:12px;color:var(--muted);
+  align-self:center;white-space:nowrap;overflow:hidden}
+.fieldrow.unused::after{content:"not read by this pack"}
 .spark{display:inline-flex;gap:2px;align-items:flex-end;height:13px}
 .spark i{width:4px;background:var(--ink);display:block;min-height:1px}
 .cols{display:none;flex-wrap:wrap;gap:9px 20px;margin-top:14px;padding:14px 0;
@@ -174,12 +215,14 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
     <h1>arche studio</h1><span class="alpha">alpha</span>
     <p class="dek">Read what the matcher decided, and why.</p>
   </div>
-  <p class="disclaim"><b>Experimental, and for us.</b> This is an internal reading tool for our
-    own matches and review queues. It is not a product, it has no authentication, and the
-    decisions it shows are alpha-quality. Nothing here is an adjudication until a person
-    checks the evidence and signs their name to it.</p>
+  <p class="disclaim"><b>A local tool, and a deliberately cautious one.</b> It runs on the
+    machine holding the data and makes one outbound request, for two typefaces. It has no
+    authentication, because it has no remote access. And it does not call a match an
+    adjudication: nothing here is settled until a person reads the evidence and puts their
+    name to it.</p>
   <nav>
     <button id="t-compare" aria-current="true">Compare</button>
+    <button id="t-extract" aria-current="false">Documents</button>
     <button id="t-places"  aria-current="false">Spatial roles</button>
     <button id="t-redact"  aria-current="false">Redact</button>
     <button id="t-verify"  aria-current="false">Verify</button>
@@ -189,6 +232,58 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 
 <main class="wrap">
 
+
+<!-- ══════════════════════════════════════════════════════════ EXTRACT ══ -->
+<section id="s-extract" hidden>
+  <p class="lede measure">Two documents, or eight. Every entity is found, every
+    one that identifies somebody is hidden, and the column on the right says
+    which section of which statute made that call. Then the matcher runs across
+    the documents and answers the question a single document cannot: is this the
+    same person twice?</p>
+
+  <div class="dz" id="ddz">Drop documents here, or click to choose. Plain text,
+    PDF, DOCX, PPTX, XLSX. Two or more is where this gets interesting.</div>
+  <input type="file" id="dfile" multiple hidden>
+  <div class="row">
+    <button class="act" id="b-docs">Read them</button>
+    <select id="djuris" style="width:auto">
+      <option value="NG" selected>NG · NDPA-2023</option>
+      <option value="ZA">ZA · POPIA</option>
+      <option value="KE">KE · Kenya DPA</option>
+      <option value="GH">GH · Ghana DPA</option>
+      <option value="EU">EU · GDPR</option>
+      <option value="US">US · HIPAA Safe Harbor</option>
+    </select>
+    <button class="act quiet" id="b-dexample">Use the example pair</button>
+    <button class="act quiet" id="b-reveal" hidden>Reveal what is hidden</button>
+    <span class="stat" id="dcount"></span>
+  </div>
+  <div class="err" id="derr"></div>
+
+  <div id="dqueued" class="stat"></div>
+
+  <div class="split" style="margin-top:26px">
+    <div id="dleft"></div>
+    <aside class="margin" id="dmargin">
+      <p><b>Hidden by default, and on the record.</b> Every entity carries the
+        action taken and the section that chose it.</p>
+      <p><b>Watch for <i>uncovered</i>.</b> Under NDPA a person's name draws no
+        rule at all. It is hidden here anyway, and marked as hidden because it
+        names somebody rather than because a statute said so. A tool that showed
+        it because no statute objected would turn a gap in coverage into a
+        permission.</p>
+      <p><b>Reveal is a display control, not a claim.</b> These are your
+        documents and you already have them. The values are not in this page
+        until you ask: the server sends them only on request, so nothing is
+        hidden in the markup waiting to be read.</p>
+      <p><b>The matching runs on the real values either way.</b> Comparing
+        <span class="mono">[PERSON]</span> against <span class="mono">[PERSON]</span>
+        would score the placeholder, not the person. So the engine sees the
+        names, the page does not, and you can read the judgement without reading
+        the names.</p>
+    </aside>
+  </div>
+</section>
 
 <!-- ═══════════════════════════════════════════════════════════ REDACT ══ -->
 <section id="s-redact" hidden>
@@ -260,9 +355,11 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
   <div class="row tight">
     <select id="pack" style="width:auto"></select>
     <select id="filter" style="width:auto">
-      <option value="review" selected>Needs review</option>
+      <option value="review" selected>Still needs a human</option>
       <option value="all">Everything</option>
-      <option value="match">Auto-matched</option>
+      <option value="settled">Settled by a reviewer</option>
+      <option value="match">Standing answer: match</option>
+      <option value="no_match">Standing answer: no match</option>
       <option value="unmarked">Not yet marked</option>
     </select>
     <input id="q" class="searchbox" placeholder="search any field">
@@ -270,6 +367,8 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
     <span class="stat" id="pmeta"></span>
     <span class="stat" id="marks"></span>
   </div>
+
+  <div id="pprob"></div>
 
   <div class="cols" id="colpick"></div>
 
@@ -288,6 +387,7 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
           <button class="act quiet" id="b-same">Same entity</button>
           <button class="act quiet" id="b-diff">Different</button>
           <button class="act quiet" id="b-unres">Cannot tell</button>
+          <span class="keys"><b>1</b> <b>2</b> <b>3</b> to call it · <b>j</b> <b>k</b> to move</span>
         </div>
         <div class="pair" style="margin-top:22px;max-width:900px">
           <div><p class="label">Reason</p><input id="reason" placeholder="what settled it, or what is missing"></div>
@@ -366,7 +466,7 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const n3=x=>x==null?"n/a":Number(x).toFixed(3);
-const tab=t=>{for(const k of["compare","places","redact","verify","review"]){
+const tab=t=>{for(const k of["compare","extract","places","redact","verify","review"]){
   $("#t-"+k).setAttribute("aria-current",String(k===t));$("#s-"+k).hidden=k!==t;}};
 
 /* ═══════════════════════════════════════════════════════════════ grid ══ */
@@ -375,7 +475,8 @@ const ID_RE=/(^|_)(id|code|uuid)$|decision_id/i, NUM_RE=/score|distance|distinct
 
 async function loadPacks(){
   const p=await(await fetch("/api/packs")).json();
-  $("#pack").innerHTML=p.length?p.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")
+  $("#pack").innerHTML=p.length?p.map(x=>
+    `<option value="${esc(x.id)}">${esc(x.name)} · ${x.rows} rows · ${esc(x.format||"csv")}</option>`).join("")
     :'<option value="">no packs found</option>';
   if(p.length)loadPack();
 }
@@ -385,7 +486,20 @@ async function loadPack(){
   if(PACK.error){$("#rerr").textContent=PACK.error;return;}
   // Open on the columns a reviewer reads. Everything else is one click away.
   HIDE=new Set(PACK.fields.filter(f=>/^(decision_id|evidence|reviewed_at|reviewer|reason)$/.test(f)));
-  SEL=null;$("#callbox").hidden=true;cols();await loadMarks();draw();
+  SEL=null;$("#callbox").hidden=true;
+  // A pack that fails its own integrity check is still shown — refusing to
+  // display it helps nobody — but the reviewer hears about it now rather than
+  // after forty rows of work.
+  const bad=(PACK.problems||[]).filter(x=>x.severity==="error");
+  const warn=(PACK.problems||[]).filter(x=>x.severity!=="error");
+  $("#pprob").innerHTML=bad.length
+    ? `<b>This pack does not match what the matcher recorded.</b> `+
+      bad.map(x=>esc(x.detail)).join(" ")+
+      ` Marks are still recorded against the pack as it is now, and the digest
+        they carry will say so.`
+    : (warn.length?warn.map(x=>esc(x.detail)).join(" "):"");
+  $("#pprob").className=bad.length?"err":"stat";
+  cols();await loadMarks();draw();
 }
 const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
 function cols(){
@@ -396,7 +510,14 @@ function flip(f){HIDE.has(f)?HIDE.delete(f):HIDE.add(f);draw();}
 function visible(){
   const f=$("#filter").value,q=($("#q").value||"").toLowerCase();
   return PACK.rows.filter(r=>{
-    const ok=f==="all"?true:f==="unmarked"?!(M[r.decision_id]||r.review_outcome):r.decision===f;
+    // `review` means "still needs a human", not "the matcher said review".
+    // A row somebody has settled leaves the queue; that is the entire point of
+    // working one, and it did not happen before.
+    const ok=f==="all"?true
+      :f==="unmarked"?!(M[r.decision_id]||r.review_outcome)
+      :f==="settled"?settled(r)
+      :f==="review"?(r.decision==="review"&&!settled(r))
+      :effective(r)===f;
     if(!ok)return false;
     if(!q)return true;
     return PACK.fields.some(k=>String(r[k]??"").toLowerCase().includes(q));});
@@ -411,6 +532,15 @@ function pretty(v){
     return vals.length?vals.join(" › "):s;}catch{return s;}
 }
 function sortBy(k){SORT=SORT.k===k?{k,d:-SORT.d}:{k,d:1};draw();}
+// The matcher proposes, a person disposes. Until a mark exists the standing
+// answer is the matcher's; once one does, it is the reviewer's. The mapping
+// comes from the server so the page cannot drift from the library.
+function effective(r){
+  const o=M[r.decision_id]?.outcome||r.review_outcome||"";
+  if(!o)return r.decision;
+  return (PACK.outcome_decision||{})[o]||r.decision;
+}
+const settled=r=>{const o=M[r.decision_id]?.outcome||r.review_outcome||"";return o&&o!=="unresolved";};
 function sparkline(json){
   let ev={};try{ev=JSON.parse(json||"{}")}catch{}
   const ks=Object.keys(ev).filter(k=>typeof ev[k]==="number"&&!/distance/.test(k)).sort();
@@ -425,7 +555,7 @@ function draw(){
     const num=NUM_RE.test(f)?' class="num"':'';
     const arr=SORT.k===f?`<span class="sort">${SORT.d>0?"▲":"▼"}</span>`:"";
     return `<th${num} onclick="sortBy('${esc(f)}')">${esc(f)}${arr}</th>`;}).join("")
-    +'<th>evidence</th><th>marked</th>';
+    +'<th>evidence</th><th title="The standing answer: a reviewer call where one was made, the matcher otherwise">resolved</th>';
   let rows=visible();
   if(SORT.k)rows=[...rows].sort((a,b)=>{
     const x=a[SORT.k]??"",y=b[SORT.k]??"",nx=parseFloat(x),ny=parseFloat(y);
@@ -436,9 +566,13 @@ function draw(){
       if(f==="decision")return `<td class="dt d-${esc(v)}">${esc(v)}</td>`;
       if(ID_RE.test(f))return `<td class="mono" title="${esc(v)}">${esc(v)}</td>`;
       return `<td title="${esc(v)}">${esc(pretty(v))}</td>`;}).join("");
-    const m=M[r.decision_id]?.outcome||r.review_outcome||"";
-    return `<tr onclick="pick('${esc(r.decision_id)}')" aria-selected="${SEL===r.decision_id}">
-      ${cells}<td>${sparkline(r.evidence)}</td><td class="dt">${esc(m)}</td></tr>`;}).join("")
+    const o=M[r.decision_id]?.outcome||r.review_outcome||"",eff=effective(r);
+    // A human's call is marked as one. An engine decision and a person's
+    // decision reading identically is how the queue lost its sense of progress.
+    const cell=o?`<span class="dt d-${esc(eff)}">${esc(eff)}</span><span class="byhand" title="${esc(o)} — ${esc(M[r.decision_id]?.reviewer||"")}">by hand</span>`
+               :`<span class="dt d-${esc(eff)}" style="opacity:.45">${esc(eff)}</span>`;
+    return `<tr onclick="pick('${esc(r.decision_id)}')" aria-selected="${SEL===r.decision_id}" ${o?'class="settled"':''}>
+      ${cells}<td>${sparkline(r.evidence)}</td><td>${cell}</td></tr>`;}).join("")
     ||`<tr><td colspan="${fs.length+2}"><span class="dek">Nothing matches.</span></td></tr>`;
   $("#pmeta").textContent=`${rows.length} of ${PACK.rows.length} rows · `
     +`${fs.length} of ${PACK.fields.length} columns · integrity ${PACK.digest}`;
@@ -497,7 +631,18 @@ async function mark(o){
     body:JSON.stringify({pack:$("#pack").value,pack_digest:PACK.digest,decision_id:SEL,
                          outcome:o,reviewer:who,reason:$("#reason").value})})).json();
   if(r.error){$("#rerr").textContent=r.error;return;}
+  const after=visible();
   await loadMarks();draw();
+  // Advance to the next row still wanting a call. Without this the reviewer
+  // marks a row, it leaves the filtered view, and the panel keeps showing a
+  // pair that is no longer in the queue.
+  const rest=visible();
+  const next=rest.find(x=>x.decision_id!==SEL)||rest[0];
+  if(next&&!rest.some(x=>x.decision_id===SEL))pick(next.decision_id);
+  else draw();
+  $("#rerr").innerHTML=`<span class="saved">Recorded.</span> `+
+    `${after.length-rest.length>0?`${after.length-rest.length} fewer in this view. `:""}`+
+    `Nothing is written to the pack until you save.`;
 }
 
 async function loadMarks(){
@@ -506,10 +651,12 @@ async function loadMarks(){
   for(const k of Object.keys(M))delete M[k];
   for(const [k,v] of Object.entries(d.current||{}))M[k]=v;
   const s=d.summary||{};
-  $("#marks").textContent=s.marked
+  const left=d.outstanding;
+  $("#marks").innerHTML=(s.marked
     ? `${s.marked} marked${s.revisions?`, ${s.revisions} revised`:""}`+
       ` · ${Object.entries(s.by_outcome||{}).map(([k,v])=>k+" "+v).join(" · ")}`
-    : "";
+    : "")
+    +(left==null?"":` · <b>${left} still need a human</b>`);
 }
 async function save(){
   $("#rerr").textContent="";
@@ -528,11 +675,115 @@ async function save(){
       : `<b>No shareable copy.</b> ${esc(r.warning||"")}`);
 }
 
+/* ══════════════════════════════════════════════════════════ documents ══ */
+// The uploaded documents stay here, in the page, so Reveal can re-ask the
+// server for the same files. Nothing is stored server-side: the reveal is a
+// second request carrying the same bytes, not a lookup against a cache.
+let DOCS=[],DRES=null,REVEALED=false;
+const ACTION_NOTE={
+  mask:"removed", tokenize:"replaced with a stable token",
+  generalize:"broadened", drop:"dropped", refuse:"refused",
+  retain:"kept, deliberately", uncovered:"no rule covered this"};
+
+function queued(){
+  $("#dqueued").textContent=DOCS.length
+    ? DOCS.map(d=>d.name).join(" · ")+`  (${DOCS.length} document${DOCS.length>1?"s":""})`
+    : "";
+}
+function addFiles(list){
+  const jobs=[...list].map(f=>new Promise(res=>{
+    const r=new FileReader();
+    r.onload=()=>res({name:f.name,b64:String(r.result).split(",")[1]});
+    r.readAsDataURL(f);}));
+  return Promise.all(jobs).then(ds=>{DOCS=DOCS.concat(ds);queued();});
+}
+async function readDocs(reveal){
+  if(!DOCS.length){$("#derr").textContent="Attach at least one document first.";return;}
+  $("#derr").textContent="";
+  $("#dleft").innerHTML='<p class="working">reading…</p>';
+  const r=await(await fetch("/api/documents",{method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({documents:DOCS,jurisdiction:$("#djuris").value,reveal:!!reveal})})).json();
+  if(r.error){$("#dleft").innerHTML="";$("#derr").textContent=r.error;return;}
+  DRES=r;REVEALED=!!reveal;
+  $("#b-reveal").hidden=false;
+  $("#b-reveal").textContent=REVEALED?"Hide it again":"Reveal what is hidden";
+  drawDocs();
+}
+function entRow(e){
+  // The action and its citation are the column worth reading. A value removed
+  // without a section to point at has not been governed, only deleted.
+  const cite=e.authority?esc(e.authority):"<i>no statute</i>";
+  return `<tr class="${e.masked?"hid":""}">
+    <td class="etype">${esc(e.type)}</td>
+    <td class="eval">${esc(e.shown)}</td>
+    <td class="eact">${esc(e.action)}<span class="dek"> · ${esc(ACTION_NOTE[e.action]||"")}</span></td>
+    <td class="ecite">${cite}</td></tr>`;
+}
+function drawDocs(){
+  const r=DRES;if(!r)return;
+  $("#dcount").textContent=Object.entries(r.counts||{})
+    .map(([k,v])=>`${k.toLowerCase()} ${v}`).join(" · ");
+  const docs=r.documents.map(d=>`
+    <div class="doc">
+      <p class="label">${esc(d.name)} <span class="dek">${d.chars} characters</span></p>
+      <pre class="doctext">${esc(d.text)}</pre>
+      <table class="ev-table enttable">
+        <thead><tr><th>Type</th><th>Value</th><th>Action</th><th>On whose authority</th></tr></thead>
+        <tbody>${d.entities.map(entRow).join("")}</tbody></table>
+    </div>`).join("");
+  const links=(r.links||[]).length?`
+    <hr class="rule">
+    <p class="label">Across the documents</p>
+    <p class="dek measure">The matcher ran on the real values, whether or not
+      this page can see them. A held pair is the interesting output: it means
+      the two mentions agree without agreeing on anything distinctive.</p>
+    <table class="ev-table">
+      <thead><tr><th>Type</th><th>In one</th><th>In the other</th>
+        <th class="num">Score</th><th>Verdict</th></tr></thead>
+      <tbody>${r.links.map(l=>`<tr>
+        <td class="etype">${esc(l.type)}</td>
+        <td>${esc(l.a)}</td><td>${esc(l.b)}</td>
+        <td class="num">${n3(l.score)}</td>
+        <td><span class="dt d-${esc(l.decision)}">${esc(l.decision)}</span></td>
+        </tr>`).join("")}</tbody></table>`
+    :(r.documents.length>1?'<hr class="rule"><p class="dek">No mention in one document paired with any in the other.</p>':"");
+  $("#dleft").innerHTML=docs+links;
+}
+const DEX=[
+ {name:"referral.txt",text:"Referral note. Dr Adesola Okonkwo, NIN 12345678901, "+
+  "reviewed the patient at Karfi Health Post in Kano on 2 March. Reach the clinic "+
+  "on 08031234567 or adesola@example.ng."},
+ {name:"register.txt",text:"Staff register, Kano State. Adesola Okonkwo is listed "+
+  "at Karfi Primary Health Centre. Contact 0803 123 4567. Malik Bello covers the "+
+  "Wudil ward."}];
+function dexample(){DOCS=DEX.map(d=>({...d}));queued();readDocs(false);}
+
 /* ════════════════════════════════════════════════════════════ compare ══ */
+let ENTITIES={};
+// A pack reads the fields it names and IGNORES everything else — no error, no
+// warning, no effect on the score. That is the right behaviour, and it is
+// silent, which is how somebody spends an afternoon wondering why the column
+// they added changed nothing. So the silence gets a visible mark.
+function markUnused(){
+  const d=ENTITIES[$("#entity").value];if(!d)return;
+  const known=new Set(d.field_names);
+  for(const side of["a","b"])
+    for(const row of $("#f"+side).querySelectorAll(".fieldrow")){
+      const k=row.querySelector("input").value.trim();
+      const unused=k&&!known.has(k);
+      row.classList.toggle("unused",!!unused);
+      row.querySelector("input").title=unused
+        ? `${$("#entity").value} does not compare "${k}". It is ignored, not rejected.`
+        : "";
+    }
+}
 function fieldRow(side,k="",v=""){
   const d=document.createElement("div");d.className="fieldrow";
   d.innerHTML=`<input value="${esc(k)}" placeholder="field"><input value="${esc(v)}" placeholder="value"><button class="drop">&minus;</button>`;
-  d.querySelector("button").onclick=()=>d.remove();$("#f"+side).appendChild(d);}
+  d.querySelector("button").onclick=()=>{d.remove();markUnused();};
+  d.querySelector("input").addEventListener("input",markUnused);
+  $("#f"+side).appendChild(d);markUnused();}
 const addField=s=>fieldRow(s);
 const record=s=>{const o={};for(const r of $("#f"+s).querySelectorAll(".fieldrow")){
   const[k,v]=r.querySelectorAll("input");if(k.value.trim())o[k.value.trim()]=v.value;}return o;};
@@ -555,7 +806,25 @@ function example(){const e=EX[ei++%EX.length];
   for(const[k,v]of Object.entries(e.a))fieldRow("a",k,v);
   for(const[k,v]of Object.entries(e.b))fieldRow("b",k,v);
   $("#entity").value=e.entity;
-  $("#cmargin").innerHTML=`<p><b>This pair.</b></p><p>${esc(e.note)}</p>`;}
+  describeEntity(e.note);}
+function describeEntity(note){
+  const name=$("#entity").value,d=ENTITIES[name];
+  markUnused();
+  if(!d){$("#cmargin").innerHTML=note?`<p><b>This pair.</b></p><p>${esc(note)}</p>`:"";return;}
+  const rows=d.fields.map(f=>
+    `<p class="fdesc"><span class="fname">${esc(f.field)}</span>`+
+    `<span class="fweight">${f.weight.toFixed(1)}</span>`+
+    `<span class="fnote">${esc(f.notes.join(". "))}`+
+    `${f.refutes?" <b>Disagreement here can pull the pair back into review.</b>":""}</span></p>`).join("");
+  $("#cmargin").innerHTML=
+    (note?`<p><b>This pair.</b></p><p>${esc(note)}</p><hr class="rule">`:"")+
+    `<p><b>What <i>${esc(name)}</i> reads.</b> The number is how much the field
+      counts against the others.</p>${rows}
+     <p>Any other field is <b>ignored, not rejected</b>. Give a record an
+      <span class="mono">occupation</span> and nothing errors and nothing
+      changes — the score is the same as if you had left it out. Fields this
+      pack will not read are marked as you type them.</p>`;
+}
 async function compare(){
   $("#cerr").textContent="";
   // Never leave a click unacknowledged. The engine can take a moment.
@@ -728,12 +997,41 @@ on("b-diff","click",()=>mark("different"));
 on("b-unres","click",()=>mark("unresolved"));
 on("b-save","click",save);
 on("pack","change",loadPack);
+on("t-extract","click",()=>tab("extract"));
+// Working a queue is repetitive by nature: look, decide, next. Reaching for the
+// mouse between every row is what makes 360 of them feel like 360.
+document.addEventListener("keydown",e=>{
+  if($("#s-review").hidden)return;
+  const t=e.target.tagName;
+  if(t==="INPUT"||t==="TEXTAREA"||t==="SELECT"||e.metaKey||e.ctrlKey)return;
+  const rows=visible(),at=rows.findIndex(r=>r.decision_id===SEL);
+  if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();
+    if(rows.length)pick(rows[Math.min(at+1,rows.length-1)>=0?Math.min(at+1,rows.length-1):0].decision_id);}
+  else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();
+    if(rows.length)pick(rows[Math.max(at-1,0)].decision_id);}
+  else if(e.key==="1")mark("same_entity");
+  else if(e.key==="2")mark("different");
+  else if(e.key==="3")mark("unresolved");
+});
+on("b-docs","click",()=>readDocs(REVEALED));
+on("b-dexample","click",dexample);
+on("b-reveal","click",()=>readDocs(!REVEALED));
+on("ddz","click",()=>$("#dfile").click());
+$("#dfile").addEventListener("change",e=>{addFiles(e.target.files).then(()=>readDocs(false));});
+for(const ev of["dragover","dragenter"])
+  $("#ddz").addEventListener(ev,e=>{e.preventDefault();$("#ddz").classList.add("over");});
+for(const ev of["dragleave","drop"])
+  $("#ddz").addEventListener(ev,e=>{e.preventDefault();$("#ddz").classList.remove("over");});
+$("#ddz").addEventListener("drop",e=>{
+  DOCS=[];addFiles(e.dataTransfer.files).then(()=>readDocs(false));});
 on("filter","change",draw);
 on("q","input",draw);
 $("#ptext").addEventListener("input",count);
 (async()=>{
-  const e=await(await fetch("/api/entities")).json();
-  $("#entity").innerHTML=e.map(x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
+  ENTITIES=await(await fetch("/api/entities")).json();
+  $("#entity").innerHTML=Object.keys(ENTITIES).map(
+    x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
+  $("#entity").addEventListener("change",()=>describeEntity(""));
   example();pexample();rexample();loadPacks();
 })();
 </script>

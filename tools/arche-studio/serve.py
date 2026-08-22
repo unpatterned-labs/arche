@@ -45,9 +45,7 @@ beside it, so the matcher output and its decision-ID manifest stay intact.
 
 from __future__ import annotations
 
-import csv
 import hashlib
-import io
 import json
 import sys
 import threading
@@ -83,18 +81,44 @@ STATE = Store(STUDIO_STATE / "state.sqlite3")
 KEY_PATH = STUDIO_STATE / "key.pem"
 
 
+def _pack_suffixes() -> tuple[str, ...]:
+    from arche.review import PACK_SUFFIXES
+
+    return PACK_SUFFIXES
+
+
 def _packs() -> list[dict]:
+    """Every pack on offer, in any format the library can read.
+
+    Row counts come from the library reader rather than from counting newlines,
+    which was wrong for any quoted field containing one and meaningless for
+    parquet.
+    """
+    from arche.review import PackError, read_pack
+
     out = []
     if not PACKS.exists():
         return out
+    suffixes = _pack_suffixes()
     for d in sorted(PACKS.iterdir()):
-        csvs = sorted(d.glob("*.csv")) if d.is_dir() else ([d] if d.suffix == ".csv" else [])
-        for c in csvs:
+        if d.is_dir():
+            candidates = sorted(c for c in d.iterdir()
+                                if c.is_file() and c.suffix.lower() in suffixes)
+        else:
+            candidates = [d] if d.suffix.lower() in suffixes else []
+        for c in candidates:
             if c.name.endswith("_reviewed.csv"):
+                continue
+            try:
+                rows = len(read_pack(c).rows)
+            except (PackError, OSError):
+                # A file that cannot be read is not offered. Listing it would
+                # only produce a pack picker entry that fails on click.
                 continue
             out.append({"id": str(c.relative_to(PACKS)).replace("\\", "/"),
                         "name": d.name if d.is_dir() else c.stem,
-                        "rows": max(0, sum(1 for _ in c.open(encoding="utf-8")) - 1)})
+                        "format": c.suffix.lower().lstrip("."),
+                        "rows": rows})
     return out
 
 
@@ -107,15 +131,18 @@ def _pack_path(pack_id: str) -> Path:
     were both readable through `/api/pack` and came back parsed as CSV rows. And
     it trusted an id the client made up rather than one this server had offered.
 
-    So: containment by `is_relative_to`, `.csv` only, and the id has to be one
-    `_packs()` actually lists.
+    So: containment by `is_relative_to`, an extension the library has a reader
+    for, and the id has to be one `_packs()` actually lists. Widening the
+    extension check from `.csv` to that set does not widen what is reachable,
+    because the last check is the binding one: a file this server never offered
+    cannot be named, whatever it is called.
     """
     resolved = (PACKS / pack_id).resolve()
     root = PACKS.resolve()
     if not resolved.is_relative_to(root):
         raise ValueError("pack path escapes the pack directory")
-    if resolved.suffix.lower() != ".csv":
-        raise ValueError("a pack is a .csv file")
+    if resolved.suffix.lower() not in _pack_suffixes():
+        raise ValueError("a pack is a .csv, .parquet, .jsonl or .json file")
     if not resolved.is_file():
         raise ValueError(f"no pack {pack_id!r}")
     offered = {p["id"] for p in _packs()}
@@ -125,39 +152,50 @@ def _pack_path(pack_id: str) -> Path:
 
 
 def _load_pack(pack_id: str) -> dict:
+    """Read a pack through the library, and report what it says about itself.
+
+    This used to run `csv.DictReader` here and infer the two sides here, which
+    meant the studio had its own opinion about what a pack is. Two opinions is
+    one too many: a parquet pack was unreadable, a quoted newline miscounted the
+    rows, and the side inference could drift from the library's without either
+    copy being wrong on its own.
+
+    So the tool now asks `arche.review`. What is left here is presentation.
+    """
+    from arche.review import read_pack
+
     path = _pack_path(pack_id)
-    rows = list(csv.DictReader(path.open(encoding="utf-8")))
-    fields = list(rows[0].keys()) if rows else []
+    pack = read_pack(path)
 
     # Integrity: a pack is only worth reviewing if it is the pack the matcher
     # produced. `content_digest` covers every column the matcher wrote, so an
     # edited name or a flipped decision shows up. `digest` is the short
     # id-membership one the header has always displayed; it notices a row
     # added or dropped and nothing inside a row, which is why both are here.
-    from arche.report import pack_content_digest
+    digest = hashlib.sha256("\n".join(pack.decision_ids).encode()).hexdigest()[:16]
 
-    ids = [r.get("decision_id", "") for r in rows]
-    content_digest = pack_content_digest(rows, fields)
-    digest = hashlib.sha256("\n".join(ids).encode()).hexdigest()[:16]
+    from arche.review import OUTCOME_DECISION
 
-    manifest = None
-    mpath = path.parent / "manifest.json"
-    if mpath.exists():
-        manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    return {"rows": pack.rows, "fields": pack.fields, "digest": digest,
+            "content_digest": pack.content_digest,
+            "manifest": pack.manifest, "sides": _sides(pack.fields),
+            "format": path.suffix.lower().lstrip("."),
+            # What a reviewer's outcome means as a decision. Served rather than
+            # hard-coded in the page, so the tool and the library cannot come to
+            # disagree about what `same_entity` does.
+            "outcome_decision": dict(OUTCOME_DECISION),
+            # A pack that fails its own integrity check is still shown, because
+            # refusing to display it helps nobody, but the reviewer is told
+            # before they start rather than after they have marked forty rows.
+            "problems": [p.as_dict() for p in pack.problems],
+            "outcomes": list(OUTCOMES)}
 
-    # Guess which columns belong to which side, so any pack renders without
-    # configuration. Columns sharing a prefix before the first underscore, where
-    # exactly two such prefixes cover most fields, are the two sides.
-    prefixes: dict[str, list[str]] = {}
-    for f in fields:
-        if "_" in f:
-            prefixes.setdefault(f.split("_", 1)[0], []).append(f)
-    sides = sorted((p for p, fs in prefixes.items() if len(fs) >= 2 and p != "review"),
-                   key=lambda p: -len(prefixes[p]))[:2]
 
-    return {"rows": rows, "fields": fields, "digest": digest,
-            "content_digest": content_digest,
-            "manifest": manifest, "sides": sides, "outcomes": list(OUTCOMES)}
+def _sides(fields: list[str]) -> list[str]:
+    """Which columns belong to which record, from the library's inference."""
+    from arche.review import _infer_sides
+
+    return _infer_sides(fields)
 
 
 def _compare(payload: dict) -> dict:
@@ -237,6 +275,283 @@ def _extract(payload: dict) -> dict:
             "address": d.get("address"),
         })
     return {"source": source, "chars": len(text), "text": text, "mentions": out}
+
+
+def _document_text(doc: dict) -> tuple[str, str]:
+    """Text out of one uploaded document, and the name to call it.
+
+    Factored out of `_extract`, which had the only copy. Plain text is decoded
+    here; anything else goes through the document lane, which needs
+    `arche-core[doc]` and says so when it is missing.
+    """
+    name = doc.get("name") or "document"
+    if doc.get("b64"):
+        import base64
+        import tempfile
+
+        raw = base64.b64decode(doc["b64"])
+        suffix = Path(name).suffix.lower()
+        if suffix in (".txt", ".md", ".csv", ""):
+            return raw.decode("utf-8", "replace"), name
+        from arche.doc import parse
+
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as handle:
+            handle.write(raw)
+            tmp = handle.name
+        try:
+            parsed = parse(tmp)
+            return (getattr(parsed, "text", None) or str(parsed)), name
+        finally:
+            Path(tmp).unlink(missing_ok=True)
+    return doc.get("text") or "", name
+
+
+# Entity types that name somebody, or address them, whether or not a statute in
+# the chosen jurisdiction happens to have a rule about them. Used only to decide
+# what to hide when no rule applies — see `_classify` for why that case exists.
+_IDENTIFYING = {"PERSON", "NATIONAL_ID", "NIN", "BVN", "PHONE", "EMAIL",
+                "ADDRESS", "PASSPORT", "DRIVERS_LICENSE", "CREDIT_CARD",
+                "BANK_ACCOUNT", "DATE_OF_BIRTH", "MEDICAL", "IP_ADDRESS"}
+
+# Policy actions that remove or replace a value. `retain` is the one that does
+# not, and it is the interesting one: a statute permitting you to keep something
+# is doing as much work as one telling you to drop it.
+_REMOVING = {"mask", "tokenize", "generalize", "drop", "refuse"}
+
+
+def _classify(entity, outcome: dict | None) -> dict:
+    """Whether one detected entity is hidden, and on whose authority.
+
+    Three cases, and the third is the one worth building the tab around.
+
+    **A rule removed it.** The statute said so and the citation says which
+    section. This is the ordinary case.
+
+    **A rule kept it.** `retain` is a decision, not an absence of one.
+
+    **No rule covered it.** The NG policy emits no outcome at all for a
+    `PERSON`, so a name detected in a document is governed by nothing here. The
+    tempting reading is that it must therefore be fine to show. That is exactly
+    backwards: an uncovered detection is one nobody has decided about, and the
+    safe default for a thing that names a person is to hide it and say plainly
+    that no rule was the reason. A tool that showed it because no statute
+    objected would be laundering a gap in coverage into a permission.
+    """
+    if outcome is not None:
+        action = outcome.get("action") or ""
+        return {"masked": action in _REMOVING,
+                "action": action,
+                "applied": outcome.get("applied"),
+                "authority": outcome.get("citation") or outcome.get("statute") or "",
+                "rationale": outcome.get("rationale") or ""}
+    identifying = (getattr(entity, "entity_type", "") or "").upper() in _IDENTIFYING
+    return {"masked": identifying,
+            "action": "uncovered",
+            "applied": None,
+            "authority": "",
+            "rationale": ("No rule in this jurisdiction covers this detection. "
+                          "Hidden because it identifies a person, not because a "
+                          "statute said to." if identifying else
+                          "No rule covers this, and it does not identify anybody.")}
+
+
+def _documents(payload: dict) -> dict:
+    """Entities out of several documents at once, hidden by default.
+
+    Two documents rather than one, because one document is a detector demo and
+    two is the actual question: **is this the same person in both?** The linking
+    at the end runs the real matcher over what was extracted, so what the tab
+    shows is the engine's answer and not a summary of it.
+
+    On revealing. The Redact tab holds a firm line — the detected value is never
+    returned to that page — and this tab has a Reveal button, so the difference
+    has to be stated rather than fudged. There, the point is to show what a
+    compliant pipeline emits, and echoing the value would defeat the
+    demonstration. Here, the document is one the person operating the tool just
+    supplied from their own disk; they are not being shown anything they did not
+    already have.
+
+    So revealing is a **display** control, and it is built as one honestly: the
+    values are not in the response at all unless `reveal` is set, so a page that
+    has not asked cannot leak what it never received. The alternative — send
+    everything and hide it in CSS — would make "redacted" a statement about
+    styling, which is the kind of claim this project exists not to make.
+
+    What is never revealed is the export. `share_artifact` masks whatever leaves
+    here, on the same reasoning as everywhere else: the document you are reading
+    and the document you send are not the same document.
+    """
+    import hashlib as _hashlib
+
+    from arche import Pipeline, detect
+
+    documents = payload.get("documents") or []
+    if not documents:
+        raise ValueError("nothing to read: attach at least one document")
+    if len(documents) > 8:
+        raise ValueError("eight documents at a time is the limit; this is a "
+                         "reading tool, not a batch pipeline")
+    jurisdiction = payload.get("jurisdiction") or "NG"
+    reveal = bool(payload.get("reveal"))
+    pipeline = Pipeline(jurisdiction=jurisdiction)
+
+    out_docs = []
+    for index, doc in enumerate(documents):
+        text, name = _document_text(doc)
+        if not text.strip():
+            raise ValueError(f"{name} has no readable text in it")
+
+        result = pipeline.process(text)
+        # Index the policy outcomes by the span they cover, so each detection
+        # can be joined to the rule that decided about it.
+        outcomes: dict[tuple[int, int], dict] = {}
+        for policy in getattr(result, "policy_outcomes", []) or []:
+            span = getattr(policy, "span", None)
+            if span and span[0] is not None:
+                outcomes[(int(span[0]), int(span[1]))] = {
+                    "action": getattr(policy, "action", None),
+                    "citation": getattr(policy, "statute_reference", None),
+                    "statute": getattr(policy, "statute_id", None),
+                    "applied": getattr(policy, "applied_value", None),
+                    "rationale": getattr(policy, "rationale", None)}
+
+        entities = []
+        for entity in detect(text):
+            span = (int(entity.start), int(entity.end))
+            verdict = _classify(entity, outcomes.get(span))
+            kind = (entity.entity_type or "UNKNOWN").upper()
+            # Content-addressed, but over the position and type rather than the
+            # value: an id that hashed the text would be a way to confirm a
+            # guess at what was hidden.
+            eid = _hashlib.sha256(
+                f"{index}:{span[0]}:{span[1]}:{kind}".encode()).hexdigest()[:16]
+            shown = ((verdict.get("applied") or f"[{kind}]")
+                     if verdict["masked"] else entity.text)
+            entities.append({
+                "id": eid, "type": kind, "span": list(span),
+                "confidence": round(float(entity.confidence or 0), 3),
+                "detector": entity.source,
+                # `raw` never leaves this process unless `reveal` is set; it is
+                # stripped at the boundary below. `shown` is what a page that
+                # has not asked is allowed to see.
+                "raw": entity.text,
+                "shown": shown,
+                "value": entity.text if (reveal or not verdict["masked"]) else None,
+                "placeholder": f"[{kind}]",
+                **verdict})
+        out_docs.append({
+            "name": name, "chars": len(text),
+            # NOT `redacted_text`. The pipeline redacts what the statute covers,
+            # and this tab additionally hides identity-bearing detections no
+            # rule reached — so the two disagree, and the NG policy leaves a
+            # PERSON in place. Showing the pipeline's text beside an entity list
+            # that hides the name would print the name anyway, which is the
+            # worst of both: a document that looks redacted and is not.
+            "text": text if reveal else _hide_spans(text, entities),
+            "entities": entities,
+            "document_hash": getattr(result, "document_hash", None)})
+
+    links = _link_documents(out_docs, reveal=reveal)
+    if not reveal:
+        # One place where the raw values are removed, after everything that
+        # needed them has run. Masking at the boundary rather than at each
+        # producer means a new field cannot quietly forget to do it.
+        for doc in out_docs:
+            for entity in doc["entities"]:
+                entity.pop("raw", None)
+    return {"jurisdiction": jurisdiction, "revealed": reveal,
+            "documents": out_docs, "links": links,
+            "counts": _entity_counts(out_docs)}
+
+
+def _hide_spans(text: str, entities: list[dict]) -> str:
+    """Replace every span this tab decided to hide, right to left.
+
+    Right to left so earlier offsets stay valid as later ones are rewritten.
+    Uses the statute's own replacement where there is one — a tokenised phone
+    keeps its stable `PHONE_1b5b54b8` token, which is worth more than `[PHONE]`
+    because it still tells you two mentions were the same number.
+    """
+    out = text
+    for entity in sorted(entities, key=lambda e: -e["span"][0]):
+        if not entity["masked"]:
+            continue
+        start, end = entity["span"]
+        out = out[:start] + entity["shown"] + out[end:]
+    return out
+
+
+def _entity_counts(documents: list[dict]) -> dict:
+    counts: dict[str, int] = {}
+    for doc in documents:
+        for entity in doc["entities"]:
+            counts[entity["type"]] = counts.get(entity["type"], 0) + 1
+    return dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+# Which entity pack answers "are these two mentions the same thing?" for each
+# detected type. Types with no sensible pack are simply not linked.
+_LINKABLE = {"PERSON": "person", "ORGANIZATION": "organisation",
+             "ORGANISATION": "organisation", "LOCATION": "place",
+             "GPE": "place", "FACILITY": "place"}
+
+
+def _link_documents(documents: list[dict], *, reveal: bool) -> list[dict]:
+    """Which mentions in one document are the same thing as in another.
+
+    This is the reason the tab takes more than one file. Extraction on its own
+    tells you a document mentions a person; two documents and a matcher tell you
+    whether it is the *same* person, which is the question anybody comparing a
+    register against a survey actually has.
+
+    Runs the real `crosswalk` over the extracted mentions, so the decision, the
+    score and the refusals are the engine's own. Pairs it declines to merge come
+    back too — a held pair is the interesting output here, not a failure.
+    """
+    from arche.resolve import crosswalk
+
+    if len(documents) < 2:
+        return []
+    links: list[dict] = []
+    for i, left in enumerate(documents):
+        for right in documents[i + 1:]:
+            for kind, pack in sorted(set(_LINKABLE.items())):
+                a = [e for e in left["entities"] if e["type"] == kind]
+                b = [e for e in right["entities"] if e["type"] == kind]
+                if not a or not b:
+                    continue
+                # Always the real values. Comparing `[PERSON]` against
+                # `[PERSON]` is not a weaker answer, it is a different question
+                # with a meaningless answer: every masked mention of a type is
+                # byte-identical to every other, so the matcher would be scoring
+                # the placeholder. The values are used here and never returned;
+                # what comes back out is masked at the boundary instead.
+                try:
+                    result = crosswalk(
+                        [{"id": e["id"], "name": e["raw"]} for e in a],
+                        [{"id": e["id"], "name": e["raw"]} for e in b],
+                        entity=pack, id_field="id")
+                except Exception:  # noqa: BLE001 - one pack failing is not fatal
+                    continue
+                by_id = {e["id"]: e for e in a + b}
+                for edge in result.get("matches", []):
+                    left_entity = by_id.get(edge.get("a_id"), {})
+                    right_entity = by_id.get(edge.get("b_id"), {})
+                    links.append({
+                        "type": kind,
+                        "a_doc": left["name"], "b_doc": right["name"],
+                        "a_id": edge.get("a_id"), "b_id": edge.get("b_id"),
+                        "a": left_entity.get("raw") if reveal
+                            else left_entity.get("shown"),
+                        "b": right_entity.get("raw") if reveal
+                            else right_entity.get("shown"),
+                        "decision": edge.get("decision"),
+                        "score": edge.get("score"),
+                        "distinctive_max": edge.get("distinctive_max"),
+                        "evidence": edge.get("evidence", {}),
+                        "decision_id": edge.get("decision_id")})
+    links.sort(key=lambda link: -(link["score"] or 0))
+    return links
 
 
 def _redact(payload: dict) -> dict:
@@ -445,53 +760,84 @@ def _mark(payload: dict) -> dict:
 
 
 def _marks(pack: str) -> dict:
-    """Standing outcomes plus the counts a reviewer wants in the toolbar."""
+    """Standing outcomes, the toolbar counts, and how much work is left.
+
+    `outstanding` is the number the reviewer actually cares about: rows the
+    matcher held for a human that a human has not yet settled. Without it the
+    only feedback for marking a row was a count going up, which is why working
+    the queue felt like it did nothing.
+    """
+    current = STATE.current(pack)
+    outstanding = None
+    try:
+        loaded = _load_pack(pack)
+    except ValueError:
+        loaded = None
+    if loaded is not None:
+        settled = {k for k, v in current.items() if v["outcome"] != "unresolved"}
+        outstanding = sum(1 for r in loaded["rows"]
+                          if r.get("decision") == "review"
+                          and r.get("decision_id", "") not in settled)
     return {"current": {k: {"outcome": v["outcome"], "reason": v["reason"],
                             "reviewer": v["reviewer"], "marked_at": v["marked_at"]}
-                        for k, v in STATE.current(pack).items()},
+                        for k, v in current.items()},
+            "outstanding": outstanding,
             "summary": STATE.summary(pack)}
 
 
+def _shown(path: Path) -> str:
+    """A path as the reviewer should read it: relative to the repo when it is
+    inside it, absolute when it is not.
+
+    `relative_to` raises rather than falling back, so a pack directory outside
+    the checkout turned a successful save into an error about subpaths.
+    """
+    try:
+        return str(path.relative_to(REPO)).replace("\\", "/")
+    except ValueError:
+        return str(path).replace("\\", "/")
+
+
 def _save_review(payload: dict) -> dict:
-    from arche.review import share_artifact
+    """Write the two documents a finished review produces.
+
+    Both come from `arche.review` rather than being assembled here. This
+    function used to run its own `csv.DictWriter` over its own field list, which
+    is how the reviewed copy ended up without the `effective_decision` column
+    the library had already started writing: two writers, one of them updated.
+    """
+    from arche.review import share_artifact, write_reviewed_csv
 
     pack_id = payload["pack"]
     path = _pack_path(pack_id)
-    rows = list(csv.DictReader(path.open(encoding="utf-8")))
-    fields = list(rows[0].keys()) if rows else []
-    for extra in ("review_outcome", "reviewer", "reviewed_at", "reason"):
-        if extra not in fields:
-            fields.append(extra)
 
     reviewer = (payload.get("reviewer") or "").strip()
     if not reviewer:
         raise ValueError("a reviewer name is required; an unattributed "
                          "adjudication cannot be audited")
-    # Read from the store, not from the browser. The store is what survived
-    # the refresh and it is what carries the history.
-    marks = {k: {"outcome": v["outcome"], "reason": v["reason"]}
-             for k, v in STATE.current(pack_id).items()} or (payload.get("marks") or {})
-    stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    n = 0
-    for r in rows:
-        m = marks.get(r.get("decision_id", ""))
-        if not m:
-            continue
-        if m.get("outcome") not in OUTCOMES:
-            raise ValueError(f"outcome must be one of {OUTCOMES}")
-        r["review_outcome"] = m["outcome"]
-        r["reviewer"] = reviewer
-        r["reviewed_at"] = stamp
-        r["reason"] = (m.get("reason") or "").strip()
-        n += 1
 
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
-    w.writeheader()
-    w.writerows(rows)
+    # Read from the store, not from the browser. The store is what survived the
+    # refresh and it is what carries the history.
+    marks = STATE.current(pack_id)
+    stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for mark in marks.values():
+        if mark.get("outcome") not in OUTCOMES:
+            raise ValueError(f"outcome must be one of {OUTCOMES}")
+
+    # One ledger, used for both documents, so the reviewed copy and the
+    # shareable copy cannot disagree about what was decided.
+    ledger = [{"decision_id": did,
+               "outcome": mark["outcome"],
+               "reviewer": mark.get("reviewer") or reviewer,
+               "reason": (mark.get("reason") or "").strip(),
+               "reviewed_at": mark.get("marked_at") or stamp,
+               "marked_at": mark.get("marked_at") or stamp}
+              for did, mark in sorted(marks.items())]
+    adjudication = {"ledger": ledger}
+
     # Never write over the matcher's output.
     out = path.with_name(path.stem + "_reviewed.csv")
-    out.write_text(buf.getvalue(), encoding="utf-8", newline="")
+    write_reviewed_csv(path, adjudication, out)
 
     # Two artifacts, because they are for two different things. The one above is
     # the working document: it carries the names, because that is what the
@@ -502,24 +848,20 @@ def _save_review(payload: dict) -> dict:
     # output to an email the pack was as revealed as the day it was written.
     # Making the masked one a separate file that always exists is the point: if
     # sharing requires remembering to redact, it does not get redacted.
-    ledger = [{"decision_id": did, "outcome": m["outcome"], "reviewer": reviewer,
-               "reason": (m.get("reason") or "").strip(), "marked_at": stamp}
-              for did, m in sorted(marks.items())]
     shared: str | None = None
     warning: str | None = None
+    share_dir = path.with_name(path.stem + "_shared")
     try:
-        share_artifact(path, path.with_name(path.stem + "_shared"),
-                       adjudication={"ledger": ledger})
-        shared = str((path.with_name(path.stem + "_shared") / "pack.csv")
-                     .relative_to(REPO)).replace("\\", "/")
+        share_artifact(path, share_dir, adjudication=adjudication)
+        shared = _shown(share_dir / "pack.csv")
     except Exception as exc:  # noqa: BLE001 - reported, not swallowed
         # The commonest cause is a pack whose ids are national identifiers, which
         # `share_artifact` refuses on purpose. Say so rather than writing a file
         # that claims to be masked.
         warning = f"no shareable copy was written: {exc}"
 
-    return {"written": str(out.relative_to(REPO)).replace("\\", "/"),
-            "shared": shared, "warning": warning, "rows_marked": n}
+    return {"written": _shown(out), "shared": shared, "warning": warning,
+            "rows_marked": len(ledger)}
 
 
 class Studio(ThreadingHTTPServer):
@@ -550,8 +892,12 @@ class Handler(BaseHTTPRequestHandler):
             if u.path in ("/", "/index.html"):
                 self._send(200, (HERE / "index.html").read_bytes(), "text/html; charset=utf-8")
             elif u.path == "/api/entities":
-                from arche.resolve import ENTITY_PACKS
-                self._json(sorted(set(ENTITY_PACKS)))
+                # Names and what each one reads. Derived from the packs, so a
+                # comparator added to the library shows up here without anybody
+                # editing a list — the `person` pack gained a date comparator
+                # and a hand-written one would already be wrong.
+                from arche.resolve import describe_packs
+                self._json(describe_packs())
             elif u.path == "/api/packs":
                 self._json(_packs())
             elif u.path == "/api/pack":
@@ -575,6 +921,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_compare(payload))
             elif u.path == "/api/extract":
                 self._json(_extract(payload))
+            elif u.path == "/api/documents":
+                self._json(_documents(payload))
             elif u.path == "/api/redact":
                 self._json(_redact(payload))
             elif u.path == "/api/verify":

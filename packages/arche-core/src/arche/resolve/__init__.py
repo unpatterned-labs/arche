@@ -360,6 +360,102 @@ def pairwise(a, b, *, entity: str = "person", **kwargs):
     )
 
 
+# What each comparator kind is actually doing, in the one sentence somebody
+# looking at a field list needs. Not documentation of the algorithm — a reason
+# the field is in the pack at all.
+COMPARATOR_NOTES = {
+    "name": "personal-name similarity, tolerant of spelling and of a dropped "
+            "middle name",
+    "placename": "place-name similarity, after the type word is set aside so "
+                 "`General Hospital` and `General Clinic` are not near-matches "
+                 "for sharing `General`",
+    "tftoken": "how rare the shared words are in these two lists. Agreeing on "
+               "an ordinary word is not evidence; agreeing on a rare one is",
+    "type": "the facility or organisation type, compared as a category rather "
+            "than as text",
+    "date": "a date, at whatever precision each side states. A year against a "
+            "full date agrees on the year and claims nothing more",
+    "id": "an exact identifier. Strong when it agrees",
+    "code": "a product or model code",
+    "spec": "a specification drawn out of the name, such as a capacity or size",
+    "phone": "a phone number, normalised before comparison",
+    "email": "an email address",
+    "address": "a postal address, compared by its parts",
+    "category": "a declared class, compared exactly",
+    "geo": "distance between two coordinates",
+    "containment": "whether one administrative path contains the other",
+}
+
+
+def describe_pack(entity: str) -> dict:
+    """What an entity pack reads, and what it does with each field.
+
+    Written for somebody about to hand records to `crosswalk` and wondering
+    which columns will be used. The answer is derivable from the pack itself, so
+    it is derived rather than maintained as prose that goes stale the first time
+    a comparator is added — the `person` pack gained a date comparator in
+    0.5.0a1 and any hand-written list would already have been wrong.
+
+    The important thing it says is what happens to everything else. A field the
+    pack does not name is **ignored, not rejected**: no error, no warning, no
+    effect on the score. That is the right behaviour — records arrive with
+    columns that are nobody's business here — but it is silent, and silent is
+    how somebody spends an afternoon wondering why `occupation` changed nothing.
+    """
+    packs = ENTITY_PACKS
+    if entity not in packs:
+        raise ValueError(
+            f"unknown entity pack {entity!r}; available: "
+            f"{', '.join(sorted(packs))}")
+
+    by_field: dict[str, dict] = {}
+    for comparator in packs[entity]:
+        kind = comparator.get("kind", "")
+        if kind == "geo":
+            # Geo names its columns differently: two of them, and not under
+            # `field`. Presented as the pair it is.
+            field = f"{comparator.get('lat', 'lat')} + {comparator.get('lon', 'lon')}"
+        else:
+            field = comparator.get("field", "")
+        if not field:
+            continue
+        entry = by_field.setdefault(field, {
+            "field": field, "kinds": [], "weight": 0.0,
+            "notes": [], "refutes": False})
+        entry["kinds"].append(kind)
+        entry["weight"] += float(comparator.get("weight", 0.0) or 0.0)
+        note = COMPARATOR_NOTES.get(kind)
+        if note and note not in entry["notes"]:
+            entry["notes"].append(note)
+        if comparator.get("refutes_below") is not None:
+            # Asymmetric: disagreement here can pull a pair down into review.
+            # It never pushes one up, and it never reaches `no_match`.
+            entry["refutes"] = True
+        if kind == "geo":
+            for key in ("decay_km", "veto_km"):
+                if comparator.get(key) is not None:
+                    entry.setdefault("geo", {})[key] = comparator[key]
+
+    fields = sorted(by_field.values(), key=lambda f: (-f["weight"], f["field"]))
+    return {
+        "entity": entity,
+        "fields": fields,
+        # The names a caller can put on a record and have read. Flattened for
+        # the common case of "is this column used?".
+        "field_names": sorted(
+            name
+            for entry in fields
+            for name in (entry["field"].split(" + ") if " + " in entry["field"]
+                         else [entry["field"]])),
+        "ignores_everything_else": True,
+    }
+
+
+def describe_packs() -> dict[str, dict]:
+    """Every pack, described. For a picker that has to explain its options."""
+    return {name: describe_pack(name) for name in sorted(ENTITY_PACKS)}
+
+
 def crosswalk(list_a, list_b, *, entity: str | None = None,
               comparators: list[dict] | None = None, tf=None, decl=None,
               **kwargs):

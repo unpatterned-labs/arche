@@ -4,7 +4,7 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [0.5.0a1] — 2026-08-21
 
-**A Splink backend, a date comparator in the `person` pack, honest pins, and a way to export a match result for review.**
+**A Splink backend, a date comparator in the `person` pack, honest pins, and a review lane that reads any format, masks what it shares, and gets shorter as you work it.**
 
 Prepared as `0.4.0a5` and released as `0.5.0a1`. `0.4.0a5` was never published, so nothing points at it. The minor version moved because `crosswalk` gained a replaceable scorer, which changes what the library is rather than only what it scores: arche now has a matcher it does not own, and says so.
 
@@ -69,6 +69,113 @@ Three decisions in it are worth stating.
 **Hot ids are refused, not laundered.** A masked pack still carries its join keys, so ids matching the national-identifier shape raise rather than being written; `id_columns=` names a surrogate instead. Same rule `review_pack` applies in masked mode.
 
 **The studio now writes both files on every save** and names them separately in the confirmation — *your copy* and *safe to share*. A redaction step you have to remember is a redaction step that does not happen.
+
+### Added — a pack can be parquet, JSONL or JSON, and the studio stopped parsing files
+
+`read_pack` was CSV-only, which pushed every other format onto the caller. The
+studio wrote its own `csv.DictReader` and could not open a parquet pack at all;
+anybody whose pipeline ends in parquet — most of them — had to convert before
+they could review.
+
+```python
+read_pack("data/decisions.parquet")     # or .jsonl, .json, .csv
+```
+
+**The formats agree on the content digest**, which is what makes this safe
+rather than merely possible: the same pack written three ways hashes the same,
+so an adjudication made against the parquet copy verifies against the CSV copy.
+That needs the typed formats narrowed to the untyped one on read — a parquet
+`1.0` and a CSV `"1.0"` have to hash identically, and evidence written as a
+nested object has to hash the same as evidence written as a JSON string. The
+types are lost deliberately: a pack is a document to be adjudicated, not a frame
+to compute on.
+
+Parquet needs `arche-core[parquet]`; the rest is standard library. A format with
+no reader is refused rather than sniffed, because a pack is re-read months later
+and a file whose format was guessed cannot be re-read reproducibly.
+
+The studio now asks the library for all of it, including which columns belong to
+which side. Two implementations of "what is a pack" is one too many, and the
+second one was also miscounting rows for any quoted field holding a newline.
+
+### Added — `effective_decision`, and a review queue that gets shorter
+
+A pack carried `decision` from the matcher and `review_outcome` from the human
+in two columns that never met. Nothing combined them, so a row somebody had
+settled still read `review` everywhere it was displayed, the studio's
+needs-a-human filter kept showing it, and the queue was exactly as long after an
+hour's work as before it. Marks were persisting correctly the whole time — the
+store is append-only and the HTTP path was sound — but nothing on screen ever
+changed, which a reviewer reasonably reads as "it didn't save".
+
+```python
+effective_decision({"decision": "review"}, "same_entity")   # -> "match"
+effective_decision({"decision": "match"},  "unresolved")    # -> "review"
+```
+
+The vocabularies stay separate on purpose — `same_entity` is a claim about the
+world, `match` is a claim about what the system will do — so the mapping is
+written once instead of at each display site. *Cannot tell* maps to `review`
+because it is a finding and not the absence of one.
+
+`write_reviewed_csv` adds `effective_decision` beside `decision` rather than
+overwriting it: what the matcher said is the thing being audited.
+
+In the studio the queue now drops rows as they are settled, shows how many still
+need a human, marks a human's call as a human's call rather than letting it read
+like an engine decision, and takes `1` `2` `3` to decide and `j` `k` to move.
+
+### Added — `describe_pack`, so a pack says which columns it reads
+
+*Will it use my `occupation` column?* had no answer anywhere, and the answer
+matters: a field the pack does not name is **ignored, not rejected** — no error,
+no warning, no change to the score. Correct behaviour, and silent, which is how
+somebody spends an afternoon wondering why a column changed nothing.
+
+Derived from `ENTITY_PACKS` rather than written out, because prose goes stale:
+`person` gained a date comparator in this release and any hand-written field
+list was wrong the day it landed. The compare tab now lists what the chosen pack
+reads and strikes through field names it will not.
+
+### Added — a Documents tab
+
+Two or more documents at once. Every entity found, everything identifying hidden,
+and the action and statute section that decided it shown beside each one. Then
+the matcher runs across the documents, because one document tells you a person is
+mentioned and two tell you whether it is the *same* person.
+
+Three decisions worth stating.
+
+**`uncovered` is not permission.** Under NDPA-2023 a person's name draws no rule
+at all. It is hidden here anyway and labelled as the tool's choice rather than a
+statute's; showing it because no statute objected would turn a gap in coverage
+into a permission. The first implementation showed the pipeline's `redacted_text`
+beside an entity list that hid the name — so it printed the name anyway, which is
+worse than not masking at all because it looks masked.
+
+**Reveal is a display control, honestly built as one.** The Redact tab holds the
+line that a detected value is never returned to the page, and that stays; there
+the point is to show what a compliant pipeline emits. Here the documents came off
+the user's own disk. The values are not in the response unless asked for, so a
+page that has not asked cannot leak what it never received — rather than sending
+everything and hiding it in CSS, which would make "redacted" a claim about
+styling.
+
+**The matcher always sees the real values.** Comparing `[PERSON]` against
+`[PERSON]` scores the placeholder, and every masked mention of a type is
+byte-identical to every other. So the engine reads the names, the page does not,
+and the judgement is readable without them.
+
+### Fixed — the studio's tests were writing to the reviewer's database
+
+`test_studio_loads.py` patched the pack directory and nothing else, and `STATE`
+is a module-level `Store` bound at import. Fourteen marks keyed to the test
+fixture's own pack name reached a real `data/_studio/state.sqlite3` before
+anyone noticed. Every piece of studio state is now redirected per test, by an
+autouse fixture, because remembering to ask for it is the thing that failed.
+
+Also fixed: saving a review of a pack outside the checkout raised a subpath
+error, because `relative_to` raises rather than falling back.
 
 ### Fixed — four ways `arche studio` did not mean what it said
 

@@ -248,3 +248,93 @@ class TestTheReviewedCsv:
         assert all(r["review_outcome"] == "same_entity" for r in rows)
         assert all(r["reviewer"] == "dee" for r in rows)
         assert (packdir / "pack.csv").read_text(encoding="utf-8") == before
+
+
+class TestTheEffectiveDecision:
+    """What the pair now stands as, once a person has looked at it.
+
+    A pack carried `decision` from the matcher and `review_outcome` from the
+    human in two columns that never met. Nothing anywhere combined them, so a
+    row somebody had settled still read `review` at every display site and a
+    review queue never got shorter no matter how much work went into it. The
+    reviewer's evidence that anything happened was a counter going up.
+
+    The two vocabularies stay separate on purpose — `same_entity` is a claim
+    about the world, `match` is a claim about what the system will do — so the
+    mapping between them is written down once instead of at each display.
+    """
+
+    def test_a_mark_becomes_a_decision(self):
+        from arche.review import effective_decision
+        row = {"decision": "review"}
+        assert effective_decision(row, "same_entity") == "match"
+        assert effective_decision(row, "different") == "no_match"
+
+    def test_cannot_tell_holds_it_rather_than_clearing_it(self):
+        """A reviewer who looked and could not tell has made a finding, and the
+        finding is that this stays held. It must not read as unreviewed."""
+        from arche.review import effective_decision
+        assert effective_decision({"decision": "match"}, "unresolved") == "review"
+
+    def test_without_a_mark_the_matcher_stands(self):
+        from arche.review import effective_decision
+        assert effective_decision({"decision": "match"}) == "match"
+        assert effective_decision({"decision": "review"}) == "review"
+
+    def test_the_row_supplies_it_when_the_caller_does_not(self):
+        from arche.review import effective_decision
+        row = {"decision": "review", "review_outcome": "same_entity"}
+        assert effective_decision(row) == "match"
+
+    def test_across_a_whole_pack(self, packdir, tmp_path):
+        from arche.review import effective_decisions
+        adj = apply_outcomes(packdir, _outcomes(packdir, tmp_path / "o.csv"))
+        assert set(effective_decisions(packdir, adj).values()) == {"match"}
+
+    def test_and_without_an_adjudication_it_is_the_matcher_verbatim(self, packdir):
+        from arche.review import effective_decisions, read_pack
+        pack = read_pack(packdir)
+        assert (effective_decisions(packdir)
+                == {r["decision_id"]: r["decision"] for r in pack.rows})
+
+
+class TestTheReviewedCsvCarriesBoth:
+
+    def test_the_column_is_added(self, packdir, tmp_path):
+        adj = apply_outcomes(packdir, _outcomes(packdir, tmp_path / "o.csv",
+                                                outcome="different"))
+        out = write_reviewed_csv(packdir, adj, tmp_path / "reviewed.csv")
+        rows = list(csv.DictReader(out.open(encoding="utf-8")))
+        assert all(r["effective_decision"] == "no_match" for r in rows)
+
+    def test_and_the_matcher_s_own_decision_survives(self, packdir, tmp_path):
+        """Overwriting `decision` to record the review would destroy the thing
+        being audited. Both columns, always."""
+        from arche.review import read_pack
+        before = [r["decision"] for r in read_pack(packdir).rows]
+        adj = apply_outcomes(packdir, _outcomes(packdir, tmp_path / "o.csv",
+                                                outcome="different"))
+        out = write_reviewed_csv(packdir, adj, tmp_path / "reviewed.csv")
+        rows = list(csv.DictReader(out.open(encoding="utf-8")))
+        assert [r["decision"] for r in rows] == before
+
+    def test_it_sits_next_to_the_decision_it_supersedes(self, packdir, tmp_path):
+        adj = apply_outcomes(packdir, _outcomes(packdir, tmp_path / "o.csv"))
+        out = write_reviewed_csv(packdir, adj, tmp_path / "reviewed.csv")
+        fields = list(csv.DictReader(out.open(encoding="utf-8")).fieldnames)
+        assert fields[fields.index("decision") + 1] == "effective_decision"
+
+    def test_an_unmarked_row_keeps_the_matcher_s_answer(self, packdir, tmp_path):
+        ids = read_pack(packdir).decision_ids
+        path = tmp_path / "o.csv"
+        with path.open("w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=["decision_id", "outcome", "reviewer"])
+            w.writeheader()
+            w.writerow({"decision_id": ids[0], "outcome": "different",
+                        "reviewer": "dee"})
+        adj = apply_outcomes(packdir, path)
+        out = write_reviewed_csv(packdir, adj, tmp_path / "reviewed.csv")
+        rows = {r["decision_id"]: r for r in
+                csv.DictReader(out.open(encoding="utf-8"))}
+        assert rows[ids[0]]["effective_decision"] == "no_match"
+        assert rows[ids[1]]["effective_decision"] == rows[ids[1]]["decision"]

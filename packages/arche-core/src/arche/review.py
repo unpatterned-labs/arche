@@ -103,13 +103,155 @@ class Pack:
         return [r.get("decision_id", "") for r in self.rows]
 
 
-def _read_rows(path: Path) -> tuple[list[dict], list[str]]:
+# The formats a pack can arrive in, in the order a directory is searched.
+# CSV first because it is what `review_pack` writes and what a reviewer can open
+# in anything; the others because real pipelines do not end in CSV and the
+# alternative to reading them is every caller writing their own parser.
+PACK_SUFFIXES = (".csv", ".parquet", ".jsonl", ".ndjson", ".json")
+
+
+def _as_text(value: Any) -> str:
+    """One rule for turning a cell into what the rest of this module sees.
+
+    Everything downstream — the content digest, the masking allowlist, the
+    outcome vocabulary — is defined over strings, because a pack's first format
+    was CSV and CSV has no other type. Parquet does have types, so reading one
+    without normalising would give a pack whose digest disagreed with the digest
+    of the identical CSV, and two files that are the same pack would fail each
+    other's integrity check.
+
+    So the typed formats are narrowed to the untyped one rather than the other
+    way round. It loses the type, which is the correct loss here: a pack is a
+    document to be read and adjudicated, not a frame to compute on.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        # Before the numeric branch: bool is an int in Python and `True` would
+        # otherwise render as `1`.
+        return "true" if value else "false"
+    if isinstance(value, float) and value.is_integer():
+        # 1.0 from parquet and "1.0" from CSV have to agree, and repr already
+        # gives "1.0" here. Spelled out because the alternative — int(value) —
+        # is the tempting wrong answer and would give "1".
+        return repr(value)
+    if isinstance(value, (int, float)):
+        return repr(value)
+    if isinstance(value, (list, dict)):
+        # Evidence arrives as a nested object in JSONL and as a JSON string in
+        # CSV. Re-encode with the same separators `review_pack` uses so the two
+        # produce the same bytes.
+        return json.dumps(value, sort_keys=True, ensure_ascii=False)
+    return str(value)
+
+
+def _read_csv(path: Path) -> tuple[list[dict], list[str]]:
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         rows = [dict(r) for r in reader]
         fields = list(reader.fieldnames or [])
     return rows, fields
 
+
+def _read_parquet(path: Path) -> tuple[list[dict], list[str]]:
+    try:
+        import pyarrow.parquet as pq
+    except ImportError as exc:  # pragma: no cover - depends on the environment
+        raise PackError(
+            f"{path.name} is a parquet file and pyarrow is not installed. "
+            "Install it with `pip install arche-core[parquet]`, or export the "
+            "pack as CSV.") from exc
+    table = pq.read_table(path)
+    fields = list(table.column_names)
+    rows = [{f: _as_text(record.get(f)) for f in fields}
+            for record in table.to_pylist()]
+    return rows, fields
+
+
+def _read_jsonl(path: Path) -> tuple[list[dict], list[str]]:
+    """One JSON object per line. Blank lines are skipped, not an error.
+
+    A ragged file — objects that do not all carry the same keys — is read rather
+    than refused, and the union of the keys becomes the field list in first-seen
+    order. Refusing would be defensible, but a pack assembled by a pipeline that
+    omits empty columns is common and there is nothing ambiguous about it.
+    """
+    rows: list[dict] = []
+    fields: list[str] = []
+    seen: set[str] = set()
+    with path.open(encoding="utf-8") as handle:
+        for number, line in enumerate(handle, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise PackError(
+                    f"{path.name} line {number} is not valid JSON: {exc}") from exc
+            if not isinstance(record, dict):
+                raise PackError(
+                    f"{path.name} line {number} is a {type(record).__name__}, "
+                    "and a pack row has to be an object")
+            for key in record:
+                if key not in seen:
+                    seen.add(key)
+                    fields.append(key)
+            rows.append({k: _as_text(v) for k, v in record.items()})
+    return [{f: r.get(f, "") for f in fields} for r in rows], fields
+
+
+def _read_json(path: Path) -> tuple[list[dict], list[str]]:
+    """A single JSON array of objects, or `{"rows": [...]}`."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise PackError(f"{path.name} is not valid JSON: {exc}") from exc
+    if isinstance(payload, dict):
+        # Absent and empty are different. An object with no `rows` key is a
+        # malformed pack, and reporting it as "has no rows" would send the
+        # reader looking at the wrong thing.
+        if "rows" not in payload:
+            raise PackError(
+                f"{path.name} does not hold a list of rows; a JSON pack is an "
+                'array of objects, or an object with a "rows" array')
+        payload = payload["rows"]
+    if not isinstance(payload, list):
+        raise PackError(
+            f"{path.name} does not hold a list of rows; a JSON pack is an array "
+            'of objects, or an object with a "rows" array')
+    fields: list[str] = []
+    seen: set[str] = set()
+    for record in payload:
+        if not isinstance(record, dict):
+            raise PackError(f"{path.name} contains a non-object row")
+        for key in record:
+            if key not in seen:
+                seen.add(key)
+                fields.append(key)
+    rows = [{f: _as_text(r.get(f)) for f in fields} for r in payload]
+    return rows, fields
+
+
+_READERS = {".csv": _read_csv, ".parquet": _read_parquet,
+            ".jsonl": _read_jsonl, ".ndjson": _read_jsonl, ".json": _read_json}
+
+
+def _read_rows(path: Path) -> tuple[list[dict], list[str]]:
+    """Dispatch on the extension, and say so plainly when there is no reader.
+
+    Sniffing the content would be friendlier and is the wrong trade here: a pack
+    is an artifact somebody will re-read months later, and a file whose format
+    was guessed is a file whose reading cannot be reproduced.
+    """
+    reader = _READERS.get(path.suffix.lower())
+    if reader is None:
+        raise PackError(
+            f"no reader for {path.suffix or 'a file with no extension'!r}; "
+            f"a pack is one of {', '.join(PACK_SUFFIXES)}")
+    return reader(path)
 
 def read_pack(path: str | Path) -> Pack:
     """Read a pack and check it against its manifest.
@@ -121,7 +263,19 @@ def read_pack(path: str | Path) -> Pack:
     """
     path = Path(path)
     if path.is_dir():
-        path = path / "pack.csv"
+        directory = path
+        found = [directory / f"pack{suffix}" for suffix in PACK_SUFFIXES
+                 if (directory / f"pack{suffix}").exists()]
+        if not found:
+            # Fall back to any single supported file, so a directory holding
+            # `decisions.parquet` works without renaming it.
+            found = sorted(c for c in directory.iterdir()
+                           if c.is_file() and c.suffix.lower() in _READERS)
+        if not found:
+            raise PackError(
+                f"no pack in {directory}; expected one of "
+                f"{', '.join('pack' + s for s in PACK_SUFFIXES)}")
+        path = found[0]
     if not path.exists():
         raise PackError(f"no pack at {path}")
     try:
@@ -429,6 +583,52 @@ def verify_adjudication(adjudication: str | Path | dict,
     return report
 
 
+# What a reviewer's outcome means as a decision.
+#
+# The matcher proposes and a person disposes, but until now nothing wrote down
+# what the disposal *was*. A pack carried `decision` from the matcher and
+# `review_outcome` from the human in two columns that never met, so a row a
+# reviewer had settled still read `review` everywhere it was displayed and the
+# queue never got shorter. Somebody working a queue could mark forty rows and
+# see no evidence that anything had happened.
+#
+# The vocabularies are deliberately different — `same_entity` is a claim about
+# the world, `match` is a claim about what the system will do — so the mapping is
+# stated here once rather than re-derived at each display site.
+OUTCOME_DECISION = {
+    "same_entity": "match",
+    "different": "no_match",
+    # Not an absence of an answer. A reviewer who looked and could not tell has
+    # made a finding, and the finding is that this stays held.
+    "unresolved": "review",
+}
+
+
+def effective_decision(row: dict, outcome: str | None = None) -> str:
+    """The standing answer for one pair: the human's if there is one, else the
+    matcher's.
+
+    `outcome` overrides whatever the row carries, which is how a caller with
+    fresher state than the file — the studio, reading its own store — asks the
+    same question.
+    """
+    outcome = outcome if outcome is not None else row.get("review_outcome", "")
+    if outcome:
+        return OUTCOME_DECISION.get(outcome, row.get("decision", ""))
+    return row.get("decision", "")
+
+
+def effective_decisions(pack: str | Path, adjudication: dict | None = None,
+                        ) -> dict[str, str]:
+    """Every pair's standing answer, keyed by decision id."""
+    read = pack if isinstance(pack, Pack) else read_pack(pack)
+    marks = {e["decision_id"]: e.get("outcome", "")
+             for e in (adjudication or {}).get("ledger", [])}
+    return {row.get("decision_id", ""):
+            effective_decision(row, marks.get(row.get("decision_id", "")))
+            for row in read.rows}
+
+
 def write_reviewed_csv(pack: str | Path, adjudication: dict,
                        out_path: str | Path) -> Path:
     """The pack with its four review columns filled in from an adjudication.
@@ -440,8 +640,17 @@ def write_reviewed_csv(pack: str | Path, adjudication: dict,
     read = read_pack(pack)
     by_id = {e["decision_id"]: e for e in adjudication.get("ledger", [])}
     out_path = Path(out_path)
+    # `effective_decision` is added rather than `decision` being overwritten.
+    # Both are worth keeping: what the matcher said is the thing being audited,
+    # and destroying it to record the audit would be self-defeating. A consumer
+    # who wants the standing answer reads one column instead of reimplementing
+    # the mapping.
+    fields = [*read.fields]
+    if "effective_decision" not in fields:
+        fields.insert(fields.index("decision") + 1 if "decision" in fields
+                      else len(fields), "effective_decision")
     with out_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=read.fields,
+        writer = csv.DictWriter(handle, fieldnames=fields,
                                 extrasaction="ignore")
         writer.writeheader()
         for row in read.rows:
@@ -452,7 +661,8 @@ def write_reviewed_csv(pack: str | Path, adjudication: dict,
                        "reviewer": entry["reviewer"],
                        "reason": entry["reason"],
                        "reviewed_at": entry["reviewed_at"]}
-            writer.writerow({f: row.get(f, "") for f in read.fields})
+            row = {**row, "effective_decision": effective_decision(row)}
+            writer.writerow({f: row.get(f, "") for f in fields})
     return out_path
 
 
@@ -605,6 +815,7 @@ def _infer_sides(fields: list[str]) -> list[str]:
 
 __all__ = [
     "ADJUDICATION_SCHEMA",
+    "OUTCOME_DECISION",
     "SHARE_SCHEMA",
     "Pack",
     "PackError",
@@ -612,6 +823,9 @@ __all__ = [
     "REVIEW_FIELDS",
     "REVIEW_OUTCOMES",
     "apply_outcomes",
+    "PACK_SUFFIXES",
+    "effective_decision",
+    "effective_decisions",
     "read_pack",
     "share_artifact",
     "validate_pack",
