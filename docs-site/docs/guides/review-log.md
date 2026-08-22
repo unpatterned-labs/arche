@@ -180,9 +180,49 @@ It also carries `source_pack_content_sha256`, so it is bound to the content of t
 
 **What none of this establishes is who reviewed.** `reviewer` is a string somebody typed. The digests prove the artifact has not changed since it was made; they do not prove the names in it are real people. That is an identity problem, and an auth proxy in front of whatever tool does the reviewing is what solves it.
 
+### Sending it onward
+
+The pack you just reviewed has real names in it, because it had to. That makes it a local document, and everything downstream of a review — a summary for the programme team, a sample for a partner, an attachment on a ticket — is a copy of it leaving the machine.
+
+`share_artifact` derives the other file:
+
+```python
+from arche.review import share_artifact
+
+manifest = share_artifact(
+    PACK, "data/review_packs/register_x_survey_shared",
+    adjudication=adjudication,      # carries the outcomes across
+)
+assert manifest["disclosure"] == "masked (safe to share)"
+```
+
+Or without writing Python:
+
+```sh
+arche review share data/review_packs/register_x_survey \
+    data/review_packs/register_x_survey_shared \
+    --adjudication adjudication.json
+```
+
+Record values go through the same masking allowlist `review_pack` uses in its masked mode, so there is one implementation of *masked* rather than two that can drift apart. What survives is the decision machinery — `decision_id`, `decision`, `score`, `distinctive_max`, `evidence`, and the ids you join on. A score is not somebody's data, and a reader cannot see what the matcher did without it.
+
+The studio writes this file on every save, beside the reviewed copy, and names both in the confirmation. That is deliberate: a redaction step you have to remember is a redaction step that does not happen.
+
+Three things are worth knowing before you rely on it.
+
+**Reviewer reasons are dropped.** A reason is free text somebody typed under time pressure, and *same person, spoke to Amara's mother* names the person the rest of the row just masked. Running a detector over free text would catch most of those and miss the rest quietly, which is the worse failure. Pass `include_reasons=True` when you know what is in them.
+
+**The ids are not masked, and they are yours to check.** They have to survive or the file joins to nothing. If your join key is itself an identifier — a BVN, a national ID — the export refuses rather than laundering it, the same refusal `review_pack` makes. Name a surrogate column instead:
+
+```python
+share_artifact(PACK, "out", id_columns=["register_ref", "survey_ref"])
+```
+
+**It is a new artifact, not an edited one.** It carries its own `content_sha256` over its own rows, and `source_pack_content_sha256` pointing back at the pack it came from. Masking in place would leave the original manifest describing a file that no longer exists; this way the pair is linked and neither one pretends to be the other. If you sign anything, sign this one — the digest worth attesting is the one over the thing you actually sent.
+
 ## What it will not let you do
 
-**Overwrite the matcher's output.** Saving writes a new `_reviewed.csv` beside the pack. The original and its decision-ID manifest stay intact.
+**Overwrite the matcher's output.** Saving writes a new `_reviewed.csv` beside the pack, and a masked `_shared/` directory beside that. The original and its manifest stay intact.
 
 **Save anonymously.** A reviewer name is required, because an unattributed adjudication cannot be audited.
 

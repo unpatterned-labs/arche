@@ -207,6 +207,32 @@ def _cmd_review_apply(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_review_share(args: argparse.Namespace) -> int:
+    """Derive the copy of a pack that is safe to send somebody."""
+    from arche.review import PackError, share_artifact
+
+    adjudication = None
+    if args.adjudication:
+        adjudication = json.loads(
+            Path(args.adjudication).read_text(encoding="utf-8"))
+    try:
+        manifest = share_artifact(
+            args.pack, args.out, adjudication=adjudication,
+            include_reasons=args.include_reasons,
+            id_columns=args.id_column or None)
+    except PackError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"{manifest['rows']} rows, masked")
+    if not manifest["reasons_included"]:
+        print("reviewer reasons dropped (free text; --include-reasons keeps them)")
+    print(f"content_sha256   {manifest['content_sha256']}")
+    print(f"from             {manifest['source_pack_content_sha256']}")
+    print(f"-> {Path(args.out) / 'pack.csv'}")
+    return 0
+
+
 def _cmd_review_verify(args: argparse.Namespace) -> int:
     """Does this adjudication still hash to what it claims, and match its pack?"""
     from arche.review import verify_adjudication
@@ -281,6 +307,20 @@ def main(argv: list[str] | None = None) -> int:
     ra.add_argument("--allow-dirty-pack", action="store_true",
                     help="adjudicate a pack that does not match its manifest")
     ra.set_defaults(func=_cmd_review_apply)
+
+    rs = rev_sub.add_parser(
+        "share", help="write the masked copy of a pack, safe to send onward")
+    rs.add_argument("pack", help="pack.csv, or the directory holding it")
+    rs.add_argument("out", help="directory to write the masked pack into")
+    rs.add_argument("--adjudication", default=None, metavar="PATH",
+                    help="an adjudication.json whose outcomes to carry across")
+    rs.add_argument("--include-reasons", action="store_true",
+                    help="keep the reviewers' free-text reasons (they are not "
+                         "masked, and can name the person the row does not)")
+    rs.add_argument("--id-column", action="append", default=[], metavar="COL",
+                    help="column(s) to keep unmasked as the join key; repeatable. "
+                         "Default is each side's `_id`.")
+    rs.set_defaults(func=_cmd_review_share)
 
     rvf = rev_sub.add_parser(
         "verify", help="re-check an adjudication against its pack")

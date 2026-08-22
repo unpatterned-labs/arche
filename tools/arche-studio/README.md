@@ -127,6 +127,17 @@ Three things are deliberate:
 **The original is never written to.** Saving produces a new `_reviewed.csv`
 beside it, so the matcher output and its manifest stay intact.
 
+**Saving produces two files, and only one of them is safe to send.** The
+`_reviewed.csv` carries real names, because that is what the reviewer was
+looking at and a masked pack cannot be judged. Beside it goes a `_shared/`
+directory holding the same decisions with every record value masked, its own
+`content_sha256`, and a pointer back to the pack it came from. The confirmation
+names both, one labelled *your copy* and the other *safe to share*, because the
+filenames do not tell them apart and somebody is about to attach one to an
+email. Reviewer reasons are dropped from the shared copy: free text can name the
+person the row just masked. `arche review share` does the same thing from a
+terminal.
+
 **A reviewer name is required.** An unattributed adjudication cannot be
 audited, so the save is refused without one.
 

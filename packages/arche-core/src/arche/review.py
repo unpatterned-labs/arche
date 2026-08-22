@@ -55,6 +55,7 @@ from arche.report import (
 )
 
 ADJUDICATION_SCHEMA = "arche.adjudication.v1"
+SHARE_SCHEMA = "arche.review_pack.shared.v1"
 
 # Columns an outcomes file must carry. `review_outcome` is accepted as an alias
 # for `outcome` so a filled-in pack works as an outcomes file unchanged.
@@ -455,8 +456,156 @@ def write_reviewed_csv(pack: str | Path, adjudication: dict,
     return out_path
 
 
+# Columns that are the matcher's machinery rather than anybody's data. Scores,
+# levels and content-addressed ids describe a decision; they are not the record.
+_DECISION_COLUMNS = ("decision_id", "decision", "score", "distinctive_max",
+                     "distance_km", "evidence")
+
+
+def share_artifact(pack: str | Path, out_dir: str | Path, *,
+                   adjudication: dict | None = None,
+                   include_reasons: bool = False,
+                   id_columns: list[str] | None = None) -> dict:
+    """Derive a masked pack that is safe to send somebody.
+
+    A working pack is usually written with ``reveal=True``, because a masked one
+    cannot be adjudicated: nobody can say whether two people are the same when
+    both names are redacted. That makes the working pack a local document, and
+    the studio's save path used to copy it verbatim, so a revealed pack stayed
+    revealed the moment anybody shared the output.
+
+    This produces the other artifact. Record values go through the same masking
+    allowlist :func:`arche.report.review_pack` uses, so there is one
+    implementation of what masked means rather than two that can disagree. The
+    decision machinery survives, because a score is not somebody's data and a
+    reader needs it to see what the matcher did.
+
+    Three things make this a projection rather than a redaction pass:
+
+    **It is computed from the source, not edited into it.** A masked file made by
+    rewriting cells after a manifest was written has a manifest that describes
+    something else. This writes a new artifact with its own ``content_sha256``
+    and records the source digest beside it, so the two are linked and neither
+    pretends to be the other.
+
+    **Nothing raw survives anywhere in it.** Not in a sidecar, not in the
+    manifest, not inside the evidence. A masked export that keeps the values
+    somewhere is worse than none, because it invites the confidence a genuinely
+    masked one would earn.
+
+    **Reviewer reasons are dropped by default.** A reason is free text somebody
+    typed and can contain anything, including the name the rest of the row just
+    masked. Running a detector over it would miss things quietly, which is the
+    failure mode that matters here. Pass ``include_reasons=True`` if you know
+    what is in them.
+
+    Sign the result rather than the source: the digest worth attesting is the one
+    over the thing you are actually sending.
+    """
+    from arche.render import render
+    from arche.report import _SENSITIVE_ID
+
+    read = read_pack(pack)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    sides = _infer_sides(read.fields)
+    ids = list(id_columns or [f"{side}_id" for side in sides])
+    present_ids = [c for c in ids if c in read.fields]
+
+    # The same refusal `review_pack` makes in masked mode. A "masked" artifact
+    # that prints national identifiers as join keys is a leak, not a projection.
+    hot = sum(1 for r in read.rows for c in present_ids
+              if _SENSITIVE_ID.match(str(r.get(c, "") or "")))
+    if hot:
+        raise PackError(
+            f"{hot} row id(s) look like sensitive identifiers (9+ digit runs, "
+            "the shape of a national ID). A masked pack still carries its ids, "
+            "so this would leak them. Re-export the pack with a surrogate id "
+            "column, or pass id_columns= naming the columns that are safe.")
+
+    marks = {e["decision_id"]: e for e in (adjudication or {}).get("ledger", [])}
+    keep_review = ["review_outcome", "reviewer"] + (
+        ["reason"] if include_reasons else [])
+    fields = [f for f in read.fields
+              if f not in REVIEW_FIELDS or f in keep_review]
+
+    rows: list[dict] = []
+    for row in read.rows:
+        out: dict[str, Any] = {}
+        for side in sides:
+            prefix = f"{side}_"
+            payload = {f[len(prefix):]: row.get(f, "")
+                       for f in read.fields if f.startswith(prefix)}
+            reveal = [c[len(prefix):] for c in present_ids
+                      if c.startswith(prefix)]
+            for key, value in render(payload, reveal=reveal or []).items():
+                out[f"{prefix}{key}"] = value
+        for column in read.fields:
+            if column in _DECISION_COLUMNS:
+                out[column] = row.get(column, "")
+        entry = marks.get(row.get("decision_id", ""))
+        if entry:
+            out["review_outcome"] = entry["outcome"]
+            out["reviewer"] = entry["reviewer"]
+            if include_reasons:
+                out["reason"] = entry["reason"]
+        else:
+            for column in keep_review:
+                out.setdefault(column, row.get(column, ""))
+        rows.append({f: out.get(f, "") for f in fields})
+
+    csv_path = out_dir / "pack.csv"
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    manifest = {
+        "schema": SHARE_SCHEMA,
+        "generated": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "disclosure": "masked (safe to share)",
+        "rows": len(rows),
+        "reasons_included": bool(include_reasons),
+        # Its own digest, over what is actually in this file.
+        "content_sha256": pack_content_digest(rows, fields),
+        # And a pointer back, so the pair can be tied together without either
+        # artifact carrying the other's contents.
+        "source_pack": read.path.name,
+        "source_pack_content_sha256": read.content_digest,
+    }
+    if adjudication:
+        manifest["adjudication_outcomes_sha256"] = adjudication.get(
+            "outcomes_sha256", "")
+        manifest["marked"] = len(marks)
+    (out_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return manifest
+
+
+def _infer_sides(fields: list[str]) -> list[str]:
+    """The two column families, the way the studio infers them.
+
+    Columns sharing a prefix before the first underscore, where the prefix is
+    not one of the decision or review column names.
+    """
+    reserved = set(_DECISION_COLUMNS) | set(REVIEW_FIELDS)
+    reserved_prefixes = {c.split("_", 1)[0] for c in reserved}
+    groups: dict[str, int] = {}
+    for column in fields:
+        if column in reserved or "_" not in column:
+            continue
+        prefix = column.split("_", 1)[0]
+        if prefix in reserved_prefixes:
+            continue
+        groups[prefix] = groups.get(prefix, 0) + 1
+    return sorted((p for p, n in groups.items() if n >= 2),
+                  key=lambda p: -groups[p])[:2]
+
+
 __all__ = [
     "ADJUDICATION_SCHEMA",
+    "SHARE_SCHEMA",
     "Pack",
     "PackError",
     "Problem",
@@ -464,6 +613,7 @@ __all__ = [
     "REVIEW_OUTCOMES",
     "apply_outcomes",
     "read_pack",
+    "share_artifact",
     "validate_pack",
     "verify_adjudication",
     "write_reviewed_csv",

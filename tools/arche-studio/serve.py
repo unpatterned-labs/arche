@@ -69,12 +69,18 @@ OUTCOMES = ("same_entity", "different", "unresolved")
 sys.path.insert(0, str(HERE))
 from state import Store  # noqa: E402  (after sys.path is set)
 
-STATE = Store(PACKS / "_studio.sqlite3")
+# NOT under PACKS. `/api/pack?id=...` reads any file inside the pack directory
+# and parses it as CSV, so anything kept there is readable over HTTP by anyone
+# who can reach the port. The signing key was in there, and `_load_pack` handed
+# back its PEM lines as two CSV rows.
+STUDIO_STATE = REPO / "data" / "_studio"
+STUDIO_STATE.mkdir(parents=True, exist_ok=True)
+STATE = Store(STUDIO_STATE / "state.sqlite3")
 
 # One key, created on first run and loaded thereafter. A fresh key per
 # request produces signatures nobody can attribute, which is a checksum
 # with extra steps.
-KEY_PATH = PACKS / "_studio_key.pem"
+KEY_PATH = STUDIO_STATE / "key.pem"
 
 
 def _packs() -> list[dict]:
@@ -92,10 +98,34 @@ def _packs() -> list[dict]:
     return out
 
 
-def _load_pack(pack_id: str) -> dict:
-    path = (PACKS / pack_id).resolve()
-    if not str(path).startswith(str(PACKS.resolve())):
+def _pack_path(pack_id: str) -> Path:
+    """Resolve a pack id to a file, or refuse.
+
+    Three things went wrong with the check this replaces. It compared resolved
+    paths with `str.startswith`, so a sibling directory named `review_packs_evil`
+    passed. It accepted any extension, so the signing key and the SQLite state
+    were both readable through `/api/pack` and came back parsed as CSV rows. And
+    it trusted an id the client made up rather than one this server had offered.
+
+    So: containment by `is_relative_to`, `.csv` only, and the id has to be one
+    `_packs()` actually lists.
+    """
+    resolved = (PACKS / pack_id).resolve()
+    root = PACKS.resolve()
+    if not resolved.is_relative_to(root):
         raise ValueError("pack path escapes the pack directory")
+    if resolved.suffix.lower() != ".csv":
+        raise ValueError("a pack is a .csv file")
+    if not resolved.is_file():
+        raise ValueError(f"no pack {pack_id!r}")
+    offered = {p["id"] for p in _packs()}
+    if pack_id not in offered:
+        raise ValueError(f"{pack_id!r} is not one of the packs on offer")
+    return resolved
+
+
+def _load_pack(pack_id: str) -> dict:
+    path = _pack_path(pack_id)
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
     fields = list(rows[0].keys()) if rows else []
 
@@ -388,10 +418,29 @@ def _sign_demo(_payload: dict) -> dict:
 
 
 def _mark(payload: dict) -> dict:
-    """One adjudication, appended. Survives a refresh, keeps its history."""
+    """One adjudication, appended. Survives a refresh, keeps its history.
+
+    The pack digest and the membership of the decision are established HERE, not
+    taken from the request. Before, a caller supplied `pack`, `pack_digest` and
+    `decision_id` and all three were believed: a mark could be recorded against a
+    decision that is not in the pack, or against a digest that does not describe
+    it, and `sign_pack` would then sign those marks. An audit trail whose subject
+    the client chooses is not an audit trail.
+    """
+    pack = payload["pack"]
+    loaded = _load_pack(pack)                    # also validates the pack id
+    decision_id = payload["decision_id"]
+    known = {r.get("decision_id", "") for r in loaded["rows"]}
+    if decision_id not in known:
+        raise ValueError(
+            f"decision {decision_id[:24]}... is not in {pack}; a mark has to be "
+            "about a decision the pack actually contains")
     return STATE.mark(
-        pack=payload["pack"], pack_digest=payload.get("pack_digest", ""),
-        decision_id=payload["decision_id"], outcome=payload.get("outcome", ""),
+        pack=pack,
+        # Server-computed, and the CONTENT digest rather than the id-membership
+        # one, so a mark records which version of the pack it was made against.
+        pack_digest=loaded["content_digest"],
+        decision_id=decision_id, outcome=payload.get("outcome", ""),
         reviewer=payload.get("reviewer", ""), reason=payload.get("reason", ""))
 
 
@@ -404,10 +453,10 @@ def _marks(pack: str) -> dict:
 
 
 def _save_review(payload: dict) -> dict:
+    from arche.review import share_artifact
+
     pack_id = payload["pack"]
-    path = (PACKS / pack_id).resolve()
-    if not str(path).startswith(str(PACKS.resolve())):
-        raise ValueError("pack path escapes the pack directory")
+    path = _pack_path(pack_id)
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
     fields = list(rows[0].keys()) if rows else []
     for extra in ("review_outcome", "reviewer", "reviewed_at", "reason"):
@@ -443,7 +492,34 @@ def _save_review(payload: dict) -> dict:
     # Never write over the matcher's output.
     out = path.with_name(path.stem + "_reviewed.csv")
     out.write_text(buf.getvalue(), encoding="utf-8", newline="")
-    return {"written": str(out.relative_to(REPO)).replace("\\", "/"), "rows_marked": n}
+
+    # Two artifacts, because they are for two different things. The one above is
+    # the working document: it carries the names, because that is what the
+    # reviewer was looking at, and it stays on this machine. The one below is
+    # the one you send somebody, and it is masked.
+    #
+    # A save used to produce only the first, so the moment anybody attached the
+    # output to an email the pack was as revealed as the day it was written.
+    # Making the masked one a separate file that always exists is the point: if
+    # sharing requires remembering to redact, it does not get redacted.
+    ledger = [{"decision_id": did, "outcome": m["outcome"], "reviewer": reviewer,
+               "reason": (m.get("reason") or "").strip(), "marked_at": stamp}
+              for did, m in sorted(marks.items())]
+    shared: str | None = None
+    warning: str | None = None
+    try:
+        share_artifact(path, path.with_name(path.stem + "_shared"),
+                       adjudication={"ledger": ledger})
+        shared = str((path.with_name(path.stem + "_shared") / "pack.csv")
+                     .relative_to(REPO)).replace("\\", "/")
+    except Exception as exc:  # noqa: BLE001 - reported, not swallowed
+        # The commonest cause is a pack whose ids are national identifiers, which
+        # `share_artifact` refuses on purpose. Say so rather than writing a file
+        # that claims to be masked.
+        warning = f"no shareable copy was written: {exc}"
+
+    return {"written": str(out.relative_to(REPO)).replace("\\", "/"),
+            "shared": shared, "warning": warning, "rows_marked": n}
 
 
 class Studio(ThreadingHTTPServer):

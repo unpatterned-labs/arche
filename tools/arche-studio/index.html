@@ -515,7 +515,17 @@ async function save(){
   $("#rerr").textContent="";
   const r=await(await fetch("/api/review",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value})})).json();
-  $("#rerr").innerHTML=r.error||`Wrote <span style="font-family:var(--mono);font-size:15px">${esc(r.written)}</span> — ${r.rows_marked} rows marked.`;
+  if(r.error){$("#rerr").textContent=r.error;return;}
+  // Two files, and the difference between them is the whole point. Name both,
+  // and say which one leaves this machine — somebody is about to attach one of
+  // them to an email and the filenames alone do not tell them apart.
+  const f=p=>`<span style="font-family:var(--mono);font-size:15px">${esc(p)}</span>`;
+  $("#rerr").innerHTML=
+    `${r.rows_marked} rows marked.<br>`+
+    `<b>Your copy</b> — ${f(r.written)}<br>`+
+    (r.shared
+      ? `<b>Safe to share</b> — ${f(r.shared)}, names and dates masked.`
+      : `<b>No shareable copy.</b> ${esc(r.warning||"")}`);
 }
 
 /* ════════════════════════════════════════════════════════════ compare ══ */

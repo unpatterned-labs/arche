@@ -90,6 +90,17 @@ def public_identity(keypair: Any) -> dict:
     }
 
 
+def _ledger_digest(ledger: list) -> str:
+    """One place that decides what a ledger hashes to.
+
+    Signing and verifying computing this separately is how the two quietly stop
+    agreeing.
+    """
+    canonical = json.dumps(ledger, sort_keys=True, separators=(",", ":"),
+                           ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def sign_adjudication(keypair: Any, *, pack: str, content_digest: str,
                       rows: int, marks: dict) -> dict:
     """Sign what each decision was adjudicated as, not how many of each there were.
@@ -131,8 +142,7 @@ def sign_adjudication(keypair: Any, *, pack: str, content_digest: str,
         ),
         key=lambda r: r["decision_id"],
     )
-    ledger_canonical = json.dumps(ledger, sort_keys=True,
-                                  separators=(",", ":"), ensure_ascii=False)
+
     counts: dict[str, int] = {}
     for entry in ledger:
         counts[entry["outcome"]] = counts.get(entry["outcome"], 0) + 1
@@ -146,8 +156,7 @@ def sign_adjudication(keypair: Any, *, pack: str, content_digest: str,
         "rows": rows,
         "marked": len(ledger),
         # This is the binding. Recompute it from `ledger` to check.
-        "outcomes_sha256": hashlib.sha256(
-            ledger_canonical.encode("utf-8")).hexdigest(),
+        "outcomes_sha256": _ledger_digest(ledger),
         # Kept for reading at a glance. It is a summary of the line above, never
         # a substitute for it.
         "outcomes": dict(sorted(counts.items())),
@@ -158,19 +167,78 @@ def sign_adjudication(keypair: Any, *, pack: str, content_digest: str,
             "jws": sign_jws(body, keypair.private_key, kid=keypair.did_key)}
 
 
-def verify_adjudication(signed: dict) -> dict:
-    """Recompute the binding. Does this ledger match this signature's claim?
+def verify_adjudication(signed: dict, *, public_key: Any = None) -> dict:
+    """Check the signature, then check the ledger the signature covers.
 
-    Separate from signature verification on purpose: a valid signature over the
-    wrong ledger is the failure this exists to catch.
+    The version this replaces did the second half only. It recomputed the ledger
+    digest and compared it against a field in the same unsigned document, and
+    never looked at the `jws` at all. Replace both the ledger and the manifest
+    field it claims and the old function said `outcomes_match=True`. A function
+    named verify that ignores the signature is worse than no function.
+
+    Three questions, answered in order, because a later one is meaningless if an
+    earlier one fails:
+
+    1. Does the signature verify at all, and against whose key?
+    2. Is the manifest inside the signature the manifest in front of us? A valid
+       signature over a DIFFERENT manifest proves nothing about this one.
+    3. Does the ledger still hash to what that manifest claims? This is what
+       binds each decision id to its outcome.
+
+    `valid` and `trusted` mean what they mean everywhere else in arche: `valid`
+    says the signature matches the key it names, `trusted` says that key is one
+    the caller pinned. Without `public_key` you get integrity, not attribution.
     """
+    from arche.sign import verify as verify_jws
+
     manifest = signed.get("manifest") or {}
     ledger = signed.get("ledger") or []
-    canonical = json.dumps(ledger, sort_keys=True,
-                           separators=(",", ":"), ensure_ascii=False)
-    recomputed = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    claimed = manifest.get("outcomes_sha256", "")
-    return {"outcomes_match": recomputed == claimed,
-            "recomputed_outcomes_sha256": recomputed,
-            "claimed_outcomes_sha256": claimed,
-            "marked": len(ledger)}
+    jws = signed.get("jws")
+
+    report: dict[str, Any] = {
+        "ok": False, "signature_valid": False, "trusted": False,
+        "manifest_matches_signature": False, "outcomes_match": False,
+        "marked": len(ledger), "problems": [],
+    }
+
+    if not jws:
+        report["problems"].append("no `jws`; this adjudication is unsigned")
+        return report
+
+    try:
+        result = verify_jws(jws, public_key=public_key,
+                            allow_did_key_from_kid=public_key is None)
+    except Exception as exc:  # noqa: BLE001 - a bad signature is an answer
+        report["problems"].append(f"signature does not verify: {exc}")
+        return report
+
+    report["signature_valid"] = bool(getattr(result, "valid", False))
+    report["trusted"] = bool(getattr(result, "trusted", False))
+    if not report["signature_valid"]:
+        report["problems"].append("signature does not verify")
+        return report
+
+    signed_payload = getattr(result, "payload", None) or {}
+    # The signed manifest is the authority. Comparing the digest lets a caller
+    # see that the document they hold is the document that was signed.
+    signed_digest = signed_payload.get("manifest_sha256")
+    report["manifest_matches_signature"] = (
+        bool(signed_digest) and signed_digest == manifest.get("manifest_sha256"))
+    if not report["manifest_matches_signature"]:
+        report["problems"].append(
+            "the manifest in this document is not the one that was signed")
+        return report
+
+    recomputed = _ledger_digest(ledger)
+    claimed = signed_payload.get("outcomes_sha256", "")
+    report["recomputed_outcomes_sha256"] = recomputed
+    report["claimed_outcomes_sha256"] = claimed
+    report["outcomes_match"] = recomputed == claimed
+    if not report["outcomes_match"]:
+        report["problems"].append(
+            "the ledger does not hash to the digest the signature covers; it "
+            "has been edited or swapped")
+        return report
+
+    report["ok"] = True
+    return report

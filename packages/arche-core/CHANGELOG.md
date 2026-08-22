@@ -42,6 +42,50 @@ On the Nigerian school register the adapter and the hand recipe both reach 190 t
 
 **Failures raise.** `SplinkBackendError`, never a quiet fall back to another algorithm.
 
+### Added — `share_artifact`, because a reviewed pack was revealed and stayed revealed
+
+A review pack is written with `reveal=True` in practice, because a masked one cannot be adjudicated: nobody can say whether two people are the same when both names are redacted. Every path downstream of a review therefore copied real names — the studio's save button wrote a `_reviewed.csv` verbatim, and that file is the one people attach to things.
+
+`arche.review.share_artifact` derives the other document. It is a projection of a pack, not an edit to one:
+
+```python
+from arche.review import share_artifact
+
+share_artifact("data/review_packs/register_x_survey",
+               "data/review_packs/register_x_survey_shared",
+               adjudication=adjudication)
+```
+
+Also `arche review share <pack> <out> [--adjudication PATH]`.
+
+Record values go through the same masking allowlist `review_pack` uses, so *masked* has one implementation rather than two that can drift. What survives is the decision machinery — `decision_id`, `decision`, `score`, `distinctive_max`, `evidence` and the join ids — because a score is not somebody's data and a reader cannot see what the matcher did without it.
+
+Three decisions in it are worth stating.
+
+**Reviewer reasons are dropped by default.** *Same person, spoke to Amara's mother* names the person the rest of the row just masked. A detector over free text would catch most and miss the rest quietly, and quiet is the failure mode that matters; `include_reasons=True` keeps them when you know what is in them.
+
+**The artifact is computed, not redacted in place.** It carries its own `content_sha256` over its own rows and `source_pack_content_sha256` pointing back. Masking the original would leave its manifest describing a file that no longer exists. Sign this one, not the source — the digest worth attesting is the one over what you actually sent.
+
+**Hot ids are refused, not laundered.** A masked pack still carries its join keys, so ids matching the national-identifier shape raise rather than being written; `id_columns=` names a surrogate instead. Same rule `review_pack` applies in masked mode.
+
+**The studio now writes both files on every save** and names them separately in the confirmation — *your copy* and *safe to share*. A redaction step you have to remember is a redaction step that does not happen.
+
+### Fixed — four ways `arche studio` did not mean what it said
+
+An outside review of the studio, which had never had one. It is not in the wheel and you get it by cloning this repository, so none of this reached a released artifact, but all four were live for anyone running it.
+
+**`GET /api/pack?id=_studio_key.pem` returned the signing key.** The key and the SQLite state both lived in `data/review_packs/`, which is the directory that endpoint serves, and the loader accepted any extension. It parsed the PEM as CSV and handed back its lines as rows. Both now live in `data/_studio/`, outside anything served, and the loader takes `.csv` only.
+
+**The containment check did not contain.** `str(path).startswith(str(PACKS.resolve()))` passes for a sibling directory named `review_packs_evil`. It is `is_relative_to` now, and a pack id additionally has to be one `_packs()` actually offered, so a client cannot name a file the server never listed.
+
+**`verify_adjudication` never looked at the signature.** It recomputed the ledger digest and compared it against a field in the same unsigned document, so replacing both the ledger and that field gave `outcomes_match=True`. A function named verify that ignores the signature is worse than no function. It now checks three things in order, because a later one is meaningless if an earlier one fails: does the JWS verify and against whose key, is the manifest inside the signature the manifest in front of us, and does the ledger still hash to what that signature covers. `valid` and `trusted` mean what they mean everywhere else in arche.
+
+**A mark was about whatever decision the client said it was.** `/api/mark` took `pack`, `pack_digest` and `decision_id` from the request and believed all three, so a mark could be recorded against a decision the pack does not contain, under a digest that does not describe it, and `sign_pack` would then sign it. The pack is now loaded server-side, the decision has to be in it, and the digest is computed here rather than accepted.
+
+**Why this was possible.** Nothing anywhere imported the studio, so its whole surface was untested and a `NameError` on the main path shipped without a single failing test: `_load_pack` referenced an undefined `ids` and every pack failed to load, which is what an empty review queue looks like. `test_studio_loads.py` now covers the contract between the library and the tool, and against the broken loader four of its tests fail.
+
+**What is still true.** The studio has no authentication, no CSRF protection and no origin checking, and binding to `127.0.0.1` is not an isolation boundary once there is a container with a published port, a port-forward, or a page that can induce a browser to call it. Its README says so. It is a local tool for the machine holding the data, and it should not be exposed without an auth proxy in front of it.
+
 ### Added — `arche.review`, so a pack can be worked without cloning the repository
 
 `review_pack` shipped in the wheel and nothing that could read a pack did. A caller who exported their own data got a CSV, a manifest, and no supported way to work them: the only consumer was a local web tool you get by cloning this repository, which is a strange thing to require of somebody who installed a library.
