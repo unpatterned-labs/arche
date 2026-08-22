@@ -133,29 +133,11 @@ class Pipeline:
         when redacted documents cross trust boundaries.
     """
 
-    _STATUTE_FOR_JURISDICTION = {
-        "NG": "NDPA-2023",
-        "ZA": "POPIA",
-        "KE": "KENYA-DPA",
-        "GH": "GHANA-DPA",
-        # The UK is its own regime post-Brexit: retained UK GDPR plus DPA 2018,
-        # ICO oversight, IDTA transfers, digital consent at 13. Close enough to
-        # the EU's category actions to be safe to ship, different enough that
-        # pointing at EU instruments would cite the wrong law.
-        "GB": "UK-GDPR",
-        # EU / EEA member states -> GDPR. Sectoral or stricter-national regimes
-        # use the explicit escape hatch instead, e.g.
-        # Pipeline(jurisdiction="US", statute="HIPAA-SAFE-HARBOR").
-        **dict.fromkeys(
-            (
-                "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
-                "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-                "PL", "PT", "RO", "SK", "SI", "ES", "SE",  # EU-27
-                "IS", "LI", "NO",                            # EEA
-            ),
-            "GDPR",
-        ),
-    }
+    #: Kept as a class attribute for the callers that already read it, but the
+    #: data now lives in :mod:`arche.policy` so that anything outside the
+    #: pipeline can ask the same question. See :func:`arche.policy.statute_for`
+    #: for the version that explains an absence instead of returning ``None``.
+    from arche.policy import STATUTE_FOR_JURISDICTION as _STATUTE_FOR_JURISDICTION
 
     # Jurisdictions the African detector inventory is calibrated for. Any OTHER
     # explicit jurisdiction gets cross-cutting detectors ONLY: running African

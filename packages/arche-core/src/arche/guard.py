@@ -164,10 +164,22 @@ class EgressGuard:
         try:
             statute = self._pipeline._ensure_statute()
             # Tooth 1: deny on absence of policy.
+            #
+            # The message explains the caller's situation rather than arche's.
+            # "no statute configured on the pipeline" describes an internal
+            # state and reads as a bug, which is exactly how it read when a
+            # document inferred US or EU with confidence 1.0 and then hit this.
+            # `statute_for` knows whether that is a missing row (EU, now fixed)
+            # or a fact about the world (the United States has no omnibus
+            # federal privacy statute), and says which.
             if statute is None:
+                from arche.policy import statute_for
+
+                choice = statute_for(getattr(self._pipeline, "jurisdiction", None))
+                hint = (f" Pass statute= explicitly, e.g. "
+                        f"{choice.alternatives[0]!r}." if choice.alternatives else "")
                 raise GuardDenied(
-                    "no statute configured on the pipeline — no policy means no "
-                    "permission to emit",
+                    f"no policy, so no permission to emit: {choice.reason}.{hint}",
                 )
             # Tooth 3: provider allow-list.
             if self._allowed_providers is not None and provider not in self._allowed_providers:

@@ -126,6 +126,109 @@ def detectable_categories(packages: list[str] | tuple[str, ...]) -> set[str]:
     return found
 
 
+# Where each detector pack was BUILT to work, which is a different question
+# from what it can emit.
+#
+# Coverage asks "is there a detector for this category?". Calibration asks "was
+# that detector built for this place?". The UK example that started all of this
+# fails the second question while passing the first: a name detector ran, a
+# location detector ran, a phone detector ran, and all three are calibrated on
+# African data. Reporting `PII-1-NAME` as covered for `GB` is true and, on its
+# own, misleading.
+#
+# Measured on 2026-08-22 rather than assumed, because two of these were
+# surprises. `core` sounds global and is not: `+2348031234567` is found and
+# `+447700900123` and `+4915112345678` are missed. `locations` finds `Kano
+# State` and misses `Manchester` and `Munich`.
+#
+# ``GLOBAL`` means format-defined rather than place-defined: an email address
+# and an IP address have the same shape everywhere.
+_AFRICA = "AFRICA"
+_GLOBAL = "GLOBAL"
+
+DETECTOR_CALIBRATION: dict[str, tuple[frozenset[str], str]] = {
+    # "African name detection via the bundled name lexicon" — its own docstring.
+    # Measured: 3 of 4 African names found, 1 of 5 non-African.
+    "names": (frozenset({_AFRICA}),
+              "built on an African name lexicon; a name it has not seen is not "
+              "detected, and outside Africa most are not seen"),
+    # Measured: Kano State found; Manchester and Munich missed.
+    "locations": (frozenset({_AFRICA}),
+                  "African place vocabulary; non-African place names are "
+                  "largely absent"),
+    # Measured: +234 found; +44 and +49 missed. Not a global phone parser.
+    "core": (frozenset({_AFRICA}),
+             "African numbering plans; other country codes are not matched"),
+    "phones": (frozenset({_AFRICA}),
+               "African numbering plans; other country codes are not matched"),
+    # Measured: both an Abuja street address and a London postcode parse.
+    "addr": (frozenset({_AFRICA, "GB"}),
+             "African informal and street forms plus UK postcodes; other "
+             "postal systems are not modelled"),
+    # Shape-defined, not place-defined.
+    "emails": (frozenset({_GLOBAL}), ""),
+    "ip": (frozenset({_GLOBAL}), ""),
+    "digital_id": (frozenset({_GLOBAL}), ""),
+    # National ID packs are calibrated for exactly their own country, and the
+    # pipeline already refuses to run them elsewhere.
+    "ng": (frozenset({"NG"}), ""),
+    "ke": (frozenset({"KE"}), ""),
+    "za": (frozenset({"ZA"}), ""),
+    "gh": (frozenset({"GH"}), ""),
+    "africa": (frozenset({_AFRICA}), ""),
+}
+
+
+def _calibrated_for(pack: str, jurisdiction: str | None) -> bool:
+    """Whether ``pack`` was built for ``jurisdiction``.
+
+    An unknown pack and an unknown jurisdiction both count as calibrated, so a
+    caller's own detector is never accused of a mismatch this module cannot
+    assess.
+    """
+    scope = DETECTOR_CALIBRATION.get(pack)
+    if scope is None or jurisdiction is None:
+        return True
+    regions = scope[0]
+    if _GLOBAL in regions:
+        return True
+    if jurisdiction in regions:
+        return True
+    if _AFRICA in regions:
+        from arche.workflow._primitive import Pipeline
+
+        return jurisdiction in Pipeline._AFRICAN_JURISDICTIONS
+    return False
+
+
+def calibration_mismatch(packages: list[str], jurisdiction: str | None
+                         ) -> list[dict[str, Any]]:
+    """Detectors that ran for a place they were not built for.
+
+    This is the residual gap category coverage deliberately does not measure. A
+    detector that ran and was calibrated elsewhere reports its category as
+    covered and then finds nothing, which looks exactly like a clean document —
+    the same failure coverage was built to expose, one level down.
+
+    Reported rather than denied. A mismatched detector is not useless: a name
+    lexicon built in Lagos will still match a name that appears in it. Turning
+    a degraded signal into a refusal would be a judgement this module has no
+    basis for making.
+    """
+    out: list[dict[str, Any]] = []
+    for pack in packages:
+        if _calibrated_for(pack, jurisdiction):
+            continue
+        regions, note = DETECTOR_CALIBRATION[pack]
+        out.append({
+            "detector": pack,
+            "calibrated_for": sorted(regions),
+            "categories": sorted(CROSS_CUTTING_CATEGORIES.get(pack, frozenset())),
+            "note": note,
+        })
+    return out
+
+
 def coverage(pipeline: Pipeline) -> dict[str, Any]:
     """What the statute governs, what the detectors can find, and the gap.
 
@@ -156,18 +259,28 @@ def coverage(pipeline: Pipeline) -> dict[str, Any]:
     packages = list(pipeline.effective_detectors())
     detectable = detectable_categories(packages)
 
+    jurisdiction = getattr(pipeline, "jurisdiction", None)
     if statute is None:
+        # Same keys as the statute branch. A report whose shape depends on which
+        # branch ran makes `report["calibration_mismatch"]` a KeyError for some
+        # jurisdictions and not others, which is how a caller ends up wrapping
+        # an honest report in a try/except and reading nothing.
+        from arche.policy import statute_for
+
+        choice = statute_for(jurisdiction)
         return {
             "verdict": "no-statute",
             "statute_id": None,
-            "jurisdiction": getattr(pipeline, "jurisdiction", None),
+            "jurisdiction": jurisdiction,
             "detector_packages": packages,
             "detectable_categories": sorted(detectable),
             "governed": [],
             "covered": [],
             "uncovered": [],
-            "note": "no statute configured, so nothing is governed and there is "
-                    "nothing to be covered or uncovered",
+            "calibration_mismatch": calibration_mismatch(packages, jurisdiction),
+            "degraded_categories": [],
+            "note": f"nothing is governed here, so nothing can be covered: "
+                    f"{choice.reason}",
         }
 
     governed = set(statute.policy_mappings)
@@ -177,20 +290,35 @@ def coverage(pipeline: Pipeline) -> dict[str, Any]:
                else "none" if not covered
                else "partial")
 
+    mismatched = calibration_mismatch(packages, jurisdiction)
+    # Categories whose only detector was built for somewhere else. They are
+    # `covered` — a detector ran — and the coverage is degraded, so they are
+    # named separately rather than moved into `uncovered`, which would claim
+    # more than is known.
+    degraded = sorted({
+        category
+        for entry in mismatched
+        for category in entry["categories"]
+        if category in covered
+    })
+
     return {
         "verdict": verdict,
         "statute_id": statute.statute_id,
-        "jurisdiction": getattr(pipeline, "jurisdiction", None),
+        "jurisdiction": jurisdiction,
         "detector_packages": packages,
         "detectable_categories": sorted(detectable),
         "governed": sorted(governed),
         "covered": sorted(covered),
         "uncovered": sorted(uncovered),
-        "note": _note(verdict, statute.statute_id, sorted(uncovered)),
+        "calibration_mismatch": mismatched,
+        "degraded_categories": degraded,
+        "note": _note(verdict, statute.statute_id, sorted(uncovered), degraded),
     }
 
 
-def _note(verdict: str, statute_id: str, uncovered: list[str]) -> str:
+def _note(verdict: str, statute_id: str, uncovered: list[str],
+          degraded: list[str] | None = None) -> str:
     """One sentence a person can act on, not a status word."""
     if verdict == "full":
         return (f"every category {statute_id} governs has a detector installed. "
@@ -201,10 +329,15 @@ def _note(verdict: str, statute_id: str, uncovered: list[str]) -> str:
                 "A clean result from this pipeline means nothing was looked for.")
     shown = ", ".join(uncovered[:4])
     more = f" and {len(uncovered) - 4} more" if len(uncovered) > 4 else ""
-    return (f"{len(uncovered)} categor{'y' if len(uncovered) == 1 else 'ies'} "
+    text = (f"{len(uncovered)} categor{'y' if len(uncovered) == 1 else 'ies'} "
             f"{statute_id} governs ha{'s' if len(uncovered) == 1 else 've'} no "
             f"detector installed: {shown}{more}. A clean result does not mean "
             "those are absent, only that nothing looked for them.")
+    if degraded:
+        text += (f" A further {len(degraded)} had a detector built for "
+                 f"somewhere else: {', '.join(degraded)}.")
+    return text
 
 
-__all__ = ["CROSS_CUTTING_CATEGORIES", "coverage", "detectable_categories"]
+__all__ = ["CROSS_CUTTING_CATEGORIES", "DETECTOR_CALIBRATION",
+           "calibration_mismatch", "coverage", "detectable_categories"]

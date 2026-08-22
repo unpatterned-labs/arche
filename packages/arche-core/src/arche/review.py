@@ -253,6 +253,29 @@ def _read_rows(path: Path) -> tuple[list[dict], list[str]]:
             f"a pack is one of {', '.join(PACK_SUFFIXES)}")
     return reader(path)
 
+def read_records(path: str | Path) -> tuple[list[dict], list[str]]:
+    """Read a table of records from any supported format.
+
+    Returns ``(rows, fields)``. Every value is a string, for the reasons in
+    :func:`_as_text`: the formats have to agree so the same data in two of them
+    digests the same.
+
+    This is :func:`read_pack` without the pack. `read_pack` additionally checks
+    a manifest, looks for `decision_id`, and reports problems — all correct for
+    an adjudication pack and noise for a plain list of people.
+
+    It exists because the alternative was `arche.cli._load_records`, which is
+    private, and which raises `SystemExit` on bad input. `SystemExit` is right
+    for a command that a person typed and wrong for a library: it cannot be
+    caught by anything reasonable and it terminates a server. Anything that
+    imported it also froze it, since a patch release could rename it.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise PackError(f"no file at {path}")
+    return _read_rows(path)
+
+
 def read_pack(path: str | Path) -> Pack:
     """Read a pack and check it against its manifest.
 
@@ -827,6 +850,7 @@ __all__ = [
     "effective_decision",
     "effective_decisions",
     "read_pack",
+    "read_records",
     "share_artifact",
     "validate_pack",
     "verify_adjudication",

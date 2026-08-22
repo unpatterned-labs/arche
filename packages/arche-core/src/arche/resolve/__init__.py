@@ -387,6 +387,24 @@ COMPARATOR_NOTES = {
 }
 
 
+def compare_names(name_a, name_b, priors=None):
+    """Compare two names: returns ``(similarity, u_probability)``.
+
+    Re-exported from :mod:`arche.resolve._matcher`, which is private. The
+    function itself was always public-shaped — no leading underscore, a stable
+    signature, a documented return — but reaching it meant importing through a
+    private module, and anything that did so froze that module's name.
+
+    `arche-mcp` did exactly that. Publishing it would have meant arche-core
+    could no longer rename its own private module without breaking a released
+    artifact, and a pin does not protect against that because a patch release
+    could do it.
+    """
+    from arche.resolve._matcher import compare_names as _compare_names
+
+    return _compare_names(name_a, name_b, priors)
+
+
 def describe_pack(entity: str) -> dict:
     """What an entity pack reads, and what it does with each field.
 

@@ -4,6 +4,64 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added — `arche.policy.statute_for`, and the EU row that was missing
+
+`arche.jurisdictions.infer` could name a country with confidence 1.0 that no statute pack covered. What happened next was a refusal reading *"no statute configured on the pipeline"*, which describes arche's internal state rather than the caller's situation and reads as a bug. An agent following the detect-jurisdiction flow hit that wall on any US or EU document.
+
+Two different problems wore that one message.
+
+**EU was a missing row.** `GDPR.yaml` ships, every EU-27 and EEA member state maps to it, and `"EU"` itself mapped to nothing — because `"EU"` is an ISO 3166-1 *exceptional reservation* rather than an alpha-2 country code, so it never arrived with the member states. The inferrer emits it from a VAT number or a euro amount. Now `EU -> GDPR`.
+
+**US is a fact about the world.** The United States has no omnibus federal privacy statute; there is nothing to pack. It still refuses, and now says so:
+
+```python
+statute_for("US").reason
+# 'the United States has no omnibus federal privacy statute, so there is no
+#  single pack to apply. This is a fact about US law rather than a gap in arche'
+statute_for("US").alternatives      # ('HIPAA-SAFE-HARBOR', 'BASELINE')
+```
+
+`STATUTE_FOR_JURISDICTION` moved from a `Pipeline` class attribute to `arche.policy`, because it is policy data rather than pipeline mechanics and because callers outside the pipeline need it. `Pipeline._STATUTE_FOR_JURISDICTION` now references it, so there is one copy. A test asserts they are the same object.
+
+The guard's first tooth carries the reason and points at the escape hatch. A test pins that every country the inferrer can emit gets an answer, so adding a signal for a new country fails there first and forces a decision about what governs it.
+
+### Added — detector calibration, the layer below coverage
+
+Coverage answers *"is there a detector for this category?"*. It left the level below untouched: a detector can be installed, run, report its category as covered, and find nothing because it was built for somewhere else.
+
+That is what the original UK example actually hit. Three detectors ran on `"Jane Smith lives in Manchester, SW1A 1AA, tel 07700 900123."` and all three are African-calibrated. Measured, not assumed, and two were surprises:
+
+| pack | finds | misses |
+| --- | --- | --- |
+| `names` | `Adaeze Okonkwo` | `Jane Smith` |
+| `locations` | `Kano State` | `Manchester`, `Munich` |
+| `core` | `+2348031234567` | `+447700900123`, `+4915112345678` |
+
+`core` sounds like a general phone parser and is not. `locations` sounds like a gazetteer and is African.
+
+So for `GB`: 6 categories have no detector, **3 have one built elsewhere**, and 4 are genuinely covered. Only the first number was previously visible.
+
+```python
+coverage(Pipeline(jurisdiction="GB"))["degraded_categories"]
+# ['PII-1-NAME', 'PII-3-PHONE', 'PII-4-LOCATION']
+```
+
+Degraded categories stay in `covered` and are named separately rather than moved to `uncovered`. A lexicon built in Lagos still matches a name that happens to be in it, so calling it absent would claim more than is known. Reported, never denied — turning a degraded signal into a refusal is a judgement this layer has no basis for making.
+
+Also fixed: the no-statute branch of the coverage report omitted the calibration keys entirely, so `report["calibration_mismatch"]` was a `KeyError` for some jurisdictions and not others. Every branch now returns the same shape.
+
+### Added — `arche.resolve.compare_names` and `arche.review.read_records`
+
+Both promoted out of private modules because `arche-mcp` imported them, and publishing freezes whatever you import — a version pin does not help, since a *patch* release can rename a private name.
+
+`compare_names` was already public-shaped and only its address was private; re-exporting it is the whole change.
+
+`_load_records` could not be re-exported: it raises `SystemExit` on bad input, which is right for a command a person typed and wrong for a library, where it cannot be caught by anything reasonable and terminates a server. The general reader already inside `arche.review` was promoted instead. It reads CSV, JSONL, JSON and parquet, and raises a catchable `PackError`.
+
+### Added — `Pipeline.effective_detectors()`
+
+The packages that will actually run, rather than the ones requested. African ID packs are stripped at run time for a non-African jurisdiction, so the two lists differ, and `_run_detectors` and `arche.coverage` now share one implementation of that rule instead of two that can disagree.
+
 ### Fixed — the egress guard could not tell "nothing here" from "nothing I can see"
 
 `EgressGuard` had four fail-closed teeth and all four passed on this:

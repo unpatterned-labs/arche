@@ -1,0 +1,242 @@
+name: arche-mcp release
+
+# Manual release of `arche-mcp` to PyPI (or TestPyPI for a rehearsal).
+#
+# Separate from `arche-core-release.yml` because a second package needs a
+# second release: that file is hardcoded to arche-core's `_version.py`, its
+# CHANGELOG, its test paths and its tag prefix. "Add a package to the
+# workspace" is cheap; "release a second package" is this file.
+#
+# It keeps the one ordering rule the core workflow was rewritten to enforce:
+# **the tag is created after the upload succeeds, never before.** A tag that
+# appears first promises a release that may not exist. arche-core learned that
+# by shipping a SECURITY.md advisory pointing at a version that was tagged,
+# changelogged, and never published.
+#
+# It deliberately does NOT copy the core workflow's tag-only recovery mode.
+# That path exists there because that workflow created the bad state itself, on
+# a package with six prior releases. arche-mcp has none. Recovery machinery for
+# an incident that has not happened is machinery nobody has tested.
+#
+# What is checked before anything leaves the runner:
+#   - the version you type matches pyproject.toml, so a stale branch cannot
+#     publish something you did not intend
+#   - the CHANGELOG mentions that version
+#   - the arche-core pin is a closed range, not an open one — an open pin means
+#     `uvx arche-mcp` breaks for every existing user the hour a breaking
+#     arche-core alpha lands
+#   - both test suites pass, arche-core's included, because this package is
+#     nothing without it
+#   - the built wheel is installed into a clean venv and the server is imported
+#     and its tools listed, so a package that cannot register a tool never
+#     reaches the index
+#
+# Secrets required:
+#   PYPI_TOKEN       for target: pypi
+#   TEST_PYPI_TOKEN  for target: testpypi
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release. Must match packages/arche-mcp/pyproject.toml exactly (e.g. 0.1.0a1)."
+        required: true
+        type: string
+      target:
+        description: "Where to publish. Rehearse on testpypi first."
+        required: true
+        default: testpypi
+        type: choice
+        options: [testpypi, pypi]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify the release is safe to make
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # tags, so the duplicate-tag check can see them
+
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+
+      - name: Version input matches the package
+        id: check
+        run: |
+          set -euo pipefail
+          FILE="packages/arche-mcp/pyproject.toml"
+          PKG=$(python -c "
+          import re, pathlib
+          text = pathlib.Path('$FILE').read_text()
+          # The first bare version= after [project]; the dependency pins also
+          # contain version specifiers and must not be picked up.
+          block = text.split('[project]', 1)[1]
+          print(re.search(r'^version\s*=\s*[\"\x27]([^\"\x27]+)', block, re.M).group(1))
+          ")
+          IN="${{ inputs.version }}"
+          echo "requested: $IN"
+          echo "in $FILE : $PKG"
+          if [ "$PKG" != "$IN" ]; then
+            echo "::error::Version mismatch. You asked for '$IN' but $FILE says '$PKG'."
+            exit 1
+          fi
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
+
+      - name: The tag does not already exist
+        run: |
+          set -euo pipefail
+          TAG="arche-mcp-v${{ steps.check.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::$TAG already exists. Releasing over it would make the tag ambiguous."
+            exit 1
+          fi
+
+      - name: The changelog mentions this version
+        run: |
+          set -euo pipefail
+          FILE="packages/arche-mcp/CHANGELOG.md"
+          if ! grep -q "${{ steps.check.outputs.version }}" "$FILE"; then
+            echo "::error::$FILE does not mention ${{ steps.check.outputs.version }}. A release with no notes is a release nobody can read."
+            exit 1
+          fi
+
+      - name: The arche-core pin is bounded
+        # An open upper bound is the single worst thing this package can ship.
+        # `uvx arche-mcp` re-resolves on every invocation, so an unbounded pin
+        # means a breaking arche-core alpha breaks every existing user at once,
+        # with no action by them and none by us.
+        run: |
+          set -euo pipefail
+          if ! grep -qE '"arche-core[^"]*<[0-9]' packages/arche-mcp/pyproject.toml; then
+            echo "::error::The arche-core dependency has no upper bound. Add one before releasing."
+            exit 1
+          fi
+
+      - name: Sync all workspace packages
+        run: uv sync --all-packages
+
+      - name: Both test suites pass
+        # arche-core's too. This package is a thin layer over it and a green
+        # MCP suite against a broken core is not evidence of anything.
+        run: |
+          uv run --no-sync pytest packages/arche-core/tests -q --tb=short
+          uv run --no-sync pytest packages/arche-mcp/tests -q --tb=short
+
+      - name: Lint
+        run: uv run --no-sync ruff check packages/arche-mcp
+
+  build:
+    name: Build and prove the wheel works
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+
+      - name: Build
+        run: uv build --package arche-mcp --out-dir dist
+
+      - name: Install the built wheel into a clean venv and use it
+        # The wheel, not the source tree. A package that imports from a checkout
+        # and fails from a wheel is the classic packaging bug, and for an MCP
+        # server "works" means the tools actually register.
+        run: |
+          set -euo pipefail
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install --quiet --upgrade pip
+          /tmp/clean/bin/pip install --quiet dist/arche_mcp-*.whl
+          /tmp/clean/bin/python - <<'PY'
+          import asyncio
+          from arche_mcp.server import mcp
+
+          tools = {t.name for t in asyncio.run(mcp.list_tools())}
+          print(f"{len(tools)} tools registered: {sorted(tools)}")
+
+          # The tool that must never come back. It read two agent-supplied
+          # paths and wrote to a third, and MCP has no consent model for a
+          # filesystem write.
+          assert "compare_files" not in tools, "compare_files is back"
+
+          # The flagship, and the two that make it safe to act on.
+          for required in ("guarded_scan", "infer_jurisdiction", "plan_protection"):
+              assert required in tools, f"{required} did not register"
+
+          # An agent reads the description and nothing else.
+          for tool in asyncio.run(mcp.list_tools()):
+              assert tool.description, f"{tool.name} has no description"
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  release:
+    name: Publish, then tag
+    needs: [verify, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write       # to create the tag and the Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: astral-sh/setup-uv@v3
+
+      - name: Upload to the index
+        env:
+          UV_PUBLISH_TOKEN: >-
+            ${{ inputs.target == 'pypi'
+                && secrets.PYPI_TOKEN
+                || secrets.TEST_PYPI_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.target }}" = "pypi" ]; then
+            uv publish dist/*
+          else
+            uv publish --index testpypi dist/*
+          fi
+
+      - name: Tag, now that the upload has succeeded
+        run: |
+          set -euo pipefail
+          TAG="arche-mcp-v${{ needs.verify.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "arche-mcp ${{ needs.verify.outputs.version }}"
+          git push origin "$TAG"
+
+      - name: Create the GitHub Release from the changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          V="${{ needs.verify.outputs.version }}"
+          TAG="arche-mcp-v$V"
+          # Cut the section out of the changelog rather than writing notes
+          # twice. A second copy is the copy nobody updates.
+          python - <<PY > /tmp/notes.md
+          import pathlib, re
+          text = pathlib.Path("packages/arche-mcp/CHANGELOG.md").read_text(encoding="utf-8")
+          match = re.search(r"^## \[?$V\]?.*?$(.*?)(?=^## |\Z)", text, re.M | re.S)
+          print((match.group(1).strip() if match else "See CHANGELOG.md."))
+          PY
+          PRE=""
+          case "$V" in *a*|*b*|*rc*) PRE="--prerelease" ;; esac
+          gh release create "$TAG" --title "arche-mcp $V" --notes-file /tmp/notes.md $PRE

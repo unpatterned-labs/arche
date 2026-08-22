@@ -1,8 +1,12 @@
 name: arche-core tests
 
-# Runs the arche-core test suite on every push and pull request that
-# touches arche-core source, tests, or its CI configuration. Matrixed
+# Runs the arche-core AND arche-mcp test suites on every push and pull
+# request that touches either package, or this CI configuration. Matrixed
 # across the three supported Python versions and the three host OSes.
+#
+# arche-mcp runs here rather than in its own workflow because the reason it
+# lives in this workspace is drift detection: a change to arche-core must be
+# checked against the server that calls it before merge, not at release time.
 #
 # Pairs with the sibling install-size workflow (arche-core-budget.yml)
 # which audits the wheel rather than the source tree.
@@ -12,10 +16,12 @@ on:
     branches: [main, "release/**"]
     paths:
       - "packages/arche-core/**"
+      - "packages/arche-mcp/**"
       - ".github/workflows/arche-core-tests.yml"
   pull_request:
     paths:
       - "packages/arche-core/**"
+      - "packages/arche-mcp/**"
       - ".github/workflows/arche-core-tests.yml"
 
 jobs:
@@ -49,8 +55,8 @@ jobs:
 
       - name: Sync all workspace packages
         # Mirrors the local dev command documented in CLAUDE.md.
-        # `--all-packages` installs every workspace member (arche-core,
-        # arche-graph, arche-live, arche-mcp, api, demo). Plain `uv sync`
+        # `--all-packages` installs every workspace member (arche-core and
+        # arche-mcp; the others were listed and never existed). Plain `uv sync`
         # only installs the workspace root's declared dependency
         # (arche-core[all]) — sibling packages stay un-installed.
         # PEP-735 [dependency-groups] dev (pytest, pytest-asyncio, ruff)
@@ -59,6 +65,15 @@ jobs:
 
       - name: Run tests
         run: uv run --no-sync pytest packages/arche-core/tests -q --tb=short
+
+      - name: Run arche-mcp tests
+        # In the same job, deliberately. The whole argument for keeping
+        # arche-mcp in this workspace rather than its own repository is that a
+        # change to arche-core is checked against the server that calls it,
+        # BEFORE merge. Splitting these into two jobs would still catch it, in
+        # a different tab, some minutes later; running them together means a
+        # core PR that breaks the MCP surface fails the core PR.
+        run: uv run --no-sync pytest packages/arche-mcp/tests -q --tb=short
 
       - name: Print summary
         if: always()

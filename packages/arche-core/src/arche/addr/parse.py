@@ -119,7 +119,14 @@ _NUMBER_RE = r"(?P<number>\d{1,4}[A-Za-z]?)"
 # code change.
 _ANCHOR_PREPOSITIONS = [
     "behind", "near", "opposite", "beside", "next to", "in front of",
-    "across from", "after", "before", "in the vicinity of", "adjacent to", "next door to", "in front of the", "across the street from"
+    "across from", "after", "before",
+    "in the vicinity of", "adjacent to", "next door to",
+    "across the street from",
+    # "in front of the" is deliberately absent: "in front of" is already here
+    # and `_ANCHOR_ARTICLES` strips the article separately, so listing the
+    # combined form adds a second rule that does the same job. Longest-first
+    # sorting made it win, which meant two entries could both claim a match and
+    # only one of them was load-bearing.
 ]
 # Articles/determiners stripped between the relation word and the landmark.
 _ANCHOR_ARTICLES = ["the"]
