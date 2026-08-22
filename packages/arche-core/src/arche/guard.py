@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from arche._tokens import token as _strong_token
+from arche.coverage import coverage as coverage_report
 
 # Same ordering the statute engine uses, imported rather than restated so the
 # guard and the policy layer can never disagree about which action is stricter.
@@ -87,6 +88,21 @@ class GuardedProjection:
     redacted_text: str
     fields: list[GuardedField] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+    #: Which categories the statute governs that no configured detector can
+    #: find. See :mod:`arche.coverage`. Present on every projection, because the
+    #: case it exists for looks exactly like a clean document: zero fields, a
+    #: statute citation, and personal data still in the text because nothing
+    #: installed could see it.
+    coverage: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def complete(self) -> bool:
+        """True when every category the statute governs had a detector.
+
+        Capability, not recall. A detector that ran may still have missed
+        something; this only says one was there to miss it.
+        """
+        return self.coverage.get("verdict") == "full"
 
 
 def _label(category: str) -> str:
@@ -172,6 +188,30 @@ class EgressGuard:
                         citation=f"{statute.statute_id} cross-border transfer rules",
                     )
 
+            # Tooth 5: deny when nothing the statute governs is detectable.
+            #
+            # The other four teeth check the boundary. This one checks whether
+            # the guard is capable of doing its job at all. A pipeline whose
+            # detectors cannot find a single category its statute governs will
+            # return the input unchanged, with a statute citation attached, and
+            # that is indistinguishable from a clean document. Emitting it is
+            # not a protection decision, it is the absence of one.
+            #
+            # `partial` is NOT denied, and that is deliberate: it is the normal
+            # answer, including under NDPA-2023, which governs health, religion
+            # and biometric categories arche ships no detector for. Denying it
+            # would deny everything. It is reported instead, and a caller that
+            # needs a stricter rule reads `projection.coverage` and decides.
+            cover = coverage_report(self._pipeline)
+            if cover["verdict"] == "none":
+                raise GuardDenied(
+                    f"no detector installed can find anything "
+                    f"{statute.statute_id} governs, so a clean result would "
+                    f"mean nothing was looked for "
+                    f"(detectors={cover['detector_packages']})",
+                    citation=statute.statute_id,
+                )
+
             result = self._pipeline.process(text)
             redacted, fields = self._project(text, result.detections, statute)
             return GuardedProjection(
@@ -182,7 +222,12 @@ class EgressGuard:
                     "provider": provider,
                     "crosses_border": crosses_border,
                     "transfer_basis": self._transfer_basis if crosses_border else None,
+                    # Duplicated into metadata so callers serialising only the
+                    # metadata dict (the MCP handlers do) still carry the caveat.
+                    "coverage": cover["verdict"],
+                    "uncovered_categories": cover["uncovered"],
                 },
+                coverage=cover,
             )
         except GuardDenied:
             raise

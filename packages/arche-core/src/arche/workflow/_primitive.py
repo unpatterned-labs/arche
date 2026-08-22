@@ -35,9 +35,8 @@ in their own modules. Pipeline is the *composition* layer.
 
 from __future__ import annotations
 
-import warnings as _warnings
-
 import hashlib
+import warnings as _warnings
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -279,6 +278,49 @@ class Pipeline:
         # are future work; add "emails" or other packs via detectors=.)
         return list(cross_cutting)
 
+    #: African ID packs, which must not run outside Africa.
+    _AFRICAN_ID_PACKS = frozenset({"ng", "ke", "za", "gh", "africa"})
+
+    def effective_detectors(self, *, warn: bool = False) -> list[str]:
+        """The detector packages that will actually run, not the ones requested.
+
+        ENFORCED, not a default: African ID detectors must not run for an
+        explicit non-African jurisdiction, because an 11-digit EU identifier
+        would confidently mislabel as ``PII-2-NIN`` in a signed audit log. This
+        holds even when the caller passes ``detectors=`` explicitly.
+
+        This is a separate method because two callers need the answer and they
+        must not disagree. `_run_detectors` needs it to decide what to run;
+        :func:`arche.coverage.coverage` needs it to decide what *could* have
+        been found. When coverage read the requested list instead, it reported
+        Nigerian ID categories as detectable for a British pipeline that had
+        already discarded that pack — claiming protection that was not there,
+        which is the exact failure coverage exists to expose.
+
+        ``warn`` is off by default so a coverage report can ask the question
+        without emitting a warning the caller did not cause.
+        """
+        packages = list(self.detector_packages)
+        if (
+            self.jurisdiction is not None
+            and self.jurisdiction not in self._AFRICAN_JURISDICTIONS
+        ):
+            blocked = [p for p in packages if p in self._AFRICAN_ID_PACKS]
+            if blocked:
+                if warn:
+                    import warnings
+                    warnings.warn(
+                        f"African ID detector packages {blocked} skipped for "
+                        f"jurisdiction {self.jurisdiction!r}: cross-region ID "
+                        "regexes mislabel foreign identifiers (e.g. a German "
+                        "Steuer-ID as PII-2-NIN). Use an African jurisdiction or "
+                        "jurisdiction=None to run them.",
+                        UserWarning,
+                        stacklevel=3,
+                    )
+                packages = [p for p in packages if p not in self._AFRICAN_ID_PACKS]
+        return packages
+
     def _ensure_statute(self) -> Any | None:
         if self._statute is None and self.statute_id:
             from arche.policy import load_statute
@@ -455,29 +497,7 @@ class Pipeline:
         """
         results: list[Any] = []
 
-        # ENFORCED (not just a default): African ID detectors must not run for
-        # an explicit non-African jurisdiction — an 11-digit EU identifier
-        # would confidently mislabel as PII-2-NIN in a signed audit log. This
-        # holds even when the caller passes detectors= explicitly.
-        packages = list(self.detector_packages)
-        if (
-            self.jurisdiction is not None
-            and self.jurisdiction not in self._AFRICAN_JURISDICTIONS
-        ):
-            african_pkgs = {"ng", "ke", "za", "gh", "africa"}
-            blocked = [p for p in packages if p in african_pkgs]
-            if blocked:
-                import warnings
-                warnings.warn(
-                    f"African ID detector packages {blocked} skipped for "
-                    f"jurisdiction {self.jurisdiction!r}: cross-region ID "
-                    "regexes mislabel foreign identifiers (e.g. a German "
-                    "Steuer-ID as PII-2-NIN). Use an African jurisdiction or "
-                    "jurisdiction=None to run them.",
-                    UserWarning,
-                    stacklevel=3,
-                )
-                packages = [p for p in packages if p not in african_pkgs]
+        packages = self.effective_detectors(warn=True)
 
         for pkg in packages:
             if pkg == "ng":

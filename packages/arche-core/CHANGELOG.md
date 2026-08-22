@@ -2,6 +2,53 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [Unreleased]
+
+### Fixed — the egress guard could not tell "nothing here" from "nothing I can see"
+
+`EgressGuard` had four fail-closed teeth and all four passed on this:
+
+```python
+EgressGuard(Pipeline(jurisdiction="GB"), key=...).guarded(
+    "Jane Smith lives in Manchester, SW1A 1AA, tel 07700 900123.")
+```
+
+Text returned verbatim, `fields == []`, UK-GDPR cited, and the personal data forwarded to the model. The teeth check the **boundary** — is there a policy, is the provider allowed, is the transfer permitted, did anything raise. None asked the prior question: *could this pipeline have found what the statute governs?*
+
+Outside Africa it often cannot, deliberately. `_default_detectors` runs cross-cutting detectors only for a non-African jurisdiction, because an African ID regex would confidently mislabel a foreign identifier as `PII-2-NIN` in a signed audit log. That decision is right and was already documented where it happens. What was missing is that its *result* was indistinguishable from a clean document.
+
+**`arche.coverage` compares the two sets, both of which are exactly knowable:** the categories a statute maps, and the categories the detector packages that will actually run can emit. Every `GuardedProjection` now carries the difference.
+
+```python
+projection.complete            # False
+projection.coverage["verdict"] # "partial"
+projection.coverage["uncovered"]
+# ['PII-2-DRIVERS_LICENCE', 'PII-2-NIN', 'PII-2-RC', 'PII-2-TIN',
+#  'PII-5-BANK_ACCOUNT', 'PII-5-CARD']
+```
+
+UK-GDPR governs a National Insurance number and nothing installed can find one. That is now on the record instead of implied.
+
+**A fifth tooth denies when coverage is zero**, and only then. A pipeline that cannot find a single category its statute governs returns the input unchanged with a citation attached; emitting that is not a protection decision, it is the absence of one. `partial` is **not** denied, because partial is the normal answer — including for Nigeria, where NDPA-2023 governs health, religion, biometric and device categories arche ships no detector for. A report that said "full" for Nigeria and "partial" for Britain would be flattering rather than true.
+
+**Category lists are derived, not declared.** The per-country sets come from the detector packages' own pattern tables (`NG_PATTERNS` and siblings) through the same `PII-2-{id_type}` construction the pipeline uses, so adding an identifier cannot desync them. The seven cross-cutting packages are declared and a test probes each one, failing if it emits a category the map does not claim.
+
+**`Pipeline.effective_detectors()`** is new and is the reason the report cannot overstate. `detector_packages` is what was *requested*; African ID packs are stripped at run time outside Africa, so the two differ. The first implementation read the requested list and reported Nigerian ID coverage for a British pipeline that had already discarded that pack — claiming protection that was not there, which is the exact failure this work exists to expose. `_run_detectors` and `coverage` now share one implementation of that rule.
+
+**What this does not claim.** Coverage is capability, not recall. `PII-1-NAME` reads as covered for `GB` because a name detector ran; that detector is calibrated on West African names and still misses "Jane Smith". Category coverage is a floor on honesty, not a completeness guarantee, and a test pins the distinction so it cannot quietly be read as more.
+
+### Fixed — "behind the mosque" was not an address
+
+`arche-direction-and-5-year-vision.md` §2 explains the moat by listing what a generic parser does not know, and one of the four items is that *"behind the mosque" is an address*. That exact string returned `None`.
+
+The vocabulary was not at fault. `_classify_anchor` already knew `mosque` is religious; it was never reached, because the landmark had to begin with a capital letter. `behind Central Mosque` parsed and `behind the central mosque` did not, and informal addresses are written the second way.
+
+The fix could not be to drop the capital requirement. `_ANCHOR_PREPOSITIONS` contains `after` and `before`, which are ordinary English, so admitting any lowercase words after them turns "after the meeting" into an address. A lowercase landmark is accepted only when it **ends** in a word naming a kind of place, drawn from the vocabulary `_classify_anchor` already keys on rather than a second list that could drift from it.
+
+A trailing lookahead requires that noun to end the phrase; without it "after the bank holiday" matches on `bank`. The cost is that a trailing modifier is not absorbed, so "behind the big market square" does not match unless `square` joins the vocabulary. That is the right way round: a missed landmark is recoverable, a sentence misread as an address is not.
+
+Measured: 10 of 10 real landmarks parse, 10 of 10 ordinary-English phrases still rejected.
+
 ## [0.5.0a1] — 2026-08-21
 
 **A Splink backend, a date comparator in the `person` pack, honest pins, and a review lane that reads any format, masks what it shares, and gets shorter as you work it.**
