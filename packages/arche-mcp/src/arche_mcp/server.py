@@ -43,10 +43,41 @@ break it.
 """
 
 import os
+from typing import Literal
 
+from arche.resolve import ENTITY_PACK_PURPOSE, ENTITY_PACKS
 from mcp.server import MCPServer
 
 from arche_mcp import handlers
+
+# The entity packs, as a schema enum rather than a bare string.
+#
+# Built from the live `ENTITY_PACKS` so it cannot drift: add a pack and the
+# tool schema gains it with no edit here.
+#
+# This is not cosmetic. Watching a model drive these tools, it called
+# `describe_pack(entity="ng")` — a *jurisdiction* code — because the schema
+# said `entity: string` and nothing in it said which strings were legal. The
+# model had no way to know, guessed from nearby context, and got a runtime
+# error it then had to recover from. An enum is the difference between a tool a
+# model can use and one it has to discover by failing.
+EntityPack = Literal[tuple(sorted(ENTITY_PACKS))]  # type: ignore[valid-type]
+
+# The same packs with each one's purpose, for the tool descriptions.
+#
+# An enum says which values are legal and nothing about which to pick, and
+# picking wrong here is not a harmless error. Asked whether two "General
+# Hospital" records were the same *place*, a model chose `organisation` and got
+# `match` at distinctive_max 0.862. `place` returns `review` at 0.564, because
+# its frequency table knows those are ordinary facility words and the
+# organisation table does not. Same engine, same refusal logic, opposite
+# answer, decided entirely by a choice the tool surface gave no basis for.
+#
+# Built from the live purposes so it cannot drift from the packs.
+_PACK_MENU = "\n".join(
+    f"      {name} - {ENTITY_PACK_PURPOSE[name]}"
+    for name in sorted(ENTITY_PACKS) if ENTITY_PACK_PURPOSE.get(name)
+)
 
 # `MCPServer`, not `FastMCP`. The MCP Python SDK removed `mcp.server.fastmcp`
 # in 2.0 and this code was written against 1.x, which the migration surfaced:
@@ -131,7 +162,7 @@ def plan_protection(jurisdiction: str | None = None,
 
 
 @mcp.tool()
-def describe_pack(entity: str) -> dict:
+def describe_pack(entity: EntityPack) -> dict:
     """Which record fields an entity pack reads, how much each one counts, and
     what it does with them.
 
@@ -196,17 +227,27 @@ def guarded_scan(text: str, jurisdiction: str | None = None,
 
 # ── resolution ───────────────────────────────────────────────────────────────
 
-@mcp.tool()
 def compare_records(list_a: list[dict], list_b: list[dict],
-                    entity: str | None = None,
+                    entity: EntityPack | None = None,
                     comparators: list[dict] | None = None,
                     threshold: float = 0.7, id_field: str = "id") -> dict:
-    """Reconcile two independent record lists — two facility registries, a
-    register against a survey — into matches with scores and evidence.
+    """Reconcile two independent record lists into matches with scores and evidence.
 
-    Pass `entity` for a shipped pack (see `describe_pack`) or `comparators` to
-    specify the comparison yourself. Returns ids and numeric evidence, never
-    record values.
+    REQUIRED: pass either `entity` (a shipped pack) or `comparators` (your own
+    spec). Not both, and not neither.
+
+    CHOOSE THE PACK BY WHAT THE RECORDS ARE, not by what is nearest to hand.
+    The pack decides which vocabulary rarity is measured against, so the same
+    pair can come back `match` under one pack and `review` under another. Two
+    records both called "General Hospital" are `review` under `place` and
+    `match` under `organisation`, and only one of those is the right question.
+
+{PACKS}
+
+    Call `describe_pack` first to see which record fields your choice reads.
+
+    For two facility registries, or a register against a survey. Returns ids
+    and numeric evidence, never record values.
 
     A `review` decision is a real answer and usually the interesting one: the
     records agree, and nothing they agree on is distinctive enough to assert a
@@ -225,6 +266,15 @@ def check_name_equivalence(name_a: str, name_b: str) -> dict:
     Returns `match`, `review` or `no_match` with the score and the band
     thresholds. `review` means close and not close enough to assert."""
     return handlers.check_name_equivalence(name_a, name_b)
+
+
+# `{PACKS}` in the docstring above is filled in here, then the function is
+# registered. It cannot be done with a docstring concatenation: `"""a""" + x`
+# as the first statement is an expression, not a string literal, so Python
+# does not treat it as `__doc__` at all and the tool ships with no description.
+compare_records.__doc__ = (compare_records.__doc__ or "").replace(
+    "{PACKS}", _PACK_MENU)
+compare_records = mcp.tool()(compare_records)
 
 
 # ── places ───────────────────────────────────────────────────────────────────

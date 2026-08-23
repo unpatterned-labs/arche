@@ -783,3 +783,100 @@ class TestThePageHangsTogether:
             [node, str(harness), str(_STUDIO / "index.html")],
             capture_output=True, text=True, timeout=120)
         assert done.returncode == 0, done.stdout + done.stderr
+
+
+class TestTheChatTabDegradesHonestly:
+    """arche studio gained an agent chat, and with it a first dependency it
+    cannot guarantee.
+
+    Everything else in the tool runs on the standard library plus arche-core.
+    The chat needs `openai`, an API key, and an importable `arche-mcp`, and any
+    of the three can be absent on a machine where the rest works perfectly.
+
+    So the tab always renders and says which one is missing. A single "chat
+    unavailable" would send somebody looking in the wrong place — a missing
+    package, a missing key and a missing workspace member need three different
+    fixes.
+
+    These tests never call a model. They cover the readiness contract and the
+    refusal, which are the parts that must hold on a machine with no key.
+    """
+
+    def test_readiness_names_each_missing_thing(self, studio, monkeypatch):
+        monkeypatch.setattr(studio, "_openai_key", lambda: "")
+        ready = studio._chat_ready()
+        assert ready["ready"] is False
+        assert any("OPENAI_API_KEY" in m for m in ready["missing"])
+
+    def test_it_reports_the_model_either_way(self, studio, monkeypatch):
+        """So the tab can show what it would use before it can use it."""
+        monkeypatch.setattr(studio, "_openai_key", lambda: "")
+        assert studio._chat_ready()["model"]
+
+    def test_a_turn_refuses_rather_than_erroring_obscurely(self, studio, monkeypatch):
+        monkeypatch.setattr(studio, "_openai_key", lambda: "")
+        with pytest.raises(ValueError, match="chat is not available"):
+            studio._chat({"messages": [{"role": "user", "content": "hi"}]})
+
+    def test_the_refusal_says_what_to_do(self, studio, monkeypatch):
+        monkeypatch.setattr(studio, "_openai_key", lambda: "")
+        try:
+            studio._chat({"messages": [{"role": "user", "content": "hi"}]})
+        except ValueError as exc:
+            assert "OPENAI_API_KEY" in str(exc)
+
+    def test_an_empty_conversation_is_refused(self, studio, monkeypatch):
+        monkeypatch.setattr(studio, "_openai_key", lambda: "k")
+        with pytest.raises(ValueError, match="at least one message"):
+            studio._chat({"messages": []})
+
+    def test_the_key_is_never_returned_to_the_page(self, studio):
+        """`_chat_ready` is a GET the browser calls on every tab switch."""
+        import json as _json
+        assert "sk-" not in _json.dumps(studio._chat_ready())
+
+
+class TestTheChatUsesTheRealToolSurface:
+    """The point of threading MCP through rather than reimplementing.
+
+    Schemas come from `arche_mcp.server.mcp.list_tools()` and dispatch goes
+    through `mcp.call_tool()`, so the descriptions, the enums and the results
+    are the ones a real client sees. What is skipped is the JSON-RPC framing.
+
+    If this ever drifts into a private copy of the tool list, the studio starts
+    demonstrating something that is not what ships.
+    """
+
+    def test_dispatch_goes_through_the_mcp_server(self, studio):
+        import inspect
+        source = inspect.getsource(studio._chat)
+        assert "_mcp.call_tool" in source
+        assert "_mcp.list_tools" in source
+
+    def test_the_server_dispatches_in_process(self):
+        """The mechanism the tab depends on."""
+        import asyncio
+
+        from arche_mcp.server import mcp
+        result = asyncio.run(mcp.call_tool(
+            "infer_jurisdiction", {"text": "NIN 12345678901, RC 1234567"}))
+        text = "".join(c.text for c in result.content if getattr(c, "text", None))
+        assert '"country": "NG"' in text
+
+    def test_the_tool_count_matches_the_published_server(self):
+        import asyncio
+
+        from arche_mcp.server import mcp
+        assert len(asyncio.run(mcp.list_tools())) == 10
+
+    def test_the_step_cap_is_bounded(self, studio):
+        """A model stuck in a retry loop should cost seconds, not a bill."""
+        assert 1 < studio._CHAT_MAX_STEPS <= 12
+
+
+def test_the_chat_tab_is_registered_in_the_page(studio):
+    """Same structural contract as every other tab."""
+    page = (_STUDIO / "index.html").read_text(encoding="utf-8")
+    assert 'id="t-chat"' in page and 'id="s-chat"' in page
+    names = re.search(r"const tab=t=>\{for\(const k of\[([^\]]+)\]", page).group(1)
+    assert '"chat"' in names

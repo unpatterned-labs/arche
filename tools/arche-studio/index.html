@@ -149,6 +149,24 @@ table.grid tbody tr.settled{color:var(--muted)}
 .vrule-review{border-top-color:var(--hold)!important}
 .vrule-different,.vrule-no_candidate{border-top-color:var(--no)!important}
 .saved{color:var(--ok);font-weight:600}
+/* ── chat ───────────────────────────────────────────────────────────── */
+#chatlog{max-height:56vh;overflow-y:auto;padding-right:6px}
+.cyou{font-weight:600;margin:20px 0 10px;max-width:var(--measure)}
+.cyou::before{content:"you  ";font-family:var(--mono);font-size:12px;
+  color:var(--muted);font-weight:400;letter-spacing:.06em}
+.carche{margin:12px 0 4px;max-width:var(--measure);line-height:1.6}
+.carche::before{content:"arche  ";font-family:var(--mono);font-size:12px;
+  color:var(--muted);letter-spacing:.06em}
+/* A tool call is machinery, so it reads as machinery: mono, quiet, and set
+   back behind a rule. The accent marks the boundary, never the text. */
+.ctool{margin:10px 0 10px 2px;border-left:2px solid var(--accent);padding-left:13px}
+.ctoolname{font-family:var(--mono);font-size:12.5px;margin:0 0 4px;color:var(--ink)}
+.cargs{color:var(--muted);margin-left:9px;font-size:11.5px}
+.cres{font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre-wrap;
+  background:var(--code);padding:9px 11px;margin:0;max-width:var(--measure);
+  max-height:230px;overflow-y:auto}
+.cerr{color:var(--no)}
+.chip{font-size:12.5px}
 .keys{font-size:13px;color:var(--muted);align-self:center;margin-left:6px}
 .keys b{font-family:var(--mono);font-size:12px;color:var(--ink);font-weight:400;
   border:1px solid var(--rule);padding:1px 5px;margin:0 1px}
@@ -221,6 +239,7 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
     adjudication: nothing here is settled until a person reads the evidence and puts their
     name to it.</p>
   <nav>
+    <button id="t-chat"    aria-current="false">Chat</button>
     <button id="t-compare" aria-current="true">Compare</button>
     <button id="t-extract" aria-current="false">Documents</button>
     <button id="t-places"  aria-current="false">Spatial roles</button>
@@ -232,6 +251,50 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 
 <main class="wrap">
 
+
+<!-- ═════════════════════════════════════════════════════════════ CHAT ══ -->
+<section id="s-chat" hidden>
+ <div class="split">
+  <div>
+    <p class="lede measure">Ask in plain English. A model reads the tool
+      descriptions and decides what to call — nothing here scripts the order.
+      Every call and every result is shown, because the working out is the
+      point, not the answer.</p>
+
+    <div id="chatoff" class="err" hidden></div>
+
+    <div id="chatlog"></div>
+
+    <div class="row" style="margin-top:20px">
+      <input id="chatin" class="searchbox" style="flex:1"
+             placeholder="is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, Kano">
+      <button class="act" id="b-chat">Ask</button>
+      <button class="act quiet" id="b-chatclear">Clear</button>
+    </div>
+    <div class="row tight" style="margin-top:6px">
+      <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, at Karfi Health Post, Kano. Tel 08031234567">a Nigerian referral</button>
+      <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Jane Smith, NI number QQ123456C, St Thomas' Hospital, London SW1A 1AA">the same thing, British</button>
+      <button class="act quiet chip" data-ask="Are General Hospital and General Hospital the same place?">two identical names</button>
+    </div>
+    <span class="stat" id="chatmeta"></span>
+  </div>
+
+  <aside class="margin">
+    <p><b>The model chooses.</b> It sees ten tools and their descriptions and
+      nothing else. If it reaches for the wrong one you will watch it happen,
+      which is more informative than a demo that cannot.</p>
+    <p><b>Watch the second example.</b> The British referral comes back with
+      nothing removed, and the model should tell you why: three of the
+      detectors that ran were built for African data. A clean result there does
+      not mean the document was clean.</p>
+    <p><b>These are the real tools.</b> Schemas and dispatch come from the
+      arche MCP server itself, so what you see here is what an agent sees over
+      the wire. The JSON-RPC framing is the only thing skipped.</p>
+    <p><b>Nothing is stored.</b> The conversation lives in this page. Reload
+      and it is gone.</p>
+  </aside>
+ </div>
+</section>
 
 <!-- ══════════════════════════════════════════════════════════ EXTRACT ══ -->
 <section id="s-extract" hidden>
@@ -466,7 +529,7 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const n3=x=>x==null?"n/a":Number(x).toFixed(3);
-const tab=t=>{for(const k of["compare","extract","places","redact","verify","review"]){
+const tab=t=>{for(const k of["chat","compare","extract","places","redact","verify","review"]){
   $("#t-"+k).setAttribute("aria-current",String(k===t));$("#s-"+k).hidden=k!==t;}};
 
 /* ═══════════════════════════════════════════════════════════════ grid ══ */
@@ -673,6 +736,83 @@ async function save(){
     (r.shared
       ? `<b>Safe to share</b> — ${f(r.shared)}, names and dates masked.`
       : `<b>No shareable copy.</b> ${esc(r.warning||"")}`);
+}
+
+/* ══════════════════════════════════════════════════════════════════ chat ══ */
+// The conversation lives here and nowhere else. No store, no session, no id —
+// reload and it is gone, which is the right default for a page you paste
+// personal data into.
+let CHAT = [], CHATBUSY = false;
+
+async function chatReady(){
+  const r = await (await fetch("/api/chat_ready")).json();
+  const box = $("#chatoff");
+  if(r.ready){ box.hidden = true; $("#chatmeta").textContent = "model " + r.model; return true; }
+  // Name each missing thing separately. "Chat unavailable" sends somebody
+  // looking in the wrong place; three different absences need three fixes.
+  box.hidden = false;
+  box.innerHTML = "<b>Chat needs one more thing.</b><ul>" +
+    r.missing.map(m=>`<li>${esc(m)}</li>`).join("") + "</ul>" +
+    "<p>Everything else in arche studio works without it.</p>";
+  return false;
+}
+
+function chatDraw(){
+  $("#chatlog").innerHTML = CHAT.map(turn=>{
+    if(turn.role === "user") return `<p class="cyou">${esc(turn.content)}</p>`;
+    const trace = (turn.trace||[]).map(step=>{
+      const args = esc(JSON.stringify(step.arguments).slice(0,120));
+      const body = step.error
+        ? `<span class="cerr">${esc(step.error)}</span>`
+        : esc(prettyStep(step.result));
+      return `<div class="ctool"><p class="ctoolname">${esc(step.tool)}<span class="cargs">${args}</span></p>`+
+             `<pre class="cres">${body}</pre></div>`;
+    }).join("");
+    return trace + `<p class="carche">${esc(turn.content)}</p>`;
+  }).join("") || '<p class="dek">Ask something, or try one of the examples.</p>';
+  $("#chatlog").scrollTop = $("#chatlog").scrollHeight;
+}
+
+// Show the fields that carry the argument, not the whole payload. A reader
+// scanning a transcript wants the verdict and the caveat; the rest is noise
+// they can get from the Inspector.
+const CHAT_KEYS = ["country","confidence","statute_id","policy_available","policy_reason",
+                   "verdict","uncovered","degraded_categories","denied","reason",
+                   "redacted_text","decision","score","distinctive_max","purpose","note"];
+function prettyStep(text){
+  let o; try { o = JSON.parse(text); } catch { return String(text).slice(0,400); }
+  const pick = {};
+  for(const k of CHAT_KEYS) if(o[k] !== undefined) pick[k] = o[k];
+  if(o.matches && o.matches[0]) for(const k of ["decision","score","distinctive_max"])
+    if(o.matches[0][k] !== undefined) pick[k] = o.matches[0][k];
+  if(o.fields) pick.fields = o.fields.map(f=>`${f.category} ${f.action} — ${f.citation||"no statute"}`);
+  const out = Object.keys(pick).length ? pick : o;
+  return JSON.stringify(out, null, 2).slice(0, 900);
+}
+
+async function chatSend(text){
+  if(CHATBUSY) return;
+  text = (text || $("#chatin").value || "").trim();
+  if(!text) return;
+  if(!await chatReady()) return;
+  CHATBUSY = true;
+  $("#chatin").value = "";
+  CHAT.push({role:"user", content:text});
+  chatDraw();
+  $("#chatmeta").textContent = "thinking…";
+  try {
+    const r = await (await fetch("/api/chat",{method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages: CHAT.map(t=>({role:t.role,content:t.content}))})})).json();
+    if(r.error){ CHAT.push({role:"assistant", content:r.error, trace:[]}); }
+    else { CHAT.push({role:"assistant", content:r.reply, trace:r.trace||[]});
+           $("#chatmeta").textContent = `model ${r.model} · ${(r.trace||[]).length} tool call(s)`; }
+  } catch(e){
+    CHAT.push({role:"assistant", content:String(e), trace:[]});
+  } finally {
+    CHATBUSY = false;
+    chatDraw();
+  }
 }
 
 /* ══════════════════════════════════════════════════════════ documents ══ */
@@ -997,6 +1137,12 @@ on("b-diff","click",()=>mark("different"));
 on("b-unres","click",()=>mark("unresolved"));
 on("b-save","click",save);
 on("pack","change",loadPack);
+on("t-chat","click",()=>{tab("chat");chatReady();chatDraw();});
+on("b-chat","click",()=>chatSend());
+on("b-chatclear","click",()=>{CHAT=[];chatDraw();});
+$("#chatin").addEventListener("keydown",e=>{if(e.key==="Enter")chatSend();});
+for(const b of document.querySelectorAll(".chip"))
+  b.addEventListener("click",()=>chatSend(b.dataset.ask));
 on("t-extract","click",()=>tab("extract"));
 // Working a queue is repetitive by nature: look, decide, next. Reaching for the
 // mouse between every row is what makes 360 of them feel like 360.

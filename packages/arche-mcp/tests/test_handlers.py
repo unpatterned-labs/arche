@@ -285,3 +285,70 @@ def test_offsets_are_labelled_against_the_text_they_index():
     assert handlers.extract_places("Deliver to Kano")["offsets_match_original"] is True
     assert handlers.guarded_scan(
         NG_TEXT, key="k", jurisdiction="NG")["offsets_match_original"] is False
+
+
+class TestTheSchemasTeachTheModel:
+    """Found by watching a model drive these tools, not by a unit test.
+
+    Two calls failed in a live transcript:
+
+        describe_pack(entity="ng")
+          -> unknown entity pack 'ng'
+        compare_records(list_a=..., list_b=..., threshold=...)
+          -> pass entity= or comparators= to say how to compare
+
+    Neither was the model being careless. `describe_pack` declared
+    `entity: string` with no enum, so "which strings are legal" was
+    unanswerable from the schema and it guessed from nearby context — `ng` is a
+    *jurisdiction* code, which is the most reasonable wrong guess available.
+    `compare_records` declared both `entity` and `comparators` as optional with
+    a null default, so the schema permitted a call the handler then rejected.
+
+    An MCP tool is called unattended. A requirement the schema does not express
+    is a requirement discovered by failing, and every failure costs a round
+    trip and some of the model's remaining attention.
+    """
+
+    @staticmethod
+    def _schemas():
+        import asyncio
+
+        from arche_mcp.server import mcp
+        return {t.name: t for t in asyncio.run(mcp.list_tools())}
+
+    def test_describe_pack_offers_the_packs_as_an_enum(self):
+        from arche.resolve import ENTITY_PACKS
+        entity = self._schemas()["describe_pack"].input_schema["properties"]["entity"]
+        assert entity.get("enum") == sorted(ENTITY_PACKS)
+
+    def test_the_enum_cannot_drift_from_the_packs(self):
+        """Built from the live dict, so adding a pack updates the schema with no
+        edit. If this ever fails, someone hardcoded the list."""
+        from arche.resolve import ENTITY_PACKS
+        schemas = self._schemas()
+        for tool in ("describe_pack", "compare_records"):
+            entity = schemas[tool].input_schema["properties"]["entity"]
+            values = entity.get("enum") or next(
+                (a["enum"] for a in entity.get("anyOf", []) if "enum" in a), None)
+            assert values == sorted(ENTITY_PACKS), tool
+
+    def test_a_jurisdiction_code_is_not_a_valid_entity(self):
+        """The specific wrong guess. `ng` is a detector pack and a jurisdiction;
+        it has never been an entity pack."""
+        entity = self._schemas()["describe_pack"].input_schema["properties"]["entity"]
+        assert "ng" not in entity["enum"]
+
+    def test_compare_records_states_the_requirement_first(self):
+        """The description is the only documentation a model reads, so a
+        requirement buried in paragraph three is a requirement it will miss."""
+        description = self._schemas()["compare_records"].description or ""
+        head = description[:400]
+        assert "REQUIRED" in head
+        assert "entity" in head and "comparators" in head
+
+    def test_and_the_handler_still_refuses_rather_than_guessing(self):
+        """The schema now discourages the bad call; the handler still refuses
+        it. Guessing a pack would be worse than the error — it would silently
+        compare on a vocabulary the caller did not choose."""
+        with pytest.raises(ValueError, match="entity= or comparators="):
+            handlers.compare_records([{"id": "a"}], [{"id": "b"}])

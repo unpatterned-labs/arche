@@ -405,6 +405,32 @@ def compare_names(name_a, name_b, priors=None):
     return _compare_names(name_a, name_b, priors)
 
 
+# What each pack is FOR, in the one line somebody choosing between them needs.
+#
+# Added after watching a model answer "are General Hospital and General Hospital
+# the same place?" by reaching for the `organisation` pack. It got `match` at
+# distinctive_max 0.862. The `place` pack gives `review` at 0.564, because its
+# frequency table knows `general` and `hospital` are ordinary facility words and
+# the person and organisation tables do not.
+#
+# The engine refused correctly. The caller never reached the engine that would
+# refuse. A pack list with no statement of purpose lets a chooser pick the pack
+# whose vocabulary happens to flatter the answer, which is the failure this
+# project exists to prevent, arriving one level above where it was defended.
+ENTITY_PACK_PURPOSE: dict[str, str] = {
+    "person": "people — names, dates of birth, national IDs, phone, email, address",
+    "place": "physical locations — facilities, buildings, sites, addresses and "
+             "coordinates. Use this for anything you would visit or deliver to, "
+             "including hospitals, schools and clinics",
+    "organisation": "legal and institutional bodies — companies, agencies, "
+                    "registered entities, by name and registration id",
+    "organization": "alias of `organisation`",
+    "artist": "performing artists and recording names, including aliases and "
+              "stage names",
+    "product_electronics": "electronic products, by model code and specification",
+}
+
+
 def describe_pack(entity: str) -> dict:
     """What an entity pack reads, and what it does with each field.
 
@@ -457,6 +483,9 @@ def describe_pack(entity: str) -> dict:
     fields = sorted(by_field.values(), key=lambda f: (-f["weight"], f["field"]))
     return {
         "entity": entity,
+        # What it is for, so a caller choosing between packs has something to
+        # choose on. The field list says what it reads, never what it is about.
+        "purpose": ENTITY_PACK_PURPOSE.get(entity, ""),
         "fields": fields,
         # The names a caller can put on a record and have read. Flattened for
         # the common case of "is this column used?".

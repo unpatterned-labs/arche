@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "arche-mcp"
+# Versioned independently of arche-core, and deliberately NOT mirroring it.
+# `arche-mcp 0.5.x` beside `arche-core 0.5.x` reads as lockstep, and users would
+# assume the pairing is required forever. Starting at 0.1.0a1 because this is
+# the first release from this repository: the 0.1.0a3 the old repo carried was
+# never published, and reusing a number that never shipped invents a history.
+version = "0.1.0a1"
+description = "MCP server for arche — entity resolution, PII detection and a fail-closed egress boundary, callable by an agent"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+authors = [{name = "unpatterned.org"}]
+keywords = ["mcp", "entity-resolution", "pii", "record-linkage", "africa"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    # >=2.0 because the SDK removed `mcp.server.fastmcp` in 2.0 and this server
+    # uses `mcp.server.MCPServer`. The old `mcp>=1.0` was open at the top and
+    # therefore already resolving to 2.0 for anyone installing fresh, against
+    # code that could not import it.
+    "mcp>=2.0,<3",
+    # Closed upper bound, and the bound is the point. `uvx arche-mcp`
+    # re-resolves on every invocation, so an open pin means the hour a breaking
+    # arche-core alpha is published, every existing user's next run breaks at
+    # once, with no action by them and none by us. A closed bound turns that
+    # into a release chore we control: one line, one arche-mcp release per
+    # arche-core minor. Relax to >=1,<2 when arche-core reaches a stable 1.0
+    # with a documented public-API contract.
+    #
+    # 0.6.0a1 is the floor, and it is a hard one rather than a preference.
+    # This package imports `arche.coverage`, `arche.policy.statute_for`,
+    # `arche.resolve.compare_names` and `arche.review.read_records`, none of
+    # which exist in 0.5.0a1. Pinned lower, `uvx arche-mcp` resolves a core it
+    # cannot import, and the failure arrives at first tool call rather than at
+    # install.
+    "arche-core>=0.6.0a1,<0.7.0",
+]
+
+[project.optional-dependencies]
+# Named-entity detection needs a real NER backend. Without it `detect_entities`
+# falls back to regex only, which finds identifiers and no names at all.
+detect = ["arche-core[detect]>=0.6.0a1,<0.7.0"]
+
+[project.urls]
+Homepage = "https://github.com/unpatterned-labs/arche"
+Documentation = "https://arche.unpatterned.org"
+Source = "https://github.com/unpatterned-labs/arche"
+
+[project.scripts]
+arche-mcp = "arche_mcp.server:main"
+
+[tool.uv.sources]
+arche-core = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arche_mcp"]

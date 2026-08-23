@@ -3,6 +3,10 @@
 Compare two records, read spatial roles out of a document, or work a review
 queue. A handful of files, no Python dependencies beyond `arche-core` itself.
 
+One exception, and it is opt-in: the **Chat** tab needs `openai` and an API key.
+Everything else works without either, and the tab renders regardless, saying
+which piece is missing rather than disappearing.
+
 ```bash
 python tools/arche-studio/serve.py
 ```
@@ -32,6 +36,47 @@ usable; only the typography changes. For a hard air gap, download Source Serif
 This matters because the people who most need to look at a match decision are
 often not the people who can install a Python package. A reviewer with a laptop
 and a browser is the audience.
+
+## Chat
+
+Ask in plain English and watch a model decide which tools to call. Nothing
+scripts the order.
+
+```
+you> Is this safe to send to a model? Dr Jane Smith, NI number QQ123456C,
+     St Thomas' Hospital, London SW1A 1AA
+
+  infer_jurisdiction   country: "GB"   statute_id: "UK-GDPR"
+  plan_protection      verdict: "partial"
+                       degraded_categories: ["PII-1-NAME","PII-3-PHONE","PII-4-LOCATION"]
+  detect_pii           count: 0
+
+arche> No PII was detected, but coverage is partial: three of the detectors
+       that ran were built for African data...
+```
+
+That transcript is the demo. A tool call is shown before its result, so you can
+watch the model work out that it needs the jurisdiction before it can redact,
+and watch it get the British case right for the right reason.
+
+Three examples are one click away, and the second is the interesting one: the
+same referral note as the first, moved to Britain, comes back with nothing
+removed and an explanation of why a clean result there means less than it looks.
+
+**These are the real tools.** Schemas and dispatch come from the arche MCP
+server itself (`arche_mcp.server.mcp`), so the descriptions, the enums and the
+results are what an agent sees over the wire. What is skipped is the JSON-RPC
+framing and the subprocess: a threaded HTTP server managing an async stdio
+child per request is a lot of machinery for a difference no viewer can observe.
+`packages/arche-mcp/chat.py` speaks the real protocol when the transport is the
+thing you want to prove.
+
+**Nothing is stored.** The conversation lives in the page. Reload and it is
+gone, which is the right default for somewhere you paste personal data.
+
+**It needs a key.** `OPENAI_API_KEY`, from the environment or from `.env` at
+the repo root, which is gitignored. Set `ARCHE_CHAT_MODEL` to change the model
+from `gpt-4o-mini`.
 
 ## Compare
 

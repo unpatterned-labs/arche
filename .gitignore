@@ -72,6 +72,22 @@ datasets/compliance/
 
 uv.lock
 pyproject.toml
+# ...but never a workspace member's manifest. The two rules above are
+# unanchored, so they match `pyproject.toml` and `uv.lock` at EVERY depth. The
+# root and arche-core manifests are unaffected only because gitignore does not
+# apply to files already in the index — they were tracked before these rules
+# existed.
+#
+# Anything new is not so lucky. `packages/arche-mcp/pyproject.toml` was written,
+# the package was committed, and the manifest was silently skipped. Nothing
+# reported it. CI failed on a clean checkout with "Workspace member ... is
+# missing a pyproject.toml", which is a long way from the cause.
+#
+# A workspace member without its manifest is not a package, so these are
+# re-included explicitly rather than relying on nobody adding another one.
+!/pyproject.toml
+!/uv.lock
+!/packages/*/pyproject.toml
 
 /docs-site/docs/concepts/arche-direction-and-5-year-vision.md
 /docs-site/docs/concepts/arche-6month-roadmap-h2-2026.md
@@ -113,3 +129,10 @@ data/review_packs/_studio.sqlite3*
 
 # arche studio signing key. Private. Never committed.
 data/review_packs/_studio_key.pem
+
+# Agent working context and project skills. Untracked on purpose: CLAUDE.md
+# rule 4 keeps agent config and workflow documentation out of the tracked tree,
+# because a contributor should not have to read internal tooling to understand
+# an open-source project. `agent/` rather than `.claude/` so the knowledge
+# belongs to the project rather than to one vendor's tool.
+agent/

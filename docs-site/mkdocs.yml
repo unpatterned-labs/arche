@@ -102,6 +102,7 @@ nav:
     - Reconcile health facilities: guides/facility-reconciliation.md
     - Compare records, review a queue: guides/review-log.md
     - Let an agent call arche: guides/mcp-server.md
+    - Run the MCP server: guides/run-the-mcp-server.md
     - Reconcile schools: guides/school-reconciliation.md
     - Resolve people across documents: guides/documents-to-decision.md
     - Accuracy and scope: guides/accuracy-and-scope.md

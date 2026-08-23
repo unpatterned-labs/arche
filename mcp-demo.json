@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "arche": {
+      "command": "uv",
+      "args": ["run", "--directory", "C:/Users/Dee/arche/arche", "arche-mcp"],
+      "env": {
+        "ARCHE_HASH_KEY": "change-me-to-a-long-random-string"
+      }
+    }
+  }
+}

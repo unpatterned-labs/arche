@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 import threading
 import webbrowser
@@ -602,6 +603,174 @@ def _redact(payload: dict) -> dict:
             "document_hash": getattr(res, "document_hash", None)}
 
 
+def _chat_ready() -> dict:
+    """What is missing before an agent can run, named individually.
+
+    Three things can be absent and they need different fixes, so a single
+    "chat unavailable" would send someone looking in the wrong place. The tab
+    renders either way and says which one it is.
+    """
+    missing = []
+    try:
+        import arche_mcp.server  # noqa: F401
+    except ImportError:
+        missing.append("arche-mcp is not importable (`uv sync --all-packages`)")
+    try:
+        import openai  # noqa: F401
+    except ImportError:
+        missing.append("the `openai` package is not installed (`uv pip install openai`)")
+    if not _openai_key():
+        missing.append("no OPENAI_API_KEY, in the environment or in .env at the repo root")
+    return {"ready": not missing, "missing": missing,
+            "model": os.environ.get("ARCHE_CHAT_MODEL", "gpt-4o-mini")}
+
+
+def _openai_key() -> str:
+    """The key from the environment, or from `.env`, without logging it.
+
+    `.env` is gitignored. Read on demand rather than at import so a key added
+    while the server is running is picked up on the next request, and so the
+    file is never held in memory longer than the call that needs it.
+    """
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if key:
+        return key
+    path = REPO / ".env"
+    if not path.exists():
+        return ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line.startswith("OPENAI_API_KEY=") and "=" in line:
+            return line.partition("=")[2].strip().strip('"').strip("'")
+    return ""
+
+
+#: How many tool calls one turn may make before the loop gives up. High enough
+#: for the four-call protection flow plus a correction, low enough that a model
+#: stuck in a retry cycle costs a few seconds rather than a bill.
+_CHAT_MAX_STEPS = 8
+
+
+def _chat(payload: dict) -> dict:
+    """One turn of an agent conversation, over arche's own MCP tool surface.
+
+    **This is the MCP layer, not the MCP transport, and the difference is worth
+    stating.** Tool schemas come from `arche_mcp.server.mcp.list_tools()` and
+    calls are dispatched through `mcp.call_tool()`, which is the server's own
+    dispatcher. So the descriptions, the enums and the results are identical to
+    what a real client sees over stdio. What is skipped is the JSON-RPC framing
+    and the subprocess.
+
+    That trade is deliberate: a `ThreadingHTTPServer` managing an async stdio
+    subprocess per request is a lot of machinery for a difference no viewer can
+    observe, and the failure modes it adds are worse than the one it removes.
+    `packages/arche-mcp/chat.py` speaks the real protocol for when the
+    transport is what you want to prove.
+
+    Returns the whole turn — every tool call, its arguments, its result, and the
+    final answer — because the trace IS the demonstration. A chat that showed
+    only the answer would hide the thing worth seeing: a model working out that
+    it needs the jurisdiction before it can redact.
+    """
+    import asyncio
+
+    ready = _chat_ready()
+    if not ready["ready"]:
+        raise ValueError("chat is not available: " + "; ".join(ready["missing"]))
+
+    from arche_mcp.server import mcp as _mcp
+    from openai import OpenAI
+
+    history = payload.get("messages") or []
+    if not history:
+        raise ValueError("nothing to say: send at least one message")
+
+    tools = asyncio.run(_mcp.list_tools())
+    schema = [{"type": "function",
+               "function": {"name": t.name,
+                            "description": t.description or "",
+                            "parameters": t.input_schema or
+                                          {"type": "object", "properties": {}}}}
+              for t in tools]
+
+    messages = [{"role": "system", "content": _CHAT_SYSTEM}] + [
+        {"role": m["role"], "content": m["content"]} for m in history
+        if m.get("role") in {"user", "assistant"} and m.get("content")
+    ]
+
+    client = OpenAI(api_key=_openai_key())
+    trace: list[dict] = []
+
+    for _ in range(_CHAT_MAX_STEPS):
+        reply = client.chat.completions.create(
+            model=ready["model"], messages=messages, tools=schema,
+            tool_choice="auto",
+        ).choices[0].message
+
+        if not reply.tool_calls:
+            return {"reply": reply.content or "", "trace": trace,
+                    "model": ready["model"]}
+
+        messages.append(reply.model_dump(exclude_none=True))
+        for call in reply.tool_calls:
+            try:
+                args = json.loads(call.function.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            step = {"tool": call.function.name, "arguments": args}
+            try:
+                result = asyncio.run(_mcp.call_tool(call.function.name, args))
+                text = "".join(c.text for c in getattr(result, "content", [])
+                               if getattr(c, "text", None))
+                step["result"] = text
+                step["error"] = None
+            except Exception as exc:  # noqa: BLE001 — shown, never fatal
+                # A failed tool is information for the model, not the end of the
+                # turn. It usually recovers, and watching it recover is one of
+                # the more useful things this tab shows.
+                text = json.dumps({"error": str(exc)})
+                step["result"] = text
+                step["error"] = str(exc)
+            trace.append(step)
+            messages.append({"role": "tool", "tool_call_id": call.id,
+                             "content": text})
+
+    return {"reply": f"(stopped after {_CHAT_MAX_STEPS} tool calls)",
+            "trace": trace, "model": ready["model"]}
+
+
+_CHAT_SYSTEM = """You are connected to arche, which resolves entity references \
+and protects personal data.
+
+Use the tools rather than answering from your own knowledge. You cannot see a \
+document the user describes unless you pass it to a tool.
+
+Two flows exist and they share almost no tools:
+
+RESOLUTION - are these two records the same thing?
+  describe_pack -> compare_records
+
+PROTECTION - what may leave this boundary, and on whose authority?
+  infer_jurisdiction -> plan_protection -> guarded_scan
+
+Choose the entity pack by what the records ARE. The pack decides which \
+vocabulary rarity is measured against, so the same pair can be `match` under \
+one pack and `review` under another.
+
+Before redacting, find out which law governs the document. `infer_jurisdiction` \
+returns `policy_available`; if that is false, no statute pack covers it and you \
+must say so rather than proceeding.
+
+Read the `coverage` block on any result that has one. A tool that found nothing \
+may have found nothing to find, or may have had no detector able to look. Those \
+are different and the block distinguishes them. Say which happened.
+
+A `review` decision is a real answer. It means the records agree and nothing \
+they agree on is distinctive enough to assert a match.
+
+Be brief. Report what the tools returned, including what they refused."""
+
+
 def _verify(payload: dict) -> dict:
     """Two independent checks on a signed decision, and one honest limit.
 
@@ -891,6 +1060,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path in ("/", "/index.html"):
                 self._send(200, (HERE / "index.html").read_bytes(), "text/html; charset=utf-8")
+            elif u.path == "/api/chat_ready":
+                self._json(_chat_ready())
             elif u.path == "/api/entities":
                 # Names and what each one reads. Derived from the packs, so a
                 # comparator added to the library shows up here without anybody
@@ -923,6 +1094,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_extract(payload))
             elif u.path == "/api/documents":
                 self._json(_documents(payload))
+            elif u.path == "/api/chat":
+                self._json(_chat(payload))
             elif u.path == "/api/redact":
                 self._json(_redact(payload))
             elif u.path == "/api/verify":
