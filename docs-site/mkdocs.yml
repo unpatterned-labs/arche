@@ -111,6 +111,7 @@ nav:
     - How arche works: reference/how-arche-works.md
     - A single call, walked through: tutorials/how-it-works.md
     - Decision contract: reference/decision-contract.md
+    - Distinctiveness: reference/distinctiveness.md
     - Record resolution API: reference/record-resolution.md
     - Read a crosswalk result: how-to/read-crosswalk-output.md
     - Addresses: api/addr.md

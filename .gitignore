@@ -95,6 +95,7 @@ pyproject.toml
 /docs-site/docs/concepts/roadmap_old.md
 /docs-site/docs/concepts/roadmap.md
 /docs-site/docs/concepts/drafts/
+/docs-site/docs/concepts/
 
 /notebooks
 
@@ -124,11 +125,15 @@ data/_cache/
 # arche studio writes a labelled copy beside the pack it reviewed.
 data/review_packs/**/*_reviewed.csv
 
-# arche studio adjudication state.
-data/review_packs/_studio.sqlite3*
-
-# arche studio signing key. Private. Never committed.
-data/review_packs/_studio_key.pem
+# arche studio's private state directory: adjudication database, signing key and
+# hash key. None of it is ever committed.
+#
+# The whole directory rather than three filenames, because these rules used to
+# name files under `data/review_packs/` and stayed there after the state moved to
+# `data/_studio/` -- which left both keys unignored and nobody noticed, since
+# nothing under the new path had been added yet. A rule that names a path it no
+# longer covers reads as protection and provides none.
+data/_studio/
 
 # Agent working context and project skills. Untracked on purpose: CLAUDE.md
 # rule 4 keeps agent config and workflow documentation out of the tracked tree,

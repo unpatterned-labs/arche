@@ -6,19 +6,15 @@
 <title>arche studio (alpha)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ─────────────────────────────────────────────────────────────────────────
-   arche studio. Editorial, print-restrained. Typography and whitespace do
-   the work: no cards, no shadows, no gradients, no icons.
+   arche studio. A local evidence workspace for serious operational work.
+   Use solid, functional surfaces to group tasks, calm hierarchy to keep the
+   evidence readable, and deliberate colour only for action and state.
 
-   THE RULE. Body text is always ink. The accent never appears as running
-   copy. It appears only as: the active nav mark, the rule above a verdict,
-   the mark on an extracted place, the marker on a selected row, an input's
-   focus state, and the rule beside an error or the alpha disclaimer.
-
-   A dense table is not a departure from Tufte, it is the point of him. The
-   grid carries every column a pack has, at high data-ink, ruled not boxed.
+   The matcher never gets to look more certain than it is. Scores, source
+   evidence and reviewer calls should remain easy to distinguish at a glance.
    ───────────────────────────────────────────────────────────────────────── */
 :root{
   --paper:#FFFFF8; --ink:#111111; --muted:#5C5C54;
@@ -224,6 +220,115 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 .kv{font-size:15px;line-height:1.5;margin:4px 0}
 .kv b{color:var(--muted);font-weight:400;font-size:12px;letter-spacing:.07em;text-transform:uppercase;
   display:inline-block;min-width:122px}
+
+/* ── evidence desk ───────────────────────────────────────────────────────
+   Studio is an operational reading surface, not a SaaS control panel. These
+   panels use rules and hierarchy rather than shadows and decorative cards. */
+.workspace-bar{display:flex;justify-content:space-between;gap:20px;align-items:center;
+  padding:13px 0;border-bottom:1px solid var(--rule);font-family:var(--mono);
+  font-size:12px;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums}
+.workspace-bar b{color:var(--ink);font-weight:500}
+.workspace-status{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.workspace-status i{display:block;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.command-key{font-family:var(--mono);font-size:11px;background:transparent;color:var(--muted);
+  border:1px solid var(--rule);padding:3px 6px;cursor:pointer}
+.command-key:hover{border-color:var(--ink);color:var(--ink)}
+.desk-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.7fr);gap:54px;align-items:start}
+.desk-hero{padding:44px 0 35px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 18px}
+.desk-hero h2{font-size:clamp(37px,5vw,68px);line-height:.98;letter-spacing:-.035em;
+  font-weight:600;max-width:14ch;margin:0}
+.desk-hero h2 em{font-style:normal;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:7px}
+.desk-hero .lede{font-size:21px;max-width:50ch;margin:24px 0 0}
+.question-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.question-list li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:14px;
+  align-items:center;border-bottom:1px solid var(--rule);padding:18px 0}
+.question-list .qnum{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.question-list strong{font-size:20px;line-height:1.22;font-weight:600;display:block}
+.question-list span:last-of-type{font-size:15px;line-height:1.4;color:var(--muted);display:block;margin-top:3px}
+button.go{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  border:0;background:transparent;color:var(--ink);cursor:pointer;padding:7px 0}
+button.go:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:4px}
+.case-rail{margin-top:44px;border-top:2px solid var(--accent);padding-top:14px}
+.case-rail h3,.desk-section h3{font-size:16px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;
+  margin:0 0 17px;font-family:var(--mono);font-weight:500}
+.case-rail p{font-size:16px;line-height:1.48;color:var(--muted);margin:0 0 17px}
+.case-state{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:15px 0}
+.case-state dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:9px 16px;font-family:var(--mono);font-size:12px;line-height:1.4}
+.case-state dt{color:var(--muted)}.case-state dd{margin:0;color:var(--ink);text-align:right}
+.desk-section{padding:31px 0;border-bottom:1px solid var(--rule)}
+.desk-section:first-child{padding-top:44px}
+.live-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.live-list li{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35}
+.live-list b{font-weight:600}.live-list span{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.promise{font-size:17px;line-height:1.48;margin:0;color:var(--ink)}
+.promise b{font-weight:600}.promise small{display:block;margin-top:9px;font-size:14px;color:var(--muted);line-height:1.45}
+.tool-context{padding:20px 0 0;display:flex;align-items:baseline;justify-content:space-between;gap:18px}
+.tool-context p{margin:0;font-size:14px;line-height:1.4;color:var(--muted)}
+.tool-context b{color:var(--ink);font-weight:600}
+.command{position:fixed;inset:0;z-index:20;background:rgba(17,17,17,.16);display:grid;
+  place-items:start center;padding-top:12vh}
+.command-panel{width:min(620px,calc(100vw - 34px));background:var(--paper);border:1px solid var(--ink);
+  padding:20px;outline:1px solid var(--rule);outline-offset:5px}
+.command-panel h2{font-size:18px;letter-spacing:.03em;margin:0 0 14px}
+.command-panel input{font-size:18px;margin-bottom:11px}
+.command-list{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--rule)}
+.command-list button{background:none;border:0;border-bottom:1px solid var(--rule);padding:13px 0;
+  text-align:left;font-family:var(--serif);font-size:16px;cursor:pointer;color:var(--ink)}
+.command-list button:nth-child(odd){padding-right:16px}.command-list button:nth-child(even){padding-left:16px}
+.command-list button:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:4px}
+.command-list small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+@media(max-width:980px){.desk-grid{grid-template-columns:1fr;gap:0}.case-rail{margin-top:0}.desk-section:first-child{padding-top:26px}}
+@media(max-width:640px){.wrap{padding:0 18px}.workspace-bar{align-items:flex-start;flex-direction:column}.desk-hero{padding-top:31px}.question-list li{grid-template-columns:26px minmax(0,1fr)}.question-list button{grid-column:2;justify-self:start}.command-list{grid-template-columns:1fr}.command-list button:nth-child(n){padding-left:0;padding-right:0}}
+
+/* Application layer. Studio is a serious local workspace, not an editorial
+   article. Keep the evidence legible, but give the work room to happen. */
+:root{
+  --paper:#F5F7FA; --surface:#FFFFFF; --ink:#101828; --muted:#475467;
+  --rule:#D0D5DD; --accent:#F26B3A; --code:#F2F4F7;
+  --ok:#067647; --hold:#B54708; --no:#B42318;
+  --serif:"IBM Plex Sans",Arial,sans-serif;
+  --display:"Fraunces",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --frame:1920px; --measure:76ch; --margin-col:330px;
+}
+body{font-family:var(--serif);font-size:16px;line-height:1.55;background:var(--paper)}
+.wrap{max-width:var(--frame);padding-left:clamp(20px,3vw,52px);padding-right:clamp(20px,3vw,52px)}
+header{background:rgba(255,255,255,.94);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:10;backdrop-filter:blur(14px)}
+.masthead{padding-top:20px;gap:12px}.masthead h1{font-family:var(--display);font-size:28px;letter-spacing:-.035em}
+.alpha{font-family:var(--mono);font-size:10px;letter-spacing:.12em;border-radius:5px;padding:4px 7px;top:0}
+.dek{font-size:14px;font-weight:500;color:var(--muted)}
+.disclaim{display:inline-block;margin:10px 0 0;border:0;padding:0;max-width:none;font-family:var(--mono);font-size:11px;letter-spacing:.01em}
+nav{gap:4px;margin-top:14px;overflow-x:auto;padding-bottom:9px}
+nav button{font-family:var(--serif);font-size:13px;line-height:1.2;font-weight:600;letter-spacing:0;text-transform:none;
+  padding:9px 12px;border:1px solid transparent;border-radius:7px;white-space:nowrap;transition:background .16s,border-color .16s,color .16s}
+nav button:hover{background:var(--code);color:var(--ink)}
+nav button[aria-current=true]{background:var(--ink);color:var(--surface);border-bottom-color:var(--ink)}
+nav .command-key{margin-left:auto;font-family:var(--mono);font-size:11px;border-color:var(--rule);color:var(--muted);padding:7px 9px}
+main{padding-top:22px}.workspace-bar{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.workspace-status{background:#ECFDF3;color:#067647;border-radius:999px;padding:4px 8px;font-size:11px}.workspace-status i{background:#12B76A}
+section{padding:28px 0 50px}.split{grid-template-columns:minmax(0,1fr) var(--margin-col);gap:32px}.margin{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;font-size:14px;line-height:1.5;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+.margin p{margin-bottom:16px}.label{font-family:var(--mono);font-size:11px;letter-spacing:.09em}.lede{font-size:18px!important;line-height:1.55}.rule{margin:24px 0}
+input,select,textarea{font-family:var(--serif);font-size:16px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;transition:border-color .16s,box-shadow .16s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(242,107,58,.14)}
+textarea{font-size:16px;padding:14px;min-height:180px}.row{gap:10px;margin-top:20px}
+button.act{font-family:var(--serif);font-size:13px;letter-spacing:.01em;text-transform:none;border-radius:8px;background:var(--ink);border-color:var(--ink);color:var(--surface);padding:10px 14px;transition:transform .14s,background .14s,border-color .14s}
+button.act:hover{background:#344054;color:var(--surface);transform:translateY(-1px)}button.act.quiet{background:var(--surface);border-color:var(--rule);color:var(--ink)}button.act.quiet:hover{background:var(--code);border-color:#98A2B3}
+.stat{font-family:var(--mono);font-size:11px}.dz{background:var(--surface);border:1px dashed #98A2B3;border-radius:10px;padding:22px}.passage,.doctext,.cres{border-radius:8px}
+.gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th{background:var(--surface)}
+.desk-grid{gap:42px}.desk-hero{padding:48px 0 38px;border-bottom:0}.desk-hero h2{font-family:var(--display);font-size:clamp(44px,5vw,74px);line-height:.98;max-width:12ch}.desk-hero .lede{max-width:58ch;margin-top:26px}
+.question-list{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}.question-list li{padding:22px 20px}.question-list li:hover{background:#FCFCFD}.question-list strong{font-size:18px}.question-list span:last-of-type{font-size:14px}
+.case-rail{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:12px;margin-top:48px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.case-rail h3,.desk-section h3{font-size:12px;letter-spacing:.07em}.desk-section{padding:24px 0}.desk-section:first-child{padding-top:30px}
+.command[hidden]{display:none}.command{background:rgba(16,24,40,.46);padding:10vh 20px;place-items:start center}.command-panel{width:min(720px,calc(100vw - 40px));background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:22px;outline:0;box-shadow:0 20px 60px rgba(16,24,40,.22)}
+.command-panel h2{font-family:var(--display);font-size:24px}.command-panel input{background:var(--code);font-size:16px}.tool-context{padding:0 0 16px}.command-list{gap:8px;border-top:0}.command-list button{border:1px solid var(--rule);border-radius:8px;padding:14px;background:var(--surface)}.command-list button:nth-child(odd),.command-list button:nth-child(even){padding-left:14px;padding-right:14px}.command-list button:hover{background:var(--code);border-color:#98A2B3}
+/* Chat is a working canvas. The conversation and its composer should never
+   feel like a small field tucked under an essay. */
+#s-chat .split{grid-template-columns:minmax(0,1fr) 310px}#s-chat .lede{max-width:72ch}#chatlog{min-height:52vh;max-height:58vh;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+#chatlog:empty::before{content:"Ask a question about the records, documents or evidence in front of you.";display:block;max-width:44ch;color:var(--muted);font-size:17px;margin:10vh auto 0;text-align:center}
+#s-chat .chat-composer{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px;margin-top:14px}#chatin{border:0;background:transparent;box-shadow:none!important;padding:12px;min-height:46px}.chip{font-size:12px!important;padding:7px 10px!important}.cyou{background:#FFF7ED;border-radius:8px;padding:10px 12px}.carche{background:var(--code);border-radius:8px;padding:10px 12px}.ctool{margin-left:12px}
+@media(max-width:980px){header{position:static}.split,#s-chat .split{grid-template-columns:1fr}.margin{position:static}.case-rail{margin-top:0}}
+@media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}}
 </style>
 </head>
 <body>
@@ -231,25 +336,78 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 <header><div class="wrap">
   <div class="masthead">
     <h1>arche studio</h1><span class="alpha">alpha</span>
-    <p class="dek">Read what the matcher decided, and why.</p>
+    <p class="dek">Entity intelligence, locally.</p>
   </div>
-  <p class="disclaim"><b>A local tool, and a deliberately cautious one.</b> It runs on the
-    machine holding the data and makes one outbound request, for two typefaces. It has no
-    authentication, because it has no remote access. And it does not call a match an
-    adjudication: nothing here is settled until a person reads the evidence and puts their
-    name to it.</p>
+  <p class="disclaim"><b>A local evidence workspace.</b> Bring records and documents together,
+    inspect the entity hypothesis, and decide what needs a person. The default workflows keep
+    data on this machine. Chat is the opt-in exception.</p>
   <nav>
+    <button id="t-home"    aria-current="true">Home</button>
     <button id="t-chat"    aria-current="false">Chat</button>
-    <button id="t-compare" aria-current="true">Compare</button>
+    <button id="t-compare" aria-current="false">Compare</button>
     <button id="t-extract" aria-current="false">Documents</button>
     <button id="t-places"  aria-current="false">Spatial roles</button>
     <button id="t-redact"  aria-current="false">Redact</button>
     <button id="t-verify"  aria-current="false">Verify</button>
     <button id="t-review"  aria-current="false">Review queue</button>
+    <button class="command-key" id="b-command" type="button">Open <kbd>Ctrl K</kbd></button>
   </nav>
 </div></header>
 
 <main class="wrap">
+
+<div class="workspace-bar">
+  <span><b id="workspace-title">Evidence desk</b> <span id="workspace-copy">Choose a question, then follow the evidence.</span></span>
+  <span class="workspace-status"><i></i><span id="workspace-live">Loading local capabilities</span></span>
+</div>
+
+<section id="s-home">
+ <div class="desk-grid">
+  <div>
+   <div class="desk-hero">
+    <p class="eyebrow">Local reconciliation workspace</p>
+    <h2>Know what is <em>real.</em></h2>
+    <p class="lede">Start with a real question. Arche keeps the sources, the entity hypothesis and the uncertainty in view.</p>
+   </div>
+   <ol class="question-list">
+    <li>
+      <span class="qnum">01</span>
+      <div><strong>Do these documents describe the same thing?</strong><span>Extract references, then compare people, places and organisations in context.</span></div>
+      <button class="go" type="button" data-go="extract">Open documents -&gt;</button>
+    </li>
+    <li>
+      <span class="qnum">02</span>
+      <div><strong>Which real-world entity does this record refer to?</strong><span>Compare two records field by field and read the evidence behind the decision.</span></div>
+      <button class="go" type="button" data-go="compare">Compare records -&gt;</button>
+    </li>
+    <li>
+      <span class="qnum">03</span>
+      <div><strong>What still needs a person to decide?</strong><span>Work the uncertain rows, preserve the rationale and leave a traceable decision.</span></div>
+      <button class="go" type="button" data-go="review">Open review queue -&gt;</button>
+    </li>
+   </ol>
+  </div>
+  <aside class="case-rail">
+   <h3>Workspace status</h3>
+   <p>Studio runs next to the data. Begin with source evidence, then test whether it refers to the same entity.</p>
+   <div class="case-state">
+    <dl>
+      <dt>Entity packs</dt><dd id="home-entities">Loading</dd>
+      <dt>Review packs</dt><dd id="home-packs">Loading</dd>
+      <dt>Current workspace</dt><dd id="home-case">None loaded</dd>
+    </dl>
+   </div>
+   <div class="desk-section">
+    <h3>What holds the answer</h3>
+    <p class="promise"><b>Evidence before action.</b><small>Scores are useful, but they are not the decision. Arche keeps the comparison, its assumptions and the human judgement together.</small></p>
+   </div>
+   <div class="desk-section">
+    <h3>Available review packs</h3>
+    <ul class="live-list" id="home-pack-list"><li><span>Loading local packs</span></li></ul>
+   </div>
+  </aside>
+ </div>
+</section>
 
 
 <!-- ═════════════════════════════════════════════════════════════ CHAT ══ -->
@@ -265,18 +423,20 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
 
     <div id="chatlog"></div>
 
-    <div class="row" style="margin-top:20px">
-      <input id="chatin" class="searchbox" style="flex:1"
-             placeholder="is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, Kano">
-      <button class="act" id="b-chat">Ask</button>
-      <button class="act quiet" id="b-chatclear">Clear</button>
+    <div class="chat-composer">
+      <div class="row tight">
+        <input id="chatin" class="searchbox" style="flex:1"
+               placeholder="Ask about a record, a document or the evidence behind a decision">
+        <button class="act" id="b-chat">Ask Arche</button>
+        <button class="act quiet" id="b-chatclear">Clear</button>
+      </div>
+      <div class="row tight" style="margin-top:10px">
+        <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, at Karfi Health Post, Kano. Tel 08031234567">Try a Nigerian referral</button>
+        <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Jane Smith, NI number QQ123456C, St Thomas' Hospital, London SW1A 1AA">Try a British referral</button>
+        <button class="act quiet chip" data-ask="Are General Hospital and General Hospital the same place?">Compare identical names</button>
+      </div>
+      <span class="stat" id="chatmeta"></span>
     </div>
-    <div class="row tight" style="margin-top:6px">
-      <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, at Karfi Health Post, Kano. Tel 08031234567">a Nigerian referral</button>
-      <button class="act quiet chip" data-ask="Is this safe to send to a model? Dr Jane Smith, NI number QQ123456C, St Thomas' Hospital, London SW1A 1AA">the same thing, British</button>
-      <button class="act quiet chip" data-ask="Are General Hospital and General Hospital the same place?">two identical names</button>
-    </div>
-    <span class="stat" id="chatmeta"></span>
   </div>
 
   <aside class="margin">
@@ -523,25 +683,75 @@ mark sup{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transf
  </div>
 </section>
 
+<div class="command" id="command" hidden role="dialog" aria-modal="true" aria-labelledby="command-title">
+ <div class="command-panel">
+  <div class="tool-context">
+   <h2 id="command-title">Go to workspace</h2>
+   <button class="command-key" id="b-command-close" type="button">Close</button>
+  </div>
+  <input id="command-input" type="search" autocomplete="off" placeholder="Filter workspaces">
+  <div class="command-list" id="command-list">
+   <button type="button" data-go="home">Evidence desk<small>Start with a question</small></button>
+   <button type="button" data-go="compare">Compare<small>Read a record-level decision</small></button>
+   <button type="button" data-go="extract">Documents<small>Extract and resolve references</small></button>
+   <button type="button" data-go="review">Review queue<small>Decide uncertain candidate pairs</small></button>
+   <button type="button" data-go="places">Spatial roles<small>Read a place in sentence context</small></button>
+   <button type="button" data-go="verify">Verify<small>Check signed evidence</small></button>
+   <button type="button" data-go="redact">Redact<small>Prepare text for a safer workflow</small></button>
+   <button type="button" data-go="chat">Chat<small>Ask an agent to use the local tools</small></button>
+  </div>
+ </div>
+</div>
+
 </main>
 
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const n3=x=>x==null?"n/a":Number(x).toFixed(3);
-const tab=t=>{for(const k of["chat","compare","extract","places","redact","verify","review"]){
-  $("#t-"+k).setAttribute("aria-current",String(k===t));$("#s-"+k).hidden=k!==t;}};
+const WORKSPACE_COPY={
+  home:"Choose a question, then follow the evidence.",
+  chat:"Ask Arche to use the local tools, and inspect every call.",
+  compare:"Read the record-level evidence behind a decision.",
+  extract:"Extract references before asking what they refer to.",
+  places:"Read each place in the context of its role.",
+  redact:"Prepare text for a safer downstream workflow.",
+  verify:"Check whether signed evidence is still intact.",
+  review:"Resolve the uncertainty that the engine should not settle alone."
+};
+const tab=t=>{for(const k of["home","chat","compare","extract","places","redact","verify","review"]){
+  const button=$("#t-"+k),section=$("#s-"+k);
+  if(button)button.setAttribute("aria-current",String(k===t));
+  if(section)section.hidden=k!==t;
+}
+  $("#workspace-title").textContent=t==="home"?"Evidence desk":$("#t-"+t).textContent;
+  $("#workspace-copy").textContent=WORKSPACE_COPY[t]||"";
+};
 
 /* ═══════════════════════════════════════════════════════════════ grid ══ */
-let PACK=null,SEL=null,SORT={k:null,d:1},HIDE=new Set();const M={};
+let PACK=null,SEL=null,SORT={k:null,d:1},HIDE=new Set(),PACK_INDEX=[];const M={};
 const ID_RE=/(^|_)(id|code|uuid)$|decision_id/i, NUM_RE=/score|distance|distinctive|_km$/i;
+
+function homeSummary(){
+  const entityCount=Object.keys(ENTITIES||{}).length;
+  $("#home-entities").textContent=entityCount?`${entityCount} ready`:"Not loaded";
+  $("#home-packs").textContent=`${PACK_INDEX.length} available`;
+  const current=PACK_INDEX.find(x=>x.id===$("#pack").value);
+  $("#home-case").textContent=current?current.name:"None loaded";
+  $("#workspace-live").textContent=`${entityCount} entity packs | ${PACK_INDEX.length} review packs | local`;
+  $("#home-pack-list").innerHTML=PACK_INDEX.length
+    ? PACK_INDEX.slice(0,4).map(x=>`<li><b>${esc(x.name)}</b><span>${x.rows} rows</span></li>`).join("")
+    :"<li><span>No review packs found</span></li>";
+}
 
 async function loadPacks(){
   const p=await(await fetch("/api/packs")).json();
+  PACK_INDEX=p;
   $("#pack").innerHTML=p.length?p.map(x=>
     `<option value="${esc(x.id)}">${esc(x.name)} · ${x.rows} rows · ${esc(x.format||"csv")}</option>`).join("")
     :'<option value="">no packs found</option>';
-  if(p.length)loadPack();
+  if(p.length)await loadPack();
+  homeSummary();
 }
 async function loadPack(){
   const id=$("#pack").value;if(!id)return;
@@ -562,7 +772,7 @@ async function loadPack(){
         they carry will say so.`
     : (warn.length?warn.map(x=>esc(x.detail)).join(" "):"");
   $("#pprob").className=bad.length?"err":"stat";
-  cols();await loadMarks();draw();
+  cols();await loadMarks();draw();homeSummary();
 }
 const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
 function cols(){
@@ -1116,11 +1326,34 @@ async function signOne(){
 // call against a scope chain that includes the element and the document, which
 // makes shadowing possible and failures silent. These are unambiguous.
 const on=(id,ev,fn)=>{const el=$("#"+id);if(el)el.addEventListener(ev,fn);};
+function closeCommand(){
+  $("#command").hidden=true;
+}
+function openCommand(){
+  const input=$("#command-input");
+  input.value="";commandFilter();$("#command").hidden=false;input.focus();
+}
+function commandFilter(){
+  const q=$("#command-input").value.trim().toLowerCase();
+  for(const button of document.querySelectorAll("#command-list button"))
+    button.hidden=!!q&&!button.textContent.toLowerCase().includes(q);
+}
+function goTo(workspace){
+  closeCommand();tab(workspace);
+  if(workspace==="chat"){chatReady();chatDraw();}
+}
+for(const button of document.querySelectorAll("[data-go]"))
+  button.addEventListener("click",()=>goTo(button.dataset.go));
+on("t-home","click",()=>tab("home"));
 on("t-compare","click",()=>tab("compare"));
 on("t-places","click",()=>tab("places"));
 on("t-redact","click",()=>tab("redact"));
 on("t-verify","click",()=>tab("verify"));
 on("t-review","click",()=>tab("review"));
+on("b-command","click",openCommand);
+on("b-command-close","click",closeCommand);
+on("command-input","input",commandFilter);
+on("command","click",e=>{if(e.target===$("#command"))closeCommand();});
 on("b-redact","click",redact);
 on("b-rexample","click",rexample);
 on("b-verify","click",doVerify);
@@ -1144,6 +1377,12 @@ $("#chatin").addEventListener("keydown",e=>{if(e.key==="Enter")chatSend();});
 for(const b of document.querySelectorAll(".chip"))
   b.addEventListener("click",()=>chatSend(b.dataset.ask));
 on("t-extract","click",()=>tab("extract"));
+document.addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){
+    e.preventDefault();$("#command").hidden?openCommand():closeCommand();return;
+  }
+  if(e.key==="Escape"&&!$("#command").hidden)closeCommand();
+});
 // Working a queue is repetitive by nature: look, decide, next. Reaching for the
 // mouse between every row is what makes 360 of them feel like 360.
 document.addEventListener("keydown",e=>{
@@ -1178,7 +1417,7 @@ $("#ptext").addEventListener("input",count);
   $("#entity").innerHTML=Object.keys(ENTITIES).map(
     x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
   $("#entity").addEventListener("change",()=>describeEntity(""));
-  example();pexample();rexample();loadPacks();
+  example();pexample();rexample();await loadPacks();homeSummary();
 })();
 </script>
 </body>

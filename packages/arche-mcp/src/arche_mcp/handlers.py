@@ -55,6 +55,7 @@ from arche.policy import statute_for as _statute_for
 from arche.resolve import ENTITY_PACKS, compare_names, crosswalk, reconcile
 from arche.resolve import describe_pack as _describe_pack
 from arche.resolve import describe_packs as _describe_packs
+from arche.resolve import would_resolve as _would_resolve
 from arche.workflow._primitive import Pipeline
 
 #: Bands for `check_name_equivalence`, matching arche's decision vocabulary.
@@ -373,6 +374,55 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
         distinctive_kinds=distinctive_kinds, distinctive_floor=distinctive_floor,
         block=None,
     )
+
+
+def why_unresolved(record_a: dict, record_b: dict, *,
+                   entity: str) -> dict[str, Any]:
+    """Why this pair was not resolved, and which field would resolve it.
+
+    Call this after ``compare_records`` returns ``review``. That verdict says
+    the evidence was insufficient; it does not say what would be sufficient,
+    and without that an agent can only escalate or guess.
+
+    Returns the gate that held the pair, the fields the pack could have read
+    and did not receive -- ranked by what supplying them could achieve -- and
+    the fields already present that cannot help however much they agree.
+
+    Read ``will_not_help`` before retrying. When a pair is held by low
+    distinctiveness, fetching a longer or cleaner version of the *same* field
+    cannot rescue it: rarity is a fact about the population, so a better
+    rendering of ``General Hospital`` is still ``General Hospital``.
+
+    Effects, strongest first:
+
+      hard_constraint     supplying it can cap the decision at review on its own
+      decisive_for        an exact identifier; agreement here settles the pair
+      can_prevent_match   disagreement holds the pair at review
+      independent_signal  adds evidence without deciding anything alone
+
+    No effect means "refutes". arche declines to assert sameness and never
+    asserts difference, so nothing here promises a ``no_match``.
+
+    Takes the two records rather than an edge, so one call answers the
+    question. The pair is re-scored internally with the same pack.
+    """
+    if entity not in ENTITY_PACKS:
+        raise ValueError(
+            f"unknown entity pack {entity!r}; "
+            f"available: {', '.join(sorted(ENTITY_PACKS))}")
+
+    a = {"id": "a", **record_a}
+    b = {"id": "b", **record_b}
+    edges = crosswalk([a], [b], entity=entity, id_field="id")["matches"]
+    if not edges:
+        return {
+            "decision": "not_surfaced",
+            "why": "the pair was not surfaced as a candidate at all, so there "
+                   "is no verdict to explain. That is not a statement that the "
+                   "records differ",
+            "fields_present": [], "would_resolve": [], "will_not_help": [],
+        }
+    return _would_resolve(edges[0], a, b, entity=entity)
 
 
 def check_name_equivalence(name_a: str, name_b: str) -> dict[str, Any]:

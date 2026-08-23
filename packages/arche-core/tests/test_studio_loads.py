@@ -82,6 +82,7 @@ def _isolated_state(tmp_path, studio, monkeypatch):
     monkeypatch.setattr(studio, "STATE", Store(tmp_path / "state.sqlite3"))
     monkeypatch.setattr(studio, "STUDIO_STATE", tmp_path)
     monkeypatch.setattr(studio, "KEY_PATH", tmp_path / "key.pem")
+    monkeypatch.setattr(studio, "HASH_KEY_PATH", tmp_path / "hash.key")
     monkeypatch.setattr(studio, "PACKS", tmp_path)
 
 
@@ -522,12 +523,20 @@ class TestReadingSeveralDocumentsAtOnce:
 
     def test_a_name_is_hidden_with_no_statute_behind_it_and_says_so(self, masked):
         """Uncovered is not permission. A name draws no NDPA rule, and hiding it
-        anyway has to be labelled as this tab's choice, not a statute's."""
+        anyway has to be labelled as this tab's choice, not a statute's.
+
+        The action label distinguishes two cases that used to share the word
+        `uncovered`. See `TestTheTwoDetectorsAreNotConflated` below for why.
+        """
         person = next(e for e in masked["documents"][0]["entities"]
                       if e["type"] == "PERSON")
         assert person["masked"] is True
-        assert person["action"] == "uncovered"
+        assert person["action"] in {"uncovered", "not evaluated"}
         assert person["authority"] == ""
+        # Both labels must carry this, and the wording is the assertion. A
+        # first pass at the `not evaluated` rationale dropped the phrase, which
+        # this test caught: without it a reader can conclude a statute is what
+        # hid the name, which is the exact inference the tab must not invite.
         assert "not because a statute" in person["rationale"]
 
     def test_a_removal_carries_its_citation(self, masked):
@@ -864,10 +873,21 @@ class TestTheChatUsesTheRealToolSurface:
         assert '"country": "NG"' in text
 
     def test_the_tool_count_matches_the_published_server(self):
+        """A literal, and deliberately so.
+
+        The studio is a consumer of the MCP surface, not its owner. Adding a
+        tool in `arche-mcp` should make somebody confirm the consumer still
+        renders it, and a hard number is the cheapest way to force that
+        acknowledgement. `arche-mcp` has its own inventory test naming every
+        tool; this one only asks whether the count moved under the studio's
+        feet.
+
+        Went 10 -> 11 when `why_unresolved` was added.
+        """
         import asyncio
 
         from arche_mcp.server import mcp
-        assert len(asyncio.run(mcp.list_tools())) == 10
+        assert len(asyncio.run(mcp.list_tools())) == 11
 
     def test_the_step_cap_is_bounded(self, studio):
         """A model stuck in a retry loop should cost seconds, not a bill."""

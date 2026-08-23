@@ -53,6 +53,12 @@ from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
 # term-frequency table its ``tftoken`` comparator + reranker consume.
 from arche.resolve.reconcile import reconcile  # noqa: E402,F401
 
+# What would settle a pair the engine declined to settle. Imported here rather
+# than left private because the caller who needs it most is an agent, and an
+# agent reaches for the documented surface. It reads `ENTITY_PACKS` from this
+# module, so it imports that lazily inside the call to keep the cycle broken.
+from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
+
 # ---------------------------------------------------------------------------
 #
 # Two entry points by USE-SHAPE, sharing primitives but deliberately distinct
@@ -369,8 +375,15 @@ COMPARATOR_NOTES = {
     "placename": "place-name similarity, after the type word is set aside so "
                  "`General Hospital` and `General Clinic` are not near-matches "
                  "for sharing `General`",
-    "tftoken": "how rare the shared words are in these two lists. Agreeing on "
-               "an ordinary word is not evidence; agreeing on a rare one is",
+    # Deliberately does NOT say "in these two lists". It said that, and it was
+    # true only for a pack without a shipped table. For `place`, `organisation`
+    # and `artist` the population is a shipped corpus, and the difference is the
+    # whole reason the same pair can be `match` under one pack and `review`
+    # under another. A caller told rarity came from their own two lists has no
+    # way to predict that, and no reason to look for `frequency_table` below.
+    "tftoken": "how rare the shared words are in this pack's reference "
+               "population (see `frequency_table`). Agreeing on an ordinary "
+               "word is not evidence; agreeing on a rare one is",
     "type": "the facility or organisation type, compared as a category rather "
             "than as text",
     "date": "a date, at whatever precision each side states. A year against a "
@@ -486,6 +499,17 @@ def describe_pack(entity: str) -> dict:
         # What it is for, so a caller choosing between packs has something to
         # choose on. The field list says what it reads, never what it is about.
         "purpose": ENTITY_PACK_PURPOSE.get(entity, ""),
+        # Which population rarity is measured against, which is the thing most
+        # likely to surprise a caller comparing packs. Two records reading
+        # `General Hospital` are `review` under `place` (a facility gazetteer
+        # knows `hospital` is 1-in-57) and `match` under `organisation` (a
+        # legal-entity registry has seen it eleven times). Same strings, same
+        # score, different population -- and nothing else in this dict says so.
+        #
+        # `None` is not "no rarity check". It means the table is built from the
+        # two lists handed to `crosswalk`, so a small pair cannot know that any
+        # of its own tokens are ordinary and everything reads as rare.
+        "frequency_table": _PACK_TF_DOMAIN.get(entity),
         "fields": fields,
         # The names a caller can put on a record and have read. Flattened for
         # the common case of "is this column used?".

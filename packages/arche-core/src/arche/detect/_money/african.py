@@ -285,6 +285,29 @@ def _escape_for_regex(s: str) -> str:
     return re.escape(s)
 
 
+#: Ordinal suffixes, rejected immediately after an amount.
+#:
+#: Two of the prefix symbols are a single letter -- ``N`` for the naira and
+#: ``R`` for the rand -- and a single letter before a number is a street
+#: address at least as often as it is money:
+#:
+#:     "227 N 5TH AVE, RIDGEFIELD WA"  ->  MONEY "N 5"
+#:     "400 N 3RD STREET"              ->  MONEY "N 3"
+#:     "R 4TH ROAD"                    ->  MONEY "R 4"
+#:
+#: The old trailing guard was ``(?![0-9])``, which rejects a following digit
+#: and allows a following letter, so ``5TH`` passed. The damage was not only a
+#: spurious amount: the MONEY span consumed the text and the LOCATION detector
+#: then reported nothing at all for the address, so a US invoice lost its
+#: addresses and gained currency that was never there.
+#:
+#: Ordinals specifically, rather than "any letter", because a following letter
+#: is also how magnitudes are written -- ``₦5m``, ``₦500k``, ``N 5bn`` -- and
+#: those already match. This rejects what cannot be an amount and leaves
+#: everything else alone.
+_ORDINAL_SUFFIX = r"(?!(?:st|nd|rd|th)\b)"
+
+
 def _build_prefix_regex() -> re.Pattern:
     """Build regex: SYMBOL [optional space] AMOUNT."""
     symbols_alt = "|".join(_escape_for_regex(s) for s in _ALL_PREFIX_SYMBOLS)
@@ -293,7 +316,12 @@ def _build_prefix_regex() -> re.Pattern:
         rf"({symbols_alt})"
         rf"\s*"
         rf"{_AMOUNT_PATTERN}"
-        rf"(?![0-9])",
+        # Order matters. The digit guard has to run first so that `N 15TH`
+        # cannot backtrack to an amount of `1` and pass the ordinal check on
+        # `5TH`. With both, `15` is rejected as an ordinal and `1` is rejected
+        # for being followed by a digit, so the whole match fails as intended.
+        rf"(?![0-9])"
+        rf"{_ORDINAL_SUFFIX}",
         re.IGNORECASE,
     )
 

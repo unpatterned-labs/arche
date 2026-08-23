@@ -259,6 +259,35 @@ def compare_records(list_a: list[dict], list_b: list[dict],
 
 
 @mcp.tool()
+def why_unresolved(record_a: dict, record_b: dict,
+                   entity: EntityPack = "place") -> dict:
+    """Why a pair came back `review`, and which field would settle it.
+
+    CALL THIS WHENEVER `compare_records` RETURNS `review`. That verdict says
+    the evidence was not enough; it does not say what would be enough. This
+    turns the refusal into a next action instead of an escalation.
+
+    Returns the gate that held the pair, the fields the pack could have read
+    and did not receive (ranked by what supplying them achieves), and the
+    fields already present that cannot help however much they agree.
+
+    READ `will_not_help` BEFORE RETRYING. A pair held by low distinctiveness
+    is not rescued by a longer or cleaner version of the same field: rarity is
+    a property of the population, so a better rendering of "General Hospital"
+    is still "General Hospital". Go and get a different field.
+
+    Effects, strongest first:
+      hard_constraint     can cap the decision at review on its own
+      decisive_for        an exact identifier; agreement settles the pair
+      can_prevent_match   disagreement holds the pair at review
+      independent_signal  adds evidence without deciding alone
+
+    Nothing here promises `no_match`. arche declines to assert sameness and
+    never asserts difference."""
+    return handlers.why_unresolved(record_a, record_b, entity=entity)
+
+
+@mcp.tool()
 def check_name_equivalence(name_a: str, name_b: str) -> dict:
     """Are two names the same person's, accounting for African name variation
     and transliteration?

@@ -224,7 +224,8 @@ class TestTheToolThatWasRemoved:
         assert names == {
             "capabilities", "infer_jurisdiction", "plan_protection",
             "describe_pack", "detect_pii", "detect_entities", "guarded_scan",
-            "compare_records", "check_name_equivalence", "extract_places",
+            "compare_records", "why_unresolved", "check_name_equivalence",
+            "extract_places",
         }
 
     def test_every_tool_has_a_description(self):

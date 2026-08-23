@@ -45,9 +45,11 @@ beside it, so the matcher output and its decision-ID manifest stay intact.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
+import secrets
 import sys
 import threading
 import webbrowser
@@ -80,6 +82,43 @@ STATE = Store(STUDIO_STATE / "state.sqlite3")
 # request produces signatures nobody can attribute, which is a checksum
 # with extra steps.
 KEY_PATH = STUDIO_STATE / "key.pem"
+
+
+# The hash key for `guarded_scan`, persisted for the same reason as the signing
+# key above and read at exactly the same point in startup.
+#
+# `arche_mcp.server` reads `ARCHE_HASH_KEY` once, at import. Studio dispatches
+# MCP tools in-process, so the server inherits *this* process's environment --
+# and nobody exports a hash key before running a local demo. The result was that
+# `guarded_scan`, the flagship tool, could never succeed through the Chat tab.
+# It refused every call with "no hash key configured" and looked, from the
+# outside, exactly like arche being strict.
+#
+# The refusal itself is correct and stays. Tokens are only worth anything if the
+# same value hashes the same way next week, so a server with no key must decline
+# rather than invent one -- an ephemeral per-process key would produce tokens
+# that silently stop correlating, which is worse than an error. What was wrong
+# was leaving a machine with durable storage keyless. Written once, reused
+# forever after, so tokens correlate across restarts.
+#
+# Must be assigned before anything imports `arche_mcp.server`.
+HASH_KEY_PATH = STUDIO_STATE / "hash.key"
+
+
+def _studio_hash_key() -> str:
+    """Load the studio's hash key, creating it on first run."""
+    if not HASH_KEY_PATH.exists():
+        HASH_KEY_PATH.write_text(secrets.token_hex(32), encoding="utf-8")
+        # Same reasoning as the signing key: not under PACKS, and not readable
+        # by anyone who can reach the port.
+        with contextlib.suppress(OSError, NotImplementedError):
+            HASH_KEY_PATH.chmod(0o600)
+    return HASH_KEY_PATH.read_text(encoding="utf-8").strip()
+
+
+# An operator-supplied key always wins -- studio is a demo surface and must not
+# quietly override a key someone chose deliberately for this environment.
+os.environ.setdefault("ARCHE_HASH_KEY", _studio_hash_key())
 
 
 def _pack_suffixes() -> tuple[str, ...]:
@@ -320,7 +359,41 @@ _IDENTIFYING = {"PERSON", "NATIONAL_ID", "NIN", "BVN", "PHONE", "EMAIL",
 _REMOVING = {"mask", "tokenize", "generalize", "drop", "refuse"}
 
 
-def _classify(entity, outcome: dict | None) -> dict:
+#: The statute's category vocabulary, mapped to the one a reader recognises and
+#: `_LINKABLE` keys on. Without this a pipeline detection would arrive as
+#: `PII-1-NAME`, match no linkable type, and silently drop out of the
+#: cross-document matching that is the whole reason this tab takes two files.
+_PII_KIND = {
+    "PII-1-NAME": "PERSON", "PII-3-EMAIL": "EMAIL", "PII-3-PHONE": "PHONE",
+    "PII-4-ADDRESS": "LOCATION", "PII-2-NIN": "NATIONAL_ID",
+    "PII-2-BVN": "NATIONAL_ID", "PII-2-TIN": "NATIONAL_ID",
+    "PII-2-RC": "NATIONAL_ID", "PII-2-PVC": "NATIONAL_ID",
+    "PII-2-DRIVERS_LICENCE": "DRIVERS_LICENSE",
+    "PII-5-BANK_ACCOUNT": "BANK_ACCOUNT", "PII-5-CARD": "CREDIT_CARD",
+    "PII-8-DEVICE_ID": "DEVICE_ID", "PII-8-COOKIE": "COOKIE",
+}
+
+
+def _entity_kind(entity) -> str:
+    """One display type, whichever detector produced the entity.
+
+    `detect` emits `entity_type` ("PERSON"); the pipeline emits `category`
+    ("PII-1-NAME"). Both end up in the same list, so both have to answer the
+    same question, and an unmapped PII category falls back to its own tail
+    rather than to "UNKNOWN" -- `PII-6-HEALTH` reads as `HEALTH`, which is
+    wrong about nothing.
+    """
+    kind = (getattr(entity, "entity_type", None) or "").upper()
+    if kind:
+        return kind
+    category = (getattr(entity, "category", None) or "").upper()
+    if not category:
+        return "UNKNOWN"
+    return _PII_KIND.get(category) or category.rsplit("-", 1)[-1]
+
+
+def _classify(entity, outcome: dict | None, *, origin: str = "detector",
+              kind: str | None = None) -> dict:
     """Whether one detected entity is hidden, and on whose authority.
 
     Three cases, and the third is the one worth building the tab around.
@@ -345,15 +418,106 @@ def _classify(entity, outcome: dict | None) -> dict:
                 "applied": outcome.get("applied"),
                 "authority": outcome.get("citation") or outcome.get("statute") or "",
                 "rationale": outcome.get("rationale") or ""}
-    identifying = (getattr(entity, "entity_type", "") or "").upper() in _IDENTIFYING
+    identifying = (kind or _entity_kind(entity)) in _IDENTIFYING
+
+    if origin == "policy":
+        # The policy engine saw this span and produced no outcome for it. That
+        # is a real statute gap -- the category is genuinely not covered here --
+        # and it is the only case entitled to say so.
+        return {"masked": identifying,
+                "action": "uncovered",
+                "applied": None,
+                "authority": "",
+                "rationale": ("The statute pack for this jurisdiction has no "
+                              "rule for this category. Hidden because it "
+                              "identifies a person, not because a statute said "
+                              "to." if identifying else
+                              "No rule covers this, and it does not identify "
+                              "anybody.")}
+
+    # A general-detector finding on a span the policy engine never evaluated.
+    # It used to be reported identically to the case above, which claimed a
+    # statute had been consulted and had nothing to say. It had not been
+    # consulted: the two detectors emit different spans, so most detector
+    # findings are simply outside the policy engine's view.
     return {"masked": identifying,
-            "action": "uncovered",
+            "action": "not evaluated",
             "applied": None,
             "authority": "",
-            "rationale": ("No rule in this jurisdiction covers this detection. "
-                          "Hidden because it identifies a person, not because a "
-                          "statute said to." if identifying else
-                          "No rule covers this, and it does not identify anybody.")}
+            "rationale": ("Found by the general entity detector. The policy "
+                          "engine runs a different detector set and did not see "
+                          "this span, so no statute has been applied to it "
+                          "either way. Hidden because it identifies a person, "
+                          "not because a statute said to. See `coverage` for "
+                          "what this jurisdiction can detect." if identifying else
+                          "Found by the general entity detector, which the "
+                          "policy engine does not read. It does not identify "
+                          "anybody.")}
+
+
+def _pick_jurisdiction(payload: dict, read: list[tuple[str, str]]) -> tuple[str | None, dict]:
+    """Which law governs these documents, asked rather than assumed.
+
+    This tab hardcoded `payload.get("jurisdiction") or "NG"`. A German invoice
+    was therefore read under the Nigerian NDPA, found nothing the NDPA has a
+    rule about, and reported every detection as "no statute" -- which reads as
+    arche having no coverage rather than arche having been pointed at the wrong
+    country. Detecting the jurisdiction is the thing that makes the rest of it
+    worth anything, and the tab was skipping it.
+
+    An explicit choice still wins: somebody who picks a jurisdiction in the UI
+    is stating a fact about their obligation, and inference must not overrule
+    it. Only the *absence* of a choice triggers detection.
+
+    All documents are inferred together. They are being compared, so they are
+    meant to be one matter, and letting two files disagree about the governing
+    law would make the entity links across them incoherent.
+
+    Returns the jurisdiction and a report of how it was decided. The report is
+    part of the answer, not debug output: "we guessed DE from a Handelsregister
+    number" and "you told us DE" support very different levels of trust.
+    """
+    from arche.jurisdictions.infer import infer_jurisdiction
+    from arche.policy import statute_for
+
+    chosen = (payload.get("jurisdiction") or "").strip().upper() or None
+    report: dict = {"source": "requested" if chosen else "inferred",
+                    "requested": chosen, "inferred": None, "confidence": None,
+                    "evidence": [], "statute": None, "statute_available": None,
+                    "note": ""}
+
+    if not chosen:
+        inferred = infer_jurisdiction("\n\n".join(text for text, _ in read))
+        country = getattr(inferred, "country", None)
+        report["inferred"] = country
+        report["confidence"] = round(float(getattr(inferred, "confidence", 0) or 0), 3)
+        report["evidence"] = [
+            {"signal": getattr(e, "signal", None), "tier": getattr(e, "tier", None),
+             "country": getattr(e, "country", None),
+             "sample": getattr(e, "sample", None)}
+            for e in (getattr(inferred, "evidence", ()) or ())
+        ][:6]
+        chosen = country
+        if not country:
+            # No country means no statute pack, and the detectors fall back to
+            # the cross-cutting set. Saying so is the honest output: a document
+            # arche cannot place is a real result, not an error.
+            report["note"] = (
+                "No jurisdiction could be inferred from these documents, so no "
+                "statute pack applies and only the cross-cutting detectors ran. "
+                "Choose one explicitly if you know which law governs.")
+            return None, report
+
+    choice = statute_for(chosen)
+    report["statute"] = getattr(choice, "statute_id", None)
+    report["statute_available"] = bool(getattr(choice, "available", False))
+    if not report["statute_available"]:
+        # `US` lands here, and the reason matters: there is no omnibus federal
+        # privacy statute to apply. That is a fact about US law rather than a
+        # gap in arche, and `statute_for` says so in its own words.
+        report["note"] = getattr(choice, "reason", "") or ""
+        report["alternatives"] = list(getattr(choice, "alternatives", ()) or ())
+    return chosen, report
 
 
 def _documents(payload: dict) -> dict:
@@ -392,15 +556,23 @@ def _documents(payload: dict) -> dict:
     if len(documents) > 8:
         raise ValueError("eight documents at a time is the limit; this is a "
                          "reading tool, not a batch pipeline")
-    jurisdiction = payload.get("jurisdiction") or "NG"
     reveal = bool(payload.get("reveal"))
+
+    # Text first, jurisdiction second. The tab used to hardcode
+    # `payload.get("jurisdiction") or "NG"`, so a German invoice was read under
+    # the Nigerian NDPA and every finding came back "no statute". arche can work
+    # out which law governs a document; not asking it was the bug.
+    read = [_document_text(doc) for doc in documents]
+    for text, name in read:
+        if not text.strip():
+            raise ValueError(f"{name} has no readable text in it")
+
+    jurisdiction, inference = _pick_jurisdiction(payload, read)
     pipeline = Pipeline(jurisdiction=jurisdiction)
 
     out_docs = []
     for index, doc in enumerate(documents):
-        text, name = _document_text(doc)
-        if not text.strip():
-            raise ValueError(f"{name} has no readable text in it")
+        text, name = read[index]
 
         result = pipeline.process(text)
         # Index the policy outcomes by the span they cover, so each detection
@@ -416,11 +588,45 @@ def _documents(payload: dict) -> dict:
                     "applied": getattr(policy, "applied_value", None),
                     "rationale": getattr(policy, "rationale", None)}
 
+        # TWO detectors run here, and conflating them was the bug.
+        #
+        # `pipeline.process` runs the jurisdiction-aware detector set and emits
+        # `PII-*` categories that the statute has rules about. `detect` runs the
+        # general entity recogniser and emits `PERSON`, `ORGANIZATION`, `MONEY`
+        # and so on. They are different vocabularies over different spans, and
+        # the tab used to list `detect`'s output and look up each span in the
+        # *pipeline's* outcomes. Measured on a real German invoice: 28 detected
+        # entities, 4 policy outcomes, **2 spans in common**. The other 26 were
+        # labelled "no rule covered this / no statute" -- which states that a
+        # statute was consulted and had nothing to say, when in truth the policy
+        # engine never saw that span at all.
+        #
+        # That is the worst available way to be wrong: a plumbing mismatch
+        # rendered as a legal finding. Widening the join to overlap does not
+        # help; overlap and exact match both give 2.
+        #
+        # So both are listed, and each row now says which detector produced it.
+        # A policy row carries a real verdict. A detector row says plainly that
+        # the policy engine did not evaluate it, and is still hidden when it
+        # names somebody -- an unevaluated identity is not a cleared one.
+        pipe_spans = {(int(d.start), int(d.end)) for d in
+                      (getattr(result, "detections", []) or [])}
+        found: list[tuple[str, object, dict | None]] = [
+            ("policy", d, outcomes.get((int(d.start), int(d.end))))
+            for d in (getattr(result, "detections", []) or [])
+        ]
+        # `detect` also finds the email the pipeline found. Listing it twice
+        # would double-count it and let one copy contradict the other, so a
+        # detector finding that lands on a policy span is dropped in favour of
+        # the row that carries the verdict.
+        found += [("detector", e, None) for e in detect(text)
+                  if (int(e.start), int(e.end)) not in pipe_spans]
+
         entities = []
-        for entity in detect(text):
+        for origin, entity, outcome in found:
             span = (int(entity.start), int(entity.end))
-            verdict = _classify(entity, outcomes.get(span))
-            kind = (entity.entity_type or "UNKNOWN").upper()
+            kind = _entity_kind(entity)
+            verdict = _classify(entity, outcome, origin=origin, kind=kind)
             # Content-addressed, but over the position and type rather than the
             # value: an id that hashed the text would be a way to confirm a
             # guess at what was hidden.
@@ -430,8 +636,14 @@ def _documents(payload: dict) -> dict:
                      if verdict["masked"] else entity.text)
             entities.append({
                 "id": eid, "type": kind, "span": list(span),
+                "origin": origin,
+                # The statute's own vocabulary, kept beside the display type.
+                # `PII-1-NAME` is what the citation refers to; `PERSON` is what
+                # a reader recognises. Dropping either loses something.
+                "category": getattr(entity, "category", None),
                 "confidence": round(float(entity.confidence or 0), 3),
-                "detector": entity.source,
+                "detector": (getattr(entity, "detector", None)
+                             or getattr(entity, "source", None)),
                 # `raw` never leaves this process unless `reveal` is set; it is
                 # stripped at the boundary below. `shown` is what a page that
                 # has not asked is allowed to see.
@@ -461,8 +673,34 @@ def _documents(payload: dict) -> dict:
             for entity in doc["entities"]:
                 entity.pop("raw", None)
     return {"jurisdiction": jurisdiction, "revealed": reveal,
+            # How the jurisdiction was arrived at, and what a detector for it
+            # can and cannot find. Both are part of the answer.
+            #
+            # A page listing findings without this cannot distinguish "nothing
+            # to find" from "no detector able to look", and the second is the
+            # one that gets somebody hurt. For a German document arche reports
+            # 19 uncovered categories, because it ships no German ID pack -- and
+            # that single honest statement replaces 26 rows each wrongly
+            # implying a statute had been consulted.
+            "jurisdiction_report": inference,
+            "coverage": _coverage_report(pipeline),
             "documents": out_docs, "links": links,
             "counts": _entity_counts(out_docs)}
+
+
+def _coverage_report(pipeline) -> dict:
+    """What this pipeline could have found, beside what it did.
+
+    Wrapped rather than called inline so a missing or changed `coverage` cannot
+    take the whole tab down: the findings are still worth showing when the
+    self-assessment is unavailable, and an exception here would lose both.
+    """
+    try:
+        from arche.coverage import coverage
+
+        return coverage(pipeline)
+    except Exception as exc:  # noqa: BLE001 - reported, never fatal
+        return {"error": f"coverage unavailable: {exc}"}
 
 
 def _hide_spans(text: str, entities: list[dict]) -> str:
