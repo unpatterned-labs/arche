@@ -82,7 +82,7 @@ decision_id    dec:sha256:fc5b9ce303...
 gate           {'distinctive_cleared': False, 'clearing_signal': None, 'floor': 0.75}
 factors        {'name': 0.9733, 'name_tf': 0.3465}
 vetoes         {'id_conflict': False}
-pins           {'engine': 'arche-core@0.5.0a1', ...}
+pins           {'engine': 'arche-core@0.6.0a1', ...}
 ```
 
 `pairwise(entity="place")` raises. `crosswalk` is the place path.

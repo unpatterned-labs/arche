@@ -77,7 +77,7 @@ What ships and what is installed. Cheap, pure, and the honest first call: severa
 
 ```json
 {
-  "arche_core_version": "0.5.0a1",
+  "arche_core_version": "0.6.0a1",
   "jurisdictions_inferable": ["DE", "EU", "GB", "KE", "NG", "US", "ZA"],
   "extras": {"detect": true, "splink": true, "doc": false}
 }

@@ -65,4 +65,15 @@ def test_version():
     # The minor version moved because a replaceable scorer changes what the
     # library is, not merely what it scores. An alpha suffix says the surface
     # may still move; it should not be asked to also hide a change of shape.
-    assert __version__ == "0.5.0a1"
+    #
+    # 0.6.0a1 moves the minor again, on the same rule. It adds public API that
+    # did not exist — `arche.coverage`, `arche.policy.statute_for`,
+    # `arche.resolve.compare_names`, `arche.review.read_records`,
+    # `Pipeline.effective_detectors` — and a fifth refusal in the egress guard,
+    # which is a behaviour change rather than an addition. A patch bump would
+    # have described that as a fix.
+    #
+    # It is also the release `arche-mcp` pins against. Every one of those five
+    # names is imported by the MCP server, so publishing 0.5.0a1 and pointing
+    # arche-mcp at it would ship a package that fails on import.
+    assert __version__ == "0.6.0a1"

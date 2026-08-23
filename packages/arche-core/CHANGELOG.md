@@ -2,7 +2,15 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [0.6.0a1] — 2026-08-23
+
+**The guard learned to say what it cannot see, jurisdiction learned to explain itself, and `arche-mcp` got the public API it needed to exist.**
+
+The minor moved for two reasons. Five names that did not exist are now public API — `arche.coverage`, `arche.policy.statute_for`, `arche.resolve.compare_names`, `arche.review.read_records`, `Pipeline.effective_detectors` — and the egress guard gained a fifth refusal, which changes behaviour rather than adding to it. A patch bump would have described that as a fix.
+
+It is also the release `arche-mcp` pins against. Every one of those five names is imported by the MCP server, so publishing `arche-mcp` against 0.5.0a1 would have shipped a package that fails on import.
+
+The thread running through most of it: **a system that cannot find something and a system that found nothing look identical from outside, and the difference is the whole value of the answer.** That was true of the guard, of jurisdiction inference, of detector calibration, and of the anchor extractor that could not read a lowercase landmark. Each one is fixed by saying so rather than by detecting more.
 
 ### Added — `arche.policy.statute_for`, and the EU row that was missing
 

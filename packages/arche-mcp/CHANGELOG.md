@@ -65,7 +65,7 @@ Every tool that returns offsets says which text they index. `guarded_scan`'s red
 
 ### Fixed — no private imports from arche-core
 
-The handlers reached into `arche.cli._load_records` and `arche.resolve._matcher.compare_names`. Publishing freezes whatever you import, and a version pin does not protect a private name because a patch release can rename it. Both now have public homes in `arche-core` 0.5.0a1: `arche.resolve.compare_names` and `arche.review.read_records`.
+The handlers reached into `arche.cli._load_records` and `arche.resolve._matcher.compare_names`. Publishing freezes whatever you import, and a version pin does not protect a private name because a patch release can rename it. Both now have public homes in `arche-core` 0.6.0a1: `arche.resolve.compare_names` and `arche.review.read_records`.
 
 ### Fixed — the MCP SDK moved
 
@@ -73,4 +73,4 @@ The server was written against `mcp.server.fastmcp`, which the SDK removed in 2.
 
 ### The arche-core pin
 
-`arche-core>=0.5.0a1,<0.6.0`, and the upper bound is the point. `uvx arche-mcp` re-resolves on every invocation, so an open pin means the hour a breaking arche-core alpha is published, every existing user's next run breaks at once, with no action by them and none by us. A closed bound turns that into a release chore we control.
+`arche-core>=0.6.0a1,<0.7.0`, and both bounds matter. The floor is hard: this package imports `arche.coverage`, `arche.policy.statute_for`, `arche.resolve.compare_names` and `arche.review.read_records`, none of which exist in 0.5.0a1. The ceiling is the point. `uvx arche-mcp` re-resolves on every invocation, so an open pin means the hour a breaking arche-core alpha is published, every existing user's next run breaks at once, with no action by them and none by us. A closed bound turns that into a release chore we control.
