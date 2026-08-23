@@ -3,7 +3,6 @@
 
 """PlaceResolver — resolve UK postcodes and landmarks to public-registry records.
 
-Per docs/ceo-plans/2026-05-24-places-resolver.md (CEO + design + eng reviews).
 
 Two query modes share the same backend:
     1. Anchored: "find me a dentist near St Thomas' Hospital in SW1"
@@ -17,13 +16,23 @@ the DEMO_LIVE_API=true env var (per spec §4.4).
 
 Public API::
 
-    from arche.resolve.places import PlaceResolver, PlaceEntity, PlaceRecord
+    from arche.resolve.places import PlaceResolver, PlaceReference, PlaceRecord
     from arche.resolve.places import PlaceReport, PlaceDirectoryReport, TraceEvent
 
     resolver = PlaceResolver()
-    entities = resolver.detect("find me a dentist near St Thomas' Hospital in SW1")
-    record = resolver.resolve(entities[0])
+    references = resolver.detect("find me a dentist near St Thomas' Hospital in SW1")
+    record = resolver.resolve(references[0])
     safe_record = resolver.redact(record, jurisdiction="GB")
+
+The three nouns are deliberately distinct and the distinction is the module's
+whole vocabulary:
+
+    PlaceReference   a span in text, and what was written there
+    PlaceRecord      one source's assertion about a place, with its provenance
+    (no Place type)   the facility itself is never materialised — see PlaceRecord
+
+``PlaceEntity`` was the old name for ``PlaceReference`` and still resolves,
+with a DeprecationWarning.
 
 Top-level convenience helpers live in ``arche.__init__``::
 
@@ -95,8 +104,29 @@ PlaceKind = Literal[
 
 
 @dataclass
-class PlaceEntity:
-    """A place mention detected in raw text."""
+class PlaceReference:
+    """A place named in text: the span, and what was written there.
+
+    Renamed from ``PlaceEntity``, which had it backwards. Look at the fields —
+    a span, the text at it, and a confidence. There is no identity here, no
+    coordinates, no source, nothing that could distinguish this facility from
+    another with the same name. It is a *reference to* a place, not the place.
+
+    That distinction is the project's own, stated in
+    `concepts/drafts/place-identity.md`: *"A place reference is not the place …
+    `Karfi Health Post` and `Karfi Primary Health Centre` are two references
+    whose disagreement is history, not noise."* A type called `PlaceEntity`
+    holding a text span taught every reader the opposite of that on their way
+    in, which is an expensive thing for a name to do.
+
+    ``reference`` rather than ``mention`` for two reasons: it is the term of art
+    in the entity-resolution literature the drafts cite (Talburt's *entity
+    reference*), and ``PlaceMention`` is already taken by
+    :class:`arche.addr.roles.PlaceMention`, which is a different thing — a span
+    that additionally carries a spatial role and the cue that decided it.
+
+    ``PlaceEntity`` still resolves, with a warning. See the module footer.
+    """
 
     span: tuple[int, int]
     text: str
@@ -106,7 +136,19 @@ class PlaceEntity:
 
 @dataclass
 class PlaceRecord:
-    """A resolved place. Safe-to-display view only.
+    """One source's assertion about a place. Safe-to-display view only.
+
+    The name is right and the previous docstring was not: it said "a resolved
+    place", which promises the thing itself. The fields say otherwise —
+    ``source`` and ``raw_redacted`` are here precisely because this is what
+    *one registry* said, and two registries will say different things about the
+    same facility. That disagreement is the input to resolution, not a defect
+    in it.
+
+    There is deliberately no ``Place`` type anywhere in arche. The moment one
+    exists it promises a registry, and `Karfi Health Post` becoming `Karfi
+    Primary Health Centre` turns into a merge conflict instead of what it
+    actually is: an upgrade, with a date.
 
     The full unredacted upstream payload is NEVER stored here. It's signed
     via arche.sign and written to the audit log; this record carries only
@@ -341,19 +383,19 @@ class PlaceResolver:
 
     # ── detection ────────────────────────────────────────────────────────────
 
-    def detect(self, text: str) -> list[PlaceEntity]:
+    def detect(self, text: str) -> list[PlaceReference]:
         """Find postcodes, landmarks, and category keywords in `text`."""
         if not text or not text.strip():
             return []
 
-        entities: list[PlaceEntity] = []
+        entities: list[PlaceReference] = []
         seen_spans: set[tuple[int, int]] = set()
 
         # Full UK postcodes (highest specificity)
         for m in _UK_POSTCODE_RE.finditer(text):
             span = (m.start(), m.end())
             if span not in seen_spans:
-                entities.append(PlaceEntity(span=span, text=m.group(0),
+                entities.append(PlaceReference(span=span, text=m.group(0),
                                             kind="postcode", confidence=0.99))
                 seen_spans.add(span)
 
@@ -363,7 +405,7 @@ class PlaceResolver:
             if any(s[0] <= span[0] and s[1] >= span[1] for s in seen_spans):
                 continue
             if span not in seen_spans:
-                entities.append(PlaceEntity(span=span, text=m.group(0),
+                entities.append(PlaceReference(span=span, text=m.group(0),
                                             kind="postcode", confidence=0.85))
                 seen_spans.add(span)
 
@@ -371,7 +413,7 @@ class PlaceResolver:
         for m in _LANDMARK_HINT_RE.finditer(text):
             span = (m.start(1), m.end(1))
             if span not in seen_spans:
-                entities.append(PlaceEntity(span=span, text=m.group(1),
+                entities.append(PlaceReference(span=span, text=m.group(1),
                                             kind="landmark", confidence=0.80))
                 seen_spans.add(span)
 
@@ -399,7 +441,7 @@ class PlaceResolver:
 
     def resolve_anchored(
         self,
-        anchor: PlaceEntity,
+        anchor: PlaceReference,
         categories: Iterable[str],
         radius_m: int = 500,
     ) -> list[PlaceRecord]:
@@ -501,7 +543,7 @@ class PlaceResolver:
 
     def _load_anchored_fixture(
         self,
-        anchor: PlaceEntity,
+        anchor: PlaceReference,
         categories: Iterable[str],
         radius_m: int,
     ) -> list[PlaceRecord]:
@@ -873,3 +915,52 @@ def _run_directory(
         next_cursor=next_cursor,
         total_estimate=total,
     )
+
+
+#: The public surface, declared rather than inferred. `PlaceEntity` is
+#: deliberately absent: it resolves for compatibility and should not be
+#: presented as a name to reach for.
+__all__ = [
+    "PlaceDirectoryReport",
+    "PlaceRecord",
+    "PlaceReference",
+    "PlaceReport",
+    "PlaceResolver",
+    "TraceEvent",
+]
+
+# ── deprecated name ──────────────────────────────────────────────────────────
+#
+# `PlaceEntity` was the documented import for this class — the module docstring
+# above showed it — and arche-core is on PyPI, so removing it outright would
+# break somebody's code to fix somebody else's confusion. It resolves, and it
+# says why it should not be used.
+#
+# Module-level `__getattr__` (PEP 562) rather than a plain assignment, because a
+# plain alias is silent: a caller keeps the old name forever and never learns
+# there is a better one. This way the deprecation is a fact they encounter
+# rather than a note they would have had to go looking for.
+_RENAMED = {
+    "PlaceEntity": (
+        "PlaceReference",
+        "it holds a text span, not an entity — a span, the text at it, and a "
+        "confidence, with no identity, coordinates or source. See "
+        "concepts/drafts/place-identity.md: a place reference is not the place",
+    ),
+}
+
+
+def __getattr__(name: str):
+    """Resolve a renamed public name, once, with a warning."""
+    if name in _RENAMED:
+        new, why = _RENAMED[name]
+        import warnings
+
+        warnings.warn(
+            f"arche.resolve.places.{name} is renamed to {new}: {why}. "
+            f"{name} still works and will be removed no earlier than 0.8.0.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[new]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

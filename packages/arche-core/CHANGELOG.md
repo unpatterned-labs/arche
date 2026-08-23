@@ -12,6 +12,32 @@ It is also the release `arche-mcp` pins against. Every one of those five names i
 
 The thread running through most of it: **a system that cannot find something and a system that found nothing look identical from outside, and the difference is the whole value of the answer.** That was true of the guard, of jurisdiction inference, of detector calibration, and of the anchor extractor that could not read a lowercase landmark. Each one is fixed by saying so rather than by detecting more.
 
+### Changed — `PlaceEntity` is `PlaceReference`, because it never held an entity
+
+`concepts/drafts/place-identity.md` states the model plainly: *"A place reference is not the place … `Karfi Health Post` and `Karfi Primary Health Centre` are two references whose disagreement is history, not noise."*
+
+`arche/resolve/places.py` contradicted it in the first type a reader meets. Look at the fields:
+
+```python
+class PlaceEntity:      # a span, the text at it, a confidence
+    span: tuple[int, int]
+    text: str
+    kind: PlaceKind
+    confidence: float
+```
+
+No identity, no coordinates, no source, nothing that could distinguish this facility from another with the same name. That is a *reference*, wearing the name of the thing it refers to. A name that teaches the opposite of the model is expensive, because nobody reads the draft first.
+
+`reference` rather than `mention` for two reasons: it is the term of art in the entity-resolution literature the drafts cite (Talburt's *entity reference*), and `PlaceMention` is already taken by `arche.addr.roles.PlaceMention`, which is a different thing — a span that additionally carries a spatial role and the cue that decided it.
+
+**`PlaceEntity` still resolves**, through a module-level `__getattr__`, with a `DeprecationWarning` naming the replacement and the reason. It was the documented import and arche-core is on PyPI, so removing it outright would break somebody's code to fix somebody else's confusion. Removal no earlier than 0.8.0. A plain alias would have been silent; the point is that a caller learns there is a better name rather than keeping the old one forever.
+
+**`PlaceRecord` keeps its name and loses a wrong docstring.** It said *"A resolved place"*, which promises the facility itself. Its fields say otherwise — `source` and `raw_redacted` are there precisely because this is what *one registry* asserted, and two registries disagree about the same facility routinely. That disagreement is the input to resolution, not a defect in it.
+
+**There is still deliberately no `Place` type**, and a test now says so. The moment one exists it promises a registry, and `Karfi Health Post` becoming `Karfi Primary Health Centre` turns into a merge conflict instead of what it is: an upgrade, with a date.
+
+The module also gains an `__all__`. It had none, so its public surface was whatever happened to sit at module scope — which is part of how a documented name and its own docstring drifted apart with nothing noticing. It had no tests at all; it has 14 now, and 10 of them fail against the old naming.
+
 ### Added — `arche.policy.statute_for`, and the EU row that was missing
 
 `arche.jurisdictions.infer` could name a country with confidence 1.0 that no statute pack covered. What happened next was a refusal reading *"no statute configured on the pipeline"*, which describes arche's internal state rather than the caller's situation and reads as a bug. An agent following the detect-jurisdiction flow hit that wall on any US or EU document.
