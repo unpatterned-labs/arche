@@ -288,6 +288,17 @@ button.go:hover{text-decoration:underline;text-decoration-color:var(--accent);te
   --paper:#F5F7FA; --surface:#FFFFFF; --ink:#101828; --muted:#475467;
   --rule:#D0D5DD; --accent:#F26B3A; --code:#F2F4F7;
   --ok:#067647; --hold:#B54708; --no:#B42318;
+  /* Six values were set as literals below this block: a hover border, a hover
+     ground, a pressed button, a status tint and its dot, and the chat bubble.
+     Declared tokens plus loose hexes is what "nearly finished" looks like --
+     each one is defensible alone and together they read as two designs. Named
+     here so a change to the palette reaches all of them. */
+  --rule-strong:#98A2B3;   /* a border under the pointer */
+  --hover:#FCFCFD;         /* a row or list item under the pointer */
+  --ink-press:#344054;     /* a dark control, pressed */
+  --ok-tint:#ECFDF3;       /* the live-status pill ground */
+  --ok-dot:#12B76A;        /* the live-status dot itself */
+  --accent-tint:#FFF7ED;   /* what the person said, in chat */
   --serif:"IBM Plex Sans",Arial,sans-serif;
   --display:"Fraunces",Georgia,serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -307,26 +318,26 @@ nav button:hover{background:var(--code);color:var(--ink)}
 nav button[aria-current=true]{background:var(--ink);color:var(--surface);border-bottom-color:var(--ink)}
 nav .command-key{margin-left:auto;font-family:var(--mono);font-size:11px;border-color:var(--rule);color:var(--muted);padding:7px 9px}
 main{padding-top:22px}.workspace-bar{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-.workspace-status{background:#ECFDF3;color:#067647;border-radius:999px;padding:4px 8px;font-size:11px}.workspace-status i{background:#12B76A}
+.workspace-status{background:var(--ok-tint);color:var(--ok);border-radius:999px;padding:4px 8px;font-size:11px}.workspace-status i{background:var(--ok-dot)}
 section{padding:28px 0 50px}.split{grid-template-columns:minmax(0,1fr) var(--margin-col);gap:32px}.margin{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;font-size:14px;line-height:1.5;box-shadow:0 1px 2px rgba(16,24,40,.03)}
 .margin p{margin-bottom:16px}.label{font-family:var(--mono);font-size:11px;letter-spacing:.09em}.lede{font-size:18px!important;line-height:1.55}.rule{margin:24px 0}
 input,select,textarea{font-family:var(--serif);font-size:16px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;transition:border-color .16s,box-shadow .16s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(242,107,58,.14)}
 textarea{font-size:16px;padding:14px;min-height:180px}.row{gap:10px;margin-top:20px}
 button.act{font-family:var(--serif);font-size:13px;letter-spacing:.01em;text-transform:none;border-radius:8px;background:var(--ink);border-color:var(--ink);color:var(--surface);padding:10px 14px;transition:transform .14s,background .14s,border-color .14s}
-button.act:hover{background:#344054;color:var(--surface);transform:translateY(-1px)}button.act.quiet{background:var(--surface);border-color:var(--rule);color:var(--ink)}button.act.quiet:hover{background:var(--code);border-color:#98A2B3}
-.stat{font-family:var(--mono);font-size:11px}.dz{background:var(--surface);border:1px dashed #98A2B3;border-radius:10px;padding:22px}.passage,.doctext,.cres{border-radius:8px}
+button.act:hover{background:var(--ink-press);color:var(--surface);transform:translateY(-1px)}button.act.quiet{background:var(--surface);border-color:var(--rule);color:var(--ink)}button.act.quiet:hover{background:var(--code);border-color:var(--rule-strong)}
+.stat{font-family:var(--mono);font-size:11px}.dz{background:var(--surface);border:1px dashed var(--rule-strong);border-radius:10px;padding:22px}.passage,.doctext,.cres{border-radius:8px}
 .gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th{background:var(--surface)}
 .desk-grid{gap:42px}.desk-hero{padding:48px 0 38px;border-bottom:0}.desk-hero h2{font-family:var(--display);font-size:clamp(44px,5vw,74px);line-height:.98;max-width:12ch}.desk-hero .lede{max-width:58ch;margin-top:26px}
-.question-list{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}.question-list li{padding:22px 20px}.question-list li:hover{background:#FCFCFD}.question-list strong{font-size:18px}.question-list span:last-of-type{font-size:14px}
+.question-list{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}.question-list li{padding:22px 20px}.question-list li:hover{background:var(--hover)}.question-list strong{font-size:18px}.question-list span:last-of-type{font-size:14px}
 .case-rail{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:12px;margin-top:48px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.case-rail h3,.desk-section h3{font-size:12px;letter-spacing:.07em}.desk-section{padding:24px 0}.desk-section:first-child{padding-top:30px}
 .command[hidden]{display:none}.command{background:rgba(16,24,40,.46);padding:10vh 20px;place-items:start center}.command-panel{width:min(720px,calc(100vw - 40px));background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:22px;outline:0;box-shadow:0 20px 60px rgba(16,24,40,.22)}
-.command-panel h2{font-family:var(--display);font-size:24px}.command-panel input{background:var(--code);font-size:16px}.tool-context{padding:0 0 16px}.command-list{gap:8px;border-top:0}.command-list button{border:1px solid var(--rule);border-radius:8px;padding:14px;background:var(--surface)}.command-list button:nth-child(odd),.command-list button:nth-child(even){padding-left:14px;padding-right:14px}.command-list button:hover{background:var(--code);border-color:#98A2B3}
+.command-panel h2{font-family:var(--display);font-size:24px}.command-panel input{background:var(--code);font-size:16px}.tool-context{padding:0 0 16px}.command-list{gap:8px;border-top:0}.command-list button{border:1px solid var(--rule);border-radius:8px;padding:14px;background:var(--surface)}.command-list button:nth-child(odd),.command-list button:nth-child(even){padding-left:14px;padding-right:14px}.command-list button:hover{background:var(--code);border-color:var(--rule-strong)}
 /* Chat is a working canvas. The conversation and its composer should never
    feel like a small field tucked under an essay. */
 #s-chat .split{grid-template-columns:minmax(0,1fr) 310px}#s-chat .lede{max-width:72ch}#chatlog{min-height:52vh;max-height:58vh;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
 #chatlog:empty::before{content:"Ask a question about the records, documents or evidence in front of you.";display:block;max-width:44ch;color:var(--muted);font-size:17px;margin:10vh auto 0;text-align:center}
-#s-chat .chat-composer{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px;margin-top:14px}#chatin{border:0;background:transparent;box-shadow:none!important;padding:12px;min-height:46px}.chip{font-size:12px!important;padding:7px 10px!important}.cyou{background:#FFF7ED;border-radius:8px;padding:10px 12px}.carche{background:var(--code);border-radius:8px;padding:10px 12px}.ctool{margin-left:12px}
+#s-chat .chat-composer{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px;margin-top:14px}#chatin{border:0;background:transparent;box-shadow:none!important;padding:12px;min-height:46px}.chip{font-size:12px!important;padding:7px 10px!important}.cyou{background:var(--accent-tint);border-radius:8px;padding:10px 12px}.carche{background:var(--code);border-radius:8px;padding:10px 12px}.ctool{margin-left:12px}
 @media(max-width:980px){header{position:static}.split,#s-chat .split{grid-template-columns:1fr}.margin{position:static}.case-rail{margin-top:0}}
 @media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}}
 </style>
@@ -1149,7 +1160,23 @@ const EX=[
   a:{name:"John Evelyn Smith"},b:{name:"John Smith"}},
  {entity:"place",note:"An academy chain. The brand is two thirds of each name.",
   a:{name:"Co-op Academy Leeds",lat:"53.8008",lon:"-1.5491"},
-  b:{name:"Co-op Academy Woodlands",lat:"53.8102",lon:"-1.5602"}}];
+  b:{name:"Co-op Academy Woodlands",lat:"53.8102",lon:"-1.5602"}},
+ {entity:"product_home_goods",
+  note:"One rug, two house styles. Different word order, different punctuation, same product — and it matches.",
+  a:{name:"SAFAVIEH Heritage Wool Area Rug Red Black 3 ft Round"},
+  b:{name:"SAFAVIEH Heritage Traditional Wool Area Rug, Red/Black, 3 ft Round"}},
+ {entity:"product_home_goods",
+  note:"A variant page against a family page. One names the size and colour, the other leaves them to a selector. Nearly the same words, not the same purchasable item.",
+  a:{name:"LCM Microfiber Down Alternative Blanket, King, Blue"},
+  b:{name:"LCM Microfiber Plush Down Alternative Blanket"}},
+ {entity:"product_home_goods",
+  note:"Six feet against seven, honey against natural. A room divider is not its taller cousin, and a price comparison between them is wrong.",
+  a:{name:"Oriental Furniture 7 ft. Tall Double Cross Shoji Screen Honey 3 Panels"},
+  b:{name:"Oriental Furniture 6 ft. Tall Double Cross Shoji Screen Natural 3 Panels"}},
+ {entity:"product_home_goods",
+  note:"King against Full/Queen. Everything else is identical, and the size is the product.",
+  a:{name:"LCM Microfiber Down Alternative Blanket, King, Blue"},
+  b:{name:"LCM Microfiber Down Alternative Blanket, Full/Queen, Blue"}}];
 let ei=0;
 function example(){const e=EX[ei++%EX.length];
   $("#fa").innerHTML="";$("#fb").innerHTML="";

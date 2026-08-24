@@ -88,6 +88,7 @@ __all__ = [
     "compare_codes",
     "compare_specs",
     "extract_product_code_candidates",
+    "extract_attributes",
     "extract_specs",
     "register_category",
 ]
@@ -111,7 +112,7 @@ _CODE_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9\-/]{2,}")
 # `inch`, `"` and `'` carry that unit instead.
 _SPEC = re.compile(
     r"(?<![A-Za-z0-9])(\d+(?:\.\d+)?)\s*-?\s*"
-    r"(gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pk|pack|g|l|w|v|p)"
+    r"(gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pieces|piece|panels|panel|pack|pk|g|l|w|v|p)"
     r"(?![a-z0-9])",
     re.I,
 )
@@ -120,10 +121,14 @@ _SPEC = re.compile(
 # synonym table here would be a lexicon pretending to be a parser.
 # A candidate that is nothing but a number and a unit.
 _QUANTITY_ONLY = re.compile(
-    r"\d+(?:gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pk|pack|g|l|w|v|p)"
+    r"\d+(?:gb|tb|mb|kb|mp|mhz|ghz|hz|wh|mah|mg|kg|mm|cm|ft|inch|oz|lb|ml|ct|pieces|piece|panels|panel|pack|pk|g|l|w|v|p)"
 )
 
-_UNIT_ALIASES = {"pk": "pack"}
+# `3 Panel` and `3 Panels` are one specification written two ways, and a
+# room divider sold as 3 panels is not the 4-panel one. Same for a
+# 1-piece chair against a 2-piece folding set, which is the bundle case
+# the relationship taxonomy calls out and a price comparison must not make.
+_UNIT_ALIASES = {"pk": "pack", "panels": "panel", "pieces": "piece"}
 _UNIT_SCALE: dict[str, float] = {}
 
 
@@ -158,6 +163,33 @@ class ProductCategory:
     #: electronics moved a published Abt-Buy figure by one true match for no
     #: benefit at all.
     quantities_are_specs: bool = False
+    #: Categorical identity attributes, as ``(("colour", frozenset({...})), ...)``.
+    #:
+    #: ``identity_units`` above only reaches specifications that are a number
+    #: bound to a unit, because that is what an electronics title exposes. A
+    #: home-goods title does not: `King`, `Ivory`, `Plush` and `3 Panels`
+    #: distinguish two purchasable items and none of them is a measurement.
+    #: Measured on 600 cross-retailer pairs, every false merge in that category
+    #: turned on an attribute of this kind.
+    #:
+    #: A tuple of pairs rather than a mapping, so the dataclass stays hashable
+    #: and `register_category`'s equality check keeps working.
+    identity_attributes: tuple[tuple[str, frozenset[str]], ...] = ()
+    #: Treat "one side declares this attribute and the other declares none of
+    #: it" as a difference rather than as missing evidence.
+    #:
+    #: **This inverts the usual rule and is off by default.** Everywhere else in
+    #: arche an absent field is not a disagreement, and for good reason. Here it
+    #: is the single most common way a retailer catalogue misleads: one listing
+    #: is a *variant* page (`Blanket, King, Blue`) and the other is a *family*
+    #: page (`Plush Blanket`) with the variant chosen elsewhere. They are not
+    #: the same purchasable item, they score as near-identical text, and six of
+    #: twelve measured false merges were exactly this.
+    #:
+    #: Under a sellable-variant contract the asymmetry is the evidence. Under a
+    #: family contract it is noise, which is why it is a per-category flag and
+    #: not a rule.
+    asymmetry_refutes: bool = False
     experimental: bool = True
 
 
@@ -235,6 +267,83 @@ register_category(ProductCategory(
     min_code_len=8,
     min_bare_number_len=8,
     identity_units=(),
+    experimental=True,
+))
+
+
+#: Bed and bath sizes. `full/queen` and `twin xl` are written both ways, and
+#: splitting on `/` in the extractor means a listing carrying `Full/Queen`
+#: registers both — which is correct, because such an item genuinely fits both.
+_BED_SIZES = frozenset({
+    "twin", "twin xl", "full", "double", "queen", "king", "cal king",
+    "california king", "full/queen", "twin/full", "crib", "toddler",
+})
+
+#: Colours and finishes that name a purchasable variant. Deliberately a short
+#: list of terms retailers actually put in titles, not a colour lexicon: a long
+#: one would start firing on brand and pattern names ("Sage Green Collection"
+#: is a range, "Sage" is a colourway) and the failure would be silent.
+_COLOURS = frozenset({
+    "black", "white", "ivory", "cream", "beige", "tan", "khaki", "taupe",
+    "grey", "gray", "charcoal", "silver", "gold", "brown", "chocolate",
+    "espresso", "natural", "honey", "walnut", "oak", "cherry", "mahogany",
+    "blue", "navy", "teal", "aqua", "turquoise", "green", "sage", "olive",
+    "red", "burgundy", "wine", "pink", "blush", "rose", "purple", "plum",
+    "lavender", "yellow", "mustard", "orange", "rust", "multicolor",
+    "multicolour",
+})
+
+#: Materials and finishes. A shopper choosing between them is choosing between
+#: products, not between descriptions of one.
+_MATERIALS = frozenset({
+    "cotton", "linen", "microfiber", "polyester", "velvet", "sherpa", "fleece",
+    "flannel", "satin", "silk", "wool", "leather", "faux leather", "suede",
+    "bamboo", "jute", "sisal", "rattan", "wicker", "rubber", "vinyl", "canvas",
+    "denim", "chenille", "corduroy", "plush", "memory foam", "latex", "down",
+    "glass", "ceramic", "porcelain", "stainless steel", "wood", "metal",
+})
+
+#: Shape, which distinguishes rugs and tables that are otherwise identical.
+#: A `7'6" x 9'6"` rug exists as both a rectangle and an oval.
+_SHAPES = frozenset({
+    "oval", "round", "square", "rectangle", "rectangular", "runner",
+    "octagon", "hexagon", "heart",
+})
+
+register_category(ProductCategory(
+    name="home_goods",
+    # Furniture, bedding, rugs, window treatments, decor. Registered because
+    # pointing `product_electronics` at this catalogue silently disables both of
+    # its safety mechanisms: `code` finds no model numbers in a home-goods title
+    # and `spec` looks for GB and GHz. What survives is title similarity with a
+    # rarity gate, which merges variants of one family.
+    #
+    # MEASURED, and the measurement is the reason for every field below. On 600
+    # cross-retailer pairs from a real offer feed (Amazon against Walmart, with
+    # a shared product id as truth), the `electronics` pack produced 12 false
+    # merges. Every one of them turned on one of three things this category
+    # supplies: a length that was extracted but never consulted, a colour or
+    # material that disagreed, or a variant attribute present on one side only.
+    #
+    # `ft` and `inch` are the important entries in `identity_units`. A 6 ft and
+    # a 7 ft room divider are different products; the electronics category
+    # extracts `ft` already and simply never asks about it, because a foot is
+    # not an identity unit for a hard drive.
+    identity_units=("ft", "inch", "cm", "mm", "pack", "ct", "panel", "piece"),
+    identity_attributes=(
+        ("size", _BED_SIZES),
+        ("colour", _COLOURS),
+        ("material", _MATERIALS),
+        ("shape", _SHAPES),
+    ),
+    # The variant-versus-family case, which is the largest single failure here.
+    asymmetry_refutes=True,
+    # Home-goods titles carry dimensions constantly (`7'6" x 9'6"`), and a bare
+    # number in one is a size, never a model. Keep the electronics floor.
+    stop_codes=frozenset({
+        "piece", "pieces", "pc", "pcs", "set", "collection", "premium",
+        "handmade", "traditional", "modern", "classic", "luxury", "deluxe",
+    }),
     experimental=True,
 ))
 
@@ -320,6 +429,38 @@ def extract_specs(text: str, category: str | None = None) -> dict[str, set[float
         value = float(num) * _UNIT_SCALE.get(u, 1.0)
         u = _UNIT_ALIASES.get(u, u)
         out.setdefault(u, set()).add(value)
+    return out
+
+
+def extract_attributes(text: str, category: str | None = None) -> dict[str, set[str]]:
+    """Categorical identity attributes as ``{attribute: {terms}}``.
+
+    ``Blanket, Full/Queen, Ivory`` under ``home_goods`` gives
+    ``{'size': {'full', 'queen'}, 'colour': {'ivory'}}``.
+
+    Separators become spaces before matching, which is what makes `Full/Queen`
+    register as both sizes rather than as neither. That is the right reading:
+    an item sold as Full/Queen genuinely fits both, so it agrees with a listing
+    naming either one.
+
+    Empty for any category that declares no ``identity_attributes``, so
+    electronics, food and bibliographic are untouched.
+    """
+    cat = _category(category)
+    if not cat.identity_attributes:
+        return {}
+    lowered = _normalise_text((text or "")[:_MAX_TITLE_CHARS]).lower()
+    for sep in ",/()[]-":
+        lowered = lowered.replace(sep, " ")
+    padded = f" {' '.join(lowered.split())} "
+
+    out: dict[str, set[str]] = {}
+    for attribute, vocabulary in cat.identity_attributes:
+        # Substring against a space-padded string, so a multi-word term like
+        # `california king` is found and `king` inside `kingston` is not.
+        hits = {term for term in vocabulary if f" {term} " in padded}
+        if hits:
+            out[attribute] = hits
     return out
 
 
@@ -495,9 +636,27 @@ def compare_specs(
     cat = _category(category)
     sa, sb = extract_specs(text_a, category), extract_specs(text_b, category)
     units = {u for u in (set(sa) & set(sb)) if u in cat.identity_units}
-    if not units:
+    verdicts = [bool(sa[u] & sb[u]) for u in units]
+
+    # Categorical attributes, on the same contract as the numeric ones: only
+    # consulted when both sides declare the attribute, and a shared term counts
+    # as agreement. `Full/Queen` against `Queen` agrees, which is correct — one
+    # item is sold to fit both.
+    aa, ab = extract_attributes(text_a, category), extract_attributes(text_b, category)
+    verdicts += [bool(aa[a] & ab[a]) for a in (set(aa) & set(ab))]
+
+    if cat.asymmetry_refutes:
+        # One side names a variant attribute and the other names none of it.
+        # Everywhere else in arche an absent field is missing evidence rather
+        # than a disagreement; here it is the commonest way a catalogue
+        # misleads, because a variant page and a family page describe different
+        # purchasable things in near-identical words. Opt-in per category, and
+        # only ever against attributes the category itself declared.
+        verdicts += [False for _ in (set(aa) ^ set(ab))]
+
+    if not verdicts:
         return None
-    return 1.0 if all(sa[u] & sb[u] for u in units) else 0.0
+    return 1.0 if all(verdicts) else 0.0
 
 
 def build_brand_prefixes(values: Iterable[str], *, min_length: int = 4) -> frozenset[str]:

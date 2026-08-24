@@ -79,6 +79,16 @@ _DEFAULT_RESOURCES = {
     "artist": "artist_frequencies.json.gz",
     "place": "place_frequencies.json.gz",
     "organisation": "organisation_frequencies.json.gz",
+    # NOT an entity population. The other four answer "how common is this token
+    # among places / person names / companies / artists"; this one answers "is
+    # this token a word in English at all". It exists so a comparator can tell a
+    # product code from a noun, which no entity table can: measured on a
+    # catalogue corpus, `spout` scored 0.766 and `at21e` scored 0.721, an
+    # ordinary word rarer than an identifier.
+    #
+    # Built from public-domain Project Gutenberg text by
+    # `datasets/english_dataops/build_english_frequencies.py`.
+    "english": "english_frequencies.json.gz",
 }
 #: Phrase (bigram) tables that accompany a unigram table. A name whose every
 #: token is ordinary can still be distinctive as a PHRASE: `london`, `bridge`

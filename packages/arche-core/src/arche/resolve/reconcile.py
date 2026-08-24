@@ -110,11 +110,17 @@ _FIELD_COMPARATORS = {
 # fields rare-token union blocking keys on).
 _TEXT_KINDS = ("tftoken", "name", "placename", "address")
 
-_DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken", "code")
+# `tokenset` is here for the same reason `name` is: it is a similarity over
+# text, so it can carry the gate. Leaving it out is not neutral -- a pack whose
+# only text comparator was `tokenset` produced `distinctive_max` 0.0 on every
+# pair, so the gate demoted all of them and the run returned zero matches from
+# 93% of true pairs surfaced. That reads exactly like a comparator that does not
+# work, and it was a comparator the gate could not see.
+_DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken", "code", "tokenset")
 # Kinds whose similarity is a claim about STRINGS, so it must be priced by the
 # rarity of what the two strings share before it may clear a gate. `id` is
 # absent on purpose: an identifier is distinctive by construction.
-_NAME_LIKE_KINDS = ("name", "placename", "tftoken")
+_NAME_LIKE_KINDS = ("name", "placename", "tftoken", "tokenset")
 
 
 def _text_values(
@@ -290,6 +296,44 @@ def _field_sim(
             return compare_specs(str(ra[field]), str(rb[field]), category)
         table = (code_tf or {}).get(category) if isinstance(code_tf, dict) else code_tf
         return compare_codes(str(ra[field]), str(rb[field]), table, category)
+    if kind == "tokenset":
+        # Long text: a product title, a description, a name with an address
+        # trailing it. Order- and length-tolerant, which the `name` comparators
+        # are not, because they are sequence measures built for two to four
+        # tokens of personal or place name.
+        from arche.resolve._gate import tokenset_similarity
+
+        field = spec["field"]
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        a_val, b_val = _text_values(spec, ra, rb, field)
+        if not a_val or not b_val:
+            return None
+        rule = getattr(tf, "token_rule", None) if tf is not None else None
+        return (tokenset_similarity(a_val, b_val, rule) if rule
+                else tokenset_similarity(a_val, b_val))
+    if kind == "rival":
+        # Each side carries a distinctive token the other lacks. Refuting only:
+        # returns 0.0 or None, never 1.0, so it cannot manufacture agreement.
+        # Needs the same table `tftoken` uses, because "distinctive" has to mean
+        # one thing within a run.
+        from arche.resolve._gate import DISTINCTIVE_FLOOR, rival_distinctive_tokens
+
+        if tf is None:
+            raise ValueError(
+                "comparator kind 'rival' requires a TokenFrequencyTable passed "
+                'as tf= (or tf="default"); it decides what counts as rare'
+            )
+        field = spec["field"]
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        a_val, b_val = _text_values(spec, ra, rb, field)
+        if not a_val or not b_val:
+            return None
+        return rival_distinctive_tokens(
+            a_val, b_val, tf,
+            floor=float(spec.get("floor", DISTINCTIVE_FLOOR)),
+        )
     if kind == "tftoken":
         if tf is None:
             raise ValueError(

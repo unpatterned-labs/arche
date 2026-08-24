@@ -215,12 +215,19 @@ class TestGeneralisation:
         and changelog, so enabling `refutes_below` on any of them is a separate,
         separately-measured decision rather than a side effect.
 
-        Two packs are exempt, by one principle: refutation is part of the
+        Three packs are exempt, by one principle: refutation is part of the
         identity contract they shipped with on their first release, so there is
         no earlier number for it to move.
 
         `product_electronics` — a purchasable variant, where a capacity or pack
         size difference means a different product.
+
+        `product_home_goods` — the same contract for furniture, bedding and
+        rugs, and it exists *because* refutation was missing there. Pointing
+        `product_electronics` at a home-goods catalogue silently disables both
+        its safety mechanisms, so this pack's first published numbers are
+        measured with `spec` and `rival` refutation already in them. Nothing
+        earlier to move.
 
         `organisation` — the party as named on a document, where sameness of
         *site* is not sameness of party. `Nyeri Hill Factory` and `Nyeri Hill
@@ -235,7 +242,9 @@ class TestGeneralisation:
 
         # By list identity, so the `organization` spelling alias is covered
         # without having to remember it here.
-        exempt = [ENTITY_PACKS["product_electronics"], ENTITY_PACKS["organisation"]]
+        exempt = [ENTITY_PACKS["product_electronics"],
+                  ENTITY_PACKS["product_home_goods"],
+                  ENTITY_PACKS["organisation"]]
         established = {
             name for name, specs in ENTITY_PACKS.items()
             if not any(specs is e for e in exempt)

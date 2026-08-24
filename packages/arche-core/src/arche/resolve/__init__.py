@@ -190,6 +190,34 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "name", "kind": "spec", "weight": 0.5,
          "category": "electronics", "refutes_below": 0.5},
     ],
+    # Home goods: furniture, bedding, rugs, window treatments, decor.
+    # EXPERIMENTAL. Exists because `product_electronics` pointed at this
+    # catalogue silently loses both of its safety mechanisms -- `code` finds no
+    # model numbers in a home-goods title and `spec` is looking for GB and GHz.
+    # What is left is title similarity with a rarity gate, which merges variants
+    # of one family.
+    #
+    # `code` keeps its weight because a rug still carries `AT312A` when the
+    # retailer publishes it. The difference is `spec`, which reads the
+    # `home_goods` category: lengths in feet and inches, plus the categorical
+    # attributes that actually distinguish a purchasable item here -- size,
+    # colour, material and shape -- and the variant-versus-family asymmetry.
+    "product_home_goods": [
+        {"field": "name", "kind": "name", "weight": 1.5},
+        {"field": "name", "kind": "code", "weight": 3.0, "category": "home_goods"},
+        {"field": "name", "kind": "tftoken", "weight": 1.5},
+        {"field": "name", "kind": "spec", "weight": 0.5,
+         "category": "home_goods", "refutes_below": 0.5},
+        # Each side carries a distinctive token the other lacks. Weight 0.0 and
+        # refuting: it contributes nothing to the score and can only hold a pair
+        # back, because "these are not the same" is the only thing it knows.
+        #
+        # The residual failure the vocabulary could not reach. One retailer
+        # lists a rug by product code (`AT21E`), another by design name
+        # (`Bethanie`), and everything else agrees. Measured on 600
+        # cross-retailer pairs, that shape was 41 of 43 false merges.
+        {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5},
+    ],
     # Organisations: companies, cooperatives, unions, institutional bodies.
     # EXPERIMENTAL. Measured on ER_Magellan Fodors-Zagats (946 labelled pairs,
     # 110 positives) against criteria declared before the run:
@@ -391,6 +419,11 @@ COMPARATOR_NOTES = {
     "id": "an exact identifier. Strong when it agrees",
     "code": "a product or model code",
     "spec": "a specification drawn out of the name, such as a capacity or size",
+    "tokenset": "how much of the shorter text is also in the longer one, as a bag of words. Order- and length-tolerant, for long titles and descriptions",
+    "rival": "whether each side names something distinctive the other does "
+             "not. Two listings that each carry their own rare identifier "
+             "are identifying different things. It can only hold a pair "
+             "back, never push one up",
     "phone": "a phone number, normalised before comparison",
     "email": "an email address",
     "address": "a postal address, compared by its parts",
@@ -441,6 +474,7 @@ ENTITY_PACK_PURPOSE: dict[str, str] = {
     "artist": "performing artists and recording names, including aliases and "
               "stage names",
     "product_electronics": "electronic products, by model code and specification",
+    "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes — size, colour, material, shape and length. Use this rather than `product_electronics` for anything without a model code",
 }
 
 
