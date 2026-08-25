@@ -417,6 +417,14 @@ def _derive(list_a: list[dict], list_b: list[dict], comparators: list[dict],
             f"(kinds seen: {sorted({str(c.get('kind')) for c in comparators})}). "
             "Pass comparators= with a supported kind, or use the default backend."
         )
+    if len(comparisons) == 1:
+        raise SplinkBackendError(
+            "cannot derive a Splink configuration from one mappable comparison. "
+            "Every candidate key would be built from the same field, so Splink "
+            "cannot estimate that comparison's m probabilities. Pass a "
+            "SettingsCreator and splink_train= with independent evidence "
+            "columns, or use the default arche backend."
+        )
 
     geo_pairs = [(s.get("lat", "lat"), s.get("lon", "lon")) for s in used
                  if s.get("kind") == "geo"]

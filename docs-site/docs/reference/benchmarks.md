@@ -108,6 +108,43 @@ Two things about arche's last row. `review` is a queue, not a merge, so 393 is n
 
 Script: `datasets/names_dataops/bench_splink_nigeria.py`.
 
+### A shipped population table against batch-estimated frequency
+
+The Nigerian register above shows Splink ahead: 190 true of 200 at 0 false of 400, against arche's 146 and 2. That comparison is fair and it is not the whole claim.
+
+arche's frequency tables rest on a specific assertion — that estimating `u` from the batch fails when the batch is small, because a handful of records cannot know which words are ordinary. **A 13,200-record register cannot test that.** Splink's term-frequency adjustment has an excellent sample of Nigerian school names there and uses it well.
+
+So this run holds the labels fixed — the same 400 observed negatives and 200 constructed positives, imported from `bench_splink_nigeria.py` so they cannot drift — and varies only the **filler**, which is the population Splink learns frequencies from. arche reads the same shipped 1.25M-record place table at every size.
+
+| filler | records | `splink@0.5` true | false | arche match true | false |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 1,200 | 190 | **368** | 146 | **2** |
+| 500 | 1,700 | 190 | 2 | 146 | 2 |
+| 2,000 | 3,200 | 190 | 2 | 146 | 2 |
+| 12,000 | 13,200 | 190 | 12 | 146 | 2 |
+
+**With nothing to learn from, Splink merges 368 of 400 known negatives.** Every name in the labelled block appears exactly twice, so nothing in the batch says `COMMUNITY PRIMARY SCHOOL` is common — and two schools of that name in different states duly merge. Add 500 filler records and it collapses to 2.
+
+arche is **2 at every size**, because the table it reads does not change.
+
+Reproduced three times at filler 0 and three at filler 2,000: 368/368/368 and 2/2/2, exactly. The effect is not a sampling artefact.
+
+**What this does and does not establish.**
+
+It does not say arche is more accurate. Splink finds 190 true pairs at every size against arche's 146, and on the full register it does so with zero false merges. On accuracy, Splink wins.
+
+What it establishes is narrower and, for a shipped library, more useful: **arche's false-merge rate does not depend on how much data you happened to bring.** That is what a population table buys, and it is the only property in this comparison that a caller gets without labels.
+
+Because the alternative reading is available and should be stated: at `p >= 0.9` Splink also holds 0-2 false merges at every filler size. A higher threshold compensates for a thinner batch. But **choosing that threshold requires labels**, and a caller with 400 records to reconcile and no ground truth has no way to know that 0.5 is wrong for their data and 0.9 is right. The shipped prior removes that choice rather than winning an argument about it.
+
+Run it with:
+
+```sh
+uv run python datasets/names_dataops/bench_population_vs_batch.py
+```
+
+**One caveat on the harness.** It builds four Splink models in one process. At filler 12,000 the `p >= 0.9` arm returned 1 true where the standalone `bench_splink_nigeria.py` reproduces 190 exactly, byte for byte. The `p >= 0.5` arm is stable across repeated runs at every size, so the ranking is reproducible and the absolute probability calibration at that size is not. The figures quoted above are from `p >= 0.5` for that reason, and the discrepancy is unexplained rather than diagnosed.
+
 ### Splink, on `historical_50k`
 
 Febrl's records were invented by a generator and then corrupted by it. This is the harder test: 50,578 records describing 5,156 real UK historical figures from Wikidata, with errors introduced afterwards. The names, places and occupations are real and distributed the way real ones are, which is the part a generator cannot fake and the part arche's thesis is about.

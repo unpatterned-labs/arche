@@ -202,6 +202,46 @@ ENTITY_PACKS: dict[str, list[dict]] = {
     # `home_goods` category: lengths in feet and inches, plus the categorical
     # attributes that actually distinguish a purchasable item here -- size,
     # colour, material and shape -- and the variant-versus-family asymmetry.
+    # Groceries: supermarket listings, own-label and branded.
+    # EXPERIMENTAL. The `food` category has shipped since 0.5 with extraction
+    # tests and no pack, because its docstring says plainly that its matching
+    # accuracy is unmeasured -- "no open grocery corpus with complete ground
+    # truth is available to this project". This pack exists because one became
+    # available: five UK supermarkets with a barcode on every row, so a shared
+    # GTIN is truth assigned by nobody with an interest in the answer.
+    #
+    # The corpus is client data and is not in this repository. Run
+    # `datasets/bench_product_matching.py <dir> --suite grocery` against it.
+    #
+    # `quantities_are_specs` is the difference that matters. Under the
+    # electronics rules `415g` is a code candidate; here net contents ARE the
+    # identity of a SKU, so `Tesco Almonds 200G` and `Tesco Almonds 500G` are
+    # two products and the weight refutes rather than identifies.
+    "product_grocery": [
+        {"field": "name", "kind": "name", "weight": 1.5},
+        {"field": "name", "kind": "code", "weight": 3.0, "category": "food"},
+        {"field": "name", "kind": "tftoken", "weight": 1.5},
+        # Weight 0.0, unlike the other product packs, and the difference is not
+        # cosmetic. At weight 0.5 a refuting 0.0 drags the score down as well as
+        # refuting, and on `Tesco Almonds 200G` against `Tesco Almonds 500G`
+        # that put the pair at 0.505 -- under the return floor, so the edge was
+        # DROPPED rather than demoted and the reviewer never saw the size
+        # conflict at all. `test_raising_the_weight_overcorrects_and_loses_the_
+        # pair` names that outcome as strictly worse than `review`.
+        #
+        # A pure discriminator refutes and never confirms, which is what a pack
+        # size is: two different sizes prove two products, two identical sizes
+        # prove nothing.
+        {"field": "name", "kind": "spec", "weight": 0.0,
+         "category": "food", "refutes_below": 0.5},
+        # Own-label is the false merge this lane has to survive. `Tesco Chopped
+        # Tomatoes 400g` and `Sainsbury's Chopped Tomatoes 400g` are different
+        # products with the same net contents, the same category words and a
+        # name similarity of 0.85 -- and they matched. The retailer name is the
+        # only thing separating them, and it is a distinctive token each side
+        # carries and the other lacks, which is exactly what `rival` reads.
+        {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5},
+    ],
     "product_home_goods": [
         {"field": "name", "kind": "name", "weight": 1.5},
         {"field": "name", "kind": "code", "weight": 3.0, "category": "home_goods"},
@@ -475,6 +515,7 @@ ENTITY_PACK_PURPOSE: dict[str, str] = {
               "stage names",
     "product_electronics": "electronic products, by model code and specification",
     "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes — size, colour, material, shape and length. Use this rather than `product_electronics` for anything without a model code",
+    "product_grocery": "supermarket groceries, by brand and net contents — a 200g pack and a 500g pack of one item are two products",
 }
 
 

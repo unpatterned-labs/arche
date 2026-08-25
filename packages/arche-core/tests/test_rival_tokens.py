@@ -177,15 +177,25 @@ class TestThePackWiring:
         assert rival[0]["weight"] == 0.0, "it must not contribute to the score"
         assert rival[0]["refutes_below"] == 0.5
 
-    def test_no_other_pack_declares_it(self):
-        """It changes what agreement means. Adding it to a pack with published
-        numbers is a separate, separately-measured decision."""
+    def test_only_product_packs_declare_it(self):
+        """It changes what agreement means, so a pack adopting it is a separate
+        and separately-measured decision -- never a side effect.
+
+        Two packs declare it today. `product_home_goods`, where it was built and
+        measured; and `product_grocery`, where own-label was the failure it had
+        to survive -- `Tesco Chopped Tomatoes 400g` and `Sainsbury's Chopped
+        Tomatoes 400g` matched at 0.735 without it, and they are two different
+        products with the same net contents. The retailer name is the only
+        separator and it is exactly a rival token.
+
+        `place`, `person`, `organisation` and `artist` have published numbers
+        this would move.
+        """
         from arche.resolve import ENTITY_PACKS
 
-        for name, specs in ENTITY_PACKS.items():
-            if name == "product_home_goods":
-                continue
-            assert not any(s.get("kind") == "rival" for s in specs), name
+        adopted = {name for name, specs in ENTITY_PACKS.items()
+                   if any(s.get("kind") == "rival" for s in specs)}
+        assert adopted == {"product_home_goods", "product_grocery"}
 
     def test_it_needs_a_table_and_says_so(self):
         """`tftoken` raises the same way. A comparator whose whole job is

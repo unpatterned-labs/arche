@@ -1,0 +1,65 @@
+{
+  "benchmark": "does a shipped population prior transfer off-distribution",
+  "source": "GeoNames, CC-BY 4.0",
+  "in_distribution": "NG is one of the twenty strata inside the shipped place table",
+  "out_of_distribution": "FR and IT are not in it",
+  "negatives": "observed; same name in different admin1 regions",
+  "positives": "CONSTRUCTED; one record written twice",
+  "seed": 20260824,
+  "results": {
+    "NG": {
+      "label": "in-distribution",
+      "records": 4764,
+      "negatives": 300,
+      "positives": 82,
+      "shipped": {
+        "true": 6,
+        "false": 299
+      },
+      "self": {
+        "true": 7,
+        "false": 300
+      },
+      "blend": {
+        "true": 7,
+        "false": 295
+      }
+    },
+    "FR": {
+      "label": "OUT of distribution",
+      "records": 4942,
+      "negatives": 300,
+      "positives": 171,
+      "shipped": {
+        "true": 127,
+        "false": 300
+      },
+      "self": {
+        "true": 145,
+        "false": 300
+      },
+      "blend": {
+        "true": 141,
+        "false": 291
+      }
+    },
+    "IT": {
+      "label": "OUT of distribution",
+      "records": 4982,
+      "negatives": 300,
+      "positives": 191,
+      "shipped": {
+        "true": 81,
+        "false": 298
+      },
+      "self": {
+        "true": 90,
+        "false": 299
+      },
+      "blend": {
+        "true": 89,
+        "false": 281
+      }
+    }
+  }
+}

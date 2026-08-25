@@ -215,12 +215,17 @@ class TestGeneralisation:
         and changelog, so enabling `refutes_below` on any of them is a separate,
         separately-measured decision rather than a side effect.
 
-        Three packs are exempt, by one principle: refutation is part of the
+        Four packs are exempt, by one principle: refutation is part of the
         identity contract they shipped with on their first release, so there is
         no earlier number for it to move.
 
         `product_electronics` — a purchasable variant, where a capacity or pack
         size difference means a different product.
+
+        `product_grocery` — net contents are the identity of a supermarket
+        SKU, so a 200g pack and a 500g pack of one item are two products and
+        the weight has to refute. First release, first numbers, measured with
+        the refutation already in them.
 
         `product_home_goods` — the same contract for furniture, bedding and
         rugs, and it exists *because* refutation was missing there. Pointing
@@ -244,6 +249,7 @@ class TestGeneralisation:
         # without having to remember it here.
         exempt = [ENTITY_PACKS["product_electronics"],
                   ENTITY_PACKS["product_home_goods"],
+                  ENTITY_PACKS["product_grocery"],
                   ENTITY_PACKS["organisation"]]
         established = {
             name for name, specs in ENTITY_PACKS.items()

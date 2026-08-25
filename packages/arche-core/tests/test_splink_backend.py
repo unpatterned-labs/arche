@@ -239,6 +239,27 @@ class TestTheDerivationIsOptIn:
                             threshold=0.99)
         assert res["pins"]["settings"] == "derived"
 
+    def test_a_name_only_product_pack_requires_caller_owned_settings(self):
+        """A derived model needs independent evidence for EM training."""
+        a = [
+            {"id": "a1", "name": "Safavieh Heritage Rug 3 x 5 Beige"},
+            {"id": "a2", "name": "Safavieh Heritage Rug 5 x 8 Green"},
+            {"id": "a3", "name": "Safavieh Madison Rug 4 x 6 Blue"},
+            {"id": "a4", "name": "Safavieh Madison Rug 6 x 9 Grey"},
+        ] * 4
+        b = [
+            {"id": f"b{i}", "name": record["name"].replace("Rug", "Area Rug")}
+            for i, record in enumerate(a)
+        ]
+        a = [{**record, "id": f"a{i}"} for i, record in enumerate(a)]
+
+        with pytest.raises(SplinkBackendError, match="one mappable comparison"):
+            crosswalk(
+                a, b, entity="product_home_goods", id_field="id",
+                backend="splink", splink_settings="derive",
+                threshold=0.5, review_margin=0.5,
+            )
+
 
 class TestColumnTypes:
     """Both directions of pandas inference have already broken a run."""

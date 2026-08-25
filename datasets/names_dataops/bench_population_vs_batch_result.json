@@ -1,0 +1,86 @@
+{
+  "benchmark": "population table versus batch-estimated term frequency",
+  "question": "does a shipped frequency table beat batch TF when the batch is small?",
+  "labels": "identical at every filler size; only the population Splink learns frequencies from changes",
+  "negatives": "observed; two schools in different states are not one",
+  "positives": "CONSTRUCTED; one record recorded twice",
+  "seed": 20260816,
+  "results": {
+    "0": {
+      "records": 1200,
+      "splink@0.9": {
+        "true": 190,
+        "false": 2
+      },
+      "splink@0.5": {
+        "true": 190,
+        "false": 368
+      },
+      "arche_match": {
+        "true": 146,
+        "false": 2
+      },
+      "arche_surfaced": {
+        "true": 199,
+        "false": 400
+      }
+    },
+    "500": {
+      "records": 1700,
+      "splink@0.9": {
+        "true": 190,
+        "false": 0
+      },
+      "splink@0.5": {
+        "true": 190,
+        "false": 2
+      },
+      "arche_match": {
+        "true": 146,
+        "false": 2
+      },
+      "arche_surfaced": {
+        "true": 199,
+        "false": 400
+      }
+    },
+    "2000": {
+      "records": 3200,
+      "splink@0.9": {
+        "true": 190,
+        "false": 0
+      },
+      "splink@0.5": {
+        "true": 190,
+        "false": 2
+      },
+      "arche_match": {
+        "true": 146,
+        "false": 2
+      },
+      "arche_surfaced": {
+        "true": 199,
+        "false": 398
+      }
+    },
+    "12000": {
+      "records": 13200,
+      "splink@0.9": {
+        "true": 1,
+        "false": 0
+      },
+      "splink@0.5": {
+        "true": 190,
+        "false": 12
+      },
+      "arche_match": {
+        "true": 146,
+        "false": 2
+      },
+      "arche_surfaced": {
+        "true": 199,
+        "false": 393
+      }
+    }
+  }
+}
