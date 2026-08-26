@@ -772,7 +772,7 @@ class TestThePageHangsTogether:
         missing = {c for c in called
                    if c not in defined
                    and c not in {"fetch", "await", "if", "for", "while",
-                                 "return", "typeof"}}
+                                 "return", "typeof", "catch", "Error"}}
         assert not missing, missing
 
     def test_the_page_boots_without_throwing(self, page):
