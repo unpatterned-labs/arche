@@ -230,6 +230,7 @@ def guarded_scan(text: str, jurisdiction: str | None = None,
 def compare_records(list_a: list[dict], list_b: list[dict],
                     entity: EntityPack | None = None,
                     comparators: list[dict] | None = None,
+                    backend: str | None = None,
                     threshold: float = 0.7, id_field: str = "id") -> dict:
     """Reconcile two independent record lists into matches with scores and evidence.
 
@@ -251,10 +252,29 @@ def compare_records(list_a: list[dict], list_b: list[dict],
 
     A `review` decision is a real answer and usually the interesting one: the
     records agree, and nothing they agree on is distinctive enough to assert a
-    match. Two hospitals both called "General Hospital" land here."""
+    match. Two hospitals both called "General Hospital" land here.
+
+    CHOOSING A BACKEND. Leave `backend` unset for arche's own scorer, or pass
+    `"splink"` for Fellegi-Sunter with parameters estimated from the data you
+    supply. **Neither is right everywhere and the choice is a measured one:**
+
+      list size      use          why
+      under ~500     arche        Splink estimates its probabilities from the
+                                  batch by EM. Measured on 5 supplier pairs it
+                                  returned ZERO edges; arche got 5 of 5. At two
+                                  records there is nothing for EM to estimate.
+      a few thousand+  splink     With a representative corpus Splink is more
+                                  accurate. On a 13,200-record register it found
+                                  190 true pairs of 200 at 0 false of 400, where
+                                  arche's scorer found 146 and 2.
+
+    The crossover is not sharp and depends on how repetitive the names are. If
+    the list is small, or you cannot tell, arche's shipped frequency tables do
+    not need a batch to calibrate against -- that is the whole reason they
+    exist."""
     return handlers.compare_records(
         list_a, list_b, entity=entity, comparators=comparators,
-        threshold=threshold, id_field=id_field,
+        backend=backend, threshold=threshold, id_field=id_field,
     )
 
 

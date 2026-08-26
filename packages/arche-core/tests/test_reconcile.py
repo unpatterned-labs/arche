@@ -99,6 +99,71 @@ def test_evidence_carries_no_raw_values():
     assert out["matches"][0]["decision"] == "match"
 
 
+def test_external_candidates_are_scored_and_pinned_into_decisions():
+    """A retriever may propose pairs, but arche still owns the decision."""
+    a = [{"id": "supplier-7", "name": "Eiffel Tower Summit Tour"}]
+    b = [
+        {"id": "offer-1", "name": "Eiffel Tower Summit Tour"},
+        {"id": "offer-2", "name": "Louvre Museum Entry"},
+    ]
+    candidates = [{
+        "a_id": "supplier-7",
+        "b_id": "offer-1",
+        "route": "title-vector-v3",
+        "retrieval_score": 0.981,
+    }]
+    pins = {
+        "provider": "warehouse-vector-search",
+        "index": "travel-title@sha256:abc123",
+        "filters": {"city": "Paris"},
+        "top_k": 20,
+    }
+    out = reconcile(
+        a, b, [{"field": "name", "kind": "name", "weight": 1.0}],
+        threshold=0.7,
+        candidate_pairs=candidates,
+        candidate_pins=pins,
+    )
+
+    assert out["blocking"] == {
+        "candidate_pairs": 1,
+        "reduction_ratio": 0.5,
+        "strategies": {"external": 1},
+    }
+    assert out["pins"]["block"] == "external"
+    assert out["pins"]["candidate_provider"] == pins
+    edge = out["matches"][0]
+    assert edge["candidate"] == {
+        "route": "title-vector-v3", "retrieval_score": 0.981,
+    }
+    assert edge["decision"] == "match"
+    assert edge["decision_id"].startswith("xwd:sha256:")
+
+    changed_index = reconcile(
+        a, b, [{"field": "name", "kind": "name", "weight": 1.0}],
+        threshold=0.7,
+        candidate_pairs=candidates,
+        candidate_pins={**pins, "index": "travel-title@sha256:def456"},
+    )
+    assert changed_index["matches"][0]["decision_id"] != edge["decision_id"]
+
+
+def test_external_candidates_require_pinned_retrieval_provenance():
+    a = [{"id": "a", "name": "Karfi Clinic"}]
+    b = [{"id": "b", "name": "Karfi Clinic"}]
+    with pytest.raises(ValueError, match="candidate_pins"):
+        reconcile(
+            a, b, [{"field": "name", "kind": "name", "weight": 1.0}],
+            candidate_pairs=[{"a_id": "a", "b_id": "b"}],
+        )
+
+    with pytest.raises(ValueError, match="candidate_pairs"):
+        reconcile(
+            a, b, [{"field": "name", "kind": "name", "weight": 1.0}],
+            candidate_pins={"provider": "retriever"},
+        )
+
+
 # ── the tftoken comparator ───────────────────────────────────────────────────
 
 def test_tftoken_weights_rare_overlap_over_common_and_gates_partial_merges():

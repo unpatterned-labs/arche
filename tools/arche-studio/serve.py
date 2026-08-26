@@ -267,6 +267,132 @@ def _compare(payload: dict) -> dict:
             "pins": res.get("pins", {})}
 
 
+def _threat_case() -> dict:
+    """One synthetic marketplace case, with real product-edge decisions.
+
+    This is a reading fixture for the Corsearch conversation. It deliberately
+    does not label a product counterfeit, a seller unauthorised, or an
+    observation enforceable. Those are policy and legal conclusions outside a
+    record-linkage decision.
+    """
+    from arche.resolve import crosswalk
+
+    product = {
+        "id": "protected-trail-40",
+        "title": "Alpine Ridge Trail 40L Backpack",
+        "brand": "Alpine Ridge",
+        "model": "TRAIL-40",
+        "gtin": "9501234567894",
+    }
+    comparators = [
+        {"field": "title", "kind": "name", "weight": 1.5},
+        {"field": "brand", "kind": "name", "weight": 1.0},
+        {"field": "model", "kind": "id", "weight": 3.0,
+         "refutes_below": 0.99},
+        {"field": "gtin", "kind": "id", "weight": 3.0,
+         "refutes_below": 0.99},
+    ]
+    pins = {
+        "provider": "synthetic-marketplace-fixture",
+        "index": "title-and-brand@fixture-2026-08-25",
+        "filters": {"brand": "Alpine Ridge"},
+        "top_k": 5,
+    }
+
+    def decide(observation: dict) -> dict:
+        result = crosswalk(
+            [product], [observation], comparators=comparators, id_field="id",
+            # The named product is held unless the fixture carries an exact
+            # trusted identifier. This makes the middle observation a real
+            # review case rather than pretending that a similar title settles
+            # a 30L versus 40L product variant.
+            threshold=0.96, review_margin=0.25,
+            candidate_pairs=[{
+                "a_id": product["id"], "b_id": observation["id"],
+                "route": "title-and-brand-top-5", "retrieval_score": 0.94,
+            }],
+            candidate_pins=pins,
+            extra_pins={"case": "marketplace-threat-demo.v1"},
+        )
+        if result["matches"]:
+            edge = result["matches"][0]
+            return {
+                "decision": edge["decision"], "score": edge["score"],
+                "evidence": edge["evidence"],
+                "decision_id": edge["decision_id"], "pins": result["pins"],
+                "candidate": edge.get("candidate"),
+                "distinctive_max": edge.get("distinctive_max"),
+                "distinctive_floor": 0.75,
+            }
+        return {
+            "decision": "not_linked", "score": 0.0, "evidence": {},
+            "note": "This candidate was compared but did not reach the review floor. "
+                    "That is not an infringement finding or a claim of non-genuineness.",
+            "candidate": {"route": "title-and-brand-top-5", "retrieval_score": 0.94},
+        }
+
+    observations = [
+        {
+            "id": "market-a-104",
+            "marketplace": "Market A", "seller": "Northstar Outdoor Ltd",
+            "title": "Alpine Ridge Trail 40L Backpack", "brand": "Alpine Ridge",
+            "model": "TRAIL-40", "gtin": "9501234567894",
+            "price": "£119", "place": "Manchester, GB",
+            "source": "market-a.example/northstar/104",
+        },
+        {
+            "id": "market-b-77",
+            "marketplace": "Market B", "seller": "North Star Outdoors",
+            "title": "Alpine Ridge Trail Backpack 30L", "brand": "Alpine Ridge",
+            "model": "", "gtin": "",
+            "price": "£87", "place": "Manchester, GB",
+            "source": "market-b.example/northstar/77",
+        },
+        {
+            "id": "market-c-18",
+            "marketplace": "Market C", "seller": "PeakTrail Outlet",
+            "title": "PeakTrail Umbrella Cover", "brand": "PeakTrail",
+            "model": "", "gtin": "",
+            "price": "£39", "place": "Leeds, GB",
+            "source": "market-c.example/peaktrail/18",
+        },
+    ]
+    for observation in observations:
+        observation["product_decision"] = decide(observation)
+
+    return {
+        "synthetic": True,
+        "case": {
+            "id": "case-alpine-ridge-40l", "status": "needs analyst review",
+            "title": "Alpine Ridge Trail 40L marketplace observations",
+            "question": "Which observations describe the protected product, and "
+                        "which seller or place links merit one analyst case?",
+            "product": product,
+        },
+        "observations": observations,
+        "relationships": [
+            {"from": "Northstar Outdoor Ltd", "to": "North Star Outdoors",
+             "kind": "seller hypothesis", "decision": "review",
+             "evidence": "shared fulfilment city; similar business name",
+             "limit": "No shared trusted seller identifier in this fixture."},
+            {"from": "Northstar Outdoor Ltd", "to": "Manchester, GB",
+             "kind": "operating place", "decision": "asserted",
+             "evidence": "marketplace seller profile", "limit": "Source assertion only."},
+            {"from": "PeakTrail Outlet", "to": "Alpine Ridge Trail 40L Backpack",
+             "kind": "product link", "decision": "not_linked",
+             "evidence": "weak title resemblance only",
+             "limit": "No genuineness, authorisation or infringement conclusion."},
+        ],
+        "next_evidence": [
+            "Authorised reseller list or distributor letter for Northstar Outdoor Ltd.",
+            "Marketplace seller ID, domain ownership or company registration "
+            "for the seller hypothesis.",
+            "Trusted GTIN, product images or manufacturer model reference "
+            "for the reviewed 30L variant.",
+        ],
+    }
+
+
 def _extract(payload: dict) -> dict:
     """Spatial roles from pasted text, or from an attached document.
 
@@ -1300,6 +1426,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, (HERE / "index.html").read_bytes(), "text/html; charset=utf-8")
             elif u.path == "/api/chat_ready":
                 self._json(_chat_ready())
+            elif u.path == "/api/threat_case":
+                self._json(_threat_case())
             elif u.path == "/api/entities":
                 # Names and what each one reads. Derived from the packs, so a
                 # comparator added to the library shows up here without anybody

@@ -2,6 +2,15 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## Unreleased
+
+### Added
+
+- `resolve.crosswalk(..., candidate_pairs=..., candidate_pins=...)` accepts
+  candidates from an external retrieval system while arche retains comparison,
+  decision and review policy. Retrieval route, score and pinned index
+  provenance are included in each resulting decision.
+
 ## [0.6.0a1] — 2026-08-23
 
 **The guard learned to say what it cannot see, jurisdiction learned to explain itself, and `arche-mcp` got the public API it needed to exist.**

@@ -900,3 +900,18 @@ def test_the_chat_tab_is_registered_in_the_page(studio):
     assert 'id="t-chat"' in page and 'id="s-chat"' in page
     names = re.search(r"const tab=t=>\{for\(const k of\[([^\]]+)\]", page).group(1)
     assert '"chat"' in names
+
+
+def test_the_marketplace_threat_case_keeps_each_claim_narrow(studio):
+    """A product edge cannot silently become an enforcement conclusion."""
+    case = studio._threat_case()
+    decisions = {row["id"]: row["product_decision"]["decision"]
+                 for row in case["observations"]}
+
+    assert case["synthetic"] is True
+    assert decisions == {
+        "market-a-104": "match",
+        "market-b-77": "review",
+        "market-c-18": "not_linked",
+    }
+    assert "infringement" in case["relationships"][-1]["limit"].lower()

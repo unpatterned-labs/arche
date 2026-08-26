@@ -179,6 +179,15 @@ class TestFailureContract:
         with pytest.raises(SplinkBackendError, match="needs a Splink config"):
             crosswalk(_A, _B, entity="person", id_field="id", backend="splink")
 
+    def test_external_candidates_are_explicitly_local_backend_only(self):
+        with pytest.raises(ValueError, match="default arche backend"):
+            crosswalk(
+                _A, _B, entity="person", id_field="id", backend="splink",
+                splink_settings=settings(),
+                candidate_pairs=[{"a_id": "a0", "b_id": "b0"}],
+                candidate_pins={"provider": "retriever"},
+            )
+
     def test_the_error_names_both_routes(self):
         with pytest.raises(SplinkBackendError) as caught:
             crosswalk(_A, _B, entity="person", id_field="id", backend="splink")

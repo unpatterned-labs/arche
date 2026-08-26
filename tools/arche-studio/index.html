@@ -338,8 +338,12 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 #s-chat .split{grid-template-columns:minmax(0,1fr) 310px}#s-chat .lede{max-width:72ch}#chatlog{min-height:52vh;max-height:58vh;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
 #chatlog:empty::before{content:"Ask a question about the records, documents or evidence in front of you.";display:block;max-width:44ch;color:var(--muted);font-size:17px;margin:10vh auto 0;text-align:center}
 #s-chat .chat-composer{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px;margin-top:14px}#chatin{border:0;background:transparent;box-shadow:none!important;padding:12px;min-height:46px}.chip{font-size:12px!important;padding:7px 10px!important}.cyou{background:var(--accent-tint);border-radius:8px;padding:10px 12px}.carche{background:var(--code);border-radius:8px;padding:10px 12px}.ctool{margin-left:12px}
+/* The marketplace case is a working reading surface. A list selects an
+   observation; the detail keeps a product-link decision separate from the
+   seller and enforcement questions around it. */
+.threat-case{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:20px;margin:20px 0}.threat-case h2{font-family:var(--display);font-size:30px;line-height:1.08;margin:0 0 9px;letter-spacing:-.025em}.threat-case p{margin:0;color:var(--muted);max-width:72ch}.threat-list{border-top:1px solid var(--rule);margin-top:24px}.threat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);padding:16px 0;text-align:left;color:var(--ink);cursor:pointer}.threat-row:hover,.threat-row[aria-selected=true]{background:var(--hover)}.threat-row[aria-selected=true]{box-shadow:inset 3px 0 0 var(--accent);padding-left:13px}.threat-row strong{display:block;font-size:16px;line-height:1.35}.threat-row small{display:block;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.5;margin-top:4px}.threat-outcome{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;align-self:start;white-space:nowrap}.threat-context{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin:16px 0 0}.threat-context p{font-size:13px}.threat-context b{display:block;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}.threat-relationship{border-bottom:1px solid var(--rule);padding:0 0 14px;margin:0 0 14px}.threat-relationship p{margin:0 0 6px}.threat-relationship small{font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--muted)}.d-not_linked{color:var(--no)}.vrule-not_linked{border-top-color:var(--no)!important}
 @media(max-width:980px){header{position:static}.split,#s-chat .split{grid-template-columns:1fr}.margin{position:static}.case-rail{margin-top:0}}
-@media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}}
+@media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}.threat-row{grid-template-columns:1fr}.threat-context{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -356,6 +360,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
     <button id="t-home"    aria-current="true">Home</button>
     <button id="t-chat"    aria-current="false">Chat</button>
     <button id="t-compare" aria-current="false">Compare</button>
+    <button id="t-threat"  aria-current="false">Threat case</button>
     <button id="t-extract" aria-current="false">Documents</button>
     <button id="t-places"  aria-current="false">Spatial roles</button>
     <button id="t-redact"  aria-current="false">Redact</button>
@@ -396,6 +401,11 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
       <div><strong>What still needs a person to decide?</strong><span>Work the uncertain rows, preserve the rationale and leave a traceable decision.</span></div>
       <button class="go" type="button" data-go="review">Open review queue -&gt;</button>
     </li>
+    <li>
+      <span class="qnum">04</span>
+      <div><strong>Which marketplace observations form one analyst case?</strong><span>Separate a product link from seller, place and enforcement questions.</span></div>
+      <button class="go" type="button" data-go="threat">Open threat case -&gt;</button>
+    </li>
    </ol>
   </div>
   <aside class="case-rail">
@@ -422,6 +432,37 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 
 
 <!-- ═════════════════════════════════════════════════════════════ CHAT ══ -->
+<section id="s-threat" hidden>
+ <div class="split">
+  <div>
+   <p class="label">Synthetic marketplace threat case</p>
+   <p class="lede measure">A product resemblance is not a finding about
+     authenticity, authorisation or infringement. Start by resolving the
+     observation, then show exactly what else an analyst would need.</p>
+   <div class="threat-case">
+    <p class="label">Protected product</p>
+    <h2 id="threat-title">Loading the local fixture</h2>
+    <p id="threat-question"></p>
+    <div class="threat-context" id="threat-product"></div>
+   </div>
+   <p class="label">Marketplace observations</p>
+   <div class="threat-list" id="threat-list"><p class="working">Loading case</p></div>
+   <div id="threat-detail"></div>
+  </div>
+  <aside class="margin">
+   <p><b>What this demo proves.</b> Arche can retrieve a candidate, make a
+     narrow product-link decision and preserve the source of that candidate.</p>
+   <p><b>What it does not prove.</b> A linked product is not proof that a listing
+     is counterfeit, a seller is unauthorised, or action should be taken.</p>
+   <hr class="rule">
+   <p class="label">Case relationships</p>
+   <div id="threat-relationships"></div>
+   <p class="label" style="margin-top:24px">Next evidence to request</p>
+   <ul class="live-list" id="threat-next"></ul>
+  </aside>
+ </div>
+</section>
+
 <section id="s-chat" hidden>
  <div class="split">
   <div>
@@ -704,6 +745,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
   <div class="command-list" id="command-list">
    <button type="button" data-go="home">Evidence desk<small>Start with a question</small></button>
    <button type="button" data-go="compare">Compare<small>Read a record-level decision</small></button>
+   <button type="button" data-go="threat">Threat case<small>Read a marketplace investigation</small></button>
    <button type="button" data-go="extract">Documents<small>Extract and resolve references</small></button>
    <button type="button" data-go="review">Review queue<small>Decide uncertain candidate pairs</small></button>
    <button type="button" data-go="places">Spatial roles<small>Read a place in sentence context</small></button>
@@ -724,13 +766,14 @@ const WORKSPACE_COPY={
   home:"Choose a question, then follow the evidence.",
   chat:"Ask Arche to use the local tools, and inspect every call.",
   compare:"Read the record-level evidence behind a decision.",
+  threat:"Separate a product link from the threat questions around it.",
   extract:"Extract references before asking what they refer to.",
   places:"Read each place in the context of its role.",
   redact:"Prepare text for a safer downstream workflow.",
   verify:"Check whether signed evidence is still intact.",
   review:"Resolve the uncertainty that the engine should not settle alone."
 };
-const tab=t=>{for(const k of["home","chat","compare","extract","places","redact","verify","review"]){
+const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review"]){
   const button=$("#t-"+k),section=$("#s-"+k);
   if(button)button.setAttribute("aria-current",String(k===t));
   if(section)section.hidden=k!==t;
@@ -863,9 +906,10 @@ function draw(){
 }
 
 /* ══════════════════════════════════════════════════════ evidence panel ══ */
-const WORD={match:"Merged",review:"Held for a human",different:"Kept apart",no_candidate:"Never considered"};
+const WORD={match:"Merged",review:"Held for a human",different:"Kept apart",not_linked:"Not linked automatically",no_candidate:"Never considered"};
 function why(r){
   const d=r.decision,dm=r.distinctive_max,fl=r.distinctive_floor;
+  if(r.note)return r.note;
   if(d==="no_candidate")return r.note||"Blocking never proposed this pair, so no comparator ran.";
   if(d==="match")return `Enough agreed, and something distinctive carried it: ${n3(dm)} against a floor of ${n3(fl)}.`;
   if(d==="review"){
@@ -887,6 +931,61 @@ function panel(r){
     <p class="note">${why(r)}</p>
     ${r.decision_id?`<p class="meta">${esc(r.decision_id)}<br>${
       Object.entries(r.pins||{}).map(([k,v])=>esc(k)+" "+esc(v)).join("<br>")}</p>`:""}`;
+}
+let THREAT=null,THREAT_SELECTED=null,THREAT_LOADING=null;
+const threatWord=d=>WORD[d]||d.replaceAll("_"," ");
+function threatPins(decision){
+  return Object.entries(decision.pins||{}).map(([key,value])=>
+    `${esc(key)} ${esc(typeof value==="object"?JSON.stringify(value):value)}`).join("<br>");
+}
+function drawThreatDetail(){
+  if(!THREAT)return;
+  const observation=THREAT.observations.find(x=>x.id===THREAT_SELECTED);
+  if(!observation)return;
+  const d=observation.product_decision;
+  const candidate=d.candidate||{};
+  $("#threat-detail").innerHTML=`<hr class="rule"><p class="label">Selected observation</p>
+    <div class="threat-context"><p><b>Source</b>${esc(observation.source)}</p>
+    <p><b>Seller and place</b>${esc(observation.seller)}<br>${esc(observation.place)}</p>
+    <p><b>Listing</b>${esc(observation.title)}<br>${esc(observation.price)}</p>
+    <p><b>Claimed identifiers</b>model ${esc(observation.model||"not supplied")}<br>GTIN ${esc(observation.gtin||"not supplied")}</p></div>
+    ${panel({...d,pins:{}})}
+    <p class="meta">candidate route ${esc(candidate.route||"not recorded")}<br>
+      retrieval score ${n3(candidate.retrieval_score)}${threatPins(d)?`<br>${threatPins(d)}`:""}</p>`;
+}
+function drawThreat(){
+  if(!THREAT)return;
+  const c=THREAT.case,p=c.product;
+  $("#threat-title").textContent=c.title;
+  $("#threat-question").textContent=c.question;
+  $("#threat-product").innerHTML=`<p><b>Brand</b>${esc(p.brand)}</p><p><b>Model</b>${esc(p.model)}</p><p><b>GTIN</b>${esc(p.gtin)}</p><p><b>Case status</b>${esc(c.status)}</p>`;
+  if(!THREAT_SELECTED)THREAT_SELECTED=THREAT.observations[0]?.id||null;
+  $("#threat-list").innerHTML=THREAT.observations.map(o=>{
+    const d=o.product_decision;
+    return `<button class="threat-row" type="button" data-threat="${esc(o.id)}" aria-selected="${o.id===THREAT_SELECTED}">
+      <span><strong>${esc(o.marketplace)}: ${esc(o.title)}</strong><small>${esc(o.seller)} | ${esc(o.place)} | ${esc(o.source)}</small></span>
+      <span class="threat-outcome d-${esc(d.decision)}">${esc(threatWord(d.decision))}</span></button>`;
+  }).join("");
+  for(const button of document.querySelectorAll("[data-threat]"))
+    button.addEventListener("click",()=>{THREAT_SELECTED=button.dataset.threat;drawThreat();});
+  $("#threat-relationships").innerHTML=THREAT.relationships.map(r=>
+    `<div class="threat-relationship"><p><span class="dt d-${esc(r.decision)}">${esc(r.decision)}</span><br>${esc(r.from)} to ${esc(r.to)}</p><small>${esc(r.kind)}: ${esc(r.evidence)}<br>${esc(r.limit)}</small></div>`).join("");
+  $("#threat-next").innerHTML=THREAT.next_evidence.map(x=>`<li><span>${esc(x)}</span></li>`).join("");
+  drawThreatDetail();
+}
+async function loadThreat(){
+  if(THREAT){drawThreat();return;}
+  if(THREAT_LOADING)return THREAT_LOADING;
+  THREAT_LOADING=(async()=>{
+    try{
+      const response=await fetch("/api/threat_case");
+      const data=await response.json();
+      if(data.error)throw Error(data.error);
+      THREAT=data;drawThreat();
+    }catch(error){$("#threat-list").innerHTML=`<p class="err">Could not load the local fixture: ${esc(error.message)}</p>`;}
+    finally{THREAT_LOADING=null;}
+  })();
+  return THREAT_LOADING;
 }
 function pick(id){
   SEL=id;draw();$("#callbox").hidden=false;
@@ -1368,11 +1467,13 @@ function commandFilter(){
 function goTo(workspace){
   closeCommand();tab(workspace);
   if(workspace==="chat"){chatReady();chatDraw();}
+  if(workspace==="threat")loadThreat();
 }
 for(const button of document.querySelectorAll("[data-go]"))
   button.addEventListener("click",()=>goTo(button.dataset.go));
 on("t-home","click",()=>tab("home"));
 on("t-compare","click",()=>tab("compare"));
+on("t-threat","click",()=>{tab("threat");loadThreat();});
 on("t-places","click",()=>tab("places"));
 on("t-redact","click",()=>tab("redact"));
 on("t-verify","click",()=>tab("verify"));

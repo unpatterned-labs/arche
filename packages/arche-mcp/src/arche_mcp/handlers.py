@@ -321,6 +321,7 @@ def guarded_scan(text: str, *, key: str | bytes, jurisdiction: str | None = None
 def compare_records(list_a: list[dict], list_b: list[dict], *,
                     comparators: list[dict] | None = None,
                     entity: str | None = None,
+                    backend: str | None = None,
                     threshold: float = 0.7,
                     review_margin: float = 0.15, id_field: str = "id",
                     distinctive_kinds: tuple[str, ...] = ("name", "id"),
@@ -361,10 +362,18 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
         # self-calibrated `tf`, so the same pair can score differently in
         # different batches. That is a property of the engine, not of this
         # wrapper, and the pins in the result record which table was used.
+        extra = {}
+        if backend:
+            # Splink refuses to run without a configuration, deliberately: a
+            # match probability is a posterior whose scale moves with the
+            # corpus, so there is no portable default. `derive` builds one from
+            # the pack, warns that it is best-effort, and is the only way an
+            # agent can reach the backend without writing Splink by hand.
+            extra = {"backend": backend, "splink_settings": "derive"}
         return crosswalk(
             list_a, list_b, entity=entity, id_field=id_field,
             threshold=threshold, review_margin=review_margin,
-            distinctive_floor=distinctive_floor,
+            distinctive_floor=distinctive_floor, **extra,
         )
     if not comparators:
         raise ValueError("pass entity= or comparators= to say how to compare")

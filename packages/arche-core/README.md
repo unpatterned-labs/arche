@@ -45,6 +45,43 @@ for edge in result["matches"]:
     print(edge["decision"], edge["score"], edge["evidence"])
 ```
 
+## Bring your own candidate retrieval
+
+At scale, the costly question is often which pairs deserve comparison. Retrieve
+candidate pairs in a warehouse, search index or specialist system, then let
+arche apply the calibrated comparators, gate and decision policy. Pin the
+retrieval configuration so the resulting decision remains reproducible.
+
+```python
+from arche.resolve import crosswalk
+
+result = crosswalk(
+    supplier_records,
+    product_offers,
+    entity="product_electronics",
+    candidate_pairs=[{
+        "a_id": "supplier-7",
+        "b_id": "offer-103",
+        "route": "title-vector-v3",
+        "retrieval_score": 0.981,
+    }],
+    candidate_pins={
+        "provider": "warehouse-vector-search",
+        "index": "travel-title@sha256:abc123",
+        "filters": {"city": "Paris"},
+        "top_k": 20,
+    },
+)
+```
+
+The retrieval score proposes a comparison. It does not decide identity. Each
+returned edge includes the retrieval route, scored evidence, the verdict and a
+`decision_id` that pins the retrieval provenance too.
+
+This import path currently uses Arche's default scorer. A Splink run keeps
+candidate generation in its caller-owned `SettingsCreator` until the two paths
+share an evaluated candidate contract.
+
 Three answers, not two: `same_entity`, `review`, `different`. The middle one is the point. It is Fellegi and Sunter's third region from 1969, which most production systems discard because a review queue costs money, and discarding it is where systems start asserting things they have not earned.
 
 ## From documents to decisions

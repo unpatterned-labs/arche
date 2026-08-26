@@ -1,7 +1,8 @@
 # arche studio
 
-Compare two records, read spatial roles out of a document, or work a review
-queue. A handful of files, no Python dependencies beyond `arche-core` itself.
+Compare two records, read spatial roles out of a document, work a review queue,
+or inspect a marketplace threat case. A handful of files, no Python
+dependencies beyond `arche-core` itself.
 
 One exception, and it is opt-in: the **Chat** tab needs `openai` and an API key.
 Everything else works without either, and the tab renders regardless, saying
@@ -121,6 +122,26 @@ report a perfect score while doing it.
 `Load an example` cycles through four pairs worth understanding: a Nigerian
 facility upgraded to a new tier, two spellings of one Fula surname, a dropped
 middle name, and two schools from the same academy chain.
+
+## Marketplace threat case
+
+The **Threat case** workspace is a local, synthetic reading fixture for a
+marketplace investigation. It shows three observations of a protected product:
+an exact GTIN-backed link, a 30L variant held for a person because trusted
+identifiers are missing, and an unrelated listing that is not linked
+automatically.
+
+It deliberately separates the decisions:
+
+- A product link says an observation probably describes a protected product.
+- A seller hypothesis says two seller references may need more evidence.
+- An enforcement action requires product, seller and policy evidence outside a
+  record-linkage score.
+
+The fixture uses the same `crosswalk` candidate-import and decision path as the
+library. It is not a Corsearch integration, an authenticity determination or a
+recommendation to take down a listing. The discovery scope and demo narrative
+are in `docs-site/docs/concepts/corsearch-marketplace-threat-case-demo.md`.
 
 ## Documents
 

@@ -545,6 +545,82 @@ def _rerank_text(record: dict, text_fields: tuple[str, ...]) -> str:
     return " ".join(str(record[f]) for f in text_fields if record.get(f))
 
 
+def _external_candidate_indices(
+    list_a: list[dict],
+    list_b: list[dict],
+    candidate_pairs: list[dict[str, Any]],
+    candidate_pins: dict[str, Any] | None,
+    id_field: str,
+) -> tuple[list[tuple[int, int]], dict[tuple[int, int], dict[str, Any]]]:
+    """Validate external candidates and map their stable ids to list indices."""
+    if not candidate_pins:
+        raise ValueError(
+            "candidate_pairs requires candidate_pins describing the retriever, "
+            "index/model version, filters and top_k"
+        )
+
+    def index(records: list[dict], side: str) -> dict[Any, int]:
+        result: dict[Any, int] = {}
+        for position, record in enumerate(records):
+            record_id = record.get(id_field, position)
+            try:
+                already_present = record_id in result
+            except TypeError as exc:
+                raise ValueError(
+                    f"{side} record id {record_id!r} is not hashable; "
+                    "external candidates require stable scalar ids"
+                ) from exc
+            if already_present:
+                raise ValueError(
+                    f"duplicate {side} record id {record_id!r}; external "
+                    "candidates require unique ids on each side"
+                )
+            result[record_id] = position
+        return result
+
+    a_indices, b_indices = index(list_a, "a"), index(list_b, "b")
+    pairs: list[tuple[int, int]] = []
+    retrieval: dict[tuple[int, int], dict[str, Any]] = {}
+    allowed = {"a_id", "b_id", "route", "retrieval_score"}
+    for candidate in candidate_pairs:
+        if not isinstance(candidate, dict):
+            raise ValueError(
+                "each candidate pair must be a dict with a_id and b_id"
+            )
+        unknown = sorted(set(candidate) - allowed)
+        if unknown:
+            raise ValueError(
+                "candidate pairs only accept a_id, b_id, route and "
+                f"retrieval_score; got {unknown}"
+            )
+        if "a_id" not in candidate or "b_id" not in candidate:
+            raise ValueError("each candidate pair requires a_id and b_id")
+        try:
+            i, j = a_indices[candidate["a_id"]], b_indices[candidate["b_id"]]
+        except KeyError as exc:
+            raise ValueError(
+                f"external candidate refers to an unknown {exc.args[0]!r} id"
+            ) from None
+        pair = (i, j)
+        if pair in retrieval:
+            raise ValueError(
+                "duplicate external candidate pair; combine retrieval routes "
+                "before passing it to reconcile"
+            )
+        route = candidate.get("route", "external")
+        if not isinstance(route, str) or not route.strip():
+            raise ValueError("candidate route must be a non-empty string")
+        metadata: dict[str, Any] = {"route": route}
+        if "retrieval_score" in candidate:
+            try:
+                metadata["retrieval_score"] = float(candidate["retrieval_score"])
+            except (TypeError, ValueError):
+                raise ValueError("candidate retrieval_score must be numeric") from None
+        pairs.append(pair)
+        retrieval[pair] = metadata
+    return pairs, retrieval
+
+
 def reconcile(
     list_a: list[dict],
     list_b: list[dict],
@@ -560,6 +636,8 @@ def reconcile(
     rerank: bool = False,
     truth_pairs: list[tuple[Any, Any]] | None = None,
     extra_pins: dict[str, Any] | None = None,
+    candidate_pairs: list[dict[str, Any]] | None = None,
+    candidate_pins: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -628,6 +706,15 @@ def reconcile(
     extra_pins:
         Extra provenance pinned into every edge's ``decision_id`` (e.g. a
         declaration pin, an admin-boundary-layer vintage).
+    candidate_pairs:
+        Optional externally retrieved candidates. Each item is
+        ``{"a_id", "b_id", "route"?, "retrieval_score"?}``, where ids are
+        the values of ``id_field`` on the two lists. These pairs replace local
+        blocking; arche still compares, gates and decides each pair.
+    candidate_pins:
+        Required with ``candidate_pairs``. JSON-safe provenance for the
+        retriever, such as its provider, index or model version, filters and
+        top-k. It is pinned into every resulting ``decision_id``.
 
     Returns
     -------
@@ -648,6 +735,8 @@ def reconcile(
         tf = TokenFrequencyTable.default(
             domain="person" if tf == "default" else tf
         )
+    if candidate_pairs is None and candidate_pins is not None:
+        raise ValueError("candidate_pins requires candidate_pairs")
     if rerank and tf is None:
         raise ValueError("rerank=True requires a TokenFrequencyTable passed as tf= "
                          '(or tf="default")')
@@ -700,7 +789,13 @@ def reconcile(
 
     # --- candidate generation (blocking) ---------------------------------
     strategy_info: dict[str, int] | None = None
-    if block == "union":
+    retrieval: dict[tuple[int, int], dict[str, Any]] = {}
+    if candidate_pairs is not None:
+        pairs, retrieval = _external_candidate_indices(
+            list_a, list_b, candidate_pairs, candidate_pins, id_field
+        )
+        strategy_info = {"external": len(pairs)}
+    elif block == "union":
         lat_field, lon_field = _geo_fields(comparators)
         pairs, strategy_info = _union_candidate_pairs(
             list_a, list_b,
@@ -775,7 +870,7 @@ def reconcile(
         # party can check which configuration produced a decision, and a pin
         # that can be collided on purpose cannot do that.
         "comparators_sha256": content_hash(comparators, prefix="cmp").split(":")[-1],
-        "block": block or "none",
+        "block": "external" if candidate_pairs is not None else block or "none",
         "threshold": threshold,
         "review_margin": review_margin,
         "distinctive_floor": distinctive_floor,
@@ -798,6 +893,8 @@ def reconcile(
         }
     if extra_pins:
         pins.update(extra_pins)
+    if candidate_pairs is not None:
+        pins["candidate_provider"] = candidate_pins
 
     # --- score + band -----------------------------------------------------
     matches: list[dict[str, Any]] = []
@@ -837,6 +934,8 @@ def reconcile(
             "evidence": evidence,
             "distinctive_max": round(distinctive_max, 3),
         }
+        if (candidate := retrieval.get((i, j))) is not None:
+            edge["candidate"] = candidate
         # The reproducible address of this edge: a pure function of the
         # (rounded) evidence and the pins — no timestamp, recomputable by
         # anyone holding the same inputs. This is what makes a crosswalk

@@ -83,6 +83,112 @@ def _tokens(text):
     return _raw_tokens(text, _TOKEN_RULE)
 
 
+def _merge_strata(strata, how: str):
+    """Combine per-stratum counts into one table.
+
+    **`equal-mass` was the original and it has a measured defect.** Each stratum
+    is scaled to the mean stratum mass and the scaled counts are then SUMMED. A
+    token occurring in twelve strata therefore accumulates twelve contributions
+    while a token occurring in one accumulates a single one -- so a word that is
+    ordinary in exactly one country comes out of the merge diluted by roughly the
+    number of countries it is absent from.
+
+    That is not hypothetical. Measured against Nigeria's own 25 commonest place
+    words, with Nigeria INSIDE the table::
+
+        15 of 25 scored at or above the distinctive floor of 0.75
+        gidan, tungan, garin, mallam -- Hausa for house-of, settlement-of, town-of
+
+    Those are the `Saint` and `Mill` of northern Nigeria, and the table called
+    them rare enough to carry a match on their own. Meanwhile `school` and
+    `hospital`, which appear across a dozen anglophone strata, came out correctly
+    ordinary at 0.31-0.41. **The merge that exists to stop the largest stratum
+    setting the vocabulary instead let the most WIDELY SHARED vocabulary set it**,
+    which for a table built to serve African registers is the same bug wearing a
+    different coat.
+
+    **`peak-rate` was the attempted fix and it is measurably WORSE.** For each
+    token it takes the rate within the stratum where the token is most common.
+    That was expected to rescue `gidan`; it did not, and the arithmetic says why
+    it could not. For a token appearing in exactly one stratum, equal-mass
+    computes ``c * (target/mass)`` and peak-rate computes ``rate * target``.
+    **They are the same number.** Equal-mass never diluted single-stratum tokens.
+    What peak-rate changes is multi-stratum tokens, which it lowers -- pushing
+    MORE words above the floor, not fewer::
+
+        commonest 25 words at or above the 0.75 floor
+                        equal-mass    peak-rate
+            NG               15/25        19/25
+            FR               18/25        19/25
+            IT               20/25        23/25
+
+    It is kept, not deleted, so nobody spends another afternoon on it.
+
+    **The real cause is the floor, not the merge.** A distinctiveness of 0.75
+    corresponds to a rate of 1 in 5,623, which in this 160,373-token table is
+    about rank 400. Only the ~400 commonest tokens are therefore treated as
+    ordinary, and those ranks are owned by vocabulary shared across many strata
+    (`health` 1-in-36, `hospital` 1-in-57). A country contributing one twentieth
+    of the table cannot get its own generics into a global top 400, so **the
+    merged table is miscalibrated for every country in it, not only for the ones
+    it omits.**
+
+    Measured, per-country tables built from the same source::
+
+                        merged      country-only
+            NG           15/25            0/25
+            FR           18/25            0/25
+            IT           20/25            0/25
+
+        gidan   0.678 -> 0.371      tungan  0.782 -> 0.462
+        garin   0.774 -> 0.500      mallam  0.820 -> 0.546
+
+    A locale-scoped table is right for all three, including the two the merged
+    table has never seen. That is the fix, and it is an architecture change --
+    one table per locale, selected by the jurisdiction the pipeline already
+    infers -- rather than a different way of averaging. It is not made here
+    because it moves every published place number and needs its own measurement.
+
+    Note also what no merge can fix: a token absent from every stratum stays
+    unseen and still scores as maximally distinctive. `moulin` and `chiesa` need
+    French and Italian strata, not arithmetic.
+    """
+    masses = [sum(a.counts.values()) for _, a, _ in strata]
+    target = sum(masses) / len(masses)
+    merged: Counter[str] = Counter()
+    descriptors: Counter[str] = Counter()
+
+    if how == "equal-mass":
+        for (_, acc, _), mass in zip(strata, masses):
+            scale = target / mass if mass else 0.0
+            for tok, c in acc.counts.items():
+                merged[tok] += c * scale
+            # Descriptors scale by the SAME per-stratum factor, so a descriptor
+            # count and a token count stay comparable after the merge.
+            for canon, c in acc.descriptors.items():
+                descriptors[canon] += c * scale
+        return merged, descriptors
+
+    peak: dict[str, float] = {}
+    peak_desc: dict[str, float] = {}
+    for (_, acc, _), mass in zip(strata, masses):
+        if not mass:
+            continue
+        for tok, c in acc.counts.items():
+            rate = c / mass
+            if rate > peak.get(tok, 0.0):
+                peak[tok] = rate
+        for canon, c in acc.descriptors.items():
+            rate = c / mass
+            if rate > peak_desc.get(canon, 0.0):
+                peak_desc[canon] = rate
+    for tok, rate in peak.items():
+        merged[tok] = rate * target
+    for canon, rate in peak_desc.items():
+        descriptors[canon] = rate * target
+    return merged, descriptors
+
+
 def _normalise_token(raw: str) -> str:
     """One normalised token, or '' — curated keys go through the same
     normaliser as corpus tokens so a YAML edit cannot silently miss."""
@@ -502,6 +608,9 @@ def main() -> int:
                     help="tokenisation the counts are accumulated under; stamped "
                          "into the artefact so the runtime cannot query it under "
                          "a different rule")
+    ap.add_argument("--merge", default="equal-mass",
+                    choices=["equal-mass", "peak-rate"],
+                    help="how strata are combined; see `_merge_strata`")
     ap.add_argument("--prune-min", type=int, default=2,
                     help="drop tokens seen fewer than N times (wheel size)")
     ap.add_argument("--offline", action="store_true",
@@ -583,22 +692,7 @@ def main() -> int:
         print("\nNo sources available — nothing built.", file=sys.stderr)
         return 1
 
-    # Equal-mass merge. Without it the largest stratum sets the vocabulary and a
-    # smaller one's generic words (UK `surgery`, energy `substation`) keep
-    # reading as rare — the exact bug this table exists to fix, relocated.
-    # Each stratum is scaled to the mean stratum mass before summing.
-    masses = [sum(a.counts.values()) for _, a, _ in strata]
-    target = sum(masses) / len(masses)
-    merged: Counter[str] = Counter()
-    descriptors: Counter[str] = Counter()
-    for (_, acc, _), mass in zip(strata, masses):
-        scale = target / mass if mass else 0.0
-        for tok, c in acc.counts.items():
-            merged[tok] += c * scale
-        # Descriptors are scaled by the SAME per-stratum factor, so a descriptor
-        # count and a token count remain comparable after the merge.
-        for canon, c in acc.descriptors.items():
-            descriptors[canon] += c * scale
+    merged, descriptors = _merge_strata(strata, args.merge)
 
     before = len(merged)
     if args.prune_min > 1:

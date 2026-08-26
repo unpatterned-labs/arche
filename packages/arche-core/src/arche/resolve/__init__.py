@@ -626,6 +626,12 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     from the pack, warns, and is best-effort). See
     :mod:`arche.resolve._splink_backend` for why arche does not pick one for
     you.
+
+    ``candidate_pairs=`` and ``candidate_pins=`` accept externally retrieved
+    candidates on the default arche backend. Each candidate names ``a_id`` and
+    ``b_id`` and may include a route and retrieval score; the pins describe the
+    retrieval system and are included in each decision. Splink candidate
+    generation remains configured through its ``SettingsCreator``.
     """
     extra_pins = dict(kwargs.pop("extra_pins", None) or {})
     # Read early: the token-frequency work below is arche's own scoring input,
@@ -633,6 +639,14 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     # term frequency inside its own name comparisons, so building a table here
     # and naming it in the pin would claim an input the decision never saw.
     backend = kwargs.pop("backend", None)
+    if backend == "splink" and (
+        "candidate_pairs" in kwargs or "candidate_pins" in kwargs
+    ):
+        raise ValueError(
+            "candidate_pairs is currently supported by the default arche "
+            "backend only; use backend='arche' or configure candidate "
+            "generation in your Splink SettingsCreator"
+        )
     tf_provenance: str | None = None
     if isinstance(tf, str):
         tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"

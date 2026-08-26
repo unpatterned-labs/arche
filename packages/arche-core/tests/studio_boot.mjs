@@ -71,6 +71,9 @@ const RESPONSES = {
       distinctive_max: 0.5, evidence: {}, decision_id: "xwd:sha256:x" }] },
   "/api/compare": { decision: "review", score: 1.0, evidence: {},
     distinctive_max: 0.56, distinctive_floor: 0.75, pins: {} },
+  "/api/threat_case": { case: { title: "fixture", question: "fixture",
+      product: { brand: "fixture", model: "fixture", gtin: "fixture" },
+      status: "fixture" }, observations: [], relationships: [], next_evidence: [] },
 };
 
 const sandbox = {
@@ -106,12 +109,13 @@ await new Promise((r) => setTimeout(r, 300));
 // Then exercise every control the page binds, the way a click would.
 const fns = [...script.matchAll(/function\s+([A-Za-z_$][\w$]*)/g)].map(m => m[1]);
 for (const name of ["tab", "draw", "drawDocs", "queued", "markUnused",
-                    "describeEntity", "example", "dexample", "loadPacks"]) {
+                    "describeEntity", "example", "dexample", "loadPacks",
+                    "loadThreat"]) {
   if (!fns.includes(name) && typeof sandbox[name] !== "function") continue;
   try {
-    if (name === "tab") ["compare","extract","places","redact","verify","review"]
+    if (name === "tab") ["compare","threat","extract","places","redact","verify","review"]
       .forEach(t => sandbox.tab(t));
-    else sandbox[name]();
+    else await sandbox[name]();
   } catch (e) {
     errors.push(`${name}() threw: ${e.message}`);
   }
