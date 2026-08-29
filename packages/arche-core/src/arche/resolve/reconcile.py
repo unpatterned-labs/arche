@@ -296,6 +296,17 @@ def _field_sim(
             return compare_specs(str(ra[field]), str(rb[field]), category)
         table = (code_tf or {}).get(category) if isinstance(code_tf, dict) else code_tf
         return compare_codes(str(ra[field]), str(rb[field]), table, category)
+    if kind == "premises":
+        # The premises number in an address, compared on its own. A similarity
+        # over the whole address cannot carry it: `Unit 4` against `Unit 9`
+        # scores 0.992 there, higher than one address written two ways. See
+        # `arche.resolve._premises` for the measurement.
+        from arche.resolve._premises import compare_premises
+
+        field = spec["field"]
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        return compare_premises(str(ra[field]), str(rb[field]))
     if kind == "tokenset":
         # Long text: a product title, a description, a name with an address
         # trailing it. Order- and length-tolerant, which the `name` comparators

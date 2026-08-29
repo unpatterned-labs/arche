@@ -323,6 +323,31 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         {"field": "entity_class", "kind": "category", "weight": 0.0,
          "refutes_below": 1.0},
         {"field": "address", "kind": "address", "weight": 1.0},
+        # The door, refuting and weightless.
+        #
+        # Two suppliers of one name at different addresses merged before this
+        # existed. `address` carries weight 1.0 against name's 4.0 and cannot
+        # outvote it, and raising the weight is the wrong instrument: a matching
+        # street number is weak evidence (every street has a number 12) while a
+        # differing one is strong evidence against, and a weight is symmetric.
+        #
+        # A `refutes_below` on the address SIMILARITY was tried first and cannot
+        # work. Measured, same-premises pairs score 0.867 to 1.000 and
+        # different-premises pairs reach 0.992 — `Unit 4, Trafford Park` against
+        # `Unit 9, Trafford Park` scores HIGHER than one address written two
+        # ways. The distributions overlap, so no threshold divides them and the
+        # number has to be compared on its own.
+        #
+        # **This does sit in tension with the geo comment below**, which says
+        # distance cannot refute a company because a registered office and an
+        # operational site are legitimately far apart. The same objection
+        # applies here and the answer is what the refutation actually does: it
+        # demotes to `review`, never to `no_match`. Two records giving one
+        # company's office and its site are exactly what a reviewer should see
+        # rather than have merged silently, and `entity_class` above is the
+        # comparator that settles which is which.
+        {"field": "address", "kind": "premises", "weight": 0.0,
+         "refutes_below": 0.5},
         # Geo is weak evidence for a party and carries NO veto, unlike `place`.
         # A registered office and an operational site are legitimately far
         # apart, so distance cannot refute a company; and a site sits on top of
@@ -459,6 +484,7 @@ COMPARATOR_NOTES = {
     "id": "an exact identifier. Strong when it agrees",
     "code": "a product or model code",
     "spec": "a specification drawn out of the name, such as a capacity or size",
+    "premises": "whether two addresses name the same door — the unit, plot or street number, compared on its own. Two different units on one estate share nearly all their address text, so this is the only part that separates them",
     "tokenset": "how much of the shorter text is also in the longer one, as a bag of words. Order- and length-tolerant, for long titles and descriptions",
     "rival": "whether each side names something distinctive the other does "
              "not. Two listings that each carry their own rare identifier "
