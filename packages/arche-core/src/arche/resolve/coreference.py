@@ -4,7 +4,7 @@
 """Co-reference decision core — resolve two references to one person.
 This takes two :class:`~arche.canonical.Reference` records
 (or two documents), decides whether they *co-refer*, and returns a
-:class:`CoReferenceDecision` whose :attr:`~CoReferenceDecision.decision_id` is a
+:class:`Receipt` whose :attr:`~Receipt.decision_id` is a
 reproducible, keyless address of the decision.
 
 The method:
@@ -293,7 +293,7 @@ def _score(
 
 # ── the decision ─────────────────────────────────────────────────────────────
 @dataclass
-class CoReferenceDecision:
+class Receipt:
     """A signed-ready co-reference decision between two references.
 
     Carries the two-axis outcome (:attr:`identity` / :attr:`action`), the numeric
@@ -330,10 +330,24 @@ class CoReferenceDecision:
 
     def __repr__(self) -> str:  # PII-free: never dump the reference objects
         return (
-            f"CoReferenceDecision(identity={self.identity!r}, "
+            f"Receipt(identity={self.identity!r}, "
             f"action={self.action!r}, score={self.score:.4f}, "
             f"decision_id={self.decision_id!r})"
         )
+
+
+#: The name this class carried until the vocabulary was tightened. Named after
+#: the linguistics term for the relation it encodes rather than after the thing
+#: a caller is handed, which is the rule the surface now follows: nouns are
+#: named for what you get back.
+#:
+#: Kept as a plain alias rather than a subclass, so ``isinstance`` checks
+#: written against either spelling keep agreeing. Renaming the class does not
+#: touch ``decision_id``: that hash is computed over the evidence keys and the
+#: pins, and neither is a Python symbol -- see ``tests/test_receipt_schema.py``,
+#: which freezes an id precisely so a rename that DID reach the wire format
+#: could not pass unnoticed.
+CoReferenceDecision = Receipt
 
 
 def _engine_version() -> str:
@@ -362,9 +376,31 @@ def _detect_comparator_lib() -> str:
     return "exact@builtin"
 
 
+#: The version of the receipt's *field vocabulary* — the names of the keys in
+#: ``factors``, ``gate`` and ``vetoes``, not the values in them.
+#:
+#: Why this exists, and why it is worth one deliberate break to add it.
+#: ``decision_id`` is a content hash over those keys plus these pins, so
+#: renaming a key silently invalidates every receipt ever issued: the id stops
+#: re-deriving and a signature that verified yesterday does not verify today.
+#: That is the single property this library sells, and until now nothing
+#: recorded which vocabulary a given receipt was issued under.
+#:
+#: With the version pinned, a receipt says so itself. A future rename bumps
+#: this to 2; receipts issued under 1 keep verifying under 1 forever, because
+#: the rules they were issued under are named in the artifact rather than
+#: implied by whatever code happens to be installed.
+#:
+#: Adding it changes every ``decision_id`` exactly once. That is the cost, it
+#: is paid here, and ``tests/test_receipt_schema.py`` freezes a fixture id so
+#: it can never be paid twice by accident.
+RECEIPT_SCHEMA = 1
+
+
 def _build_pins(jurisdiction: str, priors: JurisdictionPriors) -> dict[str, Any]:
     """The pinned-versions block hashed into ``decision_id`` (§5.1)."""
     return {
+        "receipt_schema": RECEIPT_SCHEMA,
         "engine": _engine_version(),
         "comparator_lib": _detect_comparator_lib(),
         "jurisdiction": jurisdiction,
@@ -434,7 +470,7 @@ def coref_references(
     issuer_key: bytes | None = None,
     extra_pins: dict[str, Any] | None = None,
     decl=None,
-) -> CoReferenceDecision:
+) -> Receipt:
     """Decide whether two structured references co-refer (deterministic path).
 
     The reproducible core: no extraction, no model, no timestamp. Given the same
@@ -452,7 +488,7 @@ def coref_references(
         be shared/attested**: it keys ``reference_id`` / ``decision_id`` (so the
         PII-derived ids can't be brute-forced back to the source records) and,
         when the two references share a distinctive exact identifier, mints the
-        Tier-1 :attr:`~CoReferenceDecision.entity_id`. Without a key the ids are
+        Tier-1 :attr:`~Receipt.entity_id`. Without a key the ids are
         keyless — reproducible locally, but pseudonymous personal data, not safe
         to share openly.
     """
@@ -548,7 +584,7 @@ def coref_references(
     if issuer_key and binding_a is not None and binding_a == binding_b:
         entity_identifier = ids.entity_id(binding_a, key=issuer_key)
 
-    return CoReferenceDecision(
+    return Receipt(
         identity=identity,
         action=action,
         basis=basis,
@@ -578,7 +614,7 @@ def coref_documents(
     source_a: str = "doc_a",
     source_b: str = "doc_b",
     issuer_key: bytes | None = None,
-) -> CoReferenceDecision:
+) -> Receipt:
     """Decide whether two *documents* mention the same person.
 
     Extracts each document into a :class:`Reference`, then delegates to
@@ -629,7 +665,7 @@ def resolution_pipeline(jurisdiction: str | None = None, **pipeline_kwargs: Any)
     factory is where the plan's "email default-on in the resolution path" lives
     (it is deliberately NOT in the plain-Pipeline defaults, which would change
     existing callers' outputs). Use it to produce the ``Result``s you feed to
-    :func:`coref_from_pipeline` / ``resolve.pairwise``::
+    :func:`coref_from_pipeline` / ``resolve.compare``::
 
         pipe = resolution_pipeline("NG")
         decision = coref_from_pipeline(pipe.process(doc_a), pipe.process(doc_b))
@@ -650,7 +686,7 @@ def coref_from_pipeline(
     issuer_key: bytes | None = None,
     source_a: str = "pipeline_a",
     source_b: str = "pipeline_b",
-) -> CoReferenceDecision:
+) -> Receipt:
     """Decide co-reference between two Pipeline ``Result``s — the
     compliance-aware flagship path (recon plan §3.1/§3.2).
 
@@ -690,7 +726,7 @@ def coref_from_pipeline(
 
 
 __all__ = [
-    "CoReferenceDecision",
+    "Receipt",
     "coref_references",
     "coref_documents",
     "coref_from_pipeline",

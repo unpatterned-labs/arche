@@ -39,19 +39,28 @@ dependencies = [
     # arche-core minor. Relax to >=1,<2 when arche-core reaches a stable 1.0
     # with a documented public-API contract.
     #
-    # 0.6.0a1 is the floor, and it is a hard one rather than a preference.
+    # 0.7.0a1 is the floor, and it is a hard one rather than a preference.
     # This package imports `arche.coverage`, `arche.policy.statute_for`,
     # `arche.resolve.compare_names` and `arche.review.read_records`, none of
     # which exist in 0.5.0a1. Pinned lower, `uvx arche-mcp` resolves a core it
     # cannot import, and the failure arrives at first tool call rather than at
     # install.
-    "arche-core>=0.6.0a1,<0.7.0",
+    #
+    # The floor moved to 0.7.0a1 with the verb rename. `handlers.py` imports
+    # `arche.resolve.reconcile`, which in 0.6 is the lower-level engine taking
+    # positional comparators and in 0.7 is the facade that also accepts
+    # `entity=`. The call here passes `entity=`, so against 0.6 it raises
+    # TypeError at first tool call -- the same late failure the paragraph above
+    # exists to prevent. `crosswalk` still works in 0.7 and would have kept
+    # both floors open, but it warns, and shipping a server that emits a
+    # DeprecationWarning on every call is not a saving.
+    "arche-core>=0.7.0a1,<0.8.0",
 ]
 
 [project.optional-dependencies]
 # Named-entity detection needs a real NER backend. Without it `detect_entities`
 # falls back to regex only, which finds identifiers and no names at all.
-detect = ["arche-core[detect]>=0.6.0a1,<0.7.0"]
+detect = ["arche-core[detect]>=0.7.0a1,<0.8.0"]
 
 [project.urls]
 Homepage = "https://github.com/unpatterned-labs/arche"

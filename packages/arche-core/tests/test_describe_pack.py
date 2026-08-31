@@ -112,20 +112,20 @@ class TestIgnoredNotRejected:
     """
 
     def test_an_unknown_field_does_not_raise(self):
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
         records = [{"id": "1", "name": "Amara Patel", "occupation": "nurse"}]
-        crosswalk(records, records, entity="person", id_field="id")
+        reconcile(records, records, entity="person", id_field="id")
 
     def test_and_does_not_change_the_score(self):
         """The stronger claim, and the one that makes it worth saying."""
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
         bare = [{"id": "1", "name": "Amara Patel"},
                 {"id": "2", "name": "Amara Patel"}]
         extra = [{**r, "occupation": "nurse", "favourite_colour": "blue"}
                  for r in bare]
-        assert ([m["score"] for m in crosswalk(bare, bare, entity="person",
+        assert ([m["score"] for m in reconcile(bare, bare, entity="person",
                                                id_field="id")["matches"]]
-                == [m["score"] for m in crosswalk(extra, extra, entity="person",
+                == [m["score"] for m in reconcile(extra, extra, entity="person",
                                                   id_field="id")["matches"]])
 
     def test_the_description_says_so(self):

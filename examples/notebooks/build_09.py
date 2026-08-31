@@ -51,7 +51,7 @@ while not (REPO / "packages" / "arche-core").exists() and REPO != REPO.parent:
     REPO = REPO.parent
 sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
-from arche.resolve import crosswalk, ENTITY_PACKS
+from arche.resolve import reconcile, ENTITY_PACKS
 from arche.resolve._productcode import (
     build_code_table, code_rarity, extract_product_code_candidates,
 )
@@ -102,7 +102,7 @@ B = [{"id": r["id"], "name": r["name"]} for r in buy]
 
 def score(comparators=None, entity=None, label=""):
     kw = {"comparators": comparators} if comparators else {"entity": entity}
-    res = crosswalk(A, B, id_field="id", **kw)
+    res = reconcile(A, B, id_field="id", **kw)
     pred = {(e["a_id"], e["b_id"]): e for e in res["matches"]}
     tp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k in truth)
     fp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k not in truth)
@@ -219,7 +219,7 @@ B2 = [{"id": r["id"], "name": r["name"]} for r in goo]
 
 
 def score2(kw, label):
-    res = crosswalk(A2, B2, id_field="id", **kw)
+    res = reconcile(A2, B2, id_field="id", **kw)
     pred = {(e["a_id"], e["b_id"]): e for e in res["matches"]}
     tp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k in t2)
     fp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k not in t2)
@@ -274,7 +274,7 @@ A3, B3 = rows3(amz, "title"), rows3(goo, "name")
 
 
 def bench(label, comps, b=None):
-    res = crosswalk(A3, b or B3, comparators=comps, id_field="id")
+    res = reconcile(A3, b or B3, comparators=comps, id_field="id")
     pred = {(e["a_id"], e["b_id"]): e for e in res["matches"]}
     tp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k in t2)
     fp = sum(1 for k, e in pred.items() if e["decision"] == "match" and k not in t2)

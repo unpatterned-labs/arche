@@ -48,7 +48,7 @@ names and coordinates.
 """)
 
 code("""
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 registry = [{
     "id": "registry:001",
@@ -63,7 +63,7 @@ map_data = [{
     "lon": 3.3578,
 }]
 
-result = crosswalk(registry, map_data, entity="place")
+result = reconcile(registry, map_data, entity="place")
 edge = result["matches"][0]
 
 print("decision:", edge["decision"])
@@ -176,7 +176,7 @@ must be signed again.
 """)
 
 code("""
-repeat = crosswalk(registry, map_data, entity="place")
+repeat = reconcile(registry, map_data, entity="place")
 same_decision_id = repeat["matches"][0]["decision_id"] == edge["decision_id"]
 print("same inputs give the same decision ID:", same_decision_id)
 

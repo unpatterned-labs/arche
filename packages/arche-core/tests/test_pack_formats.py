@@ -24,7 +24,7 @@ import json
 
 import pytest
 from arche.report import review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.review import PackError, read_pack
 
 pa = pytest.importorskip("pyarrow")
@@ -37,7 +37,7 @@ _RECORDS = [{"id": "r1", "name": "Adesola Okonkwo", "birth_date": "1990-03-02"},
 
 @pytest.fixture
 def csv_pack(tmp_path):
-    res = crosswalk(_RECORDS, _RECORDS, entity="person", id_field="id")
+    res = reconcile(_RECORDS, _RECORDS, entity="person", id_field="id")
     review_pack(res, _RECORDS, _RECORDS, out_dir=tmp_path / "csv",
                 entity="person", sides=("reg", "sur"), reveal=True)
     return tmp_path / "csv"

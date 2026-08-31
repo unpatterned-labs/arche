@@ -149,7 +149,7 @@ def run_splink(df) -> tuple[set, dict]:
 
 # ----------------------------------------------------------------- arche ----
 def run_arche(df, comparators=None) -> set:
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     recs = [{"id": r.unique_id,
              "name": r.first_and_surname or "",
@@ -159,7 +159,7 @@ def run_arche(df, comparators=None) -> set:
              "occupation": r.occupation or ""}
             for r in df.itertuples()]
     kw = {"comparators": comparators} if comparators else {"entity": "person"}
-    res = crosswalk(recs, recs, id_field="id", **kw)
+    res = reconcile(recs, recs, id_field="id", **kw)
     return {norm((e["a_id"], e["b_id"])) for e in res["matches"]
             if e["decision"] == "match" and e["a_id"] != e["b_id"]}
 

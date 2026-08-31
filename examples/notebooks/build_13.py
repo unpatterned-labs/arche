@@ -168,12 +168,12 @@ from where it was calibrated.
 """)
 
 code("""
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 A = [{"name": o["name"], "lat": o["lat"], "lon": o["lon"]} for o in osm]
 B = [{"name": g["name"], "lat": g["lat"], "lon": g["lon"]} for g in gias]
 
-res = crosswalk(A, B, entity="place")
+res = reconcile(A, B, entity="place")
 pred = {(osm[e["a_id"]]["osm_id"], gias[e["b_id"]]["urn"]): e for e in res["matches"]}
 
 m = {k for k, e in pred.items() if k in truth and e["decision"] == "match"}
@@ -233,7 +233,7 @@ def arche_arm(label, predictions):
 An = [{"name": o["name"]} for o in osm]
 Bn = [{"name": g["name"]} for g in gias]
 pn = {(osm[e["a_id"]]["osm_id"], gias[e["b_id"]]["urn"]): e
-      for e in crosswalk(An, Bn, entity="place")["matches"]}
+      for e in reconcile(An, Bn, entity="place")["matches"]}
 
 rows = [
     sweep("exact name (casefold)", lambda x, y: x.casefold().strip() == y.casefold().strip()),

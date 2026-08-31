@@ -255,7 +255,7 @@ for r, _ in missed[:4]:
 md("""
 ## arche, with the pack it ships
 
-`crosswalk(entity="person")` applies the shipped person pack. Read the evidence
+`reconcile(entity="person")` applies the shipped person pack. Read the evidence
 keys on the result before reading the score, because they say what was actually
 compared.
 
@@ -268,7 +268,7 @@ comparator, and the cell below is the pack as it now ships.
 """)
 
 code('''
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 def to_record(r):
     return {"id": r["ID"],
@@ -278,7 +278,7 @@ def to_record(r):
 
 left, right = [to_record(r) for r in ded], [to_record(r) for r in b]
 
-shipped = crosswalk(left, right, entity="person", id_field="id")
+shipped = reconcile(left, right, entity="person", id_field="id")
 print("pins    :", shipped["pins"])
 print("evidence:", sorted(shipped["matches"][0]["evidence"].keys()))
 print("edges   :", len(shipped["matches"]),
@@ -361,7 +361,7 @@ COMPARATORS = [
     {"field": "birth_date", "kind": "date", "weight": 2.0, "refutes_below": 0.5},
 ]
 
-dated = crosswalk(left, right, entity="person", id_field="id",
+dated = reconcile(left, right, entity="person", id_field="id",
                   comparators=COMPARATORS)
 print("evidence:", sorted(dated["matches"][0]["evidence"].keys()))
 print()

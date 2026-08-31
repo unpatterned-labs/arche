@@ -166,7 +166,7 @@ md("""
 
 code("""
 from rapidfuzz import fuzz
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 def toks(s): return {t for t in re.split(r"[^a-z0-9]+", s.casefold()) if t}
 def jaccard(x, y):
@@ -190,7 +190,7 @@ for label, fn in (
     rowsout.append((label, sum(1 for a, b in negatives if fn(a["name"], b["name"]))))
 
 pairs = {(a["uniq_id"], b["uniq_id"]) for a, b in negatives}
-res = crosswalk([rec(a) for a, _ in negatives], [rec(b) for _, b in negatives],
+res = reconcile([rec(a) for a, _ in negatives], [rec(b) for _, b in negatives],
                 entity="place", id_field="id")
 merged = sum(1 for e in res["matches"] if e["decision"] == "match" and (e["a_id"],
     e["b_id"]) in pairs)
@@ -313,7 +313,7 @@ link the two surveys.
 code("""
 A = [rec(r) for r in nmis]
 B = [rec(r) for r in grid]
-out = crosswalk(A, B, entity="place", id_field="id")
+out = reconcile(A, B, entity="place", id_field="id")
 d = Counter(e["decision"] for e in out["matches"])
 print(f"candidate pairs after blocking : {len(out['matches']):,}")
 print(f"  match  {d.get('match', 0):>6,}")

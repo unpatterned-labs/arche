@@ -34,7 +34,7 @@ are not lost while the remaining cluster is worked on.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.resolve._productcode import (
     PRODUCT_CATEGORIES,
     compare_specs,
@@ -44,7 +44,7 @@ from arche.resolve._productcode import (
 
 
 def decide(name_a: str, name_b: str, entity: str = "product_home_goods") -> str:
-    edges = crosswalk([{"id": "a", "name": name_a}], [{"id": "b", "name": name_b}],
+    edges = reconcile([{"id": "a", "name": name_a}], [{"id": "b", "name": name_b}],
                       entity=entity, id_field="id")["matches"]
     return edges[0]["decision"] if edges else "not_surfaced"
 

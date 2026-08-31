@@ -24,13 +24,13 @@ from __future__ import annotations
 
 import pytest
 
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._matcher import compare_categories, load_type_vocab, normalize_type_token
 from arche.resolve.reconcile import _DISTINCTIVE_KINDS, _FIELD_COMPARATORS
 
 
 def _link(a: list[dict], b: list[dict], **kw):
-    return crosswalk(a, b, entity="organisation", id_field="id", **kw)
+    return reconcile(a, b, entity="organisation", id_field="id", **kw)
 
 
 def _verdict(a: dict, b: dict) -> str:

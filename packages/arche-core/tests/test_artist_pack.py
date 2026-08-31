@@ -83,7 +83,7 @@ def test_common_catalog_token_less_distinctive_than_rare():
 
 
 def test_reconcile_accepts_tf_domain_string():
-    out = resolve.crosswalk(
+    out = resolve.reconcile(
         [{"id": "a", "name": "Burna Boy"}],
         [{"id": "b", "name": "Burna Boy"}],
         comparators=[{"field": "name", "kind": "tftoken", "weight": 1.0}],
@@ -95,7 +95,7 @@ def test_reconcile_accepts_tf_domain_string():
 
 def test_reconcile_rejects_unknown_tf_string():
     with pytest.raises(ValueError, match="domain"):
-        resolve.crosswalk(
+        resolve.reconcile(
             [{"id": "a", "name": "x"}],
             [{"id": "b", "name": "x"}],
             comparators=[{"field": "name", "kind": "tftoken", "weight": 1.0}],
@@ -130,7 +130,7 @@ def test_crosswalk_artist_pack_resolves_legal_names():
         {"id": "s2", "name": "Divine Ikubor"},
         {"id": "s3", "name": "Temilade Openiyi"},
     ]
-    out = resolve.crosswalk(statement, catalog, entity="artist", block=None)
+    out = resolve.reconcile(statement, catalog, entity="artist", block=None)
     best: dict[str, dict] = {}
     for m in out["matches"]:
         if m["a_id"] not in best or m["score"] > best[m["a_id"]]["score"]:
@@ -145,7 +145,7 @@ def test_crosswalk_artist_pack_resolves_legal_names():
 def test_crosswalk_artist_pack_mbid_agreement_counts():
     a = [{"id": "x", "name": "WIZKID", "mbid": "mb-1"}]
     b = [{"id": "y", "name": "Wizkid", "mbid": "mb-1"}]
-    out = resolve.crosswalk(a, b, entity="artist", block=None)
+    out = resolve.reconcile(a, b, entity="artist", block=None)
     assert out["matches"][0]["decision"] == "match"
     assert "mbid" in out["matches"][0]["evidence"]
 
@@ -159,7 +159,7 @@ def test_crosswalk_artist_pack_warns_and_falls_back_without_asset(monkeypatch):
             FileNotFoundError("asset missing"))))
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        out = resolve.crosswalk(
+        out = resolve.reconcile(
             [{"id": "a", "name": "Burna Boy"}],
             [{"id": "b", "name": "Burna Boy"}],
             entity="artist",

@@ -30,7 +30,7 @@ the failure an adversarial review of the product lane called out by name.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import ENTITY_PACKS, crosswalk, describe_pack
+from arche.resolve import ENTITY_PACKS, reconcile, describe_pack
 from arche.resolve._productcode import (
     PRODUCT_CATEGORIES,
     compare_specs,

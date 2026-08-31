@@ -13,8 +13,18 @@ GLiNER2-PII and Microsoft Presidio are opt-in via `arche-core[detect]` and
 
 Public API (PRD §10):
     from arche.detect.ng import detect_nigerian_ids
-    from arche.detect.gliner import GLiNERDetector  # requires [detect] extra
     from arche.detect.presidio import PresidioPlugin  # requires [presidio] extra
+
+Neural extraction is reached through :func:`arche.extract`, not through a
+detector class::
+
+    extract(text, backend="gliner")   # GLiNER v1,  arche-core[detect]
+    extract(text, backend="gliner2")  # GLiNER 2.5, arche-core[detect2]
+
+This block used to advertise ``from arche.detect.gliner import GLiNERDetector``.
+That class has never existed -- ``arche/detect/gliner/__init__.py`` is a
+licence header and nothing else -- so the line sent every reader who trusted it
+into an ImportError.
 
 ----
 

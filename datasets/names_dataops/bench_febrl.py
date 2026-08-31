@@ -120,11 +120,11 @@ def _truth_key(rec_id: str) -> str:
 
 
 def _score(a_rows: list[dict], b_rows: list[dict], *, with_id: bool) -> dict:
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     list_a = [_record(r, with_id=with_id) for r in a_rows]
     list_b = [_record(r, with_id=with_id) for r in b_rows]
-    res = crosswalk(list_a, list_b, entity="person", id_field="id")
+    res = reconcile(list_a, list_b, entity="person", id_field="id")
 
     n_true = len({_truth_key(r["rec_id"]) for r in a_rows}
                  & {_truth_key(r["rec_id"]) for r in b_rows})

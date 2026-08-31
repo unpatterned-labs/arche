@@ -131,7 +131,7 @@ def _token_sort(a: dict, b: dict) -> float:
 
 
 def _score(rows, mode: str) -> dict:
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     tp = fp = fn = 0
     for i, (a, b, y) in enumerate(rows):
@@ -139,7 +139,7 @@ def _score(rows, mode: str) -> dict:
         if mode == "token_sort":
             pred = 1 if _token_sort(a, b) >= 0.5 else 0
         else:
-            res = crosswalk([ra], [rb], entity=mode, id_field="id")
+            res = reconcile([ra], [rb], entity=mode, id_field="id")
             pred = 1 if (res["matches"] and
                          res["matches"][0]["decision"] == "match") else 0
         if pred and y:

@@ -26,7 +26,7 @@ depending on how it is called:
 
 * **blind** — the `person` pack with the `tftoken` comparator removed. No
   frequency information at all.
-* **shipped** — `crosswalk(entity="person")`, exactly what a user gets. The
+* **shipped** — `reconcile(entity="person")`, exactly what a user gets. The
   pack contains `tftoken`, but `person` is absent from `_PACK_TF_DOMAIN`, so
   no shipped table is loaded and `crosswalk` falls back to self-calibrating a
   table over the two lists being linked (`resolve/__init__.py`, the
@@ -269,14 +269,14 @@ def _run_arm(pairs: list[dict], **kw) -> dict[str, dict]:
     pair-by-pair scoring cannot see. That is the real task: a linkage run is
     free to propose any candidate blocking surfaces.
     """
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     list_a = [{"id": f"a{i}", "name": p["a"]} for i, p in enumerate(pairs)]
     list_b = [{"id": f"b{i}", "name": p["b"]} for i, p in enumerate(pairs)]
     truth = {(f"a{i}", f"b{i}") for i, p in enumerate(pairs)
              if p["cls"] == "pos"}
 
-    res = crosswalk(list_a, list_b, id_field="id", **kw)
+    res = reconcile(list_a, list_b, id_field="id", **kw)
 
     per_band: dict[str, dict] = {
         b: {"true_merges": 0, "false_merges": 0} for b, _, _ in BANDS}

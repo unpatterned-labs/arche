@@ -21,7 +21,7 @@ import json
 
 import pytest
 from arche.report import PACK_SCHEMA, REVIEW_FIELDS, REVIEW_OUTCOMES, review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 _A = [{"id": "a1", "name": "Amara Patel", "birth_date": "2016-06-28"},
       {"id": "a2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
@@ -30,7 +30,7 @@ _B = [{"id": "a1", "name": "Amara Patel", "birth_date": "6/28/2016"},
 
 
 def _pack(tmp_path, **kw):
-    res = crosswalk(_A, _B, entity="person", id_field="id")
+    res = reconcile(_A, _B, entity="person", id_field="id")
     kw.setdefault("reveal", True)
     manifest = review_pack(res, _A, _B, out_dir=tmp_path / "p", entity="person", **kw)
     rows = list(csv.DictReader((tmp_path / "p" / "pack.csv").open(encoding="utf-8")))
@@ -101,7 +101,7 @@ class TestWhatGoesInIt:
         assert "no_match" not in manifest["decisions"]
 
     def test_a_wider_decisions_tuple_includes_them(self, tmp_path):
-        res = crosswalk(_A, _B, entity="person", id_field="id")
+        res = reconcile(_A, _B, entity="person", id_field="id")
         wide = review_pack(res, _A, _B, out_dir=tmp_path / "w", reveal=True,
                            decisions=("match", "review", "no_match"))
         narrow = review_pack(res, _A, _B, out_dir=tmp_path / "n", reveal=True)
@@ -109,13 +109,13 @@ class TestWhatGoesInIt:
 
     def test_side_prefix_with_an_underscore_is_refused(self, tmp_path):
         """It would split in the wrong place and mis-assign every column."""
-        res = crosswalk(_A, _B, entity="person", id_field="id")
+        res = reconcile(_A, _B, entity="person", id_field="id")
         with pytest.raises(ValueError, match="underscore"):
             review_pack(res, _A, _B, out_dir=tmp_path / "x", reveal=True,
                         sides=("source_a", "source_b"))
 
     def test_two_identical_prefixes_are_refused(self, tmp_path):
-        res = crosswalk(_A, _B, entity="person", id_field="id")
+        res = reconcile(_A, _B, entity="person", id_field="id")
         with pytest.raises(ValueError, match="distinct"):
             review_pack(res, _A, _B, out_dir=tmp_path / "y", reveal=True,
                         sides=("a", "a"))
@@ -125,7 +125,7 @@ class TestDisclosure:
     """A pack is a file that gets copied around."""
 
     def test_masked_is_the_default(self, tmp_path):
-        res = crosswalk(_A, _B, entity="person", id_field="id")
+        res = reconcile(_A, _B, entity="person", id_field="id")
         manifest = review_pack(res, _A, _B, out_dir=tmp_path / "m")
         assert manifest["disclosure"] == "masked"
 
@@ -135,7 +135,7 @@ class TestDisclosure:
 
     def test_masking_actually_changes_the_values(self, tmp_path):
         """Otherwise the flag is decoration."""
-        res = crosswalk(_A, _B, entity="person", id_field="id")
+        res = reconcile(_A, _B, entity="person", id_field="id")
         review_pack(res, _A, _B, out_dir=tmp_path / "m")
         review_pack(res, _A, _B, out_dir=tmp_path / "r", reveal=True)
         masked = (tmp_path / "m" / "pack.csv").read_text(encoding="utf-8")
@@ -147,12 +147,12 @@ class TestDisclosure:
         """A masked pack that prints national IDs as row keys is a leak."""
         a = [{"id": "12345678901", "name": "Amara Patel"}]
         b = [{"id": "12345678901", "name": "Amara Patel"}]
-        res = crosswalk(a, b, entity="person", id_field="id")
+        res = reconcile(a, b, entity="person", id_field="id")
         with pytest.raises(ValueError, match="sensitive identifiers"):
             review_pack(res, a, b, out_dir=tmp_path / "s")
 
     def test_and_allowed_when_revealed_deliberately(self, tmp_path):
         a = [{"id": "12345678901", "name": "Amara Patel"}]
         b = [{"id": "12345678901", "name": "Amara Patel"}]
-        res = crosswalk(a, b, entity="person", id_field="id")
+        res = reconcile(a, b, entity="person", id_field="id")
         assert review_pack(res, a, b, out_dir=tmp_path / "s", reveal=True)["rows"]

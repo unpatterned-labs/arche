@@ -70,7 +70,7 @@ That is the whole thing.
 `resolve_documents` composed five shipped layers and left you nothing to
 reimplement: `doc.parse` read the PDFs, `Pipeline(jurisdiction="NG")` ran
 statute-aware detection, `extract` found names and places, `Reference` assembled
-each document into a canonical record, and `resolve.pairwise` judged every pair.
+each document into a canonical record, and `resolve.compare` judged every pair.
 
 Two details worth seeing in the output above.
 

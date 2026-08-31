@@ -29,7 +29,7 @@ What it does not do
 It does not invent a new matcher. `resolve_documents` composes the pieces that
 already exist and are already tested: `doc.parse` for text, `Pipeline` for
 statute-aware detection, `extract` for names and places, `Reference` for the
-canonical record, and `resolve.pairwise` for the decision. The value is that
+canonical record, and `resolve.compare` for the decision. The value is that
 they compose *here*, once, rather than in every user's first notebook.
 """
 
@@ -402,7 +402,7 @@ def resolve_documents(
     Every stage is a shipped `arche` layer: :func:`arche.doc.parse` for text,
     :class:`arche.Pipeline` for statute-aware detection, :func:`arche.extract`
     for names and places, :class:`arche.canonical.Reference` for the record, and
-    :func:`arche.resolve.pairwise` for the verdict. The caller writes no
+    :func:`arche.resolve.compare` for the verdict. The caller writes no
     patterns and no field-mapping.
 
     ``quiet=True`` silences the third-party loggers underneath ``parse`` so the
@@ -454,7 +454,7 @@ def resolve_documents(
             for side, doc in (("a", a), ("b", b))
             if report.provenance.get(doc)
         }
-        decision = resolve.pairwise(
+        decision = resolve.compare(
             refs[a], refs[b], entity=entity,
             extra_pins={"extraction": extraction} if extraction else None,
         )

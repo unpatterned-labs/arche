@@ -20,7 +20,7 @@ import csv
 
 import pytest
 from arche.report import REVIEW_FIELDS, pack_content_digest, review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 _A = [{"id": "1", "name": "Amara Patel", "birth_date": "2016-06-28"},
       {"id": "2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
@@ -30,7 +30,7 @@ _B = [{"id": "1", "name": "Amara Patel", "birth_date": "6/28/2016"},
 
 @pytest.fixture
 def pack(tmp_path):
-    res = crosswalk(_A, _B, entity="person", id_field="id")
+    res = reconcile(_A, _B, entity="person", id_field="id")
     manifest = review_pack(res, _A, _B, out_dir=tmp_path / "p",
                            entity="person", reveal=True)
     return tmp_path / "p" / "pack.csv", manifest

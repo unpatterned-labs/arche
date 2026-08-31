@@ -57,7 +57,7 @@ _REPO = _HERE.parents[1]
 sys.path.insert(0, str(_REPO / "packages" / "arche-core" / "src"))
 sys.path.insert(0, str(_HERE))
 
-from arche.resolve import crosswalk  # noqa: E402
+from arche.resolve import reconcile  # noqa: E402
 from bench_name_frequency import (  # noqa: E402
     BANDS,
     PER_BAND,
@@ -162,7 +162,7 @@ def score(pairs: list[dict], comparators: list[dict]) -> dict:
             for i, p in enumerate(pairs)]
     right = [{"id": f"R{i}", "name": p["b"], "birth_date": p["yb"]}
              for i, p in enumerate(pairs)]
-    res = crosswalk(left, right, entity="person", id_field="id",
+    res = reconcile(left, right, entity="person", id_field="id",
                     comparators=comparators)
     designated = {f"L{i}": f"R{i}" for i, p in enumerate(pairs) if p["cls"] == "pos"}
     npos = len(designated)

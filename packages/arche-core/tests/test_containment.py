@@ -22,7 +22,7 @@ through `crosswalk`.
 """
 
 import pytest
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.resolve._matcher import (
     BOUNDARY_UNCERTAINTY_KM,
     POSTCODE_BOUNDARY_UNCERTAINTY_KM,
@@ -265,7 +265,7 @@ class TestNigeriaStateBorderRegressions:
     def test_able_god_pair_is_held_for_review_end_to_end(self):
         # The pair that SHOULD be caught by an admin disagreement still is,
         # through the shipped place pack, with no configuration.
-        edge = crosswalk(
+        edge = reconcile(
             [self._record("a", "Able God Group Of School", self.ABLE_GOD_A,
                           "Ogun", "Ado Odo/Ota")],
             [self._record("b", "Able God Group Of School", self.ABLE_GOD_B,
@@ -280,7 +280,7 @@ class TestNigeriaStateBorderRegressions:
         # this pair through as a match. The evidence names the discounted
         # containment value, so a reviewer can see the pair was judged on a
         # near-boundary admin disagreement rather than on agreement.
-        edge = crosswalk(
+        edge = reconcile(
             [self._record("a", "Tumbu Primary School", self.TUMBU_A,
                           "Adamawa", "Shelleng")],
             [self._record("b", "Tumbu Primary School", self.TUMBU_B,
@@ -294,14 +294,14 @@ class TestNigeriaStateBorderRegressions:
     def test_the_discount_lowers_the_score_it_does_not_raise_it(self):
         # A near-boundary admin disagreement is still worse evidence than no
         # admin data at all. Withholding refutation must not become a bonus.
-        with_admin = crosswalk(
+        with_admin = reconcile(
             [self._record("a", "Tumbu Primary School", self.TUMBU_A,
                           "Adamawa", "Shelleng")],
             [self._record("b", "Tumbu Primary School", self.TUMBU_B,
                           "Borno", "Shani")],
             entity="place", id_field="id",
         )["matches"][0]
-        without = crosswalk(
+        without = reconcile(
             [{"id": "a", "name": "Tumbu Primary School",
               "lat": str(self.TUMBU_A[0]), "lon": str(self.TUMBU_A[1])}],
             [{"id": "b", "name": "Tumbu Primary School",
@@ -419,7 +419,7 @@ class TestPostcodeThroughCrosswalk:
     ]
 
     def _run(self, postcode_b, lat_b, lon_b):
-        return crosswalk(
+        return reconcile(
             [{"id": "a", "name": "Rosewood Clinic", "postcode": "SW1A 1AA",
               "lat": "51.5010", "lon": "-0.1416"}],
             [{"id": "b", "name": "Rosewood Clinic", "postcode": postcode_b,
@@ -442,7 +442,7 @@ class TestPostcodeThroughCrosswalk:
         assert edge["decision"] == "match"
 
     def test_a_missing_postcode_never_refutes(self):
-        edge = crosswalk(
+        edge = reconcile(
             [{"id": "a", "name": "Rosewood Clinic", "postcode": "SW1A 1AA",
               "lat": "51.5010", "lon": "-0.1416"}],
             [{"id": "b", "name": "Rosewood Clinic",
@@ -455,7 +455,7 @@ class TestPostcodeThroughCrosswalk:
 
     def test_records_without_coordinates_refute_on_the_postcode_alone(self):
         # No coordinates means no discount, which is the safe direction.
-        edge = crosswalk(
+        edge = reconcile(
             [{"id": "a", "name": "Rosewood Clinic", "postcode": "SW1A 1AA"}],
             [{"id": "b", "name": "Rosewood Clinic", "postcode": "EC2A 3AR"}],
             comparators=self.COMPARATORS, id_field="id", block=None,

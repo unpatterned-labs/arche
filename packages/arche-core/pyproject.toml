@@ -104,6 +104,11 @@ parquet = ["pyarrow>=14"]
 # --- v0.2 detector backends (PRD §4) ---------------------------------------
 # GLiNER2-PII via ONNX runtime (~250MB). Multilingual soft-PII detection.
 detect = ["gliner>=0.2.8", "onnxruntime>=1.18"]
+# GLiNER 2.5 (Fastino, Apache-2.0). The `[local]` marker is load-bearing:
+# bare `gliner2` installs an API client that posts text to a hosted service,
+# so declaring it without `[local]` would ship a code path that sends customer
+# text off the machine. `[local]` is the on-device inference stack.
+detect2 = ["gliner2[local]>=2.0"]
 # Microsoft Presidio recognizer plugin (~lightweight).
 presidio = ["presidio-analyzer>=2.2", "presidio-anonymizer>=2.2"]
 # Splink + DuckDB for billion-row entity resolution (~200MB). Stage 2+.

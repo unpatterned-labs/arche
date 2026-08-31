@@ -28,7 +28,7 @@ arrives in v0.3 alongside the ``arche-core[graph]`` Kuzu backend and the
 
 v0.3 note: the v0.1 callable-module shim (``arche.resolve(text)``) is
 removed. Use ``arche.Pipeline(...).process(text)`` for the composition
-pattern, or ``resolve.pairwise`` / ``resolve.crosswalk`` from this facade.
+pattern, or ``resolve.compare`` / ``resolve.reconcile`` from this facade.
 """
 
 from __future__ import annotations
@@ -49,9 +49,11 @@ from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
     resolve_identity_records,
 )
 
-# Place/entity crosswalk engine (list-to-list reconciliation) and the
-# term-frequency table its ``tftoken`` comparator + reranker consume.
-from arche.resolve.reconcile import reconcile  # noqa: E402,F401
+# The engine, imported privately. The public `reconcile` below IS this
+# function plus entity-pack lookup: handed the same comparators the two
+# produce byte-identical output, `decision_id` included, which is why they
+# are merged into one verb rather than kept as two names for one question.
+from arche.resolve.reconcile import reconcile as _reconcile_engine  # noqa: E402,F401
 
 # What would settle a pair the engine declined to settle. Imported here rather
 # than left private because the caller who needs it most is an agent, and an
@@ -59,17 +61,31 @@ from arche.resolve.reconcile import reconcile  # noqa: E402,F401
 # module, so it imports that lazily inside the call to keep the cycle broken.
 from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
 
+# The keys that make a lookup a lookup. Public because a master list is
+# asked about many times and its keys do not change between questions;
+# computing them once is what lets `find` scale past a scan.
+from arche.resolve._fingerprint import (  # noqa: E402,F401
+    FingerprintIndex,
+    fingerprint,
+)
+
 # ---------------------------------------------------------------------------
 #
-# Two entry points by USE-SHAPE, sharing primitives but deliberately distinct
-# combination laws:
-#   pairwise(a, b)            -> "are these two the same?" (Fellegi-Sunter +
-#                                gate, signable CoReferenceDecision)
-#   crosswalk(list_a, list_b) -> "link two lists at scale" (weighted-mean +
-#                                gate + blocking, id-only candidates)
-# The scores are NOT comparable across the two (different math, on purpose).
-# `coref_*` and `reconcile` remain importable, but the facade is the documented
-# surface. (`compare_lists` on main: wrapper-or-deprecate at merge)
+# Two verbs, by the QUESTION being asked:
+#   compare(a, b)               -> "are these two the same?"
+#   reconcile(list_a, list_b)   -> "which of these are the same?"
+#
+# Both are named for the question, never for the algorithm that answers it or
+# for one of the answers it can give. That rule is why `pairwise` (the shape of
+# the algorithm) and `crosswalk` (the artifact handed back) are now the older
+# spellings rather than the primary ones, and why `match` is not a verb here at
+# all: a verb that promises its own happy path cannot also return `no_match`.
+#
+# The two scores are NOT comparable. `compare` on a person sums log-odds;
+# `reconcile` takes a weighted mean over a comparator pack. 0.8 from one does
+# not mean what 0.8 from the other means, which is why every receipt pins the
+# engine that issued it. Read the verdict; read the score only against other
+# scores from the same engine.
 # ---------------------------------------------------------------------------
 
 # Canned comparator specs per entity type — the "entity pack" axis. A pack is
@@ -422,25 +438,162 @@ def _tf_digest(tf: TokenFrequencyTable) -> str | None:
         return None
 
 
-def pairwise(a, b, *, entity: str = "person", **kwargs):
-    """Decide whether two records/documents/results refer to the same entity.
+def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
+    """One pair, decided by the pack engine, returned as a decision.
 
-    Dispatches on input shape:
+    Two records and an entity pack is the same question `crosswalk` answers for
+    two lists, so this asks it that way rather than growing a second scorer.
+    `_score_pair` is right there and calling it directly would be shorter, but
+    it would mean re-deriving the pack, the frequency table, the code tables and
+    the pins around it — a second path that drifts from the first the day either
+    changes. Wrap, do not fork.
 
-    * two Pipeline ``Result``s -> ``coref_from_pipeline`` (the compliance-aware
-      path: statute citations travel; drop-actioned values are restricted);
-    * two canonical ``Reference``s -> ``coref_references`` (the deterministic,
-      reproducible core);
-    * two strings -> ``coref_documents`` (extract-then-resolve).
+    Two deliberate choices, because both are visible in the result:
 
-    Returns a signable ``CoReferenceDecision``. Currently ``entity="person"``
-    only — pairwise place/product decisions are roadmap.
+    **Blocking is off.** `block=None`. Blocking exists to avoid comparing every
+    pair in two lists; a caller naming one pair has already done that job. Left
+    on, `crosswalk` answers "no shared rare token" — which surfaces as *no
+    result* and reads exactly like "not the same". Measured on
+    `Karfi Agro Cooperative Ltd` against `Zenith Bank Plc`: `block="union"`
+    yields `candidate_pairs=0` (never compared), `block=None` yields
+    `candidate_pairs=1` (compared, scored below the floor). Only the second is
+    an answer to the question that was asked.
+
+    **A pair below the surfacing floor is `different`, and says so honestly.**
+    `crosswalk` emits edges only at or above `threshold - review_margin`; below
+    that it emits nothing, which for two lists means "not worth a reviewer's
+    time" and for one named pair means "different". The thresholds are NOT bent
+    to force an edge out: doing so would make the edge's own `decision` field
+    say `review` while the receipt built from it said `different`, and that
+    edge's `decision_id` is a hash over the field that disagrees. A receipt
+    whose id addresses a different claim than the receipt makes is worse than
+    no receipt.
+    """
+    from arche import ids as _ids
+    from arche.canonical import Reference as _Reference
+    from arche.resolve.coreference import Receipt
+
+    threshold = kwargs.pop("threshold", 0.7)
+    review_margin = kwargs.pop("review_margin", 0.15)
+    # Same contract as the person path: a supplied issuer key makes the
+    # reference ids (and so the decision address) per-issuer rather than a
+    # keyless hash a third party could brute-force back to the source records.
+    issuer_key = kwargs.pop("issuer_key", None)
+    run = reconcile(
+        [dict(a, **{"__arche_side": "a"})], [dict(b, **{"__arche_side": "b"})],
+        entity=entity, id_field="__arche_side",
+        block=None, threshold=threshold, review_margin=review_margin, **kwargs,
+    )
+    edge = run["matches"][0] if run["matches"] else None
+    ref_a = _Reference.from_record(a)
+    ref_b = _Reference.from_record(b)
+    ref_id_a = _ids.reference_id(ref_a, key=issuer_key)
+    ref_id_b = _ids.reference_id(ref_b, key=issuer_key)
+    pins = dict(run["pins"])
+    pins["entity_pack"] = entity
+
+    if edge is not None:
+        identity, action = (
+            ("same_entity", "merge") if edge["decision"] == "match"
+            else ("review", "hold")
+        )
+        factors = {k: v for k, v in edge["evidence"].items()
+                   if isinstance(v, (int, float))}
+        gate = {"distinctive_max": edge["distinctive_max"],
+                "distinctive_floor": pins.get("distinctive_floor")}
+        score = edge["score"]
+        # The engine's own id, not a recomputed one. It addresses the edge that
+        # was actually issued, under the `arche.crosswalk_edge.v1` format, and
+        # re-deriving it here under a different shape would quietly mint a
+        # second address for one decision.
+        the_id = edge["decision_id"]
+        basis = f"pack:{entity}"
+    else:
+        identity, action = "different", "no_op"
+        factors, gate, score = {}, {
+            "surfacing_floor": round(threshold - review_margin, 4),
+            "surfaced": False,
+        }, 0.0
+        # No edge means the engine issued no receipt, so there is no engine id
+        # to quote. This address is computed the way the person path computes
+        # its own — over the two reference ids and the pins — so the answer is
+        # still citable and still reproducible, and its `dec:` prefix says
+        # plainly that it came from here rather than from an emitted edge.
+        the_id = _ids.decision_id(
+            reference_id_a=ref_id_a, reference_id_b=ref_id_b,
+            decision="different", factors={}, gate=gate, vetoes={},
+            jurisdiction="default", pins=pins, key=issuer_key,
+        )
+        basis = f"pack:{entity} (below surfacing floor)"
+
+    return Receipt(
+        identity=identity, action=action, basis=basis, score=score,
+        factors=factors, field_weights={}, gate=gate, vetoes={},
+        explanation=_explain_pack(entity, identity, factors, gate),
+        reference_id_a=ref_id_a, reference_id_b=ref_id_b,
+        decision_id=the_id, entity_id=None,
+        reference_a=ref_a, reference_b=ref_b,
+        jurisdiction="default", pins=pins,
+    )
+
+
+def _explain_pack(entity, identity, factors, gate) -> str:
+    """One sentence a reviewer can read without knowing the pack."""
+    if identity == "different":
+        return (f"no {entity} evidence reached the surfacing floor of "
+                f"{gate.get('surfacing_floor')}")
+    agreeing = sorted((k for k, v in factors.items() if v >= 0.8))
+    refuting = sorted((k for k, v in factors.items() if v <= 0.01))
+    parts = []
+    if agreeing:
+        parts.append("agrees on " + ", ".join(agreeing))
+    if refuting:
+        parts.append("disagrees on " + ", ".join(refuting))
+    return "; ".join(parts) if parts else "no strong signals either way"
+
+
+def compare(a, b, *, entity: str = "person", **kwargs):
+    """Are these two the same thing?
+
+    The pairwise question, for any entity arche has a pack for. Returns a
+    signable ``Receipt`` carrying the two-axis outcome
+    (``identity`` / ``action``), the evidence that produced it, and a
+    ``decision_id`` that re-derives from the same inputs.
+
+    Accepts, on both sides and in any combination the pair agrees on:
+
+    * two plain ``dict`` records -> the structured path;
+    * two Pipeline ``Result``s -> the compliance-aware path (statute citations
+      travel; drop-actioned values stay restricted);
+    * two canonical ``Reference``s -> the deterministic core;
+    * two strings -> extract, then decide.
+
+    ``entity`` selects the vocabulary. ``"person"`` runs the Fellegi-Sunter
+    engine in :mod:`arche.resolve.coreference`, which carries a fixed person
+    schema (name / phone / national_id / email / address / dob / geo) and the
+    jurisdiction priors that go with it. Every other entity runs the pack
+    engine — the same one :func:`crosswalk` uses — on a single pair.
+
+    **The two engines do not share a score.** One is a log-odds sum, the other
+    a weighted mean over a comparator pack, and a 0.8 from each does not mean
+    the same thing. That is why ``pins`` records which engine decided: read the
+    verdict, and read `score` only against other scores from the same engine.
     """
     if entity != "person":
-        raise NotImplementedError(
-            f"pairwise entity={entity!r} is not available yet; person only. "
-            "Use crosswalk(...) for place lists."
-        )
+        if entity not in ENTITY_PACKS:
+            raise ValueError(
+                f"no entity pack named {entity!r}; have "
+                f"{', '.join(sorted(ENTITY_PACKS))}. Pass comparators= to "
+                "reconcile(...) for a schema arche does not ship."
+            )
+        if not (isinstance(a, dict) and isinstance(b, dict)):
+            raise TypeError(
+                f"compare(entity={entity!r}) expects two dict records; got "
+                f"{type(a).__name__} and {type(b).__name__}. The pack engine "
+                "scores declared fields, so it needs the fields."
+            )
+        return _compare_via_pack(a, b, entity, **kwargs)
+
     from arche.resolve.coreference import (
         coref_documents,
         coref_from_pipeline,
@@ -449,12 +602,28 @@ def pairwise(a, b, *, entity: str = "person", **kwargs):
 
     if hasattr(a, "detections") and hasattr(b, "detections"):
         return coref_from_pipeline(a, b, **kwargs)
+    # Plain records reach the deterministic core the same way a structured
+    # source does anywhere else in arche — through `Reference.from_record`,
+    # which is already declaration-aware. Rejecting dicts here while
+    # `crosswalk` required them was the seam that made one question look like
+    # two different libraries.
+    if isinstance(a, dict) and isinstance(b, dict):
+        from arche.canonical import Reference as _Reference
+
+        decl = kwargs.get("decl")
+        return coref_references(
+            _Reference.from_record(a, decl=decl),
+            _Reference.from_record(b, decl=decl),
+            **kwargs,
+        )
     if hasattr(a, "attributes") and hasattr(b, "attributes"):
         return coref_references(a, b, **kwargs)
     if isinstance(a, str) and isinstance(b, str):
         return coref_documents(a, b, **kwargs)
+    # Names the shapes, not the function: `pairwise` forwards here, and an
+    # error naming a function the caller did not call is a small cruelty.
     raise TypeError(
-        f"pairwise expects two Results, two References, or two strings; "
+        f"expects two dicts, two Results, two References, or two strings; "
         f"got {type(a).__name__} and {type(b).__name__}"
     )
 
@@ -628,10 +797,18 @@ def describe_packs() -> dict[str, dict]:
     return {name: describe_pack(name) for name in sorted(ENTITY_PACKS)}
 
 
-def crosswalk(list_a, list_b, *, entity: str | None = None,
-              comparators: list[dict] | None = None, tf=None, decl=None,
-              **kwargs):
-    """Link/dedupe two record lists at scale (blocking + gate + evidence).
+def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
+              entity: str | None = None, tf=None, decl=None, **kwargs):
+    """Link two lists of records: which of these are the same thing?
+
+    The batch question, the counterpart to :func:`compare`. Returns the
+    edges, the blocking diagnostics and the run pins.
+
+    ``comparators`` is positional so that callers of the lower-level engine
+    -- which this function used to sit above under a second name -- keep
+    working unchanged. Handed the same comparators, the two produce
+    byte-identical output including ``decision_id``; the only thing this
+    adds is ``entity=`` pack lookup and declaration handling.
 
     Pass ``entity=`` to use a canned comparator pack (:data:`ENTITY_PACKS`),
     or bring explicit ``comparators=`` for your own schema. When the pack uses
@@ -787,13 +964,390 @@ def crosswalk(list_a, list_b, *, entity: str | None = None,
     # arche's own engine. `splink_settings="derive"` opts into the inference
     # and warns.
     if backend in (None, "arche"):
-        return reconcile(list_a, list_b, comparators, tf=tf,
-                         extra_pins=extra_pins or None, **kwargs)
+        return _reconcile_engine(list_a, list_b, comparators, tf=tf,
+                                 extra_pins=extra_pins or None, **kwargs)
     if backend == "splink":
         return _splink(list_a, list_b, comparators, extra_pins, kwargs)
     raise ValueError(
         f"unknown backend {backend!r}; available: 'arche' (default), 'splink'"
     )
+
+
+def dedupe(records, comparators: list[dict] | None = None, *,
+           entity: str | None = None, tf=None, decl=None, **kwargs):
+    """Collapse one list: which of these records are the same thing?
+
+    The third question, after :func:`compare` ("are these two the same?") and
+    :func:`reconcile` ("which of these are the same as those?"). Returns the
+    surviving edges, the clusters they imply, and the run pins.
+
+    Not the same as ``reconcile(records, records)``, which answers a question
+    nobody asked: joined to itself a list yields ``n`` self-pairs -- every
+    record matching itself at 1.000 -- plus two mirrored edges for every real
+    pair. Both are dropped here, so an edge is always a claim about two
+    *different* records, made once.
+
+    ``clusters`` are the transitive closure over ``match`` edges only.
+    ``review`` never merges: an abstention that quietly collapsed two records
+    would make the third outcome decorative.
+
+    Every cluster declares how it is held together:
+
+    ``"direct"``
+        every pair of members was compared and matched. The cluster is a
+        clique; nothing in it is taken on trust.
+    ``"transitive"``
+        at least one member pair was never directly judged the same. A matched
+        B and B matched C, so all three are grouped -- but A and C may never
+        have been compared, and if they were, they may not have matched. That
+        is the classic way a dedupe run swallows two genuinely different
+        records, so it is reported rather than hidden.
+
+    Ids must be unique. Two records sharing one is not a duplicate to be
+    found; it is a list that cannot say which record an edge refers to.
+    """
+    id_field = kwargs.get("id_field", "id")
+    # Positions, resolved exactly the way the engine resolves them, so the
+    # ordering below refers to the same identities the edges carry.
+    identities = [r.get(id_field, i) for i, r in enumerate(records)]
+    order: dict = {}
+    for position, identity in enumerate(identities):
+        try:
+            seen = identity in order
+        except TypeError:  # an unhashable id: a dict or list in the id column
+            raise ValueError(
+                f"record {position} has an unhashable {id_field}={identity!r}; "
+                "dedupe needs an id it can compare"
+            ) from None
+        if seen:
+            raise ValueError(
+                f"duplicate {id_field}={identity!r} at positions "
+                f"{order[identity]} and {position}. Deduplication reports which "
+                "records are the same thing, so it has to be able to tell them "
+                "apart first -- two records sharing an id make every edge "
+                "between them ambiguous. Give each row a distinct id, or drop "
+                f"{id_field}= and let position identify them."
+            )
+        order[identity] = position
+
+    run = reconcile(records, records, comparators, entity=entity, tf=tf,
+                    decl=decl, **kwargs)
+
+    # One edge per unordered pair, and none from a record to itself. `order` is
+    # consulted rather than comparing ids directly because ids need not be
+    # orderable; positions always are.
+    edges = [m for m in run["matches"] if order[m["a_id"]] < order[m["b_id"]]]
+
+    matched = [(m["a_id"], m["b_id"]) for m in edges if m["decision"] == "match"]
+    clusters = _clusters(identities, matched)
+    return {
+        "matches": edges,
+        "count": len(edges),
+        "clusters": clusters,
+        "cluster_count": len(clusters),
+        "review": [m for m in edges if m["decision"] == "review"],
+        "pins": run["pins"],
+        "blocking": run["blocking"],
+    }
+
+
+def _clusters(identities: list, matched: list[tuple]) -> list[dict]:
+    """Transitive closure over matched pairs, with how each group is held.
+
+    Singletons are included. A record that matched nothing is a finding --
+    it is the answer "this one is unique" -- and dropping it would leave the
+    output impossible to line up against the input.
+    """
+    parent = {identity: identity for identity in identities}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for a, b in matched:
+        root_a, root_b = find(a), find(b)
+        if root_a != root_b:
+            parent[root_b] = root_a
+
+    groups: dict = {}
+    for identity in identities:
+        groups.setdefault(find(identity), []).append(identity)
+
+    direct = {frozenset(pair) for pair in matched}
+    out = []
+    for members in groups.values():
+        size = len(members)
+        # A clique means every member pair was compared and matched. Anything
+        # less and some pair is grouped on a chain rather than on evidence.
+        pairs_needed = size * (size - 1) // 2
+        pairs_present = sum(
+            1
+            for i, a in enumerate(members)
+            for b in members[i + 1:]
+            if frozenset((a, b)) in direct
+        )
+        out.append({
+            "members": members,
+            "size": size,
+            "held_together_by": (
+                "direct" if pairs_present == pairs_needed else "transitive"
+            ),
+        })
+    out.sort(key=lambda c: (-c["size"], str(c["members"][0])))
+    return out
+
+
+#: One line per verb: the question it answers, and what it hands back.
+#:
+#: Written out rather than derived from docstrings because this is the text an
+#: agent chooses on, and a docstring's first line is written for a human who
+#: has already decided to read it. These are written for a reader deciding
+#: which of four to call.
+_VERBS: dict[str, dict[str, str]] = {
+    "compare": {
+        "question": "Are these two the same thing?",
+        "takes": "two records (or two documents, or two references)",
+        "returns": "a Receipt: identity, action, the evidence, and a "
+                   "reproducible decision_id",
+    },
+    "reconcile": {
+        "question": "Which of these are the same as those?",
+        "takes": "two lists of records",
+        "returns": "edges, blocking diagnostics and run pins",
+    },
+    "dedupe": {
+        "question": "Which of these are the same thing?",
+        "takes": "one list of records",
+        "returns": "edges plus clusters, each saying whether it is held "
+                   "together directly or transitively",
+    },
+    "find": {
+        "question": "Which of these is this one?",
+        "takes": "one record, and a list to look in",
+        "returns": "a verdict of found / ambiguous / not_found, and when "
+                   "ambiguous, the fields that would break the tie",
+    },
+}
+
+
+def describe(entity: str | None = None) -> dict:
+    """What arche can be asked, and about what.
+
+    Built for a caller deciding what to do next -- typically an agent, which is
+    why it is a data structure rather than prose. Names the four verbs, the
+    entity packs, and for each pack the fields it reads and what each
+    comparator is actually doing.
+
+    Pass ``entity`` for one pack instead of all of them.
+
+    The verb list is the point. Before this surface was tightened there were
+    eight overlapping ways to ask three questions -- ``pairwise``, ``match``,
+    ``crosswalk``, ``link``, ``resolve_entities``, ``resolve_places``,
+    ``resolve_identity_records``, ``group_by_identity`` -- and no way to tell
+    from their names which one to reach for. Four named questions can be chosen
+    between; eight overlapping ones cannot.
+    """
+    packs = ({entity: describe_pack(entity)} if entity is not None
+             else describe_packs())
+    return {
+        "verbs": _VERBS,
+        "entities": sorted(packs),
+        "packs": packs,
+        "comparators": dict(COMPARATOR_NOTES),
+        "outcomes": {
+            "match": "the evidence supports one entity",
+            "review": "a human should look; NOT a weak match, and never "
+                      "merged automatically",
+            "different": "the evidence does not support one entity",
+        },
+        "note": (
+            "Scores are not comparable across verbs: `compare` on a person "
+            "sums log-odds, the pack engine takes a weighted mean. Every "
+            "receipt pins the engine that issued it -- read the verdict, and "
+            "read the score only against others from the same engine."
+        ),
+    }
+
+
+#: How close the runner-up may be before a top hit stops being an answer.
+#:
+#: Not a tuned constant -- a statement about what a score means. `reconcile`
+#: scores a pair on its own, so two candidates at 0.85 and 0.84 are two records
+#: the evidence cannot separate, not a winner and a loser. Returning the top one
+#: would be arche inventing a distinction its own comparators did not find.
+#:
+#: 0.05 is deliberately generous. Being told "these two, and here is what would
+#: tell them apart" costs a glance; picking wrong writes a false identity into a
+#: master list, and that is the failure this library exists to avoid.
+AMBIGUITY_MARGIN = 0.05
+
+
+def find(query: dict, within: list[dict], comparators: list[dict] | None = None, *,
+         entity: str | None = None, tf=None, decl=None,
+         ambiguity_margin: float = AMBIGUITY_MARGIN, **kwargs):
+    """Which of these is this one?
+
+    The lookup question: you hold one record -- a supplier read off an invoice,
+    a facility from a survey -- and you want the entry it refers to in a list
+    you already have. :func:`compare` answers it for a named pair,
+    :func:`reconcile` for two lists, :func:`dedupe` for one; none of them
+    answers it for one record against many.
+
+    Returns a verdict, not a ranking:
+
+    ``"found"``
+        one candidate matched, and nothing else came close.
+    ``"ambiguous"``
+        two or more candidates are within ``ambiguity_margin`` of each other.
+        ``would_resolve`` says what evidence would separate them. **This is not
+        a match.** Taking the top row here is how a wrong supplier gets written
+        into a master list, and it is indistinguishable from a correct answer
+        afterwards.
+    ``"not_found"``
+        nothing matched. Reported separately from ``"ambiguous"`` because they
+        call for opposite actions: create a new entity, versus go and look.
+
+    ``candidates`` always carries what was actually compared, best first, so a
+    caller who disagrees with the verdict can see the same evidence it saw.
+    """
+    id_field = kwargs.get("id_field", "id")
+    run = reconcile([query], within, comparators, entity=entity, tf=tf,
+                    decl=decl, **kwargs)
+    edges = sorted(run["matches"], key=lambda m: m["score"], reverse=True)
+    by_id = {r.get(id_field, i): r for i, r in enumerate(within)}
+
+    matches = [e for e in edges if e["decision"] == "match"]
+    result = {
+        "query": query,
+        "candidates": edges,
+        "pins": run["pins"],
+        "blocking": run["blocking"],
+    }
+
+    if not matches:
+        # Nothing cleared the bar. Anything that was surfaced is a near miss
+        # worth showing -- it is the difference between "no such supplier" and
+        # "one that nearly fits, go and look".
+        result["verdict"] = "not_found"
+        result["match"] = None
+        result["reason"] = (
+            f"no candidate reached `match`; {len(edges)} were compared and "
+            "scored below it" if edges else
+            "no candidate was comparable to the query"
+        )
+        return result
+
+    best = matches[0]
+    rivals = [e for e in matches[1:]
+              if best["score"] - e["score"] <= ambiguity_margin]
+    if rivals:
+        result["verdict"] = "ambiguous"
+        result["match"] = None
+        result["rivals"] = [best, *rivals]
+        result["reason"] = (
+            f"{len(rivals) + 1} candidates within {ambiguity_margin} of each "
+            f"other (top score {best['score']}); the evidence does not "
+            "separate them"
+        )
+        # And what would. Named fields the caller can go and fetch, not a
+        # list of everything absent.
+        result["would_resolve"] = _what_separates(
+            result["rivals"], query, by_id, id_field)
+        return result
+
+    result["verdict"] = "found"
+    result["match"] = best
+    result["reason"] = f"one candidate matched at {best['score']}"
+    return result
+
+
+def _what_separates(rivals, query, by_id, id_field):
+    """Fields that would break the tie, most discriminating first.
+
+    Deliberately NOT :func:`would_resolve`. That answers "what would settle
+    this pair", and in an ambiguous lookup every tied pair has already settled
+    -- asked here it replies "already resolved", which is true and useless. The
+    question an ambiguous lookup actually poses is different: not *is this a
+    match* but *which of these matches is it*, and that is answered by the
+    fields on which the tied candidates disagree.
+
+    A field qualifies when the candidates give different values for it and the
+    query gives none. Both halves matter. A field the candidates share cannot
+    separate them however well populated it is, and a field the query already
+    states has had its chance and did not.
+    """
+    records = [by_id.get(edge["b_id"], {}) for edge in rivals]
+    fields: set = set()
+    for record in records:
+        fields |= set(record)
+    fields.discard(id_field)
+
+    scored = []
+    for field in sorted(fields):
+        if str(query.get(field, "") or "").strip():
+            continue  # the query states it; it did not separate them
+        values = {
+            str(record.get(field, "") or "").strip().lower()
+            for record in records
+        }
+        values.discard("")
+        if len(values) > 1:
+            # More distinct values means a cleaner split between the rivals.
+            scored.append((len(values), field))
+    scored.sort(key=lambda pair: (-pair[0], pair[1]))
+    return [field for _, field in scored]
+
+
+#: Old spellings, each mapped to the verb that replaced it.
+#:
+#: Both were named for the wrong thing. `pairwise` names the SHAPE of the
+#: algorithm; `crosswalk` names the ARTIFACT handed back. The rule this surface
+#: follows is that a verb is named for the question being asked, so they became
+#: `compare` and `reconcile`. These remain as working aliases that say so.
+#:
+#: The word `crosswalk` survives where it was always right: the wire format is
+#: still ``arche.crosswalk_edge.v1`` and stays that way, because those strings
+#: are hashed into every edge ever signed. A crosswalk is the artifact;
+#: reconcile is the question.
+_DEPRECATED: dict[str, str] = {
+    "crosswalk": "reconcile",
+    "pairwise": "compare",
+}
+
+
+def _renamed(old: str, new: str, target):
+    """Wrap ``target`` so calling it by its old name says so.
+
+    A wrapper rather than a bare alias, because a bare alias cannot warn --
+    which is what these were until every call site in this repo had been
+    migrated. Warning before that migration would have fired hundreds of times
+    in our own passing test run, and a DeprecationWarning people learn to
+    filter is how the next real deprecation gets missed.
+    """
+    import functools
+
+    @functools.wraps(target)
+    def wrapper(*args, **kwargs):
+        _warnings.warn(
+            f"arche.resolve.{old} is now {new}; the old name still works and "
+            "will be removed in a future release",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return target(*args, **kwargs)
+
+    wrapper.__name__ = old
+    wrapper.__qualname__ = old
+    wrapper.__doc__ = (
+        f"Deprecated spelling of :func:`{new}`. Forwards unchanged, and warns."
+    )
+    return wrapper
+
+
+crosswalk = _renamed("crosswalk", "reconcile", reconcile)
+pairwise = _renamed("pairwise", "compare", compare)
 
 
 def _splink(list_a, list_b, comparators, extra_pins: dict, kwargs: dict):
@@ -804,6 +1358,6 @@ def _splink(list_a, list_b, comparators, extra_pins: dict, kwargs: dict):
 
 # The v0.1 callable-module shim (``arche.resolve(text)`` forwarding to the
 # pipeline with a DeprecationWarning) was removed in v0.3.0a1 as promised.
-# ``arche.resolve`` is now purely the facade package: ``resolve.pairwise``,
-# ``resolve.crosswalk``. The v0.1 function lives on as
+# ``arche.resolve`` is now purely the facade package: ``resolve.compare``,
+# ``resolve.reconcile``. The v0.1 function lives on as
 # ``arche.workflow.pipeline.resolve`` for the Pipeline internals.

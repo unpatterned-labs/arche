@@ -77,7 +77,7 @@ while not (REPO / "packages" / "arche-core").exists() and REPO != REPO.parent:
     REPO = REPO.parent
 sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 DATA = REPO / "data" / "er_bench"
 
@@ -151,7 +151,7 @@ exists to correct.
 
 code("""
 def score(comparators, label):
-    res = crosswalk(A, B, comparators=comparators, id_field="id")
+    res = reconcile(A, B, comparators=comparators, id_field="id")
     pred = {(e["a_id"], e["b_id"]): e for e in res["matches"]}
     tp = {k for k, e in pred.items() if e["decision"] == "match" and k in truth}
     fp = {k for k, e in pred.items() if e["decision"] == "match" and k not in truth}

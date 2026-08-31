@@ -58,7 +58,7 @@ if not (REPO / "packages" / "arche-core").exists():
 
 sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 print(f"repository: {REPO}")
 """)
@@ -93,7 +93,7 @@ place_cases = [
 ]
 
 for label, left, right in place_cases:
-    edge = crosswalk(left, right, entity="place")["matches"][0]
+    edge = reconcile(left, right, entity="place")["matches"][0]
     print(f"{label}: {edge['decision']}  score={edge['score']:.4f}  "
           f"distinctive={edge['distinctive_max']:.3f}")
     print(f"  evidence: {edge['evidence']}")
@@ -126,7 +126,7 @@ electronics_right = [{
     "name": "Canon PSC-85 Soft Camera Case 2595B002",
 }]
 
-product_edge = crosswalk(
+product_edge = reconcile(
     electronics_left,
     electronics_right,
     entity="product_electronics",
@@ -174,7 +174,7 @@ truth = {
 left = [{"id": row["id"], "name": row["name"]} for row in abt]
 right = [{"id": row["id"], "name": row["name"]} for row in buy]
 
-result = crosswalk(left, right, entity="product_electronics", id_field="id")
+result = reconcile(left, right, entity="product_electronics", id_field="id")
 edges = {(edge["a_id"], edge["b_id"]): edge for edge in result["matches"]}
 auto = {pair for pair, edge in edges.items() if edge["decision"] == "match"}
 review = {pair for pair, edge in edges.items() if edge["decision"] == "review"}

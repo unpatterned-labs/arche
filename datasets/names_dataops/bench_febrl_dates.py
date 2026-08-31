@@ -40,7 +40,7 @@ _REPO = _HERE.parents[1]
 sys.path.insert(0, str(_REPO / "packages" / "arche-core" / "src"))
 sys.path.insert(0, str(_HERE))
 
-from arche.resolve import crosswalk  # noqa: E402
+from arche.resolve import reconcile  # noqa: E402
 from arche.resolve._matcher import compare_dates  # noqa: E402
 from bench_febrl import _fetch, _truth_key  # noqa: E402
 
@@ -69,7 +69,7 @@ def _record(row: dict) -> dict:
 
 
 def score(a_rows, b_rows, comparators, label) -> dict:
-    res = crosswalk([_record(r) for r in a_rows], [_record(r) for r in b_rows],
+    res = reconcile([_record(r) for r in a_rows], [_record(r) for r in b_rows],
                     entity="person", id_field="id", comparators=comparators)
     n_true = len({_truth_key(r["rec_id"]) for r in a_rows}
                  & {_truth_key(r["rec_id"]) for r in b_rows})

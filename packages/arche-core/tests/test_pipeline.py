@@ -76,4 +76,19 @@ def test_version():
     # It is also the release `arche-mcp` pins against. Every one of those five
     # names is imported by the MCP server, so publishing 0.5.0a1 and pointing
     # arche-mcp at it would ship a package that fails on import.
-    assert __version__ == "0.6.0a1"
+    #
+    # 0.7.0a1 moves the minor on the same rule as 0.6.0a1: the public surface
+    # changed shape. Seven names are new -- `compare`, `reconcile`, `dedupe`,
+    # `find`, `describe`, `report`, `Receipt` -- three older spellings now
+    # warn, and eleven formatters collapsed into one.
+    #
+    # It also adds a `receipt_schema` pin to the hashed provenance block. Note
+    # what that does NOT change: ids were already version-specific, because
+    # `engine: arche-core@<version>` has always been pinned. The schema number
+    # states the key VOCABULARY instead, which the engine pin cannot -- reading
+    # `arche-core@0.6.0a1` does not tell you whether `factors` was keyed `name`
+    # or `name_similarity`.
+    #
+    # The Python surface stays compatible: `pairwise`, `crosswalk` and
+    # `CoReferenceDecision` all still work and warn.
+    assert __version__ == "0.7.0a1"

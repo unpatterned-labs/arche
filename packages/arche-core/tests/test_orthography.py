@@ -224,8 +224,8 @@ class TestReachableFromACrosswalkSpec:
         return [{"field": "name", "kind": "placename", "weight": 2.0}, tftoken]
 
     def _edge(self, orthography):
-        from arche.resolve import crosswalk
-        res = crosswalk([{"id": "a", "name": self.A}], [{"id": "b", "name": self.B}],
+        from arche.resolve import reconcile
+        res = reconcile([{"id": "a", "name": self.A}], [{"id": "b", "name": self.B}],
                         id_field="id", comparators=self._spec(orthography))
         return res["matches"][0] if res["matches"] else None
 

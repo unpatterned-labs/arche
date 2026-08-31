@@ -27,7 +27,7 @@ expected to agree.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.resolve._tokenfreq import TokenFrequencyTable
 
 # Partial overlap, so the shared token's rarity decides the score. Two identical
@@ -39,7 +39,7 @@ _COMMON = [{"id": f"c{i}", "name": f"Tunde Adeyemi {i}"} for i in range(12)]
 
 
 def _run(extra):
-    res = crosswalk([_A] + extra, [_B] + extra, entity="person", id_field="id")
+    res = reconcile([_A] + extra, [_B] + extra, entity="person", id_field="id")
     edge = next(e for e in res["matches"]
                 if e["a_id"] == "a" and e["b_id"] == "b")
     return res["pins"]["tf"], edge
@@ -83,7 +83,7 @@ class TestProvidedTable:
     ]
 
     def _pin(self, tf):
-        res = crosswalk([_A], [_B], id_field="id", comparators=self._SPEC, tf=tf)
+        res = reconcile([_A], [_B], id_field="id", comparators=self._SPEC, tf=tf)
         return res["pins"]["tf"]
 
     def test_two_different_tables_pin_differently(self):
@@ -101,7 +101,7 @@ class TestShippedTablesAreUnchanged:
     """They already named a digest. This fix must not disturb them."""
 
     def test_place_still_pins_its_shipped_table(self):
-        res = crosswalk([{"id": "a", "name": "Kano Central Clinic"}],
+        res = reconcile([{"id": "a", "name": "Kano Central Clinic"}],
                         [{"id": "b", "name": "Kano Central Clinic"}],
                         entity="place", id_field="id")
         assert res["pins"]["tf"].startswith("shipped:place@sha256:")
@@ -116,7 +116,7 @@ class TestTheComparatorPin:
         comparator sets to pin alike. A pin that can be collided on purpose
         cannot answer "which configuration produced this decision".
         """
-        res = crosswalk([{"id": "a", "name": "Kano Central Clinic"}],
+        res = reconcile([{"id": "a", "name": "Kano Central Clinic"}],
                         [{"id": "b", "name": "Kano Central Clinic"}],
                         entity="place", id_field="id")
         assert len(res["pins"]["comparators_sha256"]) == 64
@@ -126,7 +126,7 @@ class TestTheComparatorPin:
         heavier = [{"field": "name", "kind": "name", "weight": 3.0}]
         pins = []
         for spec in (base, heavier):
-            res = crosswalk([_A], [_B], id_field="id", comparators=spec)
+            res = reconcile([_A], [_B], id_field="id", comparators=spec)
             pins.append(res["pins"]["comparators_sha256"])
         assert pins[0] != pins[1]
 
@@ -134,7 +134,7 @@ class TestTheComparatorPin:
 @pytest.mark.parametrize("entity", ["person", "place"])
 def test_every_run_pins_something_for_tf(entity):
     """A tftoken comparator without a tf pin is an unnamed scoring input."""
-    res = crosswalk([{"id": "a", "name": "Kano Central Clinic"}],
+    res = reconcile([{"id": "a", "name": "Kano Central Clinic"}],
                     [{"id": "b", "name": "Kano Central Clinic"}],
                     entity=entity, id_field="id")
     assert res["pins"].get("tf")

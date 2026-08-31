@@ -44,6 +44,10 @@ from arche.doc.parse import (
 from arche.doc._documents import DocumentReport, resolve_documents  # noqa: E402
 from arche.doc._extract import Extraction, FieldEvidence, From, extract  # noqa: E402
 from arche.doc._metadata import DocumentMetadata, read_metadata  # noqa: E402
+from arche.doc._residence import (  # noqa: E402
+    ResidenceCheck,
+    assess_residence,
+)
 
 __all__ = [
     "DocumentMetadata",
@@ -54,6 +58,8 @@ __all__ = [
     "extract",
     "read_metadata",
     "resolve_documents",
+    "ResidenceCheck",
+    "assess_residence",
     "parse",
     "ParsedDocument",
     "DoclingNotInstalledError",

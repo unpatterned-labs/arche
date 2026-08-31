@@ -36,8 +36,8 @@ Lifecycle (five user-facing steps)::
 
 Migration from v0.1: the legacy callable-module shim ``arche.resolve(text)``
 is removed as of v0.3.0a1 — ``Pipeline.process()`` is the replacement, and
-``arche.resolve`` is purely the facade package (``resolve.pairwise``,
-``resolve.crosswalk``). Other v0.1 names remain importable through the 0.3
+``arche.resolve`` is purely the facade package (``resolve.compare``,
+``resolve.reconcile``). Other v0.1 names remain importable through the 0.3
 line as a deprecated surface; their removal is targeted for v0.4.
 """
 
@@ -127,11 +127,27 @@ def list_places(
     )
 
 # ---------------------------------------------------------------------------
-# v0.1 surface (lazy — PEP 562 __getattr__)
+# Lazily-loaded surface (PEP 562 __getattr__)
 # ---------------------------------------------------------------------------
-# The v0.1 names below remain importable as ``from arche import <name>`` for
-# backward compatibility through the v0.2.x series. They are loaded on first
-# access instead of at ``import arche`` time so that:
+# `_LAZY` does ONE job: defer an import until the name is first touched. It is
+# not a deprecation list, and the comment here used to say it was — which made
+# "old, going away in v0.4" and "current, just not imported yet" impossible to
+# tell apart from the outside. Thirteen names sat in `_LAZY` *and* in
+# `__all__`, so the package simultaneously recommended them and described them
+# as scheduled for removal, while emitting no warning either way.
+#
+# The two jobs are now separate:
+#
+#   `_LAZY`        name -> (submodule, attribute). Deferred import. Says
+#                  nothing about whether the name is going away.
+#   `_DEPRECATED`  name -> what to use instead. Emits DeprecationWarning on
+#                  first access, once, naming the replacement.
+#
+# A name may be in both (deferred AND superseded), but a name in `_DEPRECATED`
+# must NOT be in `__all__` — recommending what you are deleting is the defect
+# this split exists to prevent, and `tests/test_public_surface.py` enforces it.
+#
+# Names are loaded on first access rather than at ``import arche`` time so that:
 #
 #   1. ``import arche`` stays silent (no DeprecationWarnings emitted by
 #      transitive shim modules: signal, enrich, audit, pipeline, etc.).
@@ -238,9 +254,31 @@ _LAZY: dict[str, tuple[str, str]] = {
     # --- types ------------------------------------------------------------
     "IdentityEvidence": (".types", "IdentityEvidence"),
     "IdentityRecord": (".types", "IdentityRecord"),
+    # --- the tightened vocabulary -------------------------------------
+    "Receipt": (".resolve.coreference", "Receipt"),
+    "CoReferenceDecision": (".resolve.coreference", "Receipt"),
+    "compare": (".resolve", "compare"),
+    "reconcile": (".resolve", "reconcile"),
+    "dedupe": (".resolve", "dedupe"),
+    "find": (".resolve", "find"),
+    "describe": (".resolve", "describe"),
+    "report": (".report", "report"),
     "JurisdictionProfile": (".types", "JurisdictionProfile"),
     "MatchDecision": (".types", "MatchDecision"),
     "SensitiveSpan": (".types", "SensitiveSpan"),
+}
+
+
+#: Superseded names, each pointing at what replaced it.
+#:
+#: Deliberately small. A name earns a line here only when a replacement exists
+#: and has been checked to do the same job — `arche.match` is NOT listed, for
+#: example, because it resolves to ``arche.resolve._matcher.match``, a
+#: different engine from ``arche.resolve.compare``, and telling people to swap
+#: one for the other before that is verified would be worse than saying
+#: nothing. An empty line here is honest; a guessed one is not.
+_DEPRECATED: dict[str, str] = {
+    "CoReferenceDecision": "arche.resolve.coreference.Receipt",
 }
 
 
@@ -254,6 +292,17 @@ def __getattr__(name: str):
     target = _LAZY.get(name)
     if target is None:
         raise AttributeError(f"module 'arche' has no attribute {name!r}")
+    if name in _DEPRECATED:
+        import warnings
+
+        # Once per name, not once per access: the value is cached into
+        # globals() below, so __getattr__ does not run again for it.
+        warnings.warn(
+            f"arche.{name} is superseded by {_DEPRECATED[name]}; it still "
+            "works and will be removed in a future release",
+            DeprecationWarning,
+            stacklevel=2,
+        )
     from importlib import import_module
 
     module = import_module(target[0], package=__name__)
@@ -278,6 +327,14 @@ def __dir__() -> list[str]:
 # only v0.3 removal is the ``arche.resolve()`` callable shim (2026-08-07).
 __all__ = [
     "Pipeline",
+    # The pairwise question and what it hands back.
+    "compare",
+    "reconcile",
+    "dedupe",
+    "find",
+    "describe",
+    "report",
+    "Receipt",
     "Result",
     "Detection",
     "detect",

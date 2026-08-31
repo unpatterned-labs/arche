@@ -37,7 +37,7 @@ from arche.sign.jws import sign, verify
 from arche.sign.keys import Keypair
 
 if TYPE_CHECKING:
-    from arche.resolve.coreference import CoReferenceDecision
+    from arche.resolve.coreference import Receipt
 
 _ATT_TYP = "arche+attestation"
 _VC_TYPE = "ArcheCoReferenceCredential"
@@ -83,7 +83,7 @@ class Attestation:
     @classmethod
     def from_decision(
         cls,
-        decision: CoReferenceDecision,
+        decision: Receipt,
         *,
         issuer: str = "",
         purpose: str = "coreference",
@@ -149,7 +149,7 @@ class AttestationVerifyResult:
     key_source: str | None = None
 
 
-def _is_reproducible(decision: CoReferenceDecision) -> bool:
+def _is_reproducible(decision: Receipt) -> bool:
     """Can this decision be replayed from its evidence and representation?
 
     This used to be computed as ``mode == "jws"``, which describes the
@@ -176,7 +176,7 @@ def _is_reproducible(decision: CoReferenceDecision) -> bool:
 
 
 def _subject_claims(
-    decision: CoReferenceDecision, include_subject: bool | list[str]
+    decision: Receipt, include_subject: bool | list[str]
 ) -> dict[str, str]:
     """Flat, disclosable subject PII drawn from reference A (the resolved person).
 
@@ -200,7 +200,7 @@ def _subject_claims(
 
 
 def attest(
-    decision: CoReferenceDecision,
+    decision: Receipt,
     key: Keypair,
     *,
     mode: str = "jws",

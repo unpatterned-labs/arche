@@ -24,13 +24,13 @@ engine no longer produces.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import compare_names, crosswalk
+from arche.resolve import compare_names, reconcile
 
 
 def probe(name_a: str, name_b: str, entity: str = "place"):
     a = [{"id": "a", "name": name_a}]
     b = [{"id": "b", "name": name_b}]
-    edges = crosswalk(a, b, entity=entity, id_field="id")["matches"]
+    edges = reconcile(a, b, entity=entity, id_field="id")["matches"]
     assert edges, f"{name_a!r} vs {name_b!r} was not surfaced as a candidate"
     edge = edges[0]
     return edge["score"], edge["distinctive_max"], edge["decision"]

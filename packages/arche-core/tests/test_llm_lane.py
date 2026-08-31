@@ -87,7 +87,7 @@ def test_llm_decision_carries_honest_provenance_and_attests(decl):
     ex_a = extract_declared("doc a", decl, complete_fn=fake_llm, model="stub-1")
     ex_b = extract_declared("doc b", decl, complete_fn=fake_llm, model="stub-1")
     key = b"llm-lane-tests-issuer-key-32-byt"
-    decision = resolve.pairwise(ex_a.reference, ex_b.reference,
+    decision = resolve.compare(ex_a.reference, ex_b.reference,
                                 issuer_key=key, decl=decl,
                                 extra_pins=ex_a.pins(decl))
     assert decision.identity == "same_entity"               # shared vessel_id

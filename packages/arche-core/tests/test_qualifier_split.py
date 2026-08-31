@@ -32,7 +32,7 @@ import copy
 
 import pytest
 
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._matcher import compare_place_qualifiers, split_place_name
 
 
@@ -151,11 +151,11 @@ class TestStripQualifierFlag:
         Scores 0.661 against a 0.70 threshold: `placename` 0.900 and `tftoken`
         0.533, both diluted by a country name that is not part of the identity.
         """
-        res = crosswalk(_A, _B, comparators=_pack(False), tf="place")
+        res = reconcile(_A, _B, comparators=_pack(False), tf="place")
         assert [e["decision"] for e in res["matches"]] == ["review"]
 
     def test_splitting_recovers_it(self):
-        res = crosswalk(_A, _B, comparators=_pack(True), tf="place")
+        res = reconcile(_A, _B, comparators=_pack(True), tf="place")
         edge = res["matches"][0]
         assert edge["decision"] == "match"
         # The qualifier was the entire obstacle: both name comparators go to 1.0.
@@ -164,8 +164,8 @@ class TestStripQualifierFlag:
 
     def test_it_works_when_one_side_has_no_coordinates(self):
         """The case geography cannot rescue, which is 42.5% of DBpedia."""
-        plain = crosswalk(_NOGEO_A, _NOGEO_B, comparators=_pack(False), tf="place")
-        split = crosswalk(_NOGEO_A, _NOGEO_B, comparators=_pack(True), tf="place")
+        plain = reconcile(_NOGEO_A, _NOGEO_B, comparators=_pack(False), tf="place")
+        split = reconcile(_NOGEO_A, _NOGEO_B, comparators=_pack(True), tf="place")
         assert plain["matches"][0]["decision"] == "review"
         assert split["matches"][0]["decision"] == "match"
 
@@ -181,7 +181,7 @@ class TestStripQualifierFlag:
         """
         a, b = records
         for strip in (False, True):
-            res = crosswalk(a, b, comparators=_pack(strip), tf="place")
+            res = reconcile(a, b, comparators=_pack(strip), tf="place")
             assert res["matches"][0]["distinctive_max"] >= 0.75
 
     def test_qualifier_comparator_is_not_itself_stripped(self):
@@ -192,7 +192,7 @@ class TestStripQualifierFlag:
             {"field": "name", "kind": "qualifier", "weight": 1.0,
              "strip_qualifier": True},
         ]
-        res = crosswalk(
+        res = reconcile(
             [{"name": "Oxford (England)"}], [{"name": "Oxford, England"}],
             comparators=comps,
         )
@@ -202,15 +202,15 @@ class TestStripQualifierFlag:
         """Splitting must not merge every Oxford into one Oxford."""
         a = [{"name": "Oxford (England)", "lat": "51.75", "lon": "-1.26"}]
         b = [{"name": "Oxford, Mississippi", "lat": "34.37", "lon": "-89.52"}]
-        res = crosswalk(a, b, comparators=_pack(True), tf="place")
+        res = reconcile(a, b, comparators=_pack(True), tf="place")
         assert "match" not in [e["decision"] for e in res["matches"]]
 
     def test_unqualified_names_are_unaffected(self):
         """Kano is the evidence: no qualifiers, so nothing may change."""
         a = [{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}]
         b = [{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}]
-        plain = crosswalk(a, b, comparators=_pack(False), tf="place")
-        split = crosswalk(a, b, comparators=_pack(True), tf="place")
+        plain = reconcile(a, b, comparators=_pack(False), tf="place")
+        split = reconcile(a, b, comparators=_pack(True), tf="place")
         assert ([e["decision"] for e in plain["matches"]]
                 == [e["decision"] for e in split["matches"]] == ["match"])
 

@@ -132,13 +132,13 @@ Kano fails this test. London passes it.
 """)
 
 code("""
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 # The matcher sees name and coordinates. Never the wikidata tag.
 A = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in osm]
 B = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in wd]
 
-result = crosswalk(A, B, entity="place")
+result = reconcile(A, B, entity="place")
 pred = {(osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e for e in result["matches"]}
 
 d = [e["evidence"]["distance_km"] for k, e in pred.items()
@@ -236,7 +236,7 @@ rows = [
 An = [{"name": r["name"]} for r in osm]
 Bn = [{"name": r["name"]} for r in wd]
 pn = {(osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e
-      for e in crosswalk(An, Bn, entity="place")["matches"]}
+      for e in reconcile(An, Bn, entity="place")["matches"]}
 def arche_arm(label, predictions):
     hit = {k for k, e in predictions.items() if e["decision"] == "match" and k in truth}
     miss = {k for k, e in predictions.items() if e["decision"] == "match" and k not in truth}
@@ -357,7 +357,7 @@ ablated.phrases = None          # token-only rarity; everything else identical
 
 pred_ablated = {
     (osm[e["a_id"]]["osm_id"], wd[e["b_id"]]["wd_id"]): e
-    for e in crosswalk(A, B, entity="place", tf=ablated)["matches"]
+    for e in reconcile(A, B, entity="place", tf=ablated)["matches"]
 }
 without = score("without the phrase table", pred_ablated)
 print()
@@ -394,7 +394,7 @@ if G3.exists() and OSM_KANO.exists():
     lga_b = {i: (r.get("lga") or "").strip().lower() for i, r in enumerate(grid3)}
 
     def kano(label, table=None):
-        res = crosswalk(KA, KB, entity="place", **({"tf": table} if table else {}))
+        res = reconcile(KA, KB, entity="place", **({"tf": table} if table else {}))
         dec = Counter(e["decision"] for e in res["matches"])
         same = diff = 0
         for e in res["matches"]:
@@ -424,7 +424,7 @@ code("""
 for name, expected in (("General Hospital", "review"), ("Gyaranya Health Post", "match")):
     a = [{"name": name, "lat": "12.00", "lon": "8.50"}]
     b = [{"name": name, "lat": "12.04", "lon": "8.50"}]
-    got = crosswalk(a, b, entity="place")["matches"][0]["decision"]
+    got = reconcile(a, b, entity="place")["matches"][0]["decision"]
     print(f"  {name:24} -> {got:<7} (expected {expected})  "
           f"{'OK' if got == expected else '<-- REGRESSION'}")
 

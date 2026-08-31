@@ -45,6 +45,12 @@ class ArcheConfig:
     # still useful for name/org/location detection.
     gliner_fallback_model: str = "urchade/gliner_medium-v2.1"
     gliner_threshold: float = 0.35
+    # GLiNER 2.5 (Fastino) -- a separate model family, loaded through
+    # `AutoExtractor`, not a newer checkpoint for the loader above. Kept as its
+    # own setting so switching backends never silently reinterprets the v1
+    # model name as a v2 one.
+    gliner2_model: str = "fastino/gliner2.5-base-v1"
+    gliner2_threshold: float = 0.5
 
     # Entity resolution
     similarity_threshold: float = 0.80

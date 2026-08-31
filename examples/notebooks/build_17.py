@@ -40,7 +40,7 @@ code('''
 import warnings
 warnings.filterwarnings("ignore")
 
-from arche.resolve import crosswalk, would_resolve
+from arche.resolve import reconcile, would_resolve
 from arche.resolve._gate import DISTINCTIVE_FLOOR
 
 print("distinctiveness floor:", DISTINCTIVE_FLOOR)
@@ -50,7 +50,7 @@ def probe(name_a, name_b, entity="place", **extra):
     """Score one pair and return the two gates plus the verdict."""
     a = {"id": "a", "name": name_a, **extra}
     b = {"id": "b", "name": name_b, **extra}
-    edges = crosswalk([a], [b], entity=entity, id_field="id")["matches"]
+    edges = reconcile([a], [b], entity=entity, id_field="id")["matches"]
     if not edges:
         return None
     e = edges[0]
@@ -172,7 +172,7 @@ ABUJA      = (9.0765, 7.3986)   # about 530 km
 def pair(name, here, there):
     a = {"id": "a", "name": name, "lat": here[0], "lon": here[1]}
     b = {"id": "b", "name": name, "lat": there[0], "lon": there[1]}
-    edges = crosswalk([a], [b], entity="place", id_field="id")["matches"]
+    edges = reconcile([a], [b], entity="place", id_field="id")["matches"]
     return edges[0]["decision"] if edges else "not surfaced"
 
 print(f"{'name':<24}{'90 m apart':>14}{'530 km apart':>16}")
@@ -194,7 +194,7 @@ A `review` edge says the evidence was insufficient. It does not say what *would*
 code('''
 a = {"id": "a", "name": "General Hospital"}
 b = {"id": "b", "name": "General Hospital"}
-edge = crosswalk([a], [b], entity="place", id_field="id")["matches"][0]
+edge = reconcile([a], [b], entity="place", id_field="id")["matches"][0]
 
 advice = would_resolve(edge, a, b, entity="place")
 
@@ -224,11 +224,11 @@ code('''
 # `decisive_for` on the organisation pack: an identifier settles a generic name.
 a = {"id": "a", "name": "Central Cooperative Society"}
 b = {"id": "b", "name": "Central Cooperative Society"}
-before = crosswalk([a], [b], entity="organisation", id_field="id")["matches"][0]
+before = reconcile([a], [b], entity="organisation", id_field="id")["matches"][0]
 
 a_id = {**a, "registration_id": "RC-889112"}
 b_id = {**b, "registration_id": "RC-889112"}
-after = crosswalk([a_id], [b_id], entity="organisation", id_field="id")["matches"][0]
+after = reconcile([a_id], [b_id], entity="organisation", id_field="id")["matches"][0]
 
 print(f"name only            -> {before['decision']}  (score {before['score']})")
 print(f"+ registration_id    -> {after['decision']}  (score {after['score']})")

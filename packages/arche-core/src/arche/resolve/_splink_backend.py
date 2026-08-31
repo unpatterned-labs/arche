@@ -15,7 +15,7 @@ and decision-id recomputation keep working unchanged.
     from splink import SettingsCreator, block_on
     import splink.comparison_library as cl
 
-    crosswalk(a, b, id_field="id", backend="splink", threshold=0.99,
+    reconcile(a, b, id_field="id", backend="splink", threshold=0.99,
               splink_settings=SettingsCreator(
                   link_type="link_only",
                   comparisons=[cl.NameComparison("name"), ...],
@@ -709,7 +709,7 @@ def splink_crosswalk(
         )
         plan = _derive(list_a, list_b, comparators, cl, block_on, pair_cap)
         settings = SettingsCreator(
-            # `crosswalk(records, records)` is arche's dedupe idiom. Handing
+            # `reconcile(records, records)` is arche's dedupe idiom. Handing
             # Splink two copies of one table gives every record a perfect twin
             # in the other table, and those n free matches go straight into
             # `estimate_probability_two_random_records_match` and the u
@@ -747,7 +747,7 @@ def splink_crosswalk(
             "leave the gate off."
         )
 
-    # `crosswalk(records, records)` is arche's dedupe idiom, and a caller whose
+    # `reconcile(records, records)` is arche's dedupe idiom, and a caller whose
     # settings say `link_type="dedupe_only"` means it. Handing Splink two copies
     # of one table instead would double the corpus, which changes the u
     # estimates and the term-frequency weights, so the declared link type has to
