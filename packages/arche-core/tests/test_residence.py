@@ -345,3 +345,53 @@ This confirms termination of your contract dated August 1, 2025.
     check = assess_residence({"letter": letter}, name="Dennis Irorere",
                              min_sources=1, max_age_days=100_000)
     assert check.documents[0]["date"] == dt.date(2026, 6, 9)
+
+
+# ---------------------------------------------------------------------------
+# Getting the documents in
+# ---------------------------------------------------------------------------
+
+
+def test_a_folder_of_documents_is_enough(tmp_path):
+    # The shape callers actually have. Requiring a dict of pre-extracted text
+    # means wiring a PDF reader before the check can run at all, and a check
+    # that needs assembling is a check that does not get run.
+    (tmp_path / "bill.txt").write_text(_energy_bill(), encoding="utf-8")
+    (tmp_path / "invoice.txt").write_text(_vendor_invoice("A1", 10),
+                                          encoding="utf-8")
+    check = assess_residence(tmp_path, name="Dennis Irorere", min_sources=2)
+    assert check.verdict == "verified"
+    assert {d["document"] for d in check.documents} == {"bill.txt",
+                                                        "invoice.txt"}
+
+
+def test_a_list_of_paths_works(tmp_path):
+    one = tmp_path / "bill.txt"
+    one.write_text(_energy_bill(), encoding="utf-8")
+    check = assess_residence([one], name="Dennis Irorere", min_sources=1)
+    assert check.verdict == "verified"
+
+
+def test_a_mapping_of_text_still_works(tmp_path):
+    check = assess_residence({"bill": _energy_bill()}, name="Dennis Irorere",
+                             min_sources=1)
+    assert check.verdict == "verified"
+
+
+def test_an_unreadable_document_costs_only_itself(tmp_path):
+    # A bundle is a pile of things somebody emailed you. One corrupt
+    # attachment should cost that document's evidence, not the assessment --
+    # and it still appears in the table, because dropping it silently would
+    # make the bundle look smaller than it is.
+    (tmp_path / "bill.txt").write_text(_energy_bill(), encoding="utf-8")
+    (tmp_path / "broken.pdf").write_bytes(b"not a pdf at all")
+    check = assess_residence(tmp_path, name="Dennis Irorere", min_sources=1)
+    assert check.verdict == "verified"
+    assert len(check.documents) == 2
+    broken = next(d for d in check.documents if d["document"] == "broken.pdf")
+    assert broken["postcodes"] == []
+
+
+def test_a_nonsense_input_is_refused_by_type():
+    with pytest.raises(TypeError, match="documents must be"):
+        assess_residence(42, name="Dennis Irorere")

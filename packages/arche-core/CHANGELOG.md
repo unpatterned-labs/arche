@@ -100,6 +100,38 @@ Only the first is what document extraction usually answers, and the other three 
 
 A conflicting document contradicts the claim **only if it is newer** than the supporting evidence. An older document at a different address is a previous address — treating that as a contradiction fails every honest applicant who has moved house, which at the moment somebody opens an account is a large fraction of them.
 
+### Changed — `arche-core[pdf]` installs a permissively-licensed reader
+
+`pdf` was `pymupdf`, which is **AGPL-3.0**. It is now `pypdf`, which is
+**BSD-3-Clause**; the AGPL reader keeps a name that says what it is,
+`arche-core[pdf-mupdf]`.
+
+Both read a text layer well enough for what this library does with one, so the
+tie is broken on the licence a user acquires. Copyleft is a thing to choose on
+purpose, not to inherit from an extra called `pdf` — and
+`arche.doc.read_metadata` already ordered its readers this way, trying
+`pypdfium2` before `pymupdf`. This makes text extraction agree with metadata
+extraction.
+
+`_extract_pdf` prefers `pypdf` and falls back to `pymupdf`, so an existing
+`arche-core[pdf]` environment keeps working unchanged. It simply stops being
+the install that pulls copyleft. With neither present, the error names both
+extras and their licences rather than only the one that used to be there.
+
+### Changed — `assess_residence` takes a folder
+
+It required a mapping of label to already-extracted text. Callers arrive with a
+folder of PDFs, and making them wire a reader first is how a check that works
+ends up not being run.
+
+It now accepts a directory, a list of paths, or the mapping as before, reading
+through `arche.extract_text` so the PDF backend, its licence ordering and its
+error message are decided in one place. A file that cannot be read becomes an
+empty entry rather than an exception — a bundle is a pile of things somebody
+emailed you, and one corrupt attachment should cost that document's evidence
+rather than the whole assessment. It still appears in the per-document table,
+because dropping it silently would make the bundle look smaller than it is.
+
 ### Added — GLiNER 2.5 as an extraction backend
 
 `extract(text, backend="gliner2")`, behind `arche-core[detect2]`. Its response shape differs from v1 in a way that is easy to get wrong: v1 returns a flat list of spans each carrying its own label, 2.5 returns spans grouped **by** label.

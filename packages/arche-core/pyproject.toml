@@ -87,7 +87,17 @@ dependencies = [
 
 [project.optional-dependencies]
 # --- Document ingestion (carried from v0.1, still optional) ----------------
-pdf = ["pymupdf>=1.24"]
+# `pdf` is pypdf: BSD-3-Clause, pure Python, no system libraries. It reads the
+# text layer, which is what `extract_text` and `arche.doc.assess_residence`
+# need.
+#
+# It used to be pymupdf, which is **AGPL-3.0**. That is a licence a user should
+# choose on purpose, not acquire by installing an extra called `pdf`, so the
+# AGPL reader moved to a name that says what it is. `_extract_pdf` prefers
+# pypdf and falls back to pymupdf, so an existing `arche-core[pdf]` install
+# keeps working -- it simply stops being the one that pulls copyleft.
+pdf = ["pypdf>=5.0"]
+pdf-mupdf = ["pymupdf>=1.24"]
 docx = ["python-docx>=1.1"]
 # docling-backed structured parsing (arche.doc). The base wheel never pulls it;
 # arche.doc raises a helpful error pointing here when docling is absent.

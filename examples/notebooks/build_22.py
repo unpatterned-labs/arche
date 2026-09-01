@@ -76,15 +76,18 @@ else:
 
 code("""
 if HAVE:
-    import pypdf  # pip install pypdf
+    # `arche.extract_text` reads the text layer. It needs a PDF
+    # reader -- `pip install 'arche-core[pdf]'` -- and prefers pypdf
+    # (BSD-3-Clause) over pymupdf (AGPL-3.0), so installing an extra to read a
+    # bill does not hand you a copyleft obligation.
+    from arche import extract_text
 
     texts = {}
     for pdf in sorted(DOCS.glob("*.pdf")):
         try:
-            texts[pdf.name] = "\\n".join(
-                (page.extract_text() or "") for page in pypdf.PdfReader(pdf).pages)
+            texts[pdf.name] = extract_text(pdf)
         except Exception as exc:
-            print(f"  unreadable: {pdf.name} ({type(exc).__name__})")
+            print(f"  unreadable: {mask(pdf.name, 6)} ({type(exc).__name__})")
     for name, text in texts.items():
         print(f"  {mask(name, 6):<44} {len(text):>6,} chars")
 else:
@@ -187,6 +190,9 @@ code("""
 from arche.doc import assess_residence
 
 if HAVE:
+    # `assess_residence` also takes the folder itself -- `assess_residence(DOCS,
+    # name=..., address=...)` -- and reads it the same way. The texts are
+    # extracted above only because the cells before this one inspect them.
     check = assess_residence(texts, name=SUBJECT, address=CLAIMED)
     print(f"  {'document':<40} {'anchored by':<32} address")
     for d in sorted(check.documents, key=lambda d: d["document"]):
@@ -431,7 +437,7 @@ python examples/notebooks/build_22.py
 jupyter lab examples/notebooks/22_does_this_person_live_here.ipynb
 ```
 
-Needs `arche-core` and `pypdf`. Masked by default: issuer names and identifiers are redacted unless `REVEAL=1`, because a payslip names an employer and that relationship is not the notebook's to publish.
+Needs `arche-core[pdf]`, which installs pypdf (BSD-3-Clause). `arche-core[pdf-mupdf]` installs pymupdf instead, which is AGPL-3.0 and therefore a deliberate choice rather than a default. Masked by default: issuer names and identifiers are redacted unless `REVEAL=1`, because a payslip names an employer and that relationship is not the notebook's to publish.
 """)
 
 

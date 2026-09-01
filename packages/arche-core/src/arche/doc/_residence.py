@@ -34,8 +34,11 @@ evidence against it.
 from __future__ import annotations
 
 import datetime as _dt
+import os
 import re
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 __all__ = ["ResidenceCheck", "assess_residence"]
@@ -271,8 +274,51 @@ class ResidenceCheck:
         return (_dt.date.today() - self.most_recent).days
 
 
+def _as_texts(documents) -> dict[str, str]:
+    """Accept a mapping of text, a folder, or a list of paths.
+
+    Callers arrive with a folder of PDFs far more often than with a dict of
+    extracted strings, and making them wire a reader first is how a check that
+    works ends up not being run. Reading is delegated to
+    :func:`arche.workflow.extract_text`, so the PDF backend, its licence
+    ordering and its error message are decided in one place rather than two.
+
+    A file that cannot be read becomes an empty entry rather than an exception.
+    A bundle is a pile of things somebody emailed you; one corrupt attachment
+    should cost that document's evidence, not the whole assessment.
+    """
+    if isinstance(documents, Mapping):
+        return {str(k): str(v) for k, v in documents.items()}
+
+    from arche.workflow._ingest import extract_text
+
+    paths: list[Path]
+    if isinstance(documents, (str, os.PathLike)):
+        root = Path(documents)
+        paths = (sorted(q for q in root.iterdir() if q.is_file())
+                 if root.is_dir() else [root])
+    elif isinstance(documents, Iterable):
+        paths = [Path(q) for q in documents]
+    else:
+        raise TypeError(
+            f"documents must be a mapping of text, a directory, or a list of "
+            f"paths; got {type(documents).__name__}"
+        )
+
+    texts: dict[str, str] = {}
+    for path in paths:
+        try:
+            texts[path.name] = extract_text(path)
+        except Exception:
+            # Unreadable, unsupported, or corrupt. Recorded as empty so the
+            # document still appears in the per-document table -- silently
+            # dropping it would make the bundle look smaller than it is.
+            texts[path.name] = ""
+    return texts
+
+
 def assess_residence(
-    documents: dict[str, str],
+    documents,
     *,
     name: str,
     address: str | None = None,
@@ -281,7 +327,10 @@ def assess_residence(
 ) -> ResidenceCheck:
     """Assess whether ``documents`` show ``name`` living at ``address``.
 
-    ``documents`` maps a label to that document's extracted text.
+    ``documents`` is a folder of documents, a list of paths, or a mapping of
+    label to already-extracted text. Paths are read through
+    :func:`arche.workflow.extract_text`, which needs a PDF reader --
+    ``pip install 'arche-core[pdf]'``.
 
     ``address`` may be a postcode or contain one; when omitted the address best
     supported by the evidence is inferred and reported rather than assumed.
@@ -299,6 +348,7 @@ def assess_residence(
         m = _POSTCODE.search(address)
         claimed = _norm_postcode(m) if m else None
 
+    documents = _as_texts(documents)
     per_doc: list[dict[str, Any]] = []
     for label, text in documents.items():
         postcodes, how = _subject_addresses(text, name)
