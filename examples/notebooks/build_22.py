@@ -437,7 +437,9 @@ python examples/notebooks/build_22.py
 jupyter lab examples/notebooks/22_does_this_person_live_here.ipynb
 ```
 
-Needs `arche-core[pdf]`, which installs pypdf (BSD-3-Clause). `arche-core[pdf-mupdf]` installs pymupdf instead, which is AGPL-3.0 and therefore a deliberate choice rather than a default. Masked by default: issuer names and identifiers are redacted unless `REVEAL=1`, because a payslip names an employer and that relationship is not the notebook's to publish.
+Needs **`arche-core[pdf,doc]`**. The two extras do different jobs and this notebook uses both: `[pdf]` installs pypdf (BSD-3-Clause, ~1 MB) for the text layer, which is all `assess_residence` needs; `[doc]` installs docling for the structured parse that the `resolve_documents` cell near the top relies on, and that one pulls torch. If you only want the residence check, `[pdf]` alone is enough and that cell will say the parser is missing rather than returning an empty report.
+
+`arche-core[pdf-mupdf]` substitutes pymupdf, which is AGPL-3.0 and so a deliberate choice rather than a default. Masked by default: issuer names and identifiers are redacted unless `REVEAL=1`, because a payslip names an employer and that relationship is not the notebook's to publish.
 """)
 
 

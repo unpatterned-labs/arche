@@ -474,7 +474,17 @@ def resolve_documents(
 
 
 def _collect(report, paths, parse, jurisdiction, run) -> None:
-    """Parse each document and assemble its record; one bad file is not fatal."""
+    """Parse each document and assemble its record; one bad file is not fatal.
+
+    One bad file is not fatal. A missing parser is, and the difference matters:
+    without ``docling`` every document fails identically and the report comes
+    back with zero records and N copies of one install error. Read from
+    outside, that is indistinguishable from a folder of documents containing
+    nothing -- the failure mode this library exists to refuse. So the absent
+    parser is raised rather than reported per-document.
+    """
+    from arche.doc.parse import DoclingNotInstalledError
+
     for index, path in enumerate(paths, 1):
         name = path.name
         run.emit("parse", document=name, index=index, message="parsing")
@@ -483,6 +493,11 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
             parsed = parse(str(path))
             text = parsed.text
             run.stage(name, "parse", time.monotonic() - _t)
+        except DoclingNotInstalledError:
+            # Not this document's fault, and no later document will fare
+            # better. Raising here says so once, loudly, instead of N times
+            # quietly inside a report that otherwise reads as "found nothing".
+            raise
         except Exception as exc:  # noqa: BLE001 — one bad file is not fatal
             report.errors[name] = f"{type(exc).__name__}: {exc}"
             continue

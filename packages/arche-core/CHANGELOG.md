@@ -118,6 +118,45 @@ extraction.
 the install that pulls copyleft. With neither present, the error names both
 extras and their licences rather than only the one that used to be there.
 
+### Added — `reference/optional-dependencies.md`, with the numbers measured
+
+Every extra, what it installs, what it costs and under what licence. The counts
+are resolved from scratch with `uv pip compile` rather than estimated, and the
+page carries the script so they can be re-checked when a dependency moves — a
+number in a document is a claim about the world, and this one goes stale on
+somebody else's release schedule.
+
+The base wheel is **20 packages**. Two figures in the table were surprising
+enough to be worth stating outright:
+
+- **`[doc]` adds 92 packages**, more than quintupling the install, because
+  `docling` pulls `torch` and `transformers`. Reading a scanned table properly
+  is a machine-learning problem; the point is knowing when you need one.
+- **`[detect2]` is lighter than `[detect]`** — 24 added against 31 — because
+  GLiNER 2.5 does not pull `onnxruntime`. The newer model is the smaller
+  install.
+
+Four extras pull `torch`: `detect`, `detect2`, `doc`, `doc-ocr`. Everything
+else — record resolution, blocking, addresses, proof of address, Splink —
+stays reachable without it.
+
+### Fixed — a missing document parser reported itself as an empty folder
+
+`resolve_documents` treats a bad file as non-fatal, which is right: one
+unreadable scan in a folder of twenty should not cost the other nineteen.
+
+Without `docling` installed, every document failed identically and the report
+came back with **zero records and N copies of one install error** — the
+message itself perfectly clear, and buried per-document under a summary that
+read `records: 0`. From outside, "the parser is not installed" was
+indistinguishable from "these documents contain nothing", which is the failure
+mode this library exists to refuse.
+
+`DoclingNotInstalledError` now propagates instead of being collected. No later
+document will fare better, so saying it once and loudly beats saying it *n*
+times quietly. Every other per-document failure is unchanged and still
+non-fatal, and a test holds both halves.
+
 ### Changed — `assess_residence` takes a folder
 
 It required a mapping of label to already-extracted text. Callers arrive with a
