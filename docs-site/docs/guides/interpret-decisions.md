@@ -1,6 +1,6 @@
 # Interpret a decision
 
-`crosswalk()` returns candidate edges with two labels.
+`reconcile()` returns candidate edges with two labels.
 
 | Label | Meaning | Appropriate action |
 |---|---|---|
@@ -16,9 +16,9 @@ Treat `score` as an internal ranking signal. It is useful for prioritising revie
 Inspect the evidence instead:
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
-result = crosswalk(
+result = reconcile(
     [{"id": "a", "name": "Kano Central Primary Health Centre",
       "lat": "12.0022", "lon": "8.5920"}],
     [{"id": "b", "name": "Kano Central PHC", "lat": "12.0024", "lon": "8.5918"}],
@@ -35,7 +35,7 @@ The `decision_id` ties the decision to the evidence and run settings. Persist th
 
 ## Pairwise is a different contract
 
-`pairwise(a, b)` answers a direct person-resolution question. Its identity field uses `same_entity`, `review`, or `different`. Do not mix those labels with crosswalk edge labels without translating the meaning for your users.
+`compare(a, b)` answers a direct person-resolution question. Its identity field uses `same_entity`, `review`, or `different`. Do not mix those labels with crosswalk edge labels without translating the meaning for your users.
 
 ## Agent use
 

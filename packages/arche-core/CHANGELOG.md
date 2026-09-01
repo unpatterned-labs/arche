@@ -118,6 +118,43 @@ extraction.
 the install that pulls copyleft. With neither present, the error names both
 extras and their licences rather than only the one that used to be there.
 
+### Changed — the documentation teaches the new verbs
+
+42 tracked files carried 127 uses of the old spellings, and shipping public
+docs that teach names emitting `DeprecationWarning` would have been its own
+kind of wrong.
+
+The migration was not a rename, because `crosswalk` names two things and only
+one of them moved:
+
+| | | |
+|---|---|---|
+| the **verb** | `crosswalk(list_a, list_b)` | -> `reconcile(...)` |
+| the **artifact** | a crosswalk, crosswalk edges, crosswalk output | unchanged |
+| the **wire format** | `arche.crosswalk_edge.v1`, `crosswalk.v1` | unchanged, and must never move |
+
+So calls, dotted symbol paths and backticked function references were rewritten
+in two passes; artifact phrases, `crosswalk_report` and the wire strings
+were protected. A blind rename would have moved the wire format and
+invalidated every signed edge.
+
+One filename moved and one did not, on the same rule. `api/crosswalk.md`
+documents the **verb**, so it is now `api/reconcile.md`; the page had no
+public URL to break -- `api/` is excluded from the published site -- and its
+three inbound links were updated. `how-to/read-crosswalk-output.md`
+describes the **artifact**, so its name is still right even though its
+examples now call `reconcile()`.
+
+Six sentences needed repair rather than substitution, because the merge made
+them **false** rather than merely dated — "what `pairwise`, `crosswalk` and
+`reconcile` return" listed three things that are now two, and one section
+described a facade sitting over an engine that no longer exists separately.
+
+Checked afterwards rather than assumed: **209 of 212 python blocks parse**
+(the three that do not were already broken before the migration — a JSON
+illustration inside a `python` fence, an unclosed fence, and an indented
+fragment), and **all 101 documented arche symbols resolve**.
+
 ### Added — `reference/optional-dependencies.md`, with the numbers measured
 
 Every extra, what it installs, what it costs and under what licence. The counts

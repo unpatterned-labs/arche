@@ -36,13 +36,13 @@ A token that is one in 100,000 or rarer scores ~1.0. A token that is most of the
 `distinctive_max` is measured against **the frequency table the entity pack uses**, and the packs ship different tables built from different populations. This is the single most common source of surprise:
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 a = [{"id": "a1", "name": "General Hospital"}]
 b = [{"id": "b1", "name": "General Hospital"}]
 
-place = crosswalk(a, b, entity="place", id_field="id")["matches"][0]
-org = crosswalk(a, b, entity="organisation", id_field="id")["matches"][0]
+place = reconcile(a, b, entity="place", id_field="id")["matches"][0]
+org = reconcile(a, b, entity="organisation", id_field="id")["matches"][0]
 
 assert (place["decision"], place["score"], place["distinctive_max"]) == ("review", 1.0, 0.564)
 assert (org["decision"], org["score"], org["distinctive_max"]) == ("match", 1.0, 0.862)
@@ -79,8 +79,8 @@ The last row is the one to know about. With no shipped table in play, the "popul
 p = [{"id": "p1", "name": "Mohammed Ibrahim"}]
 q = [{"id": "p2", "name": "Mohammed Ibrahim"}]
 
-alone = crosswalk(p, q, entity="person", id_field="id")["matches"][0]
-table = crosswalk(p, q, entity="person", id_field="id", tf="default")["matches"][0]
+alone = reconcile(p, q, entity="person", id_field="id")["matches"][0]
+table = reconcile(p, q, entity="person", id_field="id", tf="default")["matches"][0]
 
 assert (alone["decision"], alone["distinctive_max"]) == ("match", 1.0)
 assert (table["decision"], table["distinctive_max"]) == ("review", 0.683)

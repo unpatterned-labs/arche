@@ -158,14 +158,14 @@ Pairwise matching assumes you already know which two records to compare. Often y
 ## Reproduce any of these
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 a = [{"id": "a", "name": "Nyeri Hill Factory",
       "entity_class": "SITE", "lat": -0.42, "lon": 36.95}]
 b = [{"id": "b", "name": "Nyeri Hill Tea Factory Co Ltd",
       "entity_class": "OPERATOR", "lat": -0.42, "lon": 36.95}]
 
-result = crosswalk(a, b, entity="organisation", id_field="id")
+result = reconcile(a, b, entity="organisation", id_field="id")
 edge = result["matches"][0]
 print(edge["decision"], edge["score"], edge["distinctive_max"])
 print(edge["evidence"])

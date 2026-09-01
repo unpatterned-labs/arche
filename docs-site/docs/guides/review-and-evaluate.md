@@ -6,11 +6,11 @@ The runnable [review and evaluation notebook](https://github.com/unpatterned-lab
 
 ## 1. Preserve the run artifact
 
-Keep the full `crosswalk()` result. In particular, retain each candidate's `decision_id`, `evidence`, and `pins` alongside the source IDs. The ID binds a review outcome to the candidate that was actually considered.
+Keep the full `reconcile()` result. In particular, retain each candidate's `decision_id`, `evidence`, and `pins` alongside the source IDs. The ID binds a review outcome to the candidate that was actually considered.
 
 ## 2. Capture review outcomes separately
 
-For every reviewed edge, store a small, append-only record. Use the identity claim rather than a replacement score or a replacement `crosswalk` decision.
+For every reviewed edge, store a small, append-only record. Use the identity claim rather than a replacement score or a replacement `reconcile` decision.
 
 ```json
 {
@@ -40,10 +40,10 @@ An agent may prepare this record, validate its schema, or retrieve cited evidenc
 `arche.resolve.metrics.evaluate()` reports automatic-match precision, recall, F1, review queue size, surfaced recall, and false merges.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.resolve.metrics import evaluate
 
-result = crosswalk(
+result = reconcile(
     [{"id": "a1", "name": "Roundhay School", "lat": "53.8386", "lon": "-1.4996"}],
     [{"id": "b1", "name": "Roundhay School", "lat": "53.8387", "lon": "-1.4995"}],
     entity="place", id_field="id",

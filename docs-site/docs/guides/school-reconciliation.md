@@ -19,7 +19,7 @@ The [England schools notebook](https://github.com/unpatterned-labs/arche/blob/ma
 Two lists of dictionaries, one line.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 # Two rows each, standing in for the full exports.
 osm_rows  = [{"name": "Roundhay School", "lat": "53.8386", "lon": "-1.4996"},
@@ -30,7 +30,7 @@ gias_rows = [{"name": "Roundhay School", "lat": "53.8387", "lon": "-1.4995"},
 osm  = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in osm_rows]
 gias = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in gias_rows]
 
-result = crosswalk(osm, gias, entity="place")
+result = reconcile(osm, gias, entity="place")
 
 for edge in result["matches"]:
     print(edge["decision"], round(edge["score"], 3), edge["evidence"])

@@ -1,6 +1,6 @@
 # Record resolution API
 
-## `crosswalk(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
+## `reconcile(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
 
 Link two record lists. Supply one of the following:
 
@@ -9,13 +9,13 @@ Link two record lists. Supply one of the following:
 - `decl` for a declared schema
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 list_a = [{"id": "a1", "name": "Kano Central PHC", "lat": "12.0022", "lon": "8.5920"}]
 list_b = [{"id": "b1", "name": "Kano Central Primary Health Centre",
            "lat": "12.0024", "lon": "8.5918"}]
 
-result = crosswalk(list_a, list_b, entity="place", id_field="id")
+result = reconcile(list_a, list_b, entity="place", id_field="id")
 ```
 
 The result has this shape:
@@ -43,21 +43,21 @@ Key options include `threshold`, `review_margin`, `id_field`, and `truth_pairs`.
 
 Read the [decision contract](decision-contract.md) before sending these results to a downstream workflow.
 
-## `pairwise(a, b, *, entity="person", **kwargs)`
+## `compare(a, b, *, entity="person", **kwargs)`
 
 Resolve one direct person pair.
 
 ```python
-from arche.resolve import pairwise
+from arche.resolve import compare
 
-decision = pairwise(
+decision = compare(
     "Fatima Abdullahi, NIN 12345678901",
     "Fatuma Abdulahi, NIN 12345678901",
 )
 print(decision.identity)
 ```
 
-`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `crosswalk()` and its labels should not be treated as interchangeable.
+`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `reconcile()` and its labels should not be treated as interchangeable.
 
 ## Signing crosswalk edges
 

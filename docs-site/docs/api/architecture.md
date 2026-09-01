@@ -85,8 +85,8 @@ Splink wants same-schema tables. Senzing wants its attribute dictionary. arche w
 
 | Derived from the declaration | Used by |
 |---|---|
-| Comparator specs | `crosswalk(..., decl=)` |
-| Matcher slot assignment | `pairwise(..., decl=)` |
+| Comparator specs | `reconcile(..., decl=)` |
+| Matcher slot assignment | `compare(..., decl=)` |
 | Masking and disclosure policy | `render`, `report`, `attest` |
 | An LLM extraction contract | `decl.tool_def()`, `arche.llm` |
 | A content-hash pin | every `decision_id` produced under it |
@@ -99,7 +99,7 @@ Validation is deliberately unforgiving. Unknown keys and typo'd roles are errors
 from arche.canonical import Reference
 from arche.declare import Declaration
 from arche.ids import reference_id
-from arche.resolve import pairwise
+from arche.resolve import compare
 
 decl = Declaration.from_yaml("examples/declarations/fisheries.decl.yaml")
 
@@ -116,7 +116,7 @@ print("declaration pin :", decl.pin())
 print("reference_id a  :", reference_id(a, key=b"k" * 32))
 print("quota restricted:", decl.restricted_for("quota_licence"))
 
-d = pairwise(a, b, decl=decl, issuer_key=b"k" * 32)
+d = compare(a, b, decl=decl, issuer_key=b"k" * 32)
 print("decision        :", d.identity, "/", d.action, "score", round(d.score, 3))
 print("gate            :", d.gate)
 print("factors         :", d.factors)
@@ -174,12 +174,12 @@ This is the short list. Each entry has a combination law written down in the cod
 
 `resolve` ships two engines because there are two questions, not because of history:
 
-| | `reconcile` / `crosswalk` | `coreference` / `pairwise` |
+| | `reconcile` | `coreference` / `compare` |
 |---|---|---|
 | Question | Link two lists at scale | Are these two the same? |
 | Combination law | Weighted arithmetic mean | Fellegi-Sunter log-odds |
 | Gate clears when | A distinctive-*kind* comparator reaches the floor **and**, for name-like kinds, what the two names share is itself rare | A genuinely **rare** shared name token exists |
-| Output | Edges with `decision_id` and evidence | A signable `CoReferenceDecision` |
+| Output | Edges with `decision_id` and evidence | A signable `Receipt` |
 
 They share their primitives. Comparators, normalisers, the token-frequency table, and the `DISTINCTIVE_FLOOR = 0.75` constant, all in `resolve/_matcher.py`, `_tokenfreq.py` and `_gate.py`. They now also share the *principle* behind the gate, which they did not until recently, and the story is worth telling because it is what this page is for.
 
@@ -201,7 +201,7 @@ Before v0.3.0a1 geography was a scored signal in the place pack, weighted 1.0 ag
 import csv
 from collections import Counter
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 with open("data/GRID3_NGA_health_facilities_v2.csv", encoding="utf-8-sig") as fh:
     grid3 = [r for r in csv.DictReader(fh) if r["state"] == "Kano"]
@@ -212,7 +212,7 @@ A = [{"name": r["name"], "lat": r["lat"], "lon": r["lon"]} for r in osm]
 B = [{"name": r["facility_name"], "lat": r["latitude"], "lon": r["longitude"]}
      for r in grid3]
 
-result = crosswalk(A, B, entity="place")
+result = reconcile(A, B, entity="place")
 print(Counter(e["decision"] for e in result["matches"]))
 
 vetoed = [e for e in result["matches"] if "geo_conflict_km" in e["evidence"]]
@@ -328,8 +328,8 @@ The layers are usable directly. These are the orchestrators that wire them up fo
 | `arche.workflow.DSARWorkflow` | Pipeline → sign → statute-aware DSAR drafting (citizen-side, draft only) |
 | `arche.sign.SignWorkflow` | Pipeline → JWS envelope over the `Result` |
 | `arche.sign.VerifyExtractWorkflow` | verify → recover redacted text and policy outcomes |
-| `arche.resolve.crosswalk` | blocking → comparators → weighted mean → gate → veto → edges |
-| `arche.resolve.pairwise` | references → Fellegi-Sunter → gate → signable decision |
+| `arche.resolve.reconcile` | blocking → comparators → weighted mean → gate → veto → edges |
+| `arche.resolve.compare` | references → Fellegi-Sunter → gate → signable decision |
 | `arche.guard.EgressGuard` | Pipeline → four-teeth deny → tokenised projection |
 | `arche.resolve_places` | gazetteer lookup → compliance block → JWS receipt |
 | `arche compare` (CLI) | two files → crosswalk → masked-by-default HTML report |
@@ -365,7 +365,7 @@ Stated so nobody has to discover it by reading source.
 - **Three audit paths exist.** `graph.audit` is the SQLite one and the one to use. `arche.audit` is the v0.1 in-memory log. `governance.py` carries a hand-maintained sensitivity map that will drift from the statute YAML; it is not exported from `arche/__init__.py` and nothing outside its own tests calls it.
 - **`Pipeline.process` does not write to `graph.audit`.** It builds its audit view in memory and returns it on the `Result`. Persisting it is a wiring step, not a missing feature, but today an audit log only fills up if you emit to it.
 - **A declared `id_family` does not yet mint an `entity_id`.** `Declaration` exposes `binding_fields()`, but `ids.identity_binding_key` is not declaration-aware. It matches arche's own fixed identifier names. In the sample at the top of this page the merge is correct and `entity_id` is `None`.
-- **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim` only, and it defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack. The measured 13-pair gain in the place benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding work.
+- **`orthography=` is not wired into `reconcile`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim` only, and it defaults to `None` on both. The place pack does not set it, so `reconcile(..., entity="place")` does not use the Hausa pack. The measured 13-pair gain in the place benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding work.
 - **`arche.detect` is a callable module.** `detect(text)` forwards to the pipeline while `arche.detect.ng.ids` is a real subpackage. The docstrings disagree with each other about whether this is temporary; the class docstring carries the later decision, which is that it stays as the documented Level-2 API.
 
 ---
@@ -379,7 +379,7 @@ Stated so adopters can hold us to scope.
 - **No risk / churn / fraud signal heuristics.** The early `arche.signal` layer was example-tier guessing and was removed. Its compliance half is now the statute-grounded `policy_outcomes` on `Pipeline.Result`.
 - **No hash-chained audit log.** The `prev_hash` and `signature` columns exist and nothing populates them. The log is append-only by convention, not tamper-evident.
 - **No pluggable storage backend.** SQLite is the only one; `StorageBackend` is named in an RFC and does not exist as a protocol.
-- **No pairwise place or product resolution.** `pairwise(entity="place")` raises; `crosswalk` is the place path.
+- **No pairwise place or product resolution.** `compare(entity="place")` raises; `reconcile` is the place path.
 - **No post-quantum signatures.** There is no `arche-core[pqc]` extra.
 
 ---

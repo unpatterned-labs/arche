@@ -2,7 +2,7 @@
 
 Health-facility reconciliation is a good place-resolution workflow because a wrong merge can remove a clinic from an allocation, while a missed link leaves two records to be reviewed. Both risks matter.
 
-The [facility reconciliation notebook](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/01_facility_reconciliation.ipynb) walks through public Nigerian facility data. It builds two lists, runs `crosswalk(..., entity="place")`, inspects the evidence, and separates automatic matches from a review queue.
+The [facility reconciliation notebook](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/01_facility_reconciliation.ipynb) walks through public Nigerian facility data. It builds two lists, runs `reconcile(..., entity="place")`, inspects the evidence, and separates automatic matches from a review queue.
 
 ## What to look for
 

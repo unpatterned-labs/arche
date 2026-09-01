@@ -4,7 +4,7 @@
 
 *Folded in from a separate page, because the signals table above and the formulas below were describing the same thing twice.*
 
-Two rows, two Nigerian registries: *Karfi Health Post* and *Karfi Primary Health Centre*, coordinates 2.1 km apart, each record carrying its named admin path (Kano State → Kura LGA → Karfi). Feed them to `crosswalk(..., entity="place")` with the small frequency table we build below, and the engine answers: score **0.6942**, decision **review**. This page teaches the math behind that number, from a 1969 statistics paper down to the exponential in the geo comparator, so that by the end you can compute it by hand, and we will, and it will agree with the engine to four decimal places. The five positions say where we stand; this page is why the numbers come out the way they do.
+Two rows, two Nigerian registries: *Karfi Health Post* and *Karfi Primary Health Centre*, coordinates 2.1 km apart, each record carrying its named admin path (Kano State → Kura LGA → Karfi). Feed them to `reconcile(..., entity="place")` with the small frequency table we build below, and the engine answers: score **0.6942**, decision **review**. This page teaches the math behind that number, from a 1969 statistics paper down to the exponential in the geo comparator, so that by the end you can compute it by hand, and we will, and it will agree with the engine to four decimal places. The five positions say where we stand; this page is why the numbers come out the way they do.
 
 ### The probability heritage: Fellegi–Sunter
 
@@ -16,7 +16,7 @@ disagreement   →  w = log2((1 − m) / (1 − u))
 partial (similarity s)  →  w = s · log2(m/u) + (1 − s) · log2((1−m)/(1−u))
 ```
 
-Weights sum across fields, then `P(match) = 2^W / (1 + 2^W)`. One worked number, with the shipped defaults `name_m = 0.92`, `name_u = 0.01`: exact name agreement is worth `log2(0.92/0.01) = 6.52` bits, so a name alone gives `2^6.52 / (1 + 2^6.52) ≈ 0.989`. Disagreement costs `log2(0.08/0.99) = −3.63` bits. The pairwise decision then bands at 0.85 (match) and 0.40 (review). The math is not ours and we do not improve it. [Splink runs the same model](../tutorials/arche_vs_alternatives.md) with proper EM-estimated parameters, and runs it better. arche implements a thin version itself and spends its effort on the representation the model scores over. At scale the shipped path is arche's own `crosswalk`; nothing in `pairwise`, `crosswalk` or the frequency tables imports Splink.
+Weights sum across fields, then `P(match) = 2^W / (1 + 2^W)`. One worked number, with the shipped defaults `name_m = 0.92`, `name_u = 0.01`: exact name agreement is worth `log2(0.92/0.01) = 6.52` bits, so a name alone gives `2^6.52 / (1 + 2^6.52) ≈ 0.989`. Disagreement costs `log2(0.08/0.99) = −3.63` bits. The pairwise decision then bands at 0.85 (match) and 0.40 (review). The math is not ours and we do not improve it. [Splink runs the same model](../tutorials/arche_vs_alternatives.md) with proper EM-estimated parameters, and runs it better. arche implements a thin version itself and spends its effort on the representation the model scores over. At scale the shipped path is arche's own engine; nothing in `compare`, `reconcile` or the frequency tables imports Splink.
 
 ### Rarity is evidence
 

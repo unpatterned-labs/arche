@@ -112,7 +112,7 @@ It is now derived from the decision's pins. The engine's own path is determinist
 ```python
 from arche.attest import attest, verify_attestation
 from arche.canonical import Reference
-from arche.resolve import pairwise
+from arche.resolve import compare
 from arche.sign import generate_keypair
 
 ISSUER_KEY = b"an issuer secret of at least 32b"
@@ -124,11 +124,11 @@ b = Reference.from_record({"id": "B7", "full_name": "N. Adeyemi",
                            "national_id": "12345678901"})
 
 # 1. The engine extracted the records itself: every step replays.
-engine = pairwise(a, b, issuer_key=ISSUER_KEY)
+engine = compare(a, b, issuer_key=ISSUER_KEY)
 
 # 2. A hosted model proposed the records. The decision maths still replays;
 #    the extraction does not, and its pin says so.
-llm = pairwise(a, b, issuer_key=ISSUER_KEY, extra_pins={
+llm = compare(a, b, issuer_key=ISSUER_KEY, extra_pins={
     "extraction": {"model": "gpt-4o-mini", "prompt_sha256": "ab12…",
                    "reproducible": False},
 })
@@ -147,7 +147,7 @@ print("pinned :", trusted.valid, trusted.trusted, trusted.key_source)
 
 # An unkeyed decision is refused: its ids would be brute-forceable.
 try:
-    attest(pairwise(a, b), signing_key)
+    attest(compare(a, b), signing_key)
 except ValueError as exc:
     print()
     print(str(exc).split(".")[0] + ".")
@@ -182,7 +182,7 @@ from datetime import datetime, timedelta, timezone
 
 from arche.attest import attest, present_attestation, verify_attestation
 from arche.canonical import Reference
-from arche.resolve import pairwise
+from arche.resolve import compare
 from arche.sign import generate_keypair
 
 ISSUER_KEY = b"an issuer secret of at least 32b"
@@ -192,7 +192,7 @@ a = Reference.from_record({"id": "A1", "full_name": "Ngozi Adeyemi",
                            "national_id": "12345678901"})
 b = Reference.from_record({"id": "B7", "full_name": "N. Adeyemi",
                            "national_id": "12345678901"})
-decision = pairwise(a, b, issuer_key=ISSUER_KEY)
+decision = compare(a, b, issuer_key=ISSUER_KEY)
 
 credential = attest(
     decision, issuer,

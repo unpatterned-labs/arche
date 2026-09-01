@@ -39,7 +39,7 @@ The vocabulary is small and closed. **`role`** is Talburt's axis: `identifies` (
 
     <!-- docs-test: fragment -->
 ```python
-    dec = resolve.pairwise(a, b, decl=fisheries, issuer_key=KEY)
+    dec = resolve.compare(a, b, decl=fisheries, issuer_key=KEY)
     dec.identity     # 'same_entity'
     dec.score        # 1.0
     dec.entity_id    # None  <- not minted from a declared id_family
@@ -78,11 +78,11 @@ from arche.declare import Declaration
 
 decl = Declaration.from_yaml("fisheries.decl.yaml")
 
-out = resolve.crosswalk(list_a, list_b, decl=decl)          # your fields, compared
+out = resolve.reconcile(list_a, list_b, decl=decl)          # your fields, compared
 
 ra = Reference.from_record(rec_a, decl=decl)                # vessel_id is now an
 rb = Reference.from_record(rec_b, decl=decl)                # identity attribute
-decision = resolve.pairwise(ra, rb, issuer_key=KEY, decl=decl)
+decision = resolve.compare(ra, rb, issuer_key=KEY, decl=decl)
 # decision.pins["declaration"] == decl.pin()
 ```
 
@@ -104,5 +104,5 @@ ref, violations = decl.validate_record(llm_output)   # names any undeclared fiel
 ## The honest caveats
 
 - **Schema freedom is not automatic calibration.** arche's scoring priors were fitted on person data; a fisheries decision is structurally sound (the gate, the veto, and corroboration all apply) but its score is not calibrated for your domain. The report's provenance block says which declaration produced every score. Declared schemas are also the signal for which calibration packs arche grows next.
-- **Two `kind: id` fields**: the signable pairwise path uses the first (declaration order); bulk `crosswalk` uses all of them. The loader warns.
+- **Two `kind: id` fields**: the signable pairwise path uses the first (declaration order); bulk `reconcile` uses all of them. The loader warns.
 - The three built-in entity packs are just declarations arche wrote for you, [`person.decl.yaml`, `place.decl.yaml`, `artist.decl.yaml`](https://github.com/unpatterned-labs/arche/tree/main/examples/declarations) round-trip to `ENTITY_PACKS` exactly.

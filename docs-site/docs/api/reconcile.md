@@ -1,15 +1,15 @@
-# Entity resolution: `pairwise()`, `crosswalk()`, `sign_edges()`
+# Entity resolution: `compare()`, `reconcile()`, `sign_edges()`
 
 The `arche.resolve` facade has two entry points by use-shape. Their scores are deliberately **not comparable**, different math for different jobs.
 
-## `resolve.pairwise(a, b, *, entity="person", **kwargs)`
+## `resolve.compare(a, b, *, entity="person", **kwargs)`
 
-"Are these two the same?" Dispatches on input shape, two Pipeline `Result`s, two canonical `Reference`s, or two raw strings (extract-then-resolve), and returns a signable `CoReferenceDecision` (Fellegi–Sunter log-odds, exact-id gate, id-conflict veto, statute citations travelling with the evidence). Currently `entity="person"` only; place lists go through `crosswalk`.
+"Are these two the same?" Dispatches on input shape, two Pipeline `Result`s, two canonical `Reference`s, or two raw strings (extract-then-resolve), and returns a signable `Receipt` (Fellegi–Sunter log-odds, exact-id gate, id-conflict veto, statute citations travelling with the evidence). Currently `entity="person"` only; place lists go through `reconcile`.
 
 ```python
 from arche import resolve
 
-decision = resolve.pairwise("Fatima Abdullahi, NIN 12345678901",
+decision = resolve.compare("Fatima Abdullahi, NIN 12345678901",
                             "Fatuma Abdullahi, NIN 12345678901")
 decision.identity      # "same_entity" | "review" | "different"
 decision.action        # what the gate decided to do about it
@@ -33,7 +33,7 @@ decision_id = 'dec:sha256:a5fde8c138c6157f00c0396ce63f6...'
     `same_entity` / `review` / `different`. `decision.decision` does not
     exist and raises `AttributeError`. The `"match"` / `"review"` /
     `"no_match"` vocabulary belongs to **crosswalk edges**, which are a
-    different object, see `resolve.crosswalk()` below.
+    different object, see `resolve.reconcile()` below.
 
 !!! warning "A high score is not a merge"
 
@@ -45,7 +45,7 @@ decision_id = 'dec:sha256:a5fde8c138c6157f00c0396ce63f6...'
 
 Signing a decision requires a keypair. Calling `arche.attest.attest()` on a decision produced without an `issuer_key` raises, deliberately: a keyless `reference_id` is a hash of the person's attributes and can be brute-forced back to the source record.
 
-## `resolve.crosswalk(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
+## `resolve.reconcile(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
 
 Link or dedupe two record lists at scale. Pass exactly one of:
 

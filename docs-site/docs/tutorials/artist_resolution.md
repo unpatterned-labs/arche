@@ -45,7 +45,7 @@ token distinctiveness under the shipped table (0 = ubiquitous, 1 = rare):
 Alias-expand the catalog (one row per known name-form, each carrying the artist's MBID), then run the artist pack, the shipped frequency table loads automatically:
 
 ```python
-out = resolve.crosswalk(statement, catalog, entity="artist", block=None)
+out = resolve.reconcile(statement, catalog, entity="artist", block=None)
 ```
 
 ```text
@@ -86,7 +86,7 @@ That is the whole argument for identity attributes: **names describe; identifier
 ```python
 ra = Reference.from_record({"full_name": "WIZKID", "national_id": wizkid_mbid})
 rb = Reference.from_record({"full_name": "Wizkid", "national_id": wizkid_mbid})
-decision = resolve.pairwise(ra, rb, issuer_key=KEY)   # same_entity / merge
+decision = resolve.compare(ra, rb, issuer_key=KEY)   # same_entity / merge
 signed = attest(decision, issuer, mode="jws")          # verified, reproducible, PII-free
 ```
 

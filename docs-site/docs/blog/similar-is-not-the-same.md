@@ -327,7 +327,7 @@ So the slogan I will actually defend is narrower: **a bare similarity should not
 
 Here is where I think this goes, and it is not "add a vector to the scorer".
 
-Everything arche does today assumes you arrive knowing what you want: two lists, a declaration, a `crosswalk` call. That is the right shape for a pipeline and the wrong shape for a person, and it is completely the wrong shape for an agent. The question a human actually has is *"is the clinic in this delivery note the same one we paid last quarter?"*, and answering it requires finding the candidates before anything can be resolved.
+Everything arche does today assumes you arrive knowing what you want: two lists, a declaration, a `reconcile` call. That is the right shape for a pipeline and the wrong shape for a person, and it is completely the wrong shape for an agent. The question a human actually has is *"is the clinic in this delivery note the same one we paid last quarter?"*, and answering it requires finding the candidates before anything can be resolved.
 
 That is a retrieval problem, and retrieval is the thing embeddings are genuinely best at.
 

@@ -6,18 +6,18 @@ arche has related capabilities, but they answer different questions. Keeping the
 |---|---|---|
 | Pipeline | What sensitive or identifying information is in this text or file? | `Pipeline.process()` |
 | Document resolution | Which document records may refer to the same person? | `resolve_documents()` |
-| Record resolution | Which rows from two lists are candidates for the same entity? | `crosswalk()` |
-| Direct person comparison | Do these two specific person references describe one entity? | `pairwise()` |
+| Record resolution | Which rows from two lists are candidates for the same entity? | `reconcile()` |
+| Direct person comparison | Do these two specific person references describe one entity? | `compare()` |
 | Address and spatial roles | What address or place is mentioned, and what role does it play? | `arche.addr`, `extract_places()` |
 
 Each example below is a standalone Python script. Install the package, save a block as a `.py` file, and run `python filename.py`. The document example needs the optional document extra; the other examples work with `pip install arche-core`.
 
 ## Crosswalk two lists
 
-Use `crosswalk()` when you have two collections of records and want surfaced candidates with evidence. This example deliberately has a rare facility name and a common one. The common name goes to review even though it has the same raw score.
+Use `reconcile()` when you have two collections of records and want surfaced candidates with evidence. This example deliberately has a rare facility name and a common one. The common name goes to review even though it has the same raw score.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 registry = [
     {"id": "registry-1", "name": "Gyaranya Health Post", "lat": 11.90, "lon": 8.50},
@@ -28,7 +28,7 @@ survey = [
     {"id": "survey-2", "name": "General Hospital", "lat": 12.04, "lon": 8.50},
 ]
 
-result = crosswalk(registry, survey, entity="place", block=None)
+result = reconcile(registry, survey, entity="place", block=None)
 for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
 ```
@@ -42,12 +42,12 @@ Each returned edge also has `evidence`, `pins`, and a `decision_id`. A missing e
 
 ## Compare two people directly
 
-Use `pairwise()` when the caller has already selected exactly two person references and needs an explicit identity claim.
+Use `compare()` when the caller has already selected exactly two person references and needs an explicit identity claim.
 
 ```python
-from arche.resolve import pairwise
+from arche.resolve import compare
 
-decision = pairwise(
+decision = compare(
     "Fatima Abdullahi, NIN 12345678901",
     "Fatuma Abdulahi, NIN 12345678901",
 )
@@ -61,7 +61,7 @@ same_entity merge 1.0
 national ID match; name similarity 91%
 ```
 
-`pairwise()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels.
+`compare()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels.
 
 ## Process text with Pipeline
 
@@ -169,7 +169,7 @@ Spatial roles can be `origin`, `destination`, `location`, `via`, or `unknown`. `
 
 ## The record-resolution path
 
-`crosswalk()` works in four stages:
+`reconcile()` works in four stages:
 
 1. **Candidate generation.** Blocking avoids scoring every possible pair.
 2. **Comparison.** Entity-specific comparators inspect names, identifiers, coordinates, types, and other available fields.

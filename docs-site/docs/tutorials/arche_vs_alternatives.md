@@ -50,12 +50,12 @@ a = Reference.from_record({"id": "A", "full_name": "Ngozi Adeyemi",
                            "national_id": "12345678901"})
 b = Reference.from_record({"id": "B", "full_name": "N. Adeyemi",
                            "national_id": "12345678901"})
-pairwise(a, b, issuer_key=b"k" * 32)
-print(f"{'pairwise()':44} splink modules loaded: {loaded()}")
+compare(a, b, issuer_key=b"k" * 32)
+print(f"{'compare()':44} splink modules loaded: {loaded()}")
 
-crosswalk([{"id": "A", "name": "Karfi PHC"}],
+reconcile([{"id": "A", "name": "Karfi PHC"}],
           [{"id": "B", "name": "Karfi Health Post"}], entity="person")
-print(f"{'crosswalk()':44} splink modules loaded: {loaded()}")
+print(f"{'reconcile()':44} splink modules loaded: {loaded()}")
 
 TokenFrequencyTable.default()
 print(f"{'TokenFrequencyTable.default()':44} splink modules loaded: {loaded()}")
@@ -70,8 +70,8 @@ print(f"{'resolve_entities(..., use_splink=True)':44} splink modules loaded: {lo
 ```text
 splink installed: 4.0.16
 import arche.resolve                         splink modules loaded: 0
-pairwise()                                   splink modules loaded: 0
-crosswalk()                                  splink modules loaded: 0
+compare()                                   splink modules loaded: 0
+reconcile()                                  splink modules loaded: 0
 TokenFrequencyTable.default()                splink modules loaded: 0
 resolve_entities(..., use_splink=True)       splink modules loaded: 84
 ```
@@ -295,7 +295,7 @@ These are choices, and we would make them again.
 
 | Boundary | Why |
 |---|---|
-| **Clustering / transitive closure** | `crosswalk` returns pairwise edges. Collective resolution changes what a decision *means*, a merge that depends on other merges cannot be signed in isolation, so it waits until the benchmark can measure it. |
+| **Clustering / transitive closure** | `reconcile` returns pairwise edges. Collective resolution changes what a decision *means*, a merge that depends on other merges cannot be signed in isolation, so it waits until the benchmark can measure it. |
 | **Detectors outside Africa** | GDPR and HIPAA statute packs load anywhere, but only cross-cutting detectors run outside the launch jurisdictions. `Pipeline(jurisdiction="US")` finds no US identifiers, because running African ID grammars on American text would produce confident mislabels in a signed audit log. Compose Presidio for that coverage. |
 | **FHIR, OpenCRVS, MOSIP, DHIS2 adapters** | Not in scope. Earlier stubs were deleted for being empty modules pretending to be features. Registry adapters return when a real partner routes real decisions through one. |
 | **Persistent storage** | SQLite for the audit log only. arche decides and signs; remembering is somebody else's job. |
@@ -308,7 +308,7 @@ These are not boundaries. They are work.
 | Gap | State |
 |---|---|
 | **MCP server** | Does not exist, no module in the wheel or the source tree. The agent-facing surface today is the masked `to_dict(reveal=False)` shape and `Declaration.tool_def()`, wired into your own tool layer. Next release. |
-| **Signable place decisions** | `pairwise(entity="place")` raises `NotImplementedError`; `crosswalk` is the place path. |
+| **Signable place decisions** | `compare(entity="place")` raises `NotImplementedError`; `reconcile` is the place path. |
 | **`Pipeline(address_parsing=True)`** | Accepted and ignored, byte-identical output with and without. The parameter lies, and should either be wired or removed. |
 | **Unknown jurisdiction codes** | Accepted silently: no statute, no policy, unchanged text, no error. `Pipeline(jurisdiction="EU")` looks like it worked. It should raise. |
 | **Hash-chained audit log** | `prev_hash` and `signature` columns exist and nothing populates them. Append-only by convention, not tamper-evident, do not describe it as the latter. |
@@ -331,7 +331,7 @@ pip install arche-core[resolve]            # + splink and duckdb (see the note b
 pip install arche-core[all]                # pdf, docx, detect, presidio, resolve, llm
 ```
 
-`[resolve]` is the one extra whose name over-promises. Installing it changes the behaviour of exactly one function, `resolve_entities(..., use_splink=True)`, the v0.2 classical path, and has no effect on `pairwise`, `crosswalk` or `reconcile`.
+`[resolve]` is the one extra whose name over-promises. Installing it changes the behaviour of exactly one function, `resolve_entities(..., use_splink=True)`, the v0.2 classical path, and has no effect on `compare` or `reconcile`.
 
 ```python
 from arche import Pipeline

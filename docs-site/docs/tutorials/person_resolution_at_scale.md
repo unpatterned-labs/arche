@@ -21,7 +21,7 @@ Exact matching is hopeless by construction. This is the mess real registries con
 ## The scored run
 
 ```python
-out = resolve.crosswalk(list_a, list_b, entity="person", block=None, tf="default")
+out = resolve.reconcile(list_a, list_b, entity="person", block=None, tf="default")
 m = metrics.evaluate(out["matches"], gold_pairs)
 ```
 
@@ -71,7 +71,7 @@ review queue     774    (15% of true-pair volume)
 A crosswalk row says *these two probably co-refer*. When one specific link **matters**, a benefits claim, a KYC approval, escalate that pair to the pairwise engine, whose decision is reproducible and cryptographically signable:
 
 ```python
-decision = resolve.pairwise(ref_a, ref_b, issuer_key=KEY)   # Fellegi-Sunter + gate
+decision = resolve.compare(ref_a, ref_b, issuer_key=KEY)   # Fellegi-Sunter + gate
 signed  = attest(decision, issuer, mode="jws")               # PII-free artifact
 verify_attestation(signed.compact).valid                     # True - offline
 ```
@@ -83,6 +83,6 @@ The attestation carries content-addressed ids and numeric evidence, never raw va
 - **Safety is measurable, and it held**: precision 1.0 across 10k deliberately corrupted records. `false_merge_rate` is the metric an identity system must be judged on, and here you can compute it, because the benchmark has truth.
 - **The review queue is the deliverable**: 774 rows is what "we don't guess on people" costs.
 - **Places have H3; people have keys.** Everything else, the entity pack, the distinctive gate, the shipped frequency table, the metrics, is the same engine.
-- **Bulk and signable are one continuum**: `crosswalk` for the list, `pairwise` + `attest` for the link you must prove.
+- **Bulk and signable are one continuum**: `reconcile` for the list, `compare` + `attest` for the link you must prove.
 
 **Next:** [read crosswalk output field-by-field](../how-to/read-crosswalk-output.md) · places at scale · the resolution-attestation notebook for the full signing story.

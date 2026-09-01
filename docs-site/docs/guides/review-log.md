@@ -39,18 +39,18 @@ Any CSV works. The tool infers which columns belong to which side from their pre
 
 ## Export a match result as a pack
 
-`review_pack` turns any `crosswalk` result into the two files the studio opens.
+`review_pack` turns any `reconcile` result into the two files the studio opens.
 
 ```python
 from arche.report import review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 register = [{"id": "1", "name": "Amara Patel", "birth_date": "2016-06-28"},
             {"id": "2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
 survey   = [{"id": "1", "name": "Amara Patel", "birth_date": "6/28/2016"},
             {"id": "2", "name": "Malik Okonkwo", "birth_date": "2017-08-18"}]
 
-result = crosswalk(register, survey, entity="person", id_field="id")
+result = reconcile(register, survey, entity="person", id_field="id")
 
 review_pack(
     result, register, survey,

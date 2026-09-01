@@ -11,9 +11,9 @@ The runnable version is [notebook 09](https://github.com/unpatterned-labs/arche/
 ## The short version
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
-result = crosswalk(abt, buy, entity="product_electronics", id_field="id")
+result = reconcile(abt, buy, entity="product_electronics", id_field="id")
 ```
 
 | | name matcher | `product_electronics` |

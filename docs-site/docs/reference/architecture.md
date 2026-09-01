@@ -37,7 +37,7 @@ The practical consequence is that a detector being wrong, an LLM hallucinating, 
 
 ## Path 1: resolve two lists
 
-`crosswalk` is the main entry point. Two lists in, scored edges out.
+`reconcile` is the main entry point. Two lists in, scored edges out.
 
 ```mermaid
 flowchart LR
@@ -64,7 +64,7 @@ Missing evidence never refutes. A comparator with nothing to say returns nothing
 
 ### The scorer is replaceable
 
-`crosswalk(..., backend="splink")` hands the scoring to [Splink](https://moj-analytical-services.github.io/splink/) and keeps everything in the diagram after it: the gate, the vetoes, the evidence, the pins, the decision ids. The result shape does not change, so a review pack written from a Splink run is the same artifact.
+`reconcile(..., backend="splink")` hands the scoring to [Splink](https://moj-analytical-services.github.io/splink/) and keeps everything in the diagram after it: the gate, the vetoes, the evidence, the pins, the decision ids. The result shape does not change, so a review pack written from a Splink run is the same artifact.
 
 This exists because arche's own matcher loses to Splink on every dataset it has been measured against, and the useful response to that is to use the better scorer rather than keep the gap. See [the benchmarks](benchmarks.md#arche-using-splink-rather-than-against-it).
 
@@ -72,7 +72,7 @@ Two arguments are required and neither has a default. `splink_settings=` takes a
 
 ## Path 2: compare two records
 
-`pairwise` answers "are these two the same?" and returns a signable `CoReferenceDecision`. It uses Fellegi-Sunter log-odds rather than `crosswalk`'s weighted mean, so **the two scores are not comparable**, on purpose.
+`compare` answers "are these two the same?" and returns a signable `Receipt`. It uses Fellegi-Sunter log-odds rather than `reconcile`'s weighted mean, so **the two scores are not comparable**, on purpose.
 
 The decision carries everything needed to re-derive it:
 
@@ -85,7 +85,7 @@ vetoes         {'id_conflict': False}
 pins           {'engine': 'arche-core@0.6.0a1', ...}
 ```
 
-`pairwise(entity="place")` raises. `crosswalk` is the place path.
+`compare(entity="place")` raises. `reconcile` is the place path.
 
 ## Path 3: find and protect PII in text
 
@@ -141,9 +141,9 @@ This distinction is the whole point and is easy to lose. `valid` answers "does t
 
 | You want to | Call | You get |
 |---|---|---|
-| Link two lists | `resolve.crosswalk` | scored edges, evidence, pins |
-| Link two lists with Splink | `crosswalk(backend="splink")` | the same, scored by Splink |
-| Compare two records | `resolve.pairwise` | a signable decision |
+| Link two lists | `resolve.reconcile` | scored edges, evidence, pins |
+| Link two lists with Splink | `reconcile(backend="splink")` | the same, scored by Splink |
+| Compare two records | `resolve.compare` | a signable decision |
 | Find PII in text | `workflow.Pipeline` | detections, policy outcomes |
 | Enforce before egress | `guard.EgressGuard` | fail-closed tokenised projection |
 | Share a result | `report.crosswalk_report` | one self-contained HTML file |

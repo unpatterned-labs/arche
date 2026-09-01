@@ -19,7 +19,7 @@ Four datasets, one shape, a name and a coordinate is all the engine needs:
 from arche import resolve
 
 # records are plain dicts: {"id": ..., "name": ..., "lat": ..., "lon": ...}
-out = resolve.crosswalk(list_a, list_b, entity="place")
+out = resolve.reconcile(list_a, list_b, entity="place")
 ```
 
 That one call is the whole API. `entity="place"` selects the canned place comparators (fuzzy name + token distinctiveness + geo proximity); H3 spatial blocking keeps big lists fast; the distinctive-signal gate keeps the merges safe.
@@ -39,7 +39,7 @@ Hold that thought and add data.
 ## Step 1: HFR ↔ OpenStreetMap, Kano state
 
 ```python
-kano = resolve.crosswalk(hfr_kano, osm_kano, entity="place")
+kano = resolve.reconcile(hfr_kano, osm_kano, entity="place")
 ```
 
 **1,561 × 165 records in 1.4 seconds:**
@@ -71,7 +71,7 @@ The third number is the coverage story: **only 110 of 165 OSM facilities matched
 Different country, different domain, different naming culture, **the identical call**:
 
 ```python
-leeds = resolve.crosswalk(fhrs_leeds, osm_leeds, entity="place")
+leeds = resolve.reconcile(fhrs_leeds, osm_leeds, entity="place")
 ```
 
 ```text
@@ -86,7 +86,7 @@ blocking:  {'candidate_pairs': 1959586, 'reduction_ratio': 0.6969}
 The question changes, *does the 46,146-row register contain duplicate records of the same facility?*, but the engine doesn't:
 
 ```python
-dd = resolve.crosswalk(hfr, hfr, entity="place", threshold=0.85)
+dd = resolve.reconcile(hfr, hfr, entity="place", threshold=0.85)
 dups = [m for m in dd["matches"] if m["a_id"] < m["b_id"] and m["decision"] == "match"]
 ```
 
@@ -114,4 +114,4 @@ Word-order swaps and exact re-entries, 177 registry rows that are very likely th
 - **Scale is a blocking story.** 2.1B pairs → 869k scored. The default is now `block="union"`: spatial H3 cells OR-ed with rare-token and shared-id keys, so a true match whose coordinates disagree by kilometres, or that has no coordinates at all, still reaches the comparators. Records without coordinates route through the token/id keys with a loud warning instead of a silent cross-product; `block=None` remains the full-cross-product escape hatch for small lists.
 - The output carries **ids and numeric evidence only, never raw values**. Rendering values (masked by default) is `arche.render`'s job.
 
-**Next steps:** read crosswalk output field-by-field · resolve *people* with signable decisions via `resolve.pairwise` (the resolution-attestation notebook) · bring your own schema with explicit `comparators=`.
+**Next steps:** read crosswalk output field-by-field · resolve *people* with signable decisions via `resolve.compare` (the resolution-attestation notebook) · bring your own schema with explicit `comparators=`.

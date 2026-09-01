@@ -74,9 +74,9 @@ Two things worth noticing.
 Three calls, and the middle one is the whole job.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
-report = crosswalk(registry, osm_export, entity="place", id_field="id")
+report = reconcile(registry, osm_export, entity="place", id_field="id")
 ```
 
 Then you read the verdicts, not the count. Every edge carries the evidence that produced it, so "why did it do that?" is answerable at the row level rather than as a matter of trust.
