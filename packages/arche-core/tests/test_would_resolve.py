@@ -25,7 +25,7 @@ the text promised.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import ENTITY_PACKS, crosswalk, would_resolve
+from arche.resolve import ENTITY_PACKS, reconcile, would_resolve
 from arche.resolve._unresolved import (
     CAN_PREVENT_MATCH,
     DECISIVE_FOR,
@@ -41,7 +41,7 @@ NEXT_DOOR = (6.5250, 3.3800)
 
 
 def edge_for(a, b, entity):
-    edges = crosswalk([a], [b], entity=entity, id_field="id")["matches"]
+    edges = reconcile([a], [b], entity=entity, id_field="id")["matches"]
     assert edges, f"{a} vs {b} was not surfaced under {entity}"
     return edges[0]
 
@@ -150,7 +150,7 @@ class TestPacksDifferBecauseTheirComparatorsDo:
         """No pack raises, whatever its comparator mix."""
         a = {"id": "a", "name": "General Hospital"}
         b = {"id": "b", "name": "General Hospital"}
-        edges = crosswalk([a], [b], entity=entity, id_field="id")["matches"]
+        edges = reconcile([a], [b], entity=entity, id_field="id")["matches"]
         if not edges:
             pytest.skip(f"{entity} does not surface this pair")
         result = would_resolve(edges[0], a, b, entity=entity)

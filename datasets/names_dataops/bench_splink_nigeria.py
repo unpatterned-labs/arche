@@ -148,7 +148,7 @@ def splink_settings():
     """The hand-written configuration, in one place.
 
     `bench_backend_compare.py` runs the SAME object through
-    `crosswalk(backend="splink")`. If the adapter is faithful the two arms
+    `reconcile(backend="splink")`. If the adapter is faithful the two arms
     produce identical counts, and a second copy of these settings living over
     there would be able to drift until they no longer did.
     """
@@ -212,9 +212,9 @@ def run_splink(records):
 
 
 def run_arche(records):
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
-    res = crosswalk(records, records, entity="place", id_field="id")
+    res = reconcile(records, records, entity="place", id_field="id")
     return [(norm((e["a_id"], e["b_id"])), e["score"], e["decision"])
             for e in res["matches"] if e["a_id"] != e["b_id"]]
 

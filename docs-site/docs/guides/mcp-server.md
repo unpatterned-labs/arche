@@ -48,11 +48,11 @@ Three limits worth knowing before you build on this.
 
 **There is no dedupe entry point.** `compare_records(records, records)` self-links, and the result contains self-pairs (`x1 ~ x1`) and each real pair twice (`x1 ~ x2` and `x2 ~ x1`). Filter both yourself: drop `a_id == b_id`, then keep one ordering. arche resolves *between* lists; deduplicating *within* one is not a first-class operation yet.
 
-**There is no clustering.** Results are pairwise edges. If A matches B and B matches C, nothing here tells you A, B and C are one entity — transitive closure over `crosswalk` output does not exist.
+**There is no clustering.** Results are pairwise edges. If A matches B and B matches C, nothing here tells you A, B and C are one entity — transitive closure over `reconcile` output does not exist.
 
 **There is nowhere to put a `review` outcome.** `arche.review` in the library reads a pack, applies adjudicated outcomes and verifies them, and none of it is exposed as a tool. An agent can produce a review queue and cannot work one.
 
-**Scores are batch-dependent.** `entity=` routes through `crosswalk`, which self-calibrates a token-frequency table over the two lists being linked. The same pair can score differently in a different batch, because how ordinary a shared name is depends on the company it keeps. The `pins` record which table was used, so two results with different `tf` pins were never expected to agree.
+**Scores are batch-dependent.** `entity=` routes through `reconcile`, which self-calibrates a token-frequency table over the two lists being linked. The same pair can score differently in a different batch, because how ordinary a shared name is depends on the company it keeps. The `pins` record which table was used, so two results with different `tf` pins were never expected to agree.
 
 ## Flow B — protection
 

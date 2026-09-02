@@ -4,12 +4,306 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## Unreleased
 
-### Added
+Nothing yet.
 
-- `resolve.crosswalk(..., candidate_pairs=..., candidate_pins=...)` accepts
+## [0.7.0a1] — 2026-08-31
+
+**Four verbs, one noun, and a receipt that says which vocabulary it was issued under.**
+
+The minor moved because the public surface changed shape. Seven names are new — `compare`, `reconcile`, `dedupe`, `find`, `describe`, `report`, `Receipt` — three older spellings now warn, and eleven formatters collapsed into one. A patch bump would have described that as a fix.
+
+Alongside it, a **`receipt_schema`** pin enters the hashed provenance block. It is worth being precise about what that does and does not change.
+
+Receipt ids were *already* version-specific: the pins carry `engine: arche-core@<version>`, so every release has always changed every `decision_id`. That is deliberate — a decision is only reproducible against the code that made it — and it is not new here.
+
+What `receipt_schema` adds is a statement the engine pin cannot make. Reading `arche-core@0.6.0a1` tells you which code ran; it does not tell you whether `factors` was keyed `name` or `name_similarity`. The schema number is a direct claim about the **key vocabulary**, independent of version, so two releases sharing schema 1 have compatible receipt shapes and a future rename bumps to 2 rather than silently changing what the same key means.
+
+`tests/test_receipt_schema.py` freezes an id computed over a **fixed** pins block for exactly that reason: freezing a live one would fail on every version bump, and a guard that cries wolf each release is one somebody eventually re-freezes without reading.
+
+### Changed — the surface asks four questions instead of offering eight ways to ask three
+
+`arche.resolve` had eight verbs answering three questions — `pairwise`, `match`, `crosswalk`, `link`, `resolve_entities`, `resolve_places`, `resolve_identity_records`, `group_by_identity` — and nothing in their names said which to reach for. That is a problem for a person and a blocker for an agent, which cannot ask.
+
+The rule now, stated so it can be applied to a name invented in six months:
+
+> **Verbs are the question you ask. Nouns are the thing you get back. A verb is never named after one of its possible outcomes.**
+
+The second clause does the work. It rules out `match`, which can return `no_match`, and `link`, which can return `review`. It is why `pairwise` (the shape of the algorithm) and `crosswalk` (the artifact handed back) are now the older spellings.
+
+| verb | question |
+|---|---|
+| `compare(a, b)` | are these two the same thing? |
+| `reconcile(list_a, list_b)` | which of these are the same as those? |
+| `dedupe(records)` | which of these are the same thing? |
+| `find(query, within)` | which of these is this one? |
+
+`describe()` returns the catalogue — verbs, packs, comparator notes, the three outcomes — as JSON, because the caller that needs it most is an agent. `report(obj, format=...)` replaces eleven formatters that were never eleven jobs, only a matrix Python has no overloading to express.
+
+**`crosswalk` and the engine `reconcile` are one function now**, not two names for one question. Handed the same comparators they produced byte-identical output, `decision_id` included; `comparators` stays positional so the fifteen existing engine-style call sites keep working untouched.
+
+**276 call sites across 68 files were migrated** before the aliases began warning, in that order deliberately: a `DeprecationWarning` that fires hundreds of times in a passing test run is one people learn to filter, and then the next real deprecation goes unnoticed.
+
+The word `crosswalk` survives where it was always right. The wire format is still `arche.crosswalk_edge.v1` and stays that way, because those strings are hashed into every edge ever signed. **A crosswalk is the artifact; reconcile is the question.**
+
+### Changed — `CoReferenceDecision` is `Receipt`
+
+Named after the linguistics term for the relation it encodes rather than after the thing a caller is handed. `CoReferenceDecision` remains as a plain alias — not a subclass, so `isinstance` checks written against either spelling keep agreeing — and warns once, naming the replacement.
+
+### Added — `compare` answers the pairwise question for every entity, and takes the records you already have
+
+`pairwise(a, b, entity="organisation")` used to raise `NotImplementedError: person only` and tell the caller to build two single-item lists and call the batch verb. The two verbs also disagreed about input: one took `Reference`s and strings and rejected dicts, the other required dicts.
+
+The cause was structural rather than incidental — `coreference.py` carries a hardcoded person schema (`name`, `phone`, `national_id`, `email`, `address`, `dob`, `geo`) while the pack engine is configuration-driven. Rather than teach the person engine about packs, `compare` routes: `person` to Fellegi-Sunter with its jurisdiction priors, every other pack to the engine `reconcile` already uses, and returns one type either way.
+
+**The two scores are not comparable** — one sums log-odds, the other takes a weighted mean over a pack — so `pins` records which engine decided, and `describe()` says so in prose.
+
+Two decisions visible in the result. Blocking is **off** for an explicitly named pair: measured, `block="union"` gave `candidate_pairs=0` on a dissimilar pair (never compared) against `1` with blocking off (compared, scored low), and only the second answers the question asked. And a pair below the surfacing floor returns `different` with `score=0.0` rather than having thresholds bent to force an edge out — a receipt whose id addresses a different claim than the receipt makes is worse than no receipt.
+
+### Added — `dedupe`, and the cluster field that catches the failure
+
+`reconcile(records, records)` is not deduplication. Joined to itself a list yields *n* self-pairs — every record matching itself at 1.000 — plus a mirrored edge for every real pair; on three records that is five edges where one is true.
+
+Clusters are the transitive closure over `match` edges only; `review` never merges, or the third outcome would be decorative. Every cluster declares **`held_together_by`**:
+
+- `direct` — every member pair was compared and matched, a clique, nothing taken on trust;
+- `transitive` — A matched B and B matched C, but A and C were never judged the same.
+
+Every deduplication tool computes that closure. Doing it silently is how two different businesses become one record and nobody notices for a year. On a 555,681-row supplier ledger the field is what showed a threshold of 0.75 chaining unrelated operators in one city, and 0.90 reducing transitive clusters to 182 of 26,350 — 0.7% — while the review queue *shrank*.
+
+### Added — `find`, and refusing to guess between two equal candidates
+
+The lookup question: one record against a list. The shortcut people reach for is `reconcile([query], master)["matches"][0]` — take the top row — and it is a false merge waiting to happen. `reconcile` scores each pair independently, so 0.85 and 0.84 are two records the evidence **cannot separate**, not a winner and a runner-up.
+
+`find` returns `found` / `ambiguous` / `not_found`. `ambiguous` is not a match: it reports the tied candidates and the fields that would break the tie — fields on which the candidates *disagree* and which the query does not state. `not_found` is kept distinct because the two call for opposite actions: create a new entity, versus go and look.
+
+### Added — `fingerprint` and `FingerprintIndex`
+
+A fingerprint is a cheap precomputed key with one property: two records that could be the same share at least one. Sharing one is an invitation to compare and nothing more.
+
+Measured on a real 555,681-record supplier ledger: indexed in 7.8 seconds, cutting 154 billion candidate pairs to 59.5 million — a 2,593× reduction.
+
+`stats()` reports what the index **cannot** reach, because recall is capped by the keys rather than by the comparators, and a recall cost you cannot see is one nobody believes later. On that ledger, 38,991 records were reachable under no key: their name tokens were all over the cost bound, `t:tours` alone being carried by 84,297 rows — 15% of the file. Two thirds of the stranded records were load-test accounts, which the index quarantines for the same reason the matcher refuses to merge on them.
+
+### Added — `arche.doc.assess_residence`, proof of address as it is actually performed
+
+Four questions over a bundle of documents, and a verdict of `verified` / `insufficient` / `contradicted`.
+
+Only the first is what document extraction usually answers, and the other three each have a specific failure:
+
+**Which address on the document is the subject's?** Every document has at least two parties. On a real energy statement the *supplier's* registered-office postcode appeared four times and the customer's three — so both obvious heuristics, most-frequent and first-on-page, return the supplier's head office. Addresses are cue-anchored: `Supply address:` and `Bill to` are the document stating whose address follows, with name adjacency as the fallback and `unanchored` reported honestly when nothing tied a postcode to anybody.
+
+**Is the subject named, when the document names two?** A joint utility account reads `A & B`, and an exact-name comparison fails on precisely the document a bank most wants to see.
+
+**How old is it?** Recency is the point of the exercise. Dates are cue-anchored too, and `date_anchored` says whether a cue named the date or whether it was inferred.
+
+**How many independent sources is that?** Three invoices from one vendor are one source. Bank policies are written as *"two documents from different issuers"* for exactly this reason, and counting documents is how a bundle looks stronger than it is.
+
+A conflicting document contradicts the claim **only if it is newer** than the supporting evidence. An older document at a different address is a previous address — treating that as a contradiction fails every honest applicant who has moved house, which at the moment somebody opens an account is a large fraction of them.
+
+### Changed — `arche-core[pdf]` installs a permissively-licensed reader
+
+`pdf` was `pymupdf`, which is **AGPL-3.0**. It is now `pypdf`, which is
+**BSD-3-Clause**; the AGPL reader keeps a name that says what it is,
+`arche-core[pdf-mupdf]`.
+
+Both read a text layer well enough for what this library does with one, so the
+tie is broken on the licence a user acquires. Copyleft is a thing to choose on
+purpose, not to inherit from an extra called `pdf` — and
+`arche.doc.read_metadata` already ordered its readers this way, trying
+`pypdfium2` before `pymupdf`. This makes text extraction agree with metadata
+extraction.
+
+`_extract_pdf` prefers `pypdf` and falls back to `pymupdf`, so an existing
+`arche-core[pdf]` environment keeps working unchanged. It simply stops being
+the install that pulls copyleft. With neither present, the error names both
+extras and their licences rather than only the one that used to be there.
+
+### Added — `pyproject.toml` is now parsed by the suite
+
+Two tests read `pyproject.toml` the way a build backend does: one parses it
+with `tomllib`, which rejects duplicate keys outright, and the other asserts
+every extra is declared exactly once, because "your TOML is broken" is a worse
+error message than "`detect2` is declared more than once".
+
+Nothing in the suite read the file with a strict parser before this, so a
+malformed `[project.optional-dependencies]` could sit in a working tree
+through a green run and only fail at `uv build`. The guard is cheap and the
+failure it prevents is a wheel that cannot be produced.
+
+### Fixed — plain text no longer needs a 92-package document converter
+
+`parse()` sent every input to docling, so reading a `.txt` file cost the
+`arche-core[doc]` install — torch, transformers, scipy and the rest — to do
+the work of `read_text()`. A folder of plain text was unreadable on a base
+install, and `resolve_documents` raised rather than returning records.
+
+`.txt`, `.text`, `.md` and `.markdown` are now read directly. The list is
+deliberately short: these are formats whose bytes *are* the text, so a
+converter can only add a dependency and a chance to disagree. Anything with
+structure to recover — PDF, DOCX, HTML — is still docling's job and still
+raises `DoclingNotInstalledError` without the extra.
+
+Two details are load-bearing. The provenance records `parser: "text"`, not
+`parser: "docling"`, because a decision that does not name its parser cannot
+explain why it differs from the same decision made last year. And the path is
+unconditional rather than a fallback for when docling is missing: a parse that
+changed with the installed extras would make `parser` a description of the
+machine rather than of the extraction. A `.txt` that is not UTF-8 falls
+through to docling instead of guessing an encoding, because a silent mojibake
+rendering under a signature is worse than an error.
+
+This surfaced through the published example below, which ran here and failed
+on a runner. The suite now covers the difference directly.
+
+### Fixed — a published example imported the PDF reader it no longer had
+
+`reference/how-arche-works.md` authored two demo PDFs with `fitz` so that its
+`resolve_documents` example had something to read. Moving `arche-core[pdf]`
+from pymupdf to pypdf left that import unsatisfiable, and CI failed on it.
+
+It failed *only* in CI, which is the honest part: this machine still had
+pymupdf installed from the old extra, so the page ran locally throughout. A
+green local run said nothing about a clean install.
+
+Creating the fixture was scaffolding and never the subject — a page about
+resolving documents should not depend on a PDF *writer*. The example now writes
+plain text, which needs no dependency at all and produces the identical result
+(`[('same_entity', 1.0)]` either way), and says plainly that a folder of PDFs
+behaves the same and needs a reader.
+
+No other page imports a reader directly. Verified afterwards by running the
+whole documentation gate with `fitz` and `pymupdf` blocked at import, which is
+what CI sees.
+
+### Changed — the documentation teaches the new verbs
+
+42 tracked files carried 127 uses of the old spellings, and shipping public
+docs that teach names emitting `DeprecationWarning` would have been its own
+kind of wrong.
+
+The migration was not a rename, because `crosswalk` names two things and only
+one of them moved:
+
+| | | |
+|---|---|---|
+| the **verb** | `crosswalk(list_a, list_b)` | -> `reconcile(...)` |
+| the **artifact** | a crosswalk, crosswalk edges, crosswalk output | unchanged |
+| the **wire format** | `arche.crosswalk_edge.v1`, `crosswalk.v1` | unchanged, and must never move |
+
+So calls, dotted symbol paths and backticked function references were rewritten
+in two passes; artifact phrases, `crosswalk_report` and the wire strings
+were protected. A blind rename would have moved the wire format and
+invalidated every signed edge.
+
+One filename moved and one did not, on the same rule. `api/crosswalk.md`
+documents the **verb**, so it is now `api/reconcile.md`; the page had no
+public URL to break -- `api/` is excluded from the published site -- and its
+three inbound links were updated. `how-to/read-crosswalk-output.md`
+describes the **artifact**, so its name is still right even though its
+examples now call `reconcile()`.
+
+Six sentences needed repair rather than substitution, because the merge made
+them **false** rather than merely dated — "what `pairwise`, `crosswalk` and
+`reconcile` return" listed three things that are now two, and one section
+described a facade sitting over an engine that no longer exists separately.
+
+Checked afterwards rather than assumed: **209 of 212 python blocks parse**
+(the three that do not were already broken before the migration — a JSON
+illustration inside a `python` fence, an unclosed fence, and an indented
+fragment), and **all 101 documented arche symbols resolve**.
+
+### Added — `reference/optional-dependencies.md`, with the numbers measured
+
+Every extra, what it installs, what it costs and under what licence. The counts
+are resolved from scratch with `uv pip compile` rather than estimated, and the
+page carries the script so they can be re-checked when a dependency moves — a
+number in a document is a claim about the world, and this one goes stale on
+somebody else's release schedule.
+
+The base wheel is **20 packages**. Two figures in the table were surprising
+enough to be worth stating outright:
+
+- **`[doc]` adds 92 packages**, more than quintupling the install, because
+  `docling` pulls `torch` and `transformers`. Reading a scanned table properly
+  is a machine-learning problem; the point is knowing when you need one.
+- **`[detect2]` is lighter than `[detect]`** — 24 added against 31 — because
+  GLiNER 2.5 does not pull `onnxruntime`. The newer model is the smaller
+  install.
+
+Four extras pull `torch`: `detect`, `detect2`, `doc`, `doc-ocr`. Everything
+else — record resolution, blocking, addresses, proof of address, Splink —
+stays reachable without it.
+
+### Fixed — a missing document parser reported itself as an empty folder
+
+`resolve_documents` treats a bad file as non-fatal, which is right: one
+unreadable scan in a folder of twenty should not cost the other nineteen.
+
+Without `docling` installed, every document failed identically and the report
+came back with **zero records and N copies of one install error** — the
+message itself perfectly clear, and buried per-document under a summary that
+read `records: 0`. From outside, "the parser is not installed" was
+indistinguishable from "these documents contain nothing", which is the failure
+mode this library exists to refuse.
+
+`DoclingNotInstalledError` now propagates instead of being collected. No later
+document will fare better, so saying it once and loudly beats saying it *n*
+times quietly. Every other per-document failure is unchanged and still
+non-fatal, and a test holds both halves.
+
+### Changed — `assess_residence` takes a folder
+
+It required a mapping of label to already-extracted text. Callers arrive with a
+folder of PDFs, and making them wire a reader first is how a check that works
+ends up not being run.
+
+It now accepts a directory, a list of paths, or the mapping as before, reading
+through `arche.extract_text` so the PDF backend, its licence ordering and its
+error message are decided in one place. A file that cannot be read becomes an
+empty entry rather than an exception — a bundle is a pile of things somebody
+emailed you, and one corrupt attachment should cost that document's evidence
+rather than the whole assessment. It still appears in the per-document table,
+because dropping it silently would make the bundle look smaller than it is.
+
+### Added — GLiNER 2.5 as an extraction backend
+
+`extract(text, backend="gliner2")`, behind `arche-core[detect2]`. Its response shape differs from v1 in a way that is easy to get wrong: v1 returns a flat list of spans each carrying its own label, 2.5 returns spans grouped **by** label.
+
+The extra is `gliner2[local]`, and the marker is load-bearing. Bare `gliner2` installs an API client that posts text to a hosted service; declaring it without `[local]` would ship a code path that looks exactly like on-device extraction while sending customer text off the machine. A test asserts it. GLiNER stays an extra permanently — `torch` never enters the core wheel.
+
+### Fixed — `arche.extract` was callable or not depending on unrelated imports
+
+```python
+from arche import extract
+extract(text)                      # fine
+
+from arche.extract import Entity   # anywhere in the process
+extract(text)                      # TypeError: 'module' object is not callable
+```
+
+`arche/extract.py` is a module and `arche.extract` is a verb, and importing any name out of the submodule rebinds the package attribute from the lazily-resolved function to the module object. Two files in this repo's own test suite did that, which is how it was found: tests that passed alone failed in the suite.
+
+Fixed with the pattern `arche.detect` already uses and documents — the module itself is callable, so it stops mattering which of the two the name resolved to first.
+
+### Fixed — `_LAZY` did two jobs under a comment describing one
+
+Its comment called it "the v0.1 surface … removal targeted for v0.4", but most of what sat in it was current API placed there for deferred import speed. Thirteen names were in `_LAZY` **and** `__all__` simultaneously — recommended by autocomplete, described in the source as scheduled for deletion, and emitting no warning either way.
+
+Split: `_LAZY` defers an import and claims nothing about a name's future; `_DEPRECATED` names a replacement and warns once. A name in `_DEPRECATED` must not be in `__all__`, and a test enforces it.
+
+`_DEPRECATED` is deliberately small. `arche.match` is **not** listed: it resolves to `arche.resolve._matcher.match`, a different engine from `compare`, and telling people to swap before that is measured would be a guess. A test also checks every named replacement actually imports — advice that raises `ImportError` makes the next warning less trusted.
+
+### Added — the public surface is frozen by a test
+
+`__all__` is pinned as an exact set, so **adding** a name fails as loudly as removing one. It is what IDE autocomplete offers and what `from arche import *` binds, and a name arriving by accident is how a library ends up with eight ways to ask three questions. Changing the set is expected; doing it without noticing is not.
+
+### Added — external candidate providers
+
+- `resolve.reconcile(..., candidate_pairs=..., candidate_pins=...)` accepts
   candidates from an external retrieval system while arche retains comparison,
   decision and review policy. Retrieval route, score and pinned index
-  provenance are included in each resulting decision.
+  provenance are included in each resulting decision. (Carried from Unreleased;
+  the verb was `crosswalk` when it landed.)
 
 ## [0.6.0a1] — 2026-08-23
 

@@ -80,7 +80,7 @@ from arche.canonical import Reference
 a = Reference.from_record({"name": "Fatima Abdullahi", "national_id": "12345678901"})
 b = Reference.from_record({"name": "Fatuma Abdulahi",  "national_id": "12345678901"})
 
-decision = resolve.pairwise(a, b)
+decision = resolve.compare(a, b)
 print(decision.identity, decision.score)
 ```
 
@@ -94,7 +94,7 @@ Two spellings, one national ID, one person. Now the case that matters:
 a = Reference.from_record({"name": "Khalid Mehmood", "national_id": "AA1111111"})
 b = Reference.from_record({"name": "Khalid Mehmood", "national_id": "BB2222222"})
 
-decision = resolve.pairwise(a, b)
+decision = resolve.compare(a, b)
 print(decision.identity, round(decision.score, 4), decision.factors)
 ```
 
@@ -104,7 +104,7 @@ different 0.0843 {'name': 1.0, 'national_id': 0.0, 'name_tf': 1.0}
 
 **Identical names, and the answer is `different`.** The name comparator scores a perfect 1.0 and it does not matter, because the identifiers contradict each other. Two men named Khalid Mehmood on the same sanctions programme are not one man, and the evidence says so field by field.
 
-The third answer is the important one. `resolve.pairwise` returns `same_entity`, `different`, or **`review`**, and `review` is not an error state. A pair sharing an exact national ID can still come back `review` at a score of 0.9999, when the evidence is strong but not *distinctive*. A system whose only outputs are match and no-match will quietly pick one. This one stops and says a human is needed.
+The third answer is the important one. `resolve.compare` returns `same_entity`, `different`, or **`review`**, and `review` is not an error state. A pair sharing an exact national ID can still come back `review` at a score of 0.9999, when the evidence is strong but not *distinctive*. A system whose only outputs are match and no-match will quietly pick one. This one stops and says a human is needed.
 
 ### attest
 
@@ -131,7 +131,7 @@ from arche.sign import generate_keypair
 
 ISSUER_KEY = b"replace-with-a-real-32-byte-secret!"   # >= 32 bytes
 
-decision = resolve.pairwise(a, b, issuer_key=ISSUER_KEY)
+decision = resolve.compare(a, b, issuer_key=ISSUER_KEY)
 
 kp = generate_keypair()
 signed = attest(decision, kp, mode="jws")

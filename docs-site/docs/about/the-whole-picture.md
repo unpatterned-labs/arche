@@ -127,7 +127,7 @@ Two things came out of re-running it properly, and the second is why the row is 
 
 **And it costs recall, which the old claim denied outright.** "Recall held at 1.00" was wrong. Measured against same-person pairs differing only by a dropped middle name, the frequency-aware engine matches **48%**. The rest go to `review`. That is defensible, abstention is the design, but reporting a safety gain while asserting the cost was zero was not.
 
-One more thing surfaced that we had not looked for. `person` is missing from the pack-to-table map, so `crosswalk(entity="person")` never loads the shipped population table and self-calibrates over the two lists instead. We expected that to be a defect. On this benchmark it is not: the self-calibrated default scores **F1 0.637** against the population table's **0.577**, buying 7 points of recall for 1.7 points of precision. The gap is real and unresolved, and it is recorded here rather than quietly fixed.
+One more thing surfaced that we had not looked for. `person` is missing from the pack-to-table map, so `reconcile(entity="person")` never loads the shipped population table and self-calibrates over the two lists instead. We expected that to be a defect. On this benchmark it is not: the self-calibrated default scores **F1 0.637** against the population table's **0.577**, buying 7 points of recall for 1.7 points of precision. The gap is real and unresolved, and it is recorded here rather than quietly fixed.
 
 ---
 

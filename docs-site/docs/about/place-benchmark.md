@@ -42,7 +42,7 @@ with open("data/osm_kano.csv", encoding="utf-8-sig") as fh:
     osm = [r for r in csv.DictReader(fh) if r["name"].strip()]
 ```
 
-`crosswalk(osm, grid3, entity="place")` on that pair compares 1,180,255 possible pairs, blocks them down to 39,701 scored (a 96.6% reduction), and returns 907 edges in about 16 seconds on a laptop, offline.
+`reconcile(osm, grid3, entity="place")` on that pair compares 1,180,255 possible pairs, blocks them down to 39,701 scored (a 96.6% reduction), and returns 907 edges in about 16 seconds on a laptop, offline.
 
 ## The weak label, and what it cannot tell you
 
@@ -77,7 +77,7 @@ Runs offline on data already in the repository. Save as `sweep.py` in the repo r
 ```python
 import copy, csv
 
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 
 with open("data/GRID3_NGA_health_facilities_v2.csv", encoding="utf-8-sig") as fh:
     grid3 = [r for r in csv.DictReader(fh) if r["state"] == "Kano"]
@@ -105,7 +105,7 @@ def pack(veto_km):
 print(f"{'veto':>7} {'matches':>8} {'same':>6} {'diff':>6} {'prec':>7} "
       f"{'>10km':>6} {'max km':>7} {'review':>7}")
 for veto in (None, 50.0, 25.0, 10.0):
-    result = crosswalk(A, B, comparators=pack(veto))
+    result = reconcile(A, B, comparators=pack(veto))
     m = [e for e in result["matches"] if e["decision"] == "match"]
     same = sum(1 for e in m if lga_a[e["a_id"]] and lga_b[e["b_id"]]
                and lga_a[e["a_id"]] == lga_b[e["b_id"]])
@@ -217,9 +217,9 @@ review -> match  score=0.704  d=0.0 km   'Yankamaye Health Post' <> 'Yan Kamaye 
 review -> match  score=0.704  d=0.0 km   'Yankwada Health Post' <> 'Yan Kwada Health Post'
 ```
 
-!!! warning "Not wired into `crosswalk` in 0.3.0a1"
+!!! warning "Not wired into `reconcile` in 0.3.0a1"
 
-    `orthography=` is a parameter on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`, and it defaults to `None` on both. The `place` entity pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack. The 13-pair figure above was measured by binding `weighted_token_sim` to `orthography="hausa"` and re-running the crosswalk. Plumbing it through the comparator spec is outstanding work.
+    `orthography=` is a parameter on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`, and it defaults to `None` on both. The `place` entity pack does not set it, so `reconcile(..., entity="place")` does not use the Hausa pack. The 13-pair figure above was measured by binding `weighted_token_sim` to `orthography="hausa"` and re-running the crosswalk. Plumbing it through the comparator spec is outstanding work.
 
 ### What the pack deliberately does not do
 
@@ -243,7 +243,7 @@ So a median near zero with a large fraction at *exactly* zero means derivation. 
 ```python
 import csv, statistics
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 
 def independence_report(label, A, B):
@@ -252,7 +252,7 @@ def independence_report(label, A, B):
     A: the source under suspicion. B: the reference it claims to be
     independent of. Both are lists of {name, lat, lon}.
     """
-    result = crosswalk(A, B, entity="place")
+    result = reconcile(A, B, entity="place")
     matched = [m for m in result["matches"] if m["decision"] == "match"]
     d = sorted(m["evidence"].get("distance_km", 0.0) for m in matched)
     if not d:
@@ -400,7 +400,7 @@ def looks_derived(distances_km, exact_threshold=0.25, median_threshold=0.005):
 
 
 for label, A in [("OpenStreetMap", OSM), ("Overture", OVERTURE)]:
-    res = crosswalk(A, GRID3, entity="place")
+    res = reconcile(A, GRID3, entity="place")
     d = [m["evidence"]["distance_km"] for m in res["matches"]
          if m["decision"] == "match"]
     print(f"{label:16} {looks_derived(d)}")

@@ -99,10 +99,10 @@ def _cmd_compare(args: argparse.Namespace) -> int:
     if args.block == "none":
         kwargs["block"] = None
     if decl is not None:
-        out = resolve.crosswalk(records_a, records_b, decl=decl, **kwargs)
+        out = resolve.reconcile(records_a, records_b, decl=decl, **kwargs)
         entity = decl.pin()
     else:
-        out = resolve.crosswalk(records_a, records_b, entity=entity, **kwargs)
+        out = resolve.reconcile(records_a, records_b, entity=entity, **kwargs)
 
     matches = [m for m in out["matches"] if m["decision"] == "match"]
     review = [m for m in out["matches"] if m["decision"] != "match"]

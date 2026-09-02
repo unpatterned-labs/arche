@@ -102,13 +102,13 @@ class TestTheBehaviourItDescribes:
     """
 
     def test_the_same_name_is_review_as_a_place_and_match_as_an_organisation(self):
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
 
         a = [{"id": "1", "name": "General Hospital"}]
         b = [{"id": "2", "name": "General Hospital"}]
 
-        place = crosswalk(a, b, entity="place", id_field="id")["matches"][0]
-        org = crosswalk(a, b, entity="organisation", id_field="id")["matches"][0]
+        place = reconcile(a, b, entity="place", id_field="id")["matches"][0]
+        org = reconcile(a, b, entity="organisation", id_field="id")["matches"][0]
 
         assert place["decision"] == "review", place
         assert org["decision"] == "match", org
@@ -119,12 +119,12 @@ class TestTheBehaviourItDescribes:
     def test_the_pin_records_which_population_scored_it(self):
         """Two runs pinning different tables were scored against different
         vocabularies and are not expected to agree."""
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
 
         a = [{"id": "1", "name": "General Hospital"}]
         b = [{"id": "2", "name": "General Hospital"}]
 
-        assert crosswalk(a, b, entity="place",
+        assert reconcile(a, b, entity="place",
                          id_field="id")["pins"]["tf"].startswith("shipped:place")
-        assert crosswalk(a, b, entity="person",
+        assert reconcile(a, b, entity="person",
                          id_field="id")["pins"]["tf"].startswith("self-calibrated")

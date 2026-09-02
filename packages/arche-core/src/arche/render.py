@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 from arche.canonical import is_pii_attribute
 
 if TYPE_CHECKING:
-    from arche.resolve.coreference import CoReferenceDecision
+    from arche.resolve.coreference import Receipt
 
 # Map an attribute name to a tokenizer id_type (its canonicalisers are a fixed set).
 _TOKEN_ID_TYPE = {
@@ -121,7 +121,7 @@ def render(
 
 
 def resolved_view(
-    decision: CoReferenceDecision,
+    decision: Receipt,
     *,
     reveal: bool | list[str] = False,
     style: str = "label",
@@ -157,7 +157,7 @@ def resolved_view(
 
 
 def resolved_table(
-    decision: CoReferenceDecision,
+    decision: Receipt,
     *,
     reveal: bool | list[str] = False,
     style: str = "label",

@@ -96,7 +96,7 @@ SPLINK_COLUMNS = ("given_name", "surname", "date_of_birth", "soc_sec_id",
 def splink_record(r: dict) -> dict:
     """One Febrl row as the columns the Splink recipe compares.
 
-    `bench_backend_compare.py` feeds these to `crosswalk(backend="splink")`,
+    `bench_backend_compare.py` feeds these to `reconcile(backend="splink")`,
     which is the whole point of the adapter: the caller keeps their own schema
     instead of flattening it into arche's `name` and `address` blobs first.
     """
@@ -188,7 +188,7 @@ def run_splink(a_rows, b_rows, *, with_ssn: bool) -> tuple[list, dict]:
 
 # ----------------------------------------------------------------- arche ----
 def run_arche(a_rows, b_rows, *, with_ssn: bool) -> list:
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     def rec(r):
         addr = " ".join(x for x in (r.get("street_number"), r.get("address_1"),
@@ -203,7 +203,7 @@ def run_arche(a_rows, b_rows, *, with_ssn: bool) -> list:
             out["national_id"] = r.get("soc_sec_id", "")
         return out
 
-    res = crosswalk([rec(r) for r in a_rows], [rec(r) for r in b_rows],
+    res = reconcile([rec(r) for r in a_rows], [rec(r) for r in b_rows],
                     entity="person", id_field="id")
     return [(e["a_id"], e["b_id"]) for e in res["matches"]
             if e["decision"] == "match"]

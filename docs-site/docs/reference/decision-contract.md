@@ -4,7 +4,7 @@ Use the outcome label, evidence, and provenance together. A score alone is not a
 
 ## Two-list reconciliation
 
-`crosswalk()` compares two collections and returns **candidate edges only** in `result["matches"]`.
+`reconcile()` compares two collections and returns **candidate edges only** in `result["matches"]`.
 
 | Field | Meaning |
 | --- | --- |
@@ -16,7 +16,7 @@ Every returned edge includes record IDs, `score`, `evidence`, `decision_id`, and
 
 ## Direct person decisions
 
-`pairwise()` makes a direct co-reference claim for two person references. It has two separate fields:
+`compare()` makes a direct co-reference claim for two person references. It has two separate fields:
 
 | Identity | Recommended action | Meaning |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Every returned edge includes record IDs, `score`, `evidence`, `decision_id`, and
 | `review` | `no_op` | Evidence is insufficient for an identity claim. Present it to an authorised reviewer if the use case requires a decision. |
 | `different` | `no_op` | Evidence supports keeping the references separate. |
 
-Do not convert `crosswalk()` labels to `pairwise()` identities, or the reverse. They answer different questions and have different output shapes.
+Do not convert `reconcile()` labels to `compare()` identities, or the reverse. They answer different questions and have different output shapes.
 
 ## The engine pin, and when it bumps
 
@@ -90,7 +90,7 @@ So a bump also requires: a changelog entry describing what decisions move, repub
 
 ### A known inconsistency
 
-`crosswalk(backend="splink")` does not pin `engine: crosswalk.v1`. It pins the Splink model, corpus, blocking and library versions instead, because a trained scorer is a function of the data it saw and naming a version would claim less than the truth.
+`reconcile(backend="splink")` does not pin `engine: crosswalk.v1`. It pins the Splink model, corpus, blocking and library versions instead, because a trained scorer is a function of the data it saw and naming a version would claim less than the truth.
 
 The result is two engines with two provenance vocabularies, and no single field a reader can compare across them. That is a real gap rather than a design; it is recorded here so it is not discovered as a surprise.
 

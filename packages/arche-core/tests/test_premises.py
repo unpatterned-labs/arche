@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from arche.resolve import COMPARATOR_NOTES, ENTITY_PACKS, crosswalk
+from arche.resolve import COMPARATOR_NOTES, ENTITY_PACKS, reconcile
 from arche.resolve._premises import compare_premises, premises_designator
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ _LEFT = [
 
 
 def _decide(record):
-    matches = crosswalk(_LEFT, [record], entity="organisation", id_field="id")["matches"]
+    matches = reconcile(_LEFT, [record], entity="organisation", id_field="id")["matches"]
     return matches[0]["decision"] if matches else None
 
 
@@ -216,7 +216,7 @@ def test_refutation_demotes_and_never_rejects():
     # The justification for refuting on a field a company may legitimately
     # differ on: the worst outcome is a human glance, never a dropped pair. A
     # registered office and an operational site reach a reviewer, not the bin.
-    matches = crosswalk(
+    matches = reconcile(
         _LEFT,
         [
             {

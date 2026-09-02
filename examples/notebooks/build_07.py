@@ -77,7 +77,7 @@ while not (REPO / "packages" / "arche-core").exists() and REPO != REPO.parent:
     REPO = REPO.parent
 sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
-from arche.resolve import crosswalk, ENTITY_PACKS
+from arche.resolve import reconcile, ENTITY_PACKS
 from arche.resolve._matcher import haversine_km, split_place_name
 
 DATA = REPO / "data" / "er_bench" / "places"
@@ -262,7 +262,7 @@ def evaluate(_unused, comparators):
     per = {}
     for s1, s2 in combinations(srcs, 2):
         gt = {k for k in truth if {recs[k[0]]["src"], recs[k[1]]["src"]} == {s1, s2}}
-        res = crosswalk(rows(s1), rows(s2),
+        res = reconcile(rows(s1), rows(s2),
                         comparators=comparators, tf="place", id_field="id")
         pred = {(min(e["a_id"], e["b_id"]), max(e["a_id"], e["b_id"])): e
                 for e in res["matches"]}

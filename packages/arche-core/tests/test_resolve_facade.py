@@ -3,11 +3,11 @@
 
 """Step 3 (engine reconciliation): the resolve facade + coref_from_pipeline.
 
-* resolve.pairwise dispatches on shape (Results / References / strings).
+* resolve.compare dispatches on shape (Results / References / strings).
 * coref_from_pipeline: jurisdiction contract (agree -> use; disagree -> require
   explicit), provenance (source jurisdictions + doc hashes) inside the hashed
   pins, restricted values flowing through.
-* resolve.crosswalk: entity packs as canned comparator specs; self-calibrated tf.
+* resolve.reconcile: entity packs as canned comparator specs; self-calibrated tf.
 """
 
 import pytest
@@ -67,21 +67,46 @@ def test_provenance_is_inside_the_decision_hash():
 def test_pairwise_dispatches_on_shape():
     a = _result("Fatima Abdullahi, NIN 12345678901.")
     b = _result("Fatima Abdulahi, NIN 12345678901.")
-    d = resolve.pairwise(a, b, issuer_key=_KEY)               # Results
+    d = resolve.compare(a, b, issuer_key=_KEY)               # Results
     assert d.identity == "same_entity"
 
     ra = Reference.from_record({"full_name": "Ngozi Okonkwo", "national_id": "N1"})
     rb = Reference.from_record({"full_name": "Ngozi Okonkwo", "national_id": "N1"})
-    d2 = resolve.pairwise(ra, rb, jurisdiction="NG", issuer_key=_KEY)  # References
+    d2 = resolve.compare(ra, rb, jurisdiction="NG", issuer_key=_KEY)  # References
     assert d2.identity == "same_entity"
 
-    with pytest.raises(TypeError, match="pairwise expects"):
-        resolve.pairwise(ra, "a string")                      # mixed shapes
+    # Matches on the shapes rather than the function name: `pairwise`
+    # forwards to `compare`, and either spelling must refuse a mixed pair.
+    with pytest.raises(TypeError, match="expects two dicts"):
+        resolve.compare(ra, "a string")                      # mixed shapes
 
 
-def test_pairwise_rejects_unknown_entity():
-    with pytest.raises(NotImplementedError, match="person only"):
-        resolve.pairwise("a", "b", entity="place")
+def test_compare_covers_every_shipped_pack():
+    # This assertion used to read `raises(NotImplementedError, match="person
+    # only")`. That was the honest guard for a facade that answered the
+    # pairwise question for people and told everyone else to go and build a
+    # two-item list. The pack engine answers it for every pack, so the guard
+    # now records the capability instead of the restriction.
+    a = {"name": "Karfi Primary Health Centre", "lat": 11.6, "lon": 8.4}
+    b = {"name": "Karfi PHC", "lat": 11.6005, "lon": 8.4005}
+    decision = resolve.compare(a, b, entity="place")
+    assert decision.identity in {"same_entity", "review", "different"}
+    assert decision.pins["entity_pack"] == "place"
+
+
+def test_compare_refuses_a_pack_it_does_not_ship():
+    # Loudly, and by naming what it does have. A typo'd pack silently falling
+    # back to `person` would score a clinic against a person schema.
+    with pytest.raises(ValueError, match="no entity pack named"):
+        resolve.compare({"name": "x"}, {"name": "y"}, entity="hospitl")
+
+
+def test_compare_refuses_strings_for_a_pack_entity():
+    # The pack engine scores declared fields. Handed two strings it has no
+    # fields to score, and guessing which one is the name is how a matcher
+    # starts quietly inventing schema.
+    with pytest.raises(TypeError, match="expects two dict records"):
+        resolve.compare("a", "b", entity="place")
 
 
 # ── the facade: crosswalk + entity packs ─────────────────────────────────────
@@ -97,14 +122,14 @@ _FACILITIES_B = [
 
 
 def test_crosswalk_place_pack_links_facilities():
-    out = resolve.crosswalk(_FACILITIES_A, _FACILITIES_B, entity="place")
+    out = resolve.reconcile(_FACILITIES_A, _FACILITIES_B, entity="place")
     pairs = {(m["a_id"], m["b_id"]): m for m in out["matches"]}
     assert ("A1", "B1") in pairs          # Karfi PHC surfaced
     assert out["blocking"]["candidate_pairs"] <= 4
 
 
 def test_crosswalk_contract_returns_candidate_edges_not_non_matches():
-    out = resolve.crosswalk(_FACILITIES_A, _FACILITIES_B, entity="place", block=None)
+    out = resolve.reconcile(_FACILITIES_A, _FACILITIES_B, entity="place", block=None)
     assert {edge["decision"] for edge in out["matches"]} <= {"match", "review"}
     assert all({"a_id", "b_id", "score", "evidence", "decision_id"} <= edge.keys()
                for edge in out["matches"])
@@ -113,25 +138,25 @@ def test_crosswalk_contract_returns_candidate_edges_not_non_matches():
 
 def test_crosswalk_requires_pack_or_comparators():
     with pytest.raises(ValueError, match="entity="):
-        resolve.crosswalk(_FACILITIES_A, _FACILITIES_B)
+        resolve.reconcile(_FACILITIES_A, _FACILITIES_B)
     with pytest.raises(ValueError, match="unknown entity pack"):
-        resolve.crosswalk(_FACILITIES_A, _FACILITIES_B, entity="starship")
+        resolve.reconcile(_FACILITIES_A, _FACILITIES_B, entity="starship")
 
 
 def test_crosswalk_person_pack_runs():
     people_a = [{"id": "P1", "name": "Ngozi Okonkwo", "phone": "08031234567"}]
     people_b = [{"id": "P2", "name": "Ngozi Okonkwo", "phone": "0803 123 4567"}]
-    out = resolve.crosswalk(people_a, people_b, entity="person", block=None)
+    out = resolve.reconcile(people_a, people_b, entity="person", block=None)
     assert out["matches"] and out["matches"][0]["decision"] in ("match", "review")
 
 
 def test_pairwise_contract_keeps_identity_and_action_separate():
-    same = resolve.pairwise(
+    same = resolve.compare(
         Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
         Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
         jurisdiction="NG",
     )
-    different = resolve.pairwise(
+    different = resolve.compare(
         Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "12345678901"}),
         Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "10987654321"}),
         jurisdiction="NG",
@@ -141,7 +166,7 @@ def test_pairwise_contract_keeps_identity_and_action_separate():
 
 
 def test_explicit_comparators_override_pack():
-    out = resolve.crosswalk(
+    out = resolve.reconcile(
         _FACILITIES_A, _FACILITIES_B,
         comparators=[{"field": "name", "kind": "name", "weight": 1.0}],
         block=None,

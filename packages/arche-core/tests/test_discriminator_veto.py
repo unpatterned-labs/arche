@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import pytest
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 _NAME = "Zephyrine Quillfeather"
 
@@ -47,7 +47,7 @@ def _comparators(*, refutes=None, weight=0.5):
 
 
 def _edges(B, **kw):
-    return crosswalk(_A, B, comparators=_comparators(**kw))["matches"]
+    return reconcile(_A, B, comparators=_comparators(**kw))["matches"]
 
 
 def _decisions(B, **kw):
@@ -123,7 +123,7 @@ class TestAbsentEvidenceRefutesNothing:
         assert _decisions(_NO_YEAR, refutes=0.99) == ["match"]
 
     def test_missing_on_both_sides_does_not_refute(self):
-        res = crosswalk(
+        res = reconcile(
             [{"name": _NAME}], _NO_YEAR, comparators=_comparators(refutes=0.99),
         )
         assert [e["decision"] for e in res["matches"]] == ["match"]
@@ -148,11 +148,11 @@ class TestPureDiscriminator:
         """
         partial_a = [{"name": "Zephyrine Quillfeather", "year": "1994"}]
         partial_b = [{"name": "Zephyrine Quillfeathers", "year": "1994"}]
-        with_year = crosswalk(
+        with_year = reconcile(
             partial_a, partial_b,
             comparators=_comparators(refutes=0.99, weight=0.0),
         )["matches"]
-        name_only = crosswalk(
+        name_only = reconcile(
             partial_a, partial_b, comparators=[_NAME_SPEC],
         )["matches"]
         assert with_year[0]["score"] == name_only[0]["score"]
@@ -178,19 +178,19 @@ class TestValidation:
     @pytest.mark.parametrize("bad", [0.0, -0.5, 1.5, 2.0])
     def test_out_of_range_raises(self, bad):
         with pytest.raises(ValueError, match="refutes_below"):
-            crosswalk(_A, _SAME_YEAR, comparators=_comparators(refutes=bad))
+            reconcile(_A, _SAME_YEAR, comparators=_comparators(refutes=bad))
 
     def test_non_numeric_raises(self):
         with pytest.raises(ValueError, match="must be a number"):
-            crosswalk(_A, _SAME_YEAR, comparators=_comparators(refutes="high"))
+            reconcile(_A, _SAME_YEAR, comparators=_comparators(refutes="high"))
 
     def test_the_error_names_the_offending_comparator(self):
         with pytest.raises(ValueError, match="year"):
-            crosswalk(_A, _SAME_YEAR, comparators=_comparators(refutes=9.0))
+            reconcile(_A, _SAME_YEAR, comparators=_comparators(refutes=9.0))
 
     @pytest.mark.parametrize("ok", [0.01, 0.5, 0.99, 1.0])
     def test_valid_range_is_accepted(self, ok):
-        crosswalk(_A, _SAME_YEAR, comparators=_comparators(refutes=ok))
+        reconcile(_A, _SAME_YEAR, comparators=_comparators(refutes=ok))
 
 
 class TestGeneralisation:
@@ -205,7 +205,7 @@ class TestGeneralisation:
         ]
         a = [{"name": _NAME, "publisher": "Troubador"}]
         b = [{"name": _NAME, "publisher": "Penguin Random House"}]
-        res = crosswalk(a, b, comparators=comparators)
+        res = reconcile(a, b, comparators=comparators)
         assert [e["decision"] for e in res["matches"]] == ["review"]
 
     def test_packs_with_published_numbers_do_not_declare_it(self):

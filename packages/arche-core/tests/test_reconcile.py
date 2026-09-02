@@ -205,12 +205,35 @@ def test_tftoken_exact_rare_overlap_matches():
     assert out["matches"][0]["distinctive_max"] >= 0.75
 
 
-def test_tftoken_requires_a_table():
+def test_tftoken_requires_a_table_in_the_engine():
+    # Pins the ENGINE's contract, and now says so. `arche.resolve.reconcile`
+    # used to be this function; it is now the facade above it, which CAN answer
+    # this case by self-calibrating a table over the two lists. The engine
+    # cannot -- it has no such machinery -- so it refuses, and that refusal is
+    # what this test is for. Reaching it through the module path is the
+    # difference, and stating it here keeps the two contracts distinguishable.
+    from arche.resolve.reconcile import reconcile as engine
+
     a = [{"id": "A", "name": "Karfi PHC"}]
     b = [{"id": "B", "name": "Karfi PHC"}]
     comps = [{"field": "name", "kind": "tftoken", "weight": 1.0}]
     with pytest.raises(ValueError, match="tftoken"):
-        reconcile(a, b, comps, block=None)  # tf omitted
+        engine(a, b, comps, block=None)  # tf omitted
+
+
+def test_the_facade_self_calibrates_and_says_so_in_the_pin():
+    # The other half of the contract. Self-calibrating over the two lists is
+    # the designed path for a corpus-specific vocabulary -- a product catalogue
+    # has no population table to ship -- so the facade does it rather than
+    # refusing. What makes that safe is not a guard but disclosure: the table
+    # arche chose is named in the pins, and the pins are hashed into every
+    # edge's `decision_id`. A reader of the receipt can see which table scored
+    # it, and a different table yields a different address.
+    a = [{"id": "A", "name": "Karfi PHC"}]
+    b = [{"id": "B", "name": "Karfi PHC"}]
+    comps = [{"field": "name", "kind": "tftoken", "weight": 1.0}]
+    pins = reconcile(a, b, comps, block=None)["pins"]
+    assert pins["tf"].startswith("self-calibrated@sha256:")
 
 
 # ── H3 blocking ──────────────────────────────────────────────────────────────

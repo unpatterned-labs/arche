@@ -17,10 +17,10 @@ For the deeper substrate APIs, import from the substrate package directly; hand-
 | `Result` | Typed return from `Pipeline.process(...)` | pipeline.md |
 | `Detection` | A single detected PII span with category, span, confidence | pipeline.md |
 | [`detect`](detect.md) | The Level-2 workhorse functions | per-page |
-| [`resolve.pairwise` / `resolve.crosswalk` / `sign_edges`](crosswalk.md) | Entity resolution: signable pairwise decisions + list-scale crosswalks | crosswalk.md |
+| [`resolve.compare` / `resolve.reconcile` / `sign_edges`](reconcile.md) | Entity resolution: signable per-pair decisions + list-scale crosswalks | reconcile.md |
 | [`extract_places` / `grade_places` / `PlaceMention`](addr.md) | Spatial role labeling + the shipped referee | addr.md |
 
-Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is removed; `arche.resolve` is the facade package documented on crosswalk.md.
+Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is removed; `arche.resolve` is the facade package documented on reconcile.md.
 
 ---
 
@@ -107,11 +107,11 @@ docling-backed PDF/DOCX/PPTX/XLSX/HTML parser. `Pipeline.process_file(path)` del
 ### Entity resolution: `arche.resolve`
 
 ```python
-from arche.resolve import pairwise, crosswalk, ENTITY_PACKS
+from arche.resolve import compare, reconcile, ENTITY_PACKS
 from arche.resolve.reconcile import reconcile, sign_edges
 ```
 
-The documented front door has two entry points by use-shape: `pairwise(a, b)`, "are these two the same?" (Fellegi–Sunter + gate, signable `CoReferenceDecision`), and `crosswalk(list_a, list_b)`, link two lists at scale (union blocking + gate + evidence, per-edge `decision_id`, `sign_edges`). Full reference: crosswalk.md.
+The documented front door has two entry points by use-shape: `compare(a, b)`, "are these two the same?" (Fellegi–Sunter + gate, signable `Receipt`), and `reconcile(list_a, list_b)`, link two lists at scale (union blocking + gate + evidence, per-edge `decision_id`, `sign_edges`). Full reference: reconcile.md.
 
 The legacy classical surface (`resolve_entities`, `resolve_identity_records`, `ResolvedEntity`, fuzzy Fellegi–Sunter with African-name equivalence, optional Splink backend via `arche-core[resolve]`) remains importable; see the [entity resolution tutorial](../tutorials/entity_resolution.md).
 
@@ -122,7 +122,7 @@ from arche.declare import Declaration, DeclarationError
 
 decl = Declaration.from_yaml("fisheries.decl.yaml")
 decl.pin()            # "name@version:sha256:<16 hex>" - enters every decision_id
-decl.comparators()    # the generated entity pack for crosswalk(decl=...)
+decl.comparators()    # the generated entity pack for reconcile(decl=...)
 decl.json_schema()    # the extraction contract for any LLM (additionalProperties: false)
 decl.tool_def("anthropic")   # or "openai" / "json-schema"
 ```

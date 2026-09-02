@@ -97,7 +97,7 @@ Extracted references flow into the same gated path as everything else. Pass `ext
 ```python
 from arche import resolve
 
-decision = resolve.pairwise(
+decision = resolve.compare(
     ex_a.reference, ex_b.reference,
     issuer_key=KEY, decl=decl,
     extra_pins=ex_a.pins(decl),

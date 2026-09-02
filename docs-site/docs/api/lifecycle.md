@@ -12,9 +12,9 @@ The four verbs are **detect · resolve · protect · attest**. An earlier versio
 |---|---|
 | Find government IDs, phones, names, addresses in African text? | Yes, 26 ID patterns across 15 countries, plus cross-cutting detectors |
 | Attach the governing statute section to each finding? | Yes, six packs, every category cited |
-| Decide whether two records are the same person? | Yes, `resolve.pairwise`, signable, with abstention |
-| Link two lists of thousands of records? | Yes, `resolve.crosswalk`, for persons, places and artists |
-| Decide whether two records are the same *place*? | List crosswalk only. `pairwise(entity="place")` raises |
+| Decide whether two records are the same person? | Yes, `resolve.compare`, signable, with abstention |
+| Link two lists of thousands of records? | Yes, `resolve.reconcile`, for persons, places and artists |
+| Decide whether two records are the same *place*? | List crosswalk only. `compare(entity="place")` raises |
 | Refuse to send personal data to a third party? | Yes, `guard.EgressGuard`, fail-closed |
 | Sign a decision so a stranger can check it offline? | Yes. Ed25519 / JWS / SD-JWT-VC |
 | Prove the audit log has not had rows removed? | **No**, append-only by convention only |
@@ -96,12 +96,12 @@ out : '[ADDRESS]o Road, [ADDRESS].'
 
 Two engines, deliberately not merged, because they answer different questions and combine evidence under different laws.
 
-| | `resolve.pairwise` | `resolve.crosswalk` |
+| | `resolve.compare` | `resolve.reconcile` |
 |---|---|---|
 | Question | Are these two the same? | Link two lists at scale |
 | Input | Two `canonical.Reference` objects | Two lists of records |
 | Combination law | Fellegi–Sunter log-odds | Weighted arithmetic mean |
-| Output | A signable `CoReferenceDecision` | Edges, each with evidence and a `decision_id` |
+| Output | A signable `Receipt` | Edges, each with evidence and a `decision_id` |
 | Entities | Person only | `person`, `place`, `artist` |
 | Signing | `attest(decision, key)` | `resolve.reconcile.sign_edges` |
 
@@ -109,14 +109,14 @@ The scores from the two engines are not comparable, and that is intentional rath
 
 ### Abstention, and the three conditions
 
-`pairwise` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999. The worked output is on the walkthrough page. A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
+`compare` returns `same_entity`, `review`, or `different` on the `identity` axis, and a separate recommended `action`. `same_entity` requires **all three** of: the score at or above the jurisdiction's match threshold (0.85 by default); the distinctive-signal gate cleared by a shared exact identifier or a genuinely rare shared name token; and at least two fields that actually agreed. Two records sharing nothing but an exact national ID satisfy the first two and fail the third, landing in `review` at a score of 0.9999. The worked output is on the walkthrough page. A conflicting identifier is decisive in the other direction and returns `different` regardless of how well the names match.
 
 ### The geographic veto
 
 On the `place` pack, distance is a constraint rather than a weighted signal: `veto_km: 10.0`. Before v0.3.0a1 geography was scored at weight 1.0 against name and token-frequency's combined 4.0, it could be outvoted, and it was. Two Kano facilities sharing a common Hausa name merged 143 km apart with the geo comparator itself scoring 0.000. Three properties of the replacement are deliberate and visible in one run:
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 A = [{"name": "Kauyen Adam Health Post", "lat": "12.0000", "lon": "8.5000"}]
 B = [
@@ -125,7 +125,7 @@ B = [
     {"name": "Kauyen Adam Health Post", "lat": "", "lon": ""},               # no coords
 ]
 
-for e in crosswalk(A, B, entity="place")["matches"]:
+for e in reconcile(A, B, entity="place")["matches"]:
     print(f"b_id={e['b_id']}  {e['decision']:8} score={round(e['score'], 3)}  {e['evidence']}")
 ```
 
@@ -143,8 +143,8 @@ The distant pair is demoted to `review` and carries `geo_conflict_km` as the rea
 
 ### What resolve does not do
 
-- **`pairwise(entity="place")` raises**. `NotImplementedError: pairwise entity='place' is not available yet; person only. Use crosswalk(...) for place lists.` The same holds for products: there is no product pack.
-- **`orthography=` is not wired into `crosswalk`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`, and defaults to `None` on both. The place pack does not set it, so `crosswalk(..., entity="place")` does not use the Hausa pack, and the measured 13-pair gain on the Kano benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding.
+- **`compare(entity="place")` raises**. `NotImplementedError: pairwise entity='place' is not available yet; person only. Use reconcile(...) for place lists.` The same holds for products: there is no product pack.
+- **`orthography=` is not wired into `reconcile`.** It is opt-in on `shared_name_distinctiveness` and `TokenFrequencyTable.weighted_token_sim`, and defaults to `None` on both. The place pack does not set it, so `reconcile(..., entity="place")` does not use the Hausa pack, and the measured 13-pair gain on the Kano benchmark came from binding the comparator explicitly. Plumbing it through the comparator spec is outstanding.
 - **A declared `id_family` does not mint an `entity_id`.** `Declaration.binding_fields()` exists, but `ids.identity_binding_key` is not declaration-aware and matches arche's own fixed identifier names.
 - **No collective or graph-based resolution.** Clustering under transitive closure is the open remainder of the inference half and is gated post-beta, not implied by anything shipped.
 

@@ -68,7 +68,7 @@ def artist_aliases() -> dict[str, tuple[str, ...]]:
 
     Prefers the full ``datasets/artist_equivalences/`` files of a repo
     checkout; falls back to the bundled copy in the wheel. Use it to
-    alias-expand a catalog before :func:`arche.resolve.crosswalk`, so legal
+    alias-expand a catalog before :func:`arche.resolve.reconcile`, so legal
     names and catalog variants *count as agreement*::
 
         rows = [{"id": f"{aid}#{i}", "artist": aid, "name": form}

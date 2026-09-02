@@ -72,13 +72,13 @@ The three arms differ only in who does the scoring.
 
 **Splink** uses the recipe from `bench_splink_febrl.py`, which follows Splink's own published Febrl example: Fellegi-Sunter with EM-trained m and u parameters and term-frequency adjustments.
 
-**arche + Splink** calls `crosswalk(backend="splink")` and hands it *the same settings object* the second arm uses. That matters: a second copy of the configuration could drift until the two arms stopped being comparable, so they import the same function.
+**arche + Splink** calls `reconcile(backend="splink")` and hands it *the same settings object* the second arm uses. That matters: a second copy of the configuration could drift until the two arms stopped being comparable, so they import the same function.
 
 Note the two schemas. arche's pack wants one `name` field and one `address` field; the Splink recipe wants `given_name` and `surname` as separate columns with their own m and u. The adapter passes the caller's own schema through, which is the point of it.
 """)
 
 code('''
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 def arche_record(r):
     """Febrl row in the shape the shipped `person` pack expects."""
@@ -141,7 +141,7 @@ md("""
 """)
 
 code('''
-res_arche = crosswalk(arche_a, arche_b, entity="person", id_field="id")
+res_arche = reconcile(arche_a, arche_b, entity="person", id_field="id")
 results.append(score(
     ((e["a_id"], e["b_id"], e["score"]) for e in res_arche["matches"]
      if e["decision"] == "match"),
@@ -188,7 +188,7 @@ md("""
 """)
 
 code('''
-res_backend = crosswalk(
+res_backend = reconcile(
     splink_a, splink_b,
     id_field="id",
     backend="splink",

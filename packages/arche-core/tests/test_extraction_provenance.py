@@ -27,7 +27,7 @@ import pytest
 
 from arche.canonical import Reference
 from arche.doc.parse import _extraction_provenance
-from arche.resolve import pairwise
+from arche.resolve import compare
 
 _BENCH = Path(__file__).resolve().parents[3] / "data" / "doc_bench"
 
@@ -104,7 +104,7 @@ class TestItReachesTheDecision:
     def _decide(extraction):
         a = Reference.from_record({"name": "Amara Nwosu", "email": "a@example.com"})
         b = Reference.from_record({"name": "Amara Nwosu", "email": "a@example.com"})
-        return pairwise(a, b, entity="person",
+        return compare(a, b, entity="person",
                         extra_pins={"extraction": extraction} if extraction else None)
 
     def test_a_different_parser_version_changes_the_decision_id(self):

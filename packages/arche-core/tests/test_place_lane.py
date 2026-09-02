@@ -13,7 +13,7 @@ from __future__ import annotations
 import math
 
 import pytest
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._block import (
     blocking_recall,
     candidate_pairs,
@@ -28,7 +28,11 @@ from arche.resolve._matcher import (
     compare_place_names,
     haversine_km,
 )
-from arche.resolve.reconcile import reconcile, sign_edges
+# Only `sign_edges` comes from the module: `reconcile` is imported above
+# from the facade, and re-importing the engine under the same name here
+# silently shadowed it -- the calls below pass `entity=`, which only the
+# facade accepts.
+from arche.resolve.reconcile import sign_edges
 
 
 def _offset_km(lat: float, km: float) -> float:
@@ -201,7 +205,7 @@ class TestPlacePack:
         a = [{"id": "a", "name": "Karfi PHC", "lat": 11.60, "lon": 8.55}]
         b = [{"id": "b", "name": "Karfi PHC",
               "lat": 11.60 + _offset_km(11.60, 3.0), "lon": 8.55}]
-        result = crosswalk(a, b, entity="place")
+        result = reconcile(a, b, entity="place")
         edge = result["matches"][0]
         assert edge["evidence"]["distance_km"] == pytest.approx(3.0, abs=0.1)
 
@@ -210,7 +214,7 @@ class TestPlacePack:
         # names equivalent only under the PERSON lexicon. Must not be "match".
         a = [{"id": "a", "name": "Fatima Hospital", "lat": 12.0, "lon": 8.5}]
         b = [{"id": "b", "name": "Fatouma Hospital", "lat": 12.0, "lon": 8.5}]
-        result = crosswalk(a, b, entity="place")
+        result = reconcile(a, b, entity="place")
         for m in result["matches"]:
             assert m["decision"] != "match"
 
@@ -232,7 +236,7 @@ class TestPlacePack:
             {"id": "SVY-02", "name": "Fatouma Hospital",
              "lat": 12.00, "lon": 8.50},
         ]
-        result = crosswalk(registry, survey, entity="place",
+        result = reconcile(registry, survey, entity="place",
                            truth_pairs=[("REG-01", "SVY-01")])
         decisions = {(m["a_id"], m["b_id"]): m for m in result["matches"]}
         assert decisions[("REG-01", "SVY-01")]["decision"] == "review"
@@ -253,7 +257,7 @@ class TestEdgeAttestation:
               "lat": 11.60, "lon": 8.55}]
         b = [{"id": "b", "name": "Karfi Primary Health Center",
               "lat": 11.601, "lon": 8.55}]
-        return crosswalk(a, b, entity="place", **kwargs)
+        return reconcile(a, b, entity="place", **kwargs)
 
     def test_every_edge_carries_decision_id(self):
         result = self._result()
@@ -288,12 +292,12 @@ class TestEdgeAttestation:
         # evidence of one facility, however identical the strings. The
         # distinctive residual is generic on both sides, so the pair must land
         # in `review`; an identically-shaped pair with a rare residual merges.
-        common = crosswalk(
+        common = reconcile(
             [{"name": "General Hospital", "lat": 12.00, "lon": 8.50}],
             [{"name": "General Hospital", "lat": 12.04, "lon": 8.50}],
             entity="place",
         )["matches"]
-        distinctive = crosswalk(
+        distinctive = reconcile(
             [{"name": "Gyaranya Health Post", "lat": 12.00, "lon": 8.50}],
             [{"name": "Gyaranya Health Post", "lat": 12.04, "lon": 8.50}],
             entity="place",
@@ -313,7 +317,7 @@ class TestEdgeAttestation:
         names = ["General Hospital", "Karfi Health Post", "Tsalle Health Post"]
         tf = TokenFrequencyTable.from_corpus(names)
         assert tf.population_scale is False
-        edges = crosswalk(
+        edges = reconcile(
             [{"name": "General Hospital", "lat": 12.00, "lon": 8.50}],
             [{"name": "General Hospital", "lat": 12.04, "lon": 8.50}],
             entity="place", tf=tf,
@@ -350,7 +354,7 @@ class TestEdgeAttestation:
         })
         a = [{"id": "a", "name": "Karfi Primary Health Centre"}]
         b = [{"id": "b", "name": "Karfi PHC"}]
-        result = crosswalk(a, b, decl=decl, tf="default")
+        result = reconcile(a, b, decl=decl, tf="default")
         assert result["pins"]["declaration"] == decl.pin()
 
 

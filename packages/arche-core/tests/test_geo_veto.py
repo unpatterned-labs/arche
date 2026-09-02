@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import copy
 
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 
 
 def _pack(veto_km):
@@ -36,7 +36,7 @@ _NEAR_B = [{"name": "Karfi Health Post", "lat": "11.62", "lon": "8.49"}]
 
 
 def _decisions(A, B, veto_km):
-    res = crosswalk(A, B, comparators=_pack(veto_km))
+    res = reconcile(A, B, comparators=_pack(veto_km))
     return [m["decision"] for m in res["matches"]]
 
 
@@ -65,13 +65,13 @@ class TestVeto:
 
 class TestEvidence:
     def test_conflict_distance_is_recorded_for_the_reviewer(self):
-        res = crosswalk(_FAR_A, _FAR_B, comparators=_pack(10.0))
+        res = reconcile(_FAR_A, _FAR_B, comparators=_pack(10.0))
         ev = res["matches"][0]["evidence"]
         assert "geo_conflict_km" in ev
         assert ev["geo_conflict_km"] > 10.0
 
     def test_no_conflict_key_when_the_veto_does_not_fire(self):
-        res = crosswalk(_NEAR_A, _NEAR_B, comparators=_pack(10.0))
+        res = reconcile(_NEAR_A, _NEAR_B, comparators=_pack(10.0))
         assert "geo_conflict_km" not in res["matches"][0]["evidence"]
 
 
@@ -100,5 +100,5 @@ class TestShippedDefault:
         assert geo["veto_km"] == 10.0
 
     def test_shipped_pack_refuses_the_143km_merge(self):
-        res = crosswalk(_FAR_A, _FAR_B, entity="place")
+        res = reconcile(_FAR_A, _FAR_B, entity="place")
         assert [m["decision"] for m in res["matches"]] == ["review"]

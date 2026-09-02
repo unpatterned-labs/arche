@@ -93,7 +93,7 @@ Resolution asks a different question from detection. Not "what is in this text" 
 
 ```python
 from arche.canonical import Reference
-from arche.resolve import pairwise
+from arche.resolve import compare
 
 ISSUER_KEY = b"an issuer secret of at least 32b"
 
@@ -102,7 +102,7 @@ a = Reference.from_record({"id": "lagos-001", "full_name": "Fatima Abdullahi",
 b = Reference.from_record({"id": "kano-774", "full_name": "Fatuma Abdulahi",
                            "national_id": "12345678901"})
 
-decision = pairwise(a, b, issuer_key=ISSUER_KEY)
+decision = compare(a, b, issuer_key=ISSUER_KEY)
 print("identity :", decision.identity)
 print("action   :", decision.action)
 print("score    :", decision.score)
@@ -124,7 +124,7 @@ Three outcomes are possible on the `identity` axis: `same_entity`, `different`, 
 
 ```python
 from arche.canonical import Reference
-from arche.resolve import pairwise
+from arche.resolve import compare
 
 ISSUER_KEY = b"an issuer secret of at least 32b"
 
@@ -132,7 +132,7 @@ ISSUER_KEY = b"an issuer secret of at least 32b"
 c = Reference.from_record({"id": "ussd-9", "national_id": "12345678901"})
 d = Reference.from_record({"id": "ussd-4", "national_id": "12345678901"})
 
-thin = pairwise(c, d, issuer_key=ISSUER_KEY)
+thin = compare(c, d, issuer_key=ISSUER_KEY)
 print("identity :", thin.identity)
 print("action   :", thin.action)
 print("score    :", thin.score)
@@ -161,7 +161,7 @@ The last verb turns a decision into something a third party can check.
 ```python
 from arche.attest import attest, verify_attestation
 from arche.canonical import Reference
-from arche.resolve import pairwise
+from arche.resolve import compare
 from arche.sign import generate_keypair
 
 ISSUER_KEY = b"an issuer secret of at least 32b"
@@ -172,7 +172,7 @@ a = Reference.from_record({"id": "lagos-001", "full_name": "Fatima Abdullahi",
 b = Reference.from_record({"id": "kano-774", "full_name": "Fatuma Abdulahi",
                            "national_id": "12345678901"})
 
-signed = attest(pairwise(a, b, issuer_key=ISSUER_KEY), signing_key)
+signed = attest(compare(a, b, issuer_key=ISSUER_KEY), signing_key)
 
 checked = verify_attestation(signed.compact, public_key=signing_key.public_key)
 print("valid       :", checked.valid)
@@ -211,7 +211,7 @@ One paragraph, because this is the whole claim. You started with a line of text 
 
 ## What this page did not show
 
-It showed one pair. Real work is usually two *lists*. `resolve.crosswalk` links them at scale, and for places it enforces a geographic veto that demotes a pair to `review` when the coordinates are too far apart no matter how well the names match. It used arche's built-in field names; a [declaration](../how-to/declare-your-schema.md) lets you keep your own schema and state what your fields mean. It said nothing about sending data to a third party, which is what `arche.guard.EgressGuard` exists to refuse by default.
+It showed one pair. Real work is usually two *lists*. `resolve.reconcile` links them at scale, and for places it enforces a geographic veto that demotes a pair to `review` when the coordinates are too far apart no matter how well the names match. It used arche's built-in field names; a [declaration](../how-to/declare-your-schema.md) lets you keep your own schema and state what your fields mean. It said nothing about sending data to a third party, which is what `arche.guard.EgressGuard` exists to refuse by default.
 
 It also showed detection working. Detection is where arche's coverage is most uneven, and this page deliberately left the inventory to a page that can be exhaustive about it.
 

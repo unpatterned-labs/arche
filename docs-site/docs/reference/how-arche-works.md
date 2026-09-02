@@ -6,18 +6,18 @@ arche has related capabilities, but they answer different questions. Keeping the
 |---|---|---|
 | Pipeline | What sensitive or identifying information is in this text or file? | `Pipeline.process()` |
 | Document resolution | Which document records may refer to the same person? | `resolve_documents()` |
-| Record resolution | Which rows from two lists are candidates for the same entity? | `crosswalk()` |
-| Direct person comparison | Do these two specific person references describe one entity? | `pairwise()` |
+| Record resolution | Which rows from two lists are candidates for the same entity? | `reconcile()` |
+| Direct person comparison | Do these two specific person references describe one entity? | `compare()` |
 | Address and spatial roles | What address or place is mentioned, and what role does it play? | `arche.addr`, `extract_places()` |
 
 Each example below is a standalone Python script. Install the package, save a block as a `.py` file, and run `python filename.py`. The document example needs the optional document extra; the other examples work with `pip install arche-core`.
 
 ## Crosswalk two lists
 
-Use `crosswalk()` when you have two collections of records and want surfaced candidates with evidence. This example deliberately has a rare facility name and a common one. The common name goes to review even though it has the same raw score.
+Use `reconcile()` when you have two collections of records and want surfaced candidates with evidence. This example deliberately has a rare facility name and a common one. The common name goes to review even though it has the same raw score.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 registry = [
     {"id": "registry-1", "name": "Gyaranya Health Post", "lat": 11.90, "lon": 8.50},
@@ -28,7 +28,7 @@ survey = [
     {"id": "survey-2", "name": "General Hospital", "lat": 12.04, "lon": 8.50},
 ]
 
-result = crosswalk(registry, survey, entity="place", block=None)
+result = reconcile(registry, survey, entity="place", block=None)
 for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
 ```
@@ -42,12 +42,12 @@ Each returned edge also has `evidence`, `pins`, and a `decision_id`. A missing e
 
 ## Compare two people directly
 
-Use `pairwise()` when the caller has already selected exactly two person references and needs an explicit identity claim.
+Use `compare()` when the caller has already selected exactly two person references and needs an explicit identity claim.
 
 ```python
-from arche.resolve import pairwise
+from arche.resolve import compare
 
-decision = pairwise(
+decision = compare(
     "Fatima Abdullahi, NIN 12345678901",
     "Fatuma Abdulahi, NIN 12345678901",
 )
@@ -61,7 +61,7 @@ same_entity merge 1.0
 national ID match; name similarity 91%
 ```
 
-`pairwise()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels.
+`compare()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels.
 
 ## Process text with Pipeline
 
@@ -95,30 +95,26 @@ Install document support first:
 pip install "arche-core[doc]"
 ```
 
-This script creates two small PDFs, reads them, extracts identity signals, and compares the resulting records. Replace the generated files with your own PDFs in a real workflow.
+This script writes two small documents, reads them, extracts identity signals, and compares the resulting records. Point it at your own folder in a real workflow. Plain text is read directly, with no extra; PDF and DOCX go through docling, so those need `arche-core[doc]`.
 
 ```python
 from pathlib import Path
 
-import fitz
-
 from arche import resolve_documents
 
+# Plain text keeps the example dependency-free; a folder of PDFs behaves the
+# same way and is what you would actually hand it.
 folder = Path("demo-docs")
 folder.mkdir(exist_ok=True)
 
 for filename, text in {
-    "statement.pdf": "Fatima Abdullahi\nNIN 12345678901\nPhone 08031234567",
-    "invoice.pdf": "Fatuma Abdulahi\nNIN 12345678901\nPhone 08031234567",
+    "statement.txt": "Fatima Abdullahi\nNIN 12345678901\nPhone 08031234567",
+    "invoice.txt": "Fatuma Abdulahi\nNIN 12345678901\nPhone 08031234567",
 }.items():
-    pdf = fitz.open()
-    page = pdf.new_page()
-    page.insert_text((72, 72), text)
-    pdf.save(folder / filename)
-    pdf.close()
+    (folder / filename).write_text(text, encoding="utf-8")
 
 report = resolve_documents(
-    str(folder / "*.pdf"), jurisdiction="NG", quiet=True, progress=False
+    str(folder), jurisdiction="NG", quiet=True, progress=False
 )
 print([(item["identity"], item["score"]) for item in report.decisions])
 print(report.table())
@@ -130,13 +126,13 @@ print(report.table())
 EXTRACTED RECORDS
 document       name                    phone                   national_id
 -------------------------------------------------------------------------------------
-invoice.pdf    Fatu***********         0803*******             1234*******
-statement.pdf  Fati************        0803*******             1234*******
+invoice.txt    Fatu***********         0803*******             1234*******
+statement.txt  Fati************        0803*******             1234*******
 
 RESOLUTION
 document a                   document b                   verdict        score
 ------------------------------------------------------------------------------
-invoice.pdf                  statement.pdf                same_entity   1.0000
+invoice.txt                  statement.txt                same_entity   1.0000
 ```
 
 `DocumentReport` retains records, masked summaries, decisions, parser errors, and extraction provenance. Check `report.errors` before treating a folder run as complete.
@@ -169,7 +165,7 @@ Spatial roles can be `origin`, `destination`, `location`, `via`, or `unknown`. `
 
 ## The record-resolution path
 
-`crosswalk()` works in four stages:
+`reconcile()` works in four stages:
 
 1. **Candidate generation.** Blocking avoids scoring every possible pair.
 2. **Comparison.** Entity-specific comparators inspect names, identifiers, coordinates, types, and other available fields.

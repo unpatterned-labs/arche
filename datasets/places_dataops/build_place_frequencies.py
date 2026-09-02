@@ -5,7 +5,7 @@
 
 Why this exists
 ---------------
-Until this table shipped, `crosswalk(entity="place")` scored distinctiveness
+Until this table shipped, `reconcile(entity="place")` scored distinctiveness
 against the *person* table. The commonest words in any facility register —
 ``hospital``, ``health``, ``clinic``, ``centre`` — are absent from a person-name
 corpus, so they landed on ``_UNKNOWN_FLOOR`` and read as **rare**. Two

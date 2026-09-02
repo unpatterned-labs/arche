@@ -25,7 +25,7 @@ import json
 
 import pytest
 from arche.report import review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.review import (
     ADJUDICATION_SCHEMA,
     PackError,
@@ -45,7 +45,7 @@ _RECORDS = [{"id": str(i), "name": n, "birth_date": d}
 
 @pytest.fixture
 def packdir(tmp_path):
-    res = crosswalk(_RECORDS, _RECORDS, entity="person", id_field="id")
+    res = reconcile(_RECORDS, _RECORDS, entity="person", id_field="id")
     review_pack(res, _RECORDS, _RECORDS, out_dir=tmp_path / "p",
                 entity="person", reveal=True)
     return tmp_path / "p"

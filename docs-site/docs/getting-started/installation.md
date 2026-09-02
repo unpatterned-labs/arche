@@ -22,7 +22,7 @@ Install an extra only when you need its capability.
 | Legacy Splink-backed resolver | `pip install "arche-core[resolve]"` |
 | LLM extraction integrations | `pip install "arche-core[llm]"` |
 
-`crosswalk()` and `pairwise()` do not require the `resolve` extra. That extra is for the older Splink-backed resolver path.
+`reconcile()` and `compare()` do not require the `resolve` extra. That extra is for the older Splink-backed resolver path.
 
 ## Install from this repository
 

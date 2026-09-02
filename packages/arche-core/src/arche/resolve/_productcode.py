@@ -564,7 +564,7 @@ def compare_codes(
             "comparator kind 'code' requires a frequency table over code "
             "candidates; build one with "
             "arche.resolve._productcode.build_code_table(titles). "
-            "reconcile()/crosswalk() build it for you when a 'code' comparator "
+            "reconcile()/reconcile() build it for you when a 'code' comparator "
             "is declared."
         )
     return max(code_rarity(code, tf) for code in shared)

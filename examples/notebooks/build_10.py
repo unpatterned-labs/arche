@@ -89,9 +89,9 @@ configuration to write.
 """)
 
 code('''
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
-result = crosswalk(lbc_ledger, certifier_registry,
+result = reconcile(lbc_ledger, certifier_registry,
                    entity="organisation", id_field="id")
 
 for edge in result["matches"]:
@@ -158,7 +158,7 @@ site_op_b = [r for r in certifier_registry if r["id"] == "C5"]
 for label, ra, rb in (("with entity_class", site_op_a, site_op_b),
                       ("without entity_class",
                        strip_class(site_op_a), strip_class(site_op_b))):
-    r = crosswalk(ra, rb, entity="organisation", id_field="id")
+    r = reconcile(ra, rb, entity="organisation", id_field="id")
     e = r["matches"][0]
     print(f"  {label:<22} -> {e['decision']:<8} score={e['score']}")
 ''')

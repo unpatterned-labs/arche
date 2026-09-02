@@ -255,9 +255,9 @@ class TestPhraseGateSafety:
     """The defect the gate exists to prevent must survive the new evidence."""
 
     def test_two_general_hospitals_still_abstain(self):
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
 
-        edges = crosswalk(
+        edges = reconcile(
             [{"name": "General Hospital", "lat": 12.00, "lon": 8.50}],
             [{"name": "General Hospital", "lat": 12.04, "lon": 8.50}],
             entity="place",
@@ -265,9 +265,9 @@ class TestPhraseGateSafety:
         assert edges and edges[0]["decision"] == "review"
 
     def test_a_distinctive_pair_still_merges(self):
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
 
-        edges = crosswalk(
+        edges = reconcile(
             [{"name": "Gyaranya Health Post", "lat": 12.00, "lon": 8.50}],
             [{"name": "Gyaranya Health Post", "lat": 12.04, "lon": 8.50}],
             entity="place",
@@ -277,9 +277,9 @@ class TestPhraseGateSafety:
     def test_the_phrase_table_is_named_in_the_pin(self):
         # A phrase table is a scoring input; a rebuild must be visible in every
         # decision id it touched rather than changing results silently.
-        from arche.resolve import crosswalk
+        from arche.resolve import reconcile
 
-        result = crosswalk(
+        result = reconcile(
             [{"name": "London Bridge Hospital", "lat": 51.5050, "lon": -0.0870}],
             [{"name": "London Bridge Hospital", "lat": 51.5052, "lon": -0.0871}],
             entity="place",

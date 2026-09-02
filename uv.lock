@@ -273,13 +273,16 @@ all = [
     { name = "openai" },
     { name = "presidio-analyzer" },
     { name = "presidio-anonymizer" },
-    { name = "pymupdf" },
+    { name = "pypdf" },
     { name = "python-docx" },
     { name = "splink" },
 ]
 detect = [
     { name = "gliner" },
     { name = "onnxruntime" },
+]
+detect2 = [
+    { name = "gliner2", extra = ["local"] },
 ]
 dev = [
     { name = "mypy" },
@@ -316,6 +319,9 @@ parquet = [
     { name = "pyarrow" },
 ]
 pdf = [
+    { name = "pypdf" },
+]
+pdf-mupdf = [
     { name = "pymupdf" },
 ]
 pii = [
@@ -349,6 +355,7 @@ requires-dist = [
     { name = "gliner", marker = "extra == 'all'", specifier = ">=0.2.8" },
     { name = "gliner", marker = "extra == 'detect'", specifier = ">=0.2.8" },
     { name = "gliner", marker = "extra == 'gliner'", specifier = ">=0.2.8" },
+    { name = "gliner2", extras = ["local"], marker = "extra == 'detect2'", specifier = ">=2.0" },
     { name = "h3", specifier = ">=4.0" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "jellyfish", specifier = ">=1.0" },
@@ -369,8 +376,9 @@ requires-dist = [
     { name = "presidio-anonymizer", marker = "extra == 'presidio'", specifier = ">=2.2" },
     { name = "pyarrow", marker = "extra == 'parquet'", specifier = ">=14" },
     { name = "pydantic", specifier = ">=2.0" },
-    { name = "pymupdf", marker = "extra == 'all'", specifier = ">=1.24" },
-    { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24" },
+    { name = "pymupdf", marker = "extra == 'pdf-mupdf'", specifier = ">=1.24" },
+    { name = "pypdf", marker = "extra == 'all'", specifier = ">=5.0" },
+    { name = "pypdf", marker = "extra == 'pdf'", specifier = ">=5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "python-docx", marker = "extra == 'all'", specifier = ">=1.1" },
@@ -384,7 +392,7 @@ requires-dist = [
     { name = "splink", marker = "extra == 'resolve'", specifier = ">=4.0" },
     { name = "splink", marker = "extra == 'splink'", specifier = ">=4.0" },
 ]
-provides-extras = ["africa", "all", "detect", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "litellm", "llm", "ng", "parquet", "pdf", "pii", "presidio", "resolve", "splink", "za"]
+provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "litellm", "llm", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "splink", "za"]
 
 [[package]]
 name = "arche-mcp"
@@ -1382,6 +1390,30 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/49/18/e199cb97147c4a9260c75e4caf51e17be6ff969b0604a029c9c62810cbe0/gliner-0.2.26.tar.gz", hash = "sha256:6783be92b4b81caa878dcc4269ba37800207c37118d8ff9be028b93bddd6813d", size = 181224, upload-time = "2026-03-19T15:07:22.707Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/6e/d54d3d2867e29b68a22b144f570c8204209647fccc7879cec5218d6ed5fb/gliner-0.2.26-py3-none-any.whl", hash = "sha256:b9baa47641efb90b9d069add0528ed2464d137991ff097f42b0cab37a91ba991", size = 170429, upload-time = "2026-03-19T15:07:19.914Z" },
+]
+
+[[package]]
+name = "gliner2"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "tqdm" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b2/a8/2dcfdb8862dbeb488b6b86047075a213cc101ca592eae1a43b824cca74dd/gliner2-2.0.0.tar.gz", hash = "sha256:82b149f893ba0f6adf75ef1db599b6dbecd9811cca34dbd0bac7cd9e90b90ce4", size = 565826, upload-time = "2026-08-24T15:13:43.439Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/44/87d2803c5c5c6c0bd22bce4d52c66c965dacae29e0121d7e04c9883711df/gliner2-2.0.0-py3-none-any.whl", hash = "sha256:6f7c4cba0ef3173636d8bd9404aa94d4e0ccf36d4b4b9a0d27d740dd2d3236c3", size = 326214, upload-time = "2026-08-24T15:13:41.09Z" },
+]
+
+[package.optional-dependencies]
+local = [
+    { name = "numpy" },
+    { name = "peft" },
+    { name = "safetensors" },
+    { name = "torch" },
+    { name = "transformers" },
 ]
 
 [[package]]
@@ -3007,6 +3039,27 @@ wheels = [
 ]
 
 [[package]]
+name = "peft"
+version = "0.20.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "accelerate" },
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch" },
+    { name = "tqdm" },
+    { name = "transformers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b4/08/02541a2c29be7c78698f73d438bc0e733b214f3f35ec5db79fca8da8fc61/peft-0.20.0.tar.gz", hash = "sha256:4769c8093a4ca145fd6fb3fd4dd50449675f5fe46434ad1e98b285a132d4b1d0", size = 880503, upload-time = "2026-07-28T13:46:01.85Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/28/79/13bcabb8048126422d5c4b880575d40886c726f354db88cfeed4325525bb/peft-0.20.0-py3-none-any.whl", hash = "sha256:0fbba16ffebfad3de96e06f2da6860fd860292324b85b6141909fa1e26ea9233", size = 775777, upload-time = "2026-07-28T13:45:59.809Z" },
+]
+
+[[package]]
 name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3658,6 +3711,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/77/ed/40eb23cf5e91de0510dfedb7d9feedeab5ce9691544ad09599e124a0a333/PyMuPDF-1.24.14-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:2d1b5c47df2f8055de5dedfbd3189c742188261a8c257f406378382adac94cff", size = 20963535, upload-time = "2024-11-19T11:18:55.527Z" },
     { url = "https://files.pythonhosted.org/packages/87/2b/46af7461bd299c3f52bc5455332cc82608cea1667cd692652505fdf9308e/PyMuPDF-1.24.14-cp39-abi3-win32.whl", hash = "sha256:60a7ee7db3e0d3a4dcbe6df2781ba4487acb7e515c64ea9c857504f44effcb25", size = 14965671, upload-time = "2024-11-19T11:19:43.549Z" },
     { url = "https://files.pythonhosted.org/packages/25/b2/82d70d9f5aea5a33e770f37e6db43ed08b5dc71b3526c5d7051689d1031e/PyMuPDF-1.24.14-cp39-abi3-win_amd64.whl", hash = "sha256:3d1f1ec2fe0249484afde7a0fc02589f19aaeb47c42939d23ae1d012aa1bc59b", size = 16257645, upload-time = "2024-11-19T11:19:23.099Z" },
+]
+
+[[package]]
+name = "pypdf"
+version = "6.16.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/66/54212e75406afd9f3e933d0dda23072f6aecc55c5a273077dc2e0b028b23/pypdf-6.16.2.tar.gz", hash = "sha256:595647f6191de6f402cfde1d0c455d6cbccbd509aac32b34783009c032de5d6e", size = 7008996, upload-time = "2026-08-23T13:50:07.135Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/f1/a2da3b55acd4ab737bf728c97edaaed5ec1d3c1236acb639dcdfa97e42c7/pypdf-6.16.2-py3-none-any.whl", hash = "sha256:c8b09a59399062fb45a1b8156c18a787a10a3dae03ac9674397a226712c94604", size = 385060, upload-time = "2026-08-23T13:50:05.349Z" },
 ]
 
 [[package]]

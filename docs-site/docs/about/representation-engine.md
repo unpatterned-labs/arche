@@ -56,9 +56,9 @@ In code, the surface is two calls:
 from arche import resolve
 from arche.attest import attest
 
-out = resolve.crosswalk(statement, catalog, entity="artist")  # or "person", "place"
+out = resolve.reconcile(statement, catalog, entity="artist")  # or "person", "place"
 
-decision = resolve.pairwise(record_a, record_b, issuer_key=key_bytes)
+decision = resolve.compare(record_a, record_b, issuer_key=key_bytes)
 decision.identity      # "same_entity" | "review" | "different"
 decision.factors       # per-field evidence
 decision.decision_id   # reproducible content address
@@ -66,7 +66,7 @@ decision.decision_id   # reproducible content address
 signed = attest(decision, issuer_keypair, mode="jws")
 ```
 
-`crosswalk` links lists at scale (blocking + gate + evidence; see [reading its output](../how-to/read-crosswalk-output.md)); `pairwise` returns a signable co-reference decision and is person-shaped today. The two share primitives and the gate but are deliberately distinct scoring paths.
+`reconcile` links lists at scale (blocking + gate + evidence; see [reading its output](../how-to/read-crosswalk-output.md)); `compare` returns a signable co-reference decision and is person-shaped today. The two share primitives and the gate but are deliberately distinct scoring paths.
 
 ## Can an LLM be the representation?
 
@@ -86,7 +86,7 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 ## Design consequences
 
-**A new entity type is a representation, not a program.** Persons, places, and artists run on the same crosswalk engine and comparator kit. A new type is configuration plus data: an identity-attribute mapping, equivalence data, frequency calibration. The artist pack added no new comparator code at all. (Signable `pairwise` decisions are person-shaped today; extending them is roadmap, not implied.)
+**A new entity type is a representation, not a program.** Persons, places, and artists run on the same crosswalk engine and comparator kit. A new type is configuration plus data: an identity-attribute mapping, equivalence data, frequency calibration. The artist pack added no new comparator code at all. (Signable `compare` decisions are person-shaped today; extending them is roadmap, not implied.)
 
 **Engines are swappable below; callers are agnostic above.** Because the representation layer is the contract, the inference backend can be arche's in-memory core today and Splink tomorrow, and the caller can be a script, a pipeline, or an AI agent (through whatever tool layer you wire it into. An MCP server is on the roadmap, not in this release).
 

@@ -3,7 +3,7 @@
 This example links a facility registry to a survey. Each list has a stable row identifier, a name, and coordinates. The same approach works for other entity packs when their relevant fields are present.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 registry = [
     {
@@ -23,7 +23,7 @@ survey = [
     },
 ]
 
-result = crosswalk(registry, survey, entity="place")
+result = reconcile(registry, survey, entity="place")
 
 for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"])

@@ -26,7 +26,7 @@ import json
 
 import pytest
 from arche.report import review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.review import PackError, read_pack, share_artifact
 
 _NAME = "Adesola Okonkwo"
@@ -42,7 +42,7 @@ _RECORDS = [
 
 @pytest.fixture
 def packdir(tmp_path):
-    res = crosswalk(_RECORDS, _RECORDS, entity="person", id_field="id")
+    res = reconcile(_RECORDS, _RECORDS, entity="person", id_field="id")
     review_pack(res, _RECORDS, _RECORDS, out_dir=tmp_path / "p",
                 entity="person", sides=("reg", "sur"), reveal=True)
     return tmp_path / "p"
@@ -177,7 +177,7 @@ class TestRefusals:
         """
         records = [{"id": "12345678901", "name": _NAME, "birth_date": "1990-03-02"},
                    {"id": "23456789012", "name": _NAME, "birth_date": "1990-03-02"}]
-        res = crosswalk(records, records, entity="person", id_field="id")
+        res = reconcile(records, records, entity="person", id_field="id")
         review_pack(res, records, records, out_dir=tmp_path / "p",
                     entity="person", sides=("reg", "sur"), reveal=True)
         with pytest.raises(PackError, match="sensitive identifiers"):
@@ -186,7 +186,7 @@ class TestRefusals:
     def test_and_a_safe_id_column_can_be_named_instead(self, tmp_path):
         records = [{"id": "12345678901", "ref": "A1", "name": _NAME},
                    {"id": "23456789012", "ref": "A2", "name": _NAME}]
-        res = crosswalk(records, records, entity="person", id_field="id")
+        res = reconcile(records, records, entity="person", id_field="id")
         review_pack(res, records, records, out_dir=tmp_path / "p",
                     entity="person", sides=("reg", "sur"), reveal=True)
         share_artifact(tmp_path / "p", tmp_path / "s",

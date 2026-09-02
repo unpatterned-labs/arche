@@ -21,7 +21,7 @@ import copy
 
 import pytest
 
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._productcode import (
     PRODUCT_CATEGORIES,
@@ -282,7 +282,7 @@ class TestModularity:
         try:
             a = [{"id": "1", "name": "Widget 501 model AB0001X"}]
             b = [{"id": "1", "name": "Widget 501 model AB0001X"}]
-            res = crosswalk(a, b, id_field="id", comparators=[
+            res = reconcile(a, b, id_field="id", comparators=[
                 {"field": "name", "kind": "name", "weight": 1.0},
                 {"field": "name", "kind": "code", "weight": 2.0,
                  "category": "electronics"},
@@ -307,15 +307,15 @@ class TestReproducibility:
         """
         a = [{"id": "1", "name": "Canon Case 2595B002"}]
         b = [{"id": "1", "name": "Canon 2595B002 Cam"}]
-        res = crosswalk(a, b, entity="product_electronics", id_field="id")
+        res = reconcile(a, b, entity="product_electronics", id_field="id")
         pin = res["pins"]["code_tf"]["electronics"]
         assert pin.startswith("codes@sha256:")
 
     def test_a_different_corpus_changes_the_pin(self):
         a = [{"id": "1", "name": "Canon Case 2595B002"}]
         b = [{"id": "1", "name": "Canon 2595B002 Cam"}]
-        small = crosswalk(a, b, entity="product_electronics", id_field="id")
-        big = crosswalk(
+        small = reconcile(a, b, entity="product_electronics", id_field="id")
+        big = reconcile(
             a + [{"id": str(i), "name": f"Other AB{i:04d}X"} for i in range(2, 40)],
             b, entity="product_electronics", id_field="id",
         )
@@ -353,7 +353,7 @@ class TestBenchmarkContract:
 
     @staticmethod
     def _auto(a, b, comparators):
-        res = crosswalk(a, b, comparators=comparators, tf=None, id_field="id")
+        res = reconcile(a, b, comparators=comparators, tf=None, id_field="id")
         return {(e["a_id"], e["b_id"]) for e in res["matches"]
                 if e["decision"] == "match"}
 
@@ -502,13 +502,13 @@ class TestPack:
         """The five-minute test: no table building, no preprocessing."""
         a = [{"id": "1", "name": "Canon Deluxe Black Digital Camera Case - 2595B002"}]
         b = [{"id": "1", "name": "Canon PSC-85 Soft Camera Case - 2595B002"}]
-        res = crosswalk(a, b, entity="product_electronics", id_field="id")
+        res = reconcile(a, b, entity="product_electronics", id_field="id")
         assert [e["decision"] for e in res["matches"]] == ["match"]
 
     def test_a_capacity_difference_refutes(self):
         a = [{"id": "1", "name": "SanDisk Sansa Clip 16GB MP3 Player SDMX18"}]
         b = [{"id": "1", "name": "SanDisk Sansa Clip 32GB MP3 Player SDMX18"}]
-        res = crosswalk(a, b, entity="product_electronics", id_field="id")
+        res = reconcile(a, b, entity="product_electronics", id_field="id")
         assert "match" not in [e["decision"] for e in res["matches"]]
 
 

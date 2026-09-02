@@ -19,7 +19,8 @@ just clean text extraction from files so they can be fed into the identity
 resolution pipeline.
 
 Supported formats:
-    - PDF (requires ``pymupdf``: ``pip install arche-core[pdf]``)
+    - PDF (requires a reader: ``pip install 'arche-core[pdf]'``, which is
+      pypdf/BSD-3-Clause; ``[pdf-mupdf]`` is pymupdf/AGPL-3.0)
     - DOCX (requires ``python-docx``: ``pip install arche-core[docx]``)
     - TXT, CSV, JSON — built-in, no extra dependencies
     - Images (requires ``pytesseract`` + Tesseract binary)
@@ -72,20 +73,46 @@ def _normalize_whitespace(text: str) -> str:
 
 
 def _extract_pdf(path: Path) -> str:
-    """Extract text from a PDF file using pymupdf (fitz).
+    """Extract text from a PDF, preferring the permissively-licensed reader.
+
+    ``pypdf`` first, ``pymupdf`` second. The order is a licence decision, not a
+    quality one: **pypdf is BSD-3-Clause and pymupdf is AGPL-3.0**, and a
+    caller who installs an extra to read a PDF should not acquire a copyleft
+    obligation without choosing to. ``arche.doc.read_metadata`` already orders
+    its readers the same way, permissive first.
+
+    Both are optional and neither is in the base wheel. If both are present,
+    ``pypdf`` wins; if only ``pymupdf`` is, it is used without complaint.
 
     Raises:
-        ImportError: If pymupdf is not installed.
+        ImportError: naming both extras, if neither reader is installed.
     """
+    try:
+        import pypdf
+    except ImportError:
+        pass
+    else:
+        pages: list[str] = []
+        reader = pypdf.PdfReader(str(path))
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                pages.append(page_text)
+        return "\n".join(pages)
+
     try:
         import fitz  # pymupdf
     except ImportError:
         raise ImportError(
-            "PDF extraction requires pymupdf. "
-            "Install with: pip install arche-core[pdf]"
+            "PDF text extraction needs a PDF reader. Install one of:\n"
+            "    pip install 'arche-core[pdf]'       # pypdf, BSD-3-Clause\n"
+            "    pip install 'arche-core[pdf-mupdf]' # pymupdf, AGPL-3.0\n"
+            "The first is the default for a reason: AGPL is a licence you "
+            "should choose deliberately rather than acquire by installing an "
+            "extra called 'pdf'."
         ) from None
 
-    pages: list[str] = []
+    pages = []
     with fitz.open(str(path)) as doc:
         for page in doc:
             page_text = page.get_text()
@@ -177,7 +204,8 @@ def extract_text(source: str | Path) -> str:
         FileNotFoundError: If the file does not exist.
         ValueError: If the file extension is not supported.
         ImportError: If a required optional dependency is not installed
-            (pymupdf for PDF, python-docx for DOCX, pytesseract for images).
+            (pypdf or pymupdf for PDF, python-docx for DOCX,
+            pytesseract for images).
 
     Examples:
         >>> text = extract_text("report.pdf")

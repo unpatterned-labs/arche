@@ -239,7 +239,7 @@ def _sides(fields: list[str]) -> list[str]:
 
 
 def _compare(payload: dict) -> dict:
-    from arche.resolve import ENTITY_PACKS, crosswalk
+    from arche.resolve import ENTITY_PACKS, reconcile
 
     entity = payload.get("entity") or "person"
     if entity not in ENTITY_PACKS:
@@ -249,7 +249,7 @@ def _compare(payload: dict) -> dict:
     if not a or not b:
         raise ValueError("both records need at least one non-empty field")
 
-    res = crosswalk([{**a, "id": "a"}], [{**b, "id": "b"}],
+    res = reconcile([{**a, "id": "a"}], [{**b, "id": "b"}],
                     entity=entity, id_field="id")
     if not res["matches"]:
         return {"decision": "no_candidate", "score": 0.0, "evidence": {},
@@ -275,7 +275,7 @@ def _threat_case() -> dict:
     observation enforceable. Those are policy and legal conclusions outside a
     record-linkage decision.
     """
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     product = {
         "id": "protected-trail-40",
@@ -300,7 +300,7 @@ def _threat_case() -> dict:
     }
 
     def decide(observation: dict) -> dict:
-        result = crosswalk(
+        result = reconcile(
             [product], [observation], comparators=comparators, id_field="id",
             # The named product is held unless the fixture carries an exact
             # trusted identifier. This makes the middle observation a real
@@ -873,7 +873,7 @@ def _link_documents(documents: list[dict], *, reveal: bool) -> list[dict]:
     score and the refusals are the engine's own. Pairs it declines to merge come
     back too — a held pair is the interesting output here, not a failure.
     """
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     if len(documents) < 2:
         return []
@@ -892,7 +892,7 @@ def _link_documents(documents: list[dict], *, reveal: bool) -> list[dict]:
                 # the placeholder. The values are used here and never returned;
                 # what comes back out is masked at the boundary instead.
                 try:
-                    result = crosswalk(
+                    result = reconcile(
                         [{"id": e["id"], "name": e["raw"]} for e in a],
                         [{"id": e["id"], "name": e["raw"]} for e in b],
                         entity=pack, id_field="id")
@@ -1251,11 +1251,11 @@ def _sign_demo(_payload: dict) -> dict:
     not authorship. Both are honest, and they are not the same claim.
     """
     import keyring
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
     from arche.resolve.reconcile import sign_edges
 
     k = keyring.load_or_create(KEY_PATH)
-    res = crosswalk([{"id": "a", "name": "Karfi Health Post", "lat": "12.0421", "lon": "8.5231"}],
+    res = reconcile([{"id": "a", "name": "Karfi Health Post", "lat": "12.0421", "lon": "8.5231"}],
                     [{"id": "b", "name": "Karfi Primary Health Centre", "lat": "12.0605",
                         "lon": "8.5188"}],
                     entity="place", id_field="id")
@@ -1490,8 +1490,8 @@ def _warm() -> None:
     before this existed.
     """
     try:
-        from arche.resolve import crosswalk
-        crosswalk([{"id": "a", "name": "warm up"}], [{"id": "b", "name": "warm up"}],
+        from arche.resolve import reconcile
+        reconcile([{"id": "a", "name": "warm up"}], [{"id": "b", "name": "warm up"}],
                   entity="place", id_field="id")
         from arche.addr import extract_places
         extract_places("from a to b")

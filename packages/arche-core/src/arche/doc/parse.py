@@ -123,7 +123,12 @@ class ParsedDocument:
 # parse() — the public entry point
 # ---------------------------------------------------------------------------
 
-def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[str, Any]:
+def _extraction_provenance(
+    source: str,
+    text: str,
+    do_ocr: bool | None,
+    parser: str = "docling",
+) -> dict[str, Any]:
     """What has to be recorded for a decision made from this parse to be checkable.
 
     A signature over a document-derived decision is worth very little on its
@@ -166,14 +171,14 @@ def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[
     import hashlib
 
     out: dict[str, Any] = {
-        "parser": "docling",
+        "parser": parser,
         "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "ocr": do_ocr,
     }
     with contextlib.suppress(Exception):
         from importlib.metadata import version as _pkg_version
 
-        out["parser_version"] = _pkg_version("docling")
+        out["parser_version"] = _pkg_version(parser)
     with contextlib.suppress(Exception):
         path = Path(source)
         if path.is_file():
@@ -185,12 +190,51 @@ def _extraction_provenance(source: str, text: str, do_ocr: bool | None) -> dict[
     return out
 
 
+#: Suffixes arche reads directly. Deliberately short: these are formats whose
+#: bytes *are* the text, so a converter can only add a dependency and a chance
+#: to disagree. Anything with structure to recover -- PDF, DOCX, HTML -- is
+#: docling's job and stays docling's job.
+_PLAIN_TEXT_SUFFIXES = frozenset({".txt", ".text", ".md", ".markdown"})
+
+
+def _read_plain_text(source: str | Path) -> ParsedDocument | None:
+    """The parse for a file that needs no parser, or ``None`` if this isn't one.
+
+    Returns ``None`` for a URL, a directory, a missing file, or any suffix not
+    in :data:`_PLAIN_TEXT_SUFFIXES`, so the caller falls through to docling.
+    Undecodable bytes also fall through: a `.txt` that is not UTF-8 is a real
+    document-conversion problem, and guessing an encoding here would put a
+    silent mojibake rendering under a signature.
+    """
+    try:
+        path = Path(source)
+        if path.suffix.lower() not in _PLAIN_TEXT_SUFFIXES or not path.is_file():
+            return None
+        text = path.read_text(encoding="utf-8")
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None
+
+    source_str = str(source)
+    return ParsedDocument(
+        source=source_str,
+        text=text,
+        # The bytes are the rendering; there is no second, structured view to
+        # offer. Reporting the same string as `markdown` would claim a layout
+        # analysis that never happened.
+        markdown=text if path.suffix.lower() in {".md", ".markdown"} else "",
+        provenance=_extraction_provenance(source_str, text, None, parser="text"),
+    )
+
+
 def parse(
     source: str | Path,
     *,
     do_ocr: bool | None = None,
 ) -> ParsedDocument:
-    """Parse a document via docling.
+    """Parse a document.
+
+    Plain text (``.txt``, ``.md``) is read directly and needs no extra.
+    Everything else goes through docling and needs ``arche-core[doc]``.
 
     Parameters
     ----------
@@ -205,8 +249,19 @@ def parse(
     Raises
     ------
     DoclingNotInstalledError
-        When ``docling`` isn't installed.
+        When ``docling`` isn't installed and the source is not plain text.
     """
+    # Reading a text file is not a document-conversion problem. Routing `.txt`
+    # through docling cost an unrelated 500MB dependency to call `read_text()`,
+    # and made a folder of plain text unreadable on a base install -- including
+    # to the published example that demonstrates `resolve_documents`. The path
+    # is unconditional rather than a fallback for when docling is absent: a
+    # parse that changes with the installed extras would make `parser` in the
+    # provenance a description of the machine rather than of the extraction.
+    plain = _read_plain_text(source)
+    if plain is not None:
+        return plain
+
     if not DOC_FEATURE_AVAILABLE:
         raise DoclingNotInstalledError()
 

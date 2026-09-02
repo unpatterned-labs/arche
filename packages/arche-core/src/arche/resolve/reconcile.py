@@ -778,7 +778,7 @@ def reconcile(
 
     # A `code` comparator is only as good as its frequency table: without one
     # it blocks Abt-Buy at 0.8865 precision, with one at 0.9973 on rare codes.
-    # Build it here, from both lists, so `crosswalk(a, b, entity=...)` is a
+    # Build it here, from both lists, so `reconcile(a, b, entity=...)` is a
     # single call rather than a setup ritual.
     #
     # One table PER CATEGORY, not one for the first spec found. Two `code`
@@ -873,6 +873,15 @@ def reconcile(
     from arche.ids import content_hash
 
     pins: dict[str, Any] = {
+        # WIRE FORMAT — do not rename. This string and the
+        # ``arche.crosswalk_edge.v1`` schema tag below are hashed into every
+        # edge's `decision_id`, so they are not Python names that follow the
+        # Python vocabulary; they are the version an already-issued edge cites
+        # to say which rules produced it. When the public verb `crosswalk`
+        # becomes `reconcile`, these two strings stay exactly as they are.
+        # Renaming them to match the new verb would silently invalidate every
+        # edge ever signed, which is the one failure this pin exists to make
+        # impossible. Bump to `.v2` only for a deliberate format change.
         "engine": "crosswalk.v1",
         # The FULL digest. This used to be truncated to 16 hex characters, which
         # is 64 bits: fine against accident, not fine against anyone who wants

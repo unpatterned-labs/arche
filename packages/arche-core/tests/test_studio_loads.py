@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 from arche.report import review_pack
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 _STUDIO = Path(__file__).resolve().parents[3] / "tools" / "arche-studio"
 
@@ -89,7 +89,7 @@ def _isolated_state(tmp_path, studio, monkeypatch):
 @pytest.fixture
 def pack(tmp_path, studio):
     """A real pack, written by the library, inside the studio's pack directory."""
-    res = crosswalk(_A, _A, entity="person", id_field="id")
+    res = reconcile(_A, _A, entity="person", id_field="id")
     review_pack(res, _A, _A, out_dir=tmp_path / "p", entity="person",
                 sides=("left", "right"), reveal=True)
     return "p/pack.csv"
@@ -390,7 +390,7 @@ class TestWorkingTheQueueChangesSomething:
         records = [{"id": f"r{i}", "name": n} for i, n in enumerate(
             ["General Hospital", "General Hospital", "Central Clinic",
              "Central Clinic", "Cottage Hospital"])]
-        res = crosswalk(records, records, entity="place", id_field="id")
+        res = reconcile(records, records, entity="place", id_field="id")
         review_pack(res, records, records, out_dir=tmp_path / "q",
                     entity="place", sides=("reg", "sur"), reveal=True)
         return "q/pack.csv"

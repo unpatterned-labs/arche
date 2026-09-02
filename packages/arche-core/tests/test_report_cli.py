@@ -19,7 +19,7 @@ B = [
 
 
 def _result():
-    out = resolve.crosswalk(A, B, entity="artist", block=None)
+    out = resolve.reconcile(A, B, entity="artist", block=None)
     assert out["matches"], "fixture must surface at least one pair"
     return out
 
@@ -44,7 +44,7 @@ def test_report_reveal_is_explicit_opt_in():
 def test_report_is_self_contained_and_escaped():
     evil_a = [{"id": "x", "name": "<script>alert(1)</script>"}]
     html = crosswalk_report(
-        resolve.crosswalk(evil_a, B, entity="artist", block=None),
+        resolve.reconcile(evil_a, B, entity="artist", block=None),
         evil_a, B, reveal=True, entity="artist",
     )
     assert "<script>alert" not in html
@@ -66,7 +66,7 @@ def test_report_refuses_sensitive_looking_ids_in_masked_mode():
     import pytest
 
     nin_a = [{"id": "12345678901", "name": "Burna Boy"}]  # surfaces vs B[0]
-    res = resolve.crosswalk(nin_a, B, entity="artist", block=None)
+    res = resolve.reconcile(nin_a, B, entity="artist", block=None)
     with pytest.raises(ValueError, match="sensitive identifiers"):
         crosswalk_report(res, nin_a, B, entity="artist")
     # An explicitly revealed working copy is the caller's own call.

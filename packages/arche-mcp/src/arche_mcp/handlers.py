@@ -52,7 +52,7 @@ from arche.extract import extract
 from arche.guard import EgressGuard, GuardDenied
 from arche.jurisdictions.infer import infer_jurisdiction as _infer_jurisdiction
 from arche.policy import statute_for as _statute_for
-from arche.resolve import ENTITY_PACKS, compare_names, crosswalk, reconcile
+from arche.resolve import ENTITY_PACKS, compare_names, reconcile
 from arche.resolve import describe_pack as _describe_pack
 from arche.resolve import describe_packs as _describe_packs
 from arche.resolve import would_resolve as _would_resolve
@@ -370,7 +370,7 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
             # the pack, warns that it is best-effort, and is the only way an
             # agent can reach the backend without writing Splink by hand.
             extra = {"backend": backend, "splink_settings": "derive"}
-        return crosswalk(
+        return reconcile(
             list_a, list_b, entity=entity, id_field=id_field,
             threshold=threshold, review_margin=review_margin,
             distinctive_floor=distinctive_floor, **extra,
@@ -422,7 +422,7 @@ def why_unresolved(record_a: dict, record_b: dict, *,
 
     a = {"id": "a", **record_a}
     b = {"id": "b", **record_b}
-    edges = crosswalk([a], [b], entity=entity, id_field="id")["matches"]
+    edges = reconcile([a], [b], entity=entity, id_field="id")["matches"]
     if not edges:
         return {
             "decision": "not_surfaced",

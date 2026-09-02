@@ -36,9 +36,9 @@ One engine, five calibrated packs. A pack is configuration and data, never a for
 | `artist` | creative works and performers | one act, many stage names and transliterations |
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
-result = crosswalk(supplier_list, certifier_registry,
+result = reconcile(supplier_list, certifier_registry,
                    entity="organisation", id_field="id")
 
 for edge in result["matches"]:

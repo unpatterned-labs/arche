@@ -473,3 +473,103 @@ def review_pack(
     (out / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest
+
+
+# ===================================================================
+# `report(obj, format=...)` — one verb over eleven formatters
+# ===================================================================
+# The eleven were never eleven jobs. They are a small matrix that Python has no
+# overloading to express, so the input type ended up encoded in the name:
+#
+#                        csv        html             table
+#   ResolutionResult     to_csv     to_html          format_table
+#   list[Evidence]       evidence_  evidence_        format_evidence_
+#                          to_csv     to_html          table
+#
+# plus `to_dot` and `to_graph_html` (result only), `format_tagged_text`
+# (evidence only), `format_summary`, and `print_table`, which is `format_table`
+# followed by print.
+#
+# A caller holding an object and wanting CSV should not have to know which
+# prefix their object earned. `report` dispatches on the type it is handed and
+# raises with the available formats when a combination does not exist -- rather
+# than, say, quietly returning a table when asked for a graph.
+#
+# Every one of the eleven still works and is still exported. This is one name
+# over them, not a replacement of them.
+
+#: (type key, format) -> the function that does it. Kept explicit rather than
+#: derived: a table that can be read is worth more here than one that is clever,
+#: and the gaps in it are real (a list of evidence spans has no entity graph to
+#: draw, so there is no `dot` row for it).
+_REPORTERS: dict[tuple[str, str], tuple[str, str]] = {
+    ("result", "csv"): (".workflow._format", "to_csv"),
+    ("result", "html"): (".workflow._format", "to_html"),
+    ("result", "table"): (".workflow._format", "format_table"),
+    ("result", "summary"): (".workflow._format", "format_summary"),
+    ("result", "dot"): (".workflow._format", "to_dot"),
+    ("result", "graph"): (".workflow._format", "to_graph_html"),
+    ("evidence", "csv"): (".workflow._format", "evidence_to_csv"),
+    ("evidence", "html"): (".workflow._format", "evidence_to_html"),
+    ("evidence", "table"): (".workflow._format", "format_evidence_table"),
+    ("evidence", "tagged"): (".ensemble", "format_tagged_text"),
+}
+
+
+def _kind_of(obj) -> str:
+    """Which row of the matrix ``obj`` belongs to."""
+    if isinstance(obj, list):
+        return "evidence"
+    if hasattr(obj, "entities"):
+        return "result"
+    raise TypeError(
+        f"report() does not know how to describe a {type(obj).__name__}. It "
+        "takes a ResolutionResult, or a list of IdentityEvidence. A Pipeline "
+        "`Result` carries `detections` rather than `entities` and these "
+        "formatters cannot read it -- an earlier version of this check "
+        "accepted one and failed inside the formatter instead, which is a "
+        "worse place to find out."
+    )
+
+
+def report(obj, format: str = "table", **kwargs):
+    """Describe a result or a list of evidence, in the format you ask for.
+
+    ``format`` is one of ``table``, ``summary``, ``csv``, ``html``, ``dot``,
+    ``graph`` or ``tagged`` -- not all of which apply to both inputs, because
+    a list of evidence spans has no entity graph to draw. Asking for one that
+    does not apply raises and lists what does.
+
+    Keyword arguments pass through to the underlying formatter unchanged.
+    """
+    from importlib import import_module
+
+    kind = _kind_of(obj)
+    target = _REPORTERS.get((kind, format))
+    if target is None:
+        available = sorted(f for k, f in _REPORTERS if k == kind)
+        raise ValueError(
+            f"format {format!r} is not available for {kind}; "
+            f"available: {', '.join(available)}"
+        )
+    module = import_module(target[0], package="arche")
+    return getattr(module, target[1])(obj, **kwargs)
+
+
+# `arche.report` is a module AND this verb. Same collision `arche.extract` had
+# and `arche.detect` documented: importing any name out of the submodule
+# rebinds the package attribute from the function to the module, after which
+# calling it raises TypeError. Making the module callable means it stops
+# mattering which one the name resolved to.
+import sys as _sys
+from types import ModuleType as _ModuleType
+
+
+class _CallableReportModule(_ModuleType):
+    """``arche.report`` — the module, and the verb, under one name."""
+
+    def __call__(self, *args, **kwargs):  # type: ignore[override]
+        return report(*args, **kwargs)
+
+
+_sys.modules[__name__].__class__ = _CallableReportModule

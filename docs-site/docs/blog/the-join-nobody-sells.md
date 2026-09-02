@@ -165,6 +165,6 @@ The vendors named at the top (Meridia, TraceX, Koltiva, Farmerline, Satelligence
 
 ## Notes
 
-1. The verdicts in the expandable block were produced by running the pairs, not written by hand. Reproduce them with `crosswalk(..., entity="organisation")`.
+1. The verdicts in the expandable block were produced by running the pairs, not written by hand. Reproduce them with `reconcile(..., entity="organisation")`.
 2. Tea is not in EUDR scope. It is included deliberately, as the cleanest available test of whether this capability stands up without a regulation compelling anyone to buy it.
 3. There is no demand evidence for any of this. That sentence is in the body rather than in a footnote because it is the most important thing on the page.

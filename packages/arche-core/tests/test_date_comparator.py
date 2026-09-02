@@ -19,7 +19,7 @@ children with the same name and different birthdays.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import ENTITY_PACKS, crosswalk
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._matcher import compare_dates, parse_date_value
 
 _NAME = "Zephyrine Quillfeather"
@@ -124,7 +124,7 @@ class TestMissingEvidenceNeverRefutes:
     ]
 
     def _edge(self, da, db):
-        res = crosswalk([{"id": "x", "name": _NAME, "birth_date": da}],
+        res = reconcile([{"id": "x", "name": _NAME, "birth_date": da}],
                         [{"id": "x", "name": _NAME, "birth_date": db}],
                         comparators=self._SPEC, id_field="id")
         return res["matches"][0] if res["matches"] else None
@@ -179,7 +179,7 @@ class TestThePersonPack:
         Two children share a name and nothing else. Before the pack could see
         a date, this merged at score 1.0.
         """
-        res = crosswalk(
+        res = reconcile(
             [{"id": "a", "name": "Angel Gonzalez", "birth_date": "2018-08-16"}],
             [{"id": "b", "name": "Angel Gonzalez", "birth_date": "2017-08-30"}],
             entity="person", id_field="id")
@@ -187,7 +187,7 @@ class TestThePersonPack:
 
     def test_the_same_child_across_two_date_formats_still_merges(self):
         """And the reason format tolerance had to come first."""
-        res = crosswalk(
+        res = reconcile(
             [{"id": "a", "name": "Angel Gonzalez", "birth_date": "8/30/2017"}],
             [{"id": "b", "name": "Angel Gonzalez", "birth_date": "2017-08-30"}],
             entity="person", id_field="id")

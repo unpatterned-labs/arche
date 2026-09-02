@@ -13,7 +13,7 @@ osm = [
     {"id": "OSM-77", "name": "Karfi PHC", "lat": 11.6015, "lon": 8.4025},
     {"id": "OSM-91", "name": "Gwale Clinic", "lat": 12.101, "lon": 8.601},
 ]
-out = resolve.crosswalk(hfr, osm, entity="place")
+out = resolve.reconcile(hfr, osm, entity="place")
 ```
 
 ```text
@@ -24,7 +24,7 @@ Same facility, ~60 m apart, name obviously equivalent, **why `review` and not `m
 
 ## The output shape
 
-`crosswalk` returns `{"matches": [...], "count": int, "blocking": {...}}`. Each entry in `matches` is one candidate pair:
+`reconcile` returns `{"matches": [...], "count": int, "blocking": {...}}`. Each entry in `matches` is one candidate pair:
 
 | field | meaning |
 |---|---|
@@ -62,14 +62,14 @@ Here: `(2.0·0.837 + 2.0·0.133 + 1.0·0.949) / 5.0 = 0.578` → the review band
 
 Look at `name_tftoken: 0.133`. The tftoken comparator asks: *how rare are the tokens these two names share?* Agreement on a **rare** token ("Karfi") is strong evidence; agreement on a **common** one ("Central", "Clinic") is nearly none.
 
-But rarity is measured **against a corpus**, and when you pass no `tf=`, `crosswalk` self-calibrates over the lists you gave it. Your corpus here is **four names**. "Karfi" appears in half the corpus, so to the engine it looks like a *common* word. The distinctiveness evidence is honestly weak, not because the match is bad, but because **four records cannot tell the engine what's rare**.
+But rarity is measured **against a corpus**, and when you pass no `tf=`, `reconcile` self-calibrates over the lists you gave it. Your corpus here is **four names**. "Karfi" appears in half the corpus, so to the engine it looks like a *common* word. The distinctiveness evidence is honestly weak, not because the match is bad, but because **four records cannot tell the engine what's rare**.
 
 Two consequences, both deliberate:
 
 1. **The safe failure mode is `review`, never a silent wrong `match`.** A name variant + close coordinates *without* distinctive proof is exactly the pair a human should confirm, the same shape as two *different* clinics that share a compound.
 2. **At real scale, distinctiveness becomes measurable.** Run the same call over the full Kano registry (~1,500 facilities) and "Karfi" is now genuinely rare in the corpus, for the real Karfi pair, `name_tftoken` rises from ~0.15 to **0.47**. And the real data teaches a second lesson: the actual registry pair is *"Karfi Health Post"* vs *"Karfi Primary Health Centre"*, 600 m apart, plausibly two **different** facilities in one town, and the engine correctly holds it at `review` while 111 clean pairs clear to `match` at ~1.0. The review queue is the product working, not failing. See the [place-resolution-at-scale tutorial](../tutorials/place_resolution_at_scale.md).
 
-You can also skip self-calibration and bring population knowledge directly: `resolve.crosswalk(..., tf="default")` uses the frequency table shipped with arche (US Census + African names).
+You can also skip self-calibration and bring population knowledge directly: `resolve.reconcile(..., tf="default")` uses the frequency table shipped with arche (US Census + African names).
 
 ## The distinctive-signal gate
 
@@ -90,4 +90,4 @@ cross-product.
 - **`review` on a toy example is expected**: distinctiveness needs a corpus.
 - **Missing fields don't hurt**: comparators skip, they don't zero.
 - **Never raw PII**: ids + numbers only; render values separately with `arche.render` (masked by default).
-- Scores from `crosswalk` (weighted mean) and `resolve.pairwise` (Fellegi–Sunter) are **not comparable**, different math, on purpose.
+- Scores from `reconcile` (weighted mean) and `resolve.compare` (Fellegi–Sunter) are **not comparable**, different math, on purpose.

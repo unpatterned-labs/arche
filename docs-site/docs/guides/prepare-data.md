@@ -22,7 +22,7 @@ Use only fields you are permitted to process. A field should be accurate enough 
 
 ## Choose the relation before matching
 
-For alpha, `crosswalk()` asks a narrow question: should these two records be treated as the same entity? Do not use it to represent related but distinct relationships such as supplier and brand, product family and product variant, or compatible products.
+For alpha, `reconcile()` asks a narrow question: should these two records be treated as the same entity? Do not use it to represent related but distinct relationships such as supplier and brand, product family and product variant, or compatible products.
 
 Those distinctions are particularly important for future product matching. An exact variant match, a family match, a substitute, and a bundle relationship need different labels, evidence, and evaluation.
 

@@ -56,7 +56,7 @@ if not (REPO / "packages" / "arche-core").exists():
 
 sys.path.insert(0, str(REPO / "packages" / "arche-core" / "src"))
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 from arche.resolve.metrics import evaluate
 """)
 
@@ -77,7 +77,7 @@ survey = [
     {"id": "osm-102", "name": "General Hospital", "lat": 12.04, "lon": 8.50},
 ]
 
-result = crosswalk(registry, survey, entity="place", block=None)
+result = reconcile(registry, survey, entity="place", block=None)
 for edge in result["matches"]:
     print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
     print(" ", edge["evidence"])

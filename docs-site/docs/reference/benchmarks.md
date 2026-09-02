@@ -205,7 +205,7 @@ Script: `datasets/names_dataops/bench_sweep_historical.py`. arche is run with `t
 
 ### arche using Splink, rather than against it
 
-The three sections above measure arche's own matcher against Splink and it loses all three. `crosswalk(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
+The three sections above measure arche's own matcher against Splink and it loses all three. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
 
 The question a benchmark can answer about an adapter is not "is it better" but "is it faithful". Does wrapping the scorer change what the scorer says?
 
@@ -314,7 +314,7 @@ A date is the clearest case of a signal that refutes better than it confirms: tw
 The shipped pack still does not declare it. `test_discriminator_veto.py` guards `place`, `person` and `artist` against acquiring refutation as a side effect of an unrelated change, on the grounds that each has published numbers a refutation would move. Adding a comparator was that unrelated change. Turning refutation on is a separate decision with its own measurement, and it is one line for a caller who wants it:
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 REFUTING = [
     {"field": "name", "kind": "name", "weight": 2.0},
@@ -324,7 +324,7 @@ REFUTING = [
 ]
 
 # Same name, different birthday: two people, however alike the names.
-res = crosswalk(
+res = reconcile(
     [{"id": "1", "name": "Angel Gonzalez", "birth_date": "2018-08-16"}],
     [{"id": "2", "name": "Angel Gonzalez", "birth_date": "2017-08-30"}],
     entity="person", id_field="id", comparators=REFUTING,

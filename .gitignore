@@ -123,6 +123,16 @@ datasets/data/_cache/
 # scripts that fetch it re-fetch on a cold cache.
 data/_cache/
 
+# Local production extracts and any derived resolution artefacts. These files
+# may contain personal or commercially sensitive data and must never be added
+# to the public repository.
+data/confidential/
+
+# A local revealed review pack may be opened by arche studio, but it must never
+# be staged with the example packs that live under data/review_packs/.
+data/review_packs/confidential/
+data/review_packs/confidential_*/
+
 # arche studio writes a labelled copy beside the pack it reviewed.
 data/review_packs/**/*_reviewed.csv
 
@@ -144,3 +154,12 @@ data/_studio/
 agent/
 .agents/
 .codex/
+
+
+
+examples/notebooks/20_a_supplier_ledger_at_scale.ipynb
+examples/notebooks/20_local_confidential_resolution.ipynb
+examples/notebooks/21_one_thing_two_identifiers.ipynb
+
+examples/notebooks/build_20.py
+examples/notebooks/build_21.py

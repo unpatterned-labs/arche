@@ -87,7 +87,17 @@ dependencies = [
 
 [project.optional-dependencies]
 # --- Document ingestion (carried from v0.1, still optional) ----------------
-pdf = ["pymupdf>=1.24"]
+# `pdf` is pypdf: BSD-3-Clause, pure Python, no system libraries. It reads the
+# text layer, which is what `extract_text` and `arche.doc.assess_residence`
+# need.
+#
+# It used to be pymupdf, which is **AGPL-3.0**. That is a licence a user should
+# choose on purpose, not acquire by installing an extra called `pdf`, so the
+# AGPL reader moved to a name that says what it is. `_extract_pdf` prefers
+# pypdf and falls back to pymupdf, so an existing `arche-core[pdf]` install
+# keeps working -- it simply stops being the one that pulls copyleft.
+pdf = ["pypdf>=5.0"]
+pdf-mupdf = ["pymupdf>=1.24"]
 docx = ["python-docx>=1.1"]
 # docling-backed structured parsing (arche.doc). The base wheel never pulls it;
 # arche.doc raises a helpful error pointing here when docling is absent.
@@ -104,6 +114,11 @@ parquet = ["pyarrow>=14"]
 # --- v0.2 detector backends (PRD §4) ---------------------------------------
 # GLiNER2-PII via ONNX runtime (~250MB). Multilingual soft-PII detection.
 detect = ["gliner>=0.2.8", "onnxruntime>=1.18"]
+# GLiNER 2.5 (Fastino, Apache-2.0). The `[local]` marker is load-bearing:
+# bare `gliner2` installs an API client that posts text to a hosted service,
+# so declaring it without `[local]` would ship a code path that sends customer
+# text off the machine. `[local]` is the on-device inference stack.
+detect2 = ["gliner2[local]>=2.0"]
 # Microsoft Presidio recognizer plugin (~lightweight).
 presidio = ["presidio-analyzer>=2.2", "presidio-anonymizer>=2.2"]
 # Splink + DuckDB for billion-row entity resolution (~200MB). Stage 2+.

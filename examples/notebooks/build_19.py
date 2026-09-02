@@ -216,11 +216,11 @@ Knowing a mark is weak does not tell you whether a listing infringes it. arche r
 """)
 
 code('''
-from arche.resolve import crosswalk, would_resolve
+from arche.resolve import reconcile, would_resolve
 
 def adjudicate(a, b, entity="product_home_goods"):
     ra, rb = {"id": "a", "name": a}, {"id": "b", "name": b}
-    edges = crosswalk([ra], [rb], entity=entity, id_field="id")["matches"]
+    edges = reconcile([ra], [rb], entity=entity, id_field="id")["matches"]
     if not edges:
         return None, None
     return edges[0], would_resolve(edges[0], ra, rb, entity=entity)

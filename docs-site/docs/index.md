@@ -18,7 +18,7 @@ Central Clinic, Kano             Central Clinic, Kaduna         review
 
 ## What arche does
 
-- Links two record lists with `crosswalk()`.
+- Links two record lists with `reconcile()`.
 - Returns `match` when the evidence clears the configured gate.
 - Returns `review` when the records are plausible but the evidence is not enough for an automatic link.
 - Records comparator evidence, configuration pins, and a reproducible `decision_id` for every returned candidate.
@@ -38,12 +38,12 @@ Then follow [Resolve two lists](getting-started/quickstart.md).
 Save this as `first_crosswalk.py`, then run `python first_crosswalk.py`. It uses only the installed package, not a notebook or a repository checkout.
 
 ```python
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 left = [{"id": "registry-1", "name": "Gyaranya Health Post", "lat": 11.90, "lon": 8.50}]
 right = [{"id": "survey-1", "name": "Gyaranya Health Post", "lat": 11.94, "lon": 8.50}]
 
-edge = crosswalk(left, right, entity="place")["matches"][0]
+edge = reconcile(left, right, entity="place")["matches"][0]
 print(edge["decision"], edge["score"], edge["evidence"])
 ```
 
@@ -66,7 +66,7 @@ There is no released arche MCP server. An agent can call the Python API through 
 
 **Splink is the better matcher, and arche can use it.** That is measured, not a courtesy: on Febrl 4, on Splink's `historical_50k`, and on a Nigerian school register chosen because collision-heavy names should have favoured arche, Splink wins every time. Its term-frequency adjustments are the same idea as arche's `tftoken` and have been in Splink for years.
 
-So `crosswalk(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-comparator evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, and a review pack a person can work. Measured against the same Splink recipe run directly, the adapter reaches the same numbers. It is the same scorer with a decision layer attached, not a better one.
+So `reconcile(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-comparator evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, and a review pack a person can work. Measured against the same Splink recipe run directly, the adapter reaches the same numbers. It is the same scorer with a decision layer attached, not a better one.
 
 Use Splink directly when you want the best available probability that two rows are the same person. Use arche when you need to show why a decision was made, what was refused and on what grounds, and to prove the artifact has not changed since. The two are not competing for the same job.
 

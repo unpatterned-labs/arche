@@ -62,7 +62,7 @@ We deliberately did **not** use Nigeria's official registry (NHFR, mirrored on H
 
 ## Result: most of it isn't a hard problem
 
-Running `crosswalk(osm, grid3, entity="place")` compared 1,180,255 possible pairs, blocked them down to 39,701 actually scored. A 96.6% reduction, and finished in **21 seconds on a laptop, offline**.
+Running `reconcile(osm, grid3, entity="place")` compared 1,180,255 possible pairs, blocked them down to 39,701 actually scored. A 96.6% reduction, and finished in **21 seconds on a laptop, offline**.
 
 | Outcome | OSM records | Share |
 |---|---|---|

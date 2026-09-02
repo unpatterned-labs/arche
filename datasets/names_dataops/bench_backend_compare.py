@@ -1,14 +1,14 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""Does `crosswalk(backend="splink")` actually deliver Splink's advantage?
+"""Does `reconcile(backend="splink")` actually deliver Splink's advantage?
 
 Three arms per dataset, and the gaps between them are the whole point:
 
 * **arche** the shipped engine.
-* **derived** `crosswalk(backend="splink", splink_settings="derive")`, the
+* **derived** `reconcile(backend="splink", splink_settings="derive")`, the
   configuration inferred from an arche comparator pack.
-* **adapter** `crosswalk(backend="splink", splink_settings=...)` handed the
+* **adapter** `reconcile(backend="splink", splink_settings=...)` handed the
   SAME `SettingsCreator` and training recipe the hand-written benchmark in this
   directory uses. Not a copy of them: the objects are imported from
   `bench_splink_febrl.py` and `bench_splink_nigeria.py`, so if the adapter is
@@ -79,7 +79,7 @@ def _timed(label, fn):
 
 def febrl() -> list[dict]:
     """Febrl 4 without `soc_sec_id`, the arm that resembles real work."""
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
     from bench_splink_febrl import (
         FILES,
         _fetch,
@@ -130,14 +130,14 @@ def febrl() -> list[dict]:
             score([(a, b) for a, b, s in rows_ if s >= thr],
                   f"{label} p>={thr}", meta)
 
-    got, meta = _timed("derived", lambda: edges(crosswalk(
+    got, meta = _timed("derived", lambda: edges(reconcile(
         _arche_records(a_rows), _arche_records(b_rows), entity="person",
         id_field="id", backend="splink", splink_settings="derive",
         threshold=0.99, review_margin=0.79)))
     if got is not None:
         sweep(got, "derived", meta)
 
-    got, meta = _timed("adapter", lambda: edges(crosswalk(
+    got, meta = _timed("adapter", lambda: edges(reconcile(
         splink_records[:half], splink_records[half:], id_field="id",
         backend="splink", splink_settings=splink_settings(with_ssn=False),
         splink_train=lambda ln: splink_train(ln, with_ssn=False),
@@ -176,7 +176,7 @@ def _arche_records(rows):
 
 def nigeria() -> list[dict]:
     import bench_splink_nigeria as bn
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     override = os.environ.get("ARCHE_BENCH_POPULATION")
     if override:
@@ -200,7 +200,7 @@ def nigeria() -> list[dict]:
               flush=True)
 
     def run(**kw):
-        res = crosswalk(records, records, id_field="id", **kw)
+        res = reconcile(records, records, id_field="id", **kw)
         return [(bn.norm((e["a_id"], e["b_id"])), e["score"], e["decision"])
                 for e in res["matches"] if e["a_id"] != e["b_id"]]
 

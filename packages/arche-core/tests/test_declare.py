@@ -181,18 +181,18 @@ def test_crosswalk_links_on_declared_identifier():
           "vessel_id": "IMO-9074729"}]
     b = [{"lot_id": "b1", "supplier_name": "ACME Fisheries Ltd",
           "vessel_id": "IMO-9074729"}]
-    out = resolve.crosswalk(a, b, decl=d, block=None)
+    out = resolve.reconcile(a, b, decl=d, block=None)
     assert out["matches"][0]["decision"] == "match"
     assert "vessel_id" in out["matches"][0]["evidence"]
 
 
 def test_crosswalk_rejects_decl_plus_entity():
     with pytest.raises(ValueError, match="not both"):
-        resolve.crosswalk([], [], decl=_decl(), entity="person")
+        resolve.reconcile([], [], decl=_decl(), entity="person")
 
 
 def test_date_kind_scores_in_crosswalk():
-    out = resolve.crosswalk(
+    out = resolve.reconcile(
         [{"id": "a", "d": "1985-03-15"}], [{"id": "b", "d": "1985-03-15"}],
         comparators=[{"field": "d", "kind": "date", "weight": 1.0},
                      {"field": "d", "kind": "name", "weight": 0.1}],
@@ -211,7 +211,7 @@ def test_pairwise_exact_declared_id_reaches_same_entity():
         {"lot_id": "b", "supplier_name": "Acme Fisheries Limited",
          "vessel_id": "IMO-9074729"}, decl=d)
     key = b"declaration-tests-issuer-key-32b"
-    decision = resolve.pairwise(ra, rb, issuer_key=key, decl=d)
+    decision = resolve.compare(ra, rb, issuer_key=key, decl=d)
     assert decision.identity == "same_entity"
     assert decision.pins["declaration"] == d.pin()
 
@@ -225,7 +225,7 @@ def test_pairwise_declared_id_conflict_vetoes():
         {"lot_id": "b", "supplier_name": "Acme Fisheries",
          "vessel_id": "IMO-1111111"}, decl=d)
     key = b"declaration-tests-issuer-key-32b"
-    decision = resolve.pairwise(ra, rb, issuer_key=key, decl=d)
+    decision = resolve.compare(ra, rb, issuer_key=key, decl=d)
     assert decision.identity == "different"
 
 
@@ -238,8 +238,8 @@ def test_decision_id_moves_with_the_declaration():
     rec = {"lot_id": "a", "supplier_name": "Acme", "vessel_id": "IMO-1"}
     ra1 = Reference.from_record(rec, decl=base)
     ra2 = Reference.from_record(rec, decl=heavier)
-    d1 = resolve.pairwise(ra1, ra1, issuer_key=key, decl=base)
-    d2 = resolve.pairwise(ra2, ra2, issuer_key=key, decl=heavier)
+    d1 = resolve.compare(ra1, ra1, issuer_key=key, decl=base)
+    d2 = resolve.compare(ra2, ra2, issuer_key=key, decl=heavier)
     assert d1.decision_id != d2.decision_id
 
 

@@ -81,7 +81,7 @@ class DeclaredExtraction:
     def pins(self, decl: Declaration) -> dict[str, Any]:
         """Provenance pins for a decision built on this extraction.
 
-        Merged into ``pairwise(..., extra_pins=...)`` these enter the decision
+        Merged into ``compare(..., extra_pins=...)`` these enter the decision
         hash — an honest account: which model proposed the record, under which
         prompt and declaration, and that the extraction step is
         **not** reproducible (the representation and the decision math are).

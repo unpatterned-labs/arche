@@ -66,7 +66,7 @@ None of these was fabricated. Every one was a real run. The failure is quieter a
 
 ## Something we found and decided not to fix
 
-The benchmark turned up a thing we were not looking for. `crosswalk(entity="person")` never loads the shipped name-frequency table. The `person` pack is missing from the internal map that connects a pack to its population data, so it self-calibrates over whatever two lists you hand it. The `organisation` pack has an entry, added to fix precisely this, with a code comment explaining why. Nobody added one for `person`.
+The benchmark turned up a thing we were not looking for. `reconcile(entity="person")` never loads the shipped name-frequency table. The `person` pack is missing from the internal map that connects a pack to its population data, so it self-calibrates over whatever two lists you hand it. The `organisation` pack has an entry, added to fix precisely this, with a code comment explaining why. Nobody added one for `person`.
 
 We expected that to be a bug. On this benchmark it is not: the self-calibrated default scores F1 0.637 against the population table's 0.577, buying seven points of recall for under two points of precision. Changing it would also change the `decision_id` of every person-pack decision ever issued.
 
