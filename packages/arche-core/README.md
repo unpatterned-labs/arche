@@ -78,6 +78,32 @@ The retrieval score proposes a comparison. It does not decide identity. Each
 returned edge includes the retrieval route, scored evidence, the verdict and a
 `decision_id` that pins the retrieval provenance too.
 
+## Persist entity decisions locally
+
+The vNext runtime starts with a local DuckDB store for stable entity identities, immutable observations, evidence, and decision receipts. It deliberately does not add an autonomous planner yet: future evidence-acquisition actions must first have a durable, replayable place to record what they learned.
+
+```bash
+pip install "arche-core[runtime]"
+```
+
+```python
+from datetime import UTC, datetime
+
+from arche import attach
+from arche.runtime import Entity, new_entity_id
+
+engine = attach("duckdb:///arche.duckdb")
+entity = Entity(
+    entity_id=new_entity_id(),
+    entity_type="organisation",
+    identity_unit="legal_entity",
+    created_at=datetime.now(UTC),
+)
+engine.store.write_entities([entity])
+```
+
+This contract is the foundation for later `ResolutionCase` work: external tool output returns as an immutable observation, is evaluated by the normal evidence and policy pipeline, and never grants the tool direct authority to merge identities.
+
 This import path currently uses Arche's default scorer. A Splink run keeps
 candidate generation in its caller-owned `SettingsCreator` until the two paths
 share an evaluated candidate contract.

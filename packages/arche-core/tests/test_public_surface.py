@@ -129,7 +129,7 @@ def test_importing_arche_is_silent():
 
 
 @pytest.mark.parametrize(
-    "name", ["compare", "reconcile", "dedupe", "Receipt"]
+    "name", ["attach", "compare", "reconcile", "dedupe", "Receipt"]
 )
 def test_the_new_names_are_exported_and_recommended(name):
     assert hasattr(arche, name)
@@ -198,7 +198,7 @@ def test_arche_extract_is_callable_whichever_way_it_resolved():
 _FROZEN_SURFACE = {
     # The vocabulary this branch settled: four questions, two conveniences,
     # the noun they hand back, and the pipeline primitives.
-    "compare", "reconcile", "dedupe", "find", "describe", "report",
+    "attach", "compare", "reconcile", "dedupe", "find", "describe", "report",
     "Receipt", "Pipeline", "Result", "Detection", "DocumentReport",
     "__version__",
     # The place lane. Domain helpers rather than vocabulary -- they read as

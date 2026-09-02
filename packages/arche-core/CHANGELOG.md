@@ -4,7 +4,10 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- `arche.attach("duckdb:///...")` starts the vNext local runtime foundation with an idempotent DuckDB schema and explicit contracts for stable entities, immutable observations, evidence, and vNext decision receipts. This does not change existing resolution APIs or introduce agent-planner behaviour.
+- The optional `arche-core[runtime]` extra installs DuckDB for the local canonical store.
 
 ## [0.7.0a1] — 2026-08-31
 
