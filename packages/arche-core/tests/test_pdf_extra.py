@@ -61,3 +61,33 @@ def test_a_missing_reader_names_both_extras_and_the_licence():
     # content rather than simulating the absent-import path.
     source = ingest._extract_pdf.__doc__ or ""
     assert "BSD" in source or "AGPL" in source
+
+
+def test_the_pyproject_is_valid_toml():
+    # It parsed as TOML while being *invalid*: a patch script ran twice and
+    # wrote `detect2` a second time, and TOML forbids duplicate keys. Nothing
+    # in the suite noticed, because nothing in the suite read the file with a
+    # strict parser -- `uv` did, and refused to build the package at all.
+    #
+    # `tomllib` is strict about duplicates, so simply parsing the file is the
+    # guard. It costs nothing and it stands between an edit and a release that
+    # cannot be installed.
+    import tomllib
+
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    extras = data["project"]["optional-dependencies"]
+    assert extras, "no optional dependencies declared"
+
+
+def test_every_extra_is_declared_once():
+    # tomllib raises on a duplicate key, so reaching this line already proves
+    # it. Asserted separately anyway: the failure above reads as "your TOML is
+    # broken", and this one names what to look for.
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    start = text.index("[project.optional-dependencies]")
+    end = text.index("\n[", start + 1)
+    keys = [line.split("=")[0].strip()
+            for line in text[start:end].splitlines()
+            if "=" in line and not line.lstrip().startswith("#")]
+    duplicates = {k for k in keys if keys.count(k) > 1}
+    assert not duplicates, f"declared more than once: {sorted(duplicates)}"

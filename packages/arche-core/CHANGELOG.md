@@ -118,6 +118,38 @@ extraction.
 the install that pulls copyleft. With neither present, the error names both
 extras and their licences rather than only the one that used to be there.
 
+### Added — `pyproject.toml` is now parsed by the suite
+
+Two tests read `pyproject.toml` the way a build backend does: one parses it
+with `tomllib`, which rejects duplicate keys outright, and the other asserts
+every extra is declared exactly once, because "your TOML is broken" is a worse
+error message than "`detect2` is declared more than once".
+
+Nothing in the suite read the file with a strict parser before this, so a
+malformed `[project.optional-dependencies]` could sit in a working tree
+through a green run and only fail at `uv build`. The guard is cheap and the
+failure it prevents is a wheel that cannot be produced.
+
+### Fixed — a published example imported the PDF reader it no longer had
+
+`reference/how-arche-works.md` authored two demo PDFs with `fitz` so that its
+`resolve_documents` example had something to read. Moving `arche-core[pdf]`
+from pymupdf to pypdf left that import unsatisfiable, and CI failed on it.
+
+It failed *only* in CI, which is the honest part: this machine still had
+pymupdf installed from the old extra, so the page ran locally throughout. A
+green local run said nothing about a clean install.
+
+Creating the fixture was scaffolding and never the subject — a page about
+resolving documents should not depend on a PDF *writer*. The example now writes
+plain text, which needs no dependency at all and produces the identical result
+(`[('same_entity', 1.0)]` either way), and says plainly that a folder of PDFs
+behaves the same and needs a reader.
+
+No other page imports a reader directly. Verified afterwards by running the
+whole documentation gate with `fitz` and `pymupdf` blocked at import, which is
+what CI sees.
+
 ### Changed — the documentation teaches the new verbs
 
 42 tracked files carried 127 uses of the old spellings, and shipping public

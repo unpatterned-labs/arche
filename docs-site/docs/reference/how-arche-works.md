@@ -95,30 +95,26 @@ Install document support first:
 pip install "arche-core[doc]"
 ```
 
-This script creates two small PDFs, reads them, extracts identity signals, and compares the resulting records. Replace the generated files with your own PDFs in a real workflow.
+This script writes two small documents, reads them, extracts identity signals, and compares the resulting records. Point it at your own folder in a real workflow — `resolve_documents` reads PDF, DOCX and plain text alike, and PDFs need a reader (`arche-core[pdf]`, or `[doc]` for a structured parse).
 
 ```python
 from pathlib import Path
 
-import fitz
-
 from arche import resolve_documents
 
+# Plain text keeps the example dependency-free; a folder of PDFs behaves the
+# same way and is what you would actually hand it.
 folder = Path("demo-docs")
 folder.mkdir(exist_ok=True)
 
 for filename, text in {
-    "statement.pdf": "Fatima Abdullahi\nNIN 12345678901\nPhone 08031234567",
-    "invoice.pdf": "Fatuma Abdulahi\nNIN 12345678901\nPhone 08031234567",
+    "statement.txt": "Fatima Abdullahi\nNIN 12345678901\nPhone 08031234567",
+    "invoice.txt": "Fatuma Abdulahi\nNIN 12345678901\nPhone 08031234567",
 }.items():
-    pdf = fitz.open()
-    page = pdf.new_page()
-    page.insert_text((72, 72), text)
-    pdf.save(folder / filename)
-    pdf.close()
+    (folder / filename).write_text(text, encoding="utf-8")
 
 report = resolve_documents(
-    str(folder / "*.pdf"), jurisdiction="NG", quiet=True, progress=False
+    str(folder), jurisdiction="NG", quiet=True, progress=False
 )
 print([(item["identity"], item["score"]) for item in report.decisions])
 print(report.table())
@@ -130,13 +126,13 @@ print(report.table())
 EXTRACTED RECORDS
 document       name                    phone                   national_id
 -------------------------------------------------------------------------------------
-invoice.pdf    Fatu***********         0803*******             1234*******
-statement.pdf  Fati************        0803*******             1234*******
+invoice.txt    Fatu***********         0803*******             1234*******
+statement.txt  Fati************        0803*******             1234*******
 
 RESOLUTION
 document a                   document b                   verdict        score
 ------------------------------------------------------------------------------
-invoice.pdf                  statement.pdf                same_entity   1.0000
+invoice.txt                  statement.txt                same_entity   1.0000
 ```
 
 `DocumentReport` retains records, masked summaries, decisions, parser errors, and extraction provenance. Check `report.errors` before treating a folder run as complete.

@@ -141,6 +141,10 @@ def extract(
         return sorted(_extract_gliner(text, entity_types), key=lambda e: e.start)
     elif backend == "gliner2":
         return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
+    elif backend == "gliner2":
+        return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
+    elif backend == "gliner2":
+        return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
     elif backend == "regex":
         return sorted(_extract_regex(text, entity_types), key=lambda e: e.start)
     else:
@@ -680,3 +684,119 @@ class _CallableExtractModule(_ModuleType):
 
 
 _sys.modules[__name__].__class__ = _CallableExtractModule
+
+
+# ===================================================================
+# GLiNER 2.5 backend (optional, `arche-core[detect2]`)
+# ===================================================================
+
+
+def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
+    """Extract entities with GLiNER 2.5.
+
+    The output shape differs from v1 and the difference matters. v1 returns a
+    flat list of spans each carrying its own label; 2.5 returns spans grouped
+    BY label::
+
+        {"entities": {"organization": [{"text": ..., "confidence": ...,
+                                        "start": ..., "end": ...}],
+                      "person": []}}
+
+    ``include_confidence`` and ``include_spans`` are both requested because
+    without them the model returns bare strings, and a mention with no offsets
+    cannot be cited back to the document it came from -- which is the whole
+    point of an arche :class:`Entity`.
+    """
+    from ._models import get_gliner2
+    from .config import get_config
+
+    model = get_gliner2()
+    labels = [label.lower() for label in entity_types] if entity_types \
+        else _IDENTITY_LABELS
+
+    result = model.extract_entities(
+        text, labels,
+        threshold=get_config().gliner2_threshold,
+        include_confidence=True,
+        include_spans=True,
+    )
+
+    out: list[Entity] = []
+    for label, spans in (result or {}).get("entities", {}).items():
+        entity_type = _GLINER_LABEL_MAP.get(label.lower(), label.upper())
+        for span in spans or []:
+            # A bare string means the model answered without offsets despite
+            # being asked for them. Skipping is right: an uncitable mention is
+            # worse than a missing one, because it looks like evidence.
+            if not isinstance(span, dict):
+                continue
+            start, end = span.get("start"), span.get("end")
+            if start is None or end is None:
+                continue
+            out.append(Entity(
+                text=span.get("text", text[start:end]),
+                entity_type=entity_type,
+                confidence=float(span.get("confidence", 0.0)),
+                start=int(start),
+                end=int(end),
+                source="gliner2",
+            ))
+    return out
+
+
+# ===================================================================
+# GLiNER 2.5 backend (optional, `arche-core[detect2]`)
+# ===================================================================
+
+
+def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
+    """Extract entities with GLiNER 2.5.
+
+    The output shape differs from v1 and the difference matters. v1 returns a
+    flat list of spans each carrying its own label; 2.5 returns spans grouped
+    BY label::
+
+        {"entities": {"organization": [{"text": ..., "confidence": ...,
+                                        "start": ..., "end": ...}],
+                      "person": []}}
+
+    ``include_confidence`` and ``include_spans`` are both requested because
+    without them the model returns bare strings, and a mention with no offsets
+    cannot be cited back to the document it came from -- which is the whole
+    point of an arche :class:`Entity`.
+    """
+    from ._models import get_gliner2
+    from .config import get_config
+
+    model = get_gliner2()
+    labels = [label.lower() for label in entity_types] if entity_types \
+        else _IDENTITY_LABELS
+
+    result = model.extract_entities(
+        text, labels,
+        threshold=get_config().gliner2_threshold,
+        include_confidence=True,
+        include_spans=True,
+    )
+
+    out: list[Entity] = []
+    for label, spans in (result or {}).get("entities", {}).items():
+        entity_type = _GLINER_LABEL_MAP.get(label.lower(), label.upper())
+        for span in spans or []:
+            # A bare string means the model answered without offsets despite
+            # being asked for them. Skipping is right: an uncitable mention is
+            # worse than a missing one, because it looks like evidence.
+            if not isinstance(span, dict):
+                continue
+            start, end = span.get("start"), span.get("end")
+            if start is None or end is None:
+                continue
+            out.append(Entity(
+                text=span.get("text", text[start:end]),
+                entity_type=entity_type,
+                confidence=float(span.get("confidence", 0.0)),
+                start=int(start),
+                end=int(end),
+                source="gliner2",
+            ))
+    return out
