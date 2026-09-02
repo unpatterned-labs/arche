@@ -8,6 +8,16 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 - `arche.attach("duckdb:///...")` starts the vNext local runtime foundation with an idempotent DuckDB schema and explicit contracts for stable entities, immutable observations, evidence, and vNext decision receipts. This does not change existing resolution APIs or introduce agent-planner behaviour.
 - The optional `arche-core[runtime]` extra installs DuckDB for the local canonical store.
+- Adapters record current pairwise and batch resolver output as vNext decision receipts, while persisted `ResolutionRun` records candidate-pair cost and review volume.
+- Added persisted `ResolutionCase` and policy-permitted `EvidenceAction` contracts. Action output is accepted only as a new immutable Observation from the permitted source; it has no direct entity-mutation path.
+- Added deterministic case evidence gaps, read-only connector capability checks, and case-associated recording of existing resolver output after persisted Evidence is available.
+- Added a deterministic ResolutionCase planner that assesses the question and evidence gaps before selecting only compatible, priced, policy-permitted read-only actions within an explicit budget.
+- Added an evidence-first entity-memory ledger: revisable claims, entity relations, contradictions, open questions, and immutable case events. `EntityMemory` assembles the view for a stable entity, and deterministic evidence plans can be recorded in case history without executing them.
+- Parsed documents now adapt to immutable runtime Observations with their parser and artifact/text-hash provenance, so document-derived evidence can enter a ResolutionCase without treating document contents as verified truth.
+- Reviewed document `FieldEvidence` can now adapt into span-cited vNext Evidence and explicit, value-hashed claim or relationship proposals in case history. Proposals never write entity-memory claims or relations directly.
+- `ProposalAcceptancePolicy` promotes only recorded proposals backed by the required number of independent Observation sources. It records insufficient evidence and active-claim/relation conflicts as review events, and writes a revisable ledger record only on acceptance.
+- `resolve_documents(..., extraction_backend="regex")` permits deterministic, bounded document extraction while retaining the existing `"auto"` default.
+- Schema-driven document extraction accepts `entity_backend="regex"` for the same bounded local entity-extraction path, while preserving its existing `"auto"` default.
 
 ## [0.7.0a1] — 2026-08-31
 

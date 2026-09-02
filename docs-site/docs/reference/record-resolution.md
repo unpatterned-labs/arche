@@ -51,13 +51,13 @@ Resolve one direct person pair.
 from arche.resolve import compare
 
 decision = compare(
-    "Fatima Abdullahi, NIN 12345678901",
-    "Fatuma Abdulahi, NIN 12345678901",
+    {"name": "Fatima Abdullahi", "national_id": "12345678901"},
+    {"name": "Fatuma Abdulahi", "national_id": "12345678901"},
 )
 print(decision.identity)
 ```
 
-`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `reconcile()` and its labels should not be treated as interchangeable.
+`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `reconcile()` and its labels should not be treated as interchangeable. Structured records take the deterministic resolution path; passing free text instead first invokes document extraction and therefore requires an extraction backend.
 
 ## Signing crosswalk edges
 

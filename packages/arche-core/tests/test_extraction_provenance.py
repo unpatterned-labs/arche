@@ -21,15 +21,16 @@ legitimacy to something the reader cannot independently inspect.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
-
 from arche.canonical import Reference
 from arche.doc.parse import _extraction_provenance
 from arche.resolve import compare
 
 _BENCH = Path(__file__).resolve().parents[3] / "data" / "doc_bench"
+_RUN_DOC_INTEGRATION = os.getenv("ARCHE_RUN_DOC_INTEGRATION") == "1"
 
 
 class TestWhatIsRecorded:
@@ -142,8 +143,13 @@ class TestItReachesTheDecision:
                 != self._decide({"a": {"parser": "docling"}}).decision_id)
 
 
-@pytest.mark.skipif(not (_BENCH / "invoice_27.pdf").exists(),
-                    reason="doc_bench corpus not present")
+@pytest.mark.skipif(
+    not _RUN_DOC_INTEGRATION,
+    reason="Requires ARCHE_RUN_DOC_INTEGRATION=1",
+)
+@pytest.mark.skipif(
+    not (_BENCH / "invoice_27.pdf").exists(), reason="doc_bench corpus not present"
+)
 class TestEndToEnd:
     def test_parse_records_provenance(self):
         from arche.doc import DOC_FEATURE_AVAILABLE, parse

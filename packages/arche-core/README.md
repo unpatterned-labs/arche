@@ -102,7 +102,181 @@ entity = Entity(
 engine.store.write_entities([entity])
 ```
 
+### Adapt existing resolver output
+
+The current deterministic resolver remains unchanged. Record its emitted receipts and candidate-pair cost in the durable runtime when a caller is ready to do so:
+
+```python
+from datetime import UTC, datetime
+
+from arche.runtime import adapt_reconcile_result
+from arche.resolve import reconcile
+
+result = reconcile(left_records, right_records, entity="organisation")
+run, receipts = adapt_reconcile_result(
+    result,
+    run_id="run_20260902_001",
+    created_at=datetime.now(UTC),
+)
+engine.store.write_decisions(receipts)
+engine.store.write_resolution_runs([run])
+```
+
+`unsurfaced_pairs` is a cost/coverage metric, not a claim that those candidate pairs are different entities. Existing resolver factors and pins are retained as receipt provenance; callers may attach durable Evidence IDs when those records already exist.
+
+### Open an uncertain resolution case
+
+`ResolutionCase` is the boundary for difficult cases. It records an unresolved question and the observations already known; a permitted action authorises one source and does not invoke it. Its output must be ingested as a new Observation before normal evidence and inference can use it.
+
+```python
+from datetime import UTC, datetime
+
+from arche.runtime import EvidenceAction, ResolutionCase
+
+case = ResolutionCase("case_01", "Which supplier is this?", ("obs_01",), (), datetime.now(UTC))
+action = EvidenceAction("act_01", case.case_id, "registry_lookup", "supplier_registry", datetime.now(UTC), "supplier-policy-v1")
+engine.store.write_resolution_cases([case])
+engine.store.write_evidence_actions([action])
+
+# A connector supplies this immutable Observation; it cannot link an entity directly.
+engine.ingest_action_observation("act_01", registry_observation)
+```
+
+There is deliberately no built-in external provider in `arche-core`. Applications supply a read-only connector that satisfies the explicit capability contract; the included deterministic planner can choose only among those permitted actions under an explicit budget.
+
+### Re-enter resolution after evidence arrives
+
+Cases can expose deterministic evidence gaps before any planning occurs. A read-only connector must declare the same source, action type, and policy pin as the permitted action; it can return only an Observation. Normal resolver output is then recorded back against the case with persisted Evidence IDs.
+
+```python
+from arche.runtime import ToolCapability, what_would_resolve
+
+for gap in what_would_resolve(case):
+    print(gap.field, gap.reason)
+
+# registry_connector.capability must match the persisted EvidenceAction exactly.
+assert registry_connector.capability == ToolCapability(
+    "supplier_registry", ("registry_lookup",), "supplier-policy-v1"
+)
+engine.execute_evidence_action("act_01", registry_connector)
+
+run, receipts = engine.record_case_reconcile_result(
+    case.case_id,
+    reconcile_result,
+    run_id="run_20260902_002",
+    created_at=datetime.now(UTC),
+    evidence_ids_by_decision={"xwd:...": ("ev_registry_01",)},
+)
+```
+
+### Plan only after assessing the case
+
+The built-in planner is deterministic and transparent. It first returns a structured assessment of the question, candidate entities, evidence gaps, eligible actions, and unavailable actions. It then selects only compatible, read-only, costed actions within the supplied budget; planning does not execute them.
+
+```python
+from arche.runtime import ResolutionBudget
+
+plan = engine.plan_case(
+    case.case_id,
+    capabilities=(registry_connector.capability,),
+    budget=ResolutionBudget(max_actions=1, max_cost=0.25),
+)
+for action in plan.actions:
+    print(action.gap_field, action.rationale, action.estimated_cost)
+
+engine.record_case_plan(plan, recorded_at=datetime.now(UTC))
+```
+
+This is the baseline for an optional future LLM planner. Any such planner must choose from the same assessed gaps and permitted capabilities, meet the same budget, and produce a comparable plan before an application executes it. It cannot create a new action type, call an unapproved source, or bypass observation and evidence records.
+
 This contract is the foundation for later `ResolutionCase` work: external tool output returns as an immutable observation, is evaluated by the normal evidence and policy pipeline, and never grants the tool direct authority to merge identities.
+
+### Keep entity memory revisable
+
+`Entity` is the stable identity; the ledger records the things currently
+believed about it without treating them as permanent truth. `Claim` and
+`EntityRelation` records cite durable Evidence IDs, `Contradiction` records
+preserve incompatible claims, `OpenQuestion` preserves material unknowns, and
+`CaseEvent` preserves the resolution history. `Claim.value_ref` is intended to
+be a caller-managed digest or pointer, not a raw document, person, or health
+record payload.
+
+```python
+memory = engine.get_entity_memory("ent_supplier_01")
+for claim in memory.claims:
+    print(claim.predicate, claim.status, claim.evidence_ids)
+
+for conflict in memory.contradictions:
+    print(conflict.reason, conflict.claim_ids)
+```
+
+The same contracts support a supplier and its corporate relationships, a
+person and identity-document claims, or a school or health facility and its
+location, licensing, and ownership claims. Documents enter through immutable
+observations and extraction evidence before they can create or revise any
+ledger entry.
+
+### Pilot a tea supply chain without declaring it true
+
+The [Unilever Global Tea Supply Chain report](https://www.unilever.com/files/950d107a-f912-4d1d-9e3f-9387288c3512/unilever-global-tea-supply-chain.pdf) is a useful pilot source because it reports suppliers and estates, but it must be treated as a dated, untrusted document observation. It is not proof that a supplier still operates an estate, owns it, or supplied a particular shipment. Download it only where its terms permit; the runtime stores neither the PDF nor its extracted text.
+
+```python
+from arche.doc import parse
+from arche.runtime import observation_from_document
+
+parsed = parse("unilever-global-tea-supply-chain.pdf")
+document_observation = observation_from_document(
+    parsed,
+    observation_id="obs_tea_report_2020",
+    source_id="unilever_tea_supply_chain",
+    recorded_at=datetime.now(UTC),
+)
+engine.ingest_action_observation("act_document_extract", document_observation)
+```
+
+An extraction step may then issue Evidence such as “the document reports this supplier/estate label at this location in the text.” Only that evidence may support a revisable `reported_supplier_estate` claim or a `reported_operates` relation. A current registry, shipment record, certification, or field observation is separate evidence and may contradict it.
+
+### Propose reviewed document beliefs before asserting them
+
+`record_reviewed_document_proposals()` is the bridge from reviewed `FieldEvidence` to vNext. It records a document Observation, one Evidence item per field (including source, confidence, page, and span), and a `reviewed_document_proposals` case event. `DocumentClaimSpec` and `DocumentRelationSpec` make the semantic mapping explicit: Arche does not infer whether a label means a supplier, estate, owner, or recipient. Proposal values are SHA-256 references, not raw document values, and no `Claim` or `EntityRelation` enters memory until a later policy or human-review step accepts it.
+
+```python
+from arche.runtime import DocumentClaimSpec, DocumentRelationSpec
+
+proposal_set = engine.record_reviewed_document_proposals(
+    case.case_id, parsed, reviewed_extraction,
+    observation_id="obs_tea_report_reviewed",
+    source_id="unilever_tea_supply_chain",
+    recorded_at=datetime.now(UTC),
+    review_id="review:tea:2020:1",
+    claim_specs=(DocumentClaimSpec("ent_supplier", "display_name", "supplier_name"),),
+    relation_specs=(DocumentRelationSpec("ent_supplier", "sources_from", "ent_estate", ("supplier_name", "estate_name")),),
+)
+
+assert engine.get_entity_memory("ent_supplier").claims == ()
+```
+
+### Promote only independently supported proposals
+
+`ProposalAcceptancePolicy` is the separate policy boundary that can promote a recorded proposal. Its default requires Evidence from two distinct Observation sources; several spans from one report still count as one source. An incompatible active claim or relationship returns `review` and records the conflicting ledger IDs in case history instead of creating a contested belief.
+
+```python
+from arche.runtime import ProposalAcceptancePolicy
+
+outcome = engine.accept_claim_proposal(
+    proposal_set.claims[0],
+    policy=ProposalAcceptancePolicy("tea-evidence-v1"),
+    recorded_at=datetime.now(UTC),
+    supplemental_evidence_ids=("ev_current_supplier_registry",),
+)
+
+if outcome.decision == "accepted":
+    print(outcome.accepted_record_id)
+else:
+    print(outcome.reason, outcome.conflicting_record_ids)
+```
+
+The policy accepts only a proposal already present in immutable case history and all cited Evidence must retain its Observation. A `review` outcome is intentionally re-evaluable when new independent evidence arrives; an accepted proposal cannot be accepted twice.
 
 This import path currently uses Arche's default scorer. A Splink run keeps
 candidate generation in its caller-owned `SettingsCreator` until the two paths
@@ -117,11 +291,13 @@ Unstructured input is a first-class entry point, not a preprocessing step you bo
 ```python
 from arche import resolve_documents
 
-report = resolve_documents("statements/*.pdf")
+report = resolve_documents("statements/*.pdf", extraction_backend="regex")
 print(report.table())
 ```
 
 That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and resolves them against each other. Every decision carries the extraction that produced it: the hash of the input bytes, the parser and its version, the digest of the rendering its spans point into. Upgrade the parser next year, re-run, and you can tell whether the answer changed or only the machinery did.
+
+`extraction_backend="regex"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
 
 ## Decisions you can hand to someone who does not trust you
 

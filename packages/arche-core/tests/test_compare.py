@@ -19,7 +19,6 @@ with its fixed person schema, everything else to the pack engine that
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import ENTITY_PACKS, compare, reconcile
 
 # ---------------------------------------------------------------------------
@@ -81,9 +80,11 @@ def test_the_old_spellings_still_work_and_now_say_so():
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             if old == "pairwise":
-                result = new("Adebayo Oluwaseun", "Adebayo Oluwaseun")
+                result = new(
+                    "Adebayo Oluwaseun", "Adebayo Oluwaseun", backend="regex"
+                )
                 assert result.identity == compare(
-                    "Adebayo Oluwaseun", "Adebayo Oluwaseun"
+                    "Adebayo Oluwaseun", "Adebayo Oluwaseun", backend="regex"
                 ).identity
             else:
                 a = [{"id": "a", "name": "Karfi PHC"}]

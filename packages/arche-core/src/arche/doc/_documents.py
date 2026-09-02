@@ -40,11 +40,12 @@ import glob as _glob
 import json
 import os
 import time
+from collections.abc import Iterable
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from itertools import combinations
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from arche.doc._progress import Event, ProgressHandler, Timing, _Run, resolve_handler
 
@@ -328,7 +329,8 @@ def _record_from_metadata(info) -> dict[str, Any]:
 
 
 def _record_from_text(text: str, jurisdiction: str | None,
-                      inferred: bool = False) -> tuple[dict, dict]:
+                      inferred: bool = False,
+                      extraction_backend: str = "auto") -> tuple[dict, dict]:
     """A canonical record plus a detection census, using only arche's own layers.
 
     Identifiers come from the **detectors**, which validate check digits, and
@@ -356,7 +358,7 @@ def _record_from_text(text: str, jurisdiction: str | None,
             record[field_name] = value
 
     try:
-        entities = list(extract(text))
+        entities = list(extract(text, backend=extraction_backend))
     except Exception:  # noqa: BLE001 — extraction is best-effort, never fatal
         entities = []
 
@@ -389,6 +391,7 @@ def resolve_documents(
     jurisdiction: str = "auto",
     quiet: bool = True,
     progress: ProgressHandler | bool | str | None = True,
+    extraction_backend: str = "auto",
 ) -> DocumentReport:
     """Parse documents, extract one record each, and resolve them against each other.
 
@@ -408,6 +411,10 @@ def resolve_documents(
     ``quiet=True`` silences the third-party loggers underneath ``parse`` so the
     first thing you see is your result rather than an OCR engine banner. Pass
     ``quiet=False`` when you are debugging the parse itself.
+
+    ``extraction_backend`` selects the entity extractor used after parsing.
+    ``"auto"`` keeps the default model-assisted behaviour; ``"regex"`` is
+    deterministic, air-gapped, and suitable for bounded CI or policy contexts.
 
     ``jurisdiction`` defaults to ``"auto"``: each document's own evidence — a
     postcode, a registrar's name, a currency, a company-form suffix — proposes a
@@ -435,7 +442,7 @@ def resolve_documents(
     run = _Run(resolve_handler(progress), total=len(paths))
     run.emit("start", message=f"resolving {len(paths)} document(s)")
     with (_quiet() if quiet else nullcontext()):
-        _collect(report, paths, parse, jurisdiction, run)
+        _collect(report, paths, parse, jurisdiction, run, extraction_backend)
 
     run.emit("resolve", message="comparing records")
     _t = time.monotonic()
@@ -473,7 +480,7 @@ def resolve_documents(
     return report
 
 
-def _collect(report, paths, parse, jurisdiction, run) -> None:
+def _collect(report, paths, parse, jurisdiction, run, extraction_backend="auto") -> None:
     """Parse each document and assemble its record; one bad file is not fatal.
 
     One bad file is not fatal. A missing parser is, and the difference matters:
@@ -509,7 +516,12 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
         doc_jurisdiction, inferred = _resolve_jurisdiction(
             jurisdiction, text, getattr(parsed, "info", None), name, report,
         )
-        record, census = _record_from_text(text, doc_jurisdiction, inferred)
+        record, census = _record_from_text(
+            text,
+            doc_jurisdiction,
+            inferred,
+            extraction_backend,
+        )
         run.stage(name, "detect", time.monotonic() - _t)
         # Metadata fills only what the body did not, so a name read from the
         # document always beats a name asserted by its header.

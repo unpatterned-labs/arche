@@ -6,6 +6,7 @@ The [same person across documents notebook](https://github.com/unpatterned-labs/
 
 ## What the workflow does
 
+<!-- docs-test: fragment -->
 ```python
 from arche import resolve_documents
 

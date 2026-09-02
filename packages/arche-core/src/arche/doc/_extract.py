@@ -219,6 +219,7 @@ def extract(
     text: str | None = None,
     jurisdiction: str = "NG",
     backend: str = "local",
+    entity_backend: str = "auto",
     llm: Any = None,
 ) -> Extraction[T]:
     """Fill ``schema`` from a document, and say where every value came from.
@@ -230,6 +231,10 @@ def extract(
     no network, no key. ``backend="llm"`` additionally offers the *unresolved*
     fields to a model; its proposals are validated by the schema like any other
     value, and are marked ``source="llm"`` so a reviewer can see which they are.
+
+    ``entity_backend`` is passed to :func:`arche.extract.extract` for the
+    local entity-extraction stage. It defaults to ``"auto"`` for compatibility;
+    pass ``"regex"`` for deterministic, air-gapped extraction.
 
     Returns an :class:`Extraction`. If the schema cannot be satisfied,
     ``data`` is ``None``, ``errors`` explains why, and ``fields`` still carries
@@ -256,7 +261,7 @@ def extract(
         source_name = Path(str(document)).name
 
     info = getattr(parsed, "info", None)
-    found = _gather(text or "", info, jurisdiction)
+    found = _gather(text or "", info, jurisdiction, entity_backend)
 
     fields: dict[str, FieldEvidence] = {}
     unresolved: list[str] = []
@@ -287,7 +292,12 @@ def extract(
     return result
 
 
-def _gather(text: str, info: Any, jurisdiction: str) -> dict[str, list[FieldEvidence]]:
+def _gather(
+    text: str,
+    info: Any,
+    jurisdiction: str,
+    entity_backend: str,
+) -> dict[str, list[FieldEvidence]]:
     """Everything the local layers found, keyed by source."""
     out: dict[str, list[FieldEvidence]] = {"detector": [], "metadata": [], "extractor": []}
 
@@ -312,7 +322,7 @@ def _gather(text: str, info: Any, jurisdiction: str) -> dict[str, list[FieldEvid
     try:
         from arche.extract import extract as extract_entities
 
-        for entity in extract_entities(text):
+        for entity in extract_entities(text, backend=entity_backend):
             out["extractor"].append(FieldEvidence(
                 value=str(getattr(entity, "text", "")), source="extractor",
                 confidence=float(getattr(entity, "confidence", 0.0) or 0.0),

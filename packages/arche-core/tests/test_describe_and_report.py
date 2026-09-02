@@ -16,9 +16,8 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 import arche
+import pytest
 from arche.workflow.pipeline import resolve as _resolve
 
 _TEXT = "Adebayo Oluwaseun lives at 12 Zaria Road, Kano. Call 08012345678."
@@ -26,7 +25,7 @@ _TEXT = "Adebayo Oluwaseun lives at 12 Zaria Road, Kano. Call 08012345678."
 
 @pytest.fixture(scope="module")
 def result():
-    return _resolve(_TEXT)
+    return _resolve(_TEXT, backend="regex")
 
 
 # ---------------------------------------------------------------------------
@@ -105,7 +104,7 @@ def test_every_result_format_produces_output(result, fmt):
 def test_table_is_the_default():
     from arche.workflow._format import format_table
 
-    result = _resolve(_TEXT)
+    result = _resolve(_TEXT, backend="regex")
     assert arche.report(result) == format_table(result)
 
 
