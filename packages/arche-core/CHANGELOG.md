@@ -130,6 +130,31 @@ malformed `[project.optional-dependencies]` could sit in a working tree
 through a green run and only fail at `uv build`. The guard is cheap and the
 failure it prevents is a wheel that cannot be produced.
 
+### Fixed — plain text no longer needs a 92-package document converter
+
+`parse()` sent every input to docling, so reading a `.txt` file cost the
+`arche-core[doc]` install — torch, transformers, scipy and the rest — to do
+the work of `read_text()`. A folder of plain text was unreadable on a base
+install, and `resolve_documents` raised rather than returning records.
+
+`.txt`, `.text`, `.md` and `.markdown` are now read directly. The list is
+deliberately short: these are formats whose bytes *are* the text, so a
+converter can only add a dependency and a chance to disagree. Anything with
+structure to recover — PDF, DOCX, HTML — is still docling's job and still
+raises `DoclingNotInstalledError` without the extra.
+
+Two details are load-bearing. The provenance records `parser: "text"`, not
+`parser: "docling"`, because a decision that does not name its parser cannot
+explain why it differs from the same decision made last year. And the path is
+unconditional rather than a fallback for when docling is missing: a parse that
+changed with the installed extras would make `parser` a description of the
+machine rather than of the extraction. A `.txt` that is not UTF-8 falls
+through to docling instead of guessing an encoding, because a silent mojibake
+rendering under a signature is worse than an error.
+
+This surfaced through the published example below, which ran here and failed
+on a runner. The suite now covers the difference directly.
+
 ### Fixed — a published example imported the PDF reader it no longer had
 
 `reference/how-arche-works.md` authored two demo PDFs with `fitz` so that its

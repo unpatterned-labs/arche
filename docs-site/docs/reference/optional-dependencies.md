@@ -20,7 +20,9 @@ This is the distinction people trip over most, because both extras read PDFs and
 
 The proof-of-address check (`assess_residence`) deliberately sits on the light one. A KYC check that needs a two-gigabyte ML stack to read an energy bill is a check that does not get deployed.
 
-**If you install only `[pdf]` and call `resolve_documents`, it raises** rather than returning an empty report. Every document would fail for the same missing parser, and a report of zero records reads as "these documents contain nothing" — which is a different statement from "I could not read them".
+**If you install only `[pdf]` and hand `resolve_documents` a PDF, it raises** rather than returning an empty report. Every document would fail for the same missing parser, and a report of zero records reads as "these documents contain nothing" — which is a different statement from "I could not read them".
+
+Plain text is the exception, and needs neither extra: `.txt` and `.md` are read directly, because a file whose bytes already are its text has nothing for a converter to recover. The provenance records `parser: "text"` rather than `parser: "docling"`, so a decision made from one is still distinguishable from a decision made from the other.
 
 ### The AGPL reader
 

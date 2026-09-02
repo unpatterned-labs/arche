@@ -95,7 +95,7 @@ Install document support first:
 pip install "arche-core[doc]"
 ```
 
-This script writes two small documents, reads them, extracts identity signals, and compares the resulting records. Point it at your own folder in a real workflow — `resolve_documents` reads PDF, DOCX and plain text alike, and PDFs need a reader (`arche-core[pdf]`, or `[doc]` for a structured parse).
+This script writes two small documents, reads them, extracts identity signals, and compares the resulting records. Point it at your own folder in a real workflow. Plain text is read directly, with no extra; PDF and DOCX go through docling, so those need `arche-core[doc]`.
 
 ```python
 from pathlib import Path
