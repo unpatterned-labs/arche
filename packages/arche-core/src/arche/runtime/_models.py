@@ -118,6 +118,37 @@ class EvidenceGap:
 
 
 @dataclass(frozen=True)
+class ResolutionIntent:
+    """Structured, value-free statement of the resolution work a case needs."""
+
+    entity_type: str
+    operation: str
+    available_fields: tuple[str, ...]
+    policy_pin: str
+    candidate_pairs: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.entity_type, str) or not self.entity_type:
+            raise ValueError("resolution intent needs an entity_type")
+        if self.operation not in {"compare", "reconcile", "dedupe", "find"}:
+            raise ValueError(
+                "resolution intent operation must be compare, reconcile, dedupe, or find"
+            )
+        if isinstance(self.available_fields, str) or not all(
+            isinstance(field, str) and field for field in self.available_fields
+        ):
+            raise ValueError("resolution intent available_fields must contain non-empty strings")
+        if not isinstance(self.policy_pin, str) or not self.policy_pin:
+            raise ValueError("resolution intent needs a policy_pin")
+        if self.candidate_pairs is not None and (
+            isinstance(self.candidate_pairs, bool)
+            or not isinstance(self.candidate_pairs, int)
+            or self.candidate_pairs < 0
+        ):
+            raise ValueError("resolution intent candidate_pairs must be non-negative")
+
+
+@dataclass(frozen=True)
 class ResolutionCase:
     """An unresolved identity question that needs bounded additional evidence."""
 
@@ -129,6 +160,7 @@ class ResolutionCase:
     status: str = "open"
     uncertainty: Mapping[str, object] = field(default_factory=dict)
     evidence_gaps: tuple[EvidenceGap, ...] = ()
+    intent: ResolutionIntent | None = None
 
 
 @dataclass(frozen=True)
@@ -171,6 +203,34 @@ class ToolCapability:
             and self.policy_pin == action.policy_pin
             and action.action_type in self.action_types
         )
+
+
+@dataclass(frozen=True)
+class ResolutionMethod:
+    """A configured resolver method that the planner may recommend, not execute."""
+
+    method_id: str
+    resolver: str
+    entity_types: tuple[str, ...]
+    operations: tuple[str, ...]
+    policy_pin: str
+    configuration_pin: str
+    required_fields: tuple[str, ...] = ()
+    max_candidate_pairs: int | None = None
+    estimated_cost: float = 0.0
+    priority: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.method_id or not self.resolver:
+            raise ValueError("resolution method needs method_id and resolver")
+        if not self.entity_types or not self.operations:
+            raise ValueError("resolution method needs entity types and operations")
+        if not self.policy_pin or not self.configuration_pin:
+            raise ValueError("resolution method needs policy and configuration pins")
+        if self.max_candidate_pairs is not None and self.max_candidate_pairs < 0:
+            raise ValueError("resolution method max_candidate_pairs must be non-negative")
+        if self.estimated_cost < 0:
+            raise ValueError("resolution method estimated_cost must be non-negative")
 
 
 @dataclass(frozen=True)

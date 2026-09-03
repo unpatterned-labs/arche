@@ -8,7 +8,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ._cases import what_would_resolve
-from ._models import EvidenceAction, EvidenceGap, ResolutionCase, ToolCapability
+from ._models import (
+    EvidenceAction,
+    EvidenceGap,
+    ResolutionCase,
+    ResolutionIntent,
+    ResolutionMethod,
+    ToolCapability,
+)
 
 
 @dataclass(frozen=True)
@@ -29,6 +36,16 @@ class CaseAssessment:
     evidence_gaps: tuple[EvidenceGap, ...]
     eligible_action_ids: tuple[str, ...]
     unavailable_action_ids: tuple[str, ...]
+    method_assessments: tuple[MethodAssessment, ...] = ()
+
+
+@dataclass(frozen=True)
+class MethodAssessment:
+    """One configured resolver method's explicit eligibility rationale."""
+
+    method_id: str
+    eligible: bool
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -42,6 +59,17 @@ class PlannedEvidenceAction:
 
 
 @dataclass(frozen=True)
+class PlannedResolutionMethod:
+    """A configured resolver method selected for a later, separate execution step."""
+
+    method_id: str
+    resolver: str
+    configuration_pin: str
+    estimated_cost: float
+    rationale: str
+
+
+@dataclass(frozen=True)
 class EvidencePlan:
     """A bounded plan produced from an assessment, without executing it."""
 
@@ -49,6 +77,7 @@ class EvidencePlan:
     actions: tuple[PlannedEvidenceAction, ...]
     total_estimated_cost: float
     unresolved_gap_fields: tuple[str, ...]
+    methods: tuple[PlannedResolutionMethod, ...] = ()
 
 
 class DeterministicResolutionPlanner:
@@ -59,6 +88,7 @@ class DeterministicResolutionPlanner:
         case: ResolutionCase,
         actions: tuple[EvidenceAction, ...],
         capabilities: tuple[ToolCapability, ...],
+        methods: tuple[ResolutionMethod, ...] = (),
     ) -> CaseAssessment:
         """Build the planner's structured case understanding.
 
@@ -68,7 +98,8 @@ class DeterministicResolutionPlanner:
             capabilities: Read-only capabilities currently available to execute.
 
         Returns:
-            A deterministic assessment that exposes eligible and unavailable work.
+            A deterministic assessment that exposes eligible and unavailable work,
+            including the reason each configured resolver is or is not suitable.
         """
         capable_actions = tuple(
             action
@@ -90,6 +121,7 @@ class DeterministicResolutionPlanner:
             evidence_gaps=what_would_resolve(case),
             eligible_action_ids=eligible_ids,
             unavailable_action_ids=unavailable_ids,
+            method_assessments=tuple(_assess_method(case.intent, method) for method in methods),
         )
 
     def plan(
@@ -98,6 +130,7 @@ class DeterministicResolutionPlanner:
         actions: tuple[EvidenceAction, ...],
         capabilities: tuple[ToolCapability, ...],
         budget: ResolutionBudget,
+        methods: tuple[ResolutionMethod, ...] = (),
     ) -> EvidencePlan:
         """Select permitted, capable, costed actions after assessing a case.
 
@@ -116,7 +149,7 @@ class DeterministicResolutionPlanner:
         if budget.max_actions < 0 or budget.max_cost < 0:
             raise ValueError("resolution budget limits must be non-negative")
 
-        assessment = self.assess(case, actions, capabilities)
+        assessment = self.assess(case, actions, capabilities, methods)
         eligible = {
             action.action_id: action
             for action in actions
@@ -145,9 +178,7 @@ class DeterministicResolutionPlanner:
                     action_id=action.action_id,
                     gap_field=gap.field,
                     estimated_cost=estimated_cost,
-                    rationale=(
-                        f"{action.action_type} is permitted for {gap.field}: {gap.reason}"
-                    ),
+                    rationale=(f"{action.action_type} is permitted for {gap.field}: {gap.reason}"),
                 )
             )
             addressed_fields.add(gap.field)
@@ -155,13 +186,73 @@ class DeterministicResolutionPlanner:
             eligible.pop(action.action_id)
 
         unresolved = tuple(
-            gap.field
-            for gap in assessment.evidence_gaps
-            if gap.field not in addressed_fields
+            gap.field for gap in assessment.evidence_gaps if gap.field not in addressed_fields
         )
+        selected_methods: list[PlannedResolutionMethod] = []
+        eligible_methods = {
+            assessment.method_assessments[index].method_id
+            for index, method in enumerate(methods)
+            if assessment.method_assessments[index].eligible
+        }
+        for method in sorted(
+            (method for method in methods if method.method_id in eligible_methods),
+            key=lambda method: (method.priority, method.estimated_cost, method.method_id),
+        ):
+            if total_cost + method.estimated_cost > budget.max_cost:
+                continue
+            selected_methods.append(
+                PlannedResolutionMethod(
+                    method_id=method.method_id,
+                    resolver=method.resolver,
+                    configuration_pin=method.configuration_pin,
+                    estimated_cost=method.estimated_cost,
+                    rationale=(
+                        f"{method.resolver} is configured for {case.intent.operation} "
+                        f"of {case.intent.entity_type}"
+                    ),
+                )
+            )
+            total_cost += method.estimated_cost
+            break
+
         return EvidencePlan(
             assessment=assessment,
             actions=tuple(selected),
             total_estimated_cost=total_cost,
             unresolved_gap_fields=unresolved,
+            methods=tuple(selected_methods),
         )
+
+
+def _assess_method(intent: ResolutionIntent | None, method: ResolutionMethod) -> MethodAssessment:
+    """Explain whether one configured resolver is suitable for a case intent."""
+    if intent is None:
+        return MethodAssessment(method.method_id, False, "case has no structured resolution intent")
+    if method.policy_pin != intent.policy_pin:
+        return MethodAssessment(
+            method.method_id, False, "policy pin does not match the case intent"
+        )
+    if intent.operation not in method.operations:
+        return MethodAssessment(method.method_id, False, "does not support the requested operation")
+    if intent.entity_type not in method.entity_types:
+        return MethodAssessment(
+            method.method_id, False, "does not support the requested entity type"
+        )
+    missing_fields = tuple(
+        field for field in method.required_fields if field not in intent.available_fields
+    )
+    if missing_fields:
+        return MethodAssessment(
+            method.method_id,
+            False,
+            f"needs unavailable fields: {', '.join(missing_fields)}",
+        )
+    if (
+        method.max_candidate_pairs is not None
+        and intent.candidate_pairs is not None
+        and intent.candidate_pairs > method.max_candidate_pairs
+    ):
+        return MethodAssessment(
+            method.method_id, False, "candidate-pair scale exceeds method limit"
+        )
+    return MethodAssessment(method.method_id, True, "matches the case intent and configured limits")

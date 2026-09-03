@@ -194,23 +194,56 @@ The case history first records the resolver receipt, then the policy outcome. Th
 
 ### Plan only after assessing the case
 
-The built-in planner is deterministic and transparent. It first returns a structured assessment of the question, candidate entities, evidence gaps, eligible actions, and unavailable actions. It then selects only compatible, read-only, costed actions within the supplied budget; planning does not execute them.
+The built-in planner is deterministic and transparent. It first returns a structured assessment of the question, candidate entities, evidence gaps, eligible actions, unavailable actions, and configured resolver methods. It then selects only compatible, read-only, costed evidence actions and at most one eligible resolver recommendation within the supplied budget; planning does not execute either.
 
 ```python
-from arche.runtime import ResolutionBudget
+from arche.runtime import ResolutionBudget, ResolutionIntent, ResolutionMethod
+
+case = ResolutionCase(
+    "case_01",
+    "Which supplier is this?",
+    ("obs_01",),
+    (),
+    datetime.now(UTC),
+    intent=ResolutionIntent(
+        "organisation",
+        "reconcile",
+        ("name", "registration_id"),
+        "supplier-policy-v1",
+        candidate_pairs=250_000,
+    ),
+)
+engine.store.write_resolution_cases([case])
 
 plan = engine.plan_case(
     case.case_id,
     capabilities=(registry_connector.capability,),
     budget=ResolutionBudget(max_actions=1, max_cost=0.25),
+    methods=(
+        ResolutionMethod(
+            "splink_supplier_v1",
+            "splink",
+            ("organisation",),
+            ("reconcile",),
+            "supplier-policy-v1",
+            "sha256:caller-owned-splink-settings",
+            required_fields=("name", "registration_id"),
+            max_candidate_pairs=1_000_000,
+            estimated_cost=0.05,
+        ),
+    ),
 )
 for action in plan.actions:
     print(action.gap_field, action.rationale, action.estimated_cost)
+for method in plan.methods:
+    print(method.resolver, method.configuration_pin, method.rationale)
 
 engine.record_case_plan(plan, recorded_at=datetime.now(UTC))
 ```
 
-This is the baseline for an optional future LLM planner. Any such planner must choose from the same assessed gaps and permitted capabilities, meet the same budget, and produce a comparable plan before an application executes it. It cannot create a new action type, call an unapproved source, or bypass observation and evidence records.
+`ResolutionIntent` contains only the requested operation, entity type, available field names, candidate-pair scale, and a policy pin; it does not persist record values. A `ResolutionMethod` is caller-configured and has a configuration pin, so the planner can recommend a configured Splink, deterministic, domain, or other resolver without inventing settings or importing/running it. The assessment records why every method was eligible or excluded.
+
+This is the baseline for an optional future LLM planner. Any such planner must choose from the same assessed gaps and permitted capabilities, meet the same budget, and produce a comparable plan before an application executes it. It cannot create a new action type, call an unapproved source, bypass observation and evidence records, or directly run a selected resolver.
 
 This contract is the foundation for later `ResolutionCase` work: external tool output returns as an immutable observation, is evaluated by the normal evidence and policy pipeline, and never grants the tool direct authority to merge identities.
 

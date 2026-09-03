@@ -34,6 +34,7 @@ from arche.runtime._models import (
     ProposalAcceptancePolicy,
     RelationProposal,
     ResolutionDecisionPolicy,
+    ResolutionMethod,
     ResolutionRun,
     new_ledger_id,
 )
@@ -178,6 +179,7 @@ class ArcheEngine:
         *,
         capabilities: tuple[ToolCapability, ...],
         budget: ResolutionBudget,
+        methods: tuple[ResolutionMethod, ...] = (),
     ) -> EvidencePlan:
         """Assess a case and select bounded, permitted evidence actions.
 
@@ -185,6 +187,7 @@ class ArcheEngine:
             case_id: A persisted ResolutionCase identifier.
             capabilities: Read-only capabilities available to execute now.
             budget: Hard maximum action count and estimated cost.
+            methods: Configured resolver methods the planner may recommend.
 
         Returns:
             A deterministic EvidencePlan. It does not execute any action.
@@ -203,6 +206,7 @@ class ArcheEngine:
             self.store.list_evidence_actions(case_id),
             capabilities,
             budget,
+            methods,
         )
 
     def record_case_plan(
@@ -240,6 +244,15 @@ class ArcheEngine:
                 "unavailable_action_ids": list(assessment.unavailable_action_ids),
                 "unresolved_gap_fields": list(plan.unresolved_gap_fields),
                 "total_estimated_cost": plan.total_estimated_cost,
+                "planned_method_ids": [method.method_id for method in plan.methods],
+                "method_assessments": [
+                    {
+                        "method_id": method.method_id,
+                        "eligible": method.eligible,
+                        "reason": method.reason,
+                    }
+                    for method in assessment.method_assessments
+                ],
             },
         )
         self.store.write_case_events([event])

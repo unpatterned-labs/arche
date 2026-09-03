@@ -32,6 +32,8 @@ from arche.runtime import (
     ResolutionBudget,
     ResolutionCase,
     ResolutionDecisionPolicy,
+    ResolutionIntent,
+    ResolutionMethod,
     ResolutionRun,
     ToolCapability,
     adapt_coreference_receipt,
@@ -687,6 +689,119 @@ def test_planner_refuses_actions_without_matching_capability_or_budget(runtime):
     assert plan.unresolved_gap_fields == ("registration_id",)
 
 
+def test_planner_reasons_about_configured_resolver_methods_before_execution(runtime):
+    """Method choice is explicit, scale-aware, and remains a non-executing plan."""
+    timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
+    observation = Observation("obs_method_plan", "file", "supplier-7", timestamp, "sha256:plan")
+    intent = ResolutionIntent(
+        "organisation",
+        "reconcile",
+        ("name", "registration_id"),
+        "supplier-policy-v1",
+        candidate_pairs=250_000,
+    )
+    case = ResolutionCase(
+        "case_method_plan",
+        "Which legal entities represent this supplier ledger?",
+        (observation.observation_id,),
+        (),
+        timestamp,
+        evidence_gaps=(
+            EvidenceGap(
+                "registration_id",
+                "confirms a proposed supplier match",
+                permitted_action_types=("registry_lookup",),
+            ),
+        ),
+        intent=intent,
+    )
+    action = EvidenceAction(
+        "act_method_registry",
+        case.case_id,
+        "registry_lookup",
+        "supplier_registry",
+        timestamp,
+        "supplier-policy-v1",
+        max_cost=0.20,
+    )
+    methods = (
+        ResolutionMethod(
+            "arche_small",
+            "arche.resolve.reconcile",
+            ("organisation",),
+            ("reconcile",),
+            "supplier-policy-v1",
+            "arche.resolve.reconcile@crosswalk.v1",
+            required_fields=("name",),
+            max_candidate_pairs=100_000,
+            estimated_cost=0.02,
+        ),
+        ResolutionMethod(
+            "splink_supplier",
+            "splink",
+            ("organisation",),
+            ("reconcile",),
+            "supplier-policy-v1",
+            "splink-settings@sha256:approved",
+            required_fields=("name", "registration_id"),
+            estimated_cost=0.15,
+            priority=1,
+        ),
+        ResolutionMethod(
+            "person_pairwise",
+            "arche.resolve.compare",
+            ("person",),
+            ("compare",),
+            "supplier-policy-v1",
+            "arche.resolve.compare@coreference.v1",
+        ),
+    )
+    runtime.store.write_observations([observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([action])
+
+    plan = runtime.plan_case(
+        case.case_id,
+        capabilities=(
+            ToolCapability("supplier_registry", ("registry_lookup",), "supplier-policy-v1"),
+        ),
+        budget=ResolutionBudget(max_actions=1, max_cost=0.40),
+        methods=methods,
+    )
+
+    assert runtime.store.get_resolution_case(case.case_id).intent == intent
+    assert [(item.method_id, item.eligible) for item in plan.assessment.method_assessments] == [
+        ("arche_small", False),
+        ("splink_supplier", True),
+        ("person_pairwise", False),
+    ]
+    assert [item.reason for item in plan.assessment.method_assessments] == [
+        "candidate-pair scale exceeds method limit",
+        "matches the case intent and configured limits",
+        "does not support the requested operation",
+    ]
+    assert [(item.action_id, item.gap_field) for item in plan.actions] == [
+        ("act_method_registry", "registration_id"),
+    ]
+    assert [(item.method_id, item.configuration_pin) for item in plan.methods] == [
+        ("splink_supplier", "splink-settings@sha256:approved"),
+    ]
+    assert plan.total_estimated_cost == pytest.approx(0.35)
+
+    event = runtime.record_case_plan(plan, recorded_at=timestamp)
+
+    assert event.provenance["planned_method_ids"] == ["splink_supplier"]
+    assert runtime.store.get_resolution_run("run_not_executed") is None
+
+
+def test_resolution_intent_requires_field_name_sequence_and_numeric_pair_count():
+    """Intent requires a field-name sequence and an integer candidate-pair scale."""
+    with pytest.raises(ValueError, match="available_fields"):
+        ResolutionIntent("organisation", "reconcile", "name", "supplier-policy-v1")
+    with pytest.raises(ValueError, match="candidate_pairs"):
+        ResolutionIntent("organisation", "reconcile", ("name",), "supplier-policy-v1", True)
+
+
 def test_case_reconcile_result_requires_persisted_evidence(runtime):
     """Case re-resolution records normal resolver receipts only after evidence exists."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
@@ -743,9 +858,7 @@ def test_evidence_and_receipts_require_their_prior_provenance(runtime):
 def test_decision_policy_releases_only_evidence_backed_case_receipts(runtime):
     """A policy outcome guides work without mutating canonical entity memory."""
     timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
-    input_observation = Observation(
-        "obs_decision_input", "file", "r-1", timestamp, "sha256:input"
-    )
+    input_observation = Observation("obs_decision_input", "file", "r-1", timestamp, "sha256:input")
     registry_observation = Observation(
         "obs_decision_registry", "registry", "r-1", timestamp, "sha256:registry"
     )
@@ -783,9 +896,7 @@ def test_decision_policy_releases_only_evidence_backed_case_receipts(runtime):
         result,
         run_id="run_decision_policy",
         created_at=timestamp,
-        evidence_ids_by_decision={
-            "xwd:release": tuple(item.evidence_id for item in evidence)
-        },
+        evidence_ids_by_decision={"xwd:release": tuple(item.evidence_id for item in evidence)},
     )
 
     outcome = runtime.apply_resolution_decision_policy(
@@ -814,9 +925,7 @@ def test_decision_policy_releases_only_evidence_backed_case_receipts(runtime):
 def test_decision_policy_reviews_weak_positive_and_abstains_on_unsupported_negative(runtime):
     """Missing evidence cannot silently create either a merge or a rejection."""
     timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
-    observation = Observation(
-        "obs_policy", "file", "r-1", timestamp, "sha256:input"
-    )
+    observation = Observation("obs_policy", "file", "r-1", timestamp, "sha256:input")
     evidence = Evidence("ev_policy", observation.observation_id, "name", "supports")
     case = ResolutionCase(
         "case_policy", "Which record is this?", (observation.observation_id,), (), timestamp
@@ -1077,6 +1186,38 @@ def test_runtime_schema_upgrades_a_pre_provenance_decision_table():
             for row in store._connection.execute("PRAGMA table_info('arche_decisions')").fetchall()
         }
         assert "provenance" in columns
+    finally:
+        store.close()
+
+
+def test_runtime_schema_upgrades_a_pre_intent_case_table():
+    """Existing case stores gain planner intent without a destructive reset."""
+    from arche.store.duckdb import DuckDBStore
+
+    store = DuckDBStore(":memory:")
+    store._connection.execute(
+        """
+        CREATE TABLE arche_resolution_cases (
+            case_id VARCHAR PRIMARY KEY,
+            question VARCHAR NOT NULL,
+            observation_ids JSON NOT NULL,
+            candidate_entity_ids JSON NOT NULL,
+            opened_at VARCHAR NOT NULL,
+            status VARCHAR NOT NULL,
+            uncertainty JSON NOT NULL,
+            evidence_gaps JSON NOT NULL DEFAULT '[]'
+        )
+        """
+    )
+    try:
+        store.ensure_schema()
+        columns = {
+            row[1]
+            for row in store._connection.execute(
+                "PRAGMA table_info('arche_resolution_cases')"
+            ).fetchall()
+        }
+        assert "intent" in columns
     finally:
         store.close()
 

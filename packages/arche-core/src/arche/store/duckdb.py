@@ -24,6 +24,7 @@ from arche.runtime._models import (
     Observation,
     OpenQuestion,
     ResolutionCase,
+    ResolutionIntent,
     ResolutionRun,
 )
 
@@ -125,13 +126,17 @@ class DuckDBStore:
                 opened_at VARCHAR NOT NULL,
                 status VARCHAR NOT NULL,
                 uncertainty JSON NOT NULL,
-                evidence_gaps JSON NOT NULL DEFAULT '[]'
+                evidence_gaps JSON NOT NULL DEFAULT '[]',
+                intent JSON DEFAULT 'null'
             )
             """
         )
         self._connection.execute(
             "ALTER TABLE arche_resolution_cases "
             "ADD COLUMN IF NOT EXISTS evidence_gaps JSON DEFAULT '[]'"
+        )
+        self._connection.execute(
+            "ALTER TABLE arche_resolution_cases ADD COLUMN IF NOT EXISTS intent JSON DEFAULT 'null'"
         )
         self._connection.execute(
             """
@@ -436,8 +441,8 @@ class DuckDBStore:
             """
             INSERT INTO arche_resolution_cases (
                 case_id, question, observation_ids, candidate_entity_ids, opened_at,
-                status, uncertainty, evidence_gaps
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                status, uncertainty, evidence_gaps, intent
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -448,16 +453,19 @@ class DuckDBStore:
                     _timestamp(case.opened_at),
                     case.status,
                     _json(case.uncertainty),
-                    _json([
-                        {
-                            "field": gap.field,
-                            "reason": gap.reason,
-                            "candidate_entity_ids": gap.candidate_entity_ids,
-                            "priority": gap.priority,
-                            "permitted_action_types": gap.permitted_action_types,
-                        }
-                        for gap in case.evidence_gaps
-                    ]),
+                    _json(
+                        [
+                            {
+                                "field": gap.field,
+                                "reason": gap.reason,
+                                "candidate_entity_ids": gap.candidate_entity_ids,
+                                "priority": gap.priority,
+                                "permitted_action_types": gap.permitted_action_types,
+                            }
+                            for gap in case.evidence_gaps
+                        ]
+                    ),
+                    _intent(case.intent),
                 )
                 for case in case_list
             ],
@@ -467,7 +475,8 @@ class DuckDBStore:
         """Load one unresolved case by identifier."""
         row = self._connection.execute(
             "SELECT case_id, question, observation_ids, candidate_entity_ids, opened_at, "
-            "status, uncertainty, evidence_gaps FROM arche_resolution_cases WHERE case_id = ?",
+            "status, uncertainty, evidence_gaps, intent "
+            "FROM arche_resolution_cases WHERE case_id = ?",
             [case_id],
         ).fetchone()
         if row is None:
@@ -481,6 +490,7 @@ class DuckDBStore:
             status=row[5],
             uncertainty=_mapping(row[6]),
             evidence_gaps=_evidence_gaps(row[7]),
+            intent=_resolution_intent(row[8]),
         )
 
     def write_evidence_actions(self, actions: Iterable[EvidenceAction]) -> None:
@@ -657,8 +667,7 @@ class DuckDBStore:
                 ).fetchone()
                 if claim is None or claim[0] != contradiction.entity_id:
                     raise ValueError(
-                        f"claim {claim_id!r} does not belong to entity "
-                        f"{contradiction.entity_id!r}"
+                        f"claim {claim_id!r} does not belong to entity {contradiction.entity_id!r}"
                     )
         self._write_many(
             """
@@ -914,10 +923,54 @@ def _evidence_gaps(value: object) -> tuple[EvidenceGap, ...]:
             raise TypeError("stored case evidence gap action types are not strings")
         if isinstance(priority, bool) or not isinstance(priority, int):
             raise TypeError("stored case evidence gap priority is not an integer")
-        gaps.append(
-            EvidenceGap(field, reason, tuple(candidate_ids), priority, tuple(action_types))
-        )
+        gaps.append(EvidenceGap(field, reason, tuple(candidate_ids), priority, tuple(action_types)))
     return tuple(gaps)
+
+
+def _intent(value: ResolutionIntent | None) -> str:
+    """Encode a value-free case intent for durable planning."""
+    if value is None:
+        return "null"
+    return _json(
+        {
+            "entity_type": value.entity_type,
+            "operation": value.operation,
+            "available_fields": value.available_fields,
+            "policy_pin": value.policy_pin,
+            "candidate_pairs": value.candidate_pairs,
+        }
+    )
+
+
+def _resolution_intent(value: object) -> ResolutionIntent | None:
+    """Decode a persisted structured intent without accepting raw records."""
+    decoded = _json_value(value)
+    if decoded is None:
+        return None
+    if not isinstance(decoded, dict):
+        raise TypeError("stored case intent is not a JSON object")
+    entity_type = decoded.get("entity_type")
+    operation = decoded.get("operation")
+    available_fields = decoded.get("available_fields")
+    policy_pin = decoded.get("policy_pin")
+    candidate_pairs = decoded.get("candidate_pairs")
+    if not all(isinstance(item, str) and item for item in (entity_type, operation, policy_pin)):
+        raise TypeError("stored case intent needs entity type, operation, and policy pin")
+    if isinstance(available_fields, (str, bytes)) or not isinstance(available_fields, list):
+        raise TypeError("stored case intent available fields are not an array")
+    if not all(isinstance(field, str) and field for field in available_fields):
+        raise TypeError("stored case intent available fields are not non-empty strings")
+    if candidate_pairs is not None and (
+        isinstance(candidate_pairs, bool) or not isinstance(candidate_pairs, int)
+    ):
+        raise TypeError("stored case intent candidate pairs are not an integer")
+    return ResolutionIntent(
+        entity_type,
+        operation,
+        tuple(available_fields),
+        policy_pin,
+        candidate_pairs,
+    )
 
 
 def _timestamp(value: datetime) -> str:
