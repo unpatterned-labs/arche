@@ -16,6 +16,8 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 - Parsed documents now adapt to immutable runtime Observations with their parser and artifact/text-hash provenance, so document-derived evidence can enter a ResolutionCase without treating document contents as verified truth.
 - Reviewed document `FieldEvidence` can now adapt into span-cited vNext Evidence and explicit, value-hashed claim or relationship proposals in case history. Proposals never write entity-memory claims or relations directly.
 - `ProposalAcceptancePolicy` promotes only recorded proposals backed by the required number of independent Observation sources. It records insufficient evidence and active-claim/relation conflicts as review events, and writes a revisable ledger record only on acceptance.
+- `ResolutionDecisionPolicy` releases only independently evidenced vNext `link` or `create` receipt outcomes. Weak positives become review events, unsupported negative results abstain, and every result is written to case history without mutating canonical entity memory.
+- `data/scripts/benchmark_opensanctions_pairs.py` evaluates a locally downloaded CC-BY-NC-4.0 OpenSanctions Pairs sample or streaming JSONL archive without adding a runtime dependency. It reports its unsupported structural and mixed-schema pairs rather than treating them as person or organisation validation.
 - `resolve_documents(..., extraction_backend="regex")` permits deterministic, bounded document extraction while retaining the existing `"auto"` default.
 - Schema-driven document extraction accepts `entity_backend="regex"` for the same bounded local entity-extraction path, while preserving its existing `"auto"` default.
 

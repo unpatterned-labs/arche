@@ -31,6 +31,7 @@ from arche.runtime import (
     ProposalAcceptancePolicy,
     ResolutionBudget,
     ResolutionCase,
+    ResolutionDecisionPolicy,
     ResolutionRun,
     ToolCapability,
     adapt_coreference_receipt,
@@ -68,9 +69,7 @@ def test_runtime_persists_stable_entity_observation_evidence_and_decision(runtim
     """The M0 contracts round-trip without consulting a resolver or network."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
     entity = Entity(new_entity_id(), "organisation", "legal_entity", timestamp)
-    observation = Observation(
-        "obs_01", "supplier_registry", "supplier-7", timestamp, "sha256:abc"
-    )
+    observation = Observation("obs_01", "supplier_registry", "supplier-7", timestamp, "sha256:abc")
     evidence = Evidence(
         "ev_01",
         observation.observation_id,
@@ -203,9 +202,7 @@ def test_reviewed_tea_document_fields_propose_but_do_not_assert_entity_memory(ru
         source_id="tea_review_pack",
         recorded_at=timestamp,
         review_id="review:tea:18",
-        claim_specs=(
-            DocumentClaimSpec(supplier.entity_id, "display_name", "supplier_name"),
-        ),
+        claim_specs=(DocumentClaimSpec(supplier.entity_id, "display_name", "supplier_name"),),
         relation_specs=(
             DocumentRelationSpec(
                 supplier.entity_id,
@@ -499,9 +496,7 @@ def test_case_evidence_gaps_are_deterministic_and_persisted(runtime):
 def test_read_only_connector_can_only_return_a_permitted_observation(runtime):
     """Connector execution is constrained by source, action type, and policy pin."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
-    input_observation = Observation(
-        "obs_connector_input", "file", "r-1", timestamp, "sha256:input"
-    )
+    input_observation = Observation("obs_connector_input", "file", "r-1", timestamp, "sha256:input")
     case = ResolutionCase(
         "case_connector",
         "Which entity is this?",
@@ -540,9 +535,7 @@ def test_read_only_connector_can_only_return_a_permitted_observation(runtime):
 def test_connector_capability_cannot_broaden_a_permitted_action(runtime):
     """A connector with a different policy pin cannot execute the action."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
-    input_observation = Observation(
-        "obs_policy_input", "file", "r-1", timestamp, "sha256:input"
-    )
+    input_observation = Observation("obs_policy_input", "file", "r-1", timestamp, "sha256:input")
     case = ResolutionCase(
         "case_policy",
         "Which entity is this?",
@@ -747,6 +740,117 @@ def test_evidence_and_receipts_require_their_prior_provenance(runtime):
         runtime.store.write_decisions([receipt])
 
 
+def test_decision_policy_releases_only_evidence_backed_case_receipts(runtime):
+    """A policy outcome guides work without mutating canonical entity memory."""
+    timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
+    input_observation = Observation(
+        "obs_decision_input", "file", "r-1", timestamp, "sha256:input"
+    )
+    registry_observation = Observation(
+        "obs_decision_registry", "registry", "r-1", timestamp, "sha256:registry"
+    )
+    case = ResolutionCase(
+        "case_decision_policy",
+        "Does this supplier reference identify the registered entity?",
+        (input_observation.observation_id,),
+        (),
+        timestamp,
+    )
+    evidence = (
+        Evidence(
+            "ev_decision_input",
+            input_observation.observation_id,
+            "name",
+            "supports",
+        ),
+        Evidence(
+            "ev_decision_registry",
+            registry_observation.observation_id,
+            "registration_id",
+            "supports",
+        ),
+    )
+    result = {
+        "matches": [{"decision_id": "xwd:release", "decision": "match", "score": 0.99}],
+        "pins": {"engine": "crosswalk.v1"},
+        "blocking": {"candidate_pairs": 1},
+    }
+    runtime.store.write_observations([input_observation, registry_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence(evidence)
+    runtime.record_case_reconcile_result(
+        case.case_id,
+        result,
+        run_id="run_decision_policy",
+        created_at=timestamp,
+        evidence_ids_by_decision={
+            "xwd:release": tuple(item.evidence_id for item in evidence)
+        },
+    )
+
+    outcome = runtime.apply_resolution_decision_policy(
+        case.case_id,
+        "xwd:release",
+        policy=ResolutionDecisionPolicy("supplier-link-v1"),
+        recorded_at=timestamp,
+    )
+
+    assert outcome.action == "link"
+    assert outcome.independent_source_ids == ("file", "registry")
+    assert {event.event_type for event in runtime.get_case_history(case.case_id)} == {
+        "resolver_decision",
+        "policy_decision",
+    }
+    assert runtime.store.get_entity("ent_not_created") is None
+    with pytest.raises(ValueError, match="already decided"):
+        runtime.apply_resolution_decision_policy(
+            case.case_id,
+            "xwd:release",
+            policy=ResolutionDecisionPolicy("supplier-link-v1"),
+            recorded_at=timestamp,
+        )
+
+
+def test_decision_policy_reviews_weak_positive_and_abstains_on_unsupported_negative(runtime):
+    """Missing evidence cannot silently create either a merge or a rejection."""
+    timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
+    observation = Observation(
+        "obs_policy", "file", "r-1", timestamp, "sha256:input"
+    )
+    evidence = Evidence("ev_policy", observation.observation_id, "name", "supports")
+    case = ResolutionCase(
+        "case_policy", "Which record is this?", (observation.observation_id,), (), timestamp
+    )
+    runtime.store.write_observations([observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence([evidence])
+
+    runtime.record_case_reconcile_result(
+        case.case_id,
+        {
+            "matches": [
+                {"decision_id": "xwd:weak", "decision": "match", "score": 0.99},
+                {"decision_id": "xwd:negative", "decision": "no_match", "score": 0.01},
+            ],
+            "pins": {"engine": "crosswalk.v1"},
+            "blocking": {"candidate_pairs": 2},
+        },
+        run_id="run_policy_outcomes",
+        created_at=timestamp,
+        evidence_ids_by_decision={"xwd:weak": (evidence.evidence_id,)},
+    )
+    policy = ResolutionDecisionPolicy("supplier-link-v1")
+
+    weak = runtime.apply_resolution_decision_policy(
+        case.case_id, "xwd:weak", policy=policy, recorded_at=timestamp
+    )
+    negative = runtime.apply_resolution_decision_policy(
+        case.case_id, "xwd:negative", policy=policy, recorded_at=timestamp
+    )
+
+    assert (weak.action, negative.action) == ("review", "abstain")
+
+
 def test_entity_memory_recovers_claims_conflicts_relations_and_case_history(runtime):
     """A supplier ledger survives outside the resolver call that created it."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
@@ -874,7 +978,7 @@ def test_coreference_adapter_keeps_existing_decision_identifier_and_pins():
 
     assert adapted.decision_id == existing.decision_id
     assert adapted.identity_result == existing.identity
-    assert adapted.action == existing.action
+    assert adapted.action == "link"
     assert adapted.raw_score == existing.score
     assert adapted.evidence_ids == ("ev_pair_01",)
     assert adapted.provenance["resolver_pins"] == existing.pins
@@ -969,9 +1073,8 @@ def test_runtime_schema_upgrades_a_pre_provenance_decision_table():
     try:
         store.ensure_schema()
         columns = {
-            row[1] for row in store._connection.execute(
-                "PRAGMA table_info('arche_decisions')"
-            ).fetchall()
+            row[1]
+            for row in store._connection.execute("PRAGMA table_info('arche_decisions')").fetchall()
         }
         assert "provenance" in columns
     finally:

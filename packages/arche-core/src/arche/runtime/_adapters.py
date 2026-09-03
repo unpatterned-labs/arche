@@ -23,6 +23,13 @@ _EDGE_OUTCOMES = {
 }
 
 
+_COREFERENCE_ACTIONS = {
+    "merge": "link",
+    "hold": "review",
+    "no_op": "reject",
+}
+
+
 def adapt_coreference_receipt(
     receipt: Receipt,
     *,
@@ -44,7 +51,7 @@ def adapt_coreference_receipt(
     return DecisionReceipt(
         decision_id=receipt.decision_id,
         identity_result=receipt.identity,
-        action=receipt.action,
+        action=_COREFERENCE_ACTIONS.get(receipt.action, receipt.action),
         evidence_ids=evidence_ids,
         created_at=created_at,
         raw_score=receipt.score,
@@ -108,9 +115,7 @@ def adapt_reconcile_result(
                 provenance={
                     "resolver_pins": dict(pins),
                     "edge": {
-                        key: value
-                        for key, value in edge_mapping.items()
-                        if key != "decision_id"
+                        key: value for key, value in edge_mapping.items() if key != "decision_id"
                     },
                 },
             )

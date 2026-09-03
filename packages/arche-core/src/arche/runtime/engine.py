@@ -29,9 +29,11 @@ from arche.runtime._models import (
     EntityMemory,
     EntityRelation,
     Observation,
+    PolicyDecision,
     ProposalAcceptance,
     ProposalAcceptancePolicy,
     RelationProposal,
+    ResolutionDecisionPolicy,
     ResolutionRun,
     new_ledger_id,
 )
@@ -293,7 +295,113 @@ class ArcheEngine:
         )
         self.store.write_decisions(receipts)
         self.store.write_resolution_runs([case_run])
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=new_ledger_id("evt"),
+                    case_id=case_id,
+                    event_type="resolver_decision",
+                    recorded_at=created_at,
+                    references=(case_run.run_id, receipt.decision_id),
+                    provenance={
+                        "identity_result": receipt.identity_result,
+                        "action": receipt.action,
+                    },
+                )
+                for receipt in receipts
+            ]
+        )
         return case_run, receipts
+
+    def apply_resolution_decision_policy(
+        self,
+        case_id: str,
+        decision_id: str,
+        *,
+        policy: ResolutionDecisionPolicy,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> PolicyDecision:
+        """Release, review, reject, or abstain on one case decision receipt.
+
+        This control-plane method never creates entities, claims, or links. It
+        records the policy outcome in immutable case history, leaving a caller
+        or human workflow to perform any consequential action.
+
+        Parameters:
+            case_id: Existing case that produced the receipt.
+            decision_id: Existing receipt recorded for that case.
+            policy: Evidence and source-independence requirements.
+            recorded_at: Timestamp for the immutable policy event.
+            event_id: Optional caller-owned immutable event identifier.
+
+        Returns:
+            The policy's operational action and its evidence basis.
+
+        Raises:
+            ValueError: If the case, receipt, or case/receipt relationship is
+                unknown, or this policy has already decided the receipt.
+        """
+        if self.store.get_resolution_case(case_id) is None:
+            raise ValueError(
+                f"resolution case {case_id!r} does not exist; open the case before "
+                "applying decision policy"
+            )
+        receipt = self.store.get_decision(decision_id)
+        if receipt is None:
+            raise ValueError(
+                f"decision receipt {decision_id!r} does not exist; record resolver "
+                "output before applying decision policy"
+            )
+        events = self.store.list_case_events(case_id)
+        if not any(
+            event.event_type == "resolver_decision" and decision_id in event.references
+            for event in events
+        ):
+            raise ValueError(
+                f"decision receipt {decision_id!r} was not recorded for case {case_id!r}"
+            )
+        if any(
+            event.event_type == "policy_decision"
+            and decision_id in event.references
+            and event.provenance.get("policy_id") == policy.policy_id
+            for event in events
+        ):
+            raise ValueError(
+                f"policy {policy.policy_id!r} already decided receipt {decision_id!r} "
+                f"for case {case_id!r}"
+            )
+
+        source_ids = self._evidence_source_ids(receipt.evidence_ids)
+        action, reason = self._policy_action(receipt, policy, source_ids)
+        outcome = PolicyDecision(
+            decision_id=decision_id,
+            case_id=case_id,
+            action=action,
+            reason=reason,
+            evidence_ids=receipt.evidence_ids,
+            independent_source_ids=source_ids,
+            policy_id=policy.policy_id,
+        )
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=event_id or new_ledger_id("evt"),
+                    case_id=case_id,
+                    event_type="policy_decision",
+                    recorded_at=recorded_at,
+                    references=(decision_id,),
+                    provenance={
+                        "policy_id": policy.policy_id,
+                        "action": action,
+                        "reason": reason,
+                        "evidence_ids": list(receipt.evidence_ids),
+                        "independent_source_ids": list(source_ids),
+                    },
+                )
+            ]
+        )
+        return outcome
 
     def record_reviewed_document_proposals(
         self,
@@ -522,6 +630,41 @@ class ArcheEngine:
         )
         return outcome
 
+    def _evidence_source_ids(self, evidence_ids: tuple[str, ...]) -> tuple[str, ...]:
+        """Return distinct observation sources required by durable evidence."""
+        source_ids: set[str] = set()
+        for evidence_id in evidence_ids:
+            evidence = self.store.get_evidence(evidence_id)
+            if evidence is None:
+                raise ValueError(
+                    f"evidence {evidence_id!r} does not exist; persist it before "
+                    "applying decision policy"
+                )
+            observation = self.store.get_observation(evidence.observation_id)
+            if observation is None:
+                raise ValueError(f"evidence {evidence_id!r} lacks its required Observation")
+            source_ids.add(observation.source_id)
+        return tuple(sorted(source_ids))
+
+    @staticmethod
+    def _policy_action(
+        receipt: DecisionReceipt,
+        policy: ResolutionDecisionPolicy,
+        source_ids: tuple[str, ...],
+    ) -> tuple[str, str]:
+        """Return a conservative operational action for one receipt."""
+        if receipt.identity_result == "review" or receipt.action == "review":
+            return "review", "resolver requires review"
+        if receipt.identity_result == "same_entity":
+            if receipt.action not in policy.releasable_actions:
+                return "review", "resolver action is not releasable under this policy"
+            if len(source_ids) < policy.min_independent_sources:
+                return "review", "needs more independent observation sources"
+            return receipt.action, "meets independent-evidence requirement"
+        if receipt.identity_result == "different" and receipt.evidence_ids:
+            return "reject", "resolver supplied evidence for a different-entity result"
+        return "abstain", "receipt has no evidence-backed operational conclusion"
+
     def _proposal_evidence(
         self,
         proposal: ClaimProposal | RelationProposal,
@@ -672,8 +815,7 @@ def attach(uri: str) -> ArcheEngine:
     """
     if not uri.startswith("duckdb:///"):
         raise ValueError(
-            f"unsupported Arche store URI {uri!r}; use duckdb:///:memory: or "
-            "duckdb:///arche.duckdb"
+            f"unsupported Arche store URI {uri!r}; use duckdb:///:memory: or duckdb:///arche.duckdb"
         )
 
     database = uri.removeprefix("duckdb:///")

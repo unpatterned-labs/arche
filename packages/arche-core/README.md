@@ -80,7 +80,7 @@ returned edge includes the retrieval route, scored evidence, the verdict and a
 
 ## Persist entity decisions locally
 
-The vNext runtime starts with a local DuckDB store for stable entity identities, immutable observations, evidence, and decision receipts. It deliberately does not add an autonomous planner yet: future evidence-acquisition actions must first have a durable, replayable place to record what they learned.
+The vNext runtime starts with a local DuckDB store for stable entity identities, immutable observations, evidence, and decision receipts. Its deterministic planner can assess a case and select only permitted, costed actions; an optional future LLM planner must use the same durable boundary and cannot execute tools or mutate identity state directly.
 
 ```bash
 pip install "arche-core[runtime]"
@@ -168,6 +168,29 @@ run, receipts = engine.record_case_reconcile_result(
     evidence_ids_by_decision={"xwd:...": ("ev_registry_01",)},
 )
 ```
+
+### Release a decision only with independent evidence
+
+`ResolutionDecisionPolicy` is the boundary between a resolver receipt and an operational instruction. It deliberately has no universal score threshold: pairwise and batch resolver scores are not comparable or calibrated across domains. It can release only evidence-backed `link` or `create` outcomes from the policy's required number of independent Observation sources. Otherwise it records `review` (for a weak positive) or `abstain` (for an unsupported negative) in immutable case history. It never changes entity memory itself.
+
+```python
+from arche.runtime import ResolutionDecisionPolicy
+
+outcome = engine.apply_resolution_decision_policy(
+    case.case_id,
+    receipts[0].decision_id,
+    policy=ResolutionDecisionPolicy("supplier-link-v1"),
+    recorded_at=datetime.now(UTC),
+)
+
+if outcome.action == "link":
+    # An application or a human workflow performs any consequential action.
+    print(outcome.evidence_ids, outcome.independent_source_ids)
+else:
+    print(outcome.action, outcome.reason)
+```
+
+The case history first records the resolver receipt, then the policy outcome. This makes a later policy revision or human decision traceable without giving the planner or connector authority to assert a canonical entity relationship.
 
 ### Plan only after assessing the case
 
@@ -325,6 +348,8 @@ Published whichever way it falls, with the caveats attached rather than in a foo
 | **Multilingual detection** | Presidio 37/48 | **47/48** | **Not re-runnable.** The 48-case set is not in this repo and nothing here computes the number. Unverified until rebuilt |
 
 The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
+
+For a local OpenSanctions Pairs smoke evaluation, download the CC-BY-NC-4.0 dataset under its terms and run `uv run python data/scripts/benchmark_opensanctions_pairs.py --input path/to/sample_1000.json`. The script reports only the supported person/person and organisation/organisation pairs, and reports structural or mixed-schema pairs as skipped; it does not turn an evaluation result into a runtime pack or an operational sanctions-screening policy.
 
 ## Why the calibration comes from where it does
 

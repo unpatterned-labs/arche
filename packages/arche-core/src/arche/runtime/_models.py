@@ -312,6 +312,47 @@ class ProposalAcceptance:
 
 
 @dataclass(frozen=True)
+class ResolutionDecisionPolicy:
+    """Requirements for releasing a resolver receipt as an operational action.
+
+    Scores from different resolver engines are not interchangeable, so this
+    policy deliberately makes no score threshold a portability promise. It
+    releases only evidence-backed actions and otherwise sends the case to
+    review or abstains.
+    """
+
+    policy_id: str
+    min_independent_sources: int = 2
+    releasable_actions: tuple[str, ...] = ("link", "create")
+
+    def __post_init__(self) -> None:
+        if not self.policy_id:
+            raise ValueError("resolution decision policy needs a policy_id")
+        if self.min_independent_sources < 1:
+            raise ValueError("min_independent_sources must be at least one")
+        if not self.releasable_actions:
+            raise ValueError("resolution decision policy needs a releasable action")
+        invalid = set(self.releasable_actions) - {"link", "create"}
+        if invalid:
+            raise ValueError(
+                f"releasable_actions may contain only 'link' or 'create'; got {sorted(invalid)!r}"
+            )
+
+
+@dataclass(frozen=True)
+class PolicyDecision:
+    """An auditable policy outcome for one durable resolver receipt."""
+
+    decision_id: str
+    case_id: str
+    action: str
+    reason: str
+    evidence_ids: tuple[str, ...]
+    independent_source_ids: tuple[str, ...]
+    policy_id: str
+
+
+@dataclass(frozen=True)
 class EntityMemory:
     """The compact current ledger view for one stable entity."""
 
