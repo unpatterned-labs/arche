@@ -144,6 +144,23 @@ engine.ingest_action_observation("act_01", registry_observation)
 
 There is deliberately no built-in external provider in `arche-core`. Applications supply a read-only connector that satisfies the explicit capability contract; the included deterministic planner can choose only among those permitted actions under an explicit budget.
 
+`HttpEvidenceConnector` is the opt-in reference connector for an application-approved HTTPS source; it is not a bundled provider or autonomous crawler. The application retains lookup values in its request builder, while Arche persists only request/result hashes, response status, cost, and a success or failure Observation. It enforces the action's cost ceiling plus a connector-local request window. A failed or exhausted request is terminal for that action, so retries require a new `EvidenceAction` and remain visible in history.
+
+```python
+from arche.runtime import ExternalEvidenceRequest, HttpEvidenceConnector, ToolCapability
+
+registry_connector = HttpEvidenceConnector(
+    ToolCapability("supplier_registry", ("registry_lookup",), "supplier-policy-v1"),
+    "https://registry.example/v1",
+    # The application owns this value and it is never stored in Observation provenance.
+    lambda action: ExternalEvidenceRequest("/suppliers", (("query", supplier_name),)),
+    estimated_cost=0.02,
+    max_requests=30,
+    window_seconds=60.0,
+)
+engine.execute_evidence_action("act_01", registry_connector)
+```
+
 ### Re-enter resolution after evidence arrives
 
 Cases can expose deterministic evidence gaps before any planning occurs. A read-only connector must declare the same source, action type, and policy pin as the permitted action; it can return only an Observation. Normal resolver output is then recorded back against the case with persisted Evidence IDs.
@@ -184,13 +201,18 @@ outcome = engine.apply_resolution_decision_policy(
 )
 
 if outcome.action == "link":
-    # An application or a human workflow performs any consequential action.
-    print(outcome.evidence_ids, outcome.independent_source_ids)
+    # An application or human workflow explicitly performs the released action.
+    execution = engine.execute_released_policy_decision(
+        outcome,
+        application_executor,
+        recorded_at=datetime.now(UTC),
+    )
+    print(execution.outcome, execution.result_hash)
 else:
     print(outcome.action, outcome.reason)
 ```
 
-The case history first records the resolver receipt, then the policy outcome. This makes a later policy revision or human decision traceable without giving the planner or connector authority to assert a canonical entity relationship.
+`application_executor` is caller-owned and must return a hash-only `PolicyExecution`; Arche verifies that the exact policy release exists, records the executor outcome, and refuses repeat submission of the same receipt. The case history first records the resolver receipt, then the policy outcome, then any application execution. This makes a later policy revision or human decision traceable without giving the planner or connector authority to assert a canonical entity relationship.
 
 ### Plan only after assessing the case
 
@@ -215,30 +237,29 @@ case = ResolutionCase(
 )
 engine.store.write_resolution_cases([case])
 
+selected_method = ResolutionMethod(
+    "splink_supplier_v1",
+    "splink",
+    ("organisation",),
+    ("reconcile",),
+    "supplier-policy-v1",
+    "sha256:caller-owned-splink-settings",
+    required_fields=("name", "registration_id"),
+    max_candidate_pairs=1_000_000,
+    estimated_cost=0.05,
+)
 plan = engine.plan_case(
     case.case_id,
     capabilities=(registry_connector.capability,),
     budget=ResolutionBudget(max_actions=1, max_cost=0.25),
-    methods=(
-        ResolutionMethod(
-            "splink_supplier_v1",
-            "splink",
-            ("organisation",),
-            ("reconcile",),
-            "supplier-policy-v1",
-            "sha256:caller-owned-splink-settings",
-            required_fields=("name", "registration_id"),
-            max_candidate_pairs=1_000_000,
-            estimated_cost=0.05,
-        ),
-    ),
+    methods=(selected_method,),
 )
 for action in plan.actions:
     print(action.gap_field, action.rationale, action.estimated_cost)
 for method in plan.methods:
     print(method.resolver, method.configuration_pin, method.rationale)
 
-engine.record_case_plan(plan, recorded_at=datetime.now(UTC))
+plan_event = engine.record_case_plan(plan, recorded_at=datetime.now(UTC))
 ```
 
 `ResolutionIntent` contains only the requested operation, entity type, available field names, candidate-pair scale, and a policy pin; it does not persist record values. A `ResolutionMethod` is caller-configured and has a configuration pin, so the planner can recommend a configured Splink, deterministic, domain, or other resolver without inventing settings or importing/running it. The assessment records why every method was eligible or excluded.
@@ -246,6 +267,93 @@ engine.record_case_plan(plan, recorded_at=datetime.now(UTC))
 This is the baseline for an optional future LLM planner. Any such planner must choose from the same assessed gaps and permitted capabilities, meet the same budget, and produce a comparable plan before an application executes it. It cannot create a new action type, call an unapproved source, bypass observation and evidence records, or directly run a selected resolver.
 
 This contract is the foundation for later `ResolutionCase` work: external tool output returns as an immutable observation, is evaluated by the normal evidence and policy pipeline, and never grants the tool direct authority to merge identities.
+
+### Let an optional agent advise on an already-bounded plan
+
+`AgentPlanAdvice` is the narrow agentic boundary. A caller-owned planner may interpret the case and recommend only action or method IDs already selected by a persisted deterministic `EvidencePlan`; `record_agent_plan_advice()` rejects invented tools, methods, or budgets. It records stable reason codes, uncertainty targets, and a SHA-256 reference to caller-managed free-form reasoning, but it cannot execute a connector or resolver, approve a method, or mutate entity memory.
+
+### Gate optional Splink and domain methods on evaluated configurations
+
+Set a non-core `ResolutionMethod.benchmark_id` and provide an exact passing `MethodBenchmarkQualification` to `plan_case()`. The qualification pins its method/resolver/configuration, benchmark and dataset identities, evaluator version, and hash-addressed result; it does not make an accuracy claim in runtime state. Without it, the method is ineligible. A changed settings pin or benchmark requires a new qualification before the planner can recommend the runner.
+
+`SplinkResolutionMethodExecutor` and `DomainResolutionMethodExecutor` bind caller-owned runner functions to one resolver identifier and executor pin. They return the existing hash-only `ResolutionMethodExecution` contract, so the ordinary plan → approval → gateway Observation → reviewed Evidence → receipt → policy path remains mandatory.
+
+### Approve and run a planned resolver method
+
+Resolver selection and resolver execution are separate. `approve_planned_resolution_method` checks that a persisted plan selected the exact configured method and records the application or human approval plus its cost ceiling. `execute_approved_resolution_method` then invokes the caller-owned adapter once and records a success or failure Observation. It does not interpret the result, create Evidence, record a DecisionReceipt, or mutate entity memory.
+
+```python
+from arche.runtime import ResolutionMethodApproval, ResolutionMethodExecution
+
+approval = ResolutionMethodApproval(
+    "approval_01",
+    case.case_id,
+    plan_event.event_id,
+    selected_method.method_id,
+    selected_method.configuration_pin,
+    "supplier-reviewer",
+    max_cost=0.15,
+)
+engine.approve_planned_resolution_method(
+    approval,
+    selected_method,
+    recorded_at=datetime.now(UTC),
+)
+
+class SupplierResolver:
+    def execute(self, case, method):
+        # The application owns inputs, the configured library, and raw output storage.
+        return ResolutionMethodExecution(
+            "execution_01",
+            method.method_id,
+            method.configuration_pin,
+            "success",
+            "sha256:result-artifact",
+            actual_cost=0.12,
+        )
+
+result_observation = engine.execute_approved_resolution_method(
+    case.case_id,
+    approval.approval_id,
+    selected_method,
+    SupplierResolver(),
+    recorded_at=datetime.now(UTC),
+)
+# Derive reviewed Evidence from result_observation before creating any receipt.
+```
+
+An executor exception, an explicit failure, or an actual cost above the approved ceiling becomes a failure Observation. A new approval is required to retry, preserving the complete chain of plan, approval, execution, evidence, inference, and policy.
+
+### Review deterministic reconcile output before using it
+
+`record_reviewed_reconcile_artifact` is the first bridge from a successful deterministic `arche.resolve.reconcile` gateway Observation to vNext Evidence and receipts. The caller retains the raw result artifact, reviews it, supplies one Evidence ID per emitted edge, and may add existing independent Evidence such as a registry or document field. Resolver-output Evidence is retained on the receipt for provenance but does not count as an independent real-world source for `ResolutionDecisionPolicy`.
+
+```python
+artifact_evidence, run, receipts = engine.record_reviewed_reconcile_artifact(
+    case.case_id,
+    result_observation.observation_id,
+    reviewed_reconcile_result,
+    review_id="review_reconcile_01",
+    reviewed_at=datetime.now(UTC),
+    run_id="run_reconcile_01",
+    artifact_evidence_ids_by_decision={"xwd:edge_01": "ev_reconcile_edge_01"},
+    supporting_evidence_ids_by_decision={
+        "xwd:edge_01": ("ev_supplier_document", "ev_registry"),
+    },
+)
+outcome = engine.apply_resolution_decision_policy(
+    case.case_id,
+    receipts[0].decision_id,
+    policy=ResolutionDecisionPolicy("supplier-link-v1"),
+    recorded_at=datetime.now(UTC),
+)
+```
+
+The bridge rejects failed outputs, unrecorded artifacts, and incomplete edge review. `record_reviewed_resolution_artifact()` gives reviewed Splink and domain-matcher output the same path: the gateway Observation must have the matching resolver and pinned configuration; every edge becomes case-linked Evidence; then the ordinary receipt and `ResolutionDecisionPolicy` path applies. No library adapter writes a decision or ledger record directly.
+
+PDFs, scans, and image-to-text input follow the same boundary. `DocumentIngestion` is the provider-neutral, value-free parser/OCR result; `ingest_document_observation()` requires a permitted `document_extract` or `document_ocr` action and stores only artifact/text hashes, parser/OCR pins, and page count. Reviewed fields/spans can then become Evidence and proposals. OCR output is not trusted matching input merely because it is text.
+
+`DoclingDocumentIngestionExecutor` is the opt-in caller-owned bridge for `arche.doc.parse(...)`: it accepts a local path or other caller-managed source in `DocumentIngestionRequest`, discards the parsed text after hashing, and writes a success or failure Observation through the permitted case action. The runtime never persists the path, parser exception, or document text.
 
 ### Keep entity memory revisable
 
@@ -387,6 +495,25 @@ For a local OpenSanctions Pairs smoke evaluation, download the CC-BY-NC-4.0 data
 ## Why the calibration comes from where it does
 
 The engine is general. The organisation frequency table is built from company registrations across 65 jurisdictions, the product work is benchmarked on US retail catalogues, and the place work runs on UK hospitals and Nigerian clinics alike.
+
+### CLI discovery and releases
+
+`arche` is intended to be usable without memorising a hidden command tree:
+
+```text
+arche version             # the installed arche-core version
+arche list                # compare, review, schema, datasets, and version
+arche datasets            # truth coverage before choosing a benchmark
+arche datasets --json     # the same catalog for an application or agent
+arche review template PACK outcomes.csv  # value-free IDs for human adjudication
+arche case open document.pdf --store arche.duckdb
+arche case plan CASE_ID --enable-local-document
+arche case review CASE_ID --out case-review.json
+```
+
+`arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.
+
+`arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case review` writes a value-free case-history artifact for a future review pane or another application. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
 
 What is unusual is where the defaults were tested first. Jaro-Winkler, the string comparator underneath most record linkage, pays a bonus for a shared prefix, because it was tuned on US Census surnames where clerical typos land at the end of a word. *Diallo* and *Jallow* are one Fula family name split by a colonial spelling border, and they share no prefix at all. That assumption fails identically on Arabic transliteration, on Cantonese romanisation, and on any register where one name has three spellings.
 

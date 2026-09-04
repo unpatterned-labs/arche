@@ -15,34 +15,55 @@ import pytest
 from arche.doc._extract import Extraction, FieldEvidence
 from arche.doc.parse import ParsedDocument
 from arche.runtime import (
+    AgentPlanAdvice,
+    BenchmarkResultBundle,
     CaseEvent,
     Claim,
     Contradiction,
     DecisionReceipt,
+    DoclingDocumentIngestionExecutor,
     DocumentClaimSpec,
+    DocumentIngestion,
+    DocumentIngestionRequest,
     DocumentRelationSpec,
+    DomainResolutionMethodExecutor,
     Entity,
     EntityRelation,
     Evidence,
     EvidenceAction,
     EvidenceGap,
+    ExternalEvidenceRequest,
+    HttpEvidenceConnector,
+    HttpEvidenceResponse,
     Observation,
     OpenQuestion,
+    PolicyExecution,
     ProposalAcceptancePolicy,
     ResolutionBudget,
     ResolutionCase,
     ResolutionDecisionPolicy,
     ResolutionIntent,
     ResolutionMethod,
+    ResolutionMethodApproval,
+    ResolutionMethodExecution,
     ResolutionRun,
+    ReviewedResolutionArtifact,
+    ReviewedResolutionEdge,
+    SplinkResolutionMethodExecutor,
     ToolCapability,
     adapt_coreference_receipt,
     adapt_reconcile_result,
+    adapt_reviewed_resolution_artifact,
+    benchmark_result_bundle_from_record,
     new_entity_id,
     new_evidence_action_id,
     new_resolution_case_id,
     observation_from_document,
+    qualification_from_evaluated_result,
+    read_benchmark_result_bundle,
+    reviewed_resolution_evidence,
     what_would_resolve,
+    write_benchmark_result_bundle,
 )
 
 
@@ -152,6 +173,120 @@ def test_document_observation_carries_parser_pins_into_a_permitted_case(runtime)
     assert runtime.store.get_observation(observation.observation_id) == observation
     assert observation.content_hash == "sha256:" + "a" * 64
     assert observation.provenance["document"]["parser"] == "docling"
+
+
+def test_document_ocr_ingestion_action_keeps_scan_provenance_out_of_values(runtime):
+    """A caller-owned scan/OCR result is an action Observation before review."""
+    timestamp = datetime(2026, 9, 3, 15, 0, tzinfo=UTC)
+    input_observation = Observation(
+        "obs_document_ingestion_input", "tea-intake", "shipment-19", timestamp, "sha256:intake"
+    )
+    case = ResolutionCase(
+        "case_document_ocr_ingestion",
+        "What supplier is reported by this scanned tea shipment document?",
+        (input_observation.observation_id,),
+        (),
+        timestamp,
+    )
+    action = EvidenceAction(
+        "act_document_ocr_ingestion",
+        case.case_id,
+        "document_ocr",
+        "tea_document_service",
+        timestamp,
+        "tea-pilot-v1",
+    )
+    ingestion = DocumentIngestion(
+        "artifact:sha256:caller-managed",
+        text_sha256="a" * 64,
+        parser="docling",
+        parser_version="2.0",
+        ocr=True,
+        artifact_sha256="b" * 64,
+        page_count=2,
+    )
+    runtime.store.write_observations([input_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([action])
+
+    link = runtime.ingest_document_observation(
+        action.action_id,
+        ingestion,
+        observation_id="obs_document_ocr_ingestion",
+        recorded_at=timestamp,
+    )
+    observation = runtime.store.get_observation(link.observation_id)
+
+    assert observation is not None
+    assert observation.source_id == action.source_id
+    assert observation.content_hash == "sha256:" + "b" * 64
+    assert observation.provenance == {
+        "kind": "document_ingestion",
+        "document": {
+            "artifact_sha256": "b" * 64,
+            "text_sha256": "a" * 64,
+            "parser": "docling",
+            "parser_version": "2.0",
+            "ocr": True,
+            "page_count": 2,
+        },
+    }
+    assert "supplier" not in str(observation.provenance)
+
+
+def test_docling_executor_enters_a_permitted_document_action_without_text(runtime):
+    """Docling/OCR stays caller-owned and emits only hash-pinned ingestion state."""
+    timestamp = datetime(2026, 9, 3, 15, 15, tzinfo=UTC)
+    input_observation = Observation(
+        "obs_docling_executor_input", "tea-intake", "shipment-21", timestamp, "sha256:intake"
+    )
+    case = ResolutionCase(
+        "case_docling_executor",
+        "What supplier is reported by this scanned tea document?",
+        (input_observation.observation_id,),
+        (),
+        timestamp,
+    )
+    action = EvidenceAction(
+        "act_docling_executor",
+        case.case_id,
+        "document_ocr",
+        "tea_document_service",
+        timestamp,
+        "tea-pilot-v1",
+    )
+    parsed = ParsedDocument(
+        source="private-invoice.pdf",
+        text="This text must not enter runtime provenance.",
+        num_pages=1,
+        provenance={
+            "artifact_sha256": "c" * 64,
+            "text_sha256": "d" * 64,
+            "parser": "docling",
+            "parser_version": "2.0",
+            "ocr": True,
+        },
+    )
+    executor = DoclingDocumentIngestionExecutor(
+        parse_document=lambda source, do_ocr: parsed,
+    )
+    runtime.store.write_observations([input_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([action])
+
+    link = runtime.execute_document_ingestion_action(
+        action.action_id,
+        DocumentIngestionRequest("private-invoice.pdf", "artifact:private-21", do_ocr=True),
+        executor,
+        observation_id="obs_docling_executor",
+        recorded_at=timestamp,
+    )
+    observation = runtime.store.get_observation(link.observation_id)
+
+    assert observation is not None
+    assert observation.source_record_id == "artifact:private-21"
+    assert observation.provenance["document"]["ocr"] is True
+    assert "This text" not in str(observation.provenance)
 
 
 def test_reviewed_tea_document_fields_propose_but_do_not_assert_entity_memory(runtime):
@@ -568,6 +703,91 @@ def test_connector_capability_cannot_broaden_a_permitted_action(runtime):
         runtime.execute_evidence_action(action.action_id, WrongPolicyConnector())
 
 
+def test_https_connector_records_hashed_external_results_and_terminal_failures(runtime):
+    """External source values never enter durable provenance, including failures."""
+    timestamp = datetime(2026, 9, 3, 10, 0, tzinfo=UTC)
+    input_observation = Observation("obs_external_input", "file", "r-1", timestamp, "sha256:input")
+    case = ResolutionCase(
+        "case_external_connector",
+        "Which supplier is this?",
+        (input_observation.observation_id,),
+        (),
+        timestamp,
+    )
+    success, rate_limited, cost_limited = (
+        EvidenceAction(
+            "act_external_success",
+            case.case_id,
+            "registry_lookup",
+            "registry",
+            timestamp,
+            "policy-v1",
+            0.10,
+        ),
+        EvidenceAction(
+            "act_external_rate",
+            case.case_id,
+            "registry_lookup",
+            "registry",
+            timestamp,
+            "policy-v1",
+            0.10,
+        ),
+        EvidenceAction(
+            "act_external_cost",
+            case.case_id,
+            "registry_lookup",
+            "registry",
+            timestamp,
+            "policy-v1",
+            0.01,
+        ),
+    )
+    requested_urls: list[str] = []
+
+    def fetch(url: str, timeout: float) -> HttpEvidenceResponse:
+        requested_urls.append(url)
+        assert timeout == 5.0
+        return HttpEvidenceResponse(200, b'{"supplier":"example"}')
+
+    connector = HttpEvidenceConnector(
+        ToolCapability("registry", ("registry_lookup",), "policy-v1"),
+        "https://registry.example/v1",
+        lambda action: ExternalEvidenceRequest(
+            "/suppliers", (("query", "private supplier value"),)
+        ),
+        estimated_cost=0.05,
+        max_requests=1,
+        window_seconds=60.0,
+        timeout_seconds=5.0,
+        fetch=fetch,
+        clock=lambda: 100.0,
+        recorded_at=lambda: timestamp,
+    )
+    runtime.store.write_observations([input_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([success, rate_limited, cost_limited])
+
+    success_link = runtime.execute_evidence_action(success.action_id, connector)
+    rate_link = runtime.execute_evidence_action(rate_limited.action_id, connector)
+    cost_link = runtime.execute_evidence_action(cost_limited.action_id, connector)
+    success_observation = runtime.store.get_observation(success_link.observation_id)
+    rate_observation = runtime.store.get_observation(rate_link.observation_id)
+    cost_observation = runtime.store.get_observation(cost_link.observation_id)
+
+    assert requested_urls == ["https://registry.example/v1/suppliers?query=private+supplier+value"]
+    assert success_observation is not None
+    assert success_observation.provenance["outcome"] == "success"
+    assert success_observation.provenance["response_status"] == 200
+    assert "private supplier value" not in str(success_observation.provenance)
+    assert rate_observation is not None
+    assert rate_observation.provenance["failure_reason"] == "rate_limit"
+    assert cost_observation is not None
+    assert cost_observation.provenance["failure_reason"] == "cost_limit"
+    with pytest.raises(ValueError, match="already has an Observation"):
+        runtime.execute_evidence_action(success.action_id, connector)
+
+
 def test_planner_assesses_before_selecting_permitted_costed_actions(runtime):
     """Planning exposes its understanding and never executes an action itself."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)
@@ -791,7 +1011,409 @@ def test_planner_reasons_about_configured_resolver_methods_before_execution(runt
     event = runtime.record_case_plan(plan, recorded_at=timestamp)
 
     assert event.provenance["planned_method_ids"] == ["splink_supplier"]
+    assert event.provenance["planned_methods"] == [
+        {
+            "method_id": "splink_supplier",
+            "resolver": "splink",
+            "policy_pin": "supplier-policy-v1",
+            "configuration_pin": "splink-settings@sha256:approved",
+            "estimated_cost": 0.15,
+        }
+    ]
+
+    selected_method = methods[1]
+    approval = ResolutionMethodApproval(
+        "approval_splink_supplier",
+        case.case_id,
+        event.event_id,
+        selected_method.method_id,
+        selected_method.configuration_pin,
+        "supplier-reviewer",
+        max_cost=0.15,
+    )
+    approval_event = runtime.approve_planned_resolution_method(
+        approval, selected_method, recorded_at=timestamp
+    )
+
+    class SplinkExecutor:
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, requested_case, requested_method):
+            self.calls.append((requested_case, requested_method))
+            return ResolutionMethodExecution(
+                "exec_splink_supplier",
+                requested_method.method_id,
+                requested_method.configuration_pin,
+                "success",
+                "sha256:splink-result",
+                actual_cost=0.14,
+            )
+
+    executor = SplinkExecutor()
+    method_observation = runtime.execute_approved_resolution_method(
+        case.case_id,
+        approval.approval_id,
+        selected_method,
+        executor,
+        recorded_at=timestamp,
+    )
+
+    assert approval_event.references == (event.event_id, selected_method.method_id)
+    assert executor.calls == [(case, selected_method)]
+    assert method_observation.source_id == "resolver:splink"
+    assert method_observation.provenance["outcome"] == "success"
+    assert runtime.store.get_decision("dec_not_created") is None
+    with pytest.raises(ValueError, match="already has an execution Observation"):
+        runtime.execute_approved_resolution_method(
+            case.case_id,
+            approval.approval_id,
+            selected_method,
+            executor,
+            recorded_at=timestamp,
+        )
+
+    overrun_approval = ResolutionMethodApproval(
+        "approval_splink_overrun",
+        case.case_id,
+        event.event_id,
+        selected_method.method_id,
+        selected_method.configuration_pin,
+        "supplier-reviewer",
+        max_cost=0.15,
+    )
+    runtime.approve_planned_resolution_method(
+        overrun_approval, selected_method, recorded_at=timestamp
+    )
+
+    class CostOverrunExecutor:
+        def execute(self, requested_case, requested_method):
+            return ResolutionMethodExecution(
+                "exec_splink_overrun",
+                requested_method.method_id,
+                requested_method.configuration_pin,
+                "success",
+                "sha256:splink-overrun-result",
+                actual_cost=0.16,
+            )
+
+    overrun_observation = runtime.execute_approved_resolution_method(
+        case.case_id,
+        overrun_approval.approval_id,
+        selected_method,
+        CostOverrunExecutor(),
+        recorded_at=timestamp,
+    )
+
+    assert overrun_observation.provenance["outcome"] == "failure"
+    assert overrun_observation.provenance["failure_reason"] == "cost_limit"
+
+    failed_approval = ResolutionMethodApproval(
+        "approval_splink_failure",
+        case.case_id,
+        event.event_id,
+        selected_method.method_id,
+        selected_method.configuration_pin,
+        "supplier-reviewer",
+        max_cost=0.15,
+    )
+    runtime.approve_planned_resolution_method(
+        failed_approval, selected_method, recorded_at=timestamp
+    )
+
+    class FailingExecutor:
+        def execute(self, requested_case, requested_method):
+            raise RuntimeError("adapter unavailable")
+
+    failed_observation = runtime.execute_approved_resolution_method(
+        case.case_id,
+        failed_approval.approval_id,
+        selected_method,
+        FailingExecutor(),
+        recorded_at=timestamp,
+    )
+
+    assert failed_observation.provenance["outcome"] == "failure"
+    assert failed_observation.provenance["failure_reason"] == "executor_failed"
     assert runtime.store.get_resolution_run("run_not_executed") is None
+
+
+def test_planner_requires_a_pinned_qualified_benchmark_for_splink_or_domain_methods(runtime):
+    """Optional non-core runners remain unavailable until exact evaluation is supplied."""
+    timestamp = datetime(2026, 9, 3, 16, 30, tzinfo=UTC)
+    observation = Observation(
+        "obs_benchmark_gate", "file", "supplier-22", timestamp, "sha256:input"
+    )
+    intent = ResolutionIntent(
+        "organisation", "reconcile", ("name", "registration_id"), "tea-policy-v1", 100
+    )
+    case = ResolutionCase(
+        "case_benchmark_gate",
+        "Which supplier is represented by these records?",
+        (observation.observation_id,),
+        (),
+        timestamp,
+        intent=intent,
+    )
+    method = ResolutionMethod(
+        "splink_supplier_benchmarked",
+        "splink",
+        ("organisation",),
+        ("reconcile",),
+        "tea-policy-v1",
+        "splink-settings@sha256:tea-v1",
+        required_fields=("name", "registration_id"),
+        estimated_cost=0.10,
+        benchmark_id="leipzig-abt-buy-v1",
+    )
+    runtime.store.write_observations([observation])
+    runtime.store.write_resolution_cases([case])
+
+    unqualified = runtime.plan_case(
+        case.case_id,
+        capabilities=(),
+        budget=ResolutionBudget(max_actions=0, max_cost=0.20),
+        methods=(method,),
+    )
+    bundle = BenchmarkResultBundle(
+        "bundle_splink_abt_buy",
+        method.method_id,
+        method.resolver,
+        method.configuration_pin,
+        "leipzig-abt-buy-v1",
+        "leipzig-abt-buy",
+        "benchmark-runner@v1",
+        timestamp,
+        "complete",
+        candidate_pairs=20,
+        auto_match_count=10,
+        review_count=4,
+        true_pair_count=12,
+        blocking_true_pair_count=12,
+        true_positive_count=9,
+        false_positive_count=1,
+        reviewed_true_pair_count=3,
+    )
+    qualification = qualification_from_evaluated_result(
+        bundle,
+        qualification_id="qualification_splink_abt_buy",
+        qualification_policy_pin="benchmark-acceptance@v1",
+        qualified=True,
+    )
+    mismatched = runtime.plan_case(
+        case.case_id,
+        capabilities=(),
+        budget=ResolutionBudget(max_actions=0, max_cost=0.20),
+        methods=(method,),
+        benchmark_qualifications=(
+            replace(qualification, configuration_pin="splink-settings@sha256:other"),
+        ),
+    )
+    qualified = runtime.plan_case(
+        case.case_id,
+        capabilities=(),
+        budget=ResolutionBudget(max_actions=0, max_cost=0.20),
+        methods=(method,),
+        benchmark_qualifications=(qualification,),
+    )
+    event = runtime.record_case_plan(qualified, recorded_at=timestamp)
+
+    assert unqualified.assessment.method_assessments[0].reason == (
+        "requires qualified benchmark leipzig-abt-buy-v1"
+    )
+    assert unqualified.methods == ()
+    assert mismatched.methods == ()
+    assert qualified.methods[0].benchmark_qualification_id == qualification.qualification_id
+    assert (
+        event.provenance["planned_methods"][0]["benchmark_result_hash"] == qualification.result_hash
+    )
+
+
+def test_benchmark_bundles_are_hash_verified_and_unlabelled_review_packs_cannot_qualify(tmp_path):
+    """Only the full, hash-addressed evaluation path can enable an optional method."""
+    timestamp = datetime(2026, 9, 3, 17, 0, tzinfo=UTC)
+    complete = BenchmarkResultBundle(
+        "bundle_product_complete",
+        "arche_products",
+        "arche",
+        "arche-products@sha256:v1",
+        "leipzig-abt-buy-v1",
+        "leipzig-abt-buy",
+        "arche.crosswalk.complete-mapping.v1",
+        timestamp,
+        "complete",
+        candidate_pairs=30,
+        auto_match_count=8,
+        review_count=6,
+        true_pair_count=10,
+        blocking_true_pair_count=10,
+        true_positive_count=7,
+        false_positive_count=1,
+        reviewed_true_pair_count=3,
+        provenance={"input_sha256": "sha256:source"},
+    )
+    path = tmp_path / "product-result.json"
+    assert write_benchmark_result_bundle(path, complete) == complete.result_hash
+    assert read_benchmark_result_bundle(path) == complete
+    saved = complete.to_record()
+    saved["provenance"]["input_sha256"] = "sha256:tampered"
+    with pytest.raises(ValueError, match="hash does not match"):
+        benchmark_result_bundle_from_record(saved)
+    qualification = qualification_from_evaluated_result(
+        complete,
+        qualification_id="qualification_product_complete",
+        qualification_policy_pin="product-quality@v1",
+        qualified=True,
+    )
+    assert qualification.result_hash == complete.result_hash
+    unlabelled = BenchmarkResultBundle(
+        "bundle_facility_unlabelled",
+        "facility-review-pack",
+        "domain.facility",
+        "facility-pack@sha256:v1",
+        "facility-review-pack-v1",
+        "facility-review-pack",
+        "arche.review-pack.v1",
+        timestamp,
+        "unlabelled",
+        candidate_pairs=20,
+        auto_match_count=10,
+        review_count=10,
+    )
+    with pytest.raises(ValueError, match="complete-truth"):
+        qualification_from_evaluated_result(
+            unlabelled,
+            qualification_id="qualification_facility_unlabelled",
+            qualification_policy_pin="facility-quality@v1",
+            qualified=True,
+        )
+
+
+def test_pinned_splink_and_domain_runners_cannot_cross_resolver_boundaries():
+    """Optional libraries use one method-execution contract with executor provenance."""
+    timestamp = datetime(2026, 9, 3, 16, 45, tzinfo=UTC)
+    case = ResolutionCase("case_pinned_runner", "Which entity is this?", (), (), timestamp)
+    splink_method = ResolutionMethod(
+        "splink_runner",
+        "splink",
+        ("organisation",),
+        ("reconcile",),
+        "policy-v1",
+        "splink-settings@sha256:v1",
+    )
+    domain_method = ResolutionMethod(
+        "domain_runner",
+        "domain.supplier",
+        ("organisation",),
+        ("reconcile",),
+        "policy-v1",
+        "domain-supplier@sha256:v1",
+    )
+
+    def runner(requested_case, requested_method):
+        return ResolutionMethodExecution(
+            f"exec_{requested_method.method_id}",
+            requested_method.method_id,
+            requested_method.configuration_pin,
+            "success",
+            "sha256:caller-managed-artifact",
+            0.01,
+        )
+
+    splink = SplinkResolutionMethodExecutor("application.splink.v1", runner)
+    domain = DomainResolutionMethodExecutor("domain.supplier", "application.domain.v1", runner)
+
+    assert splink.execute(case, splink_method).executor_id == "application.splink.v1"
+    assert domain.execute(case, domain_method).executor_id == "application.domain.v1"
+    with pytest.raises(ValueError, match="pinned to 'splink'"):
+        splink.execute(case, domain_method)
+
+
+def test_agent_plan_advice_can_only_recommend_a_persisted_plan(runtime):
+    """Optional agent reasoning is bounded advice, not a tool or identity authority."""
+    timestamp = datetime(2026, 9, 3, 16, 0, tzinfo=UTC)
+    input_observation = Observation(
+        "obs_agent_advice_input", "tea-intake", "shipment-20", timestamp, "sha256:intake"
+    )
+    intent = ResolutionIntent(
+        "organisation", "reconcile", ("name", "registration_id"), "tea-policy-v1", 10
+    )
+    case = ResolutionCase(
+        "case_agent_advice",
+        "Which supplier is reported by this reviewed tea submission?",
+        (input_observation.observation_id,),
+        (),
+        timestamp,
+        evidence_gaps=(
+            EvidenceGap(
+                "registration_id",
+                "distinguishes similarly named suppliers",
+                permitted_action_types=("registry_lookup",),
+            ),
+        ),
+        intent=intent,
+    )
+    action = EvidenceAction(
+        "act_agent_advice_registry",
+        case.case_id,
+        "registry_lookup",
+        "supplier_registry",
+        timestamp,
+        "tea-policy-v1",
+        max_cost=0.05,
+    )
+    method = ResolutionMethod(
+        "splink_agent_advice",
+        "splink",
+        ("organisation",),
+        ("reconcile",),
+        "tea-policy-v1",
+        "splink-settings@sha256:tea-v1",
+        required_fields=("name", "registration_id"),
+        estimated_cost=0.10,
+    )
+    runtime.store.write_observations([input_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([action])
+    plan = runtime.plan_case(
+        case.case_id,
+        capabilities=(ToolCapability("supplier_registry", ("registry_lookup",), "tea-policy-v1"),),
+        budget=ResolutionBudget(max_actions=1, max_cost=0.20),
+        methods=(method,),
+    )
+    plan_event = runtime.record_case_plan(plan, recorded_at=timestamp)
+    advice = AgentPlanAdvice(
+        "advice_tea_001",
+        case.case_id,
+        plan_event.event_id,
+        "application-llm-planner",
+        "proceed",
+        recommended_action_ids=(action.action_id,),
+        recommended_method_ids=(method.method_id,),
+        uncertainty_targets=("registration_id",),
+        reason_codes=("independent_identifier_needed", "configured_method_eligible"),
+        reasoning_hash="sha256:agent-reasoning-kept-by-application",
+    )
+
+    advice_event = runtime.record_agent_plan_advice(advice, recorded_at=timestamp)
+
+    assert advice_event.references == (plan_event.event_id, action.action_id, method.method_id)
+    assert advice_event.provenance["reasoning_hash"] == advice.reasoning_hash
+    assert runtime.store.get_action_observation(action.action_id) is None
+    assert runtime.store.get_decision("dec_not_created") is None
+    with pytest.raises(ValueError, match="already selected"):
+        runtime.record_agent_plan_advice(
+            AgentPlanAdvice(
+                "advice_tea_invalid",
+                case.case_id,
+                plan_event.event_id,
+                "application-llm-planner",
+                "proceed",
+                recommended_method_ids=("unplanned_method",),
+                reasoning_hash="sha256:invalid-advice",
+            ),
+            recorded_at=timestamp,
+        )
 
 
 def test_resolution_intent_requires_field_name_sequence_and_numeric_pair_count():
@@ -835,6 +1457,217 @@ def test_case_reconcile_result_requires_persisted_evidence(runtime):
     assert receipts[0].evidence_ids == (evidence.evidence_id,)
     assert runtime.store.get_resolution_run(run.run_id) == run
     assert runtime.store.get_decision(receipts[0].decision_id) == receipts[0]
+
+
+def test_reviewed_reconcile_artifact_flows_through_evidence_receipts_and_policy(runtime):
+    """Reviewed deterministic output is traceable but not independent corroboration."""
+    timestamp = datetime(2026, 9, 3, 11, 0, tzinfo=UTC)
+    case = ResolutionCase("case_reviewed_artifact", "Which supplier is this?", (), (), timestamp)
+    artifact = Observation(
+        "obs_reconcile_artifact",
+        "resolver:arche.resolve.reconcile",
+        "exec_reconcile",
+        timestamp,
+        "sha256:reconcile-artifact",
+        provenance={
+            "kind": "resolver_execution",
+            "outcome": "success",
+            "method_id": "arche_reconcile",
+            "configuration_pin": "arche.resolve.reconcile@crosswalk.v1",
+        },
+    )
+    file_observation = Observation("obs_review_file", "file", "r-1", timestamp, "sha256:file")
+    registry_observation = Observation(
+        "obs_review_registry", "registry", "r-2", timestamp, "sha256:registry"
+    )
+    supporting_evidence = (
+        Evidence("ev_review_file", file_observation.observation_id, "name", "supports"),
+        Evidence(
+            "ev_review_registry",
+            registry_observation.observation_id,
+            "registration_id",
+            "supports",
+        ),
+    )
+    result = {
+        "matches": [{"decision_id": "xwd:reviewed", "decision": "match", "score": 0.99}],
+        "pins": {"engine": "crosswalk.v1"},
+        "blocking": {"candidate_pairs": 1},
+    }
+    runtime.store.write_observations([artifact, file_observation, registry_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence(supporting_evidence)
+    runtime.store.write_case_events(
+        [
+            CaseEvent(
+                "evt_reconcile_execution",
+                case.case_id,
+                "method_execution",
+                timestamp,
+                ("approval_reconcile", artifact.observation_id),
+            )
+        ]
+    )
+
+    artifact_evidence, run, receipts = runtime.record_reviewed_reconcile_artifact(
+        case.case_id,
+        artifact.observation_id,
+        result,
+        review_id="review_reconcile_01",
+        reviewed_at=timestamp,
+        run_id="run_reviewed_reconcile",
+        artifact_evidence_ids_by_decision={"xwd:reviewed": "ev_reviewed_edge"},
+        supporting_evidence_ids_by_decision={
+            "xwd:reviewed": tuple(item.evidence_id for item in supporting_evidence)
+        },
+    )
+    outcome = runtime.apply_resolution_decision_policy(
+        case.case_id,
+        receipts[0].decision_id,
+        policy=ResolutionDecisionPolicy("supplier-link-v1"),
+        recorded_at=timestamp,
+    )
+
+    assert run.provenance["resolution_case_id"] == case.case_id
+    assert artifact_evidence[0].provenance["review_id"] == "review_reconcile_01"
+    assert receipts[0].evidence_ids == (
+        "ev_reviewed_edge",
+        "ev_review_file",
+        "ev_review_registry",
+    )
+    assert outcome.action == "link"
+    assert outcome.independent_source_ids == ("file", "registry")
+    assert {event.event_type for event in runtime.get_case_history(case.case_id)} == {
+        "method_execution",
+        "reviewed_resolver_evidence",
+        "resolver_decision",
+        "policy_decision",
+    }
+
+
+def test_reviewed_splink_and_domain_artifacts_share_one_value_free_adapter():
+    """Library-specific scores are recorded, never interpreted as portable thresholds."""
+    timestamp = datetime(2026, 9, 3, 12, 0, tzinfo=UTC)
+    artifact = ReviewedResolutionArtifact(
+        "splink",
+        "splink-settings@sha256:approved",
+        2,
+        (
+            ReviewedResolutionEdge("splink:1", "same_entity", "link", probability=0.99),
+            ReviewedResolutionEdge("domain:2", "review", "review", raw_score=7.0),
+        ),
+    )
+    evidence = reviewed_resolution_evidence(
+        artifact,
+        observation_id="obs_splink_artifact",
+        review_id="review_splink_01",
+        evidence_ids_by_decision={"splink:1": "ev_splink_1", "domain:2": "ev_domain_2"},
+    )
+    run, receipts = adapt_reviewed_resolution_artifact(
+        artifact,
+        run_id="run_splink_01",
+        created_at=timestamp,
+        evidence_ids_by_decision={
+            "splink:1": ("ev_splink_1",),
+            "domain:2": ("ev_domain_2",),
+        },
+    )
+
+    assert [item.supports for item in evidence] == ["splink:1", "domain:2"]
+    assert run.resolver == "splink"
+    assert [(item.action, item.probability, item.raw_score) for item in receipts] == [
+        ("link", 0.99, None),
+        ("review", None, 7.0),
+    ]
+    assert all(item.schema_pin == "arche.reviewed_resolution_artifact.v1" for item in receipts)
+
+
+def test_reviewed_splink_artifact_flows_through_case_evidence_receipts_and_policy(runtime):
+    """Generic resolver artifacts use the same controlled case path as Arche output."""
+    timestamp = datetime(2026, 9, 3, 12, 30, tzinfo=UTC)
+    case = ResolutionCase("case_reviewed_splink", "Which supplier is this?", (), (), timestamp)
+    artifact_observation = Observation(
+        "obs_splink_artifact",
+        "resolver:splink",
+        "exec_splink_supplier",
+        timestamp,
+        "sha256:splink-artifact",
+        provenance={
+            "kind": "resolver_execution",
+            "outcome": "success",
+            "method_id": "splink_supplier",
+            "configuration_pin": "splink-settings@sha256:approved",
+        },
+    )
+    file_observation = Observation("obs_splink_file", "file", "r-1", timestamp, "sha256:file")
+    registry_observation = Observation(
+        "obs_splink_registry", "registry", "r-2", timestamp, "sha256:registry"
+    )
+    supporting_evidence = (
+        Evidence("ev_splink_file", file_observation.observation_id, "name", "supports"),
+        Evidence(
+            "ev_splink_registry",
+            registry_observation.observation_id,
+            "registration_id",
+            "supports",
+        ),
+    )
+    artifact = ReviewedResolutionArtifact(
+        "splink",
+        "splink-settings@sha256:approved",
+        1,
+        (ReviewedResolutionEdge("splink:reviewed", "same_entity", "link", probability=0.99),),
+    )
+    runtime.store.write_observations([artifact_observation, file_observation, registry_observation])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence(supporting_evidence)
+    runtime.store.write_case_events(
+        [
+            CaseEvent(
+                "evt_splink_execution",
+                case.case_id,
+                "method_execution",
+                timestamp,
+                ("approval_splink_supplier", artifact_observation.observation_id),
+            )
+        ]
+    )
+
+    artifact_evidence, run, receipts = runtime.record_reviewed_resolution_artifact(
+        case.case_id,
+        artifact_observation.observation_id,
+        artifact,
+        review_id="review_splink_01",
+        reviewed_at=timestamp,
+        run_id="run_reviewed_splink",
+        artifact_evidence_ids_by_decision={"splink:reviewed": "ev_splink_edge"},
+        supporting_evidence_ids_by_decision={
+            "splink:reviewed": tuple(item.evidence_id for item in supporting_evidence)
+        },
+    )
+    outcome = runtime.apply_resolution_decision_policy(
+        case.case_id,
+        receipts[0].decision_id,
+        policy=ResolutionDecisionPolicy("supplier-link-v1"),
+        recorded_at=timestamp,
+    )
+
+    assert artifact_evidence[0].provenance["review_id"] == "review_splink_01"
+    assert run.provenance["resolution_case_id"] == case.case_id
+    assert run.resolver == "splink"
+    assert receipts[0].evidence_ids == (
+        "ev_splink_edge",
+        "ev_splink_file",
+        "ev_splink_registry",
+    )
+    assert outcome.action == "link"
+    assert outcome.independent_source_ids == ("file", "registry")
+    assert {event.event_type for event in runtime.get_case_history(case.case_id)} == {
+        "method_execution",
+        "reviewed_resolver_evidence",
+        "resolver_decision",
+        "policy_decision",
+    }
 
 
 def test_evidence_and_receipts_require_their_prior_provenance(runtime):
@@ -913,6 +1746,43 @@ def test_decision_policy_releases_only_evidence_backed_case_receipts(runtime):
         "policy_decision",
     }
     assert runtime.store.get_entity("ent_not_created") is None
+
+    class ApplicationExecutor:
+        def __init__(self):
+            self.received = []
+
+        def execute(self, decision):
+            self.received.append(decision)
+            return PolicyExecution(
+                "exec_supplier_link",
+                decision.decision_id,
+                decision.case_id,
+                decision.policy_id,
+                decision.action,
+                "supplier-application",
+                "applied",
+                "sha256:application-result",
+            )
+
+    executor = ApplicationExecutor()
+    execution = runtime.execute_released_policy_decision(outcome, executor, recorded_at=timestamp)
+
+    assert executor.received == [outcome]
+    assert execution.outcome == "applied"
+    execution_event = next(
+        event
+        for event in runtime.get_case_history(case.case_id)
+        if event.event_type == "policy_execution"
+    )
+    assert execution_event.provenance == {
+        "policy_id": "supplier-link-v1",
+        "action": "link",
+        "executor_id": "supplier-application",
+        "outcome": "applied",
+        "result_hash": "sha256:application-result",
+    }
+    with pytest.raises(ValueError, match="already has a recorded executor outcome"):
+        runtime.execute_released_policy_decision(outcome, executor, recorded_at=timestamp)
     with pytest.raises(ValueError, match="already decided"):
         runtime.apply_resolution_decision_policy(
             case.case_id,
@@ -958,6 +1828,13 @@ def test_decision_policy_reviews_weak_positive_and_abstains_on_unsupported_negat
     )
 
     assert (weak.action, negative.action) == ("review", "abstain")
+
+    class UnexpectedExecutor:
+        def execute(self, decision):
+            raise AssertionError(f"executor should not receive {decision.action}")
+
+    with pytest.raises(ValueError, match="only released link or create"):
+        runtime.execute_released_policy_decision(weak, UnexpectedExecutor(), recorded_at=timestamp)
 
 
 def test_entity_memory_recovers_claims_conflicts_relations_and_case_history(runtime):

@@ -219,6 +219,7 @@ class ResolutionMethod:
     max_candidate_pairs: int | None = None
     estimated_cost: float = 0.0
     priority: int = 0
+    benchmark_id: str | None = None
 
     def __post_init__(self) -> None:
         if not self.method_id or not self.resolver:
@@ -231,6 +232,41 @@ class ResolutionMethod:
             raise ValueError("resolution method max_candidate_pairs must be non-negative")
         if self.estimated_cost < 0:
             raise ValueError("resolution method estimated_cost must be non-negative")
+        if self.benchmark_id is not None and (
+            not isinstance(self.benchmark_id, str) or not self.benchmark_id
+        ):
+            raise ValueError("resolution method benchmark_id must be a non-empty string")
+
+
+@dataclass(frozen=True)
+class ResolutionMethodApproval:
+    """An explicit application or human approval of one planned resolver method."""
+
+    approval_id: str
+    case_id: str
+    plan_event_id: str
+    method_id: str
+    configuration_pin: str
+    approved_by: str
+    max_cost: float
+
+    def __post_init__(self) -> None:
+        if not all(
+            isinstance(value, str) and value
+            for value in (
+                self.approval_id,
+                self.case_id,
+                self.plan_event_id,
+                self.method_id,
+                self.configuration_pin,
+                self.approved_by,
+            )
+        ):
+            raise ValueError("resolution method approval identifiers must be non-empty strings")
+        if isinstance(self.max_cost, bool) or not isinstance(self.max_cost, (int, float)):
+            raise ValueError("resolution method approval max_cost must be numeric")
+        if self.max_cost < 0:
+            raise ValueError("resolution method approval max_cost must be non-negative")
 
 
 @dataclass(frozen=True)

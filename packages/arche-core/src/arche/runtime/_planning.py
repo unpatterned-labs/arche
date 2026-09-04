@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ._benchmarks import BENCHMARK_RESULT_BUNDLE_SCHEMA
 from ._cases import what_would_resolve
 from ._models import (
     EvidenceAction,
@@ -49,6 +50,48 @@ class MethodAssessment:
 
 
 @dataclass(frozen=True)
+class MethodBenchmarkQualification:
+    """A hash-addressed evaluation that may qualify one configured method."""
+
+    qualification_id: str
+    method_id: str
+    resolver: str
+    configuration_pin: str
+    benchmark_id: str
+    dataset_id: str
+    evaluator_pin: str
+    result_hash: str
+    qualified: bool
+    bundle_id: str
+    bundle_schema: str
+    qualification_policy_pin: str
+
+    def __post_init__(self) -> None:
+        if not all(
+            isinstance(value, str) and value
+            for value in (
+                self.qualification_id,
+                self.method_id,
+                self.resolver,
+                self.configuration_pin,
+                self.benchmark_id,
+                self.dataset_id,
+                self.evaluator_pin,
+                self.bundle_id,
+                self.bundle_schema,
+                self.qualification_policy_pin,
+            )
+        ):
+            raise ValueError("benchmark qualification identifiers must be non-empty strings")
+        if not self.result_hash.startswith("sha256:"):
+            raise ValueError("benchmark qualification result_hash must be a sha256 reference")
+        if not isinstance(self.qualified, bool):
+            raise ValueError("benchmark qualification qualified must be true or false")
+        if self.bundle_schema != BENCHMARK_RESULT_BUNDLE_SCHEMA:
+            raise ValueError("benchmark qualification needs a supported result bundle schema")
+
+
+@dataclass(frozen=True)
 class PlannedEvidenceAction:
     """One permitted evidence action selected to address a specific gap."""
 
@@ -64,9 +107,13 @@ class PlannedResolutionMethod:
 
     method_id: str
     resolver: str
+    policy_pin: str
     configuration_pin: str
     estimated_cost: float
     rationale: str
+    benchmark_id: str | None = None
+    benchmark_qualification_id: str | None = None
+    benchmark_result_hash: str | None = None
 
 
 @dataclass(frozen=True)
@@ -89,6 +136,7 @@ class DeterministicResolutionPlanner:
         actions: tuple[EvidenceAction, ...],
         capabilities: tuple[ToolCapability, ...],
         methods: tuple[ResolutionMethod, ...] = (),
+        benchmark_qualifications: tuple[MethodBenchmarkQualification, ...] = (),
     ) -> CaseAssessment:
         """Build the planner's structured case understanding.
 
@@ -121,7 +169,9 @@ class DeterministicResolutionPlanner:
             evidence_gaps=what_would_resolve(case),
             eligible_action_ids=eligible_ids,
             unavailable_action_ids=unavailable_ids,
-            method_assessments=tuple(_assess_method(case.intent, method) for method in methods),
+            method_assessments=tuple(
+                _assess_method(case.intent, method, benchmark_qualifications) for method in methods
+            ),
         )
 
     def plan(
@@ -131,6 +181,7 @@ class DeterministicResolutionPlanner:
         capabilities: tuple[ToolCapability, ...],
         budget: ResolutionBudget,
         methods: tuple[ResolutionMethod, ...] = (),
+        benchmark_qualifications: tuple[MethodBenchmarkQualification, ...] = (),
     ) -> EvidencePlan:
         """Select permitted, capable, costed actions after assessing a case.
 
@@ -149,7 +200,13 @@ class DeterministicResolutionPlanner:
         if budget.max_actions < 0 or budget.max_cost < 0:
             raise ValueError("resolution budget limits must be non-negative")
 
-        assessment = self.assess(case, actions, capabilities, methods)
+        assessment = self.assess(
+            case,
+            actions,
+            capabilities,
+            methods,
+            benchmark_qualifications,
+        )
         eligible = {
             action.action_id: action
             for action in actions
@@ -200,15 +257,24 @@ class DeterministicResolutionPlanner:
         ):
             if total_cost + method.estimated_cost > budget.max_cost:
                 continue
+            qualification = _benchmark_qualification(method, benchmark_qualifications)
             selected_methods.append(
                 PlannedResolutionMethod(
                     method_id=method.method_id,
                     resolver=method.resolver,
+                    policy_pin=method.policy_pin,
                     configuration_pin=method.configuration_pin,
                     estimated_cost=method.estimated_cost,
                     rationale=(
                         f"{method.resolver} is configured for {case.intent.operation} "
                         f"of {case.intent.entity_type}"
+                    ),
+                    benchmark_id=method.benchmark_id,
+                    benchmark_qualification_id=(
+                        qualification.qualification_id if qualification is not None else None
+                    ),
+                    benchmark_result_hash=(
+                        qualification.result_hash if qualification is not None else None
                     ),
                 )
             )
@@ -224,7 +290,11 @@ class DeterministicResolutionPlanner:
         )
 
 
-def _assess_method(intent: ResolutionIntent | None, method: ResolutionMethod) -> MethodAssessment:
+def _assess_method(
+    intent: ResolutionIntent | None,
+    method: ResolutionMethod,
+    benchmark_qualifications: tuple[MethodBenchmarkQualification, ...],
+) -> MethodAssessment:
     """Explain whether one configured resolver is suitable for a case intent."""
     if intent is None:
         return MethodAssessment(method.method_id, False, "case has no structured resolution intent")
@@ -255,4 +325,34 @@ def _assess_method(intent: ResolutionIntent | None, method: ResolutionMethod) ->
         return MethodAssessment(
             method.method_id, False, "candidate-pair scale exceeds method limit"
         )
+    if method.benchmark_id is not None:
+        qualification = _benchmark_qualification(method, benchmark_qualifications)
+        if qualification is None:
+            return MethodAssessment(
+                method.method_id,
+                False,
+                f"requires qualified benchmark {method.benchmark_id}",
+            )
     return MethodAssessment(method.method_id, True, "matches the case intent and configured limits")
+
+
+def _benchmark_qualification(
+    method: ResolutionMethod,
+    qualifications: tuple[MethodBenchmarkQualification, ...],
+) -> MethodBenchmarkQualification | None:
+    """Return the exact passing evaluation required by one configured method."""
+    if method.benchmark_id is None:
+        return None
+    return next(
+        (
+            qualification
+            for qualification in qualifications
+            if qualification.qualified
+            and qualification.method_id == method.method_id
+            and qualification.resolver == method.resolver
+            and qualification.configuration_pin == method.configuration_pin
+            and qualification.benchmark_id == method.benchmark_id
+            and qualification.bundle_schema == BENCHMARK_RESULT_BUNDLE_SCHEMA
+        ),
+        None,
+    )

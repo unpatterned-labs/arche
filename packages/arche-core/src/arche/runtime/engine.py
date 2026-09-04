@@ -12,13 +12,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime
+from hashlib import sha256
 from typing import TYPE_CHECKING, Any
 
-from arche.runtime._adapters import adapt_reconcile_result
+from arche.runtime._adapters import adapt_reconcile_result, reviewed_reconcile_evidence
+from arche.runtime._agent_planning import AgentPlanAdvice
+from arche.runtime._document_execution import DocumentIngestionRequest
+from arche.runtime._document_observations import (
+    DocumentIngestion,
+    observation_from_document_ingestion,
+)
 from arche.runtime._document_proposals import (
     DocumentProposalSet,
     reviewed_document_proposals,
 )
+from arche.runtime._execution import PolicyExecution
+from arche.runtime._method_execution import ResolutionMethodExecution
 from arche.runtime._models import (
     ActionObservation,
     CaseEvent,
@@ -28,6 +37,7 @@ from arche.runtime._models import (
     DocumentRelationSpec,
     EntityMemory,
     EntityRelation,
+    Evidence,
     Observation,
     PolicyDecision,
     ProposalAcceptance,
@@ -35,13 +45,20 @@ from arche.runtime._models import (
     RelationProposal,
     ResolutionDecisionPolicy,
     ResolutionMethod,
+    ResolutionMethodApproval,
     ResolutionRun,
     new_ledger_id,
 )
 from arche.runtime._planning import (
     DeterministicResolutionPlanner,
     EvidencePlan,
+    MethodBenchmarkQualification,
     ResolutionBudget,
+)
+from arche.runtime._reviewed_artifacts import (
+    ReviewedResolutionArtifact,
+    adapt_reviewed_resolution_artifact,
+    reviewed_resolution_evidence,
 )
 from arche.store.base import ArcheStore
 
@@ -49,6 +66,9 @@ if TYPE_CHECKING:
     from arche.doc._extract import Extraction
     from arche.doc.parse import ParsedDocument
     from arche.runtime._connectors import EvidenceConnector
+    from arche.runtime._document_execution import DocumentIngestionExecutor
+    from arche.runtime._execution import PolicyDecisionExecutor
+    from arche.runtime._method_execution import ResolutionMethodExecutor
     from arche.runtime._models import DecisionReceipt, ToolCapability
 
 
@@ -142,6 +162,89 @@ class ArcheEngine:
         self.store.write_action_observations([link])
         return link
 
+    def ingest_document_observation(
+        self,
+        action_id: str,
+        ingestion: DocumentIngestion,
+        *,
+        observation_id: str,
+        recorded_at: datetime,
+    ) -> ActionObservation:
+        """Record a permitted PDF, scan, image, or text ingestion result.
+
+        Parser and OCR providers are application-owned. Their result becomes an
+        immutable Observation before extraction fields can become Evidence.
+        """
+        action = self.store.get_evidence_action(action_id)
+        if action is None:
+            raise ValueError(
+                f"evidence action {action_id!r} does not exist; permit document "
+                "ingestion before recording its result"
+            )
+        if action.action_type not in {"document_extract", "document_ocr"}:
+            raise ValueError(
+                "document ingestion requires a document_extract or document_ocr EvidenceAction"
+            )
+        observation = observation_from_document_ingestion(
+            ingestion,
+            observation_id=observation_id,
+            source_id=action.source_id,
+            recorded_at=recorded_at,
+        )
+        return self.ingest_action_observation(action_id, observation)
+
+    def execute_document_ingestion_action(
+        self,
+        action_id: str,
+        request: DocumentIngestionRequest,
+        executor: DocumentIngestionExecutor,
+        *,
+        observation_id: str,
+        recorded_at: datetime,
+    ) -> ActionObservation:
+        """Run a caller-owned parser/OCR provider under a permitted action.
+
+        The provider receives the document path or bytes reference in the
+        caller's process. Arche records only its value-free ingestion result,
+        or a hash-only failure Observation if parsing cannot complete.
+        """
+        action = self.store.get_evidence_action(action_id)
+        if action is None:
+            raise ValueError(
+                f"evidence action {action_id!r} does not exist; permit document "
+                "ingestion before executing it"
+            )
+        if action.action_type not in {"document_extract", "document_ocr"}:
+            raise ValueError(
+                "document ingestion requires a document_extract or document_ocr EvidenceAction"
+            )
+        try:
+            ingestion = executor.ingest(request)
+        except Exception as error:
+            failure_hash = sha256(
+                f"{executor.executor_id}:{type(error).__name__}".encode()
+            ).hexdigest()
+            observation = Observation(
+                observation_id=observation_id,
+                source_id=action.source_id,
+                source_record_id=request.source_record_id,
+                recorded_at=recorded_at,
+                content_hash=f"sha256:{failure_hash}",
+                provenance={
+                    "kind": "document_ingestion",
+                    "outcome": "failure",
+                    "executor_id": executor.executor_id,
+                    "failure_reason": "ingestion_failed",
+                },
+            )
+            return self.ingest_action_observation(action_id, observation)
+        return self.ingest_document_observation(
+            action_id,
+            ingestion,
+            observation_id=observation_id,
+            recorded_at=recorded_at,
+        )
+
     def execute_evidence_action(
         self,
         action_id: str,
@@ -171,6 +274,11 @@ class ArcheEngine:
                 "use a read-only connector with the matching source, action type, "
                 "and policy pin"
             )
+        if self.store.get_action_observation(action_id) is not None:
+            raise ValueError(
+                f"evidence action {action_id!r} already has an Observation; issue a "
+                "new permitted action for a retry so both attempts remain traceable"
+            )
         return self.ingest_action_observation(action_id, connector.observe(action))
 
     def plan_case(
@@ -180,6 +288,7 @@ class ArcheEngine:
         capabilities: tuple[ToolCapability, ...],
         budget: ResolutionBudget,
         methods: tuple[ResolutionMethod, ...] = (),
+        benchmark_qualifications: tuple[MethodBenchmarkQualification, ...] = (),
     ) -> EvidencePlan:
         """Assess a case and select bounded, permitted evidence actions.
 
@@ -188,6 +297,8 @@ class ArcheEngine:
             capabilities: Read-only capabilities available to execute now.
             budget: Hard maximum action count and estimated cost.
             methods: Configured resolver methods the planner may recommend.
+            benchmark_qualifications: Hash-addressed evaluations required by
+                optional configured methods.
 
         Returns:
             A deterministic EvidencePlan. It does not execute any action.
@@ -207,6 +318,7 @@ class ArcheEngine:
             capabilities,
             budget,
             methods,
+            benchmark_qualifications,
         )
 
     def record_case_plan(
@@ -245,6 +357,25 @@ class ArcheEngine:
                 "unresolved_gap_fields": list(plan.unresolved_gap_fields),
                 "total_estimated_cost": plan.total_estimated_cost,
                 "planned_method_ids": [method.method_id for method in plan.methods],
+                "planned_methods": [
+                    {
+                        "method_id": method.method_id,
+                        "resolver": method.resolver,
+                        "policy_pin": method.policy_pin,
+                        "configuration_pin": method.configuration_pin,
+                        "estimated_cost": method.estimated_cost,
+                        **(
+                            {
+                                "benchmark_id": method.benchmark_id,
+                                "benchmark_qualification_id": method.benchmark_qualification_id,
+                                "benchmark_result_hash": method.benchmark_result_hash,
+                            }
+                            if method.benchmark_id is not None
+                            else {}
+                        ),
+                    }
+                    for method in plan.methods
+                ],
                 "method_assessments": [
                     {
                         "method_id": method.method_id,
@@ -257,6 +388,305 @@ class ArcheEngine:
         )
         self.store.write_case_events([event])
         return event
+
+    def record_agent_plan_advice(
+        self,
+        advice: AgentPlanAdvice,
+        *,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> CaseEvent:
+        """Append bounded agent advice without allowing it to execute a plan.
+
+        The advice can recommend only action and method IDs already selected by
+        a persisted evidence plan. It records no raw reasoning, tool result,
+        entity change, approval, or resolver execution.
+        """
+        plan_event = next(
+            (
+                event
+                for event in self.get_case_history(advice.case_id)
+                if event.event_id == advice.plan_event_id and event.event_type == "evidence_plan"
+            ),
+            None,
+        )
+        if plan_event is None:
+            raise ValueError(
+                f"agent plan advice {advice.advice_id!r} requires a persisted "
+                "evidence plan for its case"
+            )
+        planned_action_ids = set(plan_event.references)
+        planned_method_ids = set(plan_event.provenance.get("planned_method_ids", ()))
+        unknown_actions = set(advice.recommended_action_ids) - planned_action_ids
+        unknown_methods = set(advice.recommended_method_ids) - planned_method_ids
+        if unknown_actions or unknown_methods:
+            raise ValueError(
+                "agent plan advice may recommend only actions and methods already "
+                "selected by the persisted evidence plan"
+            )
+        if any(
+            event.event_type == "agent_plan_advice"
+            and event.provenance.get("advice_id") == advice.advice_id
+            for event in self.get_case_history(advice.case_id)
+        ):
+            raise ValueError(f"agent plan advice {advice.advice_id!r} already exists")
+        event = CaseEvent(
+            event_id=event_id or new_ledger_id("evt"),
+            case_id=advice.case_id,
+            event_type="agent_plan_advice",
+            recorded_at=recorded_at,
+            references=(
+                advice.plan_event_id,
+                *advice.recommended_action_ids,
+                *advice.recommended_method_ids,
+            ),
+            provenance={
+                "advice_id": advice.advice_id,
+                "advisor_id": advice.advisor_id,
+                "recommendation": advice.recommendation,
+                "recommended_action_ids": list(advice.recommended_action_ids),
+                "recommended_method_ids": list(advice.recommended_method_ids),
+                "uncertainty_targets": list(advice.uncertainty_targets),
+                "reason_codes": list(advice.reason_codes),
+                "reasoning_hash": advice.reasoning_hash,
+            },
+        )
+        self.store.write_case_events([event])
+        return event
+
+    def approve_planned_resolution_method(
+        self,
+        approval: ResolutionMethodApproval,
+        method: ResolutionMethod,
+        *,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> CaseEvent:
+        """Record an explicit approval for a method selected by a persisted plan.
+
+        Parameters:
+            approval: Caller or human approval bound to a specific plan and method pin.
+            method: Configured method that must exactly match the selected plan entry.
+            recorded_at: Timestamp for immutable approval history.
+            event_id: Optional caller-owned immutable case-event identifier.
+
+        Returns:
+            The persisted method-approval event.
+
+        Raises:
+            ValueError: If the plan did not select this exact method or a duplicate
+                approval already exists.
+        """
+        if (
+            approval.method_id != method.method_id
+            or approval.configuration_pin != method.configuration_pin
+        ):
+            raise ValueError("resolution method approval does not match the supplied method pin")
+        plan_event = self._planned_method_event(approval.case_id, approval.plan_event_id, method)
+        if method.estimated_cost > approval.max_cost:
+            raise ValueError(
+                "resolution method estimate exceeds the approved cost ceiling; "
+                "raise the explicit approval limit or choose another method"
+            )
+        history = self.get_case_history(approval.case_id)
+        if any(
+            event.event_type == "method_approval"
+            and event.provenance.get("approval_id") == approval.approval_id
+            for event in history
+        ):
+            raise ValueError(f"resolution method approval {approval.approval_id!r} already exists")
+        event = CaseEvent(
+            event_id=event_id or new_ledger_id("evt"),
+            case_id=approval.case_id,
+            event_type="method_approval",
+            recorded_at=recorded_at,
+            references=(plan_event.event_id, approval.method_id),
+            provenance={
+                "approval_id": approval.approval_id,
+                "approved_by": approval.approved_by,
+                "max_cost": approval.max_cost,
+                "method_id": method.method_id,
+                "resolver": method.resolver,
+                "policy_pin": method.policy_pin,
+                "configuration_pin": method.configuration_pin,
+                "estimated_cost": method.estimated_cost,
+                **(
+                    {"benchmark_id": method.benchmark_id} if method.benchmark_id is not None else {}
+                ),
+            },
+        )
+        self.store.write_case_events([event])
+        return event
+
+    def execute_approved_resolution_method(
+        self,
+        case_id: str,
+        approval_id: str,
+        method: ResolutionMethod,
+        executor: ResolutionMethodExecutor,
+        *,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> Observation:
+        """Run an approved resolver method and record only its output Observation.
+
+        Parameters:
+            case_id: Existing case whose plan and approval selected the method.
+            approval_id: Recorded explicit approval identifier.
+            method: Configured method exactly matching that approval.
+            executor: Caller-owned adapter that runs the method.
+            recorded_at: Timestamp for the immutable execution record.
+            event_id: Optional caller-owned immutable case-event identifier.
+
+        Returns:
+            A success or failure Observation for later Evidence derivation.
+
+        Raises:
+            ValueError: If approval is missing, mismatched, or already executed.
+        """
+        case = self.store.get_resolution_case(case_id)
+        if case is None:
+            raise ValueError(f"resolution case {case_id!r} does not exist")
+        history = self.get_case_history(case_id)
+        approval_event = next(
+            (
+                event
+                for event in history
+                if event.event_type == "method_approval"
+                and event.provenance.get("approval_id") == approval_id
+            ),
+            None,
+        )
+        if approval_event is None or not _method_matches_event(method, approval_event):
+            raise ValueError(
+                f"resolution method {method.method_id!r} is not approved for case {case_id!r}"
+            )
+        if any(
+            event.event_type == "method_execution" and approval_id in event.references
+            for event in history
+        ):
+            raise ValueError(
+                f"resolution method approval {approval_id!r} already has an execution Observation"
+            )
+        try:
+            execution = executor.execute(case, method)
+        except Exception as error:
+            execution = ResolutionMethodExecution(
+                execution_id=f"exec_{sha256(approval_id.encode()).hexdigest()[:24]}",
+                method_id=method.method_id,
+                configuration_pin=method.configuration_pin,
+                outcome="failed",
+                result_hash=f"sha256:{sha256(type(error).__name__.encode()).hexdigest()}",
+                actual_cost=0.0,
+            )
+        if (
+            execution.method_id != method.method_id
+            or execution.configuration_pin != method.configuration_pin
+        ):
+            raise ValueError(
+                "resolver execution does not match the approved method and configuration pin"
+            )
+        max_cost = approval_event.provenance["max_cost"]
+        if not isinstance(max_cost, (int, float)) or isinstance(max_cost, bool):
+            raise TypeError("stored method approval max_cost is not numeric")
+        failed = execution.outcome == "failed" or execution.actual_cost > max_cost
+        failure_reason = (
+            ("executor_failed" if execution.outcome == "failed" else "cost_limit")
+            if failed
+            else None
+        )
+        observation = Observation(
+            observation_id=f"obs_{execution.execution_id}",
+            source_id=f"resolver:{method.resolver}",
+            source_record_id=execution.execution_id,
+            recorded_at=recorded_at,
+            content_hash=execution.result_hash,
+            provenance={
+                "kind": "resolver_execution",
+                "outcome": "failure" if failed else "success",
+                "failure_reason": failure_reason,
+                "approval_id": approval_id,
+                "method_id": method.method_id,
+                "configuration_pin": method.configuration_pin,
+                "estimated_cost": method.estimated_cost,
+                "actual_cost": execution.actual_cost,
+                "executor_id": execution.executor_id,
+            },
+        )
+        self.store.write_observations([observation])
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=event_id or new_ledger_id("evt"),
+                    case_id=case_id,
+                    event_type="method_execution",
+                    recorded_at=recorded_at,
+                    references=(approval_id, observation.observation_id),
+                    provenance=observation.provenance,
+                )
+            ]
+        )
+        return observation
+
+    def _planned_method_event(
+        self,
+        case_id: str,
+        plan_event_id: str,
+        method: ResolutionMethod,
+    ) -> CaseEvent:
+        """Load the evidence-plan event that selected one exact resolver method."""
+        plan_event = next(
+            (
+                event
+                for event in self.get_case_history(case_id)
+                if event.event_id == plan_event_id and event.event_type == "evidence_plan"
+            ),
+            None,
+        )
+        if plan_event is None or not _method_matches_plan(method, plan_event):
+            raise ValueError(
+                f"plan event {plan_event_id!r} did not select method {method.method_id!r} "
+                "with this configuration pin"
+            )
+        return plan_event
+
+    def _record_case_resolver_receipts(
+        self,
+        case_id: str,
+        run: ResolutionRun,
+        receipts: tuple[DecisionReceipt, ...],
+        *,
+        recorded_at: datetime,
+    ) -> tuple[ResolutionRun, tuple[DecisionReceipt, ...]]:
+        """Persist resolver receipts and metrics through one case-history path."""
+        if self.store.get_resolution_case(case_id) is None:
+            raise ValueError(
+                f"resolution case {case_id!r} does not exist; open the case before "
+                "recording its resolver result"
+            )
+        case_run = replace(
+            run,
+            provenance={**run.provenance, "resolution_case_id": case_id},
+        )
+        self.store.write_decisions(receipts)
+        self.store.write_resolution_runs([case_run])
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=new_ledger_id("evt"),
+                    case_id=case_id,
+                    event_type="resolver_decision",
+                    recorded_at=recorded_at,
+                    references=(case_run.run_id, receipt.decision_id),
+                    provenance={
+                        "identity_result": receipt.identity_result,
+                        "action": receipt.action,
+                    },
+                )
+                for receipt in receipts
+            ]
+        )
+        return case_run, receipts
 
     def record_case_reconcile_result(
         self,
@@ -302,29 +732,229 @@ class ArcheEngine:
             created_at=created_at,
             evidence_ids_by_decision=evidence_ids_by_decision,
         )
-        case_run = replace(
+        return self._record_case_resolver_receipts(
+            case_id,
             run,
-            provenance={**run.provenance, "resolution_case_id": case_id},
+            receipts,
+            recorded_at=created_at,
         )
-        self.store.write_decisions(receipts)
-        self.store.write_resolution_runs([case_run])
+
+    def record_reviewed_reconcile_artifact(
+        self,
+        case_id: str,
+        observation_id: str,
+        result: dict[str, Any],
+        *,
+        review_id: str,
+        reviewed_at: datetime,
+        run_id: str,
+        artifact_evidence_ids_by_decision: dict[str, str],
+        supporting_evidence_ids_by_decision: dict[str, tuple[str, ...]] | None = None,
+        review_event_id: str | None = None,
+    ) -> tuple[tuple[Evidence, ...], ResolutionRun, tuple[DecisionReceipt, ...]]:
+        """Record reviewed reconcile output as Evidence before creating receipts.
+
+        Parameters:
+            case_id: Existing case that owns the successful resolver execution.
+            observation_id: Persisted success Observation from the method gateway.
+            result: Caller-managed current ``arche.resolve.reconcile`` output.
+            review_id: Caller-managed identifier for the review of that output.
+            reviewed_at: Timestamp for reviewed Evidence and receipt records.
+            run_id: Caller-owned identifier for the durable resolver run.
+            artifact_evidence_ids_by_decision: One Evidence ID for every emitted edge.
+            supporting_evidence_ids_by_decision: Independent existing Evidence by edge.
+            review_event_id: Optional caller-owned immutable review event identifier.
+
+        Returns:
+            Reviewed artifact Evidence, one persisted run, and its decision receipts.
+
+        Raises:
+            ValueError: If the Observation is not a successful deterministic
+                reconciler execution, the review is incomplete, or supporting
+                Evidence has not been persisted.
+        """
+        if self.store.get_resolution_case(case_id) is None:
+            raise ValueError(f"resolution case {case_id!r} does not exist")
+        observation = self.store.get_observation(observation_id)
+        if observation is None:
+            raise ValueError(f"resolver artifact Observation {observation_id!r} does not exist")
+        if (
+            observation.source_id != "resolver:arche.resolve.reconcile"
+            or observation.provenance.get("kind") != "resolver_execution"
+            or observation.provenance.get("outcome") != "success"
+        ):
+            raise ValueError(
+                "reviewed reconcile artifacts require a successful "
+                "arche.resolve.reconcile gateway Observation"
+            )
+        if not any(
+            event.event_type == "method_execution" and observation_id in event.references
+            for event in self.get_case_history(case_id)
+        ):
+            raise ValueError(
+                f"resolver artifact Observation {observation_id!r} was not recorded "
+                f"for case {case_id!r}"
+            )
+        artifact_evidence = reviewed_reconcile_evidence(
+            result,
+            observation_id=observation_id,
+            review_id=review_id,
+            evidence_ids_by_decision=artifact_evidence_ids_by_decision,
+            reviewed_at=reviewed_at,
+        )
+        supporting_evidence_ids_by_decision = supporting_evidence_ids_by_decision or {}
+        unknown_decisions = set(supporting_evidence_ids_by_decision) - {
+            evidence.supports for evidence in artifact_evidence
+        }
+        if unknown_decisions:
+            raise ValueError(
+                "supporting reconcile evidence refers to decisions absent from the "
+                "reviewed artifact"
+            )
+        combined_evidence_ids = {
+            evidence.supports: (
+                evidence.evidence_id,
+                *supporting_evidence_ids_by_decision.get(evidence.supports, ()),
+            )
+            for evidence in artifact_evidence
+        }
+        for evidence_ids in supporting_evidence_ids_by_decision.values():
+            for evidence_id in evidence_ids:
+                if self.store.get_evidence(evidence_id) is None:
+                    raise ValueError(
+                        f"supporting evidence {evidence_id!r} does not exist; persist "
+                        "it before review"
+                    )
+        self.store.write_evidence(artifact_evidence)
         self.store.write_case_events(
             [
                 CaseEvent(
-                    event_id=new_ledger_id("evt"),
+                    event_id=review_event_id or new_ledger_id("evt"),
                     case_id=case_id,
-                    event_type="resolver_decision",
-                    recorded_at=created_at,
-                    references=(case_run.run_id, receipt.decision_id),
+                    event_type="reviewed_resolver_evidence",
+                    recorded_at=reviewed_at,
+                    references=(observation_id, *(item.evidence_id for item in artifact_evidence)),
                     provenance={
-                        "identity_result": receipt.identity_result,
-                        "action": receipt.action,
+                        "review_id": review_id,
+                        "resolver": "arche.resolve.reconcile",
+                        "artifact_hash": observation.content_hash,
+                        "decision_ids": [item.supports for item in artifact_evidence],
                     },
                 )
-                for receipt in receipts
             ]
         )
-        return case_run, receipts
+        run, receipts = self.record_case_reconcile_result(
+            case_id,
+            result,
+            run_id=run_id,
+            created_at=reviewed_at,
+            evidence_ids_by_decision=combined_evidence_ids,
+        )
+        return artifact_evidence, run, receipts
+
+    def record_reviewed_resolution_artifact(
+        self,
+        case_id: str,
+        observation_id: str,
+        artifact: ReviewedResolutionArtifact,
+        *,
+        review_id: str,
+        reviewed_at: datetime,
+        run_id: str,
+        artifact_evidence_ids_by_decision: dict[str, str],
+        supporting_evidence_ids_by_decision: dict[str, tuple[str, ...]] | None = None,
+        review_event_id: str | None = None,
+    ) -> tuple[tuple[Evidence, ...], ResolutionRun, tuple[DecisionReceipt, ...]]:
+        """Record reviewed Splink or domain output through case history.
+
+        The artifact must describe a successful, case-linked resolver gateway
+        Observation with the exact configuration that executed. Its reviewed
+        edges become immutable Evidence before receipts and policy can use them.
+        """
+        if self.store.get_resolution_case(case_id) is None:
+            raise ValueError(f"resolution case {case_id!r} does not exist")
+        observation = self.store.get_observation(observation_id)
+        if observation is None:
+            raise ValueError(f"resolver artifact Observation {observation_id!r} does not exist")
+        if (
+            observation.source_id != f"resolver:{artifact.resolver}"
+            or observation.provenance.get("kind") != "resolver_execution"
+            or observation.provenance.get("outcome") != "success"
+            or observation.provenance.get("configuration_pin") != artifact.configuration_pin
+        ):
+            raise ValueError(
+                "reviewed resolution artifacts require a successful gateway Observation "
+                "with the artifact resolver and configuration pin"
+            )
+        if not any(
+            event.event_type == "method_execution" and observation_id in event.references
+            for event in self.get_case_history(case_id)
+        ):
+            raise ValueError(
+                f"resolver artifact Observation {observation_id!r} was not recorded "
+                f"for case {case_id!r}"
+            )
+
+        artifact_evidence = reviewed_resolution_evidence(
+            artifact,
+            observation_id=observation_id,
+            review_id=review_id,
+            evidence_ids_by_decision=artifact_evidence_ids_by_decision,
+        )
+        supporting_evidence_ids_by_decision = supporting_evidence_ids_by_decision or {}
+        artifact_decision_ids = {item.supports for item in artifact_evidence}
+        unknown_decisions = set(supporting_evidence_ids_by_decision) - artifact_decision_ids
+        if unknown_decisions:
+            raise ValueError(
+                "supporting resolution evidence refers to decisions absent from the "
+                "reviewed artifact"
+            )
+        for evidence_ids in supporting_evidence_ids_by_decision.values():
+            for evidence_id in evidence_ids:
+                if self.store.get_evidence(evidence_id) is None:
+                    raise ValueError(
+                        f"supporting evidence {evidence_id!r} does not exist; persist "
+                        "it before review"
+                    )
+        combined_evidence_ids = {
+            evidence.supports: (
+                evidence.evidence_id,
+                *supporting_evidence_ids_by_decision.get(evidence.supports, ()),
+            )
+            for evidence in artifact_evidence
+        }
+        run, receipts = adapt_reviewed_resolution_artifact(
+            artifact,
+            run_id=run_id,
+            created_at=reviewed_at,
+            evidence_ids_by_decision=combined_evidence_ids,
+        )
+        self.store.write_evidence(artifact_evidence)
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=review_event_id or new_ledger_id("evt"),
+                    case_id=case_id,
+                    event_type="reviewed_resolver_evidence",
+                    recorded_at=reviewed_at,
+                    references=(observation_id, *(item.evidence_id for item in artifact_evidence)),
+                    provenance={
+                        "review_id": review_id,
+                        "resolver": artifact.resolver,
+                        "configuration_pin": artifact.configuration_pin,
+                        "artifact_hash": observation.content_hash,
+                        "decision_ids": [item.supports for item in artifact_evidence],
+                    },
+                )
+            ]
+        )
+        case_run, receipts = self._record_case_resolver_receipts(
+            case_id,
+            run,
+            receipts,
+            recorded_at=reviewed_at,
+        )
+        return artifact_evidence, case_run, receipts
 
     def apply_resolution_decision_policy(
         self,
@@ -415,6 +1045,78 @@ class ArcheEngine:
             ]
         )
         return outcome
+
+    def execute_released_policy_decision(
+        self,
+        decision: PolicyDecision,
+        executor: PolicyDecisionExecutor,
+        *,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> PolicyExecution:
+        """Ask an application-controlled executor to perform one released decision.
+
+        Parameters:
+            decision: A link or create outcome previously released into case history.
+            executor: Caller-owned application or human workflow implementation.
+            recorded_at: Timestamp for the immutable execution event.
+            event_id: Optional caller-owned immutable case-event identifier.
+
+        Returns:
+            The executor's hash-only outcome, recorded in case history.
+
+        Raises:
+            ValueError: If the decision was not released exactly as supplied, is not
+                consequential, or was already submitted to an executor.
+        """
+        if decision.action not in {"link", "create"}:
+            raise ValueError(
+                "only released link or create decisions may reach an executor; "
+                "review, reject, and abstain stay in case history"
+            )
+        history = self.get_case_history(decision.case_id)
+        if not _released_policy_decision_is_recorded(history, decision):
+            raise ValueError(
+                f"decision {decision.decision_id!r} was not released by policy "
+                f"{decision.policy_id!r} for case {decision.case_id!r}"
+            )
+        if any(
+            event.event_type == "policy_execution" and decision.decision_id in event.references
+            for event in history
+        ):
+            raise ValueError(
+                f"decision {decision.decision_id!r} already has a recorded executor outcome"
+            )
+        execution = executor.execute(decision)
+        if (
+            execution.decision_id != decision.decision_id
+            or execution.case_id != decision.case_id
+            or execution.policy_id != decision.policy_id
+            or execution.action != decision.action
+        ):
+            raise ValueError(
+                "executor outcome does not match the released policy decision; "
+                "return the same decision, case, policy, and action identifiers"
+            )
+        self.store.write_case_events(
+            [
+                CaseEvent(
+                    event_id=event_id or new_ledger_id("evt"),
+                    case_id=decision.case_id,
+                    event_type="policy_execution",
+                    recorded_at=recorded_at,
+                    references=(decision.decision_id, execution.execution_id),
+                    provenance={
+                        "policy_id": decision.policy_id,
+                        "action": decision.action,
+                        "executor_id": execution.executor_id,
+                        "outcome": execution.outcome,
+                        "result_hash": execution.result_hash,
+                    },
+                )
+            ]
+        )
+        return execution
 
     def record_reviewed_document_proposals(
         self,
@@ -656,6 +1358,8 @@ class ArcheEngine:
             observation = self.store.get_observation(evidence.observation_id)
             if observation is None:
                 raise ValueError(f"evidence {evidence_id!r} lacks its required Observation")
+            if observation.provenance.get("kind") == "resolver_execution":
+                continue
             source_ids.add(observation.source_id)
         return tuple(sorted(source_ids))
 
@@ -761,6 +1465,54 @@ class ArcheEngine:
                 "conflicting_record_ids": list(outcome.conflicting_record_ids),
             },
         )
+
+
+def _released_policy_decision_is_recorded(
+    history: tuple[CaseEvent, ...], decision: PolicyDecision
+) -> bool:
+    """Return whether immutable history contains this exact released policy outcome."""
+    expected = {
+        "policy_id": decision.policy_id,
+        "action": decision.action,
+        "reason": decision.reason,
+        "evidence_ids": list(decision.evidence_ids),
+        "independent_source_ids": list(decision.independent_source_ids),
+    }
+    return any(
+        event.event_type == "policy_decision"
+        and event.references == (decision.decision_id,)
+        and all(event.provenance.get(key) == value for key, value in expected.items())
+        for event in history
+    )
+
+
+def _method_matches_plan(method: ResolutionMethod, event: CaseEvent) -> bool:
+    """Return whether an evidence-plan event selected this exact configured method."""
+    planned_methods = event.provenance.get("planned_methods")
+    if not isinstance(planned_methods, list):
+        return False
+    return any(
+        isinstance(item, dict)
+        and item.get("method_id") == method.method_id
+        and item.get("resolver") == method.resolver
+        and item.get("policy_pin") == method.policy_pin
+        and item.get("configuration_pin") == method.configuration_pin
+        and item.get("estimated_cost") == method.estimated_cost
+        and item.get("benchmark_id") == method.benchmark_id
+        for item in planned_methods
+    )
+
+
+def _method_matches_event(method: ResolutionMethod, event: CaseEvent) -> bool:
+    """Return whether an approval event binds the supplied method configuration."""
+    return (
+        event.provenance.get("method_id") == method.method_id
+        and event.provenance.get("resolver") == method.resolver
+        and event.provenance.get("policy_pin") == method.policy_pin
+        and event.provenance.get("configuration_pin") == method.configuration_pin
+        and event.provenance.get("estimated_cost") == method.estimated_cost
+        and event.provenance.get("benchmark_id") == method.benchmark_id
+    )
 
 
 def _proposal_is_recorded(
