@@ -118,6 +118,7 @@ def test_cli_version_list_and_datasets_are_discoverable(capsys):
         "compare",
         "datasets",
         "list",
+        "resolve-documents",
         "review",
         "schema",
         "version",
@@ -128,14 +129,233 @@ def test_cli_version_list_and_datasets_are_discoverable(capsys):
     assert datasets["nigeria-facilities-review-pack"]["truth_coverage"] == "unlabelled"
 
 
-def test_cli_case_open_plan_and_review_are_value_free(tmp_path, capsys):
-    """A document starts a case; planning never parses or resolves it implicitly."""
+def test_cli_resolve_documents_writes_a_masked_case_review(tmp_path):
+    document = tmp_path / "tea-shipment.txt"
+    document.write_text(
+        "Supplier: Kijani Tea Exporters Ltd\n"
+        "Distributor: Nairobi Tea Trading Ltd\n"
+        "Registration ID: C.12345\n"
+        "Country: Kenya\n",
+        encoding="utf-8",
+    )
+    candidates = tmp_path / "suppliers.json"
+    candidates.write_text(
+        json.dumps(
+            [{"entity_id": "ent_kericho", "name": "Kericho Highlands Processing"}]
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "tea-review.json"
+    store = tmp_path / "tea-cases.duckdb"
+
+    assert (
+        main(
+            [
+                "resolve-documents",
+                str(document),
+                "--entity",
+                "organisation",
+                "--candidates",
+                str(candidates),
+                "--extraction-backend",
+                "regex",
+                "--out",
+                str(output),
+                "--store",
+                str(store),
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    rendered = output.read_text(encoding="utf-8")
+    assert "Kijani Tea Exporters Ltd" not in rendered
+    assert payload["cases"][0]["candidate_entity_ids"] == ["ent_kericho"]
+    assert {action["action_type"] for action in payload["cases"][0]["permitted_actions"]} == {
+        "registry_lookup"
+    }
+    assert payload["persistence"]["case_ids"] == [payload["cases"][0]["case_id"]]
+
+    from arche.runtime import attach
+
+    engine = attach(f"duckdb:///{store}")
+    assert engine.store.get_resolution_case(payload["persistence"]["case_ids"][0]) is not None
+
+
+def test_cli_registry_lookup_executes_persisted_action_without_storing_query_values(
+    tmp_path, monkeypatch
+):
+    """A caller-owned registry request becomes one value-free case Observation."""
+    document = tmp_path / "tea-shipment.txt"
+    document.write_text("Supplier: Kijani Tea Exporters Ltd\n", encoding="utf-8")
+    store = tmp_path / "tea-cases.duckdb"
+    opened = tmp_path / "tea-review.json"
+    connector = tmp_path / "registry.json"
+    wrong_connector = tmp_path / "wrong-registry.json"
+    output = tmp_path / "registry-observation.json"
+    review = tmp_path / "case-review.json"
+    connector.write_text(
+        json.dumps(
+            {
+                "source_id": "external_registry",
+                "policy_pin": "document-resolution-v1",
+                "base_url": "https://supplier-master.example",
+                "request": {
+                    "path": "/v1/suppliers",
+                    "query": {"registration_id": "C.12345"},
+                },
+                "estimated_cost": 0.25,
+                "max_requests": 2,
+                "window_seconds": 60,
+                "timeout_seconds": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    from arche.runtime import Observation
+
+    captured = {}
+
+    class StubRegistryConnector:
+        def __init__(self, **kwargs):
+            self.capability = kwargs["capability"]
+            captured["request"] = kwargs["request_for_action"]
+
+        def observe(self, action):
+            request = captured["request"](action)
+            captured["query"] = request.query
+            return Observation(
+                observation_id="obs_registry_fixture",
+                source_id=action.source_id,
+                source_record_id="request:fixture",
+                recorded_at=action.permitted_at,
+                content_hash="sha256:" + "a" * 64,
+                provenance={"connector": "test_registry", "outcome": "success"},
+            )
+
+    monkeypatch.setattr("arche.runtime.HttpEvidenceConnector", StubRegistryConnector)
+    assert (
+        main(
+            [
+                "resolve-documents",
+                str(document),
+                "--entity",
+                "organisation",
+                "--extraction-backend",
+                "regex",
+                "--out",
+                str(opened),
+                "--store",
+                str(store),
+            ]
+        )
+        == 0
+    )
+    opened_payload = json.loads(opened.read_text(encoding="utf-8"))
+    case = opened_payload["cases"][0]
+    action_id = case["permitted_actions"][0]["action_id"]
+
+    wrong_config = json.loads(connector.read_text(encoding="utf-8"))
+    wrong_config["policy_pin"] = "wrong-policy-v1"
+    wrong_connector.write_text(json.dumps(wrong_config), encoding="utf-8")
+    import pytest
+
+    with pytest.raises(SystemExit, match="connector capability does not permit"):
+        main(
+            [
+                "case",
+                "registry-lookup",
+                case["case_id"],
+                action_id,
+                "--connector",
+                str(wrong_connector),
+                "--store",
+                str(store),
+            ]
+        )
+
+    assert (
+        main(
+            [
+                "case",
+                "registry-lookup",
+                case["case_id"],
+                action_id,
+                "--connector",
+                str(connector),
+                "--store",
+                str(store),
+                "--out",
+                str(output),
+            ]
+        )
+        == 0
+    )
+    rendered = output.read_text(encoding="utf-8")
+    payload = json.loads(rendered)
+    assert captured["query"] == (("registration_id", "C.12345"),)
+    assert "C.12345" not in rendered
+    assert payload["connector_config_sha256"].startswith("sha256:")
+    assert payload["observation"]["provenance"]["outcome"] == "success"
+
+    assert (
+        main(
+            [
+                "case",
+                "review",
+                case["case_id"],
+                "--store",
+                str(store),
+                "--out",
+                str(review),
+            ]
+        )
+        == 0
+    )
+    review_payload = json.loads(review.read_text(encoding="utf-8"))
+    assert review_payload["action_observations"][0]["action_id"] == action_id
+    assert review_payload["action_observations"][0]["observation"]["observation_id"] == (
+        "obs_registry_fixture"
+    )
+
+    from arche.runtime import attach
+
+    engine = attach(f"duckdb:///{store}")
+    assert engine.store.get_action_observation(action_id).observation_id == "obs_registry_fixture"
+
+
+def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
+    tmp_path, capsys, monkeypatch
+):
+    """A planned document action yields an Observation before reviewed field Evidence."""
     document = tmp_path / "supplier.pdf"
     document.write_text("private supplier and estate values", encoding="utf-8")
     store = tmp_path / "case.duckdb"
     opened = tmp_path / "opened.json"
     planned = tmp_path / "planned.json"
+    ingested = tmp_path / "ingested.json"
+    reviewed_fields = tmp_path / "reviewed-fields.json"
+    evidence = tmp_path / "evidence.json"
     review = tmp_path / "review.json"
+
+    from arche.runtime import DocumentIngestion
+
+    class StubDocumentExecutor:
+        executor_id = "test.docling"
+
+        def ingest(self, request):
+            return DocumentIngestion(
+                source_record_id=request.source_record_id,
+                text_sha256="a" * 64,
+                artifact_sha256="b" * 64,
+                parser="test-docling",
+                parser_version="1.0",
+                ocr=request.do_ocr,
+                page_count=1,
+            )
+
+    monkeypatch.setattr("arche.runtime.DoclingDocumentIngestionExecutor", StubDocumentExecutor)
 
     assert main(["case", "open", str(document), "--store", str(store), "--out", str(opened)]) == 0
     open_payload = json.loads(opened.read_text(encoding="utf-8"))
@@ -161,12 +381,77 @@ def test_cli_case_open_plan_and_review_are_value_free(tmp_path, capsys):
     )
     plan_payload = json.loads(planned.read_text(encoding="utf-8"))
     assert len(plan_payload["plan"]["actions"]) == 1
-    assert "did not parse the document" in plan_payload["note"]
+    action_id = plan_payload["plan"]["actions"][0]["action_id"]
+
+    assert (
+        main(
+            [
+                "case",
+                "ingest",
+                case_id,
+                action_id,
+                str(document),
+                "--store",
+                str(store),
+                "--approved-by",
+                "reviewer-1",
+                "--out",
+                str(ingested),
+            ]
+        )
+        == 0
+    )
+    assert "private supplier" not in ingested.read_text(encoding="utf-8")
+    ingested_payload = json.loads(ingested.read_text(encoding="utf-8"))
+    assert ingested_payload["observation"]["provenance"]["document"]["parser"] == "test-docling"
+
+    reviewed_fields.write_text(
+        json.dumps(
+            {
+                "fields": {
+                    "supplier_name": {
+                        "value": "private supplier and estate values",
+                        "source": "extractor",
+                        "confidence": 0.82,
+                        "span": [0, 17],
+                        "page": 1,
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert (
+        main(
+            [
+                "case",
+                "evidence",
+                case_id,
+                action_id,
+                str(reviewed_fields),
+                "--review-id",
+                "review-case-1",
+                "--store",
+                str(store),
+                "--out",
+                str(evidence),
+            ]
+        )
+        == 0
+    )
+    evidence_payload = json.loads(evidence.read_text(encoding="utf-8"))
+    assert evidence_payload["evidence"][0]["provenance"]["span"] == [0, 17]
+    assert "private supplier" not in evidence.read_text(encoding="utf-8")
 
     assert main(["case", "review", case_id, "--store", str(store), "--out", str(review)]) == 0
     review_payload = json.loads(review.read_text(encoding="utf-8"))
     assert "private supplier" not in review.read_text(encoding="utf-8")
-    assert review_payload["history"][0]["event_type"] == "evidence_plan"
+    assert {event["event_type"] for event in review_payload["history"]} >= {
+        "document_action_approval",
+        "evidence_plan",
+        "reviewed_document_evidence",
+    }
+    assert review_payload["reviewed_evidence"][0]["provenance"]["field"] == "supplier_name"
     assert "wrote" in capsys.readouterr().out
 
 

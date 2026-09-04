@@ -24,6 +24,7 @@ from arche.runtime._document_observations import (
 )
 from arche.runtime._document_proposals import (
     DocumentProposalSet,
+    reviewed_document_evidence_from_observation,
     reviewed_document_proposals,
 )
 from arche.runtime._execution import PolicyExecution
@@ -244,6 +245,78 @@ class ArcheEngine:
             observation_id=observation_id,
             recorded_at=recorded_at,
         )
+
+    def record_reviewed_document_evidence(
+        self,
+        case_id: str,
+        action_id: str,
+        extraction: Extraction,
+        *,
+        review_id: str,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> tuple[tuple[Evidence, ...], CaseEvent]:
+        """Record reviewed field Evidence against one ingested document action.
+
+        Parsing creates an immutable Observation, not Evidence. A caller-owned
+        review supplies fields and spans later; this method records their
+        value-free provenance against the exact Observation produced by the
+        permitted action. It makes no claim, relation, receipt, or policy
+        decision.
+
+        Raises:
+            ValueError: If the action is not case-bound document ingestion, has
+                no successful Observation, or the review identifier is empty.
+        """
+        if not review_id:
+            raise ValueError("reviewed document evidence needs a review_id")
+        case = self.store.get_resolution_case(case_id)
+        if case is None:
+            raise ValueError(f"resolution case {case_id!r} does not exist")
+        action = self.store.get_evidence_action(action_id)
+        if action is None or action.case_id != case.case_id:
+            raise ValueError(f"document action {action_id!r} is not permitted for this case")
+        if action.action_type not in {"document_extract", "document_ocr"}:
+            raise ValueError(
+                "reviewed document evidence requires a document extraction or OCR action"
+            )
+        link = self.store.get_action_observation(action.action_id)
+        if link is None:
+            raise ValueError(
+                f"document action {action_id!r} has no Observation; execute it before review"
+            )
+        observation = self.store.get_observation(link.observation_id)
+        if observation is None:
+            raise ValueError(f"document action {action_id!r} links to a missing Observation")
+        if (
+            observation.provenance.get("kind") != "document_ingestion"
+            or observation.provenance.get("outcome") == "failure"
+        ):
+            raise ValueError(
+                f"document action {action_id!r} has no successful ingestion Observation"
+            )
+        evidence = reviewed_document_evidence_from_observation(observation, extraction)
+        event = CaseEvent(
+            event_id=event_id or new_ledger_id("evt"),
+            case_id=case.case_id,
+            event_type="reviewed_document_evidence",
+            recorded_at=recorded_at,
+            references=(observation.observation_id, *(item.evidence_id for item in evidence)),
+            provenance={
+                "action_id": action.action_id,
+                "review_id": review_id,
+                "field_evidence": [
+                    {
+                        "evidence_id": item.evidence_id,
+                        **dict(item.provenance),
+                    }
+                    for item in evidence
+                ],
+            },
+        )
+        self.store.write_evidence(evidence)
+        self.store.write_case_events([event])
+        return evidence, event
 
     def execute_evidence_action(
         self,

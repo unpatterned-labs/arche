@@ -77,6 +77,28 @@ def reviewed_document_evidence(
         source_id=source_id,
         recorded_at=recorded_at,
     )
+    return observation, reviewed_document_evidence_from_observation(
+        observation,
+        extraction,
+        evidence_id_prefix=evidence_id_prefix,
+    )
+
+
+def reviewed_document_evidence_from_observation(
+    observation: Observation,
+    extraction: Extraction[Any],
+    *,
+    evidence_id_prefix: str = "ev_doc",
+) -> tuple[Evidence, ...]:
+    """Derive field Evidence from an already-persisted document Observation.
+
+    This is the CLI-safe counterpart of :func:`reviewed_document_evidence`.
+    The caller has already executed a permitted parser/OCR action; reviewed
+    spans can therefore cite that immutable result rather than creating a
+    duplicate document Observation.
+    """
+    if not extraction.fields:
+        raise ValueError("reviewed document extraction needs at least one field")
     evidence: list[Evidence] = []
     for field_name, field in sorted(extraction.fields.items()):
         if not field_name or any(char.isspace() for char in field_name):
@@ -92,14 +114,14 @@ def reviewed_document_evidence(
             provenance["page"] = field.page
         evidence.append(
             Evidence(
-                evidence_id=f"{evidence_id_prefix}:{observation_id}:{field_name}",
+                evidence_id=f"{evidence_id_prefix}:{observation.observation_id}:{field_name}",
                 observation_id=observation.observation_id,
                 kind="document_field",
                 supports="claim_proposal",
                 provenance=provenance,
             )
         )
-    return observation, tuple(evidence)
+    return tuple(evidence)
 
 
 def reviewed_document_proposals(

@@ -28,10 +28,14 @@ from pathlib import Path
 from arche._version import __version__
 
 _COMMANDS = (
-    ("case", "open, plan, inspect, or export a provenance-first resolution case"),
+    (
+        "case",
+        "open, plan, acquire evidence, ingest, review, or export a provenance-first case",
+    ),
     ("compare", "link two record files and emit a masked report plus JSON"),
     ("datasets", "list benchmark and review datasets with their truth coverage"),
     ("list", "list supported CLI commands"),
+    ("resolve-documents", "extract document fields, compare explicit candidates, and open cases"),
     ("review", "validate, apply, share, or verify review-pack outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
     ("version", "show the single-sourced arche-core version"),
@@ -121,7 +125,13 @@ def _cmd_datasets(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_records(path: Path, prefix: str, id_field: str = "id") -> list[dict]:
+def _load_records(
+    path: Path,
+    prefix: str,
+    id_field: str = "id",
+    *,
+    require_explicit_id: bool = False,
+) -> list[dict]:
     if path.suffix.lower() == ".json":
         data = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(data, list):
@@ -134,6 +144,8 @@ def _load_records(path: Path, prefix: str, id_field: str = "id") -> list[dict]:
         raise SystemExit(f"{path}: unsupported input (use .csv or .json)")
     for i, rec in enumerate(records):
         if not rec.get(id_field):
+            if require_explicit_id and not rec.get("entity_id"):
+                raise SystemExit(f"{path}: candidate {i + 1} needs an 'entity_id' or 'id'")
             rec[id_field] = f"{prefix}-{i}"
     return records
 
@@ -181,6 +193,95 @@ def _write_case_output(payload: dict[str, object], output: str | None) -> None:
         raise SystemExit(f"arche case: output parent does not exist: {path.parent}")
     path.write_text(encoded + "\n", encoding="utf-8")
     print(f"wrote {path}")
+
+
+def _configured_registry_connector(config_path: Path):
+    """Build one transient HTTPS registry connector from caller-owned configuration.
+
+    Query values remain in the caller's file and only its content hash is returned
+    to the CLI artifact.  The runtime still checks the connector capability against
+    the persisted EvidenceAction before any request can be made.
+    """
+    from arche.runtime import ExternalEvidenceRequest, HttpEvidenceConnector, ToolCapability
+
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("registry connector configuration must be valid JSON") from error
+    if not isinstance(config, dict):
+        raise ValueError("registry connector configuration must be a JSON object")
+    expected = {
+        "source_id",
+        "policy_pin",
+        "base_url",
+        "request",
+        "estimated_cost",
+        "max_requests",
+        "window_seconds",
+        "timeout_seconds",
+    }
+    if set(config) != expected:
+        raise ValueError("registry connector configuration has an invalid field set")
+
+    def required_text(name: str) -> str:
+        value = config[name]
+        if not isinstance(value, str) or not value:
+            raise ValueError(f"registry connector configuration needs a non-empty {name}")
+        return value
+
+    source_id = required_text("source_id")
+    policy_pin = required_text("policy_pin")
+    base_url = required_text("base_url")
+    request = config["request"]
+    if not isinstance(request, dict) or set(request) != {"path", "query"}:
+        raise ValueError("registry connector request needs exactly path and query")
+    path = request["path"]
+    query = request["query"]
+    if not isinstance(path, str) or not isinstance(query, dict):
+        raise ValueError("registry connector request path and query must be strings and an object")
+    if any(
+        not isinstance(key, str) or not key or not isinstance(value, str)
+        for key, value in query.items()
+    ):
+        raise ValueError("registry connector query must contain non-empty string keys and values")
+    try:
+        request_template = ExternalEvidenceRequest(path, tuple(query.items()))
+    except ValueError as error:
+        raise ValueError("registry connector request is invalid") from error
+
+    estimated_cost = config["estimated_cost"]
+    max_requests = config["max_requests"]
+    window_seconds = config["window_seconds"]
+    timeout_seconds = config["timeout_seconds"]
+    if (
+        isinstance(estimated_cost, bool)
+        or not isinstance(estimated_cost, (int, float))
+        or isinstance(max_requests, bool)
+        or not isinstance(max_requests, int)
+        or isinstance(window_seconds, bool)
+        or not isinstance(window_seconds, (int, float))
+        or isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, (int, float))
+    ):
+        raise ValueError("registry connector limits must be numeric")
+    try:
+        connector = HttpEvidenceConnector(
+            capability=ToolCapability(
+                source_id=source_id,
+                action_types=("registry_lookup",),
+                policy_pin=policy_pin,
+            ),
+            base_url=base_url,
+            request_for_action=lambda action: request_template,
+            estimated_cost=float(estimated_cost),
+            max_requests=max_requests,
+            window_seconds=float(window_seconds),
+            timeout_seconds=float(timeout_seconds),
+        )
+    except ValueError as error:
+        raise ValueError("registry connector configuration is not permitted") from error
+    canonical = json.dumps(config, sort_keys=True, separators=(",", ":")).encode()
+    return connector, f"sha256:{sha256(canonical).hexdigest()}"
 
 
 def _cmd_case_open(args: argparse.Namespace) -> int:
@@ -303,6 +404,210 @@ def _cmd_case_plan(args: argparse.Namespace) -> int:
     return 0
 
 
+def _planned_case_action(engine, case_id: str, action_id: str) -> None:
+    """Require the caller to execute only an action selected in case history."""
+    if not any(
+        event.event_type == "evidence_plan" and action_id in event.references
+        for event in engine.get_case_history(case_id)
+    ):
+        raise SystemExit(
+            f"arche case: action {action_id!r} is not in a recorded plan for case {case_id!r}"
+        )
+
+
+def _reviewed_extraction(path: Path):
+    """Read caller-owned reviewed values transiently and retain only their Evidence provenance."""
+    from arche.doc import Extraction, FieldEvidence
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"arche case evidence: invalid reviewed fields JSON: {path}") from error
+    fields_data = payload.get("fields") if isinstance(payload, dict) else None
+    if not isinstance(fields_data, dict) or not fields_data:
+        raise SystemExit(
+            "arche case evidence: reviewed fields JSON needs a non-empty fields object"
+        )
+    fields: dict[str, FieldEvidence] = {}
+    for name, item in fields_data.items():
+        if not isinstance(name, str) or not name or any(char.isspace() for char in name):
+            raise SystemExit("arche case evidence: field names must be non-empty identifiers")
+        if not isinstance(item, dict) or "value" not in item:
+            raise SystemExit(f"arche case evidence: field {name!r} needs a reviewed value")
+        source = item.get("source", "extractor")
+        confidence = item.get("confidence", 0.0)
+        span = item.get("span")
+        page = item.get("page")
+        if source not in {"detector", "metadata", "extractor", "llm", "default"}:
+            raise SystemExit(f"arche case evidence: field {name!r} has an unsupported source")
+        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+            raise SystemExit(f"arche case evidence: field {name!r} confidence must be numeric")
+        if not 0.0 <= float(confidence) <= 1.0:
+            raise SystemExit(f"arche case evidence: field {name!r} confidence must be in [0, 1]")
+        if span is not None and (
+            not isinstance(span, list)
+            or len(span) != 2
+            or any(isinstance(offset, bool) or not isinstance(offset, int) for offset in span)
+            or span[0] < 0
+            or span[1] < span[0]
+        ):
+            raise SystemExit(f"arche case evidence: field {name!r} span must be [start, end]")
+        if page is not None and (isinstance(page, bool) or not isinstance(page, int) or page < 1):
+            raise SystemExit(f"arche case evidence: field {name!r} page must be a positive integer")
+        fields[name] = FieldEvidence(
+            item["value"],
+            source=source,
+            confidence=float(confidence),
+            span=tuple(span) if span is not None else None,
+            page=page,
+            detail=str(item.get("detail", "")),
+        )
+    return Extraction(data=None, fields=fields)
+
+
+def _cmd_case_ingest(args: argparse.Namespace) -> int:
+    """Execute one explicitly approved, previously planned Docling/OCR action."""
+    from arche.runtime import (
+        CaseEvent,
+        DoclingDocumentIngestionExecutor,
+        DocumentIngestionRequest,
+        new_ledger_id,
+    )
+
+    document = Path(args.document)
+    if not document.is_file():
+        raise SystemExit(f"arche case ingest: document does not exist: {document}")
+    engine = _case_engine(args.store)
+    case = engine.store.get_resolution_case(args.case_id)
+    if case is None:
+        raise SystemExit(f"arche case ingest: unknown case {args.case_id!r}")
+    action = engine.store.get_evidence_action(args.action_id)
+    if action is None or action.case_id != case.case_id:
+        raise SystemExit(f"arche case ingest: unknown document action {args.action_id!r}")
+    _planned_case_action(engine, case.case_id, action.action_id)
+    if engine.store.get_action_observation(action.action_id) is not None:
+        raise SystemExit(f"arche case ingest: action {action.action_id!r} was already executed")
+    expected_observation_id = action.provenance.get("document_observation_id")
+    expected = (
+        engine.store.get_observation(expected_observation_id)
+        if isinstance(expected_observation_id, str)
+        else None
+    )
+    if expected is None or expected.content_hash != _file_sha256(document):
+        raise SystemExit(
+            "arche case ingest: supplied document does not match the case document hash"
+        )
+    now = datetime.now(UTC)
+    engine.store.write_case_events(
+        [
+            CaseEvent(
+                event_id=new_ledger_id("evt"),
+                case_id=case.case_id,
+                event_type="document_action_approval",
+                recorded_at=now,
+                references=(action.action_id,),
+                provenance={"approved_by": args.approved_by},
+            )
+        ]
+    )
+    link = engine.execute_document_ingestion_action(
+        action.action_id,
+        DocumentIngestionRequest(
+            document,
+            source_record_id=f"document:{expected.content_hash}",
+            do_ocr=action.action_type == "document_ocr",
+        ),
+        DoclingDocumentIngestionExecutor(),
+        observation_id=new_ledger_id("obs"),
+        recorded_at=now,
+    )
+    observation = engine.store.get_observation(link.observation_id)
+    _write_case_output(
+        {
+            "schema": "arche.case_ingestion.v1",
+            "case_id": case.case_id,
+            "action_id": action.action_id,
+            "observation": _case_value(observation),
+            "note": (
+                "Parser/OCR output is an immutable Observation, not reviewed Evidence or a "
+                "decision."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
+def _cmd_case_evidence(args: argparse.Namespace) -> int:
+    """Record caller-reviewed field spans as Evidence after a successful ingestion."""
+    fields_path = Path(args.reviewed_fields)
+    if not fields_path.is_file():
+        raise SystemExit(f"arche case evidence: reviewed fields file does not exist: {fields_path}")
+    engine = _case_engine(args.store)
+    extraction = _reviewed_extraction(fields_path)
+    evidence, event = engine.record_reviewed_document_evidence(
+        args.case_id,
+        args.action_id,
+        extraction,
+        review_id=args.review_id,
+        recorded_at=datetime.now(UTC),
+    )
+    _write_case_output(
+        {
+            "schema": "arche.case_document_evidence.v1",
+            "case_id": args.case_id,
+            "review_event_id": event.event_id,
+            "evidence": _case_value(evidence),
+            "note": (
+                "Reviewed values were consumed from the caller-owned file and are not stored in "
+                "this artifact."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
+def _cmd_case_registry_lookup(args: argparse.Namespace) -> int:
+    """Execute one persisted registry lookup through its declared connector boundary."""
+    config_path = Path(args.connector)
+    if not config_path.is_file():
+        raise SystemExit(
+            f"arche case registry-lookup: connector file does not exist: {config_path}"
+        )
+    engine = _case_engine(args.store)
+    case = engine.store.get_resolution_case(args.case_id)
+    if case is None:
+        raise SystemExit(f"arche case registry-lookup: unknown case {args.case_id!r}")
+    action = engine.store.get_evidence_action(args.action_id)
+    if action is None or action.case_id != case.case_id or action.action_type != "registry_lookup":
+        raise SystemExit(
+            f"arche case registry-lookup: unknown permitted registry action {args.action_id!r}"
+        )
+    try:
+        connector, config_hash = _configured_registry_connector(config_path)
+        link = engine.execute_evidence_action(action.action_id, connector)
+    except ValueError as error:
+        raise SystemExit(f"arche case registry-lookup: {error}") from error
+    observation = engine.store.get_observation(link.observation_id)
+    _write_case_output(
+        {
+            "schema": "arche.case_registry_observation.v1",
+            "case_id": case.case_id,
+            "action_id": action.action_id,
+            "connector_config_sha256": config_hash,
+            "observation": _case_value(observation),
+            "note": (
+                "The caller-owned connector configuration and query values were used only "
+                "transiently. The registry result is an immutable Observation, not Evidence "
+                "or a decision."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
 def _cmd_case_review(args: argparse.Namespace) -> int:
     """Export a value-free case artifact for a UI or human review workflow."""
     engine = _case_engine(args.store)
@@ -311,12 +616,35 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
         raise SystemExit(f"arche case review: unknown case {args.case_id!r}")
     actions = engine.store.list_evidence_actions(case.case_id)
     history = engine.get_case_history(case.case_id)
+    action_observations = tuple(
+        {
+            "action_id": action.action_id,
+            "observation": observation,
+        }
+        for action in actions
+        if (link := engine.store.get_action_observation(action.action_id)) is not None
+        if (observation := engine.store.get_observation(link.observation_id)) is not None
+    )
+    evidence_ids = tuple(
+        reference
+        for event in history
+        if event.event_type == "reviewed_document_evidence"
+        for reference in event.references
+        if engine.store.get_evidence(reference) is not None
+    )
+    reviewed_evidence = tuple(
+        evidence
+        for evidence_id in dict.fromkeys(evidence_ids)
+        if (evidence := engine.store.get_evidence(evidence_id)) is not None
+    )
     _write_case_output(
         {
             "schema": "arche.case_review.v1",
             "generated_at": datetime.now(UTC).isoformat(),
             "case": _case_value(case),
             "permitted_actions": _case_value(actions),
+            "action_observations": _case_value(action_observations),
+            "reviewed_evidence": _case_value(reviewed_evidence),
             "history": _case_value(history),
             "review_status": "awaiting_evidence" if not history else "review_case_history",
             "note": (
@@ -443,6 +771,38 @@ def _cmd_compare(args: argparse.Namespace) -> int:
     print(f"  decisions: {json_path}")
     if not args.reveal:
         print("  (values masked by default; add --reveal for a working copy)")
+    return 0
+
+
+def _cmd_resolve_documents(args: argparse.Namespace) -> int:
+    """Run the document-to-candidate front door without persisting raw fields."""
+    from arche import resolve_documents
+
+    candidates = (
+        _load_records(Path(args.candidates), "candidate", require_explicit_id=True)
+        if args.candidates
+        else None
+    )
+    try:
+        report = resolve_documents(
+            args.source,
+            entity=args.entity,
+            jurisdiction=args.jurisdiction,
+            candidates=candidates,
+            max_candidate_pairs=args.max_candidate_pairs,
+            quiet=not args.verbose,
+            progress=args.progress,
+            extraction_backend=args.extraction_backend,
+        )
+        persistence = None
+        if args.store:
+            persistence = report.persist(_case_engine(args.store))
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(f"arche resolve-documents: {exc}") from exc
+    payload = report.review(reveal=args.reveal)
+    if persistence is not None:
+        payload["persistence"] = persistence
+    _write_case_output(payload, args.out)
     return 0
 
 
@@ -666,6 +1026,53 @@ def main(argv: list[str] | None = None) -> int:
     case_plan.add_argument("--out", default=None, help="write JSON instead of stdout")
     case_plan.set_defaults(func=_cmd_case_plan)
 
+    case_ingest = case_sub.add_parser(
+        "ingest", help="execute an approved planned Docling/OCR document action"
+    )
+    case_ingest.add_argument("case_id", help="case identifier returned by arche case open")
+    case_ingest.add_argument("action_id", help="planned document action identifier")
+    case_ingest.add_argument(
+        "document", help="the same caller-owned document used to open the case"
+    )
+    case_ingest.add_argument("--store", default="arche.duckdb", help="local DuckDB runtime store")
+    case_ingest.add_argument(
+        "--approved-by", required=True, help="human or application identifier approving this action"
+    )
+    case_ingest.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_ingest.set_defaults(func=_cmd_case_ingest)
+
+    case_evidence = case_sub.add_parser(
+        "evidence", help="record reviewed document fields and spans after ingestion"
+    )
+    case_evidence.add_argument("case_id", help="case identifier to update")
+    case_evidence.add_argument("action_id", help="successful document action identifier")
+    case_evidence.add_argument(
+        "reviewed_fields", help="caller-owned reviewed fields JSON; values are not persisted"
+    )
+    case_evidence.add_argument("--review-id", required=True, help="caller-managed review reference")
+    case_evidence.add_argument("--store", default="arche.duckdb", help="local DuckDB runtime store")
+    case_evidence.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_evidence.set_defaults(func=_cmd_case_evidence)
+
+    case_registry_lookup = case_sub.add_parser(
+        "registry-lookup",
+        help="execute a persisted registry_lookup action through a configured HTTPS connector",
+    )
+    case_registry_lookup.add_argument("case_id", help="case identifier to update")
+    case_registry_lookup.add_argument(
+        "action_id", help="permitted registry_lookup action identifier"
+    )
+    case_registry_lookup.add_argument(
+        "--connector",
+        required=True,
+        help="caller-owned connector JSON; request values stay outside the runtime store",
+    )
+    case_registry_lookup.add_argument(
+        "--store", default="arche.duckdb", help="local DuckDB runtime store"
+    )
+    case_registry_lookup.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_registry_lookup.set_defaults(func=_cmd_case_registry_lookup)
+
     case_review = case_sub.add_parser(
         "review", help="export a value-free case artifact for a review client"
     )
@@ -712,6 +1119,53 @@ def main(argv: list[str] | None = None) -> int:
         "--demo", action="store_true", help="run on the built-in artist demo, no data needed"
     )
     cmp_p.set_defaults(func=_cmd_compare)
+
+    documents_p = sub.add_parser(
+        "resolve-documents",
+        help="extract document fields, compare explicit candidates, and open cases",
+    )
+    documents_p.add_argument(
+        "source", help="document path, directory, or glob owned by the caller"
+    )
+    documents_p.add_argument(
+        "--candidates",
+        default=None,
+        help="caller-owned JSON or CSV candidate records with entity_id or id",
+    )
+    documents_p.add_argument("--entity", default="person", help="entity pack (default person)")
+    documents_p.add_argument(
+        "--jurisdiction", default="auto", help="declared jurisdiction or auto (default)"
+    )
+    documents_p.add_argument(
+        "--max-candidate-pairs",
+        type=int,
+        default=1_000,
+        help="hard candidate comparison cap (default 1000)",
+    )
+    documents_p.add_argument(
+        "--extraction-backend",
+        choices=["auto", "regex"],
+        default="regex",
+        help="field extraction backend (default regex; auto may load local models)",
+    )
+    documents_p.add_argument(
+        "--progress", action="store_true", help="emit progress while parsing instead of JSON only"
+    )
+    documents_p.add_argument(
+        "--verbose", action="store_true", help="show parser diagnostics while resolving"
+    )
+    documents_p.add_argument(
+        "--reveal", action="store_true", help="include document field values in output"
+    )
+    documents_p.add_argument(
+        "--store",
+        default=None,
+        help="persist unresolved value-free cases to this local DuckDB store",
+    )
+    documents_p.add_argument(
+        "--out", default=None, help="write JSON review artifact instead of stdout"
+    )
+    documents_p.set_defaults(func=_cmd_resolve_documents)
 
     rev_p = sub.add_parser(
         "review",

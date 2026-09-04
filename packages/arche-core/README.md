@@ -455,11 +455,44 @@ Unstructured input is a first-class entry point, not a preprocessing step you bo
 ```python
 from arche import resolve_documents
 
-report = resolve_documents("statements/*.pdf", extraction_backend="regex")
-print(report.table())
+candidates = [{"entity_id": "ent_supplier_17", "name": "Kijani Tea Exporters Limited"}]
+report = resolve_documents("shipments/*.pdf", entity="organisation", candidates=candidates)
+print(report.review())
 ```
 
-That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and resolves them against each other. Every decision carries the extraction that produced it: the hash of the input bytes, the parser and its version, the digest of the rendering its spans point into. Upgrade the parser next year, re-run, and you can tell whether the answer changed or only the machinery did.
+That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and compares it against the explicit caller-owned candidate set. Labelled commercial fields such as supplier, distributor, estate, and registration ID are proposed with spans for review; they are not claims or accepted Evidence. Candidate results are proposals. If no candidate is safe to link, `review()` returns a value-masked `ResolutionCase` with already-permitted evidence actions; the caller must review fields before they can become vNext Evidence. `max_candidate_pairs` defaults to 1,000, so callers narrow candidates rather than accidentally comparing every document against a full master table.
+
+Persist only an unresolved case, and only into a caller-owned runtime:
+
+```python
+from arche import attach
+
+engine = attach("duckdb:///tea-cases.duckdb")
+saved = report.persist(engine)
+```
+
+`persist()` writes the hash/provenance-only document Observation, `ResolutionCase`, and already-permitted actions; it writes no document values, Evidence, receipt, claim, relationship, or entity decision. Repeating it against the same store is safe. Continue only through an approved document-ingestion or evidence-connector action.
+
+For a persisted `registry_lookup` action, a caller can supply a policy-pinned HTTPS registry or supplier-master request without putting its query values into DuckDB or the emitted artifact:
+
+```json
+{
+  "source_id": "external_registry",
+  "policy_pin": "document-resolution-v1",
+  "base_url": "https://supplier-master.example",
+  "request": {"path": "/v1/suppliers", "query": {"registration_id": "caller-value"}},
+  "estimated_cost": 0.25,
+  "max_requests": 2,
+  "window_seconds": 60,
+  "timeout_seconds": 5
+}
+```
+
+```text
+arche case registry-lookup CASE_ID ACTION_ID --connector registry.json --store tea-cases.duckdb --out registry-observation.json
+```
+
+The source, action type, and policy pin must match the already-persisted action; the runtime rejects a mismatch before a request. The connector permits read-only HTTPS GET requests only, enforces its cost and rate limits, and turns either a response or a refusal/failure into one immutable Observation. The output retains a hash of the configuration, not its request values or response body.
 
 `extraction_backend="regex"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
 
@@ -506,14 +539,18 @@ arche list                # compare, review, schema, datasets, and version
 arche datasets            # truth coverage before choosing a benchmark
 arche datasets --json     # the same catalog for an application or agent
 arche review template PACK outcomes.csv  # value-free IDs for human adjudication
+arche resolve-documents tea-shipment.pdf --entity organisation --candidates suppliers.json --store tea-cases.duckdb --out tea-review.json
 arche case open document.pdf --store arche.duckdb
 arche case plan CASE_ID --enable-local-document
+arche case ingest CASE_ID ACTION_ID document.pdf --approved-by reviewer-1
+arche case evidence CASE_ID ACTION_ID reviewed-fields.json --review-id review-1
+arche case registry-lookup CASE_ID ACTION_ID --connector registry.json --store tea-cases.duckdb
 arche case review CASE_ID --out case-review.json
 ```
 
 `arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.
 
-`arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case review` writes a value-free case-history artifact for a future review pane or another application. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
+`arche resolve-documents` is the shortest document front door: it emits a masked proposed-field/candidate review artifact and opens an unresolved case when it cannot safely link a supplied candidate. Add `--store` to persist only the value-free Observation, case, and permitted actions to a caller-owned DuckDB file; it never writes a link, claim, or entity-memory record. `arche case registry-lookup` consumes one of those persisted `registry_lookup` actions only through a caller-owned configuration whose declared source and policy pin match the action; its response or failure is an Observation. `arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case ingest` requires a selected planned action and an explicit human/application approval before invoking the caller-owned Docling/OCR executor; parser output becomes an immutable Observation. `arche case evidence` accepts caller-owned reviewed field values transiently and records only value-free Evidence provenance, confidence, pages, and spans. `arche case review` writes case history, action-result Observations, and reviewed Evidence for a future review pane or another application. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
 
 What is unusual is where the defaults were tested first. Jaro-Winkler, the string comparator underneath most record linkage, pays a bonus for a shared prefix, because it was tuned on US Census surnames where clerical typos land at the end of a word. *Diallo* and *Jallow* are one Fula family name split by a colonial spelling border, and they share no prefix at all. That assumption fails identically on Arabic transliteration, on Cantonese romanisation, and on any register where one name has three spellings.
 
