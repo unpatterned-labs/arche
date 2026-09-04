@@ -337,9 +337,11 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
     ingested = tmp_path / "ingested.json"
     reviewed_fields = tmp_path / "reviewed-fields.json"
     evidence = tmp_path / "evidence.json"
+    proposals = tmp_path / "tea-proposals.json"
     review = tmp_path / "review.json"
+    pane = tmp_path / "review.html"
 
-    from arche.runtime import DocumentIngestion
+    from arche.runtime import DocumentIngestion, Entity, attach
 
     class StubDocumentExecutor:
         executor_id = "test.docling"
@@ -443,7 +445,57 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
     assert evidence_payload["evidence"][0]["provenance"]["span"] == [0, 17]
     assert "private supplier" not in evidence.read_text(encoding="utf-8")
 
-    assert main(["case", "review", case_id, "--store", str(store), "--out", str(review)]) == 0
+    engine = attach(f"duckdb:///{store}")
+    engine.store.write_entities(
+        [
+            Entity(
+                "ent_reviewed_supplier",
+                "organisation",
+                "legal_entity",
+                engine.store.get_resolution_case(case_id).opened_at,
+            )
+        ]
+    )
+    assert (
+        main(
+            [
+                "case",
+                "propose-tea",
+                case_id,
+                action_id,
+                str(reviewed_fields),
+                "--review-id",
+                "review-case-1",
+                "--supplier-entity",
+                "ent_reviewed_supplier",
+                "--store",
+                str(store),
+                "--out",
+                str(proposals),
+            ]
+        )
+        == 0
+    )
+    proposal_payload = json.loads(proposals.read_text(encoding="utf-8"))
+    assert proposal_payload["claims"][0]["predicate"] == "reported_supplier"
+    assert "private supplier" not in proposals.read_text(encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "case",
+                "review",
+                case_id,
+                "--store",
+                str(store),
+                "--out",
+                str(review),
+                "--html",
+                str(pane),
+            ]
+        )
+        == 0
+    )
     review_payload = json.loads(review.read_text(encoding="utf-8"))
     assert "private supplier" not in review.read_text(encoding="utf-8")
     assert {event["event_type"] for event in review_payload["history"]} >= {
@@ -452,6 +504,10 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
         "reviewed_document_evidence",
     }
     assert review_payload["reviewed_evidence"][0]["provenance"]["field"] == "supplier_name"
+    pane_html = pane.read_text(encoding="utf-8")
+    assert "Resolution case review" in pane_html
+    assert "private supplier" not in pane_html
+    assert "src=" not in pane_html
     assert "wrote" in capsys.readouterr().out
 
 

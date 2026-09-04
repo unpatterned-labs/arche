@@ -465,6 +465,59 @@ def _reviewed_extraction(path: Path):
     return Extraction(data=None, fields=fields)
 
 
+def _tea_document_specs(args: argparse.Namespace, extraction):
+    """Return the deliberate tea field mappings selected by the review caller."""
+    from arche.runtime import DocumentClaimSpec, DocumentRelationSpec
+
+    claim_specs = []
+    if args.supplier_entity:
+        for field, predicate in (
+            ("supplier_name", "reported_supplier"),
+            ("registration_id", "reported_registration_id"),
+            ("country", "reported_country"),
+        ):
+            if field in extraction.fields:
+                claim_specs.append(DocumentClaimSpec(args.supplier_entity, predicate, field))
+        if not any(spec.field == "supplier_name" for spec in claim_specs):
+            raise SystemExit("arche case propose-tea: supplier_entity needs supplier_name")
+    if args.distributor_entity:
+        if "distributor_name" not in extraction.fields:
+            raise SystemExit("arche case propose-tea: distributor_entity needs distributor_name")
+        claim_specs.append(
+            DocumentClaimSpec(args.distributor_entity, "reported_distributor", "distributor_name")
+        )
+    if args.estate_entity:
+        if "estate_name" not in extraction.fields:
+            raise SystemExit("arche case propose-tea: estate_entity needs estate_name")
+        claim_specs.append(DocumentClaimSpec(args.estate_entity, "reported_estate", "estate_name"))
+
+    relation_specs = []
+    if args.supplier_entity and args.distributor_entity:
+        relation_specs.append(
+            DocumentRelationSpec(
+                args.supplier_entity,
+                "reported_distributor",
+                args.distributor_entity,
+                ("supplier_name", "distributor_name"),
+            )
+        )
+    if args.supplier_entity and args.estate_entity:
+        relation_specs.append(
+            DocumentRelationSpec(
+                args.supplier_entity,
+                "reported_operates",
+                args.estate_entity,
+                ("supplier_name", "estate_name"),
+            )
+        )
+    if not claim_specs and not relation_specs:
+        raise SystemExit(
+            "arche case propose-tea: supply at least one stable supplier, distributor, or estate "
+            "entity id"
+        )
+    return tuple(claim_specs), tuple(relation_specs)
+
+
 def _cmd_case_ingest(args: argparse.Namespace) -> int:
     """Execute one explicitly approved, previously planned Docling/OCR action."""
     from arche.runtime import (
@@ -568,6 +621,46 @@ def _cmd_case_evidence(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_case_propose_tea(args: argparse.Namespace) -> int:
+    """Map previously reviewed tea fields to review-pending memory proposals."""
+    fields_path = Path(args.reviewed_fields)
+    if not fields_path.is_file():
+        raise SystemExit(
+            f"arche case propose-tea: reviewed fields file does not exist: {fields_path}"
+        )
+    extraction = _reviewed_extraction(fields_path)
+    claim_specs, relation_specs = _tea_document_specs(args, extraction)
+    engine = _case_engine(args.store)
+    try:
+        proposals = engine.record_reviewed_document_field_proposals(
+            args.case_id,
+            args.action_id,
+            extraction,
+            review_id=args.review_id,
+            recorded_at=datetime.now(UTC),
+            claim_specs=claim_specs,
+            relation_specs=relation_specs,
+        )
+    except ValueError as error:
+        raise SystemExit(f"arche case propose-tea: {error}") from error
+    _write_case_output(
+        {
+            "schema": "arche.case_tea_proposals.v1",
+            "case_id": args.case_id,
+            "review_event_id": proposals.event.event_id,
+            "claims": _case_value(proposals.claims),
+            "relations": _case_value(proposals.relations),
+            "note": (
+                "These are reviewed document proposals only. They are not Claims or "
+                "EntityRelations until an independent-evidence acceptance policy permits "
+                "promotion."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
 def _cmd_case_registry_lookup(args: argparse.Namespace) -> int:
     """Execute one persisted registry lookup through its declared connector boundary."""
     config_path = Path(args.connector)
@@ -637,23 +730,31 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
         for evidence_id in dict.fromkeys(evidence_ids)
         if (evidence := engine.store.get_evidence(evidence_id)) is not None
     )
-    _write_case_output(
-        {
-            "schema": "arche.case_review.v1",
-            "generated_at": datetime.now(UTC).isoformat(),
-            "case": _case_value(case),
-            "permitted_actions": _case_value(actions),
-            "action_observations": _case_value(action_observations),
-            "reviewed_evidence": _case_value(reviewed_evidence),
-            "history": _case_value(history),
-            "review_status": "awaiting_evidence" if not history else "review_case_history",
-            "note": (
-                "This artifact contains identifiers, hashes, and provenance only. A client can "
-                "render it as a review pane; it cannot apply a decision by itself."
-            ),
-        },
-        args.out,
-    )
+    payload = {
+        "schema": "arche.case_review.v1",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "case": _case_value(case),
+        "permitted_actions": _case_value(actions),
+        "action_observations": _case_value(action_observations),
+        "reviewed_evidence": _case_value(reviewed_evidence),
+        "history": _case_value(history),
+        "review_status": "awaiting_evidence" if not history else "review_case_history",
+        "note": (
+            "This artifact contains identifiers, hashes, and provenance only. A client can "
+            "render it as a review pane; it cannot apply a decision by itself."
+        ),
+    }
+    _write_case_output(payload, args.out)
+    if args.html:
+        from arche.report import case_review_pane
+
+        pane_path = Path(args.html)
+        if not pane_path.parent.exists():
+            raise SystemExit(
+                f"arche case review: HTML output parent does not exist: {pane_path.parent}"
+            )
+        pane_path.write_text(case_review_pane(payload), encoding="utf-8")
+        print(f"wrote {pane_path}")
     return 0
 
 
@@ -1054,6 +1155,29 @@ def main(argv: list[str] | None = None) -> int:
     case_evidence.add_argument("--out", default=None, help="write JSON instead of stdout")
     case_evidence.set_defaults(func=_cmd_case_evidence)
 
+    case_propose_tea = case_sub.add_parser(
+        "propose-tea",
+        help="map reviewed tea fields to review-pending claim and relationship proposals",
+    )
+    case_propose_tea.add_argument("case_id", help="case identifier to update")
+    case_propose_tea.add_argument("action_id", help="successful reviewed document action")
+    case_propose_tea.add_argument(
+        "reviewed_fields", help="the exact caller-owned fields JSON already recorded as Evidence"
+    )
+    case_propose_tea.add_argument("--review-id", required=True, help="matching caller review id")
+    case_propose_tea.add_argument(
+        "--supplier-entity", default=None, help="stable supplier entity id"
+    )
+    case_propose_tea.add_argument(
+        "--distributor-entity", default=None, help="stable distributor entity id"
+    )
+    case_propose_tea.add_argument("--estate-entity", default=None, help="stable estate entity id")
+    case_propose_tea.add_argument(
+        "--store", default="arche.duckdb", help="local DuckDB runtime store"
+    )
+    case_propose_tea.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_propose_tea.set_defaults(func=_cmd_case_propose_tea)
+
     case_registry_lookup = case_sub.add_parser(
         "registry-lookup",
         help="execute a persisted registry_lookup action through a configured HTTPS connector",
@@ -1079,6 +1203,9 @@ def main(argv: list[str] | None = None) -> int:
     case_review.add_argument("case_id", help="case identifier to inspect")
     case_review.add_argument("--store", default="arche.duckdb", help="local DuckDB runtime store")
     case_review.add_argument("--out", required=True, help="review artifact JSON destination")
+    case_review.add_argument(
+        "--html", default=None, help="optional self-contained local review-pane HTML destination"
+    )
     case_review.set_defaults(func=_cmd_case_review)
 
     cmp_p = sub.add_parser(

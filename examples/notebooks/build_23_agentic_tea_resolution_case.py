@@ -119,7 +119,8 @@ code("""
 # arche case plan CASE_ID --enable-local-document
 # arche case ingest CASE_ID ACTION_ID tea-shipment.pdf --approved-by analyst-1
 # arche case evidence CASE_ID ACTION_ID reviewed-fields.json --review-id review-1
-# arche case review CASE_ID --out tea-review.json
+# arche case propose-tea CASE_ID ACTION_ID reviewed-fields.json --review-id review-1 --supplier-entity ent_supplier
+# arche case review CASE_ID --out tea-review.json --html tea-review.html
 """)
 
 md("""
@@ -137,10 +138,9 @@ Splink, RecordLinkage, and domain matchers belong after this basic experience. A
 md("""
 ## 6. Roadmap from here
 
-1. **Review pane:** render `report.review()` / `arche case review` as a local UI with source document, page/span highlight, candidate comparison, planner recommendation, action outcomes, and explicit reviewer choices.
-2. **Tea semantic mapping:** turn reviewed supplier/distributor/estate fields into explicit proposals for claims and relationships, then promote only with independent support and contradiction checks.
-3. **Resolver selection:** qualify deterministic, Splink, and domain configurations on complete mappings, then let the planner select only eligible methods under a budget.
-4. **Entity memory:** promote accepted, independently supported supplier/distributor/estate claims and relationships; preserve contradictions and open questions for the next shipment.
+1. **Review interaction bridge:** connect a caller-owned review client to reviewed fields, selected semantic mappings, and acceptance requests through the existing case APIs. The source document remains client-side.
+2. **Resolver selection:** qualify deterministic, Splink, and domain configurations on complete mappings, then let the planner select only eligible methods under a budget.
+3. **Entity memory:** promote accepted, independently supported supplier/distributor/estate claims and relationships; preserve contradictions and open questions for the next shipment.
 """)
 
 nb = {

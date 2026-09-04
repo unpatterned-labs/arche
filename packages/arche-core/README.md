@@ -494,6 +494,17 @@ arche case registry-lookup CASE_ID ACTION_ID --connector registry.json --store t
 
 The source, action type, and policy pin must match the already-persisted action; the runtime rejects a mismatch before a request. The connector permits read-only HTTPS GET requests only, enforces its cost and rate limits, and turns either a response or a refusal/failure into one immutable Observation. The output retains a hash of the configuration, not its request values or response body.
 
+After document ingestion and `arche case evidence`, tea-specific semantic mappings remain review-pending proposals. The selected opaque entity IDs must already exist in the caller's runtime; this command does not create an entity, assert a claim, or link two entities:
+
+```text
+arche case propose-tea CASE_ID DOCUMENT_ACTION_ID reviewed-fields.json \
+  --review-id review-42 --supplier-entity ent_supplier \
+  --distributor-entity ent_distributor --estate-entity ent_estate \
+  --store tea-cases.duckdb --out tea-proposals.json
+```
+
+It proposes hashed `reported_supplier`, `reported_distributor`, and `reported_estate` claims where their reviewed fields are present, plus `reported_distributor` and `reported_operates` relations when the relevant entities are explicitly supplied. Before writing any proposal event, Arche verifies that the exact reviewed field Evidence and review ID already exist for that action. Promotion into entity memory still requires the separate independent-evidence acceptance policy.
+
 `extraction_backend="regex"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
 
 ## Decisions you can hand to someone who does not trust you
@@ -544,13 +555,14 @@ arche case open document.pdf --store arche.duckdb
 arche case plan CASE_ID --enable-local-document
 arche case ingest CASE_ID ACTION_ID document.pdf --approved-by reviewer-1
 arche case evidence CASE_ID ACTION_ID reviewed-fields.json --review-id review-1
+arche case propose-tea CASE_ID ACTION_ID reviewed-fields.json --review-id review-1 --supplier-entity ent_supplier
 arche case registry-lookup CASE_ID ACTION_ID --connector registry.json --store tea-cases.duckdb
-arche case review CASE_ID --out case-review.json
+arche case review CASE_ID --out case-review.json --html case-review.html
 ```
 
 `arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.
 
-`arche resolve-documents` is the shortest document front door: it emits a masked proposed-field/candidate review artifact and opens an unresolved case when it cannot safely link a supplied candidate. Add `--store` to persist only the value-free Observation, case, and permitted actions to a caller-owned DuckDB file; it never writes a link, claim, or entity-memory record. `arche case registry-lookup` consumes one of those persisted `registry_lookup` actions only through a caller-owned configuration whose declared source and policy pin match the action; its response or failure is an Observation. `arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case ingest` requires a selected planned action and an explicit human/application approval before invoking the caller-owned Docling/OCR executor; parser output becomes an immutable Observation. `arche case evidence` accepts caller-owned reviewed field values transiently and records only value-free Evidence provenance, confidence, pages, and spans. `arche case review` writes case history, action-result Observations, and reviewed Evidence for a future review pane or another application. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
+`arche resolve-documents` is the shortest document front door: it emits a masked proposed-field/candidate review artifact and opens an unresolved case when it cannot safely link a supplied candidate. Add `--store` to persist only the value-free Observation, case, and permitted actions to a caller-owned DuckDB file; it never writes a link, claim, or entity-memory record. `arche case registry-lookup` consumes one of those persisted `registry_lookup` actions only through a caller-owned configuration whose declared source and policy pin match the action; its response or failure is an Observation. `arche case propose-tea` makes explicit, review-pending mappings from reviewed tea fields to opaque existing entities and cannot promote them. `arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case ingest` requires a selected planned action and an explicit human/application approval before invoking the caller-owned Docling/OCR executor; parser output becomes an immutable Observation. `arche case evidence` accepts caller-owned reviewed field values transiently and records only value-free Evidence provenance, confidence, pages, and spans. `arche case review --html` renders the same value-free case history, action-result Observations, and reviewed Evidence as a local inspection pane. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
 
 What is unusual is where the defaults were tested first. Jaro-Winkler, the string comparator underneath most record linkage, pays a bonus for a shared prefix, because it was tuned on US Census surnames where clerical typos land at the end of a word. *Diallo* and *Jallow* are one Fula family name split by a colonial spelling border, and they share no prefix at all. That assumption fails identically on Arabic transliteration, on Cantonese romanisation, and on any register where one name has three spellings.
 

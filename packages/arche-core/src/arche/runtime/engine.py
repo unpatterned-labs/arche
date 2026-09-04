@@ -26,6 +26,7 @@ from arche.runtime._document_proposals import (
     DocumentProposalSet,
     reviewed_document_evidence_from_observation,
     reviewed_document_proposals,
+    reviewed_document_proposals_from_evidence,
 )
 from arche.runtime._execution import PolicyExecution
 from arche.runtime._method_execution import ResolutionMethodExecution
@@ -270,6 +271,95 @@ class ArcheEngine:
         """
         if not review_id:
             raise ValueError("reviewed document evidence needs a review_id")
+        case, action, observation = self._reviewed_document_action_inputs(case_id, action_id)
+        evidence = reviewed_document_evidence_from_observation(observation, extraction)
+        event = CaseEvent(
+            event_id=event_id or new_ledger_id("evt"),
+            case_id=case.case_id,
+            event_type="reviewed_document_evidence",
+            recorded_at=recorded_at,
+            references=(observation.observation_id, *(item.evidence_id for item in evidence)),
+            provenance={
+                "action_id": action.action_id,
+                "review_id": review_id,
+                "field_evidence": [
+                    {
+                        "evidence_id": item.evidence_id,
+                        **dict(item.provenance),
+                    }
+                    for item in evidence
+                ],
+            },
+        )
+        self.store.write_evidence(evidence)
+        self.store.write_case_events([event])
+        return evidence, event
+
+    def record_reviewed_document_field_proposals(
+        self,
+        case_id: str,
+        action_id: str,
+        extraction: Extraction,
+        *,
+        review_id: str,
+        recorded_at: datetime,
+        claim_specs: tuple[DocumentClaimSpec, ...] = (),
+        relation_specs: tuple[DocumentRelationSpec, ...] = (),
+        event_id: str | None = None,
+    ) -> DocumentProposalSet:
+        """Record proposal-only semantic mappings from previously reviewed fields.
+
+        The field Evidence must already have been recorded against the same
+        successful document action. This keeps a semantic proposal downstream
+        of review, while letting its caller retain reviewed values outside the
+        runtime store.
+        """
+        if not review_id:
+            raise ValueError("reviewed document proposals need a review_id")
+        case, _, observation = self._reviewed_document_action_inputs(case_id, action_id)
+        evidence = reviewed_document_evidence_from_observation(observation, extraction)
+        if any(self.store.get_evidence(item.evidence_id) != item for item in evidence):
+            raise ValueError(
+                "reviewed field Evidence is missing or differs; record the exact reviewed "
+                "fields before proposing claims or relationships"
+            )
+        if not any(
+            event.event_type == "reviewed_document_evidence"
+            and event.provenance.get("action_id") == action_id
+            and event.provenance.get("review_id") == review_id
+            for event in self.store.list_case_events(case.case_id)
+        ):
+            raise ValueError(
+                "reviewed field Evidence needs a matching review_id before proposing claims "
+                "or relationships"
+            )
+        proposals = reviewed_document_proposals_from_evidence(
+            case_id=case.case_id,
+            observation=observation,
+            extraction=extraction,
+            evidence=evidence,
+            recorded_at=recorded_at,
+            review_id=review_id,
+            claim_specs=claim_specs,
+            relation_specs=relation_specs,
+            event_id=event_id,
+        )
+        target_entity_ids = (
+            {proposal.entity_id for proposal in proposals.claims}
+            | {proposal.subject_entity_id for proposal in proposals.relations}
+            | {proposal.object_entity_id for proposal in proposals.relations}
+        )
+        for entity_id in target_entity_ids:
+            if self.store.get_entity(entity_id) is None:
+                raise ValueError(
+                    f"proposal entity {entity_id!r} does not exist; persist the "
+                    "stable entity before recording a document proposal"
+                )
+        self.store.write_case_events([proposals.event])
+        return proposals
+
+    def _reviewed_document_action_inputs(self, case_id: str, action_id: str):
+        """Return the persisted case action and successful document Observation."""
         case = self.store.get_resolution_case(case_id)
         if case is None:
             raise ValueError(f"resolution case {case_id!r} does not exist")
@@ -295,28 +385,7 @@ class ArcheEngine:
             raise ValueError(
                 f"document action {action_id!r} has no successful ingestion Observation"
             )
-        evidence = reviewed_document_evidence_from_observation(observation, extraction)
-        event = CaseEvent(
-            event_id=event_id or new_ledger_id("evt"),
-            case_id=case.case_id,
-            event_type="reviewed_document_evidence",
-            recorded_at=recorded_at,
-            references=(observation.observation_id, *(item.evidence_id for item in evidence)),
-            provenance={
-                "action_id": action.action_id,
-                "review_id": review_id,
-                "field_evidence": [
-                    {
-                        "evidence_id": item.evidence_id,
-                        **dict(item.provenance),
-                    }
-                    for item in evidence
-                ],
-            },
-        )
-        self.store.write_evidence(evidence)
-        self.store.write_case_events([event])
-        return evidence, event
+        return case, action, observation
 
     def execute_evidence_action(
         self,

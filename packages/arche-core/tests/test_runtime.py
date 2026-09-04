@@ -406,6 +406,97 @@ def test_reviewed_tea_document_fields_propose_but_do_not_assert_entity_memory(ru
     assert memory.relations[0].relation_id == "rel_tea_supplier_estate"
 
 
+def test_reuses_reviewed_action_evidence_for_tea_proposals(runtime):
+    """A semantic mapping must reuse the exact reviewed document Evidence."""
+    timestamp = datetime(2026, 9, 3, 9, 0, tzinfo=UTC)
+    supplier = Entity("ent_reuse_supplier", "organisation", "legal_entity", timestamp)
+    distributor = Entity("ent_reuse_distributor", "organisation", "legal_entity", timestamp)
+    estate = Entity("ent_reuse_estate", "place", "estate", timestamp)
+    case = ResolutionCase(
+        "case_reuse_tea_evidence", "Which tea organisations are reported?", (), (), timestamp
+    )
+    action = EvidenceAction(
+        "act_reuse_tea_document",
+        case.case_id,
+        "document_extract",
+        "local-document",
+        timestamp,
+        "tea-document-v1",
+    )
+    observation = Observation(
+        "obs_reuse_tea_document",
+        action.source_id,
+        "document:fixture",
+        timestamp,
+        "sha256:document",
+        provenance={"kind": "document_ingestion", "outcome": "success"},
+    )
+    extraction = Extraction(
+        data=None,
+        fields={
+            "supplier_name": FieldEvidence("Kijani Tea Exporters", span=(0, 20)),
+            "distributor_name": FieldEvidence("Nairobi Tea Trading", span=(32, 52)),
+            "estate_name": FieldEvidence("Kericho Estate", span=(67, 81)),
+        },
+    )
+    runtime.store.write_entities([supplier, distributor, estate])
+    runtime.store.write_resolution_cases([case])
+    runtime.store.write_evidence_actions([action])
+    runtime.ingest_action_observation(action.action_id, observation)
+    evidence, _ = runtime.record_reviewed_document_evidence(
+        case.case_id,
+        action.action_id,
+        extraction,
+        review_id="review:reuse:tea",
+        recorded_at=timestamp,
+    )
+
+    proposals = runtime.record_reviewed_document_field_proposals(
+        case.case_id,
+        action.action_id,
+        extraction,
+        review_id="review:reuse:tea",
+        recorded_at=timestamp,
+        claim_specs=(DocumentClaimSpec(supplier.entity_id, "reported_supplier", "supplier_name"),),
+        relation_specs=(
+            DocumentRelationSpec(
+                supplier.entity_id,
+                "reported_distributor",
+                distributor.entity_id,
+                ("supplier_name", "distributor_name"),
+            ),
+            DocumentRelationSpec(
+                supplier.entity_id,
+                "reported_operates",
+                estate.entity_id,
+                ("supplier_name", "estate_name"),
+            ),
+        ),
+    )
+
+    assert proposals.evidence == evidence
+    assert [item.predicate for item in proposals.relations] == [
+        "reported_distributor",
+        "reported_operates",
+    ]
+    assert runtime.get_entity_memory(supplier.entity_id).claims == ()
+    changed = Extraction(
+        data=None,
+        fields={
+            **extraction.fields,
+            "supplier_name": FieldEvidence("Different Supplier", span=(0, 20)),
+        },
+    )
+    with pytest.raises(ValueError, match="missing or differs"):
+        runtime.record_reviewed_document_field_proposals(
+            case.case_id,
+            action.action_id,
+            changed,
+            review_id="review:reuse:tea",
+            recorded_at=timestamp,
+        )
+
+
 def test_acceptance_routes_a_conflicting_document_claim_to_review(runtime):
     """An unaccepted value cannot create a ledger contradiction by itself."""
     timestamp = datetime(2026, 9, 2, 9, 0, tzinfo=UTC)

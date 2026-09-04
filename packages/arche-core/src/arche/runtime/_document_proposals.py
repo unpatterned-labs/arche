@@ -107,6 +107,7 @@ def reviewed_document_evidence_from_observation(
             "field": field_name,
             "extraction_source": field.source,
             "confidence": field.confidence,
+            "value_ref": _value_ref(field.value),
         }
         if field.span is not None:
             provenance["span"] = list(field.span)
@@ -154,6 +155,39 @@ def reviewed_document_proposals(
         source_id=source_id,
         recorded_at=recorded_at,
     )
+    return reviewed_document_proposals_from_evidence(
+        case_id=case_id,
+        observation=observation,
+        extraction=extraction,
+        evidence=evidence,
+        recorded_at=recorded_at,
+        review_id=review_id,
+        claim_specs=claim_specs,
+        relation_specs=relation_specs,
+        event_id=event_id,
+    )
+
+
+def reviewed_document_proposals_from_evidence(
+    *,
+    case_id: str,
+    observation: Observation,
+    extraction: Extraction[Any],
+    evidence: tuple[Evidence, ...],
+    recorded_at: datetime,
+    review_id: str,
+    claim_specs: tuple[DocumentClaimSpec, ...] = (),
+    relation_specs: tuple[DocumentRelationSpec, ...] = (),
+    event_id: str | None = None,
+) -> DocumentProposalSet:
+    """Build proposals from reviewed Evidence already tied to an Observation.
+
+    This is the durable-action counterpart of :func:`reviewed_document_proposals`.
+    A caller can reuse evidence from a permitted document action rather than
+    creating another document Observation or duplicating the field Evidence.
+    """
+    if not review_id:
+        raise ValueError("review_id is required before document fields can propose claims")
     evidence_by_field = {
         field_name: item
         for item in evidence
