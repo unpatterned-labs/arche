@@ -1,6 +1,6 @@
 # arche-core
 
-**Know what's real.**
+**Are these the same thing? arche decides, shows the evidence, and keeps the receipt.**
 
 An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.
 

@@ -1,6 +1,6 @@
 # Introducing arche
 
-*Know what's real. An open engine for messy, multilingual data. Detect, resolve, protect, attest.*
+*Are these the same thing? An open engine for messy, multilingual data. Detect, resolve, protect, attest.*
 
 !!! warning "Status: pre-beta (v0.3.0a1)"
 

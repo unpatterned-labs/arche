@@ -1,61 +1,91 @@
-# Resolve two lists
+# Quickstart
 
-This example links a facility registry to a survey. Each list has a stable row identifier, a name, and coordinates. The same approach works for other entity packs when their relevant fields are present.
+Two questions, in the order people meet them: *are these two the same?* and *which of these are the same as those?* Both run offline in seconds. Everything below is the installed package; no notebook, no repository checkout, no model download.
+
+```bash
+pip install "arche-core[ledger]"
+```
+
+## Are these two the same?
 
 ```python
-from arche.resolve import reconcile
+import arche
 
-registry = [
-    {
-        "id": "registry-1",
-        "name": "Karfi Health Post",
-        "lat": "11.62",
-        "lon": "8.49",
-    },
-]
+text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
+text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
 
-survey = [
-    {
-        "id": "survey-7",
-        "name": "Karfi Health Post",
-        "lat": "11.62",
-        "lon": "8.49",
-    },
-]
-
-result = reconcile(registry, survey, entity="place")
-
-for edge in result["matches"]:
-    print(edge["a_id"], edge["b_id"], edge["decision"])
+receipt = arche.compare(text1, text2, entity="person", jurisdiction="NG", backend="regex")
+print(receipt.identity, receipt.action, "|", receipt.explanation)
+print(receipt.factors)
 ```
-
-The returned candidate is labelled `match` when it clears both the score threshold and the distinctive-evidence gate.
 
 ```text
-registry-1 survey-7 match
+same_entity hold | national ID match
+{'national_id': 1.0, 'email': 0.0}
 ```
 
-## Read the result before acting on it
+`identity` says the two texts describe one person: a shared national id clears the distinctiveness gate on its own. `action` says do not merge yet: the email disagrees and nothing else corroborates. Both are true, and keeping them apart is what lets a system link the records while routing the conflict to someone.
 
-`result["matches"]` contains only candidates that reached the review floor. Each edge contains:
+`receipt.decision_id` is a content hash over the rounded evidence and the pinned versions. Run the same call again and you get the same id, byte for byte.
 
-- `a_id` and `b_id`, the source record identifiers
-- `decision`, either `match` or `review`
-- `score`, a model score and not a calibrated probability
-- `evidence`, the per-field comparison results
-- `decision_id`, a reproducible identifier for the evidence and run settings
+## Keep it
 
-Pairs below the review floor are not returned. Their absence is not proof that the records describe different entities.
+Add `store=` and the same call also records the receipt, with the two inputs it was made from, in a DuckDB file you own.
 
-Use `review` as a queue for an accountable human or business process. Do not promote it to a match solely because its score is high.
+```python
+ledger = arche.attach("duckdb:///:memory:")            # or duckdb:///people.duckdb
+person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
 
-All five standalone scripts, including Pipeline, document resolution, direct person comparison, address parsing, and spatial roles, are in [How arche works](../reference/how-arche-works.md). They run from an installed package and do not require the notebooks.
+text3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 Elim Street"
+r12 = arche.compare(text1, text2, **person)
+r13 = arche.compare(text1, text3, **person)
+r23 = arche.compare(text2, text3, **person)
 
-## Next steps
+(entity,) = ledger.entities()
+print(len(entity.records), "records |", entity.shared, "|", entity.conflicts)
+print(ledger.explain(r12.decision_id)["refuting"])
+print(ledger.replay(r12.decision_id).reproduced)
+```
 
-- [Prepare your data](../guides/prepare-data.md)
+```text
+3 records | {'national_id': '12345678901'} | {'email': ['adesola@example.com', 'adesola@gmail.com']}
+['email']
+True
+```
+
+Three pairwise verdicts became one entity, with what the records agree on and what they do not. [Keep and replay a decision](../guides/keep-and-replay.md) covers the rest of the ledger: looking a decision up by id, what `replay` reports when something has changed, the open cases, and adding evidence.
+
+## Which of these are the same as those?
+
+The batch question. Each list needs a stable `id`; the pack says which other fields are read.
+
+```python
+suppliers = [
+    {"id": "s1", "name": "Kijani Tea Exporters Ltd", "city": "Nairobi"},
+    {"id": "s2", "name": "Zenith Bank Plc", "city": "Lagos"},
+]
+registry = [
+    {"id": "r1", "name": "Kijani Tea Exporters Limited", "city": "Nairobi"},
+    {"id": "r2", "name": "Kijani Coffee", "city": "Nairobi"},
+]
+
+result = arche.reconcile(suppliers, registry, entity="organisation", store=ledger)
+for edge in result["matches"]:
+    print(edge["a_id"], edge["b_id"], edge["decision"], edge["score"])
+```
+
+```text
+s1 r1 match 1.0
+s1 r2 review 0.5798
+```
+
+`s1↔r1` matched: *Ltd* and *Limited* are the same company. `s1↔r2` is `review`: they share the rare word *Kijani* and nothing else. Pairs below the review floor are not returned, and their absence is not a claim that they differ.
+
+`review` is a queue for a person or a process, not a score to round up. With a ledger attached, `ledger.cases()` lists these pairs and what would settle each one.
+
+## Next
+
+- [Keep and replay a decision](../guides/keep-and-replay.md)
+- [Resolve documents](../guides/documents-to-decision.md)
 - [Interpret a decision](../guides/interpret-decisions.md)
-- [See places and products in action](../guides/places-and-products.md)
-- [Reconcile health facilities](../guides/facility-reconciliation.md)
-- [Resolve people across documents](../guides/documents-to-decision.md)
-- [Read the record-resolution reference](../reference/record-resolution.md)
+- [Record resolution API](../reference/record-resolution.md)

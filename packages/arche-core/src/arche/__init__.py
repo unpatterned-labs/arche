@@ -158,10 +158,11 @@ def list_places(
 # Each entry maps an exposed name to (submodule, attribute_name).
 
 _LAZY: dict[str, tuple[str, str]] = {
-    # --- vNext runtime -----------------------------------------------------
-    # The runtime module itself remains dependency-light; DuckDB loads only
-    # when attach() is called, preserving the base package cold-import budget.
-    "attach": (".runtime", "attach"),
+    # --- ledger -------------------------------------------------------------
+    # DuckDB loads only when attach() is called, so `import arche` stays within
+    # its cold-import budget.
+    "attach": (".ledger", "attach"),
+    "Ledger": (".ledger", "Ledger"),
     # --- audit (v0.1 in-memory; v0.2 SQLite lives at arche.graph.audit) ----
     "AuditEntry": (".audit", "AuditEntry"),
     "AuditLog": (".audit", "AuditLog"),

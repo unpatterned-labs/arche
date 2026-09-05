@@ -44,7 +44,6 @@ import time
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
 from typing import Any
@@ -187,15 +186,6 @@ class DocumentReport:
     #: Proposed identity fields and their source spans. Values remain in the
     #: caller-owned report and are masked by :meth:`review` by default.
     review_fields: dict[str, dict[str, dict[str, object]]] = field(default_factory=dict)
-    #: A document with no safe candidate link gets an immutable vNext case.
-    #: These are intentionally not persisted until the caller chooses a store.
-    cases: dict[str, object] = field(default_factory=dict)
-    #: Parsed caller-supplied documents enter the vNext model as immutable
-    #: Observations. Field values remain outside this value-free contract.
-    observations: dict[str, object] = field(default_factory=dict)
-    #: Case ID -> already policy-permitted next evidence actions.  Nothing in
-    #: this report executes an action or writes a claim.
-    permitted_actions: dict[str, tuple[object, ...]] = field(default_factory=dict)
 
     # ---------------------------------------------------------------- views
 
@@ -321,17 +311,16 @@ class DocumentReport:
             indent=indent, default=str,
         )
 
-    def review(self, case_id: str | None = None, *, reveal: bool = False) -> dict[str, Any]:
-        """Return a masked, application-renderable review artifact.
+    def review(self, *, reveal: bool = False) -> dict[str, Any]:
+        """A masked, application-renderable review artifact.
 
-        This is the safe hand-off point for a review pane or an agent: it shows
-        proposed document fields, candidate outcomes, uncertainty, and already
-        permitted evidence actions. It does not assert claims, execute tools,
-        or treat an extractor value as accepted evidence.
+        The safe hand-off point for a review pane or an agent: the fields each
+        document proposed (with their spans), every verdict, and the documents
+        nothing linked. Values are masked unless ``reveal=True``. It asserts no
+        claim and treats no extracted value as accepted evidence; pass a
+        ``store=`` to :func:`resolve_documents` if the decisions should outlive
+        this report.
         """
-        if case_id is not None and case_id not in self.cases:
-            raise ValueError(f"resolution case {case_id!r} is not in this report")
-        chosen_case_ids = (case_id,) if case_id else tuple(self.cases)
         show = (lambda value: value) if reveal else _mask
         fields = [
             {
@@ -345,120 +334,24 @@ class DocumentReport:
             for document, document_fields in sorted(self.review_fields.items())
             for field_name, field in sorted(document_fields.items())
         ]
-        cases = []
-        for identifier in chosen_case_ids:
-            case = self.cases[identifier]
-            actions = self.permitted_actions.get(identifier, ())
-            cases.append(
-                {
-                    "case_id": case.case_id,
-                    "status": case.status,
-                    "question": case.question,
-                    "candidate_entity_ids": list(case.candidate_entity_ids),
-                    "uncertainty": dict(case.uncertainty),
-                    "evidence_gaps": [
-                        {
-                            "field": gap.field,
-                            "reason": gap.reason,
-                            "priority": gap.priority,
-                            "permitted_action_types": list(gap.permitted_action_types),
-                        }
-                        for gap in case.evidence_gaps
-                    ],
-                    "permitted_actions": [
-                        {
-                            "action_id": action.action_id,
-                            "action_type": action.action_type,
-                            "source_id": action.source_id,
-                            "max_cost": action.max_cost,
-                        }
-                        for action in actions
-                    ],
-                }
-            )
         return {
             "entity": self.entity,
             "proposed_fields": fields,
-            "candidate_decisions": list(self.decisions),
-            "cases": cases,
+            "decisions": list(self.decisions),
+            "unlinked": self.unlinked(),
             "errors": dict(self.errors),
         }
 
-    def persist(self, engine: object, *, case_id: str | None = None) -> dict[str, list[str]]:
-        """Persist unresolved front-door cases into a caller-owned runtime.
-
-        Only the value-free document Observations, ResolutionCases, and
-        already-permitted EvidenceActions are written. Parsed text, proposed
-        field values, candidate records, resolver proposals, Evidence, and
-        entity-memory changes stay outside this operation. Repeating the call
-        is idempotent when the target store already holds the same records.
-        """
-        store = getattr(engine, "store", None)
-        required_methods = (
-            "get_observation",
-            "get_resolution_case",
-            "get_evidence_action",
-            "write_observations",
-            "write_resolution_cases",
-            "write_evidence_actions",
-        )
-        if store is None or not all(
-            callable(getattr(store, method, None)) for method in required_methods
-        ):
-            raise TypeError("persist needs an ArcheEngine with a compatible runtime store")
-        if case_id is not None and case_id not in self.cases:
-            raise ValueError(f"resolution case {case_id!r} is not in this report")
-
-        selected_case_ids = (case_id,) if case_id else tuple(self.cases)
-        selected_cases = [self.cases[identifier] for identifier in selected_case_ids]
-        observations_by_id = {
-            observation.observation_id: observation for observation in self.observations.values()
+    def unlinked(self) -> list[str]:
+        """Documents no verdict tied to anything: the open questions."""
+        linked = {
+            document
+            for row in self.decisions
+            if row["identity"] == "same_entity"
+            for document in (row["a"], row["b"])
         }
-        selected_observation_ids = tuple(
-            dict.fromkeys(
-                observation_id
-                for case in selected_cases
-                for observation_id in case.observation_ids
-            )
-        )
-        missing = [
-            observation_id for observation_id in selected_observation_ids
-            if observation_id not in observations_by_id
-        ]
-        if missing:
-            raise ValueError(f"report is missing case Observations: {missing}")
-        selected_observations = [
-            observations_by_id[identifier] for identifier in selected_observation_ids
-        ]
-        selected_actions = [
-            action
-            for identifier in selected_case_ids
-            for action in self.permitted_actions.get(identifier, ())
-        ]
+        return [document for document in self.records if document not in linked]
 
-        _write_if_absent(
-            selected_observations,
-            store.get_observation,
-            store.write_observations,
-            "Observation",
-        )
-        _write_if_absent(
-            selected_cases,
-            store.get_resolution_case,
-            store.write_resolution_cases,
-            "ResolutionCase",
-        )
-        _write_if_absent(
-            selected_actions,
-            store.get_evidence_action,
-            store.write_evidence_actions,
-            "EvidenceAction",
-        )
-        return {
-            "case_ids": list(selected_case_ids),
-            "observation_ids": list(selected_observation_ids),
-            "action_ids": [action.action_id for action in selected_actions],
-        }
 
     def save_json(self, path: str | os.PathLike, reveal: bool = False) -> Path:
         out = Path(path)
@@ -628,104 +521,6 @@ def _decision_row(a: str, b: str, decision: Any, *, candidate: bool = False) -> 
     }
 
 
-def _open_document_case(
-    report: DocumentReport,
-    *,
-    document: str,
-    record: Mapping[str, Any],
-    candidate_entity_ids: tuple[str, ...],
-    decision_ids: tuple[str, ...],
-) -> None:
-    """Open a value-free vNext case when no candidate is safe to link.
-
-    The comparison remains a proposal until reviewed document fields become
-    Evidence through the runtime. This helper exposes exactly the next bounded
-    actions, but cannot execute either one.
-    """
-    from arche.runtime import (
-        EvidenceAction,
-        EvidenceGap,
-        Observation,
-        ResolutionCase,
-        ResolutionIntent,
-        new_evidence_action_id,
-        new_ledger_id,
-        new_resolution_case_id,
-    )
-
-    now = datetime.now(UTC)
-    provenance = report.provenance.get(document, {})
-    digest = provenance.get("artifact_sha256") or provenance.get("text_sha256")
-    if not isinstance(digest, str) or not digest:
-        return
-    observation = Observation(
-        observation_id=new_ledger_id("obs"),
-        source_id="caller_document",
-        source_record_id=document,
-        recorded_at=now,
-        content_hash=f"sha256:{digest}",
-        provenance={
-            "kind": "document_input",
-            "artifact_sha256": provenance.get("artifact_sha256"),
-            "text_sha256": provenance.get("text_sha256"),
-            "parser": provenance.get("parser"),
-            "parser_version": provenance.get("parser_version"),
-            "ocr": provenance.get("ocr"),
-        },
-    )
-    case_id = new_resolution_case_id()
-    needs_document_extraction = "registration_id" not in record
-    permitted_action_types = (
-        ("registry_lookup", "document_extract")
-        if needs_document_extraction
-        else ("registry_lookup",)
-    )
-    gap = EvidenceGap(
-        field="registration_id",
-        reason="document name evidence is not independently sufficient to link a legal entity",
-        candidate_entity_ids=candidate_entity_ids,
-        priority=1,
-        permitted_action_types=permitted_action_types,
-    )
-    case = ResolutionCase(
-        case_id=case_id,
-        question=f"Which {report.entity} does {document!r} identify?",
-        observation_ids=(observation.observation_id,),
-        candidate_entity_ids=candidate_entity_ids,
-        opened_at=now,
-        uncertainty={
-            "reason": "no_safe_candidate_link",
-            "candidate_decision_ids": list(decision_ids),
-        },
-        evidence_gaps=(gap,),
-        intent=ResolutionIntent(
-            entity_type=report.entity,
-            operation="find",
-            available_fields=tuple(sorted(str(field) for field in record)),
-            policy_pin="document-resolution-v1",
-            candidate_pairs=len(candidate_entity_ids),
-        ),
-    )
-    actions = [
-        EvidenceAction(
-            new_evidence_action_id(), case_id, "registry_lookup", "external_registry", now,
-            "document-resolution-v1", max_cost=1.0,
-            provenance={"gap_field": gap.field},
-        )
-    ]
-    if needs_document_extraction:
-        actions.append(
-            EvidenceAction(
-                new_evidence_action_id(), case_id, "document_extract", "caller_document", now,
-                "document-resolution-v1", max_cost=0.1,
-                provenance={"gap_field": gap.field, "document": document},
-            )
-        )
-    report.observations[document] = observation
-    report.cases[case_id] = case
-    report.permitted_actions[case_id] = tuple(actions)
-
-
 def resolve_documents(
     source: str | os.PathLike | Iterable[str | os.PathLike],
     *,
@@ -736,6 +531,7 @@ def resolve_documents(
     quiet: bool = True,
     progress: ProgressHandler | bool | str | None = True,
     extraction_backend: str = "auto",
+    store: Any | None = None,
 ) -> DocumentReport:
     """Parse documents, propose fields, and resolve against records or each other.
 
@@ -778,10 +574,11 @@ def resolve_documents(
     comparisons are bounded by ``max_candidate_pairs``; provide a narrowed
     candidate set rather than relying on an accidental all-pairs run.
 
-    Candidate outcomes are proposals, not entity-memory mutations. When no
-    candidate is safe to link, :meth:`DocumentReport.review` exposes a vNext
-    ``ResolutionCase`` plus the already-permitted evidence actions. The caller
-    reviews fields before they can become Evidence in a durable runtime.
+    Pass ``store=`` (a :class:`arche.ledger.Ledger` from :func:`arche.attach`)
+    and every verdict is recorded with the record it was made from, so
+    ``ledger.entities()`` shows which documents describe one thing and
+    ``ledger.replay(decision_id)`` can make any verdict again later. Without a
+    store the report is the only artifact.
 
     A document that cannot be parsed is recorded in ``report.errors`` and
     skipped, never raised — one unreadable scan in a folder of twenty should not
@@ -830,28 +627,19 @@ def resolve_documents(
             rows: list[dict[str, Any]] = []
             document_input = report.records[document] if entity != "person" else document_ref
             for candidate_id, candidate_input in candidate_inputs.items():
-                extraction = {"document": report.provenance.get(document, {})}
+                extraction = {"extraction": {"document": report.provenance.get(document, {})}}
                 decision = resolve.compare(
-                    document_input,
-                    candidate_input,
-                    entity=entity,
-                    extra_pins={"extraction": extraction} if extraction else None,
+                    document_input, candidate_input, entity=entity, extra_pins=extraction,
                 )
                 row = _decision_row(document, candidate_id, decision, candidate=True)
                 report.decisions.append(row)
                 rows.append(row)
-            if not any(row["identity"] == "same_entity" for row in rows):
-                _open_document_case(
-                    report,
-                    document=document,
-                    record=report.records[document],
-                    candidate_entity_ids=tuple(candidate_inputs),
-                    decision_ids=tuple(
-                        str(row["decision_id"])
-                        for row in rows
-                        if isinstance(row.get("decision_id"), str)
-                    ),
-                )
+                if store is not None:
+                    store.record_compare(
+                        decision, document_input, candidate_input,
+                        call={"entity": entity, "extra_pins": extraction},
+                        source="document", caller_ids=(document, candidate_id),
+                    )
     else:
         for a, b in combinations(sorted(refs), 2):
             # The extraction that produced these records goes INSIDE the decision
@@ -866,33 +654,18 @@ def resolve_documents(
                 for side, doc in (("a", a), ("b", b))
                 if report.provenance.get(doc)
             }
-            decision = resolve.compare(
-                (refs[a] if entity == "person" else report.records[a]),
-                (refs[b] if entity == "person" else report.records[b]),
-                entity=entity,
-                extra_pins={"extraction": extraction} if extraction else None,
-            )
+            extraction = {"extraction": extraction} if extraction else None
+            side_a = refs[a] if entity == "person" else report.records[a]
+            side_b = refs[b] if entity == "person" else report.records[b]
+            decision = resolve.compare(side_a, side_b, entity=entity, extra_pins=extraction)
             report.decisions.append(_decision_row(a, b, decision))
-        linked_documents = {
-            document
-            for row in report.decisions
-            if row["identity"] == "same_entity"
-            for document in (row["a"], row["b"])
-        }
-        for document, record in report.records.items():
-            if document not in linked_documents:
-                related_decisions = tuple(
-                    str(row["decision_id"])
-                    for row in report.decisions
-                    if document in (row["a"], row["b"])
-                    and isinstance(row.get("decision_id"), str)
-                )
-                _open_document_case(
-                    report,
-                    document=document,
-                    record=record,
-                    candidate_entity_ids=(),
-                    decision_ids=related_decisions,
+            if store is not None:
+                call = {"entity": entity}
+                if extraction:
+                    call["extra_pins"] = extraction
+                store.record_compare(
+                    decision, side_a, side_b, call=call,
+                    source="document", caller_ids=(a, b),
                 )
     run.timing.resolve_s = time.monotonic() - _t
     report.timing = run.finish()

@@ -46,11 +46,9 @@ What comes back is per-pair: `a_id`, `b_id`, `score`, `decision`, `distinctive_m
 
 Three limits worth knowing before you build on this.
 
-**There is no dedupe entry point.** `compare_records(records, records)` self-links, and the result contains self-pairs (`x1 ~ x1`) and each real pair twice (`x1 ~ x2` and `x2 ~ x1`). Filter both yourself: drop `a_id == b_id`, then keep one ordering. arche resolves *between* lists; deduplicating *within* one is not a first-class operation yet.
+**There is no dedupe tool.** `compare_records(records, records)` self-links, and the result contains self-pairs (`x1 ~ x1`) and each real pair twice. Filter both yourself: drop `a_id == b_id`, then keep one ordering. The library's `dedupe()` does this; the tool does not yet.
 
-**There is no clustering.** Results are pairwise edges. If A matches B and B matches C, nothing here tells you A, B and C are one entity — transitive closure over `reconcile` output does not exist.
-
-**There is nowhere to put a `review` outcome.** `arche.review` in the library reads a pack, applies adjudicated outcomes and verifies them, and none of it is exposed as a tool. An agent can produce a review queue and cannot work one.
+**Nothing is remembered between calls.** Results are pairwise edges, and the server keeps no state. If A matches B and B matches C, nothing *here* tells you A, B and C are one entity, and a `review` an agent produces has nowhere to go. The library's [ledger](keep-and-replay.md) does both — links decisions into entities, lists open cases, takes new evidence — and exposing it through this server is the next planned change. Until then, an agent that needs memory calls the library.
 
 **Scores are batch-dependent.** `entity=` routes through `reconcile`, which self-calibrates a token-frequency table over the two lists being linked. The same pair can score differently in a different batch, because how ordinary a shared name is depends on the company it keeps. The `pins` record which table was used, so two results with different `tf` pins were never expected to agree.
 

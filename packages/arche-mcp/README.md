@@ -1,6 +1,6 @@
 # arche-mcp
 
-An MCP server for [arche](https://github.com/unpatterned-labs/arche). Gives an agent ten tools: work out which law governs a document, find out what this installation can and cannot detect, redact personal data to stable tokens with the statute section that required it, and reconcile two record lists.
+**Are these the same thing?** An MCP server for [arche](https://github.com/unpatterned-labs/arche), so an agent can ask that and get evidence back. Ten tools: work out which law governs a document, find out what this installation can and cannot detect, redact personal data to stable tokens with the statute section that required it, and reconcile two record lists.
 
 ```sh
 uvx arche-mcp
@@ -42,7 +42,7 @@ The first two are not optional if you want to trust the fourth. `infer_jurisdict
 
 **Nothing touches the filesystem.** An earlier version had a tool that read two caller-supplied paths and wrote a report to a third. MCP has no consent model for a filesystem write. Use the `arche compare` CLI, where a person sees the command before it runs.
 
-**Nothing is remembered.** Every handler is a pure function — no session, no document handle, no store. The hashed token does the correlating instead: the same input value produces the same token across calls, so an agent can join an entity across documents without this server holding anything.
+**Nothing is remembered — here.** Every handler is a pure function: no session, no document handle, no store. For the protection tools that is the point; a redactor that keeps documents is a liability. For resolution it is a limit: `compare_records` returns pairwise edges and forgets them, so nothing tells an agent that A, B and C are one entity, or that a pair was already decided yesterday. The arche library now has a [ledger](https://unpatterned-labs.github.io/arche/guides/keep-and-replay/) that does exactly that — records every verdict with its inputs, links them into entities, replays any decision by id, takes new evidence — and exposing it through this server is the next planned change. Until then, an agent that needs memory calls the library; the hashed token from `guarded_scan` still lets it correlate a person across documents without this server holding anything.
 
 ## See it work, without an agent
 
@@ -122,7 +122,11 @@ A ceiling, not a default: a per-call argument may narrow it and cannot widen it.
 
 ## Not yet
 
-HTTP and SSE transport, and authentication. It speaks stdio and expects to run on the machine holding the data.
+**The ledger.** `arche.attach("duckdb:///…")` in the library records decisions, builds entities from them and replays them; none of it is a tool here yet. The intended shape is opt-in: an `ARCHE_LEDGER` environment variable naming a local DuckDB file, after which `compare_records` records and four read tools (`decision`, `replay`, `cases`, `observe`) appear. Unset, the server stays stateless as it is today.
+
+**Dedupe and find.** The library's `dedupe()` and `find()` have no tool; `compare_records(records, records)` self-links and returns self-pairs and mirrors you must filter yourself.
+
+**Transport.** HTTP and SSE, and authentication. It speaks stdio and expects to run on the machine holding the data.
 
 ## Licence
 

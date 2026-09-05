@@ -13,6 +13,7 @@ primitives. Examples 01-05 run with the base install
 | 04 | [`04_sd_jwt_credential.py`](04_sd_jwt_credential.py) | SD-JWT-VC selective disclosure (EUDI Wallet / MOSIP Inji format). Holder controls which claims to disclose to each verifier. |
 | 05 | [`05_audit_log.py`](05_audit_log.py) | SQLite audit log per PRD §8.2 with markdown compliance reports and JWS-signed regulator export bundles. |
 | 06 | [`06_doc_pipeline.py`](06_doc_pipeline.py) | docling-backed PDF/DOCX ingest → Pipeline → policy → signed export. Requires `pip install arche-core[doc]`. |
+| — | [`quick_text_resolution.py`](quick_text_resolution.py) | Three texts, one person, five lines: `compare` with `store=`, then `ledger.entities()`, `explain` and `replay`. Offline, no model download. Walked through in [`notebooks/23_three_texts_one_person.ipynb`](notebooks/23_three_texts_one_person.ipynb). |
 
 Run any of them:
 

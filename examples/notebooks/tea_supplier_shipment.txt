@@ -1,5 +1,0 @@
-Supplier: Kijani Tea Exporters Ltd
-Distributor: Nairobi Tea Trading Ltd
-Estate: Kericho Highlands Estate
-Registration ID: C.12345
-Country: Kenya
