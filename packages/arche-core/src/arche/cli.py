@@ -701,6 +701,28 @@ def _cmd_case_registry_lookup(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_case_progress(args: argparse.Namespace) -> int:
+    """Emit the next safe, value-free control-plane step for one case."""
+    engine = _case_engine(args.store)
+    try:
+        progress = engine.get_case_progress(args.case_id)
+    except ValueError as error:
+        raise SystemExit(f"arche case progress: {error}") from error
+    _write_case_output(
+        {
+            "schema": "arche.case_progress.v1",
+            "case_id": args.case_id,
+            "progress": _case_value(progress),
+            "note": (
+                "This is a read-only next-step assessment. It does not execute an action, "
+                "review evidence, run a resolver, or release a decision."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
 def _cmd_case_review(args: argparse.Namespace) -> int:
     """Export a value-free case artifact for a UI or human review workflow."""
     engine = _case_engine(args.store)
@@ -709,6 +731,7 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
         raise SystemExit(f"arche case review: unknown case {args.case_id!r}")
     actions = engine.store.list_evidence_actions(case.case_id)
     history = engine.get_case_history(case.case_id)
+    progress = engine.get_case_progress(case.case_id)
     action_observations = tuple(
         {
             "action_id": action.action_id,
@@ -738,7 +761,8 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
         "action_observations": _case_value(action_observations),
         "reviewed_evidence": _case_value(reviewed_evidence),
         "history": _case_value(history),
-        "review_status": "awaiting_evidence" if not history else "review_case_history",
+        "progress": _case_value(progress),
+        "review_status": progress.state,
         "note": (
             "This artifact contains identifiers, hashes, and provenance only. A client can "
             "render it as a review pane; it cannot apply a decision by itself."
@@ -755,6 +779,42 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
             )
         pane_path.write_text(case_review_pane(payload), encoding="utf-8")
         print(f"wrote {pane_path}")
+    return 0
+
+
+def _cmd_case_export_solid(args: argparse.Namespace) -> int:
+    """Export one recorded case receipt as a value-free SOLID JSON-LD assertion."""
+    from arche.export import solid_resolution_assertion
+
+    engine = _case_engine(args.store)
+    case = engine.store.get_resolution_case(args.case_id)
+    if case is None:
+        raise SystemExit(f"arche case export-solid: unknown case {args.case_id!r}")
+    receipt = engine.store.get_decision(args.decision_id)
+    if receipt is None:
+        raise SystemExit(f"arche case export-solid: unknown receipt {args.decision_id!r}")
+    if not any(
+        event.event_type == "resolver_decision" and receipt.decision_id in event.references
+        for event in engine.get_case_history(case.case_id)
+    ):
+        raise SystemExit(
+            "arche case export-solid: receipt was not recorded for this case; "
+            "refusing a cross-case export"
+        )
+    for evidence_id in receipt.evidence_ids:
+        if engine.store.get_evidence(evidence_id) is None:
+            raise SystemExit(
+                f"arche case export-solid: receipt references missing Evidence {evidence_id!r}"
+            )
+    payload = solid_resolution_assertion(
+        case,
+        receipt,
+        pod_base_url=args.pod_base_url,
+        exported_at=datetime.now(UTC),
+        consent_record_iri=args.consent_record_iri,
+        capability_iri=args.capability_iri,
+    )
+    _write_case_output(payload, args.out)
     return 0
 
 
@@ -1197,6 +1257,14 @@ def main(argv: list[str] | None = None) -> int:
     case_registry_lookup.add_argument("--out", default=None, help="write JSON instead of stdout")
     case_registry_lookup.set_defaults(func=_cmd_case_registry_lookup)
 
+    case_progress = case_sub.add_parser(
+        "progress", help="show the next safe, value-free step for a persisted case"
+    )
+    case_progress.add_argument("case_id", help="case identifier to inspect")
+    case_progress.add_argument("--store", default="arche.duckdb", help="local DuckDB runtime store")
+    case_progress.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_progress.set_defaults(func=_cmd_case_progress)
+
     case_review = case_sub.add_parser(
         "review", help="export a value-free case artifact for a review client"
     )
@@ -1207,6 +1275,30 @@ def main(argv: list[str] | None = None) -> int:
         "--html", default=None, help="optional self-contained local review-pane HTML destination"
     )
     case_review.set_defaults(func=_cmd_case_review)
+
+    case_export_solid = case_sub.add_parser(
+        "export-solid", help="export one recorded receipt as a value-free SOLID JSON-LD assertion"
+    )
+    case_export_solid.add_argument("case_id", help="case that recorded the decision receipt")
+    case_export_solid.add_argument("decision_id", help="recorded vNext decision receipt identifier")
+    case_export_solid.add_argument(
+        "--store", default="arche.duckdb", help="local DuckDB runtime store"
+    )
+    case_export_solid.add_argument(
+        "--pod-base-url", required=True, help="private HTTPS SOLID Pod container URL"
+    )
+    case_export_solid.add_argument(
+        "--consent-record-iri",
+        default=None,
+        help="optional HTTPS IRI for caller-managed consent metadata",
+    )
+    case_export_solid.add_argument(
+        "--capability-iri",
+        default=None,
+        help="optional HTTPS IRI for caller-managed access capability",
+    )
+    case_export_solid.add_argument("--out", required=True, help="JSON-LD destination")
+    case_export_solid.set_defaults(func=_cmd_case_export_solid)
 
     cmp_p = sub.add_parser(
         "compare",
@@ -1251,9 +1343,7 @@ def main(argv: list[str] | None = None) -> int:
         "resolve-documents",
         help="extract document fields, compare explicit candidates, and open cases",
     )
-    documents_p.add_argument(
-        "source", help="document path, directory, or glob owned by the caller"
-    )
+    documents_p.add_argument("source", help="document path, directory, or glob owned by the caller")
     documents_p.add_argument(
         "--candidates",
         default=None,

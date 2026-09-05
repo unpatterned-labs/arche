@@ -272,6 +272,14 @@ This contract is the foundation for later `ResolutionCase` work: external tool o
 
 `AgentPlanAdvice` is the narrow agentic boundary. A caller-owned planner may interpret the case and recommend only action or method IDs already selected by a persisted deterministic `EvidencePlan`; `record_agent_plan_advice()` rejects invented tools, methods, or budgets. It records stable reason codes, uncertainty targets, and a SHA-256 reference to caller-managed free-form reasoning, but it cannot execute a connector or resolver, approve a method, or mutate entity memory.
 
+### Show the next safe case step
+
+`engine.get_case_progress(case_id)` is a read-only controller view over immutable case history. `arche case progress CASE_ID --store arche.duckdb` exposes the same value-free status to a CLI, notebook, review pane, or agent.
+
+It reports `state`, `next_step`, `reason`, planned/completed action IDs, unresolved gap labels, and receipt/policy IDs. A document action with an Observation is `awaiting_evidence_review`; a recorded receipt is `awaiting_policy`; and a release is `released_for_execution`, never automatically executed. Simulated Pod consent remains `needs_independent_evidence`, because consent is workflow permission rather than identity evidence.
+
+The controller does not assess raw document values, execute tools, turn an Observation into Evidence, approve a resolver, or change entity memory. An optional future LLM controller must consume this same bounded state and surface its free-form reasoning outside the canonical store as a caller-managed hash reference.
+
 ### Gate optional Splink and domain methods on evaluated configurations
 
 Set a non-core `ResolutionMethod.benchmark_id` and provide an exact passing `MethodBenchmarkQualification` to `plan_case()`. The qualification pins its method/resolver/configuration, benchmark and dataset identities, evaluator version, and hash-addressed result; it does not make an accuracy claim in runtime state. Without it, the method is ineligible. A changed settings pin or benchmark requires a new qualification before the planner can recommend the runner.
@@ -542,6 +550,8 @@ The engine is general. The organisation frequency table is built from company re
 
 ### CLI discovery and releases
 
+For an offline example of a case explaining why another source is needed, run `uv run --no-sync python examples/two_pod_review.py`; add `--consent` to simulate explicit approval by both owners and record the response as an Observation. See [the two-Pod test guide and agentic roadmap](POD_SIMULATION.md) for the metadata budget, negative tests, current autonomy limits and customer MVP gates.
+
 `arche` is intended to be usable without memorising a hidden command tree:
 
 ```text
@@ -558,9 +568,14 @@ arche case evidence CASE_ID ACTION_ID reviewed-fields.json --review-id review-1
 arche case propose-tea CASE_ID ACTION_ID reviewed-fields.json --review-id review-1 --supplier-entity ent_supplier
 arche case registry-lookup CASE_ID ACTION_ID --connector registry.json --store tea-cases.duckdb
 arche case review CASE_ID --out case-review.json --html case-review.html
+arche case export-solid CASE_ID DECISION_ID --store tea-cases.duckdb --pod-base-url https://pod.example/private/arche --out assertion.jsonld
 ```
 
 `arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.
+
+`arche case export-solid` is a local JSON-LD projection for a caller-managed SOLID Pod, not a Pod client or a federated matcher. It accepts only a receipt recorded in the selected case and emits a case-bound, revisable `ResolutionAssertion`: salted local aliases for the case, receipt, and Evidence references; the recorded conclusion and recommended action; pins; and optional caller-owned consent/capability IRIs. It omits values, document content, entity IDs, raw scores, arbitrary provenance, and `owl:sameAs`. The aliases use a fresh in-memory salt for each CLI export, so they are not a cross-Pod linkage key. Persisting to a Pod, authenticating a caller, issuing verifiable credentials, or executing privacy-preserving joins remains caller-owned and deliberately out of scope for this command.
+
+For an application that owns Pod authentication, `arche.export.SolidPodClient` accepts an injected `SolidPodTransport`; there is no default network transport, OAuth client, or credential store. A `SolidPublicationApproval` is an expiring, policy-pinned record for one case receipt and contains only caller-managed opaque consent/capability/approver references. Call `approve_solid_publication(engine, approval)` before the transport, then `record_solid_publication(engine, approval, result, recorded_at=...)` afterward. The stored history contains hashes and HTTP status only; the Pod URL, authorization material, JSON-LD body, response body, and actual consent/capability documents remain caller-managed. Publication is not evidence acquisition and cannot change a decision, claim, or entity.
 
 `arche resolve-documents` is the shortest document front door: it emits a masked proposed-field/candidate review artifact and opens an unresolved case when it cannot safely link a supplied candidate. Add `--store` to persist only the value-free Observation, case, and permitted actions to a caller-owned DuckDB file; it never writes a link, claim, or entity-memory record. `arche case registry-lookup` consumes one of those persisted `registry_lookup` actions only through a caller-owned configuration whose declared source and policy pin match the action; its response or failure is an Observation. `arche case propose-tea` makes explicit, review-pending mappings from reviewed tea fields to opaque existing entities and cannot promote them. `arche case open` records only a document hash, filename hash, and a permitted extraction or OCR action. `arche case plan` records deterministic, budgeted advice and requires an explicit declaration that the caller-owned local document capability is available; it does not parse a document, invoke a resolver, or mutate entity state. `arche case ingest` requires a selected planned action and an explicit human/application approval before invoking the caller-owned Docling/OCR executor; parser output becomes an immutable Observation. `arche case evidence` accepts caller-owned reviewed field values transiently and records only value-free Evidence provenance, confidence, pages, and spans. `arche case review --html` renders the same value-free case history, action-result Observations, and reviewed Evidence as a local inspection pane. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
 

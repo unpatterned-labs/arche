@@ -140,9 +140,7 @@ def test_cli_resolve_documents_writes_a_masked_case_review(tmp_path):
     )
     candidates = tmp_path / "suppliers.json"
     candidates.write_text(
-        json.dumps(
-            [{"entity_id": "ent_kericho", "name": "Kericho Highlands Processing"}]
-        ),
+        json.dumps([{"entity_id": "ent_kericho", "name": "Kericho Highlands Processing"}]),
         encoding="utf-8",
     )
     output = tmp_path / "tea-review.json"
@@ -338,6 +336,7 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
     reviewed_fields = tmp_path / "reviewed-fields.json"
     evidence = tmp_path / "evidence.json"
     proposals = tmp_path / "tea-proposals.json"
+    progress = tmp_path / "progress.json"
     review = tmp_path / "review.json"
     pane = tmp_path / "review.html"
 
@@ -406,6 +405,25 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
     assert "private supplier" not in ingested.read_text(encoding="utf-8")
     ingested_payload = json.loads(ingested.read_text(encoding="utf-8"))
     assert ingested_payload["observation"]["provenance"]["document"]["parser"] == "test-docling"
+
+    assert (
+        main(
+            [
+                "case",
+                "progress",
+                case_id,
+                "--store",
+                str(store),
+                "--out",
+                str(progress),
+            ]
+        )
+        == 0
+    )
+    progress_payload = json.loads(progress.read_text(encoding="utf-8"))
+    assert progress_payload["progress"]["state"] == "awaiting_evidence_review"
+    assert progress_payload["progress"]["next_step"] == "review_document_observation"
+    assert "private supplier" not in progress.read_text(encoding="utf-8")
 
     reviewed_fields.write_text(
         json.dumps(
@@ -504,6 +522,7 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
         "reviewed_document_evidence",
     }
     assert review_payload["reviewed_evidence"][0]["provenance"]["field"] == "supplier_name"
+    assert review_payload["progress"]["state"] == "needs_resolution_plan"
     pane_html = pane.read_text(encoding="utf-8")
     assert "Resolution case review" in pane_html
     assert "private supplier" not in pane_html

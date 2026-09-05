@@ -1,0 +1,395 @@
+{
+  "candidate_same_person_groups": [
+    [
+      "doc-05",
+      "doc-06",
+      "doc-08"
+    ]
+  ],
+  "decisions": [
+    {
+      "decision_id": "dec:sha256:7739e8c9afed86309c2d80a4e4c6b658132bd7d0d0c85ef1bb52d06fbbcdd003",
+      "factor_names": [
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-01",
+      "right": "doc-02",
+      "score": 0.0476
+    },
+    {
+      "decision_id": "dec:sha256:8edc19fee512a803d3324ce65588f2178f0633fd351badd72453ad2a4aaaa4ba",
+      "factor_names": [
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-01",
+      "right": "doc-03",
+      "score": 0.0476
+    },
+    {
+      "decision_id": "dec:sha256:9264be1b0a24ca49037beeb53538facf60506b5b4ffbe3af07c81c52721782bb",
+      "factor_names": [],
+      "identity": "review",
+      "left": "doc-01",
+      "right": "doc-04",
+      "score": 0.5
+    },
+    {
+      "decision_id": "dec:sha256:e0aa08f776997af7dfa04ee05e0db36fa834884ba7b0d88691a7a484c6be4080",
+      "factor_names": [
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-01",
+      "right": "doc-05",
+      "score": 0.0476
+    },
+    {
+      "decision_id": "dec:sha256:be746ade91981e237356bfe6fb965b523f6a081f90b80cada56ccf419cb5479c",
+      "factor_names": [
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-01",
+      "right": "doc-06",
+      "score": 0.0476
+    },
+    {
+      "decision_id": "dec:sha256:d440836950b55c4d23eabcf357855b74cd99656f44e25d01c6e8d6f6e8b13701",
+      "factor_names": [],
+      "identity": "review",
+      "left": "doc-01",
+      "right": "doc-07",
+      "score": 0.5
+    },
+    {
+      "decision_id": "dec:sha256:e0aa08f776997af7dfa04ee05e0db36fa834884ba7b0d88691a7a484c6be4080",
+      "factor_names": [
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-01",
+      "right": "doc-08",
+      "score": 0.0476
+    },
+    {
+      "decision_id": "dec:sha256:4fafac1c8e105a5aaf8fc8c25b8030798d017d60c50bd300336084927419f833",
+      "factor_names": [
+        "address",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-02",
+      "right": "doc-03",
+      "score": 0.0376
+    },
+    {
+      "decision_id": "dec:sha256:cb5ab06634b0c20fe1910cb80d1c23e193a57c438643c67a0eecb890e78813a8",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "different",
+      "left": "doc-02",
+      "right": "doc-04",
+      "score": 0.3157
+    },
+    {
+      "decision_id": "dec:sha256:4039d06e7d86a117513aad3e097c9eb2ad3b98991221ef6fd01332654c493180",
+      "factor_names": [
+        "address",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-02",
+      "right": "doc-05",
+      "score": 0.0587
+    },
+    {
+      "decision_id": "dec:sha256:641ce32223a6ab897c6baa2c268359ae3a01b45ce4bf0ff44b5f5f468bf9973c",
+      "factor_names": [
+        "address",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-02",
+      "right": "doc-06",
+      "score": 0.0587
+    },
+    {
+      "decision_id": "dec:sha256:99d126f4e00c2bde0acc0bf11d5f27307b91bed6e73b529f935dfa49b53a98ad",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "review",
+      "left": "doc-02",
+      "right": "doc-07",
+      "score": 0.9444
+    },
+    {
+      "decision_id": "dec:sha256:4039d06e7d86a117513aad3e097c9eb2ad3b98991221ef6fd01332654c493180",
+      "factor_names": [
+        "address",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-02",
+      "right": "doc-08",
+      "score": 0.0587
+    },
+    {
+      "decision_id": "dec:sha256:57179d73b627cded0d76579a79f352f9e863ac85a1c6cf6e779ed3c0cc15eb45",
+      "factor_names": [
+        "address",
+        "email"
+      ],
+      "identity": "different",
+      "left": "doc-03",
+      "right": "doc-04",
+      "score": 0.0138
+    },
+    {
+      "decision_id": "dec:sha256:356e5beea2bbe79ae809913d5f9c3e2ed34ebbbdb2709a139dff0b729f50c5bc",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-03",
+      "right": "doc-05",
+      "score": 0.001
+    },
+    {
+      "decision_id": "dec:sha256:a462f3791ca1fbe908f1d24d343fc41b6e1bdcd3630f4f247f4f34277403b0e4",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-03",
+      "right": "doc-06",
+      "score": 0.001
+    },
+    {
+      "decision_id": "dec:sha256:0687d568f4bbc076f5c163dc0845370cbd29c8f3dffa4e259d3b59bcc7366058",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "review",
+      "left": "doc-03",
+      "right": "doc-07",
+      "score": 0.4789
+    },
+    {
+      "decision_id": "dec:sha256:356e5beea2bbe79ae809913d5f9c3e2ed34ebbbdb2709a139dff0b729f50c5bc",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "different",
+      "left": "doc-03",
+      "right": "doc-08",
+      "score": 0.001
+    },
+    {
+      "decision_id": "dec:sha256:89731b72057b20b0d9c85a5b3a38a89f1e31fb8b6c0e71bc777cf997dbd788bd",
+      "factor_names": [
+        "address",
+        "email"
+      ],
+      "identity": "different",
+      "left": "doc-04",
+      "right": "doc-05",
+      "score": 0.023
+    },
+    {
+      "decision_id": "dec:sha256:eee9b9034700dcdc69c1cf550847d40bd4e6c72f6934e59d65e472e648cf37b8",
+      "factor_names": [
+        "address",
+        "email"
+      ],
+      "identity": "different",
+      "left": "doc-04",
+      "right": "doc-06",
+      "score": 0.023
+    },
+    {
+      "decision_id": "dec:sha256:15fc62f5fbd1a4b1cc0de7b046c75b69690d6e1c9f452bc7a0889a796214fc68",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "different",
+      "left": "doc-04",
+      "right": "doc-07",
+      "score": 0.3157
+    },
+    {
+      "decision_id": "dec:sha256:89731b72057b20b0d9c85a5b3a38a89f1e31fb8b6c0e71bc777cf997dbd788bd",
+      "factor_names": [
+        "address",
+        "email"
+      ],
+      "identity": "different",
+      "left": "doc-04",
+      "right": "doc-08",
+      "score": 0.023
+    },
+    {
+      "decision_id": "dec:sha256:3902f24c9ec3487bcd9b2580cf021bfbbda6f3a5b13e91a285747c9f377a5014",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "same_entity",
+      "left": "doc-05",
+      "right": "doc-06",
+      "score": 0.9999
+    },
+    {
+      "decision_id": "dec:sha256:0b64746691ced25021d31bcdc9eb02598265cb872a6917ee30c912560f934c2f",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "review",
+      "left": "doc-05",
+      "right": "doc-07",
+      "score": 0.5284
+    },
+    {
+      "decision_id": "dec:sha256:9ebbd600a4afb43fff66960fe610d7a0ef44e1dfa6e46a0b05707be5a2a63d04",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "same_entity",
+      "left": "doc-05",
+      "right": "doc-08",
+      "score": 1.0
+    },
+    {
+      "decision_id": "dec:sha256:76394652dc0521d7f18de8d0f9e3e907d448f0a18213a0a2e154dbc29e8585a4",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "review",
+      "left": "doc-06",
+      "right": "doc-07",
+      "score": 0.5284
+    },
+    {
+      "decision_id": "dec:sha256:9c7f890c128d580ba2125c52a68968a6e06ba52dc312dce685f53e7dd8289214",
+      "factor_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "identity": "same_entity",
+      "left": "doc-06",
+      "right": "doc-08",
+      "score": 0.9999
+    },
+    {
+      "decision_id": "dec:sha256:ff5fa1b073b865800c151f9ce7879f09aa8ac21e1cec053b52162cb0003c8af8",
+      "factor_names": [
+        "address"
+      ],
+      "identity": "review",
+      "left": "doc-07",
+      "right": "doc-08",
+      "score": 0.5284
+    }
+  ],
+  "documents": [
+    {
+      "artifact_sha256": "sha256:91cdd05d3a4e4c8ff4e5bcc1219686ffb0f256c2b4896458eb1d771e9a460de5",
+      "document_id": "doc-01",
+      "field_names": [
+        "phone"
+      ],
+      "jurisdiction": "US",
+      "pages": 2
+    },
+    {
+      "artifact_sha256": "sha256:ca5d572ce603400477ff21415c9342ee556fc5111744897589ff3cf61dd92b25",
+      "document_id": "doc-02",
+      "field_names": [
+        "address",
+        "phone"
+      ],
+      "jurisdiction": "GB",
+      "pages": 1
+    },
+    {
+      "artifact_sha256": "sha256:d2ae84ec53b43d4bbe36f092902d2200bf1be93aee2a61b21b44dccbbb73c352",
+      "document_id": "doc-03",
+      "field_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "jurisdiction": "GB",
+      "pages": 3
+    },
+    {
+      "artifact_sha256": "sha256:9baaae928910d9cc8a04131c08d1000d5ae5f8e64cf67cc0a10a753f9180518d",
+      "document_id": "doc-04",
+      "field_names": [
+        "address",
+        "email",
+        "national_id"
+      ],
+      "jurisdiction": null,
+      "pages": 1
+    },
+    {
+      "artifact_sha256": "sha256:83510651dd834eb1d4ffa7ffa8c672bd22ce5c31bc987d8d3bcf801842d00eb5",
+      "document_id": "doc-05",
+      "field_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "jurisdiction": null,
+      "pages": 2
+    },
+    {
+      "artifact_sha256": "sha256:5b8573aaed19068e1bf51def0575b6c23067c6df94d6b91984d35134f951e6b4",
+      "document_id": "doc-06",
+      "field_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "jurisdiction": null,
+      "pages": 2
+    },
+    {
+      "artifact_sha256": "sha256:307f36a8cd24068f05600be38a5ca535bfc0fb31a846ed24fd08f30fe24320ca",
+      "document_id": "doc-07",
+      "field_names": [
+        "address"
+      ],
+      "jurisdiction": "GB",
+      "pages": 1
+    },
+    {
+      "artifact_sha256": "sha256:2b50540c2544e7e9c2bd76a979d21ebd83d11759c9aaf6dded111a72c5c44ba7",
+      "document_id": "doc-08",
+      "field_names": [
+        "address",
+        "email",
+        "phone"
+      ],
+      "jurisdiction": null,
+      "pages": 2
+    }
+  ],
+  "review_case_count": 7,
+  "schema": "arche.document_person_resolution.v1",
+  "skipped": {}
+}

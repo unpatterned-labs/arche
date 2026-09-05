@@ -19,6 +19,7 @@ from ._benchmarks import (
     read_benchmark_result_bundle,
     write_benchmark_result_bundle,
 )
+from ._case_progress import CaseProgress, assess_case_progress
 from ._cases import what_would_resolve
 from ._connectors import (
     EvidenceConnector,
@@ -108,6 +109,7 @@ __all__ = [
     "BENCHMARK_RESULT_BUNDLE_SCHEMA",
     "BenchmarkResultBundle",
     "CaseEvent",
+    "CaseProgress",
     "CaseAssessment",
     "Claim",
     "ClaimProposal",
@@ -163,6 +165,7 @@ __all__ = [
     "benchmark_result_bundle_from_record",
     "adapt_coreference_receipt",
     "adapt_reconcile_result",
+    "assess_case_progress",
     "adapt_reviewed_resolution_artifact",
     "reviewed_resolution_evidence",
     "reviewed_reconcile_evidence",

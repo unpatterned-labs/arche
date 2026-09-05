@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 from arche.runtime._adapters import adapt_reconcile_result, reviewed_reconcile_evidence
 from arche.runtime._agent_planning import AgentPlanAdvice
+from arche.runtime._case_progress import CaseProgress, assess_case_progress
 from arche.runtime._document_execution import DocumentIngestionRequest
 from arche.runtime._document_observations import (
     DocumentIngestion,
@@ -125,6 +126,24 @@ class ArcheEngine:
                 "requesting its history"
             )
         return self.store.list_case_events(case_id)
+
+    def get_case_progress(self, case_id: str) -> CaseProgress:
+        """Return a read-only statement of the next safe step for one case.
+
+        Progress is derived from persisted case history. It cannot execute a
+        connector or resolver, transform an Observation into Evidence, or
+        release a decision.
+
+        Parameters:
+            case_id: The opaque ResolutionCase identifier to inspect.
+
+        Returns:
+            A deterministic control-plane status with the next permitted step.
+
+        Raises:
+            ValueError: If the case does not exist in this runtime.
+        """
+        return assess_case_progress(self.store, case_id)
 
     def ingest_action_observation(
         self,
@@ -1500,7 +1519,10 @@ class ArcheEngine:
             observation = self.store.get_observation(evidence.observation_id)
             if observation is None:
                 raise ValueError(f"evidence {evidence_id!r} lacks its required Observation")
-            if observation.provenance.get("kind") == "resolver_execution":
+            if observation.provenance.get("kind") in {
+                "resolver_execution",
+                "simulated_pod_consent",
+            }:
                 continue
             source_ids.add(observation.source_id)
         return tuple(sorted(source_ids))
@@ -1553,7 +1575,8 @@ class ArcheEngine:
             observation = self.store.get_observation(evidence.observation_id)
             if observation is None:
                 raise ValueError(f"evidence {evidence_id!r} lacks its required Observation")
-            source_ids.add(observation.source_id)
+            if observation.provenance.get("kind") != "simulated_pod_consent":
+                source_ids.add(observation.source_id)
         return evidence_ids, tuple(sorted(source_ids))
 
     def _record_proposal_review(
