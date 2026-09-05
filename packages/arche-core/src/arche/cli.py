@@ -35,7 +35,9 @@ _COMMANDS = (
     ("explain", "supporting, refuting and missing fields of a recorded decision"),
     ("list", "list supported CLI commands"),
     ("observe", "add evidence about a record and decide its open pairs again"),
+    ("path", "why two records are one entity: the chain of decisions between them"),
     ("replay", "make a recorded decision again and report what moved"),
+    ("resolve", "a new record against the entities a ledger holds: found, review, conflict..."),
     ("resolve-documents", "extract document fields, compare explicit candidates, and open cases"),
     ("review", "validate, apply, share, or verify review-pack outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
@@ -307,7 +309,9 @@ def _cmd_entities(args: argparse.Namespace) -> int:
     views = ledger.entities(args.type)
     payload = {"entities": [
         {
-            "entity_id": v.entity_id, "entity_type": v.entity_type, "held": v.held,
+            "entity_id": v.entity_id, "entity_type": v.entity_type,
+            "held_together_by": v.held_together_by,
+            "weak_links": list(v.weak_links), "bridges": list(v.bridges),
             "records": [r.caller_id or r.record_id for r in v.records],
             "shared": _shown(v.shared, args.reveal),
             "conflicts": _shown(v.conflicts, args.reveal),
@@ -317,7 +321,11 @@ def _cmd_entities(args: argparse.Namespace) -> int:
     ]}
     lines = [f"{len(views)} entit{'y' if len(views) == 1 else 'ies'}"]
     for v in views:
-        lines.append(f"{v.entity_id}  {v.entity_type}  {len(v.records)} records  {v.held}")
+        lines.append(f"{v.entity_id}  {v.entity_type}  {len(v.records)} records  "
+                     f"{v.held_together_by}")
+        if v.weak_links:
+            weak = [ledger.record(r).caller_id or r[:16] for r in v.weak_links]
+            lines.append(f"  weak links {weak}")
         lines.append(f"  records   {[r.caller_id or r.record_id[:16] for r in v.records]}")
         lines.append(f"  shared    {_shown(v.shared, args.reveal)}")
         if v.conflicts:
@@ -350,6 +358,83 @@ def _cmd_cases(args: argparse.Namespace) -> int:
                      f"({c.decision.score:.4f})  {c.decision.explanation}")
         lines.append(f"  would resolve: {c.would_resolve}")
         lines.append(f"  observe: arche observe {c.record_b.record_id} --evidence '{{...}}'")
+    return _emit(payload, lines, args)
+
+
+def _cmd_path(args: argparse.Namespace) -> int:
+    """`arche path A B`: the chain of decisions that makes two records one entity."""
+    ledger = _ledger(args.store)
+    try:
+        chain = ledger.path(args.record_a, args.record_b)
+    except KeyError as exc:
+        raise SystemExit(f"arche path: {exc.args[0]}") from exc
+    payload = {"record_a": args.record_a, "record_b": args.record_b,
+               "same_entity": bool(chain),
+               "decisions": [_decision_payload(d, args.reveal) for d in chain]}
+    if not chain:
+        lines = ["not one entity: no chain of linking decisions joins these records"]
+    else:
+        lines = [f"one entity, {len(chain)} decision{'s' if len(chain) != 1 else ''} apart"]
+        for d in chain:
+            a, b = ledger.record(d.record_a), ledger.record(d.record_b)
+            lines.append(f"  {a.caller_id or a.record_id[:16]} -> {b.caller_id or b.record_id[:16]}"
+                         f"  {d.identity} {d.action} ({d.score:.4f})  {d.explanation}"
+                         f"  [{d.decision_id[:22]}...]")
+    return _emit(payload, lines, args)
+
+
+def _cmd_resolve(args: argparse.Namespace) -> int:
+    """`arche resolve --text "..."` or `--record '{...}'`: a new record against the entities."""
+    if bool(args.text) == bool(args.record):
+        raise SystemExit("arche resolve: pass exactly one of --text or --record")
+    if args.record:
+        raw = args.record
+        try:
+            record = json.loads(Path(raw[1:]).read_text(encoding="utf-8")) if raw.startswith("@") \
+                else json.loads(raw)
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(
+                f"arche resolve: --record must be a JSON object or @file: {exc}") from exc
+        if not isinstance(record, dict):
+            raise SystemExit("arche resolve: --record must be a JSON object of field: value")
+    else:
+        record = args.text
+    ledger = _ledger(args.store)
+    try:
+        res = ledger.resolve(record, entity_type=args.type, jurisdiction=args.jurisdiction,
+                             backend=args.backend)
+    except ValueError as exc:
+        raise SystemExit(f"arche resolve: {exc}") from exc
+    payload = {
+        "verdict": res.verdict, "note": res.note, "record_id": res.record_id,
+        "entity_id": res.entity.entity_id if res.entity else None,
+        "entity": ({"records": len(res.entity.records),
+                    "held_together_by": res.entity.held_together_by,
+                    "shared_fields": sorted(res.entity.shared),
+                    "conflicting_fields": sorted(res.entity.conflicts)}
+                   if res.entity else None),
+        "candidates": res.candidates,
+        "entity_evidence": res.entity_evidence,
+        "conflicts": _shown(res.conflicts, args.reveal),
+        "would_resolve": res.would_resolve,
+        "decisions": [_decision_payload(d, args.reveal) for d in res.decisions],
+    }
+    lines = [f"{res.verdict}  - {res.note}"]
+    if res.entity:
+        lines.append(f"  entity     {res.entity.entity_id}  {len(res.entity.records)} records  "
+                     f"{res.entity.held_together_by}")
+    for entity_id, c in res.candidates.items():
+        lines.append(f"  candidate  {entity_id}  best {c['identity']} ({c['score']:.4f})  "
+                     f"matched {c['matched']}/{c['members']} members")
+    if res.entity_evidence:
+        whole = res.entity_evidence
+        lines.append(f"  as a whole {whole['identity']} {whole['action']}  - "
+                     f"{whole['explanation']}")
+    if res.conflicts:
+        lines.append(f"  conflicts  {_shown(res.conflicts, args.reveal)}")
+    if res.would_resolve:
+        lines.append(f"  would resolve {res.would_resolve}")
+    lines.append(f"  record     {res.record_id}")
     return _emit(payload, lines, args)
 
 
@@ -898,6 +983,21 @@ def main(argv: list[str] | None = None) -> int:
     cas_p = sub.add_parser("cases", help="pairs still at review, and what would settle each")
     ledger_args(cas_p, reveal=False, entity_type=True)
     cas_p.set_defaults(func=_cmd_cases)
+
+    path_p = sub.add_parser("path", help="why two records are one entity: the chain of decisions")
+    path_p.add_argument("record_a")
+    path_p.add_argument("record_b")
+    ledger_args(path_p)
+    path_p.set_defaults(func=_cmd_path)
+
+    res_p = sub.add_parser("resolve", help="a new record against the entities the ledger holds")
+    res_p.add_argument("--text", default=None, help="the record as a piece of text (person pack)")
+    res_p.add_argument("--record", default=None, help="the record as a JSON object, or @file.json")
+    res_p.add_argument("--type", default="person", help="entity pack (default person)")
+    res_p.add_argument("--jurisdiction", default="NG", help="with --text: priors (default NG)")
+    res_p.add_argument("--backend", default="regex", help="with --text: extractor (default regex)")
+    ledger_args(res_p)
+    res_p.set_defaults(func=_cmd_resolve)
 
     obs_p = sub.add_parser("observe", help="add evidence about a record; re-decide its open pairs")
     obs_p.add_argument("record_id", help="record id (from `arche cases` or `arche decision`)")

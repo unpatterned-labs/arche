@@ -130,14 +130,14 @@ def measure(name: str, list_a: list[dict], list_b: list[dict],
     for view in entities:
         clusters = Counter(truth[r.caller_id] for r in view.records)
         size[len(view.records)] += 1
-        held[view.held] += 1
+        held[view.held_together_by] += 1
         if len(clusters) > 1:
             records_in_cross += len(view.records)
             cross.append({
                 "entity_id": view.entity_id,
                 "records": len(view.records),
                 "clusters": len(clusters),
-                "held": view.held,
+                "held": view.held_together_by,
                 "linked_by": len(view.decision_ids),
                 "sample": [r.caller_id for r in view.records][:6],
             })

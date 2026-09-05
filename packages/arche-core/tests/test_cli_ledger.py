@@ -156,3 +156,49 @@ def test_list_advertises_the_ledger_commands(capsys):
     assert main(["list", "--json"]) == 0
     commands = {c["command"] for c in _json(capsys)["commands"]}
     assert {"decision", "explain", "replay", "entities", "cases", "observe"} <= commands
+
+
+def test_path_explains_a_transitive_link_from_the_shell(store, capsys):
+    t4 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, phone 08035557890"
+    ids = {}
+    for key, (a, b) in {"12": (T1, T2), "34": (T3, t4), "23": (T2, T3)}.items():
+        assert main(["compare", "--text", a, b, "--store", store, "--json", "-"]) == 0
+        ids[key] = _json(capsys)
+    first = ids["12"]["decision_id"]
+    assert main(["decision", first, "--store", store, "--json"]) == 0
+    rec_a = _json(capsys)["record_a"]
+    assert main(["decision", ids["34"]["decision_id"], "--store", store, "--json"]) == 0
+    rec_d = _json(capsys)["record_b"]
+
+    assert main(["path", rec_a, rec_d, "--store", store, "--json"]) == 0
+    chain = _json(capsys)
+    assert chain["same_entity"] is True
+    assert [d["decision_id"] for d in chain["decisions"]] == [
+        first, ids["23"]["decision_id"], ids["34"]["decision_id"]]
+
+    assert main(["entities", "--store", store, "--json"]) == 0
+    (entity,) = _json(capsys)["entities"]
+    assert entity["held_together_by"] == "transitive" and len(entity["weak_links"]) == 2
+
+    assert main(["path", rec_a, "rec:sha256:elsewhere", "--store", store]) == 0
+    assert "not one entity" in capsys.readouterr().out
+
+
+def test_resolve_from_the_shell(store, capsys):
+    a = "Mary Smith, NIN 12345678901, phone 08035557890, mary.smith@example.com"
+    b = "Mary Jones, NIN 12345678901, phone 08035557890, 4 Elim Street Enugu"
+    assert main(["compare", "--text", a, b, "--store", store]) == 0
+    capsys.readouterr()
+
+    assert main(["resolve", "--text", "M. Jones, NIN 12345678901", "--store", store, "--json"]) == 0
+    out = _json(capsys)
+    assert out["verdict"] == "found" and out["entity"]["records"] == 3
+
+    assert main(["resolve", "--record", '{"name": "Mary Smith", "national_id": "99999999999"}',
+                 "--store", store]) == 0
+    text = capsys.readouterr().out
+    assert text.startswith("conflict") and "national_id" in text
+    assert "99999999999" not in text, "masked unless --reveal"
+
+    with pytest.raises(SystemExit, match="exactly one"):
+        main(["resolve", "--store", store])

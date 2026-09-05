@@ -201,6 +201,8 @@ arche entities --store people.duckdb           # what the decisions linked; valu
 arche decision DECISION_ID --store people.duckdb
 arche explain  DECISION_ID --store people.duckdb
 arche replay   DECISION_ID --store people.duckdb
+arche path REC_A REC_B --store people.duckdb   # why two records are one entity: the chain of decisions
+arche resolve --text "M. Jones, NIN 12345678901" --store people.duckdb   # a new record against the entities
 arche cases    --store people.duckdb           # still at review, and what would settle each
 arche observe RECORD_ID --evidence '{"registration_id": "C.54321"}' --store people.duckdb
 ```

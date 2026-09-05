@@ -55,6 +55,7 @@ pip install "arche-core[ledger]"
 
 - [Quickstart](getting-started/quickstart.md) — the example above, then two lists.
 - [Keep and replay a decision](guides/keep-and-replay.md) — the ledger.
+- [Association analysis](guides/association-analysis.md) — Mary Smith became Mary Jones; why the first record and the last are one person.
 - [Resolve documents](guides/documents-to-decision.md) — five PDFs in, linked entities out.
 - [Interpret a decision](guides/interpret-decisions.md) — what `review` means and what to do with it.
 

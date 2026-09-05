@@ -134,7 +134,7 @@ def test_three_texts_become_one_entity_with_shared_and_conflicting_attributes(le
     # conflict is a disagreement to show, not a defect to average away.
     assert set(person.conflicts["full_name"]) == {"Adesola Okonkwo", "Adesola E. Okonkwo"}
     assert len(person.decision_ids) == 3
-    assert person.held == "direct"  # every pair was itself decided
+    assert person.held_together_by == "direct"  # every pair was itself decided
     kinds = [event.kind for event in ledger.events()]
     assert kinds.count("entity_created") == 1
     assert "record_linked" in kinds
@@ -151,7 +151,7 @@ def test_separate_entities_merge_when_a_later_decision_links_them(ledger):
 
     assert len(ledger.entities()) == 1
     assert len(ledger.entities()[0].records) == 4
-    assert ledger.entities()[0].held == "transitive"  # 1 and 4 were never compared
+    assert ledger.entities()[0].held_together_by == "transitive"  # 1 and 4 were never compared
     assert any(event.kind == "entities_merged" for event in ledger.events())
 
 
@@ -339,3 +339,155 @@ def test_resolve_documents_records_into_the_ledger(ledger, tmp_path):
     assert entity.shared == {"national_id": "12345678901"}
     replay = ledger.replay(report.decisions[0]["decision_id"])
     assert replay.reproduced is True, replay.changed
+
+
+# ── association analysis ─────────────────────────────────────────────────────
+
+
+def test_path_explains_why_two_never_compared_records_are_one_entity(ledger):
+    """Talburt's case: Mary Smith and Mary Jones were never compared, yet they
+    are one entity. The explanation is the chain of decisions through the
+    records that were."""
+    t4 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, phone 08035557890"
+    r12 = arche.compare(T1, T2, store=ledger, **PERSON)
+    r34 = arche.compare(T3, t4, store=ledger, **PERSON)
+    r23 = arche.compare(T2, T3, store=ledger, **PERSON)
+    first = ledger.decision(r12.decision_id).record_a
+    fourth = ledger.decision(r34.decision_id).record_b
+
+    chain = ledger.path(first, fourth)
+
+    assert [d.decision_id for d in chain] == [r12.decision_id, r23.decision_id, r34.decision_id]
+    assert all(d.linked for d in chain)
+    (entity,) = ledger.entities()
+    assert entity.held_together_by == "transitive"
+    # the middle two records hold the chain together; the two ends do not
+    second = ledger.decision(r12.decision_id).record_b
+    third = ledger.decision(r34.decision_id).record_a
+    assert set(entity.weak_links) == {second, third}
+    assert set(entity.bridges) == {r12.decision_id, r23.decision_id, r34.decision_id}
+
+
+def test_a_clique_has_no_weak_links_and_a_one_hop_path(ledger):
+    r12 = arche.compare(T1, T2, store=ledger, **PERSON)
+    arche.compare(T1, T3, store=ledger, **PERSON)
+    arche.compare(T2, T3, store=ledger, **PERSON)
+    (entity,) = ledger.entities()
+    assert entity.held_together_by == "direct"
+    assert entity.weak_links == () and entity.bridges == ()
+    d = ledger.decision(r12.decision_id)
+    assert [x.decision_id for x in ledger.path(d.record_a, d.record_b)] == [r12.decision_id]
+
+
+def test_path_is_empty_across_entities_and_review_is_never_an_edge(ledger):
+    result = arche.reconcile(SUPPLIERS, REGISTRY, entity="organisation", store=ledger)
+    review = next(m for m in result["matches"] if m["decision"] == "review")
+    d = ledger.decision(review["decision_id"])
+    assert ledger.path(d.record_a, d.record_b) == []
+    graph = ledger.graph()
+    assert not graph.has_edge(d.record_a, d.record_b)
+    identities = {data["identity"] for _, _, data in graph.edges(data=True)}
+    assert identities <= {"same_entity", "match"}
+
+
+def test_read_pulls_rows_from_a_table_or_a_file_in_the_same_duckdb(ledger, tmp_path):
+    ledger._db.execute("CREATE TABLE suppliers AS SELECT * FROM (VALUES "
+                       "('s1', 'Kijani Tea Exporters Ltd', 'Nairobi'), "
+                       "('s2', 'Zenith Bank Plc', 'Lagos')) AS t(id, name, city)")
+    rows = ledger.read("suppliers")
+    assert rows == SUPPLIERS
+    csv_path = tmp_path / "registry.csv"
+    csv_path.write_text("id,name,city\nr1,Kijani Tea Exporters Limited,Nairobi\n", encoding="utf-8")
+    assert ledger.read(str(csv_path).replace("\\", "/")) == [REGISTRY[0]]
+    assert ledger.read("SELECT id FROM suppliers ORDER BY id", limit=1) == [{"id": "s1"}]
+    with pytest.raises(ValueError, match="table name"):
+        ledger.read("DROP TABLE suppliers")
+
+    result = arche.reconcile(ledger.read("suppliers"), REGISTRY, entity="organisation",
+                             store=ledger)
+    assert any(m["decision"] == "match" for m in result["matches"])
+
+
+# ── transitive matching: a new record against the entities ───────────────────
+
+MARY = (
+    "Mary Smith, NIN 12345678901, 12 Awolowo Road Ikoyi, mary.smith@example.com",
+    "Mary Smith, NIN 12345678901, phone 08035557890, mary.smith@example.com",
+    "Mary Jones, NIN 12345678901, phone 08035557890, 4 Elim Street Enugu",
+    "Mary Jones, NIN 12345678901, mary.jones@example.com, 4 Elim Street Enugu",
+)
+
+
+@pytest.fixture
+def mary(ledger):
+    for a, b in zip(MARY, MARY[1:], strict=False):
+        arche.compare(a, b, store=ledger, **PERSON)
+    return ledger
+
+
+def test_resolve_joins_a_fifth_record_to_the_entity_its_members_match(mary):
+    before = mary.entities()[0].entity_id
+
+    res = mary.resolve("M. Jones, NIN 12345678901, phone 08035557890", entity_type="person")
+
+    assert res.verdict == "found"
+    assert res.entity.entity_id == before and len(res.entity.records) == 5
+    assert len(mary.entities()) == 1, "no copies of the candidates were stored"
+    assert res.candidates[before]["matched"] == 4
+    # the entity as a whole agrees with the newcomer on the id one member holds
+    # and the phone another holds: cluster-level evidence a single pair lacks
+    assert res.entity_evidence["identity"] == "same_entity"
+    assert set(res.entity_evidence["profile_fields"]) >= {"national_id", "phone"}
+    assert mary.record(res.record_id).text.startswith("M. Jones")
+    assert all(d.verb == "resolve" for d in res.decisions)
+
+
+def test_resolve_holds_a_record_that_contradicts_the_entitys_shared_identifier(mary):
+    res = mary.resolve(
+        {"full_name": "Mary Smith", "national_id": "99999999999",
+         "email": "mary.smith@example.com"},
+        entity_type="person",
+    )
+    assert res.verdict == "conflict"
+    assert res.conflicts == {"national_id": {"entity": "12345678901", "record": "99999999999"}}
+    assert mary.entity_of(res.record_id) is None
+    assert len(mary.entities()[0].records) == 4
+    assert any(e.kind == "link_withheld" for e in mary.events())
+
+
+def test_resolve_withholds_when_members_of_two_entities_match(mary):
+    arche.compare({"name": "Mary Smith", "email": "other@example.com", "phone": "08099990000"},
+                  {"name": "Mary Smith", "email": "other@example.com", "phone": "0809 999 0000"},
+                  entity="person", store=mary)
+    assert len(mary.entities()) == 2
+
+    res = mary.resolve({"name": "Mary Smith", "national_id": "12345678901",
+                        "email": "other@example.com"}, entity_type="person")
+
+    assert res.verdict == "ambiguous"
+    assert len(res.candidates) == 2
+    assert mary.entity_of(res.record_id) is None
+    assert len(mary.entities()) == 2, "the two entities were not merged on a newcomer's say-so"
+    # the pairwise decisions are still on record, exactly as the engine issued them
+    assert any(d.linked for d in res.decisions)
+
+
+def test_resolve_stores_a_stranger_without_linking(mary):
+    res = mary.resolve({"name": "Grace Adeyemi", "phone": "08011112222"}, entity_type="person")
+    assert res.verdict == "not_found"
+    assert mary.record(res.record_id).attributes["name"] == "Grace Adeyemi"
+    assert mary.entity_of(res.record_id) is None
+
+
+def test_resolve_on_an_empty_ledger_and_an_unknown_pack(ledger):
+    res = ledger.resolve({"name": "Grace Adeyemi"}, entity_type="person")
+    assert res.verdict == "not_found" and ledger.record(res.record_id)
+    with pytest.raises(ValueError, match="no entity pack"):
+        ledger.resolve({"name": "x"}, entity_type="spaceship")
+
+
+def test_resolved_decisions_replay_and_explain_like_any_other(mary):
+    res = mary.resolve("M. Jones, NIN 12345678901, phone 08035557890", entity_type="person")
+    best = res.decisions[0]
+    assert mary.replay(best.decision_id).reproduced is True
+    assert "national_id" in mary.explain(best.decision_id)["supporting"]

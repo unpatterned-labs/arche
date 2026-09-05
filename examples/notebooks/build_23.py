@@ -72,7 +72,7 @@ print("entity   ", entity.entity_id)
 print("records  ", len(entity.records))
 print("shared   ", entity.shared)
 print("conflicts", entity.conflicts)
-print("linked by", len(entity.decision_ids), "decisions |", entity.held)
+print("linked by", len(entity.decision_ids), "decisions |", entity.held_together_by)
 ''')
 
 md("""
@@ -82,7 +82,7 @@ Each `compare` looked at two texts. The ledger looked at the three receipts toge
 
 Nothing was averaged and nothing was overwritten. The two email addresses are both there, in `conflicts`; so are the two spellings of the name, because *Adesola Okonkwo* and *Adesola E. Okonkwo* are the same person and not the same string. The entity exists because the identity axis of all three receipts said the same thing. If a later decision had said `different` about one of them it would have been recorded too, and it would not have unlinked anything on its own — a contradiction is something to show a reviewer, not something to resolve by deleting a row.
 
-`entity.held` is `direct`: every one of the three pairs was itself decided. An entity held `transitive` — A matched B, B matched C, A and C never compared — is the classic way two different things become one, and the ledger says which kind it is.
+`entity.held_together_by` is `direct`, the same word `dedupe()` uses for its clusters: every one of the three pairs was itself decided. An entity held `transitive` — A matched B, B matched C, A and C never compared — is the classic way two different things become one, and the ledger says which kind it is.
 
 The `regex` extractor read the national id, the email and the name. It did not read the street, so `address` is absent from `shared` and `conflicts` alike, and `explain` lists it under `missing`.
 """)

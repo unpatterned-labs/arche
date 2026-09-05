@@ -353,3 +353,148 @@ class TestTheSchemasTeachTheModel:
         compare on a vocabulary the caller did not choose."""
         with pytest.raises(ValueError, match="entity= or comparators="):
             handlers.compare_records([{"id": "a"}], [{"id": "b"}])
+
+
+class TestTheLedgerTools:
+    """With ARCHE_LEDGER the server remembers. What comes back is still ids,
+    labels, field names and numbers -- the values stay in the operator's file."""
+
+    A = [{"id": "s1", "name": "Kijani Tea Exporters Ltd", "city": "Nairobi",
+          "registration_id": "C.12345"}]
+    B = [{"id": "r1", "name": "Kijani Tea Exporters Limited", "city": "Nairobi",
+          "registration_id": "C.12345"},
+         {"id": "r2", "name": "Kijani Coffee", "city": "Nairobi"}]
+
+    @pytest.fixture
+    def ledger(self):
+        pytest.importorskip("duckdb")
+        import arche
+        with arche.attach("duckdb:///:memory:") as book:
+            yield book
+
+    def test_compare_records_records_when_given_a_ledger(self, ledger):
+        out = handlers.compare_records(self.A, self.B, entity="organisation", ledger=ledger)
+        assert out["matches"], "fixture must surface edges"
+        assert handlers.ledger_entities(ledger)["count"] == 1
+        for edge in out["matches"]:
+            found = handlers.ledger_decision(ledger, edge["decision_id"])
+            assert found["identity"] == edge["decision"]
+
+    def test_nothing_raw_crosses_the_boundary(self, ledger):
+        handlers.compare_records(self.A, self.B, entity="organisation", ledger=ledger)
+        (case,) = handlers.ledger_cases(ledger)["cases"]
+        edge_id = case["decision_id"]
+        blob = json.dumps([
+            handlers.ledger_entities(ledger),
+            handlers.ledger_decision(ledger, edge_id),
+            handlers.ledger_explain(ledger, edge_id),
+            handlers.ledger_cases(ledger),
+            handlers.ledger_path(ledger, case["a"]["record_id"], case["b"]["record_id"]),
+        ])
+        for value in ("Kijani", "Nairobi", "C.12345"):
+            assert value not in blob, f"{value!r} leaked through a ledger tool"
+
+    def test_entities_report_field_names_and_how_they_are_held(self, ledger):
+        handlers.compare_records(self.A, self.B, entity="organisation", ledger=ledger)
+        (entity,) = handlers.ledger_entities(ledger)["entities"]
+        assert {r["label"] for r in entity["records"]} == {"s1", "r1"}
+        assert "registration_id" in entity["shared_fields"]
+        assert "name" in entity["conflicting_fields"]
+        assert entity["held_together_by"] == "direct" and entity["weak_links"] == []
+
+    def test_path_explains_a_transitive_link(self, ledger):
+        import arche
+        texts = ("Mary Smith, NIN 12345678901, mary.smith@example.com",
+                 "Mary Smith, NIN 12345678901, phone 08035557890, mary.smith@example.com",
+                 "Mary Jones, NIN 12345678901, phone 08035557890, 4 Elim Street Enugu",
+                 "Mary Jones, NIN 12345678901, mary.jones@example.com, 4 Elim Street Enugu")
+        person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+        r12 = arche.compare(texts[0], texts[1], **person)
+        arche.compare(texts[1], texts[2], **person)
+        r34 = arche.compare(texts[2], texts[3], **person)
+        first = ledger.decision(r12.decision_id).record_a
+        fourth = ledger.decision(r34.decision_id).record_b
+
+        out = handlers.ledger_path(ledger, first, fourth)
+
+        assert out["same_entity"] is True and out["hops"] == 3
+        assert "never compared" in out["note"]
+        assert "Mary" not in json.dumps(out)
+        (entity,) = handlers.ledger_entities(ledger)["entities"]
+        assert entity["held_together_by"] == "transitive" and len(entity["weak_links"]) == 2
+
+    def test_cases_then_observe_closes_the_case(self, ledger):
+        handlers.compare_records(self.A, self.B, entity="organisation", ledger=ledger)
+        (case,) = handlers.ledger_cases(ledger)["cases"]
+        assert case["would_resolve"][0] == "registration_id"
+        out = handlers.ledger_observe(ledger, case["b"]["record_id"],
+                                      {"registration_id": "C.54321"})
+        assert out["decisions"][0]["identity"] == "different"
+        assert out["decisions"][0]["supersedes"] == case["decision_id"]
+        assert out["open_cases"] == 0
+        assert "C.54321" not in json.dumps(out)
+
+    def test_resolve_joins_a_newcomer_and_says_why_without_values(self, ledger):
+        import arche
+        texts = ("Mary Smith, NIN 12345678901, phone 08035557890, mary.smith@example.com",
+                 "Mary Jones, NIN 12345678901, phone 08035557890, 4 Elim Street Enugu")
+        arche.compare(*texts, entity="person", jurisdiction="NG", backend="regex", store=ledger)
+
+        out = handlers.ledger_resolve(
+            ledger, {"name": "M. Jones", "national_id": "12345678901"}, entity_type="person")
+
+        assert out["verdict"] == "found"
+        assert out["entity"]["held_together_by"] in {"direct", "transitive"}
+        assert len(out["entity"]["records"]) == 3
+        # id alone, no second field on the newcomer: the whole-entity receipt is
+        # honest about that and says review; the id factor is still 1.0
+        assert out["entity_evidence"]["identity"] in {"same_entity", "review"}
+        assert out["entity_evidence"]["factors"]["national_id"] == 1.0
+        assert "12345678901" not in json.dumps(out)
+
+        held = handlers.ledger_resolve(
+            ledger, {"name": "Mary Smith", "national_id": "99999999999"}, entity_type="person")
+        assert held["verdict"] == "conflict" and held["conflicting_fields"] == ["national_id"]
+        assert "99999999999" not in json.dumps(held)
+
+    def test_observe_refuses_an_empty_object(self, ledger):
+        with pytest.raises(ValueError, match="non-empty"):
+            handlers.ledger_observe(ledger, "rec:sha256:x", {})
+
+    def test_replay_reproduces(self, ledger):
+        out = handlers.compare_records(self.A, self.B, entity="organisation", ledger=ledger)
+        replay = handlers.ledger_replay(ledger, out["matches"][0]["decision_id"])
+        assert replay["reproduced"] is True and replay["changed"] == {}
+
+
+class TestLedgerToolsAppearOnlyWhenConfigured:
+    """A client of an unconfigured server must not see tools that can only fail."""
+
+    LEDGER_TOOLS = {"decision", "explain", "replay", "entities", "path", "cases", "observe",
+                    "resolve"}
+
+    @staticmethod
+    def _tools(monkeypatch, uri):
+        import asyncio
+        import importlib
+        import sys
+
+        if uri is None:
+            monkeypatch.delenv("ARCHE_LEDGER", raising=False)
+        else:
+            monkeypatch.setenv("ARCHE_LEDGER", uri)
+        sys.modules.pop("arche_mcp.server", None)
+        server = importlib.import_module("arche_mcp.server")
+        names = {t.name for t in asyncio.run(server.mcp.list_tools())}
+        sys.modules.pop("arche_mcp.server", None)
+        return names, server
+
+    def test_absent_when_unset(self, monkeypatch):
+        names, _ = self._tools(monkeypatch, None)
+        assert not names & self.LEDGER_TOOLS
+
+    def test_present_when_set_and_capabilities_says_so(self, monkeypatch):
+        pytest.importorskip("duckdb")
+        names, server = self._tools(monkeypatch, "duckdb:///:memory:")
+        assert names >= self.LEDGER_TOOLS
+        assert server.capabilities()["ledger"]["configured"] is True

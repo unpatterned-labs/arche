@@ -95,6 +95,7 @@ nav:
     - Quickstart: getting-started/quickstart.md
   - Guides:
     - Keep and replay a decision: guides/keep-and-replay.md
+    - Association analysis: guides/association-analysis.md
     - Resolve documents: guides/documents-to-decision.md
     - Interpret a decision: guides/interpret-decisions.md
     - Prepare your data: guides/prepare-data.md

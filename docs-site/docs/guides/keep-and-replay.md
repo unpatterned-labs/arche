@@ -112,7 +112,44 @@ shared    {'national_id': '12345678901'}
 conflicts {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 ```
 
-`shared` is every attribute the member records agree on; `conflicts` every one they do not. Nothing is averaged: the two email addresses and the two spellings of the name stay visible on the entity, because a conflict is something to show a reviewer, not something to resolve by deleting a row. `entity.held` says `direct` — every pair of the three was itself decided — or `transitive`, when two records are in one entity only because each matched a third. Transitive is where a resolution system quietly merges two different things, so the ledger says which is which.
+`shared` is every attribute the member records agree on; `conflicts` every one they do not. Nothing is averaged: the two email addresses and the two spellings of the name stay visible on the entity, because a conflict is something to show a reviewer, not something to resolve by deleting a row. `entity.held_together_by` says `direct` — every pair of the three was itself decided — or `transitive`, when two records are in one entity only because each matched a third; the same word `dedupe()` uses for its clusters. Transitive is where a resolution system quietly merges two different things, so the ledger says which is which, and for a transitive entity `weak_links` names the records whose removal would split it and `bridges` the decisions that would.
+
+## Why are these two records one entity?
+
+The question a user of any resolution system asks first, and — Talburt's example — the one a wrong answer hides best: *Mary Smith* and *Mary Jones* at different addresses, never compared, in one entity. A name changed and an address changed, and the records that connect them were compared. The explanation is that chain, and `path` hands it back as decisions, each with its own evidence.
+
+```python
+t4 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, phone 08035557890"
+r34 = arche.compare(text3, t4, **person)          # a fourth record, linked to the third
+
+first = ledger.decision(r12.decision_id).record_a
+fourth = ledger.decision(r34.decision_id).record_b
+for d in ledger.path(first, fourth):
+    print(d.identity, d.action, "|", d.explanation)
+```
+
+```text
+same_entity merge | national ID match; name similarity 100%
+same_entity merge | national ID match; email match; name similarity 80%
+same_entity merge | national ID match; email match; name similarity 80%
+```
+
+The first and fourth records were never compared; three decisions make them one person. `path` returns the shortest chain, ties broken toward the strongest evidence, so the explanation offered is the best one available. `ledger.graph()` is the same structure as a `networkx.Graph` — records as nodes, linking decisions as edges — for whatever analysis you want to run over it; a `review` is never an edge, so a connected component is exactly one entity.
+
+For any entity, `weak_links` names the records whose removal would split it and `bridges` the decisions that would. A four-record chain has two of each; a clique has none. That is the association analysis a reviewer needs first: not "how similar are these", but "what is this entity resting on".
+
+## Read data from the same file
+
+A DuckDB file that holds the ledger can hold, or read, the tables being resolved. `read()` returns rows as dicts, ready for a verb: a table in the file, a `.csv` / `.parquet` / `.json` path, or a `SELECT`.
+
+<!-- docs-test: fragment -->
+```python
+ledger = arche.attach("duckdb:///suppliers.duckdb")
+result = arche.reconcile(ledger.read("suppliers"), ledger.read("registry.parquet"),
+                         entity="organisation", store=ledger)
+```
+
+The ledger's own tables are `arche_*`; everything else in the file is yours. The `duckdb:///` scheme is where other stores will hang later; `attach` is the door to the data as well as to the decisions.
 
 ## Cases
 
@@ -187,6 +224,8 @@ arche entities                       # what the decisions have linked together
 arche decision dec:sha256:e77c…      # the receipt, pins, and (masked) inputs
 arche explain  dec:sha256:e77c…      # supporting / refuting / missing
 arche replay   dec:sha256:e77c…      # reproduced: True, or what moved
+arche path rec:sha256:b905… rec:sha256:87966…   # the chain of decisions that makes two records one
+arche resolve --text "M. Jones, NIN 12345678901"   # a new record against the entities
 arche cases                          # pairs still at review, and what would settle each
 arche observe rec:sha256:9f1a… --evidence '{"registration_id": "C.54321"}'
 ```

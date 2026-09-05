@@ -325,10 +325,14 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
                     threshold: float = 0.7,
                     review_margin: float = 0.15, id_field: str = "id",
                     distinctive_kinds: tuple[str, ...] = ("name", "id"),
-                    distinctive_floor: float = 0.75) -> dict[str, Any]:
+                    distinctive_floor: float = 0.75,
+                    ledger: Any | None = None) -> dict[str, Any]:
     """Reconcile two record lists. Ids and numeric evidence only, never raw PII.
 
-    The safest tool in this set: pure in, pure out, no filesystem, no state.
+    Pure in, pure out, no filesystem. ``ledger`` is the one exception to "no
+    state", and it is the operator's, not the agent's: when the server was
+    started with ``ARCHE_LEDGER`` every edge is also recorded there, so the
+    ledger tools can find it again by ``decision_id``.
 
     Pass ``entity`` to use a shipped pack (call ``describe_pack`` to see what it
     reads), or ``comparators`` to specify the comparison yourself::
@@ -373,7 +377,7 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
         return reconcile(
             list_a, list_b, entity=entity, id_field=id_field,
             threshold=threshold, review_margin=review_margin,
-            distinctive_floor=distinctive_floor, **extra,
+            distinctive_floor=distinctive_floor, store=ledger, **extra,
         )
     if not comparators:
         raise ValueError("pass entity= or comparators= to say how to compare")
@@ -381,8 +385,176 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
         list_a, list_b, comparators,
         threshold=threshold, review_margin=review_margin, id_field=id_field,
         distinctive_kinds=distinctive_kinds, distinctive_floor=distinctive_floor,
-        block=None,
+        block=None, store=ledger,
     )
+
+
+# ── the ledger ───────────────────────────────────────────────────────────────
+#
+# Every handler below takes the ledger as an argument rather than opening one,
+# so they are unit-testable against an in-memory DuckDB and so the server, not
+# the handler, decides whether a ledger exists at all. Value policy is the same
+# as the rest of this module and stricter than the CLI: there is no `reveal`.
+# A record is shown by its caller id or its content address, an entity by the
+# NAMES of the fields its records agree and disagree on, a decision by its
+# factors and pins. The values stay in the operator's DuckDB file.
+
+
+def _label(record) -> str:
+    return record.caller_id or record.record_id
+
+
+def _decision_view(decision) -> dict[str, Any]:
+    return {
+        "decision_id": decision.decision_id,
+        "verb": decision.verb,
+        "identity": decision.identity,
+        "action": decision.action,
+        "score": decision.score,
+        "explanation": decision.explanation,
+        "factors": decision.factors,
+        "pins": decision.pins,
+        "record_a": decision.record_a,
+        "record_b": decision.record_b,
+        "recorded_at": decision.recorded_at.isoformat(timespec="seconds"),
+        "supersedes": decision.supersedes,
+        "superseded_by": decision.superseded_by,
+    }
+
+
+def ledger_decision(ledger, decision_id: str) -> dict[str, Any]:
+    """A recorded decision by id: receipt, pins, and which records, never their values."""
+    decision = ledger.decision(decision_id)
+    a, b = ledger.record(decision.record_a), ledger.record(decision.record_b)
+    return {
+        **_decision_view(decision),
+        "records": [
+            {"record_id": r.record_id, "label": _label(r), "entity_type": r.entity_type,
+             "fields": sorted(r.attributes), "from_text": r.text is not None}
+            for r in (a, b)
+        ],
+        "entity_id": ledger.entity_of(decision.record_a),
+    }
+
+
+def ledger_explain(ledger, decision_id: str) -> dict[str, Any]:
+    """Supporting, refuting and missing fields of a decision. Field names only."""
+    why = ledger.explain(decision_id)
+    return {**why, "shared": sorted(why["shared"]), "decision_id": decision_id}
+
+
+def ledger_replay(ledger, decision_id: str) -> dict[str, Any]:
+    """Make a decision again under the installed engine; report what moved."""
+    replay = ledger.replay(decision_id)
+    return {
+        "decision_id": decision_id,
+        "reproduced": replay.reproduced,
+        "then": {"identity": replay.then.identity, "action": replay.then.action,
+                 "score": replay.then.score, "engine": replay.then.pins.get("engine")},
+        "now": {"identity": replay.now["identity"], "action": replay.now["action"],
+                "score": replay.now["score"], "engine": replay.now["pins"].get("engine"),
+                "decision_id": replay.now["decision_id"]},
+        "changed": replay.changed,
+    }
+
+
+def _entity_view(ledger, view) -> dict[str, Any]:
+    return {
+        "entity_id": view.entity_id,
+        "entity_type": view.entity_type,
+        "held_together_by": view.held_together_by,
+        "records": [{"record_id": r.record_id, "label": _label(r)} for r in view.records],
+        "shared_fields": sorted(view.shared),
+        "conflicting_fields": sorted(view.conflicts),
+        "weak_links": [{"record_id": r, "label": _label(ledger.record(r))}
+                       for r in view.weak_links],
+        "bridges": list(view.bridges),
+        "decisions": len(view.decision_ids),
+    }
+
+
+def ledger_entities(ledger, *, entity_type: str | None = None) -> dict[str, Any]:
+    """What the ledger's decisions have linked together, largest entity first."""
+    views = ledger.entities(entity_type)
+    return {"count": len(views), "entities": [_entity_view(ledger, v) for v in views]}
+
+
+def ledger_path(ledger, record_a: str, record_b: str) -> dict[str, Any]:
+    """Why two records are one entity: the chain of decisions between them."""
+    chain = ledger.path(record_a, record_b)
+    steps = []
+    for d in chain:
+        steps.append({
+            **_decision_view(d),
+            "from": _label(ledger.record(d.record_a)),
+            "to": _label(ledger.record(d.record_b)),
+        })
+    return {
+        "record_a": record_a, "record_b": record_b,
+        "same_entity": bool(chain),
+        "hops": len(chain),
+        "decisions": steps,
+        "note": (
+            "one decision: the two were compared and matched directly" if len(chain) == 1
+            else "no chain of linking decisions joins these records" if not chain
+            else f"{len(chain)} decisions: the two were never compared; the records between "
+                 "them were"
+        ),
+    }
+
+
+def ledger_cases(ledger, *, entity_type: str | None = None) -> dict[str, Any]:
+    """Pairs still at review, and what would settle each."""
+    cases = ledger.cases(entity_type)
+    return {"count": len(cases), "cases": [
+        {
+            "decision_id": c.decision.decision_id,
+            "a": {"record_id": c.record_a.record_id, "label": _label(c.record_a)},
+            "b": {"record_id": c.record_b.record_id, "label": _label(c.record_b)},
+            "score": c.decision.score,
+            "explanation": c.decision.explanation,
+            "supporting": c.why["supporting"],
+            "refuting": c.why["refuting"],
+            "would_resolve": c.would_resolve,
+        }
+        for c in cases
+    ]}
+
+
+def ledger_resolve(ledger, record: dict[str, Any], *, entity_type: str) -> dict[str, Any]:
+    """A new record against the entities the ledger holds. Labels and field names only."""
+    if not isinstance(record, dict) or not record:
+        raise ValueError("record must be a non-empty object of field: value")
+    res = ledger.resolve(record, entity_type=entity_type)
+    return {
+        "verdict": res.verdict,
+        "note": res.note,
+        "record_id": res.record_id,
+        "entity": _entity_view(ledger, res.entity) if res.entity else None,
+        "candidates": res.candidates,
+        "entity_evidence": res.entity_evidence,
+        "conflicting_fields": sorted(res.conflicts),
+        "would_resolve": res.would_resolve,
+        "decisions": [_decision_view(d) for d in res.decisions],
+    }
+
+
+def ledger_observe(ledger, record_id: str, evidence: dict[str, Any]) -> dict[str, Any]:
+    """Add evidence about a record and decide its open pairs again.
+
+    The values in ``evidence`` go into the operator's ledger file, which is
+    where every other value already is. The response carries field names and
+    outcomes only.
+    """
+    if not isinstance(evidence, dict) or not evidence:
+        raise ValueError("evidence must be a non-empty object of field: value")
+    fresh = ledger.observe(record_id, evidence)
+    return {
+        "record_id": record_id,
+        "fields": sorted(str(k) for k in evidence),
+        "decisions": [_decision_view(d) for d in fresh],
+        "open_cases": len(ledger.cases()),
+    }
 
 
 def why_unresolved(record_a: dict, record_b: dict, *,

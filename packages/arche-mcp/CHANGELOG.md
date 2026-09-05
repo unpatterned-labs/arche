@@ -8,6 +8,8 @@ All notable changes to `arche-mcp` are documented here. Format loosely follows [
 
 **First release from the arche repository. Ten tools, one removed, jurisdiction inferred rather than configured.**
 
+**The ledger.** With `ARCHE_LEDGER=duckdb:///FILE` the server remembers: `compare_records` records every edge it returns, and eight tools appear — `decision`, `explain`, `replay`, `entities`, `path`, `cases`, `observe`, `resolve`. Registered only when configured, so an unconfigured server shows no tool that can only fail. Value policy is stricter than the CLI's: there is no reveal; entities come back as field names, records as labels, decisions as factors and pins. `capabilities()["ledger"]` says whether it is on.
+
 Requires `arche-core>=0.8.0,<0.9.0`. The bound is closed on purpose: `uvx arche-mcp` re-resolves on every run, so the ceiling moves by a release of this package rather than by whatever `arche-core` publishes next.
 
 The package existed before this in a separate repository and was never published. Its version there was `0.1.0a3`; starting at `0.1.0a1` here rather than continuing that line, because reusing numbers that never shipped invents a history.

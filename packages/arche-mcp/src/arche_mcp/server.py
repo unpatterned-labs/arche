@@ -28,6 +28,13 @@ the agent, and an agent that can pick its own statute can pick a weaker one.
   ARCHE_HASH_KEY          required for guarded_scan; no key, no tokens
   ARCHE_ALLOWED_PROVIDERS comma-separated model-provider allow-list
   ARCHE_TRANSFER_BASIS    declared cross-border transfer basis
+  ARCHE_LEDGER            duckdb:///FILE (or a path): remember decisions there
+
+With ``ARCHE_LEDGER`` set, ``compare_records`` records what it decides and
+eight more tools appear -- ``decision``, ``explain``, ``replay``, ``entities``,
+``path``, ``cases``, ``observe`` and ``resolve``. Unset, the server is stateless, as it
+always was. The ledger is the operator's file; the tools return ids, field
+names and numbers, never a value out of it.
 
 With none of them set, jurisdiction becomes a per-call argument and the
 intended flow is `infer_jurisdiction` then `plan_protection` then
@@ -93,6 +100,19 @@ _ALLOWED_PROVIDERS = (
     if os.environ.get("ARCHE_ALLOWED_PROVIDERS") else None
 )
 _TRANSFER_BASIS = os.environ.get("ARCHE_TRANSFER_BASIS") or None
+_LEDGER_URI = os.environ.get("ARCHE_LEDGER") or None
+_LEDGER = None
+
+
+def _ledger():
+    """The one ledger this server process holds open, attached on first use."""
+    global _LEDGER
+    if _LEDGER is None and _LEDGER_URI:
+        from arche.ledger import attach
+
+        uri = _LEDGER_URI if _LEDGER_URI.startswith("duckdb:///") else f"duckdb:///{_LEDGER_URI}"
+        _LEDGER = attach(uri)
+    return _LEDGER
 
 
 def _jurisdiction(requested):
@@ -120,7 +140,13 @@ def capabilities() -> dict:
     extras are installed. Call this first. It is the difference between "this
     document is clean" and "nothing here could read this document" — several
     tools return empty results rather than errors when an extra is missing."""
-    return handlers.capabilities()
+    report = handlers.capabilities()
+    report["ledger"] = {
+        "configured": bool(_LEDGER_URI),
+        "tools": (["decision", "explain", "replay", "entities", "path", "cases", "observe",
+                   "resolve"] if _LEDGER_URI else []),
+    }
+    return report
 
 
 @mcp.tool()
@@ -275,6 +301,7 @@ def compare_records(list_a: list[dict], list_b: list[dict],
     return handlers.compare_records(
         list_a, list_b, entity=entity, comparators=comparators,
         backend=backend, threshold=threshold, id_field=id_field,
+        ledger=_ledger(),
     )
 
 
@@ -340,6 +367,85 @@ def extract_places(text: str) -> dict:
     guessed: an agent that swaps pickup and drop-off has a much worse day than
     one that asks."""
     return handlers.extract_places(text)
+
+
+# ── the ledger, when the operator gave this server one ────────────────────────
+#
+# Registered only when ARCHE_LEDGER is set, so a client of an unconfigured
+# server does not see tools that can only fail. `compare_records` above is the
+# way decisions get in; these are the ways they come back out. Nothing here
+# returns a record value: labels are caller ids or content addresses, entities
+# are field names, decisions are factors and pins.
+
+if _LEDGER_URI:
+
+    @mcp.tool()
+    def decision(decision_id: str) -> dict:
+        """A recorded decision by its id: verdict, action, factors, pins, which two
+        records (by label, never by value), and the entity it now belongs to.
+        The id is the handle to the whole explanation: pass it to `explain` for
+        the field-by-field reasoning and to `replay` to check it still holds."""
+        return handlers.ledger_decision(_ledger(), decision_id)
+
+    @mcp.tool()
+    def explain(decision_id: str) -> dict:
+        """Why a recorded decision came out as it did: the fields that supported
+        it, the fields that refuted it, and the identifying fields neither
+        record supplied. Field names only; the values stay in the ledger."""
+        return handlers.ledger_explain(_ledger(), decision_id)
+
+    @mcp.tool()
+    def replay(decision_id: str) -> dict:
+        """Make a recorded decision again under the engine installed now.
+        `reproduced` is true when the new receipt has the same decision_id byte
+        for byte; otherwise `changed` names every factor and pin that moved."""
+        return handlers.ledger_replay(_ledger(), decision_id)
+
+    @mcp.tool()
+    def entities(entity_type: str | None = None) -> dict:
+        """What the ledger's decisions have linked together. Each entity lists its
+        records by label, the NAMES of fields they agree and disagree on, and
+        `held_together_by`: `direct` when every pair was itself decided, or
+        `transitive` when some records are linked only through others -- the
+        case to review first. `weak_links` are the records that hold a
+        transitive entity together."""
+        return handlers.ledger_entities(_ledger(), entity_type=entity_type)
+
+    @mcp.tool()
+    def path(record_a: str, record_b: str) -> dict:
+        """Why two records are one entity: the chain of decisions that joins them,
+        each with its own evidence. One hop means they were compared directly;
+        more means they were never compared and the records between them were.
+        Empty means they are not one entity. Record ids come from `decision`,
+        `entities` or `cases`."""
+        return handlers.ledger_path(_ledger(), record_a, record_b)
+
+    @mcp.tool()
+    def cases(entity_type: str | None = None) -> dict:
+        """Pairs still at `review`: the open questions. Each says what agreed,
+        what refuted, and which fields would settle it. Fetch one of those
+        fields from wherever you can and hand it to `observe`."""
+        return handlers.ledger_cases(_ledger(), entity_type=entity_type)
+
+    @mcp.tool()
+    def resolve(record: dict, entity_type: EntityPack) -> dict:
+        """A new record against the entities the ledger already holds -- transitive
+        matching. Compared with every stored record of its type, grouped by the
+        entity each belongs to, decided at the entity level: `found` (linked),
+        `review` (nearest pairs opened as cases), `ambiguous` (members of two
+        entities matched; link withheld), `conflict` (contradicts an identifier
+        the entity shares; withheld), `not_found` (stored on its own).
+        `entity_evidence` compares the record with the entity as a whole."""
+        return handlers.ledger_resolve(_ledger(), record, entity_type=entity_type)
+
+    @mcp.tool()
+    def observe(record_id: str, evidence: dict) -> dict:
+        """Add evidence about a record -- a field: value object such as a
+        registration id from a registry -- and decide every open pair about it
+        again. New receipts record which decision they supersede; nothing is
+        overwritten. The values go into the operator's ledger file; the reply
+        carries outcomes and field names only."""
+        return handlers.ledger_observe(_ledger(), record_id, evidence)
 
 
 def main() -> None:
