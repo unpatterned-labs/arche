@@ -449,11 +449,10 @@ code {{ word-break: break-all; }}
 <div class="card"><div class="label">Status</div>{_esc(case.get('status', ''))}</div>
 <div class="card"><div class="label">Candidates</div>{_esc(candidates)}</div>
 <div class="card"><div class="label">Uncertainty</div>{_esc(uncertainty)}</div></div>
-<div class="notice">Open the caller-owned source document separately. This pane shows stored
-observation and reviewed page/span citations, never document values or external response
-bodies.</div>
+<div class="notice">Open the caller-owned source document or external response separately. This pane shows stored
+observation and reviewed field citations, never document values or external response bodies.</div>
 <h2>Permitted actions and acquired observations</h2>{action_table}
-<h2>Reviewed field evidence</h2>{evidence_table}
+<h2>Reviewed evidence</h2>{evidence_table}
 <h2>Review-pending tea proposals</h2>{proposal_table}
 <h2>Case history</h2>{history_table}
 </main></body></html>"""

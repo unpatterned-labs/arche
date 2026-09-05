@@ -50,6 +50,7 @@ from arche.runtime._models import (
     ResolutionMethod,
     ResolutionMethodApproval,
     ResolutionRun,
+    ReviewedActionEvidence,
     new_ledger_id,
 )
 from arche.runtime._planning import (
@@ -58,6 +59,7 @@ from arche.runtime._planning import (
     MethodBenchmarkQualification,
     ResolutionBudget,
 )
+from arche.runtime._reassessment import CaseReassessment, reassess_case, reassessed_case
 from arche.runtime._reviewed_artifacts import (
     ReviewedResolutionArtifact,
     adapt_reviewed_resolution_artifact,
@@ -144,6 +146,23 @@ class ArcheEngine:
             ValueError: If the case does not exist in this runtime.
         """
         return assess_case_progress(self.store, case_id)
+
+    def reassess_case(self, case_id: str) -> CaseReassessment:
+        """Report reviewed field coverage and remaining evidence gaps for a case.
+
+        The persisted ResolutionCase remains immutable. This read-only view is
+        used by planning after reviewed Evidence arrives from a permitted action.
+
+        Parameters:
+            case_id: The opaque ResolutionCase identifier to inspect.
+
+        Returns:
+            Reviewed field labels and the gaps they can satisfy.
+
+        Raises:
+            ValueError: If the case does not exist in this runtime.
+        """
+        return reassess_case(self.store, case_id)
 
     def ingest_action_observation(
         self,
@@ -314,6 +333,96 @@ class ArcheEngine:
         self.store.write_case_events([event])
         return evidence, event
 
+    def record_reviewed_action_evidence(
+        self,
+        case_id: str,
+        action_id: str,
+        reviewed: tuple[ReviewedActionEvidence, ...],
+        *,
+        review_id: str,
+        recorded_at: datetime,
+        event_id: str | None = None,
+    ) -> tuple[tuple[Evidence, ...], CaseEvent]:
+        """Record value-free reviewed Evidence from a non-document action result.
+
+        A registry or supplier-master response remains an immutable Observation
+        until the caller reviews it. The caller supplies only safe field labels;
+        raw values and external response bodies stay outside the runtime.
+
+        Parameters:
+            case_id: Existing case that owns the permitted action.
+            action_id: Successful non-document EvidenceAction to review.
+            reviewed: Value-free labels accepted from the action result.
+            review_id: Caller-managed review identifier.
+            recorded_at: Timestamp of the review decision.
+            event_id: Optional caller-owned event identifier.
+
+        Returns:
+            Persisted Evidence and its immutable case-history event.
+
+        Raises:
+            ValueError: If the action is not eligible, has no successful
+                Observation, or the review would duplicate durable evidence.
+        """
+        if not review_id:
+            raise ValueError("reviewed action evidence needs a review_id")
+        if not reviewed:
+            raise ValueError("reviewed action evidence needs at least one value-free field label")
+        case = self.store.get_resolution_case(case_id)
+        action = self.store.get_evidence_action(action_id)
+        if case is None or action is None or action.case_id != case.case_id:
+            raise ValueError(f"action {action_id!r} is not permitted for case {case_id!r}")
+        if action.action_type in {"document_extract", "document_ocr"}:
+            raise ValueError("document actions require record_reviewed_document_evidence")
+        link = self.store.get_action_observation(action.action_id)
+        if link is None:
+            raise ValueError(f"action {action_id!r} has no Observation; execute it before review")
+        observation = self.store.get_observation(link.observation_id)
+        if observation is None or observation.provenance.get("outcome") == "failure":
+            raise ValueError(f"action {action_id!r} has no successful Observation to review")
+        evidence_ids = tuple(item.evidence_id for item in reviewed)
+        if len(set(evidence_ids)) != len(evidence_ids):
+            raise ValueError("reviewed action evidence IDs must be unique")
+        if any(self.store.get_evidence(evidence_id) is not None for evidence_id in evidence_ids):
+            raise ValueError("reviewed action evidence IDs must be new")
+        if any(
+            event.event_type == "reviewed_action_evidence"
+            and event.provenance.get("action_id") == action.action_id
+            and event.provenance.get("review_id") == review_id
+            for event in self.get_case_history(case.case_id)
+        ):
+            raise ValueError("this action and review_id are already recorded")
+        evidence = tuple(
+            Evidence(
+                item.evidence_id,
+                observation.observation_id,
+                item.kind,
+                item.supports,
+                provenance={
+                    "action_id": action.action_id,
+                    "field": item.field,
+                    "review_id": review_id,
+                    "reviewed": True,
+                },
+            )
+            for item in reviewed
+        )
+        event = CaseEvent(
+            event_id=event_id or new_ledger_id("evt"),
+            case_id=case.case_id,
+            event_type="reviewed_action_evidence",
+            recorded_at=recorded_at,
+            references=(observation.observation_id, *evidence_ids),
+            provenance={
+                "action_id": action.action_id,
+                "review_id": review_id,
+                "reviewed_fields": [item.field for item in reviewed],
+            },
+        )
+        self.store.write_evidence(evidence)
+        self.store.write_case_events([event])
+        return evidence, event
+
     def record_reviewed_document_field_proposals(
         self,
         case_id: str,
@@ -474,7 +583,7 @@ class ArcheEngine:
                 "planning evidence acquisition"
             )
         return DeterministicResolutionPlanner().plan(
-            case,
+            reassessed_case(self.store, case),
             self.store.list_evidence_actions(case_id),
             capabilities,
             budget,

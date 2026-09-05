@@ -45,6 +45,28 @@ for edge in result["matches"]:
     print(edge["decision"], edge["score"], edge["evidence"])
 ```
 
+## Compare two pieces of person text
+
+For a fast, local first answer, pass the text directly to `compare`. This synthetic example uses the deterministic `regex` extractor, so it does not download or call a model.
+
+```python
+from arche import compare
+
+text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
+text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
+
+receipt = compare(text1, text2, entity="person", jurisdiction="NG", backend="regex")
+print(receipt.identity, receipt.action, receipt.explanation)
+```
+
+```text
+same_entity hold national ID match
+```
+
+`hold` matters: the shared national ID is a strong signal, but the email conflict means Arche has not authorised a merge or downstream action. Treat the result as an evidence-cited resolution proposal. For richer name and address extraction, use the model-assisted backend after its local model is installed, or review the fields through the document/case workflow.
+
+The runnable form is [examples/quick_text_resolution.py](../../examples/quick_text_resolution.py). It prints only the outcome, basis, explanation, and factor names; it does not export raw text or build an entity ledger.
+
 ## Bring your own candidate retrieval
 
 At scale, the costly question is often which pairs deserve comparison. Retrieve
@@ -145,6 +167,8 @@ engine.ingest_action_observation("act_01", registry_observation)
 There is deliberately no built-in external provider in `arche-core`. Applications supply a read-only connector that satisfies the explicit capability contract; the included deterministic planner can choose only among those permitted actions under an explicit budget.
 
 `HttpEvidenceConnector` is the opt-in reference connector for an application-approved HTTPS source; it is not a bundled provider or autonomous crawler. The application retains lookup values in its request builder, while Arche persists only request/result hashes, response status, cost, and a success or failure Observation. It enforces the action's cost ceiling plus a connector-local request window. A failed or exhausted request is terminal for that action, so retries require a new `EvidenceAction` and remain visible in history.
+
+After a human or caller-controlled application reviews a successful non-document result, `record_reviewed_action_evidence(...)` accepts only value-free field labels such as `registration_id`. It records case-linked Evidence and re-assesses the temporary planning view; it never persists the registry response or its values. A newly satisfied gap can make a configured, qualified method eligible, but the method still needs its usual approval and its output still returns through reviewed Evidence and policy.
 
 ```python
 from arche.runtime import ExternalEvidenceRequest, HttpEvidenceConnector, ToolCapability

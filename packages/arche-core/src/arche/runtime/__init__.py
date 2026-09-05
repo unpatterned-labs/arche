@@ -78,6 +78,7 @@ from ._models import (
     ResolutionMethod,
     ResolutionMethodApproval,
     ResolutionRun,
+    ReviewedActionEvidence,
     ToolCapability,
     new_entity_id,
     new_evidence_action_id,
@@ -94,6 +95,7 @@ from ._planning import (
     PlannedResolutionMethod,
     ResolutionBudget,
 )
+from ._reassessment import CaseReassessment, reassess_case
 from ._reviewed_artifacts import (
     ReviewedResolutionArtifact,
     ReviewedResolutionEdge,
@@ -109,6 +111,7 @@ __all__ = [
     "BENCHMARK_RESULT_BUNDLE_SCHEMA",
     "BenchmarkResultBundle",
     "CaseEvent",
+    "CaseReassessment",
     "CaseProgress",
     "CaseAssessment",
     "Claim",
@@ -152,6 +155,7 @@ __all__ = [
     "ResolutionDecisionPolicy",
     "ResolutionBudget",
     "ResolutionRun",
+    "ReviewedActionEvidence",
     "ReviewedResolutionArtifact",
     "ReviewedResolutionEdge",
     "RelationProposal",
@@ -178,6 +182,7 @@ __all__ = [
     "observation_from_document_ingestion",
     "qualification_from_evaluated_result",
     "read_benchmark_result_bundle",
+    "reassess_case",
     "reviewed_document_evidence",
     "reviewed_document_proposals",
     "write_benchmark_result_bundle",

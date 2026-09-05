@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -63,6 +64,34 @@ class Evidence:
     kind: str
     supports: str
     provenance: Mapping[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ReviewedActionEvidence:
+    """A value-free field label accepted from one reviewed external action.
+
+    The caller retains the value and raw source response. ``field``, ``kind``,
+    and ``supports`` are stable labels only; they must not contain the value
+    that was reviewed.
+    """
+
+    evidence_id: str
+    field: str
+    kind: str
+    supports: str = "case_resolution"
+
+    def __post_init__(self) -> None:
+        """Reject empty or value-like labels before they reach durable history."""
+        for name, value in (
+            ("evidence_id", self.evidence_id),
+            ("field", self.field),
+            ("kind", self.kind),
+            ("supports", self.supports),
+        ):
+            if not isinstance(value, str) or not re.fullmatch(r"[a-z][a-z0-9_:-]{0,63}", value):
+                raise ValueError(
+                    f"reviewed action evidence {name} must be a lower-case value-free label"
+                )
 
 
 @dataclass(frozen=True)

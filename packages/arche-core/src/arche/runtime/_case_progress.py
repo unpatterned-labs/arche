@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from ._models import ResolutionCase
+from ._reassessment import reassessed_case
 
 if TYPE_CHECKING:
     from arche.store.base import ArcheStore
@@ -55,7 +56,7 @@ def assess_case_progress(store: ArcheStore, case_id: str) -> CaseProgress:
     if case is None:
         raise ValueError(f"resolution case {case_id!r} does not exist")
     history = store.list_case_events(case_id)
-    return _progress_for_case(store, case, history)
+    return _progress_for_case(store, reassessed_case(store, case), history)
 
 
 def _progress_for_case(store: ArcheStore, case: ResolutionCase, history: tuple) -> CaseProgress:
@@ -179,7 +180,8 @@ def _after_action_observations(
     reviewed_action_ids = {
         str(event.provenance["action_id"])
         for event in history
-        if event.event_type == "reviewed_document_evidence" and "action_id" in event.provenance
+        if event.event_type in {"reviewed_action_evidence", "reviewed_document_evidence"}
+        and "action_id" in event.provenance
     }
     pending_document_review = tuple(
         action_id
@@ -200,6 +202,7 @@ def _after_action_observations(
         )
     if any(
         _action_type(store, action_id) not in {"document_extract", "document_ocr"}
+        and action_id not in reviewed_action_ids
         for action_id in completed
     ):
         return CaseProgress(
@@ -218,8 +221,7 @@ def _after_action_observations(
             case.case_id,
             "awaiting_method_approval",
             "approve_and_execute_resolution_method",
-            "Reviewed document Evidence is available; the selected resolver still needs "
-            "caller approval.",
+            "Reviewed Evidence is available; the selected resolver still needs caller approval.",
             planned_action_ids=plan.references,
             completed_action_ids=completed,
             unresolved_gap_fields=_gap_fields(case),
@@ -228,8 +230,7 @@ def _after_action_observations(
         case.case_id,
         "needs_resolution_plan",
         "plan_qualified_resolution_method",
-        "Reviewed document Evidence is available, but no resolver method is selected for "
-        "this case.",
+        "Reviewed Evidence is available, but no resolver method is selected for this case.",
         planned_action_ids=plan.references,
         completed_action_ids=completed,
         unresolved_gap_fields=_gap_fields(case),

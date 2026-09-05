@@ -465,6 +465,47 @@ def _reviewed_extraction(path: Path):
     return Extraction(data=None, fields=fields)
 
 
+def _reviewed_action_evidence(path: Path):
+    """Read only value-free external-review labels from a caller-owned JSON file."""
+    from arche.runtime import ReviewedActionEvidence, new_ledger_id
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(
+            f"arche case review-action: invalid reviewed action JSON: {path}"
+        ) from error
+    items = payload.get("evidence") if isinstance(payload, dict) else None
+    if not isinstance(items, list) or not items:
+        raise SystemExit(
+            "arche case review-action: JSON needs a non-empty evidence list"
+        )
+    allowed = {"field", "kind", "supports"}
+    reviewed = []
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict) or set(item) - allowed:
+            raise SystemExit(
+                "arche case review-action: each evidence item may contain only "
+                "field, kind, and supports labels"
+            )
+        if not isinstance(item.get("field"), str) or not isinstance(item.get("kind"), str):
+            raise SystemExit(
+                f"arche case review-action: evidence item {index} needs field and kind labels"
+            )
+        try:
+            reviewed.append(
+                ReviewedActionEvidence(
+                    new_ledger_id("ev"),
+                    item["field"],
+                    item["kind"],
+                    item.get("supports", "case_resolution"),
+                )
+            )
+        except ValueError as error:
+            raise SystemExit(f"arche case review-action: {error}") from error
+    return tuple(reviewed)
+
+
 def _tea_document_specs(args: argparse.Namespace, extraction):
     """Return the deliberate tea field mappings selected by the review caller."""
     from arche.runtime import DocumentClaimSpec, DocumentRelationSpec
@@ -621,6 +662,42 @@ def _cmd_case_evidence(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_case_review_action(args: argparse.Namespace) -> int:
+    """Record caller-reviewed, value-free Evidence from an external action."""
+    review_path = Path(args.reviewed_evidence)
+    if not review_path.is_file():
+        raise SystemExit(
+            f"arche case review-action: reviewed evidence file does not exist: {review_path}"
+        )
+    reviewed = _reviewed_action_evidence(review_path)
+    engine = _case_engine(args.store)
+    try:
+        evidence, event = engine.record_reviewed_action_evidence(
+            args.case_id,
+            args.action_id,
+            reviewed,
+            review_id=args.review_id,
+            recorded_at=datetime.now(UTC),
+        )
+    except ValueError as error:
+        raise SystemExit(f"arche case review-action: {error}") from error
+    _write_case_output(
+        {
+            "schema": "arche.case_reviewed_action_evidence.v1",
+            "case_id": args.case_id,
+            "action_id": args.action_id,
+            "review_event_id": event.event_id,
+            "evidence": _case_value(evidence),
+            "note": (
+                "The caller supplied field labels only. External response values stay outside "
+                "the runtime store and this artifact."
+            ),
+        },
+        args.out,
+    )
+    return 0
+
+
 def _cmd_case_propose_tea(args: argparse.Namespace) -> int:
     """Map previously reviewed tea fields to review-pending memory proposals."""
     fields_path = Path(args.reviewed_fields)
@@ -744,7 +821,7 @@ def _cmd_case_review(args: argparse.Namespace) -> int:
     evidence_ids = tuple(
         reference
         for event in history
-        if event.event_type == "reviewed_document_evidence"
+        if event.event_type in {"reviewed_action_evidence", "reviewed_document_evidence"}
         for reference in event.references
         if engine.store.get_evidence(reference) is not None
     )
@@ -1214,6 +1291,25 @@ def main(argv: list[str] | None = None) -> int:
     case_evidence.add_argument("--store", default="arche.duckdb", help="local DuckDB runtime store")
     case_evidence.add_argument("--out", default=None, help="write JSON instead of stdout")
     case_evidence.set_defaults(func=_cmd_case_evidence)
+
+    case_review_action = case_sub.add_parser(
+        "review-action",
+        help="record reviewed value-free Evidence from a successful external action",
+    )
+    case_review_action.add_argument("case_id", help="case identifier to update")
+    case_review_action.add_argument("action_id", help="successful non-document action identifier")
+    case_review_action.add_argument(
+        "reviewed_evidence",
+        help="caller-owned JSON with field/kind/supports labels only; values are refused",
+    )
+    case_review_action.add_argument(
+        "--review-id", required=True, help="caller-managed review reference"
+    )
+    case_review_action.add_argument(
+        "--store", default="arche.duckdb", help="local DuckDB runtime store"
+    )
+    case_review_action.add_argument("--out", default=None, help="write JSON instead of stdout")
+    case_review_action.set_defaults(func=_cmd_case_review_action)
 
     case_propose_tea = case_sub.add_parser(
         "propose-tea",

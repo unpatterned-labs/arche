@@ -155,7 +155,7 @@ agent/
 .agents/
 .codex/
 
-
+outputs/
 
 examples/notebooks/20_a_supplier_ledger_at_scale.ipynb
 examples/notebooks/20_local_confidential_resolution.ipynb

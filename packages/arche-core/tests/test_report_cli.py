@@ -530,6 +530,111 @@ def test_cli_case_open_plan_ingest_evidence_and_review_are_value_free(
     assert "wrote" in capsys.readouterr().out
 
 
+def test_cli_case_review_action_records_external_labels_without_response_values(tmp_path):
+    """A caller can bridge external review without putting registry values in DuckDB."""
+    from datetime import UTC, datetime
+
+    from arche.runtime import EvidenceAction, Observation, ResolutionCase, attach
+
+    timestamp = datetime(2026, 9, 5, tzinfo=UTC)
+    store = tmp_path / "case.duckdb"
+    reviewed = tmp_path / "reviewed-action.json"
+    output = tmp_path / "action-evidence.json"
+    review = tmp_path / "review.json"
+    engine = attach(f"duckdb:///{store}")
+    case = ResolutionCase("case_external", "Which supplier is this?", (), (), timestamp)
+    action = EvidenceAction(
+        "act_registry",
+        case.case_id,
+        "registry_lookup",
+        "supplier_registry",
+        timestamp,
+        "supplier-policy-v1",
+    )
+    engine.store.write_resolution_cases([case])
+    engine.store.write_evidence_actions([action])
+    engine.ingest_action_observation(
+        action.action_id,
+        Observation(
+            "obs_registry",
+            "supplier_registry",
+            "caller-held-response",
+            timestamp,
+            "sha256:registry-response",
+            provenance={"outcome": "success"},
+        ),
+    )
+    reviewed.write_text(
+        json.dumps(
+            {"evidence": [{"field": "registration_id", "kind": "registry_identifier"}]}
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "case",
+                "review-action",
+                case.case_id,
+                action.action_id,
+                str(reviewed),
+                "--review-id",
+                "review-registry-1",
+                "--store",
+                str(store),
+                "--out",
+                str(output),
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["evidence"][0]["provenance"]["field"] == "registration_id"
+    assert "caller-held-response" not in output.read_text(encoding="utf-8")
+
+    assert (
+        main(
+            ["case", "review", case.case_id, "--store", str(store), "--out", str(review)]
+        )
+        == 0
+    )
+    review_payload = json.loads(review.read_text(encoding="utf-8"))
+    assert review_payload["reviewed_evidence"][0]["provenance"]["field"] == "registration_id"
+    assert "caller-held-response" not in review.read_text(encoding="utf-8")
+
+    reviewed.write_text(
+        json.dumps(
+            {
+                "evidence": [
+                    {
+                        "field": "registration_id",
+                        "kind": "registry_identifier",
+                        "value": "private registry value",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    import pytest
+
+    with pytest.raises(SystemExit, match="only field, kind, and supports"):
+        main(
+            [
+                "case",
+                "review-action",
+                case.case_id,
+                action.action_id,
+                str(reviewed),
+                "--review-id",
+                "review-registry-2",
+                "--store",
+                str(store),
+            ]
+        )
+
+
 def test_cli_review_template_contains_only_decision_ids(tmp_path):
     """A reviewer can receive the decision task without copied record values."""
     pack = tmp_path / "pack.csv"
