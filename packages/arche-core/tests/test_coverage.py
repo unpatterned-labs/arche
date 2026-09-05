@@ -8,7 +8,7 @@ The bug
 `EgressGuard` had four fail-closed teeth and all four passed on this::
 
     EgressGuard(Pipeline(jurisdiction="GB"), key=...).guarded(
-        "Jane Smith lives in Manchester, SW1A 1AA, tel 07700 900123.")
+        "Björn Svensson lives in Manchester, SW1A 1AA, tel 07700 900123.")
 
     -> text returned verbatim, fields == [], statute UK-GDPR cited
 
@@ -36,7 +36,7 @@ What this does NOT claim
 ------------------------
 Coverage is capability, not recall. `PII-1-NAME` reads as covered for `GB`
 because a name detector ran, and that detector is calibrated on West African
-names and will still miss "Jane Smith". Category coverage is a floor on
+names and will still miss "Björn Svensson". Category coverage is a floor on
 honesty, not a completeness guarantee, and `test_coverage_is_not_recall` pins
 that distinction so nobody later reads more into it.
 """
@@ -58,7 +58,7 @@ from arche.guard import EgressGuard, GuardDenied
 class TestTheReportedBug:
     """British text, a British statute, and nothing removed."""
 
-    TEXT = "Jane Smith lives in Manchester, SW1A 1AA, tel 07700 900123."
+    TEXT = "Björn Svensson lives in Manchester, SW1A 1AA, tel 07700 900123."
 
     @pytest.fixture
     def projection(self):
@@ -131,12 +131,12 @@ class TestTheFifthTooth:
     def test_zero_coverage_is_denied(self):
         guard = EgressGuard(Pipeline(jurisdiction="GB", detectors=["ng"]), key="k")
         with pytest.raises(GuardDenied, match="nothing was looked for"):
-            guard.guarded("Jane Smith")
+            guard.guarded("Björn Svensson")
 
     def test_the_denial_cites_the_statute(self):
         guard = EgressGuard(Pipeline(jurisdiction="GB", detectors=["ng"]), key="k")
         try:
-            guard.guarded("Jane Smith")
+            guard.guarded("Björn Svensson")
         except GuardDenied as exc:
             assert exc.citation == "UK-GDPR"
 
@@ -217,14 +217,17 @@ def test_coverage_is_not_recall():
     """The distinction the docstring makes, pinned so it cannot be forgotten.
 
     `PII-1-NAME` is reported covered for GB because a name detector ran. It
-    still missed "Jane Smith". Coverage says a detector was there to miss it,
-    which is strictly less than saying nothing was missed.
+    still missed "Björn Svensson": the shipped lexicon is drawn from people
+    recorded in African countries, and a Scandinavian name is not in it
+    (*Jane Smith*, the original example, now is -- names travel). Coverage says
+    a detector was there to miss it, which is strictly less than saying nothing
+    was missed.
     """
     projection = EgressGuard(Pipeline(jurisdiction="GB"), key="k").guarded(
-        "Jane Smith lives in Manchester.")
+        "Björn Svensson lives in Manchester.")
     assert "PII-1-NAME" in projection.coverage["covered"]
     assert projection.fields == []
-    assert "Jane Smith" in projection.redacted_text
+    assert "Björn Svensson" in projection.redacted_text
 
 
 def test_no_statute_reports_no_statute_rather_than_full():

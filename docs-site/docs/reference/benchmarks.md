@@ -254,6 +254,31 @@ The published claim holds only with the social security number in the record. Wi
 
 Script: `datasets/names_dataops/bench_febrl.py`.
 
+## Entity formation
+
+Every entry above scores *pairs*. The [ledger](../guides/keep-and-replay.md) does something no pairwise score measures: it unions `match` edges into entities, so A~B and B~C put A, B and C together whether or not A and C were ever compared. That is how a resolution system quietly merges two different things, and until this section nothing in the repository counted it.
+
+Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the configuration reported for each above, then every entity's records mapped back to the truth clusters they belong to. An entity whose records come from more than one truth cluster is a **cross-cluster merge** — the entity-level false merge, worse than a pairwise one because it propagates. `held` says whether the entity is a clique (`direct`, every pair itself decided `match`) or depends on a chain (`transitive`).
+
+| | DBLP-ACM, year refutes | Febrl 4, name + address |
+| --- | ---: | ---: |
+| records / true clusters | 4,910 / 2,224 | 10,000 / 5,000 |
+| pairwise: true merges / false merges | 2,215 / 115 | 3,285 / 484 |
+| entities built | 2,179 | 3,155 |
+| true clusters recovered whole | 2,135 (96.0%) | 2,960 (59.2%) |
+| **cross-cluster entities** | **44 (2.0%)** | **195 (6.2%)** |
+| records inside them | 187 | 848 |
+| of which `transitive` / `direct` | 44 / 0 | 184 / 11 |
+| largest cross-cluster entity | 12 records, 8 clusters | 17 records, 10 clusters |
+
+The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 184 of 195 are transitive; the 11 direct ones are two-record entities, which is to say ordinary pairwise false merges wearing an entity id. So `held == "direct"` is a usable guarantee — such an entity is exactly as trustworthy as its pairwise decisions — and `held == "transitive"` is where review effort belongs.
+
+The compounding is visible in the sizes. DBLP-ACM's 115 pairwise false merges become 44 bad entities holding 187 records; the worst is a 12-record entity built from eight different SIGMOD editorials that share a generic title. Febrl's 484 become 195 entities holding 848 records; the worst chains ten different people through seventeen records. A pairwise precision of 0.95 does not translate into 95% of entities being right when the errors cluster, and on DBLP-ACM they do: recurring generic titles pull many records toward one another.
+
+Two caveats. The Febrl pairwise line here (484 false merges) is not the 282 recorded in `bench_febrl_result.json` on 2026-08-17; true merges are identical; the shipped name lexicon and the equivalence groups are ruled out (the count is 484 with either switched off), and the branch's parent commit reproduces 484 untouched, so the drift is in the matcher somewhere between v0.4.0a3 and the current head and is being run down separately. A benchmark that is not gated in CI is a benchmark that drifts. And whole-cluster recovery (59% on Febrl) is bounded by pairwise recall (65.7% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
+
+Script: `data/scripts/benchmark_entity_formation.py`, result in `data/er_bench/benchmark_entity_formation_result.json`. Run with a results file already present and it adds to it rather than replacing it.
+
 ## Against string baselines
 
 Two school registers, same process both times, opposite conclusions.

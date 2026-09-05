@@ -144,6 +144,11 @@ class EntityView:
     conflicts: dict[str, list[Any]]
     #: every linking decision between members, oldest first
     decision_ids: tuple[str, ...]
+    #: ``"direct"`` when every pair of members was itself decided ``same``;
+    #: ``"transitive"`` when at least one pair is linked only through a third
+    #: record. A matched B and B matched C says nothing about A and C, and a
+    #: transitive entity is the classic way two different things end up as one.
+    held: str = "direct"
 
     @property
     def record_ids(self) -> tuple[str, ...]:
@@ -284,51 +289,48 @@ class Ledger:
         The two lists are stored as a *run* so any edge can later be replayed
         against exactly the lists it was scored within: a self-calibrated
         frequency table is a property of the batch, not of the pair.
+
+        Written in bulk. A DuckDB statement costs about a millisecond here and
+        the per-edge path issued seven of them: 9 ms an edge, 21-28 s for a
+        3,000-edge batch. This path does one existence query and one multi-row
+        insert per table and resolves memberships with an in-memory union-find
+        before writing them once: 0.8 ms an edge, 2.4 s for the same batch.
         """
         call_record, unreplayable = _call_record(call)
         if unreplayable:
             call_record["_unreplayable"] = unreplayable
         entity_type = str(call_record.get("entity") or "record")
         id_field = str(call_record.get("id_field", "id"))
+        now = _now()
 
-        def side(records: list[Mapping[str, Any]], label: str) -> dict[str, str]:
-            by_caller: dict[str, str] = {}
+        def rows_for(records: list[Mapping[str, Any]], label: str) -> dict[str, Record]:
+            out: dict[str, Record] = {}
             for position, row in enumerate(records):
                 caller_id = str(row.get(id_field, position))
-                stored = self._record(entity_type, row, None, f"{verb}:{label}", caller_id)
-                by_caller[caller_id] = stored.record_id
-            return by_caller
+                attributes = _json_clean(dict(row))
+                record_id = content_hash(
+                    {"entity_type": entity_type, "attributes": attributes}, prefix="rec"
+                )
+                out[caller_id] = Record(record_id, entity_type, f"{verb}:{label}", caller_id,
+                                        attributes, None, now)
+            return out
 
-        by_a = side(list_a, "a")
-        by_b = side(list_b, "b") if list_b is not list_a else by_a
+        by_a = rows_for(list_a, "a")
+        by_b = by_a if list_b is list_a else rows_for(list_b, "b")
+        records = {r.record_id: r for r in [*by_a.values(), *by_b.values()]}
+        pins = dict(result.get("pins", {}))
         run_id = f"run_{uuid4().hex}"
-        self._db.execute(
-            "INSERT INTO arche_runs VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [run_id, verb, _dump(call_record), _dump(list(by_a.values())),
-             _dump(list(by_b.values())), _dump(dict(result.get("pins", {}))),
-             _dump(dict(result.get("blocking", {}))), _now().isoformat()],
-        )
-        self._event("run_recorded", {"run_id": run_id, "verb": verb,
-                                     "edges": len(result.get("matches", ()))})
 
-        recorded: list[Decision] = []
+        # Build every decision first; nothing below touches the database until
+        # the shape of the whole batch is known.
+        built: list[Decision] = []
         for edge in result.get("matches", ()):
             a_id, b_id = str(edge["a_id"]), str(edge["b_id"])
-            record_a, record_b = by_a[a_id], by_b[b_id]
+            record_a, record_b = by_a[a_id].record_id, by_b[b_id].record_id
             if record_a == record_b:
                 continue  # a record against itself says nothing about identity
-            existing = self._decision_or_none(edge["decision_id"])
-            if existing is not None:
-                recorded.append(existing)
-                continue
             identity = str(edge["decision"])
-            evidence = {
-                "a_id": a_id, "b_id": b_id,
-                "distinctive_max": edge.get("distinctive_max"),
-                **{k: v for k, v in edge.items()
-                   if k in ("route", "retrieval_score", "refuted_by", "capped_by")},
-            }
-            decision = Decision(
+            built.append(Decision(
                 decision_id=str(edge["decision_id"]),
                 verb=verb,
                 record_a=record_a,
@@ -339,15 +341,160 @@ class Ledger:
                 factors={k: float(v) for k, v in dict(edge.get("evidence", {})).items()
                          if isinstance(v, (int, float))},
                 explanation=_explain_edge(edge),
-                evidence=evidence,
-                pins=dict(result.get("pins", {})),
+                evidence={
+                    "a_id": a_id, "b_id": b_id,
+                    "distinctive_max": edge.get("distinctive_max"),
+                    **{k: v for k, v in edge.items()
+                       if k in ("route", "retrieval_score", "refuted_by", "capped_by")},
+                },
+                pins=pins,
                 call=call_record,
                 run_id=run_id,
-                recorded_at=_now(),
+                recorded_at=now,
+            ))
+
+        self._db.execute("BEGIN TRANSACTION")
+        try:
+            known_records = self._existing("arche_records", "record_id", list(records))
+            self._insert_rows("arche_records", [
+                [r.record_id, r.entity_type, r.source, r.caller_id, _dump(r.attributes),
+                 r.text, r.recorded_at.isoformat()]
+                for rid, r in records.items() if rid not in known_records
+            ])
+            self._db.execute(
+                "INSERT INTO arche_runs VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                [run_id, verb, _dump(call_record), _dump([r.record_id for r in by_a.values()]),
+                 _dump([r.record_id for r in by_b.values()]), _dump(pins),
+                 _dump(dict(result.get("blocking", {}))), now.isoformat()],
             )
-            self._write_decision(decision)
-            recorded.append(decision)
-        return recorded
+            events = [_event_row("run_recorded", {"run_id": run_id, "verb": verb,
+                                                  "edges": len(built)})]
+
+            existing = {
+                row[0]: _decision_from_row(row)
+                for row in self._fetch_in("arche_decisions", "decision_id",
+                                          [d.decision_id for d in built])
+            }
+            fresh = [d for d in built if d.decision_id not in existing]
+            self._insert_rows("arche_decisions", [
+                [d.decision_id, d.verb, d.record_a, d.record_b, d.identity, d.action, d.score,
+                 _dump(d.factors), d.explanation, _dump(d.evidence), _dump(d.pins),
+                 _dump(d.call), d.run_id, d.recorded_at.isoformat(), d.supersedes, None]
+                for d in fresh
+            ])
+            events += [
+                _event_row("decision_recorded", {
+                    "decision_id": d.decision_id, "identity": d.identity,
+                    "action": d.action, "verb": d.verb,
+                })
+                for d in fresh
+            ]
+            events += self._link_many([d for d in fresh if d.linked], entity_type, now)
+            self._insert_rows("arche_events", events)
+        except Exception:
+            self._db.execute("ROLLBACK")
+            raise
+        self._db.execute("COMMIT")
+        return [existing.get(d.decision_id, d) for d in built]
+
+    def _link_many(self, linked: list[Decision], entity_type: str, now: datetime) -> list[list]:
+        """Union the records of many linking decisions at once; return the events.
+
+        Same rules as :meth:`_link`, one query in and one write out: an entity
+        that already exists in the store survives a merge with one created in
+        this batch, and among two existing ones the first seen survives.
+        """
+        if not linked:
+            return []
+        involved = sorted({rid for d in linked for rid in (d.record_a, d.record_b)})
+        member: dict[str, str] = {
+            row[0]: row[1]
+            for row in self._fetch_in("arche_memberships", "record_id", involved,
+                                      columns="record_id, entity_id")
+        }
+        stored_entities = set(member.values())
+        parent: dict[str, str] = {}
+
+        def find(entity: str) -> str:
+            while parent.get(entity, entity) != entity:
+                entity = parent[entity]
+            return entity
+
+        new_members: dict[str, tuple[str, str]] = {}   # record -> (entity, decision_id)
+        events: list[list] = []
+
+        def current(record_id: str) -> str | None:
+            entity = member.get(record_id) or (new_members.get(record_id) or (None,))[0]
+            return find(entity) if entity else None
+
+        for d in linked:
+            a, b = current(d.record_a), current(d.record_b)
+            if a is None and b is None:
+                entity_id = f"ent_{uuid4().hex}"
+                new_members[d.record_a] = (entity_id, d.decision_id)
+                new_members[d.record_b] = (entity_id, d.decision_id)
+                events.append(_event_row("entity_created", {
+                    "entity_id": entity_id, "decision_id": d.decision_id,
+                    "records": [d.record_a, d.record_b],
+                }))
+            elif a is None or b is None:
+                entity_id = a or b
+                newcomer = d.record_a if a is None else d.record_b
+                new_members[newcomer] = (entity_id, d.decision_id)
+                events.append(_event_row("record_linked", {
+                    "entity_id": entity_id, "record_id": newcomer,
+                    "decision_id": d.decision_id,
+                }))
+            elif a != b:
+                kept, absorbed = (b, a) if (b in stored_entities and a not in stored_entities) \
+                    else (a, b)
+                parent[absorbed] = kept
+                events.append(_event_row("entities_merged", {
+                    "kept": kept, "absorbed": absorbed, "decision_id": d.decision_id,
+                }, "two entities turned out to be one"))
+
+        self._insert_rows("arche_memberships", [
+            [record_id, find(entity), entity_type, decision_id, now.isoformat()]
+            for record_id, (entity, decision_id) in new_members.items()
+        ])
+        for absorbed in stored_entities:
+            kept = find(absorbed)
+            if kept != absorbed:
+                self._db.execute(
+                    "UPDATE arche_memberships SET entity_id = ? WHERE entity_id = ?",
+                    [kept, absorbed],
+                )
+        return events
+
+    # -- bulk helpers ---------------------------------------------------------
+
+    _CHUNK = 500
+
+    def _existing(self, table: str, key: str, ids: list[str]) -> set[str]:
+        return {row[0] for row in self._fetch_in(table, key, ids, columns=key)}
+
+    def _fetch_in(self, table: str, key: str, ids: list[str], *,
+                  columns: str = "*") -> list[tuple]:
+        rows: list[tuple] = []
+        for i in range(0, len(ids), self._CHUNK):
+            chunk = ids[i:i + self._CHUNK]
+            marks = ", ".join("?" for _ in chunk)
+            rows += self._db.execute(
+                f"SELECT {columns} FROM {table} WHERE {key} IN ({marks})", chunk
+            ).fetchall()
+        return rows
+
+    def _insert_rows(self, table: str, rows: list[list]) -> None:
+        if not rows:
+            return
+        width = len(rows[0])
+        one = "(" + ", ".join("?" for _ in range(width)) + ")"
+        for i in range(0, len(rows), self._CHUNK):
+            chunk = rows[i:i + self._CHUNK]
+            self._db.execute(
+                f"INSERT INTO {table} VALUES " + ", ".join([one] * len(chunk)),
+                [value for row in chunk for value in row],
+            )
 
     # ------------------------------------------------------------ reading
 
@@ -425,10 +572,13 @@ class Ledger:
         member_ids = [record.record_id for record in records]
         marks = ", ".join("?" for _ in member_ids)
         linked = self._db.execute(
-            f"SELECT decision_id FROM arche_decisions WHERE identity IN ('same_entity', 'match') "
+            f"SELECT decision_id, record_a, record_b FROM arche_decisions "
+            f"WHERE identity IN ('same_entity', 'match') "
             f"AND record_a IN ({marks}) AND record_b IN ({marks}) ORDER BY recorded_at",
             [*member_ids, *member_ids],
         ).fetchall()
+        decided_pairs = {frozenset((row[1], row[2])) for row in linked}
+        n = len(member_ids)
         return EntityView(
             entity_id=entity_id,
             entity_type=rows[0][1],
@@ -436,6 +586,7 @@ class Ledger:
             shared=shared,
             conflicts=conflicts,
             decision_ids=tuple(row[0] for row in linked),
+            held="direct" if len(decided_pairs) >= n * (n - 1) // 2 else "transitive",
         )
 
     def entities(self, entity_type: str | None = None) -> list[EntityView]:
@@ -511,36 +662,49 @@ class Ledger:
         )
         superseded: list[Decision] = []
         for prior in self.history(record_id):
-            if prior.superseded_by is None and prior.verb == "compare":
-                other_id = prior.record_b if prior.record_a == record_id else prior.record_a
-                other = self.record(other_id)
+            if prior.superseded_by is not None:
+                continue
+            other_id = prior.record_b if prior.record_a == record_id else prior.record_a
+            other = self.record(other_id)
+            if prior.verb == "compare":
                 call = {k: v for k, v in prior.call.items()
                         if k not in _TEXT_ONLY_ARGS and not k.startswith("_")}
                 entity = call.pop("entity", old.entity_type)
-                a_in = merged if prior.record_a == record_id else dict(other.attributes)
-                b_in = merged if prior.record_b == record_id else dict(other.attributes)
-                receipt = compare(a_in, b_in, entity=entity, **call)
-                observed_is_a = prior.record_a == record_id
-                keep = (None, other.record_id) if observed_is_a else (other.record_id, None)
-                fresh = self.record_compare(
-                    receipt, a_in, b_in,
-                    call={"entity": entity, **call},
-                    source=f"observe:{record_id}",
-                    supersedes=prior.decision_id,
-                    record_ids=keep,
-                )
-                self._db.execute(
-                    "UPDATE arche_decisions SET superseded_by = ? WHERE decision_id = ?",
-                    [fresh.decision_id, prior.decision_id],
-                )
-                self._event(
-                    "decision_superseded",
-                    {
-                        "was": prior.decision_id, "now": fresh.decision_id,
-                        "identity": f"{prior.identity} -> {fresh.identity}",
-                    },
-                )
-                superseded.append(fresh)
+            else:
+                # A batch edge is re-decided as one pair through the same pack.
+                # The score is the pack engine's for a pair, not the batch's:
+                # the frequency table was calibrated over two lists that are
+                # not here. The new receipt's pins say which engine issued it.
+                entity = prior.call.get("entity")
+                if entity is None:
+                    self._event("observe_skipped", {"decision_id": prior.decision_id},
+                                "batch decision with bespoke comparators; re-run the batch")
+                    continue
+                call = {}
+            a_in = merged if prior.record_a == record_id else dict(other.attributes)
+            b_in = merged if prior.record_b == record_id else dict(other.attributes)
+            receipt = compare(a_in, b_in, entity=entity, **call)
+            observed_is_a = prior.record_a == record_id
+            keep = (None, other.record_id) if observed_is_a else (other.record_id, None)
+            fresh = self.record_compare(
+                receipt, a_in, b_in,
+                call={"entity": entity, **call},
+                source=f"observe:{record_id}",
+                supersedes=prior.decision_id,
+                record_ids=keep,
+            )
+            self._db.execute(
+                "UPDATE arche_decisions SET superseded_by = ? WHERE decision_id = ?",
+                [fresh.decision_id, prior.decision_id],
+            )
+            self._event(
+                "decision_superseded",
+                {
+                    "was": prior.decision_id, "now": fresh.decision_id,
+                    "identity": f"{prior.identity} -> {fresh.identity}",
+                },
+            )
+            superseded.append(fresh)
         return superseded
 
     # ------------------------------------------------------------ internals
@@ -590,8 +754,10 @@ class Ledger:
         ).fetchone()
         return _decision_from_row(row) if row else None
 
-    def _write_decision(self, decision: Decision) -> None:
-        self._db.execute("BEGIN TRANSACTION")
+    def _write_decision(self, decision: Decision, *, entity_type: str | None = None,
+                        transaction: bool = True) -> None:
+        if transaction:
+            self._db.execute("BEGIN TRANSACTION")
         try:
             self._db.execute(
                 "INSERT INTO arche_decisions VALUES "
@@ -608,15 +774,18 @@ class Ledger:
                  "action": decision.action, "verb": decision.verb},
             )
             if decision.linked:
-                self._link(decision)
+                self._link(decision, entity_type)
         except Exception:
-            self._db.execute("ROLLBACK")
+            if transaction:
+                self._db.execute("ROLLBACK")
             raise
-        self._db.execute("COMMIT")
+        if transaction:
+            self._db.execute("COMMIT")
 
-    def _link(self, decision: Decision) -> None:
+    def _link(self, decision: Decision, entity_type: str | None = None) -> None:
         """Union the two records' entities. Merges keep the older id and log it."""
-        entity_type = self.record(decision.record_a).entity_type
+        if entity_type is None:
+            entity_type = self.record(decision.record_a).entity_type
         a = self.entity_of(decision.record_a)
         b = self.entity_of(decision.record_b)
         if a is None and b is None:
@@ -654,10 +823,8 @@ class Ledger:
         )
 
     def _event(self, kind: str, refs: Mapping[str, Any], note: str = "") -> None:
-        self._db.execute(
-            "INSERT INTO arche_events VALUES (?, ?, ?, ?, ?)",
-            [f"evt_{uuid4().hex}", kind, _now().isoformat(), _dump(dict(refs)), note],
-        )
+        self._db.execute("INSERT INTO arche_events VALUES (?, ?, ?, ?, ?)",
+                         _event_row(kind, refs, note))
 
     def _rerun(self, then: Decision) -> dict[str, Any]:
         from arche.resolve import compare, reconcile
@@ -750,6 +917,10 @@ _SCHEMA = (
 
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _event_row(kind: str, refs: Mapping[str, Any], note: str = "") -> list:
+    return [f"evt_{uuid4().hex}", kind, _now().isoformat(), _dump(dict(refs)), note]
 
 
 def _dump(value: Any) -> str:
@@ -852,9 +1023,15 @@ def _why(decision: Decision, record_a: Record, record_b: Record) -> dict[str, An
     refuting += sorted(f"veto:{k}" for k, v in dict(vetoes).items() if v)
     present = set(record_a.attributes) | set(record_b.attributes)
     missing = [f for f in _IDENTITY_FIELDS if f not in present and f not in decision.factors]
-    shared = {k: record_a.attributes.get(k) for k in supporting
-              if k in record_a.attributes and
-              _norm(record_a.attributes[k]) == _norm(record_b.attributes.get(k, ""))}
+    shared: dict[str, Any] = {}
+    for factor in supporting:
+        # A factor is named for the comparison (`name`); the attribute it read
+        # may carry the record's own spelling of that (`full_name`).
+        for key in (factor, f"full_{factor}"):
+            if (key in record_a.attributes and key in record_b.attributes
+                    and _norm(record_a.attributes[key]) == _norm(record_b.attributes[key])):
+                shared[factor] = record_a.attributes[key]
+                break
     return {
         "identity": decision.identity,
         "action": decision.action,
@@ -878,8 +1055,11 @@ def _would_resolve(decision: Decision, record_a: Record, record_b: Record,
 
         if entity in ENTITY_PACKS:
             edge = {"decision": "review", "evidence": decision.factors,
+                    "score": decision.score,
                     "distinctive_max": decision.evidence.get("distinctive_max")}
-            guidance = would_resolve(edge, record_a.attributes, record_b.attributes, entity=entity)
+            threshold = decision.pins.get("threshold")
+            guidance = would_resolve(edge, record_a.attributes, record_b.attributes,
+                                     entity=entity, threshold=threshold)
             fields = [item.get("field", item) if isinstance(item, Mapping) else str(item)
                       for item in guidance.get("would_resolve", [])]
             if fields:

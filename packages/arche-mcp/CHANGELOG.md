@@ -8,6 +8,8 @@ All notable changes to `arche-mcp` are documented here. Format loosely follows [
 
 **First release from the arche repository. Ten tools, one removed, jurisdiction inferred rather than configured.**
 
+Requires `arche-core>=0.8.0,<0.9.0`. The bound is closed on purpose: `uvx arche-mcp` re-resolves on every run, so the ceiling moves by a release of this package rather than by whatever `arche-core` publishes next.
+
 The package existed before this in a separate repository and was never published. Its version there was `0.1.0a3`; starting at `0.1.0a1` here rather than continuing that line, because reusing numbers that never shipped invents a history.
 
 ### The tools

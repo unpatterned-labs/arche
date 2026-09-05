@@ -4,11 +4,11 @@
 
 <p class="arche-hero__sub">arche decides whether messy records of people, organisations, places and products describe one real-world thing — shows the evidence, says <em>I don't know</em> when it should, and keeps a receipt you can replay later.</p>
 
-<span class="arche-hero__status">Alpha software · Apache-2.0 · runs offline on CPU</span>
+<span class="arche-hero__status">0.8.0 · Apache-2.0 · runs offline on CPU</span>
 
 </div>
 
-Three fragments of text mention someone. They share a national id, disagree on an email, and none of the addresses match. Same person?
+Three fragments of text mention someone. They share a national id and a name — once with a middle initial — disagree on an email, and none of the addresses match. Same person?
 
 ```python
 import arche
@@ -31,12 +31,12 @@ print(ledger.replay(r12.decision_id).reproduced)       # the same decision, agai
 ```
 
 ```text
-same_entity hold | same_entity merge
-{'national_id': '12345678901'} {'email': ['adesola@example.com', 'adesola@gmail.com']}
+same_entity merge | same_entity merge
+{'national_id': '12345678901'} {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 True
 ```
 
-Two axes, on purpose. `identity` is what arche believes: all three pairs are the same person, because a shared national id is distinctive. `action` is what it recommends: `hold` where the email conflicts and nothing else corroborates, `merge` where two identifiers agree. The ledger notices that three pairwise answers describe one entity, keeps the receipts, and can make any of them again.
+Two axes, on purpose. `identity` is what arche believes: all three pairs are the same person, because a shared national id is distinctive. `action` is what it recommends: `merge`, because the name corroborates the id — on a national id alone, with nothing else agreeing, it would say `hold`. The ledger notices that three pairwise answers describe one entity, keeps the receipts, and can make any of them again. The email the records disagree on is not averaged away: it sits in `conflicts`, beside the name spelled two ways, for whoever acts on the entity to see.
 
 ## What you get back
 
@@ -74,8 +74,8 @@ One engine, five calibrated packs. A pack is configuration and data, never a for
 
 **Splink is the better matcher, and arche can use it.** Measured, not a courtesy: on Febrl 4, on Splink's `historical_50k`, and on a Nigerian school register, Splink wins every time. `reconcile(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-field evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, a review pack a person can work, and now a ledger. Use Splink directly when you want the best probability that two rows are the same person. Use arche when you need to show why a decision was made, and prove later that it has not changed. See [the benchmarks](reference/benchmarks.md), including the runs where arche loses.
 
-## Scope for alpha
+## Scope
 
-arche is alpha software. Its APIs and calibration can change. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
+arche is pre-1.0: 0.8.0 is the first release out of alpha, and its APIs and calibration can still change between minor versions. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
 
-The `regex` extractor used above is deterministic and offline; it reads identifiers and emails, not names or streets. The model-backed extractors and the document parser are optional extras. `arche-mcp` is a separate, optional package that exposes the same functions to an agent; it does not yet expose the ledger.
+The `regex` extractor used above is deterministic and offline; it reads identifiers, emails, and names from a shipped lexicon of 13,342 African given and family names, not streets. The model-backed extractors and the document parser are optional extras. `arche-mcp` is a separate, optional package that exposes the same functions to an agent; it does not yet expose the ledger.

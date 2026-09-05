@@ -60,10 +60,10 @@ print(receipt.identity, receipt.action, receipt.explanation)
 ```
 
 ```text
-same_entity hold national ID match
+same_entity merge national ID match; name similarity 100%
 ```
 
-`hold` matters: the shared national ID is a strong signal, but the email conflict means Arche has not authorised a merge or downstream action. Treat the result as an evidence-cited resolution proposal. For richer name and address extraction, use the model-assisted backend after its local model is installed, or review the fields through the document/case workflow.
+Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone — say the name had not been read — the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `regex` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. The model-assisted backend does, once its local model is installed.
 
 The runnable form is [examples/quick_text_resolution.py](../../examples/quick_text_resolution.py), which goes one step further: three texts, a ledger, and the entity they turn out to describe. The notebook [23_three_texts_one_person.ipynb](../../examples/notebooks/23_three_texts_one_person.ipynb) walks the same path with replay and `observe`.
 
@@ -85,7 +85,7 @@ r23 = compare(text2, text3, entity="person", jurisdiction="NG", backend="regex",
 
 person, = ledger.entities()          # three texts, one entity
 person.shared                        # {'national_id': '12345678901'}
-person.conflicts                     # {'email': ['adesola@example.com', 'adesola@gmail.com']}
+person.conflicts                     # {'email': [...two addresses...], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 
 ledger.explain(r12.decision_id)      # supporting / refuting / missing, by field
 ledger.replay(r12.decision_id)       # reproduced=True, or `changed` names what moved
@@ -196,6 +196,13 @@ arche datasets            # truth coverage before choosing a benchmark
 arche datasets --json     # the same catalog for an application or agent
 arche review template PACK outcomes.csv  # value-free IDs for human adjudication
 arche resolve-documents tea-shipment.pdf --entity organisation --candidates suppliers.json --store tea-cases.duckdb --out tea-review.json
+arche compare --text "Adesola Okonkwo, NIN 12345678901" "A. Okonkwo, NIN 12345678901" --store people.duckdb
+arche entities --store people.duckdb           # what the decisions linked; values masked
+arche decision DECISION_ID --store people.duckdb
+arche explain  DECISION_ID --store people.duckdb
+arche replay   DECISION_ID --store people.duckdb
+arche cases    --store people.duckdb           # still at review, and what would settle each
+arche observe RECORD_ID --evidence '{"registration_id": "C.54321"}' --store people.duckdb
 ```
 
 `arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.

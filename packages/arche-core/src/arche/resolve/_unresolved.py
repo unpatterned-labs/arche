@@ -121,8 +121,17 @@ def _effect(comparator: Mapping) -> tuple[str, str]:
 
 
 def would_resolve(edge: Mapping, record_a: Mapping, record_b: Mapping, *,
-                  entity: str) -> dict[str, Any]:
+                  entity: str, threshold: float | None = None) -> dict[str, Any]:
     """Which fields would settle this pair, ranked by what they can achieve.
+
+    ``threshold`` is the run's match threshold (``result["pins"]["threshold"]``).
+    With it, a pair whose distinctiveness cleared the floor but whose *score*
+    fell short is recognised for what it is -- partial agreement, not a
+    conflict -- and the missing fields are listed. Without it the function
+    keeps its older reading, in which the only demotion above the floor is a
+    hard constraint; that reading is wrong for a pair like ``Kijani Tea
+    Exporters`` against ``Kijani Coffee``, which agrees distinctively on one
+    token and on nothing else.
 
     Returns the reason the pair is unresolved, the fields the pack could have
     used and did not receive, and the fields that are already present and
@@ -152,10 +161,18 @@ def would_resolve(edge: Mapping, record_a: Mapping, record_b: Mapping, *,
     # `conflict` is not carried on the edge. It does not need to be: a pair held
     # at review with distinctiveness above the floor was held by something else,
     # and the only other demotion is a conflict.
+    score = edge.get("score")
+    by_score = (threshold is not None and score is not None
+                and float(score) < float(threshold))
     by_conflict = (distinctive is not None
-                   and distinctive >= DISTINCTIVE_FLOOR)
+                   and distinctive >= DISTINCTIVE_FLOOR
+                   and not by_score)
 
-    if by_conflict:
+    if by_score:
+        why = (f"the records agree on something distinctive but on little else "
+               f"(score {score} < threshold {threshold}). What is present "
+               f"agrees only in part; a field that is absent could settle it")
+    elif by_conflict:
         why = ("the records agree distinctively, and a hard constraint "
                "contradicts them -- an administrative-unit disagreement or a "
                "geographic impossibility. More evidence will not settle this; "
@@ -191,7 +208,7 @@ def would_resolve(edge: Mapping, record_a: Mapping, record_b: Mapping, *,
         missing.append({"field": label, "effect": effect, "why": reason,
                         "weight": float(comparator.get("weight", 0.0) or 0.0)})
 
-    if not by_conflict:
+    if not by_conflict and not by_score:
         for label in present:
             useless.append({
                 "field": label,

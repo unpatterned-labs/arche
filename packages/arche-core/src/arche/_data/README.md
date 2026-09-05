@@ -38,3 +38,21 @@ curl -sf "https://restcountries.com/v3.1/all?fields=cca2,cca3,name,idd,currencie
 
 After refreshing, bump the fetch date in this file and verify
 `test_restcountries.py` still passes.
+
+---
+
+## `african_names_v1.jsonl.gz`
+
+| Field | Value |
+|---|---|
+| Source | `datasets/data/african_names_unique_v1.jsonl` (arche DataOps export, derived from Wikidata / ParaNames) |
+| Rows | 13,342 names (`{"name", "name_type": "given" \| "family"}`) |
+| File size | ~55 KB gzipped |
+| License | CC-BY-4.0 — credit *Unpatterned Labs*, <https://github.com/unpatterned-labs/arche> (see `datasets/DATASET_LICENSE.md`) |
+| arche use | `arche.detect.names` (`PII-1-NAME` detection, `person_spans`) and the `PERSON` rule of the regex extractor |
+| Refresh policy | Regenerate from the DataOps export when it changes; the loader prefers a repository export over this copy |
+| Consumer | `arche.detect._names.lexicon._find_lexicon_path` (last fallback) |
+
+**Why vendored:** the installed package used to detect 118 names — the
+equivalence-group starter set — and nothing else. The 13k lexicon existed only
+as a file in the source tree. Loaded lazily, on the first detection call.

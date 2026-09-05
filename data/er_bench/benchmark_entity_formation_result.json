@@ -1,0 +1,385 @@
+{
+  "benchmark": "entity formation: cross-cluster merges in ledger entities",
+  "method": "reconcile(store=ledger) with the published configuration; each entity's records mapped to complete-truth clusters; >1 cluster = cross-cluster merge",
+  "results": {
+    "dblp_acm_year_refutes": {
+      "records": 4910,
+      "true_clusters_of_size_gt_1": 2224,
+      "pairs": {
+        "true": 2224,
+        "matched_true": 2215,
+        "matched_false": 115,
+        "precision": 0.9506
+      },
+      "entities": {
+        "built": 2179,
+        "by_size": {
+          "2": 2135,
+          "3": 8,
+          "4": 29,
+          "5": 3,
+          "6": 2,
+          "8": 1,
+          "12": 1
+        },
+        "held": {
+          "transitive": 44,
+          "direct": 2135
+        },
+        "true_clusters_recovered_whole": 2135,
+        "recovered_whole_rate": 0.96,
+        "cross_cluster": 44,
+        "cross_cluster_rate": 0.0202,
+        "records_in_cross_cluster_entities": 187,
+        "cross_cluster_by_held": {
+          "transitive": 44
+        },
+        "largest_cross_cluster": 12
+      },
+      "cross_cluster_examples": [
+        {
+          "entity_id": "ent_4d855a61f06b4e4990dae35d462b1feb",
+          "records": 12,
+          "clusters": 8,
+          "held": "transitive",
+          "linked_by": 32,
+          "sample": [
+            "dblp:journals/sigmod/Aberer02",
+            "acm:601865",
+            "acm:507353",
+            "acm:565129",
+            "acm:637424",
+            "dblp:journals/sigmod/Aberer02b"
+          ]
+        },
+        {
+          "entity_id": "ent_488c7a75db7541eba31a866a73701dd7",
+          "records": 8,
+          "clusters": 6,
+          "held": "transitive",
+          "linked_by": 9,
+          "sample": [
+            "dblp:journals/sigmod/Aberer03d",
+            "acm:776994",
+            "acm:959078",
+            "dblp:journals/sigmod/Aberer03b",
+            "dblp:journals/sigmod/Aberer03",
+            "acm:776993"
+          ]
+        },
+        {
+          "entity_id": "ent_115b957f51e041a5a02a501701ddcee9",
+          "records": 6,
+          "clusters": 5,
+          "held": "transitive",
+          "linked_by": 5,
+          "sample": [
+            "dblp:journals/sigmod/RossNO03",
+            "acm:641001",
+            "dblp:journals/sigmod/RossGR03",
+            "dblp:journals/sigmod/CherniakV03",
+            "dblp:journals/sigmod/RossGN03",
+            "acm:641000"
+          ]
+        },
+        {
+          "entity_id": "ent_3258cbdf6cf448ccaad68a02daa15c7b",
+          "records": 6,
+          "clusters": 4,
+          "held": "transitive",
+          "linked_by": 8,
+          "sample": [
+            "dblp:journals/sigmod/RossFS02",
+            "acm:507364",
+            "dblp:journals/sigmod/RossAA02",
+            "acm:601875",
+            "dblp:journals/sigmod/RossAJS02",
+            "dblp:journals/sigmod/RossKMV02"
+          ]
+        },
+        {
+          "entity_id": "ent_4b4037b2ce084ed1a6268e5e96288cc4",
+          "records": 5,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 6,
+          "sample": [
+            "dblp:conf/sigmod/ShashaB02",
+            "acm:564799",
+            "dblp:conf/sigmod/ShashaB02a",
+            "acm:564798",
+            "dblp:conf/vldb/ShashaB02"
+          ]
+        },
+        {
+          "entity_id": "ent_8a6a4a85ec964ffb988e1047ab9de114",
+          "records": 5,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 6,
+          "sample": [
+            "dblp:journals/sigmod/Snodgrass98a",
+            "acm:290599",
+            "dblp:journals/sigmod/SnodgrassGIMSU98",
+            "dblp:journals/sigmod/SnodgrassHMOPRRWY98",
+            "acm:390004"
+          ]
+        },
+        {
+          "entity_id": "ent_bb42c0457ec74bf295b12e78d40ed437",
+          "records": 5,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 6,
+          "sample": [
+            "dblp:journals/sigmod/RossHLW01",
+            "acm:603882",
+            "acm:604262",
+            "dblp:journals/sigmod/RossHKRRSS01",
+            "dblp:journals/sigmod/RossCGLLM01"
+          ]
+        },
+        {
+          "entity_id": "ent_00a94c55db934796abe0b3682df844c7",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "dblp:journals/vldb/RamamohanaraoH94",
+            "acm:615193",
+            "dblp:journals/vldb/Guting94",
+            "acm:615206"
+          ]
+        },
+        {
+          "entity_id": "ent_0ad4a4a7f0d14934b2649b1ecf981335",
+          "records": 4,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "dblp:journals/sigmod/RossFLOSSVW00",
+            "acm:602302",
+            "dblp:journals/sigmod/RossIJP00",
+            "dblp:journals/sigmod/RossAKSSY00"
+          ]
+        },
+        {
+          "entity_id": "ent_18205a2a23df4a88a391e465144d0019",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 4,
+          "sample": [
+            "dblp:conf/vldb/Brodie00",
+            "acm:671680",
+            "dblp:conf/vldb/Schek00",
+            "acm:671861"
+          ]
+        }
+      ],
+      "seconds": {
+        "reconcile_with_store": 262.5,
+        "entities": 10.4
+      }
+    },
+    "febrl4_name_address": {
+      "records": 10000,
+      "true_clusters_of_size_gt_1": 5000,
+      "pairs": {
+        "true": 5000,
+        "matched_true": 3285,
+        "matched_false": 484,
+        "precision": 0.8716
+      },
+      "entities": {
+        "built": 3155,
+        "by_size": {
+          "2": 2971,
+          "3": 66,
+          "4": 57,
+          "5": 28,
+          "6": 13,
+          "7": 6,
+          "8": 4,
+          "9": 5,
+          "10": 1,
+          "11": 2,
+          "14": 1,
+          "17": 1
+        },
+        "held": {
+          "transitive": 184,
+          "direct": 2971
+        },
+        "true_clusters_recovered_whole": 2960,
+        "recovered_whole_rate": 0.592,
+        "cross_cluster": 195,
+        "cross_cluster_rate": 0.0618,
+        "records_in_cross_cluster_entities": 848,
+        "cross_cluster_by_held": {
+          "transitive": 184,
+          "direct": 11
+        },
+        "largest_cross_cluster": 17
+      },
+      "cross_cluster_examples": [
+        {
+          "entity_id": "ent_a6dbc250a9c24a3ab1cc6d53779389d7",
+          "records": 17,
+          "clusters": 10,
+          "held": "transitive",
+          "linked_by": 21,
+          "sample": [
+            "rec-1866-org",
+            "rec-1866-dup-0",
+            "rec-2346-org",
+            "rec-2346-dup-0",
+            "rec-484-org",
+            "rec-484-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_de62a5f0a26647578b60d0e610a86302",
+          "records": 14,
+          "clusters": 9,
+          "held": "transitive",
+          "linked_by": 25,
+          "sample": [
+            "rec-2762-org",
+            "rec-2762-dup-0",
+            "rec-826-org",
+            "rec-826-dup-0",
+            "rec-4579-org",
+            "rec-4579-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_c0ae6656efa645b49ce6b86cb518eeb6",
+          "records": 11,
+          "clusters": 8,
+          "held": "transitive",
+          "linked_by": 14,
+          "sample": [
+            "rec-406-org",
+            "rec-406-dup-0",
+            "rec-4937-org",
+            "rec-4937-dup-0",
+            "rec-374-org",
+            "rec-374-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_ea767c5b05cf4e409004d3ce1619107a",
+          "records": 11,
+          "clusters": 7,
+          "held": "transitive",
+          "linked_by": 17,
+          "sample": [
+            "rec-1360-org",
+            "rec-1360-dup-0",
+            "rec-4978-org",
+            "rec-4978-dup-0",
+            "rec-1935-org",
+            "rec-1935-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_6d0d10c4cfc94ba58eac019ce87e6074",
+          "records": 10,
+          "clusters": 7,
+          "held": "transitive",
+          "linked_by": 9,
+          "sample": [
+            "rec-2116-org",
+            "rec-2116-dup-0",
+            "rec-4549-dup-0",
+            "rec-2003-org",
+            "rec-475-dup-0",
+            "rec-2003-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_0c89fe5f27634291a3684fa6ed3f6a39",
+          "records": 9,
+          "clusters": 5,
+          "held": "transitive",
+          "linked_by": 10,
+          "sample": [
+            "rec-3193-org",
+            "rec-3193-dup-0",
+            "rec-3394-org",
+            "rec-3394-dup-0",
+            "rec-996-org",
+            "rec-996-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_3d3e97f9f02a45f2b1215f7c07b564ab",
+          "records": 9,
+          "clusters": 6,
+          "held": "transitive",
+          "linked_by": 10,
+          "sample": [
+            "rec-393-org",
+            "rec-393-dup-0",
+            "rec-3244-dup-0",
+            "rec-1084-org",
+            "rec-2409-dup-0",
+            "rec-3244-org"
+          ]
+        },
+        {
+          "entity_id": "ent_82986057fa884c3a81f702429caca31c",
+          "records": 9,
+          "clusters": 5,
+          "held": "transitive",
+          "linked_by": 11,
+          "sample": [
+            "rec-1133-org",
+            "rec-1133-dup-0",
+            "rec-1747-org",
+            "rec-1747-dup-0",
+            "rec-1612-org",
+            "rec-1612-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_a484392415a04455867d0e149a216622",
+          "records": 9,
+          "clusters": 6,
+          "held": "transitive",
+          "linked_by": 14,
+          "sample": [
+            "rec-4599-org",
+            "rec-4599-dup-0",
+            "rec-2911-org",
+            "rec-2911-dup-0",
+            "rec-4662-dup-0",
+            "rec-4662-org"
+          ]
+        },
+        {
+          "entity_id": "ent_ba8e97b352df4ff89396a80c4511c1e7",
+          "records": 9,
+          "clusters": 5,
+          "held": "transitive",
+          "linked_by": 11,
+          "sample": [
+            "rec-363-org",
+            "rec-363-dup-0",
+            "rec-1491-org",
+            "rec-1491-dup-0",
+            "rec-3770-org",
+            "rec-2079-org"
+          ]
+        }
+      ],
+      "seconds": {
+        "reconcile_with_store": 468.7,
+        "entities": 37.4
+      }
+    }
+  }
+}

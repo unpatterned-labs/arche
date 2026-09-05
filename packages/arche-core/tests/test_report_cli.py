@@ -165,7 +165,7 @@ def test_cli_resolve_documents_records_into_a_ledger_without_leaking_values(tmp_
     assert payload["decisions"][0]["identity"] == "same_entity"
     assert payload["unlinked"] == []
     assert payload["entities"][0]["records"] == ["invoice.txt", "kyc.txt"]
-    assert payload["entities"][0]["shared_fields"] == ["national_id"]
+    assert payload["entities"][0]["shared_fields"] == ["name", "national_id"]
     assert payload["entities"][0]["conflicting_fields"] == ["address", "email"]
     assert payload["open_cases"] == 0
 
@@ -173,7 +173,7 @@ def test_cli_resolve_documents_records_into_a_ledger_without_leaking_values(tmp_
 
     ledger = attach(f"duckdb:///{store}")
     assert ledger.decision(payload["decisions"][0]["decision_id"]).identity == "same_entity"
-    assert ledger.entities()[0].shared == {"national_id": "12345678901"}
+    assert ledger.entities()[0].shared == {"name": "Adesola Okonkwo", "national_id": "12345678901"}
     ledger.close()
 
 

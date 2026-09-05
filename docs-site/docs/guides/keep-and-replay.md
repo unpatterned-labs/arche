@@ -39,8 +39,8 @@ print(ledger.record(past.record_a).text)
 ```
 
 ```text
-same_entity hold | made with {'backend': 'regex', 'entity': 'person', 'jurisdiction': 'NG'}
-arche-core@0.7.0a1 {'distinctive_floor': 0.75, 'match': 0.85, 'review': 0.4}
+same_entity merge | made with {'backend': 'regex', 'entity': 'person', 'jurisdiction': 'NG'}
+arche-core@0.8.0 {'distinctive_floor': 0.75, 'match': 0.85, 'review': 0.4}
 Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com
 ```
 
@@ -55,11 +55,11 @@ print(why["shared"])
 ```
 
 ```text
-['national_id'] ['email'] ['registration_id', 'phone', 'dob', 'name', 'address']
-{'national_id': '12345678901'}
+['name', 'name_tf', 'national_id'] ['email'] ['registration_id', 'phone', 'dob', 'address']
+{'name': 'Adesola Okonkwo', 'national_id': '12345678901'}
 ```
 
-`supporting` agreed, `refuting` disagreed or vetoed, `missing` are identifying fields neither record supplied. `shared` carries the agreed values, because "the national id matched" is the claim and the id is the evidence.
+`supporting` agreed, `refuting` disagreed or vetoed, `missing` are identifying fields neither record supplied. `shared` carries the agreed values, because "the national id matched" is the claim and the id is the evidence. The name is there because the `regex` extractor reads it from a shipped lexicon of 13,342 African names; had it not been, the id alone would have made the action `hold` rather than `merge`.
 
 ## Replay
 
@@ -87,7 +87,7 @@ print(drift.then.identity, "->", drift.now["identity"])
 ```
 
 ```text
-False {'pins.engine': {'then': 'arche-core@0.7.0a1', 'now': 'arche-core@1.0.0'}}
+False {'pins.engine': {'then': 'arche-core@0.8.0', 'now': 'arche-core@1.0.0'}}
 same_entity -> same_entity
 ```
 
@@ -109,50 +109,55 @@ print("conflicts", entity.conflicts)
 ```text
 3 records, linked by 3 decisions
 shared    {'national_id': '12345678901'}
-conflicts {'email': ['adesola@example.com', 'adesola@gmail.com']}
+conflicts {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 ```
 
-`shared` is every attribute the member records agree on; `conflicts` every one they do not. Nothing is averaged, and the two `hold` receipts are still `hold` — a conflict is something to show a reviewer, not something to resolve by deleting a row.
+`shared` is every attribute the member records agree on; `conflicts` every one they do not. Nothing is averaged: the two email addresses and the two spellings of the name stay visible on the entity, because a conflict is something to show a reviewer, not something to resolve by deleting a row. `entity.held` says `direct` — every pair of the three was itself decided — or `transitive`, when two records are in one entity only because each matched a third. Transitive is where a resolution system quietly merges two different things, so the ledger says which is which.
 
 ## Cases
 
 Pairs still at `review` are the open questions. Each comes with what would settle it.
 
 ```python
-suppliers = [{"id": "s1", "name": "Kijani Tea Exporters Ltd", "city": "Nairobi"}]
-registry = [{"id": "r1", "name": "Kijani Tea Exporters Limited", "city": "Nairobi"},
+suppliers = [{"id": "s1", "name": "Kijani Tea Exporters Ltd", "city": "Nairobi",
+              "registration_id": "C.12345"}]
+registry = [{"id": "r1", "name": "Kijani Tea Exporters Limited", "city": "Nairobi",
+             "registration_id": "C.12345"},
             {"id": "r2", "name": "Kijani Coffee", "city": "Nairobi"}]
 arche.reconcile(suppliers, registry, entity="organisation", store=ledger)
 
 for case in ledger.cases():
     print(case.record_a.caller_id, "<->", case.record_b.caller_id, "|", case.decision.explanation)
     print(case.would_resolve)
+    open_record = case.record_b.record_id
 ```
 
 ```text
 s1 <-> r2 | review: no field agreed strongly
-['national_id', 'registration_id', 'phone', 'email', 'dob', 'address']
+['registration_id', 'entity_class', 'address', 'lat + lon']
 ```
+
+*Kijani Tea Exporters* and *Kijani Coffee* share one rare word and nothing else. The list is the organisation pack's answer, strongest first: a registration id would decide it outright; an entity class could only hold it back; an address or a coordinate would add an independent signal.
 
 ## Observe
 
-Go and get one of those fields — from a registry, a reviewer, another document — and hand it back. `observe` writes the enriched record, makes every open decision about the old one again, and records which receipt each new one supersedes. The old receipts stay, marked.
+Go and get one of those fields — from a registry, a reviewer, another document — and hand it back. `observe` writes the enriched record, decides every open pair about the old one again, and records which receipt each new one supersedes. The old receipts stay, marked.
 
 ```python
-third = ledger.decision(r13.decision_id).record_b
-fresh = ledger.observe(third, {"name": "Adesola Okonkwo"})
+fresh = ledger.observe(open_record, {"registration_id": "C.54321"})
 for d in fresh:
-    print(d.identity, d.action, "supersedes", d.supersedes[:20], "| knows", sorted(d.factors))
-print(ledger.decision(r13.decision_id).superseded_by is not None)
+    print(d.identity, d.action, "| supersedes", d.supersedes[:20], "|", d.explanation)
+print("open cases:", len(ledger.cases()))
 ```
 
 ```text
-same_entity merge supersedes dec:sha256:b1123feef | knows ['email', 'national_id']
-same_entity hold supersedes dec:sha256:45848124c | knows ['email', 'national_id']
-True
+different no_op | supersedes xwd:sha256:d72db93de | no organisation evidence reached the surfacing floor of 0.55
+open cases: 0
 ```
 
-That is the whole loop — `cases()` says what is open and what would help, you fetch it however you like, `observe` folds it in — with you, or your agent, holding the wheel. arche records; it does not act.
+The registry says *Kijani Coffee* is `C.54321`; the supplier record says `C.12345`. Two exact identifiers that disagree, and the shared word is no longer enough: the pair drops below the floor and the case closes as `different`. Had the registry returned `C.12345`, it would have closed as `same_entity`.
+
+That is the whole loop — `cases()` says what is open and what would help, you fetch it however you like, `observe` folds it in — with you, or your agent, holding the wheel. arche records; it does not act. A batch edge re-decided this way goes through the pack's pair engine rather than the batch it came from, and the new receipt's pins say so.
 
 ## Events
 
@@ -167,4 +172,23 @@ Every recording, link, merge, observation and supersession is a line in an appen
 
 The ledger keeps the inputs **as given** — the text, or the record — because replay needs them. It is your file, on your disk, like `decisions.json` beside your PDFs. Do not point it at a shared drive you would not put the source records on. A mode that keeps only hashed ids is planned; ask if you need it.
 
-From the command line, `arche resolve-documents FOLDER --store FILE.duckdb` records every verdict the same way and adds a value-free entity summary to its JSON output: document names and the *names* of the fields they agree on, never the values.
+## From the command line
+
+The same six moves, from a shell. `--store FILE.duckdb` names the ledger, or set `ARCHE_LEDGER` once; values are masked unless you pass `--reveal`; every command takes `--json`.
+
+```bash
+export ARCHE_LEDGER=people.duckdb
+
+arche compare --text "Adesola Okonkwo, NIN 12345678901, adesola@example.com"                      "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com" --record
+#  same_entity  merge  — national ID match; name similarity 100%
+#  decision_id dec:sha256:e77c…
+
+arche entities                       # what the decisions have linked together
+arche decision dec:sha256:e77c…      # the receipt, pins, and (masked) inputs
+arche explain  dec:sha256:e77c…      # supporting / refuting / missing
+arche replay   dec:sha256:e77c…      # reproduced: True, or what moved
+arche cases                          # pairs still at review, and what would settle each
+arche observe rec:sha256:9f1a… --evidence '{"registration_id": "C.54321"}'
+```
+
+`arche compare suppliers.csv registry.csv --entity organisation --store people.duckdb` records a batch the same way, and `arche resolve-documents FOLDER --store people.duckdb` does it for documents, adding a value-free entity summary to its JSON: document names and the *names* of the fields they agree on, never the values.

@@ -3,11 +3,11 @@
 
 """The ledger: record, look up, replay, link, observe.
 
-Three pieces of text about one person are the running example. Two of them
-share a national id and disagree on an email; the third agrees with the second
-on both. Pairwise the engine says ``same_entity`` three times, twice with
-``hold``; the ledger's job is to notice that those three verdicts describe one
-entity, keep the receipts, and make any of them again on request.
+Three pieces of text about one person are the running example. All three
+share a national id and a name; two disagree on an email; the third spells the
+name with an initial. Pairwise the engine says ``same_entity`` three times; the
+ledger's job is to notice that those three verdicts describe one entity, keep
+the receipts, and make any of them again on request.
 """
 
 from __future__ import annotations
@@ -82,14 +82,16 @@ def test_a_decision_can_be_found_by_its_id(ledger):
     found = ledger.decision(receipt.decision_id)
 
     assert found.verb == "compare"
-    assert (found.identity, found.action) == ("same_entity", "hold")
+    assert (found.identity, found.action) == ("same_entity", "merge")
     assert found.factors["national_id"] == 1.0
+    assert found.factors["name"] == 1.0  # the shipped lexicon reads the name
     assert found.pins == receipt.pins
     assert found.call == {"entity": "person", "jurisdiction": "NG", "backend": "regex"}
     # the inputs are kept, as given, so the decision can be made again
     assert ledger.record(found.record_a).text == T1
     assert ledger.record(found.record_b).text == T2
     assert ledger.record(found.record_a).attributes["national_id"] == "12345678901"
+    assert ledger.record(found.record_a).attributes["full_name"] == "Adesola Okonkwo"
 
 
 def test_recording_the_same_receipt_twice_writes_nothing_new(ledger):
@@ -126,9 +128,13 @@ def test_three_texts_become_one_entity_with_shared_and_conflicting_attributes(le
     assert person.entity_type == "person"
     assert len(person.records) == 3
     assert person.shared == {"national_id": "12345678901"}
-    assert set(person.conflicts) == {"email"}
+    assert set(person.conflicts) == {"email", "full_name"}
     assert set(person.conflicts["email"]) == {"adesola@example.com", "adesola@gmail.com"}
+    # "Adesola E. Okonkwo" is the same person and not the same string; a
+    # conflict is a disagreement to show, not a defect to average away.
+    assert set(person.conflicts["full_name"]) == {"Adesola Okonkwo", "Adesola E. Okonkwo"}
     assert len(person.decision_ids) == 3
+    assert person.held == "direct"  # every pair was itself decided
     kinds = [event.kind for event in ledger.events()]
     assert kinds.count("entity_created") == 1
     assert "record_linked" in kinds
@@ -145,6 +151,7 @@ def test_separate_entities_merge_when_a_later_decision_links_them(ledger):
 
     assert len(ledger.entities()) == 1
     assert len(ledger.entities()[0].records) == 4
+    assert ledger.entities()[0].held == "transitive"  # 1 and 4 were never compared
     assert any(event.kind == "entities_merged" for event in ledger.events())
 
 
@@ -166,11 +173,12 @@ def test_explain_separates_supporting_refuting_and_missing(ledger):
     why = ledger.explain(receipt.decision_id)
 
     assert why["identity"] == "same_entity"
-    assert why["action"] == "hold"
-    assert why["supporting"] == ["national_id"]
+    assert why["action"] == "merge"
+    assert why["basis"] == "corroborated"  # the name corroborates the id
+    assert why["supporting"] == ["name", "name_tf", "national_id"]
     assert why["refuting"] == ["email"]
-    assert "name" in why["missing"] and "phone" in why["missing"]
-    assert why["shared"] == {"national_id": "12345678901"}
+    assert "phone" in why["missing"] and "name" not in why["missing"]
+    assert why["shared"] == {"name": "Adesola Okonkwo", "national_id": "12345678901"}
 
 
 # ── replay ───────────────────────────────────────────────────────────────────

@@ -107,21 +107,21 @@ from arche.workflow import Pipeline
 
 text = "Adesola Okonkwo, NIN 12345678901, adesola@example.com"
 
-# No statute. The NIN and the email are both found, and nothing is changed.
+# No statute. The name, the NIN and the email are all found, and nothing is changed.
 plain = Pipeline().process(text)
-assert len(plain.detections) == 2
+assert {d.category for d in plain.detections} == {"PII-1-NAME", "PII-2-NIN", "PII-3-EMAIL"}
 assert plain.policy_outcomes == []
 assert plain.redacted_text == text
 
 # With a statute, the policy decides what happens to each field.
 guarded = Pipeline(statute="NDPA-2023").process(text)
-assert len(guarded.policy_outcomes) == 2
-assert guarded.redacted_text.startswith("Adesola Okonkwo, NIN [NIN], EMAIL_")
+assert len(guarded.policy_outcomes) == 4
+assert guarded.redacted_text.startswith("NAME_") and "NIN [NIN], EMAIL_" in guarded.redacted_text
 ```
 
 No statute means no policy, and no policy means no permission to alter or emit anything. The field is called `redacted_text` in both cases. Treating it as safe without checking `policy_outcomes` is the mistake this design invites, and the reason the egress guard exists as a separate, fail-closed component.
 
-Note also that `Adesola Okonkwo` survives both. The base rule-based pass carries no person-name detector for this jurisdiction, and no guard can tokenise a span nobody proposed. Neural NER is an opt-in extra, never on the critical path.
+Note also how `Adesola Okonkwo` is found: the rule-based pass matches each token against a lexicon of 13,342 African given and family names that ships in the package, so it reads *Adesola* and *Okonkwo* and would not read *Björn Svensson*. A name the lexicon does not hold is a span nobody proposed, and no guard can tokenise it. Neural NER is an opt-in extra, never on the critical path.
 
 ## Path 4: attest a decision
 

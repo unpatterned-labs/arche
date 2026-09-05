@@ -20,11 +20,11 @@ print(receipt.factors)
 ```
 
 ```text
-same_entity hold | national ID match
-{'national_id': 1.0, 'email': 0.0}
+same_entity merge | national ID match; name similarity 100%
+{'name': 1.0, 'national_id': 1.0, 'email': 0.0, 'name_tf': 1.0}
 ```
 
-`identity` says the two texts describe one person: a shared national id clears the distinctiveness gate on its own. `action` says do not merge yet: the email disagrees and nothing else corroborates. Both are true, and keeping them apart is what lets a system link the records while routing the conflict to someone.
+`identity` says the two texts describe one person: a shared national id clears the distinctiveness gate on its own. `action` says `merge` because a second field, the name, corroborates it. Had the name been absent — an id and a conflicting email and nothing else — the action would have been `hold`: same belief, no recommendation to act on it yet. Keeping the two axes apart is what lets a system link records while routing a conflict to someone.
 
 `receipt.decision_id` is a content hash over the rounded evidence and the pinned versions. Run the same call again and you get the same id, byte for byte.
 
@@ -48,7 +48,7 @@ print(ledger.replay(r12.decision_id).reproduced)
 ```
 
 ```text
-3 records | {'national_id': '12345678901'} | {'email': ['adesola@example.com', 'adesola@gmail.com']}
+3 records | {'national_id': '12345678901'} | {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 ['email']
 True
 ```

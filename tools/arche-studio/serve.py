@@ -745,8 +745,12 @@ def _documents(payload: dict) -> dict:
         # would double-count it and let one copy contradict the other, so a
         # detector finding that lands on a policy span is dropped in favour of
         # the row that carries the verdict.
+        # Overlap, not equality: the pipeline's name detector emits one span
+        # per token (`Adesola`, `Okonkwo`) where `detect` emits the whole name,
+        # and two rows over one stretch of text splice into each other when
+        # the page hides them ("[PERSON]AME_925a28e1" was the symptom).
         found += [("detector", e, None) for e in detect(text)
-                  if (int(e.start), int(e.end)) not in pipe_spans]
+                  if not any(s < int(e.end) and int(e.start) < t for s, t in pipe_spans)]
 
         entities = []
         for origin, entity, outcome in found:
@@ -838,10 +842,14 @@ def _hide_spans(text: str, entities: list[dict]) -> str:
     because it still tells you two mentions were the same number.
     """
     out = text
-    for entity in sorted(entities, key=lambda e: -e["span"][0]):
+    hidden: list[tuple[int, int]] = []
+    for entity in sorted(entities, key=lambda e: (-e["span"][0], e["span"][1] - e["span"][0])):
         if not entity["masked"]:
             continue
         start, end = entity["span"]
+        if any(s < end and start < t for s, t in hidden):
+            continue  # a span inside one already hidden would splice into it
+        hidden.append((start, end))
         out = out[:start] + entity["shown"] + out[end:]
     return out
 
