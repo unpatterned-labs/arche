@@ -674,7 +674,8 @@ def _documents(payload: dict) -> dict:
     """
     import hashlib as _hashlib
 
-    from arche import Pipeline, detect
+    from arche import Pipeline
+    from arche.extract import extract
 
     documents = payload.get("documents") or []
     if not documents:
@@ -741,15 +742,15 @@ def _documents(payload: dict) -> dict:
             ("policy", d, outcomes.get((int(d.start), int(d.end))))
             for d in (getattr(result, "detections", []) or [])
         ]
-        # `detect` also finds the email the pipeline found. Listing it twice
+        # `extract` also finds the email the pipeline found. Listing it twice
         # would double-count it and let one copy contradict the other, so a
         # detector finding that lands on a policy span is dropped in favour of
         # the row that carries the verdict.
         # Overlap, not equality: the pipeline's name detector emits one span
-        # per token (`Adesola`, `Okonkwo`) where `detect` emits the whole name,
+        # per token (`Adesola`, `Okonkwo`) where `extract` emits the whole name,
         # and two rows over one stretch of text splice into each other when
         # the page hides them ("[PERSON]AME_925a28e1" was the symptom).
-        found += [("detector", e, None) for e in detect(text)
+        found += [("detector", e, None) for e in extract(text)
                   if not any(s < int(e.end) and int(e.start) < t for s, t in pipe_spans)]
 
         entities = []

@@ -336,6 +336,8 @@ def detect_african_ids(text: str) -> list[NationalID]:
         # Highly specific alphanumeric formats first
         "GH_CARD", "GH_TIN", "GH_SSNIT",
         "KE_HUDUMA",  # cue-anchored, so more specific than any bare-digit KE id
+        "ZA_TAX_REF",  # cue-anchored ("tax"/"SARS" before the ten digits)
+        "NG_TIN",  # cue-anchored ("TIN"/"tax"/"FIRS" before the ten digits)
         "KE_KRA_PIN",
         "NG_RC", "NG_DRIVERS", "NG_PVC",
         "ZA_PASSPORT",
@@ -346,10 +348,9 @@ def detect_african_ids(text: str) -> list[NationalID]:
         "SN_CNI",
         # Constrained digit patterns (require specific prefix or length)
         "NG_BVN",  # 11 digits, must start with 22
-        "ZA_TAX_REF",  # 10 digits, first digit in {0,1,2,3,9}
         "KE_NHIF",  # 8-9 digits
         # Bare-digit patterns (most ambiguous, last)
-        "NG_TIN", "NG_NIN", "CM_CNI", "KE_ID",
+        "NG_NIN", "CM_CNI", "KE_ID",
     ]
 
     for key in priority_order:

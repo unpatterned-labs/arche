@@ -436,6 +436,19 @@ def _extract_regex(text: str, entity_types: list[str] | None = None) -> list[Ent
             from .detect._africa.ids import detect_african_ids
 
             for nid in detect_african_ids(text):
+                # A span already claimed by a validated non-phone entity keeps
+                # it. The case that found this: "ISBN 1806342456" -- the ten
+                # digits pass the ZA tax-reference *format* (any 10 digits
+                # starting 0/1/2/3/9, confidence 0.50, no checksum) while the
+                # ISBN-10 check digit has actually been verified. Without this
+                # guard both were emitted over the same digits, and the merge
+                # in `_merge_entities` -- which trusts `source="african"`
+                # unconditionally -- then dropped the ISBN in favour of the
+                # weaker guess.
+                if any(e.entity_type != "PHONE"
+                       and nid.start < e.end and nid.end > e.start
+                       for e in entities):
+                    continue
                 # Validated IDs replace any overlapping PHONE guess at the same span
                 entities = [
                     e for e in entities

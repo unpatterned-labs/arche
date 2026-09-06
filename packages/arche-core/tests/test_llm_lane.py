@@ -15,11 +15,9 @@ import warnings
 
 import pytest
 from arche import resolve
-from arche.attest import attest, verify_attestation
 from arche.declare import Declaration
 from arche.llm.declarative import extract_declared
 from arche.llm.harness import grade_extractions, grade_pairs
-from arche.sign.keys import generate_keypair
 
 DECL_RAW = {
     "arche_declaration": 1,
@@ -79,7 +77,7 @@ def test_bad_model_output_fails_loud(decl):
         extract_declared("...", decl)                       # neither seam
 
 
-def test_llm_decision_carries_honest_provenance_and_attests(decl):
+def test_llm_decision_carries_honest_provenance(decl):
     def fake_llm(messages):
         return json.dumps({"supplier_name": "Acme Fisheries",
                            "vessel_id": "IMO-9074729"})
@@ -94,8 +92,6 @@ def test_llm_decision_carries_honest_provenance_and_attests(decl):
     assert decision.pins["extraction"]["reproducible"] is False
     assert decision.pins["extraction"]["model"] == "stub-1"
     assert decision.pins["declaration"] == decl.pin()
-    signed = attest(decision, generate_keypair(), mode="jws")
-    assert verify_attestation(signed.compact).valid
 
 
 # ── grade_pairs (the model as matcher, engine as oracle) ─────────────────────

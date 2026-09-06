@@ -10,7 +10,6 @@ warning. Plus the disclosure-boundary enforcement in attest and render.
 """
 
 import pytest
-from arche.attest import attest, verify_attestation
 from arche.canonical import (
     PERSON_ID_CATEGORIES,
     Reference,
@@ -18,7 +17,6 @@ from arche.canonical import (
 )
 from arche.render import render
 from arche.resolve.coreference import _reference_to_match_record, coref_references
-from arche.sign.keys import generate_keypair
 from arche.workflow._primitive import Pipeline
 
 _KEY = b"bridge-test-issuer-key-32-bytes!"
@@ -149,19 +147,6 @@ def _restricted_decision():
             if attr.name == "national_id":
                 attr.restricted = True  # simulate a statute drop action
     return coref_references(a, b, jurisdiction="NG", issuer_key=_KEY)
-
-
-def test_restricted_attribute_never_enters_sd_jwt_claims():
-    from datetime import datetime
-    kp = generate_keypair()
-    d = _restricted_decision()
-    signed = attest(d, kp, mode="sd-jwt", include_subject=True,
-                    expires_at=datetime(2030, 1, 1))
-    r = verify_attestation(signed.compact)
-    assert r.valid
-    assert "national_id" not in r.claims          # refused despite include_subject=True
-    assert "NIN-1" not in signed.compact          # nor anywhere in the wire form
-    assert "full_name" in r.claims                # non-restricted PII still disclosable
 
 
 def test_restricted_attribute_never_renders_even_with_reveal_true():

@@ -531,29 +531,3 @@ def test_ndpa_retention_limits():
 def test_ndpa_penalties():
     penalties = NDPA_COMPLIANCE["penalties"]
     assert "minor_violation" in penalties
-
-
-# ── Cross-system: Nigeria pack + SDK pipeline ──────────────────────────────
-
-
-def test_full_pipeline_nigerian_text():
-    """End-to-end: Nigerian text → extract → resolve → governance."""
-    from arche.workflow.pipeline import resolve
-    result = resolve(
-        "Fatima Abdullahi, NIN 12345678901, phone 0803 555 7890, Lagos Nigeria",
-        backend="regex",
-    )
-    assert result.entity_count >= 2
-
-
-def test_governance_with_nigerian_evidence():
-    """Governance module should load NDPA from Nigeria pack."""
-    from arche.governance import assess_compliance
-    evidence = [
-        {"label": "nin", "text": "12345678901", "country_hint": "NG"},
-        {"label": "bvn", "text": "22100987654", "country_hint": "NG"},
-    ]
-    report = assess_compliance(evidence=evidence, jurisdiction="NG")
-    assert "NDPA" in report.law_name
-    assert report.high_sensitivity_count >= 2
-    assert report.dpia_required is False  # only 2 high, need 3 for DPIA

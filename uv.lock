@@ -255,7 +255,6 @@ source = { editable = "packages/arche-core" }
 dependencies = [
     { name = "cryptography" },
     { name = "h3" },
-    { name = "httpx" },
     { name = "jellyfish" },
     { name = "networkx" },
     { name = "phonenumbers" },
@@ -365,7 +364,6 @@ requires-dist = [
     { name = "gliner", marker = "extra == 'gliner'", specifier = ">=0.2.8" },
     { name = "gliner2", extras = ["local"], marker = "extra == 'detect2'", specifier = ">=2.0" },
     { name = "h3", specifier = ">=4.0" },
-    { name = "httpx", specifier = ">=0.27" },
     { name = "jellyfish", specifier = ">=1.0" },
     { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.40" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },

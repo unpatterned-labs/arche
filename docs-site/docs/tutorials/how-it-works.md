@@ -159,47 +159,43 @@ Abstention is a feature that costs something, and it is worth being clear about 
 The last verb turns a decision into something a third party can check.
 
 ```python
-from arche.attest import attest, verify_attestation
-from arche.canonical import Reference
-from arche.resolve import compare
-from arche.sign import generate_keypair
+from arche.resolve import reconcile
+from arche.resolve.reconcile import sign_edges
+from arche.sign import generate_keypair, verify
 
-ISSUER_KEY = b"an issuer secret of at least 32b"
-signing_key = generate_keypair()
+a = [{"id": "lagos-001", "name": "Fatima Abdullahi", "national_id": "12345678901"}]
+b = [{"id": "kano-774", "name": "Fatuma Abdulahi", "national_id": "12345678901"}]
 
-a = Reference.from_record({"id": "lagos-001", "full_name": "Fatima Abdullahi",
-                           "national_id": "12345678901"})
-b = Reference.from_record({"id": "kano-774", "full_name": "Fatuma Abdulahi",
-                           "national_id": "12345678901"})
+result = reconcile(a, b, entity="person", id_field="id")
+key = generate_keypair()
+signed = sign_edges(result, private_key=key.private_key, kid=key.did_key)
 
-signed = attest(compare(a, b, issuer_key=ISSUER_KEY), signing_key)
-
-checked = verify_attestation(signed.compact, public_key=signing_key.public_key)
+checked = verify(signed[0]["jws"], public_key=key.public_key)
 print("valid       :", checked.valid)
 print("trusted     :", checked.trusted)
 print("key_source  :", checked.key_source)
-print("decision    :", checked.claims["decision"])
-print("reproducible:", checked.claims["reproducible"])
-print("raw names in the attestation:",
-      "Fatima" in signed.compact or "Abdullahi" in signed.compact)
+print("decision    :", checked.payload["decision"])
+print("decision_id :", checked.payload["decision_id"][:24] + "...")
+print("raw names in the token:",
+      "Fatima" in signed[0]["jws"] or "Abdullahi" in signed[0]["jws"])
 ```
 
 ```text
 valid       : True
 trusted     : True
 key_source  : pinned
-decision    : same_entity
-reproducible: True
-raw names in the attestation: False
+decision    : review
+decision_id : xwd:sha256:33a0bb0f13492...
+raw names in the token: False
 ```
 
-Four fields in that output are doing separate jobs, and conflating any two of them is how people end up trusting something they should not.
+The decision being signed is a `review`, and that is deliberate: a signature is over what the engine decided, abstentions included. Three fields in that output are doing separate jobs, and conflating any two of them is how people end up trusting something they should not.
 
-**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls**. Here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Had we verified without passing a key, arche would have fallen back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token would come back `valid=True, trusted=False`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed. [The attest page](../how-to/attest.md) shows the forged case side by side with the genuine one.
+**`valid` says the signature matches the key that was used to check it. `trusted` says that key came from somewhere the caller controls**. Here, a `public_key` passed in explicitly, which is why `key_source` reads `pinned`. Verify with `allow_did_key_from_kid=True` and no key of your own, and arche falls back to the key the token names *about itself*, and an impostor who signs their own forgery names their own key too. That token comes back `valid=True, trusted=False, key_source=self-asserted`. Check `trusted`, never `valid`, whenever the signature is meant to prove *who* signed.
 
-**`reproducible: True` is a claim about replay**, and it is derived from what actually fed the decision rather than from the signing format. The engine's own path is deterministic, so this decision replays byte for byte. Had the two records been extracted by a hosted language model, the extraction step could not be replayed by a stranger, and the attestation would say `reproducible: False` instead of quietly implying otherwise.
+**The `decision_id` in the payload can be recomputed.** The signed claim is the edge plus the run's pins, the same bytes the id hashes, so a recipient recomputes the id from the payload and confirms it is the honest address of *this* evidence rather than one lifted from a more favourable decision. The signature and the recomputed id fail differently, which is what makes the pair useful.
 
-**And no raw name is in the artefact.** An attestation carries the decision, the numeric evidence, the gate, and content-addressed identifiers, not the person. That is what makes it shareable with a regulator, an auditor, or a counterparty who has no business seeing the underlying records.
+**And no raw name is in the artefact.** A signed edge carries the two record ids, the decision, the numeric evidence, the gate and the pins, not the person. That is what makes it shareable with a regulator, an auditor, or a counterparty who has no business seeing the underlying records.
 
 ---
 

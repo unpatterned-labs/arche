@@ -131,12 +131,21 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_TIN": {
         "country": "NG",
         "id_type": "TIN",
-        "description": "Nigeria Tax Identification Number — 10 digits (FIRS), optional -0001 branch suffix",
+        "description": "Nigeria Tax Identification Number — 10 digits (FIRS), cue-anchored",
+        # Cue-anchored like ZA_TAX_REF and KE_HUDUMA: ten bare digits with no
+        # check digit are an order number as often as a tax number, and the
+        # only evidence a reader has is the word "TIN", "tax" or "FIRS" before
+        # them. The "-0001" branch suffix is kept as part of the match.
         "pattern": re.compile(
-            r"(?<![0-9])(\d{10}(?:-\d{4})?)(?![0-9])"
+            r"\b(?:firs|tin|tax(?:\s*(?:id(?:entification)?))?"
+            r"(?:\s*(?:number|no|#))?)"
+            r"(?![a-z])"
+            r"[^0-9\n]{0,40}?"
+            r"(?<![0-9])(\d{10}(?:-\d{4})?)(?![0-9])",
+            re.IGNORECASE,
         ),
         "validator": _validate_ng_tin,
-        "base_confidence": 0.50,  # 10-digit sequences are ambiguous without context
+        "base_confidence": 0.80,  # the cue word is doing the work
     },
     "NG_RC": {
         "country": "NG",

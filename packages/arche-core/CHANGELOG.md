@@ -33,6 +33,27 @@ It is also the first release without an alpha suffix. Not because the API is fro
 - `arche version`, `arche list`, `arche datasets` and `arche review template` make the command surface, installed version, benchmark truth coverage and a value-free adjudication sheet discoverable without reading record values.
 - `data/scripts/benchmark_opensanctions_pairs.py` evaluates a locally downloaded OpenSanctions Pairs sample without adding a runtime dependency.
 
+### Fixed
+
+- `extract` dropped an ISBN-10 when its ten digits also fit the South African tax-reference format. Both readings were emitted over the same span by the regex pass -- the ISBN with its check digit verified at 0.95, the tax reference format-only at 0.50 -- and the merge, which trusts `source="african"` unconditionally, kept the weaker one. A span already claimed by a validated non-phone entity now keeps it. Found by `examples/identity_knowledge_graph.py`, which showed one ISBN where the text has two.
+- The South African tax-reference detector is **cue-anchored**, the way the Kenyan Huduma detector already was: it fires only when `tax`, `SARS` or `income tax` appears within forty characters before the ten digits, at confidence 0.80 rather than 0.50. A bare ten-digit run starting 0/1/2/3/9 -- an order number, an account number, a UK mobile without its leading zero -- is no longer read as a `NATIONAL_ID`. The Nigerian TIN detector had the identical shape and took over the same false positives the moment the ZA one was gated, so it is cue-anchored the same way (`TIN`, `tax`, `FIRS`). `detect_south_african_ids`, `detect_nigerian_ids` and `detect_african_ids` all carry the change; the profile validators in `arche.jurisdictions` are unchanged.
+
+### Removed
+
+The v0.1 surface. Nothing on the 0.8.0 path -- the four verbs, `resolve_documents`, the ledger, the CLI, `arche-mcp`, the studio -- imported any of it; the only callers left were its own tests. Each name below still had a lazy entry in `arche.__init__`, which is how a library keeps eight ways to ask three questions. The names, with what replaced them where something did:
+
+- `arche.workflow.pipeline`: `ArchePipeline`, `resolve(text)`, `detect(text)`, `link`, `IdentityGraph`, `ResolutionResult`. `Pipeline(jurisdiction=...).process(text)` is the detection primitive; `arche.extract.extract(text)` is the entity extractor `detect()` wrapped. The callable-module trick that made `arche.detect(text)` work is gone with it; `arche.detect` is the detector package.
+- `arche.resolve.classical`: `resolve_entities`, `resolve_identity_records`, `ResolvedEntity`, and `canonical.Entity.from_resolved`. `dedupe()` answers the one-list question over records; `Reference.from_mentions` turns extracted mentions into one.
+- `arche.protect` (`detect_pii`, `redact`, `PIIDetection`), the v0.1 Presidio wrapper. `Pipeline` runs the detectors and applies the statute; the `[presidio]` extra still installs the recogniser plugin under `arche.detect.presidio`.
+- `arche.ensemble` (`extract_identity_evidence`, `detect_sensitive_spans`, `format_tagged_text`), `arche.types` (`IdentityEvidence`, `IdentityRecord`, `MatchDecision`, `SensitiveSpan`, `JurisdictionProfile`) and `arche.models`, the v0.1 dataclass/pydantic pair. `JurisdictionProfileModel`, the one thing the country packs read, moved to `arche.jurisdictions._profile`.
+- `arche.audit` (the in-memory `AuditLog`), `arche.graph` (the networkx identity graph and the SQLite `graph.audit.AuditLog`), `arche.locate`. The association graph a user actually asks for is `ledger.graph()`, built from decisions rather than mentions.
+- `arche.attest` and `arche.credentials` (JWS and SD-JWT attestations of a receipt). `arche.sign` stays: `sign_edges` signs a result and `arche.sign.verify` checks it, which is what the README and the studio use.
+- `arche.governance` (`assess_compliance`), `arche.adapters` (the Nominatim verifier), `arche.resolve._relate`, `arche.workflow._review` (`ReviewQueue`), `arche.workflow._format` (the eleven `to_csv`/`to_html`/`format_table` formatters over `ResolutionResult`) and `report()`, the verb that dispatched over them; `arche.report` keeps `crosswalk_report`, `review_pack` and `pack_content_digest`.
+- `arche.workflow.dsar` and its letter templates (`DSARWorkflow`, `DSARRequestor`, `DSAROrganization`, `DSARDraft`, `DSARResult`), the citizen-side Data Subject Access Request drafter. `arche.workflow` now exports `Pipeline`, `Result` and `Detection` only.
+- `arche.ingest.from_url`, the SSRF-guarded web fetch, and with it **`httpx` as a dependency** -- it had no other caller. `extract_text` (files to text) is unchanged and still reachable as `arche.extract_text`.
+- `tools/review_log/`, the Streamlit adjudication app the studio replaced.
+- `examples/03_dsar_workflow.py`, `examples/04_sd_jwt_credential.py`, `examples/05_audit_log.py`, and 20 test files that tested only the above. `examples/identity_knowledge_graph.py` stays, rewritten on `extract` and networkx directly. The suite runs in under four minutes where it ran in six and a half.
+
 ### Removed before release
 
 None of the following shipped in a tagged version; they existed only on the `vnext` branch and are listed so their absence is not mistaken for an oversight.

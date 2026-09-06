@@ -359,8 +359,8 @@ class PlaceResolver:
         Directory containing JSON fixtures. If None, uses the bundled
         demo/_fixtures/ from the arche-core package.
     audit_log:
-        Optional arche.audit.AuditLog instance. If None, a fresh in-memory
-        log is created on first use.
+        Optional audit-log object with an ``append``-style interface. If None,
+        a fresh in-memory log is created on first use.
     live_api:
         Override the DEMO_LIVE_API env var. None = use env. True = always
         live. False = always fixtures.

@@ -7,13 +7,10 @@ Covers the collision-safe migration:
   * ``extract.Entity`` is aliased to ``EntityReference`` (both keep working).
   * the canonical resolved ``Entity`` is distinct and lives in ``arche.canonical``.
   * round-trip ``extract.Entity`` <-> ``EntityReference``.
-  * ``ResolvedEntity`` -> canonical ``Entity`` carries attributes + citations.
   * identity vs descriptive attribute distinction.
 """
 
 import pytest
-from arche.extract import Entity as ExtractEntity
-from arche.extract import extract
 from arche.canonical import (
     IDENTITY_ATTRIBUTE_NAMES,
     Attribute,
@@ -26,7 +23,8 @@ from arche.canonical import (
     is_identity_attribute_name,
     make_attribute,
 )
-from arche.resolve.classical import ResolvedEntity
+from arche.extract import Entity as ExtractEntity
+from arche.extract import extract
 
 # ── Collision resolution ─────────────────────────────────────────────────────
 
@@ -172,115 +170,11 @@ def test_provenance_no_law_is_not_an_error():
     assert cite.regulatory_citation == ""  # absence represented, no raise
 
 
-# ── ResolvedEntity -> canonical Entity ───────────────────────────────────────
-
-
-def _resolved_person_with_identifiers() -> ResolvedEntity:
-    """A resolved cluster mixing a name mention with identifier mentions."""
-    members = [
-        ExtractEntity(text="Janet Okafor", entity_type="PERSON", confidence=0.95,
-                      start=0, end=12, source="gliner"),
-        ExtractEntity(text="Jan Okafor", entity_type="PERSON", confidence=0.90,
-                      start=20, end=30, source="gliner"),
-        ExtractEntity(text="12345678901", entity_type="NATIONAL_ID", confidence=0.97,
-                      start=40, end=51, source="african",
-                      metadata={"country": "NG", "id_type": "nin",
-                                "regulatory_citation": "NDPA-2023 s.2.2"}),
-        ExtractEntity(text="+2348035557890", entity_type="PHONE", confidence=0.90,
-                      start=60, end=74, source="african",
-                      metadata={"regulatory_citation": "NDPA-2023 s.2.2"}),
-    ]
-    return ResolvedEntity(
-        canonical_name="Janet Okafor",
-        entity_type="PERSON",
-        aliases=["Jan Okafor"],
-        confidence=0.93,
-        sources=4,
-        match_reasons=["merged_4_mentions", "national_id_match"],
-        entities=members,
-    )
-
-
-def test_resolved_to_entity_basic_fields():
-    ent = Entity.from_resolved(_resolved_person_with_identifiers())
-    assert ent.canonical_name == "Janet Okafor"
-    assert ent.entity_type == "person"                 # PERSON -> person
-    assert len(ent.references) == 4
-    assert all(isinstance(r, EntityReference) for r in ent.references)
-    assert ent.confidence == 0.93
-    assert "national_id_match" in ent.match_reasons
-
-
-def test_resolved_to_entity_identity_vs_descriptive_split():
-    ent = Entity.from_resolved(_resolved_person_with_identifiers())
-
-    ident_names = {a.name for a in ent.identity_attributes}
-    desc_names = {a.name for a in ent.descriptive_attributes}
-
-    assert ident_names == {"national_id", "phone"}     # the distinguishing subset
-    assert "full_name" in desc_names                   # a common name is descriptive
-    assert all(a.identifying for a in ent.identity_attributes)
-    assert all(not a.identifying for a in ent.descriptive_attributes)
-
-
-def test_resolved_to_entity_carries_citations_onto_attributes():
-    ent = Entity.from_resolved(_resolved_person_with_identifiers())
-
-    nid = next(a for a in ent.identity_attributes if a.name == "national_id")
-    assert nid.regulatory_citations == ["NDPA-2023 s.2.2"]
-    assert nid.provenance[0].source == "african"
-
-    # Entity-level flattening dedupes across attributes.
-    assert ent.regulatory_citations == ["NDPA-2023 s.2.2"]
-
-
-def test_resolved_to_entity_dedupes_repeated_values():
-    """Two mentions of the same phone collapse to one attribute with merged provenance."""
-    members = [
-        ExtractEntity(text="+2348035557890", entity_type="PHONE", confidence=0.80,
-                      start=0, end=14, source="regex",
-                      metadata={"regulatory_citation": "NDPA-2023 s.2.2"}),
-        ExtractEntity(text="+2348035557890", entity_type="PHONE", confidence=0.90,
-                      start=30, end=44, source="african",
-                      metadata={"regulatory_citation": "NDPA-2023 s.2.2"}),
-    ]
-    resolved = ResolvedEntity(
-        canonical_name="+2348035557890", entity_type="PHONE", aliases=[],
-        confidence=0.85, sources=2, match_reasons=["merged_2_mentions"], entities=members,
-    )
-    ent = Entity.from_resolved(resolved)
-    phones = [a for a in ent.identity_attributes if a.name == "phone"]
-    assert len(phones) == 1
-    assert len(phones[0].provenance) == 2                 # both mentions cited
-    assert phones[0].confidence == 0.90                   # highest confidence kept
-
-
-def test_provenance_aggregation_at_entity_level():
-    ent = Entity.from_resolved(_resolved_person_with_identifiers())
-    # 4 references -> 4 attributes (2 names, 1 nid, 1 phone), each 1 citation.
-    assert len(ent.provenance) == len(ent.attributes) == 4
-
-
 def test_canonical_entity_type_mapping():
     assert canonical_entity_type("PERSON") == "person"
     assert canonical_entity_type("ORGANIZATION") == "organization"
     assert canonical_entity_type("LOCATION") == "place"
     assert canonical_entity_type("VEHICLE") == "vehicle"   # unknown -> lowercased thing
-
-
-# ── End-to-end: extract -> resolve -> canonical model ────────────────────────
-
-
-def test_end_to_end_extract_resolve_model():
-    from arche.resolve import resolve_entities
-
-    refs = extract("Contact Janet Okafor at janet@example.com", backend="regex")
-    resolved = resolve_entities(refs, use_splink=False)
-    entities = [Entity.from_resolved(r) for r in resolved]
-    assert entities
-    # The email should surface as an identity attribute somewhere.
-    all_ident = {a.name for e in entities for a in e.identity_attributes}
-    assert "email" in all_ident
 
 
 def test_identity_attribute_names_is_frozen():

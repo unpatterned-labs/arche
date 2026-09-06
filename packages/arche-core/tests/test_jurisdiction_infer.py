@@ -158,7 +158,14 @@ class TestSerialisation:
 
 
 class TestTheOriginalBug:
-    """36 phantom tax numbers, and whether the fix is real or just flattering."""
+    """36 phantom tax numbers, and whether the fix is real or just flattering.
+
+    Two fixes now stand between a UK bank statement and a Nigerian TIN. The
+    first was jurisdiction inference: run the statute that governs the text.
+    The second, in 0.8.0, is at the source: the TIN detector is cue-anchored,
+    so a bare ten-digit card-transaction reference is no evidence of a tax
+    number under *any* jurisdiction. Both are tested; either alone would do.
+    """
 
     _TEXT = (
         "Monzo Bank Limited, London EC2A 2AG. Registered in England and Wales. "
@@ -166,11 +173,19 @@ class TestTheOriginalBug:
         "Contact jane.smith@monzo.com. Balance £1,204.50."
     )
 
-    def test_the_wrong_jurisdiction_produces_phantom_identifiers(self):
+    def test_the_wrong_jurisdiction_no_longer_produces_phantom_identifiers(self):
+        # This used to assert `> 0`: the bug reproduced on demand. The
+        # cue-anchored TIN detector removed it at the source.
         from arche import Pipeline
 
         result = Pipeline(jurisdiction="NG").process(self._TEXT)
-        assert sum(1 for d in result.detections if d.category.endswith("TIN")) > 0
+        assert sum(1 for d in result.detections if d.category.endswith("TIN")) == 0
+
+    def test_a_cued_tin_is_still_found_under_the_right_jurisdiction(self):
+        from arche import Pipeline
+
+        result = Pipeline(jurisdiction="NG").process("FIRS TIN: 1234567890-0001")
+        assert sum(1 for d in result.detections if d.category.endswith("TIN")) == 1
 
     def test_inference_finds_the_right_one(self):
         assert infer_jurisdiction(self._TEXT).country == "GB"
