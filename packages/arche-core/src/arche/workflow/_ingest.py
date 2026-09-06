@@ -26,7 +26,7 @@ Supported formats:
     - Images (requires ``pytesseract`` + Tesseract binary)
 
 Usage:
-    from arche.ingest import extract_text
+    from arche import extract_text
     text = extract_text("report.pdf")
     text = extract_text("patient_records.docx")
     text = extract_text("notes.txt")

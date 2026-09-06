@@ -1,14 +1,7 @@
 """Edge case and adversarial tests."""
 
-import pytest
-from arche.workflow.pipeline import resolve
 from arche.detect._names.lexicon import are_names_equivalent, normalize_african_name
 from arche.extract import Entity, _mask_text, extract
-
-
-def test_resolve_empty_string():
-    result = resolve("", backend="regex")
-    assert result.entity_count == 0
 
 
 def test_extract_unicode_input():
@@ -27,18 +20,6 @@ def test_names_equivalent_empty():
     assert ok is False
     ok, score = are_names_equivalent("Mohammed", "")
     assert ok is False
-
-
-def test_over_max_length():
-    """Input exceeding max length should raise ValueError."""
-    from arche.config import configure, get_config
-    old_max = get_config().max_text_length
-    configure(max_text_length=100)
-    try:
-        with pytest.raises(ValueError, match="maximum length"):
-            resolve("x" * 200, backend="regex")
-    finally:
-        configure(max_text_length=old_max)
 
 
 def test_pii_masked_in_repr():
@@ -63,24 +44,3 @@ def test_mask_text_helper():
     assert _mask_text("janet@example.com", "EMAIL") == "jan***"
     assert _mask_text("Janet Okafor", "PERSON") == "Janet Okafor"
     assert _mask_text("AB", "PHONE") == "AB"  # Too short to mask
-
-
-def test_sanitize_for_logging():
-    result = resolve("Call +234 803 555 7890 about NIN 12345678901", backend="regex")
-    safe = result.sanitize_for_logging()
-    # Raw text should be masked
-    assert "+234" not in safe["text"]
-    assert "<input:" in safe["text"]
-    # PII entity text should be masked
-    for pii in safe.get("pii", []):
-        assert "12345678901" not in pii["text"]
-
-
-def test_redact_output():
-    result = resolve(
-        "Call +234 803 555 7890",
-        backend="regex",
-        redact_output=True,
-    )
-    # The result text should have PII redacted
-    assert "+234 803 555 7890" not in result.text

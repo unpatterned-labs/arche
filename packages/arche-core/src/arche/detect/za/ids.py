@@ -93,12 +93,27 @@ ZA_PATTERNS: dict[str, dict] = {
     "ZA_TAX_REF": {
         "country": "ZA",
         "id_type": "TAX_REFERENCE",
-        "description": "South Africa Tax Reference Number — 10 digits (SARS)",
+        "description": "South Africa Tax Reference Number — 10 digits (SARS), cue-anchored",
+        # DELIBERATELY cue-anchored, the way KE_HUDUMA is. A SARS tax reference
+        # is ten digits starting 0/1/2/3/9 with no published check digit, which
+        # is also the shape of an order number, an account number, a UK mobile
+        # without its leading zero and the ISBN-10 that first exposed this
+        # (`ISBN 1806342456` read as a tax reference at 0.50 and, through the
+        # merge's trust in validated ids, displaced the checksummed ISBN). A
+        # bare ten-digit run carries no evidence of being a tax number; the
+        # word "tax" or "SARS" within forty characters before it does, and it
+        # is the same evidence a human reader uses. So the pattern fires only
+        # with the cue, and the confidence reflects that the cue is doing the
+        # work rather than the digits.
         "pattern": re.compile(
-            r"(?<![0-9])([01239]\d{9})(?![0-9])"
+            r"\b(?:sars|income\s+tax|tax(?:\s*(?:ref(?:erence)?|reg(?:istration)?|number|no|#))?)"
+            r"(?![a-z])"
+            r"[^0-9\n]{0,40}?"
+            r"(?<![0-9])([01239]\d{9})(?![0-9])",
+            re.IGNORECASE,
         ),
         "validator": _validate_za_tax_ref,
-        "base_confidence": 0.50,  # 10-digit sequences ambiguous without context
+        "base_confidence": 0.80,  # the cue word is doing the work
     },
     "ZA_PASSPORT": {
         "country": "ZA",

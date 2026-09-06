@@ -28,8 +28,8 @@ the ordinals must not detect, and everything that legitimately did must still.
 from __future__ import annotations
 
 import pytest
-from arche import detect
 from arche.detect._money.african import detect_african_currency
+from arche.extract import extract
 
 
 def currencies(text: str) -> list[str]:
@@ -50,10 +50,10 @@ class TestOrdinalStreetNumbersAreNotMoney:
         assert currencies(text) == [], text
 
     def test_the_address_survives_as_a_location(self):
-        """The point of the fix. Previously MONEY ate the span and `detect`
+        """The point of the fix. Previously MONEY ate the span and `extract`
         returned no LOCATION for a perfectly ordinary US address."""
         text = "227 N 5TH AVE, RIDGEFIELD WA"
-        found = {e.entity_type for e in detect(text)}
+        found = {e.entity_type for e in extract(text)}
         assert "LOCATION" in found
         assert "MONEY" not in found
 
@@ -62,7 +62,7 @@ class TestOrdinalStreetNumbersAreNotMoney:
         control: it shows the bug was the symbol list, not the address parser."""
         text = "12 S 4TH AVE"
         assert currencies(text) == []
-        assert "LOCATION" in {e.entity_type for e in detect(text)}
+        assert "LOCATION" in {e.entity_type for e in extract(text)}
 
 
 class TestRealAmountsStillDetect:

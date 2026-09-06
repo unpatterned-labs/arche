@@ -1,34 +1,17 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""Resolve layer - link mentions across documents to canonical entities.
+"""Resolve -- the pairwise question, asked four ways.
 
-Ships a fuzzy/Fellegi-Sunter probabilistic record
-linkage implementation in ``arche.resolve.classical`` suitable for
-in-memory operation up to ~100K records. African-context comparator
-functions handle Yoruba/Hausa/Swahili name variants, patronymics, and
-transliteration differences.
+``compare`` for two things, ``reconcile`` for two lists, ``dedupe`` for one
+list, ``find`` for one record against a list. Every verb returns receipts
+with a content-addressed ``decision_id``, takes ``entity=`` to pick a shipped
+pack or ``comparators=`` to declare your own, and ``store=`` to record the
+result in a ledger. ``describe()`` says the same in JSON for a caller that
+cannot read prose.
 
-Public API::
-
-    from arche.resolve import resolve_entities, resolve_identity_records
-    from arche.resolve import ResolvedEntity
-
-For production-scale entity resolution (millions of records), install
-``arche-core[resolve]`` which pulls Splink + DuckDB. With the extra
-installed, ``resolve_entities(..., use_splink=True)`` auto-engages a
-Splink-backed Fellegi-Sunter pipeline at sizes >=10 entities and falls
-back to the fuzzy implementation on import error.
-
-A first-class ``SplinkResolver`` user class (CSV-in / cluster-out)
-arrives in v0.3 alongside the ``arche-core[graph]`` Kuzu backend and the
-``StorageBackend`` Protocol. See ``docs-site/docs/rfcs/0001-v0.3-storage.md``.
-
-----
-
-v0.3 note: the v0.1 callable-module shim (``arche.resolve(text)``) is
-removed. Use ``arche.Pipeline(...).process(text)`` for the composition
-pattern, or ``resolve.compare`` / ``resolve.reconcile`` from this facade.
+The v0.2 mention-level resolver (``resolve_entities``,
+``resolve_identity_records``, ``ResolvedEntity``) was removed in 0.8.0.
 """
 
 from __future__ import annotations
@@ -37,17 +20,6 @@ import warnings as _warnings
 
 from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
 from arche.resolve.artists import artist_aliases  # noqa: E402,F401
-
-# Re-export the v0.2 classical resolver surface so existing
-# ``from arche.resolve import X`` calls keep working.
-# Private symbols used internally by pipeline.py and other modules.
-from arche.resolve.classical import (  # noqa: E402,F401  # noqa: E402,F401
-    ResolvedEntity,
-    _build_resolved,
-    _single_entity_to_resolved,
-    resolve_entities,
-    resolve_identity_records,
-)
 
 # The engine, imported privately. The public `reconcile` below IS this
 # function plus entity-pack lookup: handed the same comparators the two
@@ -1402,5 +1374,4 @@ def _splink(list_a, list_b, comparators, extra_pins: dict, kwargs: dict):
 # The v0.1 callable-module shim (``arche.resolve(text)`` forwarding to the
 # pipeline with a DeprecationWarning) was removed in v0.3.0a1 as promised.
 # ``arche.resolve`` is now purely the facade package: ``resolve.compare``,
-# ``resolve.reconcile``. The v0.1 function lives on as
-# ``arche.workflow.pipeline.resolve`` for the Pipeline internals.
+# ``resolve.reconcile``. The v0.1 function itself was removed in 0.8.0.

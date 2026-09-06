@@ -15,9 +15,9 @@
 """arche's canonical object model.
 
 This module fixes the entity-resolution vocabulary so the object model is the pluggable
-spine the whole engine hangs off. It is **additive**: the legacy ``Entity`` /
-``ResolvedEntity`` types keep working unchanged. New code should prefer the
-names here.
+spine the whole engine hangs off. It is **additive**: the legacy
+``extract.Entity`` mention type keeps working unchanged. New code should prefer
+the names here.
 
 The vocabulary (and the name inversion this fixes)::
 
@@ -25,7 +25,7 @@ The vocabulary (and the name inversion this fixes)::
     ─────────────────    ──────────────────────────────────  ──────────────────
     EntityReference      One surface-form mention that        ``extract.Entity``
                          *refers* to an entity.               (INVERTED name)
-    Entity               The distinct real-world thing        ``ResolvedEntity``
+    Entity               The distinct real-world thing        (0.8.0: none)
                          references resolve *to*.
     Attribute            A property of an entity/reference    scattered fields
                          (name, DOB, address) with value +
@@ -57,15 +57,13 @@ rename, the migration is additive:
 
 Usage::
 
-    from arche.canonical import Entity, EntityReference
+    from arche.canonical import Entity, EntityReference, Reference
     from arche.extract import extract
-    from arche.resolve import resolve_entities
 
     refs = extract("Janet Okafor, NIN 12345678901")   # EntityReference[]
-    resolved = resolve_entities(refs)                  # legacy ResolvedEntity[]
-    entities = [Entity.from_resolved(r) for r in resolved]  # canonical Entity[]
-
-    person = entities[0]
+    record = Reference.from_mentions(refs)            # one record for the verbs
+    person = Entity(canonical_name="Janet Okafor", entity_type="person",
+                    references=refs, attributes=[])
     person.identity_attributes     # -> [IdentityAttribute(name='national_id', ...)]
     person.descriptive_attributes  # -> [Attribute(name='full_name', ...)]
     person.regulatory_citations    # -> flattened governing-law citations
@@ -78,7 +76,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # imported lazily in adapters to avoid import cycles
     from .extract import Entity as _LegacyMention
-    from .resolve.classical import ResolvedEntity
 
 
 # ── PII-safe display ─────────────────────────────────────────────────────────
@@ -118,8 +115,8 @@ _MENTION_TYPE_TO_ATTRIBUTE: dict[str, str] = {
     "MONEY": "amount",
 }
 
-# Map a legacy ``ResolvedEntity.entity_type`` onto the canonical entity
-# taxonomy: person | place | organization | thing.
+# Map a mention ``entity_type`` token onto the canonical entity taxonomy:
+# person | place | organization | thing.
 _ENTITY_TYPE_TO_CANONICAL: dict[str, str] = {
     "PERSON": "person",
     "ORGANIZATION": "organization",
@@ -749,7 +746,7 @@ class Reference:
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# Entity — the distinct real-world thing (canonical name for ResolvedEntity)
+# Entity — the distinct real-world thing
 # ═════════════════════════════════════════════════════════════════════════════
 
 
@@ -757,13 +754,11 @@ class Reference:
 class Entity:
     """A distinct real-world thing that references resolve *to*.
 
-    The canonical form of the legacy ``ResolvedEntity``. Carries a canonical
+    Carries a canonical
     name, the entity taxonomy type (``person``/``place``/``organization``/
     ``thing``), the :class:`EntityReference` mentions that were merged, and the
     resolved :class:`Attribute` set — split into distinguishing
     :meth:`identity_attributes` and :meth:`descriptive_attributes`.
-
-    Build one from the legacy resolver output with :meth:`from_resolved`.
     """
 
     canonical_name: str
@@ -803,9 +798,7 @@ class Entity:
     def regulatory_citations(self) -> list[str]:
         """Ordered, de-duplicated governing-law citations for this entity.
 
-        Flattens per-attribute provenance citations. Matches the semantics of
-        the legacy ``ResolvedEntity.regulatory_citations`` so callers migrating
-        to the canonical model keep the same compliance surface.
+        Flattens per-attribute provenance citations.
         """
         seen: list[str] = []
         for a in self.attributes:
@@ -813,58 +806,6 @@ class Entity:
                 if cite not in seen:
                     seen.append(cite)
         return seen
-
-    # ── adapters ────────────────────────────────────────────────────────────
-    @classmethod
-    def from_resolved(cls, resolved: ResolvedEntity) -> Entity:
-        """Adapt a legacy ``resolve.ResolvedEntity`` into a canonical Entity.
-
-        Each merged mention becomes an :class:`EntityReference`; its type maps
-        to a canonical :class:`Attribute` (identifier types become
-        :class:`IdentityAttribute`). Attributes are de-duplicated by
-        ``(name, value)`` with provenance merged, so N mentions of the same
-        phone collapse to one identity attribute citing every source.
-
-        The resolved record's ``regulatory_citations`` are preserved: they are
-        threaded onto each reference's provenance and re-derivable via
-        :attr:`regulatory_citations`.
-        """
-        references = [EntityReference.from_mention(m) for m in resolved.entities]
-
-        # Group by (attribute_name, value) so repeated mentions merge, carrying
-        # every mention's provenance onto the single resulting attribute.
-        by_key: dict[tuple[str, str], Attribute] = {}
-        for ref in references:
-            attr_name = _MENTION_TYPE_TO_ATTRIBUTE.get(
-                ref.entity_type, ref.entity_type.lower()
-            )
-            key = (attr_name, ref.text)
-            citation = ProvenanceCitation.from_reference(ref)
-            existing = by_key.get(key)
-            if existing is None:
-                by_key[key] = make_attribute(
-                    name=attr_name,
-                    value=ref.text,
-                    confidence=ref.confidence,
-                    provenance=[citation],
-                )
-            else:
-                existing.provenance.append(citation)
-                # Keep the highest confidence seen for this value.
-                existing.confidence = max(existing.confidence, ref.confidence)
-
-        attributes = list(by_key.values())
-
-        return cls(
-            canonical_name=resolved.canonical_name,
-            entity_type=canonical_entity_type(resolved.entity_type),
-            references=references,
-            attributes=attributes,
-            confidence=resolved.confidence,
-            match_reasons=list(resolved.match_reasons),
-        )
-
-
 __all__ = [
     "ProvenanceCitation",
     "Attribute",

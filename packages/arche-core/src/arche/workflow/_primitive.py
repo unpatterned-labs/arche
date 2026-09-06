@@ -90,7 +90,7 @@ class Result:
     addresses: list[Any] = field(default_factory=list)  # arche.addr.Address (Week 3)
     policy_outcomes: list[Any] = field(default_factory=list)  # arche.policy.PolicyOutcome
     redacted_text: str = ""
-    audit_log: list[Any] = field(default_factory=list)  # arche.graph.audit.AuditEvent (Week 3)
+    audit_log: list[Any] = field(default_factory=list)  # reserved; nothing writes it yet
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -101,9 +101,8 @@ class Result:
 class Pipeline:
     """Compose detection + policy + audit for one jurisdiction.
 
-    This is the framework primitive. Reference workflows
-    (`arche.workflow.redact.RedactionWorkflow`,
-    `arche.workflow.dsar.DSARWorkflow`) build on top of it.
+    This is the framework primitive; `resolve_documents`, the studio and
+    `arche-mcp` build on top of it.
 
     Parameters
     ----------
@@ -125,8 +124,8 @@ class Pipeline:
         Run ``arche.addr.parse_address`` over the text. Stage 1 / Week 3
         delivery; the field exists today as a forward-compatibility hook.
     audit:
-        Emit ``arche.graph.audit.AuditEvent`` records into ``Result.audit_log``
-        for each detection and policy decision. Stage 1 / Week 3 delivery.
+        Reserved: emit audit records into ``Result.audit_log`` for each
+        detection and policy decision. Nothing writes the field yet.
     tokenize_salt:
         Per-deployment salt for the ``tokenize`` policy action. Different
         salts across organizations prevent token re-identification leaks

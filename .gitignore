@@ -163,3 +163,6 @@ examples/notebooks/21_one_thing_two_identifiers.ipynb
 
 examples/notebooks/build_20.py
 examples/notebooks/build_21.py
+
+# Written by examples/identity_knowledge_graph.py on every run.
+examples/identity_graph.html

@@ -312,5 +312,3 @@ Not a service. It binds to `127.0.0.1` and is meant to be run on the machine
 that has the data. There is no authentication because there is no remote
 access, and adding one without the other would be theatre.
 
-It supersedes the earlier Streamlit `tools/review_log`, which needed a
-dependency to do less.

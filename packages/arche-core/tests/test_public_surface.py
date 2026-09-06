@@ -198,7 +198,7 @@ def test_arche_extract_is_callable_whichever_way_it_resolved():
 _FROZEN_SURFACE = {
     # The vocabulary this branch settled: four questions, two conveniences,
     # the noun they hand back, and the pipeline primitives.
-    "attach", "compare", "reconcile", "dedupe", "find", "describe", "report",
+    "attach", "compare", "reconcile", "dedupe", "find", "describe",
     "Receipt", "Pipeline", "Result", "Detection", "DocumentReport",
     "__version__",
     # The place lane. Domain helpers rather than vocabulary -- they read as
@@ -206,13 +206,10 @@ _FROZEN_SURFACE = {
     "compare_geo", "compare_place_qualifiers", "extract_places", "list_places",
     "load_type_vocab", "normalize_type_token", "resolve_places",
     "split_place_name",
-    # Older verbs, still recommended because they have NOT been shown to be
-    # replaceable. `match` resolves to arche.resolve._matcher.match and `link`
-    # to arche.workflow.pipeline.link -- different engines from `compare` and
-    # `reconcile`, not older spellings of them. Telling people to swap before
-    # that is measured would be a guess, and a wrong one writes bad links into
-    # somebody's data. They stay until someone runs the comparison.
-    "detect", "link", "match", "read_metadata", "resolve",
+    # `match` resolves to arche.resolve._matcher.match -- a different engine
+    # from `compare`, not an older spelling of it; it stays until someone runs
+    # the comparison. `detect` and `resolve` are the subpackages.
+    "detect", "match", "read_metadata", "resolve",
     "resolve_documents", "to_match_record",
 }
 

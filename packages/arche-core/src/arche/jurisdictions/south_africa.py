@@ -31,7 +31,7 @@ from __future__ import annotations  # noqa: I001
 
 import re
 
-from ..models import JurisdictionProfileModel
+from ._profile import JurisdictionProfileModel
 from .nigeria import ValidationResult
 
 

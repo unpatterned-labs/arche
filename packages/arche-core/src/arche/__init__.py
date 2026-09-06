@@ -1,44 +1,30 @@
-# Copyright 2026 unpatterned.org
-# SPDX-License-Identifier: Apache-2.0
+"""arche -- are these the same thing?
 
-"""arche — the identity workflow framework.
+Four verbs answer the pairwise question over records, text and documents --
+``compare``, ``reconcile``, ``dedupe``, ``find`` -- and ``resolve_documents``
+asks it of a folder of files. ``attach`` opens a ledger so a decision can be
+looked up, explained and replayed by its ``decision_id``::
 
-African-first, globally pluggable. Compose detection, resolution, linking,
-verification, and governance into production identity pipelines.
+    import arche
 
-Lifecycle (five user-facing steps)::
+    ledger = arche.attach("duckdb:///decisions.duckdb")
+    receipt = arche.compare(text_a, text_b, entity="person", jurisdiction="NG",
+                            backend="regex", store=ledger)
+    ledger.explain(receipt.decision_id)
 
-    Detect   →   Resolve   →   Link        →   Verify              →   Govern
-    arche.       arche.        arche-          arche.sign +            arche.policy +
-    detect       resolve       adapters        arche.credentials       arche.graph.audit
-                               (v0.2.0a2:
-                                arche.link)
-
+``Pipeline`` is the detection primitive underneath: detectors, a statute and
+the redaction it requires::
 
     from arche import Pipeline
 
-    pipeline = Pipeline(
-        jurisdiction="NG",
-        statute="NDPA-2023",
-    )
-    result = pipeline.process(
+    result = Pipeline(jurisdiction="NG").process(
         "Customer Adesola Okonkwo, NIN 12345678901, phone 0803 555 7890."
     )
     print(result.redacted_text)
-    # -> "Customer NAME_..., NIN [NIN], phone PHONE_..."
 
-    from arche.detect.ng.ids import detect_nigerian_ids
-    from arche.detect.za.ids import detect_south_african_ids
-    from arche.detect.ng.phones import normalize_ng_phone, validate_ng_phone
-
-    from arche.policy import load_statute, apply_policy, list_available_statutes
-    statute = load_statute("NDPA-2023")  # or POPIA, KENYA-DPA, GHANA-DPA
-
-Migration from v0.1: the legacy callable-module shim ``arche.resolve(text)``
-is removed as of v0.3.0a1 — ``Pipeline.process()`` is the replacement, and
-``arche.resolve`` is purely the facade package (``resolve.compare``,
-``resolve.reconcile``). Other v0.1 names remain importable through the 0.3
-line as a deprecated surface; their removal is targeted for v0.4.
+The v0.1 surface (``ArchePipeline``, ``resolve_entities``, ``detect_pii``,
+``locate``, the in-memory audit log, ``arche.graph``, ``arche.attest`` and the
+SD-JWT credentials) was removed in 0.8.0; the changelog lists every name.
 """
 
 from __future__ import annotations
@@ -53,7 +39,7 @@ from typing import TYPE_CHECKING
 from ._version import __version__
 
 # ---------------------------------------------------------------------------
-# v0.2 PRD §10.1 surface (eager — the recommended public API)
+# surface (eager — the recommended public API)
 # ---------------------------------------------------------------------------
 from .workflow import Detection, Pipeline, Result
 
@@ -163,17 +149,9 @@ _LAZY: dict[str, tuple[str, str]] = {
     # its cold-import budget.
     "attach": (".ledger", "attach"),
     "Ledger": (".ledger", "Ledger"),
-    # --- audit (v0.1 in-memory; v0.2 SQLite lives at arche.graph.audit) ----
-    "AuditEntry": (".audit", "AuditEntry"),
-    "AuditLog": (".audit", "AuditLog"),
-    "get_audit_log": (".audit", "get_audit_log"),
     # --- config -----------------------------------------------------------
     "configure": (".config", "configure"),
     "get_config": (".config", "get_config"),
-    # --- ensemble ---------------------------------------------------------
-    "detect_sensitive_spans": (".ensemble", "detect_sensitive_spans"),
-    "extract_identity_evidence": (".ensemble", "extract_identity_evidence"),
-    "format_tagged_text": (".ensemble", "format_tagged_text"),
     # --- extract / ingest -------------------------------------------------
     "Entity": (".extract", "Entity"),
     "extract": (".extract", "extract"),
@@ -187,16 +165,8 @@ _LAZY: dict[str, tuple[str, str]] = {
     "Attribute": (".canonical", "Attribute"),
     "IdentityAttribute": (".canonical", "IdentityAttribute"),
     "ProvenanceCitation": (".canonical", "ProvenanceCitation"),
-    # --- llm + locate -----------------------------------------------------
+    # --- llm --------------------------------------------------------------
     "LLMConfig": (".llm", "LLMConfig"),
-    "Location": (".locate", "Location"),
-    "locate": (".locate", "locate"),
-    # --- models (v2 pydantic surface) -------------------------------------
-    "IdentityEvidenceModel": (".models", "IdentityEvidenceModel"),
-    "IdentityRecordModel": (".models", "IdentityRecordModel"),
-    "JurisdictionProfileModel": (".models", "JurisdictionProfileModel"),
-    "MatchDecisionModel": (".models", "MatchDecisionModel"),
-    "SensitiveSpanModel": (".models", "SensitiveSpanModel"),
     # --- match ------------------------------------------------------------
     # Resolves to the real module (.resolve._matcher). The legacy
     # `arche.match` deprecation shim was removed; `from arche import match`
@@ -214,51 +184,6 @@ _LAZY: dict[str, tuple[str, str]] = {
     "DocumentReport": (".doc._documents", "DocumentReport"),
     "read_metadata": (".doc._metadata", "read_metadata"),
     "compare_place_qualifiers": (".resolve._matcher", "compare_place_qualifiers"),
-    # --- pipeline (v0.1 callables) ----------------------------------------
-    # Retargeted to .workflow.pipeline (real location); see note above.
-    # NOTE: `resolve_fhir` was removed in v0.2.0a3 along with the
-    # arche-adapters package — no FHIR surface in arche-core anymore.
-    "ArchePipeline": (".workflow.pipeline", "ArchePipeline"),
-    "IdentityGraph": (".workflow.pipeline", "IdentityGraph"),
-    "ResolutionResult": (".workflow.pipeline", "ResolutionResult"),
-    "detect": (".workflow.pipeline", "detect"),
-    "link": (".workflow.pipeline", "link"),
-    # --- relate -----------------------------------------------------------
-    # Resolves to the real module (.resolve._relate); the .relate shim was
-    # removed.
-    "EntityRelationship": (".resolve._relate", "EntityRelationship"),
-    "IdentityCluster": (".resolve._relate", "IdentityCluster"),
-    "extract_relationships": (".resolve._relate", "extract_relationships"),
-    "group_by_identity": (".resolve._relate", "group_by_identity"),
-    # --- protect ----------------------------------------------------------
-    "PIIDetection": (".protect", "PIIDetection"),
-    "detect_pii": (".protect", "detect_pii"),
-    "redact": (".protect", "redact"),
-    # --- resolve (also a callable package via _CallableResolveModule) -----
-    "ResolvedEntity": (".resolve", "ResolvedEntity"),
-    "resolve_entities": (".resolve", "resolve_entities"),
-    "resolve_identity_records": (".resolve", "resolve_identity_records"),
-    # --- review -----------------------------------------------------------
-    # ReviewQueue/ReviewCandidate removed from the public surface in v0.2.0a2.
-    # The MPI human-review workflow is internal v0.1 plumbing with no v0.2
-    # consumer (no README, demo/, api/, or web/ usage). Still importable from
-    # the canonical location: ``from arche.workflow._review import ReviewQueue``.
-    # --- visualize --------------------------------------------------------
-    # Resolves to the real module (.workflow._format); the .visualize shim
-    # was removed.
-    "evidence_to_csv": (".workflow._format", "evidence_to_csv"),
-    "evidence_to_html": (".workflow._format", "evidence_to_html"),
-    "format_evidence_table": (".workflow._format", "format_evidence_table"),
-    "format_summary": (".workflow._format", "format_summary"),
-    "format_table": (".workflow._format", "format_table"),
-    "print_table": (".workflow._format", "print_table"),
-    "to_csv": (".workflow._format", "to_csv"),
-    "to_dot": (".workflow._format", "to_dot"),
-    "to_graph_html": (".workflow._format", "to_graph_html"),
-    "to_html": (".workflow._format", "to_html"),
-    # --- types ------------------------------------------------------------
-    "IdentityEvidence": (".types", "IdentityEvidence"),
-    "IdentityRecord": (".types", "IdentityRecord"),
     # --- the tightened vocabulary -------------------------------------
     "Receipt": (".resolve.coreference", "Receipt"),
     "CoReferenceDecision": (".resolve.coreference", "Receipt"),
@@ -267,10 +192,6 @@ _LAZY: dict[str, tuple[str, str]] = {
     "dedupe": (".resolve", "dedupe"),
     "find": (".resolve", "find"),
     "describe": (".resolve", "describe"),
-    "report": (".report", "report"),
-    "JurisdictionProfile": (".types", "JurisdictionProfile"),
-    "MatchDecision": (".types", "MatchDecision"),
-    "SensitiveSpan": (".types", "SensitiveSpan"),
 }
 
 
@@ -288,11 +209,10 @@ _DEPRECATED: dict[str, str] = {
 
 
 def __getattr__(name: str):
-    """PEP 562 lazy attribute access for the v0.1 backward-compat surface.
+    """PEP 562 lazy attribute access.
 
-    The v0.1 shim modules (signal, enrich, audit, pipeline, ...) emit
-    ``DeprecationWarning`` on import. Lazy-loading them defers those
-    warnings to first-use, so ``import arche`` itself remains silent.
+    Every name in ``_LAZY`` imports on first use so that ``import arche``
+    stays inside its cold-import budget; a ``_DEPRECATED`` name warns once.
     """
     target = _LAZY.get(name)
     if target is None:
@@ -318,7 +238,7 @@ def __getattr__(name: str):
 
 
 def __dir__() -> list[str]:
-    """Expose v0.1 names via auto-complete without forcing their import."""
+    """Expose the lazy names to auto-complete without forcing their import."""
     return sorted(set(globals()) | _LAZY.keys())
 
 
@@ -339,7 +259,6 @@ __all__ = [
     "dedupe",
     "find",
     "describe",
-    "report",
     "Receipt",
     "Result",
     "Detection",
@@ -354,7 +273,6 @@ __all__ = [
     "resolve_documents",
     "DocumentReport",
     "read_metadata",
-    "link",
     "resolve",
     "resolve_places",
     "list_places",
