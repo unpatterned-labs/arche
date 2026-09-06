@@ -14,6 +14,8 @@ There are three kinds of entry, and they support different claims.
 
 **Internal ablation.** One part of arche switched off, everything else held still. Says nothing about other tools.
 
+**Gated.** Two of these run in CI on every change to the resolver — DBLP-ACM (year refutes) and Febrl 4 (name + address) — and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). The gate exists because the Febrl number below drifted for two weeks before anyone looked.
+
 ## Against another package
 
 ### R `RecordLinkage`, Parrish tutorial
