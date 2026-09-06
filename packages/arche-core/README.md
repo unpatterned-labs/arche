@@ -1,6 +1,6 @@
 # arche-core
 
-**Know what's real.**
+**Are these the same thing? arche decides, shows the evidence, and keeps the receipt.**
 
 An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.
 
@@ -45,12 +45,59 @@ for edge in result["matches"]:
     print(edge["decision"], edge["score"], edge["evidence"])
 ```
 
+## Compare two pieces of person text
+
+For a fast, local first answer, pass the text directly to `compare`. This synthetic example uses the deterministic `regex` extractor, so it does not download or call a model.
+
+```python
+from arche import compare
+
+text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
+text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
+
+receipt = compare(text1, text2, entity="person", jurisdiction="NG", backend="regex")
+print(receipt.identity, receipt.action, receipt.explanation)
+```
+
+```text
+same_entity merge national ID match; name similarity 100%
+```
+
+Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone — say the name had not been read — the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `regex` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. The model-assisted backend does, once its local model is installed.
+
+The runnable form is [examples/quick_text_resolution.py](../../examples/quick_text_resolution.py), which goes one step further: three texts, a ledger, and the entity they turn out to describe. The notebook [23_three_texts_one_person.ipynb](../../examples/notebooks/23_three_texts_one_person.ipynb) walks the same path with replay and `observe`.
+
+## Keep the decision, and make it again
+
+Every verdict already carries a `decision_id`: a content hash over the evidence and the pinned versions, so the same inputs give the same id byte for byte. A ledger is where that id becomes useful.
+
+```bash
+pip install "arche-core[ledger]"
+```
+
+```python
+from arche import attach, compare
+
+ledger = attach("duckdb:///people.duckdb")
+r12 = compare(text1, text2, entity="person", jurisdiction="NG", backend="regex", store=ledger)
+r13 = compare(text1, text3, entity="person", jurisdiction="NG", backend="regex", store=ledger)
+r23 = compare(text2, text3, entity="person", jurisdiction="NG", backend="regex", store=ledger)
+
+person, = ledger.entities()          # three texts, one entity
+person.shared                        # {'national_id': '12345678901'}
+person.conflicts                     # {'email': [...two addresses...], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
+
+ledger.explain(r12.decision_id)      # supporting / refuting / missing, by field
+ledger.replay(r12.decision_id)       # reproduced=True, or `changed` names what moved
+ledger.cases()                       # pairs still at review, and what would settle them
+ledger.observe(record_id, {...})     # add evidence, re-decide, supersede
+```
+
+The receipt is identical with or without `store=`. The ledger is a DuckDB file on your disk holding the inputs as given, the receipts, and an append-only event log; it records, and leaves what to *do* about a verdict to you.
+
 ## Bring your own candidate retrieval
 
-At scale, the costly question is often which pairs deserve comparison. Retrieve
-candidate pairs in a warehouse, search index or specialist system, then let
-arche apply the calibrated comparators, gate and decision policy. Pin the
-retrieval configuration so the resulting decision remains reproducible.
+At scale, the costly question is often which pairs deserve comparison. Retrieve candidate pairs in a warehouse, search index or specialist system, then let arche apply the calibrated comparators, gate and decision policy. Pin the retrieval configuration so the resulting decision remains reproducible.
 
 ```python
 from arche.resolve import reconcile
@@ -74,15 +121,7 @@ result = reconcile(
 )
 ```
 
-The retrieval score proposes a comparison. It does not decide identity. Each
-returned edge includes the retrieval route, scored evidence, the verdict and a
-`decision_id` that pins the retrieval provenance too.
-
-This import path currently uses Arche's default scorer. A Splink run keeps
-candidate generation in its caller-owned `SettingsCreator` until the two paths
-share an evaluated candidate contract.
-
-Three answers, not two: `same_entity`, `review`, `different`. The middle one is the point. It is Fellegi and Sunter's third region from 1969, which most production systems discard because a review queue costs money, and discarding it is where systems start asserting things they have not earned.
+The retrieval score proposes a comparison. It does not decide identity. Each returned edge includes the retrieval route, scored evidence, the verdict and a `decision_id` that pins the retrieval provenance too.
 
 ## From documents to decisions
 
@@ -91,11 +130,27 @@ Unstructured input is a first-class entry point, not a preprocessing step you bo
 ```python
 from arche import resolve_documents
 
-report = resolve_documents("statements/*.pdf")
-print(report.table())
+candidates = [{"entity_id": "ent_supplier_17", "name": "Kijani Tea Exporters Limited"}]
+report = resolve_documents("shipments/*.pdf", entity="organisation", candidates=candidates)
+print(report.review())
 ```
 
-That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and resolves them against each other. Every decision carries the extraction that produced it: the hash of the input bytes, the parser and its version, the digest of the rendering its spans point into. Upgrade the parser next year, re-run, and you can tell whether the answer changed or only the machinery did.
+That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and compares it against the explicit caller-owned candidate set. Labelled commercial fields such as supplier, distributor, estate, and registration ID are proposed with spans for review; they are not claims or accepted Evidence. Candidate results are proposals. `review()` is the masked hand-off for a review pane or an agent, and `unlinked()` names the documents no verdict tied to anything. `max_candidate_pairs` defaults to 1,000, so callers narrow candidates rather than accidentally comparing every document against a full master table.
+
+Give the run a ledger and the verdicts outlive the report:
+
+```python
+from arche import attach, resolve_documents
+
+ledger = attach("duckdb:///suppliers.duckdb")
+report = resolve_documents("shipments/*.pdf", entity="organisation", store=ledger)
+
+for entity in ledger.entities():          # which documents describe one thing
+    print(entity.shared, entity.conflicts)
+ledger.replay(report.decisions[0]["decision_id"]).reproduced   # True, or what moved
+```
+
+`extraction_backend="regex"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
 
 ## Decisions you can hand to someone who does not trust you
 
@@ -124,9 +179,37 @@ Published whichever way it falls, with the caveats attached rather than in a foo
 
 The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
 
+For a local OpenSanctions Pairs smoke evaluation, download the CC-BY-NC-4.0 dataset under its terms and run `uv run python data/scripts/benchmark_opensanctions_pairs.py --input path/to/sample_1000.json`. The script reports only the supported person/person and organisation/organisation pairs, and reports structural or mixed-schema pairs as skipped; it does not turn an evaluation result into a runtime pack or an operational sanctions-screening policy.
+
 ## Why the calibration comes from where it does
 
 The engine is general. The organisation frequency table is built from company registrations across 65 jurisdictions, the product work is benchmarked on US retail catalogues, and the place work runs on UK hospitals and Nigerian clinics alike.
+
+### CLI discovery and releases
+
+`arche` is intended to be usable without memorising a hidden command tree:
+
+```text
+arche version             # the installed arche-core version
+arche list                # compare, review, schema, datasets, and version
+arche datasets            # truth coverage before choosing a benchmark
+arche datasets --json     # the same catalog for an application or agent
+arche review template PACK outcomes.csv  # value-free IDs for human adjudication
+arche resolve-documents tea-shipment.pdf --entity organisation --candidates suppliers.json --store tea-cases.duckdb --out tea-review.json
+arche compare --text "Adesola Okonkwo, NIN 12345678901" "A. Okonkwo, NIN 12345678901" --store people.duckdb
+arche entities --store people.duckdb           # what the decisions linked; values masked
+arche decision DECISION_ID --store people.duckdb
+arche explain  DECISION_ID --store people.duckdb
+arche replay   DECISION_ID --store people.duckdb
+arche path REC_A REC_B --store people.duckdb   # why two records are one entity: the chain of decisions
+arche resolve --text "M. Jones, NIN 12345678901" --store people.duckdb   # a new record against the entities
+arche cases    --store people.duckdb           # still at review, and what would settle each
+arche observe RECORD_ID --evidence '{"registration_id": "C.54321"}' --store people.duckdb
+```
+
+`arche datasets` never reads record values. It distinguishes complete mappings (which can measure false merges and support an evaluated-method qualification) from unlabelled review packs (which can support adjudication but cannot qualify a method). `arche review template` writes only decision IDs and empty review fields, so the reviewer can supply the outcome separately from record values.
+
+`arche resolve-documents` is the shortest document front door: it emits a masked proposed-field/candidate review artifact and opens an unresolved case when it cannot safely link a supplied candidate. Add `--store FILE.duckdb` to record every verdict and its records in a local ledger; the JSON artifact then also lists the entities those verdicts built, by document name and field *name* only. The release version is single-sourced in `src/arche/_version.py`; Hatch reads that value into wheel metadata, so a release bump changes one file and must be made only as part of a release commit.
 
 What is unusual is where the defaults were tested first. Jaro-Winkler, the string comparator underneath most record linkage, pays a bonus for a shared prefix, because it was tuned on US Census surnames where clerical typos land at the end of a word. *Diallo* and *Jallow* are one Fula family name split by a colonial spelling border, and they share no prefix at all. That assumption fails identically on Arabic transliteration, on Cantonese romanisation, and on any register where one name has three spellings.
 

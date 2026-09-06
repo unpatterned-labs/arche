@@ -15,7 +15,7 @@ are African-calibrated:
 ===========  ==================================  ==========================
 pack         finds                               misses
 ===========  ==================================  ==========================
-``names``    ``Adaeze Okonkwo``                  ``Jane Smith``
+``names``    ``Adaeze Okonkwo``                  ``Björn Svensson``
 ``locations``  ``Kano State``                    ``Manchester``, ``Munich``
 ``core``     ``+2348031234567``                  ``+447700900123``, ``+49…``
 ===========  ==================================  ==========================
@@ -62,7 +62,10 @@ class TestTheMeasurementsBehindTheDeclaration:
     """
 
     @pytest.mark.parametrize("pack,found,missed", [
-        ("names", "Adaeze Okonkwo lives here.", "Jane Smith lives here."),
+        # `Jane Smith` used to be the miss. The shipped 13k lexicon is drawn
+        # from people recorded in African countries, and *Jane* and *Smith*
+        # are both in it -- names travel. A Scandinavian name is still not.
+        ("names", "Adaeze Okonkwo lives here.", "Björn Svensson lives here."),
         ("locations", "Kano State, Nigeria", "Munich, Bavaria"),
         ("core", "+2348031234567", "+4915112345678"),
     ])

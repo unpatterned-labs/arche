@@ -251,3 +251,33 @@ class TestMissingValues:
         b = {"id": "b", "name": "General Hospital"}
         result = would_resolve(edge_for(a, b, "place"), a, b, entity="place")
         assert "lat + lon" in {e["field"] for e in result["would_resolve"]}
+
+
+class TestScoreBelowThreshold:
+    """A pair can sit at `review` with distinctiveness above the floor and no
+    conflict at all: it agreed on one rare word and on nothing else. Before
+    `threshold=` was accepted, that case was misread as a hard constraint and
+    the caller was told nothing would help."""
+
+    EDGE = {"decision": "review", "score": 0.5798, "distinctive_max": 0.834,
+            "evidence": {"name": 0.834, "name_tftoken": 0.326}}
+    A = {"id": "s1", "name": "Kijani Tea Exporters Ltd", "registration_id": "C.12345"}
+    B = {"id": "r2", "name": "Kijani Coffee"}
+
+    def test_with_the_threshold_the_missing_fields_are_listed(self):
+        from arche.resolve import would_resolve
+
+        guidance = would_resolve(self.EDGE, self.A, self.B, entity="organisation",
+                                 threshold=0.7)
+        fields = [item["field"] for item in guidance["would_resolve"]]
+        assert fields[0] == "registration_id"
+        assert "address" in fields
+        assert "score" in guidance["why"] and "threshold" in guidance["why"]
+        assert guidance["will_not_help"] == []
+
+    def test_without_it_the_older_reading_is_unchanged(self):
+        from arche.resolve import would_resolve
+
+        guidance = would_resolve(self.EDGE, self.A, self.B, entity="organisation")
+        assert guidance["would_resolve"] == []
+        assert "hard constraint" in guidance["why"]

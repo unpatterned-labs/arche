@@ -5,9 +5,12 @@
 
 from __future__ import annotations
 
-import pytest
+import os
 
+import pytest
 from arche.doc import DOC_FEATURE_AVAILABLE, DoclingNotInstalledError, parse
+
+_RUN_DOC_INTEGRATION = os.getenv("ARCHE_RUN_DOC_INTEGRATION") == "1"
 
 
 # ── Optionality contract ────────────────────────────────────────────────────
@@ -48,8 +51,8 @@ def test_parse_imports_docling_lazily():
 
 
 @pytest.mark.skipif(
-    not DOC_FEATURE_AVAILABLE,
-    reason="Requires arche-core[doc] extra (docling)",
+    not (DOC_FEATURE_AVAILABLE and _RUN_DOC_INTEGRATION),
+    reason="Requires arche-core[doc] and ARCHE_RUN_DOC_INTEGRATION=1",
 )
 def test_pipeline_process_file_round_trip(tmp_path):
     """End-to-end: write a markdown file, parse via docling, run policy."""

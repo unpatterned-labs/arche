@@ -1,5 +1,5 @@
 site_name: arche
-site_description: An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.
+site_description: Are these the same thing? arche decides whether messy records of people, organisations, places and products describe one real-world thing, shows the evidence, and keeps a receipt you can replay.
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
@@ -92,31 +92,20 @@ nav:
   - Overview: index.md
   - Get started:
     - Installation: getting-started/installation.md
-    - Resolve two lists: getting-started/quickstart.md
+    - Quickstart: getting-started/quickstart.md
   - Guides:
-    - Prepare your data: guides/prepare-data.md
+    - Keep and replay a decision: guides/keep-and-replay.md
+    - Association analysis: guides/association-analysis.md
+    - Resolve documents: guides/documents-to-decision.md
     - Interpret a decision: guides/interpret-decisions.md
-    - Review and evaluate a crosswalk: guides/review-and-evaluate.md
-    - Places and products in action: guides/places-and-products.md
-    - Prepare health and care locations: guides/uk-health-and-care.md
-    - Reconcile health facilities: guides/facility-reconciliation.md
-    - Compare records, review a queue: guides/review-log.md
+    - Prepare your data: guides/prepare-data.md
+    - Review and evaluate: guides/review-and-evaluate.md
     - Let an agent call arche: guides/mcp-server.md
-    - Run the MCP server: guides/run-the-mcp-server.md
-    - Reconcile schools: guides/school-reconciliation.md
-    - Resolve people across documents: guides/documents-to-decision.md
-    - Accuracy and scope: guides/accuracy-and-scope.md
   - Reference:
-    - Architecture: reference/architecture.md
-    - How arche works: reference/how-arche-works.md
-    - A single call, walked through: tutorials/how-it-works.md
-    - Decision contract: reference/decision-contract.md
-    - Distinctiveness: reference/distinctiveness.md
-    - Optional dependencies: reference/optional-dependencies.md
     - Record resolution API: reference/record-resolution.md
-    - Read a crosswalk result: how-to/read-crosswalk-output.md
-    - Addresses: api/addr.md
-    - Match African names: how-to/match-african-names.md
+    - Decision contract: reference/decision-contract.md
+    - How arche works: reference/how-arche-works.md
+    - Optional dependencies: reference/optional-dependencies.md
     - Benchmarks: reference/benchmarks.md
   - Contribute: contributing.md
 

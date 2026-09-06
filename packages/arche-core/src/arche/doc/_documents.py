@@ -39,12 +39,14 @@ import contextlib
 import glob as _glob
 import json
 import os
+import re
 import time
+from collections.abc import Iterable, Mapping
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from itertools import combinations
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from arche.doc._progress import Event, ProgressHandler, Timing, _Run, resolve_handler
 
@@ -69,6 +71,28 @@ _DETECTION_FIELDS = {
     "PASSPORT": "passport",
     "ADDRESS": "address",
 }
+
+
+# Explicit document labels are a useful local extraction signal for commercial
+# documents.  They become *proposed* fields for a reviewer, never a claim or
+# an entity link by themselves.  The narrow vocabulary keeps this a transparent
+# document adapter rather than an attempt to infer arbitrary relationships.
+_LABELLED_IDENTITY_FIELDS = {
+    "supplier": "supplier_name",
+    "distributor": "distributor_name",
+    "estate": "estate_name",
+    "registration id": "registration_id",
+    "registration number": "registration_id",
+    "registration no": "registration_id",
+    "country": "country",
+    "origin": "country",
+}
+_LABELLED_IDENTITY_RE = re.compile(
+    r"^\s*(?P<label>supplier|distributor|estate|registration\s+id|"
+    r"registration\s+number|registration\s+no|country|origin)\s*:\s*"
+    r"(?P<value>\S(?:.*\S)?)\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 
 # Third-party layers below `parse` are chatty: docling's table exporter,
@@ -159,6 +183,9 @@ class DocumentReport:
     #: Where the time went. Progress answers "is it stuck?" during a run;
     #: this answers "what was slow?" afterwards.
     timing: Timing = field(default_factory=Timing)
+    #: Proposed identity fields and their source spans. Values remain in the
+    #: caller-owned report and are masked by :meth:`review` by default.
+    review_fields: dict[str, dict[str, dict[str, object]]] = field(default_factory=dict)
 
     # ---------------------------------------------------------------- views
 
@@ -284,6 +311,48 @@ class DocumentReport:
             indent=indent, default=str,
         )
 
+    def review(self, *, reveal: bool = False) -> dict[str, Any]:
+        """A masked, application-renderable review artifact.
+
+        The safe hand-off point for a review pane or an agent: the fields each
+        document proposed (with their spans), every verdict, and the documents
+        nothing linked. Values are masked unless ``reveal=True``. It asserts no
+        claim and treats no extracted value as accepted evidence; pass a
+        ``store=`` to :func:`resolve_documents` if the decisions should outlive
+        this report.
+        """
+        show = (lambda value: value) if reveal else _mask
+        fields = [
+            {
+                "document": document,
+                "field": field_name,
+                "value": show(field["value"]),
+                "source": field["source"],
+                "confidence": field["confidence"],
+                "span": field["span"],
+            }
+            for document, document_fields in sorted(self.review_fields.items())
+            for field_name, field in sorted(document_fields.items())
+        ]
+        return {
+            "entity": self.entity,
+            "proposed_fields": fields,
+            "decisions": list(self.decisions),
+            "unlinked": self.unlinked(),
+            "errors": dict(self.errors),
+        }
+
+    def unlinked(self) -> list[str]:
+        """Documents no verdict tied to anything: the open questions."""
+        linked = {
+            document
+            for row in self.decisions
+            if row["identity"] == "same_entity"
+            for document in (row["a"], row["b"])
+        }
+        return [document for document in self.records if document not in linked]
+
+
     def save_json(self, path: str | os.PathLike, reveal: bool = False) -> Path:
         out = Path(path)
         out.write_text(self.to_json(reveal), encoding="utf-8")
@@ -291,6 +360,24 @@ class DocumentReport:
 
     def __str__(self) -> str:  # so `print(report)` does the useful thing
         return self.table()
+
+
+def _write_if_absent(items, get_item, write_items, label: str) -> None:
+    """Write immutable records once, refusing an accidental identifier collision."""
+    missing = []
+    for item in items:
+        identifier = next(
+            value
+            for name, value in vars(item).items()
+            if name.endswith("_id") and isinstance(value, str)
+        )
+        existing = get_item(identifier)
+        if existing is None:
+            missing.append(item)
+        elif existing != item:
+            raise ValueError(f"{label} {identifier!r} already exists with different content")
+    if missing:
+        write_items(missing)
 
 
 def _paths(source: str | os.PathLike | Iterable[str | os.PathLike]) -> list[Path]:
@@ -328,7 +415,8 @@ def _record_from_metadata(info) -> dict[str, Any]:
 
 
 def _record_from_text(text: str, jurisdiction: str | None,
-                      inferred: bool = False) -> tuple[dict, dict]:
+                      inferred: bool = False,
+                      extraction_backend: str = "auto") -> tuple[dict, dict]:
     """A canonical record plus a detection census, using only arche's own layers.
 
     Identifiers come from the **detectors**, which validate check digits, and
@@ -356,7 +444,7 @@ def _record_from_text(text: str, jurisdiction: str | None,
             record[field_name] = value
 
     try:
-        entities = list(extract(text))
+        entities = list(extract(text, backend=extraction_backend))
     except Exception:  # noqa: BLE001 — extraction is best-effort, never fatal
         entities = []
 
@@ -382,15 +470,70 @@ def _record_from_text(text: str, jurisdiction: str | None,
     return record, census
 
 
+def _labelled_identity_fields(text: str) -> dict[str, dict[str, object]]:
+    """Return transparent supplier-document fields with their text spans.
+
+    A shipment document often labels the parties more precisely than a generic
+    entity extractor can. The result is deliberately review-pending: a label
+    such as ``Supplier:`` is a statement in one document, not proof of a
+    supplier relationship or a stable entity identity.
+    """
+    fields: dict[str, dict[str, object]] = {}
+    for match in _LABELLED_IDENTITY_RE.finditer(text):
+        label = " ".join(match.group("label").lower().split())
+        field_name = _LABELLED_IDENTITY_FIELDS[label]
+        if field_name in fields:
+            continue
+        value_start, value_end = match.span("value")
+        fields[field_name] = {
+            "value": match.group("value"),
+            "source": "document_label",
+            "confidence": 0.9,
+            "span": [value_start, value_end],
+        }
+    return fields
+
+
+def _candidate_id(candidate: Mapping[str, Any], index: int) -> str:
+    """Return the caller's stable candidate handle without inventing one."""
+    value = candidate.get("entity_id") or candidate.get("id")
+    if not isinstance(value, str) or not value:
+        raise ValueError(
+            f"candidate {index} needs a non-empty 'entity_id' or 'id'; "
+            "candidate identity must be caller-supplied"
+        )
+    return value
+
+
+def _decision_row(a: str, b: str, decision: Any, *, candidate: bool = False) -> dict[str, Any]:
+    """Render a resolver result without promoting it to a durable receipt."""
+    return {
+        "a": a,
+        "b": b,
+        "identity": getattr(decision, "identity", ""),
+        "score": round(float(getattr(decision, "score", 0.0)), 4),
+        "factors": {
+            key: round(value, 4) if isinstance(value, (int, float)) else value
+            for key, value in dict(getattr(decision, "factors", {})).items()
+        },
+        "decision_id": getattr(decision, "decision_id", ""),
+        **({"status": "proposed"} if candidate else {}),
+    }
+
+
 def resolve_documents(
     source: str | os.PathLike | Iterable[str | os.PathLike],
     *,
     entity: str = "person",
     jurisdiction: str = "auto",
+    candidates: Iterable[Mapping[str, Any]] | None = None,
+    max_candidate_pairs: int = 1_000,
     quiet: bool = True,
     progress: ProgressHandler | bool | str | None = True,
+    extraction_backend: str = "auto",
+    store: Any | None = None,
 ) -> DocumentReport:
-    """Parse documents, extract one record each, and resolve them against each other.
+    """Parse documents, propose fields, and resolve against records or each other.
 
     ``source`` may be a glob (``"docs/*.pdf"``), a directory, a single file, or
     any iterable of those.
@@ -409,6 +552,10 @@ def resolve_documents(
     first thing you see is your result rather than an OCR engine banner. Pass
     ``quiet=False`` when you are debugging the parse itself.
 
+    ``extraction_backend`` selects the entity extractor used after parsing.
+    ``"auto"`` keeps the default model-assisted behaviour; ``"regex"`` is
+    deterministic, air-gapped, and suitable for bounded CI or policy contexts.
+
     ``jurisdiction`` defaults to ``"auto"``: each document's own evidence — a
     postcode, a registrar's name, a currency, a company-form suffix — proposes a
     country, and a document whose evidence is thin or conflicting gets no
@@ -421,6 +568,18 @@ def resolve_documents(
     country would otherwise switch protection off, because a Pipeline with no
     statute returns text unredacted.
 
+    Pass ``candidates`` to compare extracted document records against an
+    explicit caller-owned registry, master-data export, or prior reviewed
+    records. Each candidate needs an opaque ``entity_id`` or ``id``. Candidate
+    comparisons are bounded by ``max_candidate_pairs``; provide a narrowed
+    candidate set rather than relying on an accidental all-pairs run.
+
+    Pass ``store=`` (a :class:`arche.ledger.Ledger` from :func:`arche.attach`)
+    and every verdict is recorded with the record it was made from, so
+    ``ledger.entities()`` shows which documents describe one thing and
+    ``ledger.replay(decision_id)`` can make any verdict again later. Without a
+    store the report is the only artifact.
+
     A document that cannot be parsed is recorded in ``report.errors`` and
     skipped, never raised — one unreadable scan in a folder of twenty should not
     cost you the other nineteen.
@@ -429,43 +588,85 @@ def resolve_documents(
     from arche.canonical import Reference
     from arche.doc import parse
 
+    if max_candidate_pairs < 0:
+        raise ValueError("max_candidate_pairs must be non-negative")
+    candidate_rows = None if candidates is None else list(candidates)
+    if candidate_rows is not None and not all(isinstance(row, Mapping) for row in candidate_rows):
+        raise TypeError("candidates must contain mapping records")
+
     report = DocumentReport(jurisdiction=jurisdiction, entity=entity)
 
     paths = _paths(source)
     run = _Run(resolve_handler(progress), total=len(paths))
     run.emit("start", message=f"resolving {len(paths)} document(s)")
     with (_quiet() if quiet else nullcontext()):
-        _collect(report, paths, parse, jurisdiction, run)
+        _collect(report, paths, parse, jurisdiction, run, extraction_backend)
 
     run.emit("resolve", message="comparing records")
     _t = time.monotonic()
 
     refs = {doc: Reference.from_record(rec) for doc, rec in report.records.items()}
-    for a, b in combinations(sorted(refs), 2):
-        # The extraction that produced these records goes INSIDE the decision
-        # hash, not alongside it. Without it a document-derived decision can be
-        # re-run approximately but never re-verified: a parser upgrade changes
-        # the text, which changes the record, which changes the verdict, and
-        # nothing would record that it had. Every cited span also indexes into
-        # a specific rendering, so `text_sha256` is what makes a citation
-        # checkable rather than merely plausible.
-        extraction = {
-            side: report.provenance.get(doc, {})
-            for side, doc in (("a", a), ("b", b))
-            if report.provenance.get(doc)
-        }
-        decision = resolve.compare(
-            refs[a], refs[b], entity=entity,
-            extra_pins={"extraction": extraction} if extraction else None,
-        )
-        report.decisions.append({
-            "a": a, "b": b,
-            "identity": getattr(decision, "identity", ""),
-            "score": round(float(getattr(decision, "score", 0.0)), 4),
-            "factors": {k: (round(v, 4) if isinstance(v, (int, float)) else v)
-                        for k, v in dict(getattr(decision, "factors", {})).items()},
-            "decision_id": getattr(decision, "decision_id", ""),
-        })
+    if candidate_rows is not None:
+        pair_count = len(refs) * len(candidate_rows)
+        if pair_count > max_candidate_pairs:
+            raise ValueError(
+                f"document/candidate comparison would create {pair_count} pairs; "
+                f"max_candidate_pairs is {max_candidate_pairs}. Narrow candidates first."
+            )
+        candidate_inputs: dict[str, Any] = {}
+        for index, row in enumerate(candidate_rows, start=1):
+            candidate_id = _candidate_id(row, index)
+            if candidate_id in candidate_inputs:
+                raise ValueError(f"candidate identifiers must be unique: {candidate_id!r}")
+            candidate_record = dict(row)
+            candidate_record.setdefault("id", candidate_id)
+            candidate_inputs[candidate_id] = (
+                candidate_record if entity != "person" else Reference.from_record(candidate_record)
+            )
+        for document, document_ref in refs.items():
+            rows: list[dict[str, Any]] = []
+            document_input = report.records[document] if entity != "person" else document_ref
+            for candidate_id, candidate_input in candidate_inputs.items():
+                extraction = {"extraction": {"document": report.provenance.get(document, {})}}
+                decision = resolve.compare(
+                    document_input, candidate_input, entity=entity, extra_pins=extraction,
+                )
+                row = _decision_row(document, candidate_id, decision, candidate=True)
+                report.decisions.append(row)
+                rows.append(row)
+                if store is not None:
+                    store.record_compare(
+                        decision, document_input, candidate_input,
+                        call={"entity": entity, "extra_pins": extraction},
+                        source="document", caller_ids=(document, candidate_id),
+                    )
+    else:
+        for a, b in combinations(sorted(refs), 2):
+            # The extraction that produced these records goes INSIDE the decision
+            # hash, not alongside it. Without it a document-derived decision can be
+            # re-run approximately but never re-verified: a parser upgrade changes
+            # the text, which changes the record, which changes the verdict, and
+            # nothing would record that it had. Every cited span also indexes into
+            # a specific rendering, so `text_sha256` is what makes a citation
+            # checkable rather than merely plausible.
+            extraction = {
+                side: report.provenance.get(doc, {})
+                for side, doc in (("a", a), ("b", b))
+                if report.provenance.get(doc)
+            }
+            extraction = {"extraction": extraction} if extraction else None
+            side_a = refs[a] if entity == "person" else report.records[a]
+            side_b = refs[b] if entity == "person" else report.records[b]
+            decision = resolve.compare(side_a, side_b, entity=entity, extra_pins=extraction)
+            report.decisions.append(_decision_row(a, b, decision))
+            if store is not None:
+                call = {"entity": entity}
+                if extraction:
+                    call["extra_pins"] = extraction
+                store.record_compare(
+                    decision, side_a, side_b, call=call,
+                    source="document", caller_ids=(a, b),
+                )
     run.timing.resolve_s = time.monotonic() - _t
     report.timing = run.finish()
     run.emit("done", message=f"{len(report.records)} record(s), "
@@ -473,7 +674,7 @@ def resolve_documents(
     return report
 
 
-def _collect(report, paths, parse, jurisdiction, run) -> None:
+def _collect(report, paths, parse, jurisdiction, run, extraction_backend="auto") -> None:
     """Parse each document and assemble its record; one bad file is not fatal.
 
     One bad file is not fatal. A missing parser is, and the difference matters:
@@ -509,7 +710,19 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
         doc_jurisdiction, inferred = _resolve_jurisdiction(
             jurisdiction, text, getattr(parsed, "info", None), name, report,
         )
-        record, census = _record_from_text(text, doc_jurisdiction, inferred)
+        record, census = _record_from_text(
+            text,
+            doc_jurisdiction,
+            inferred,
+            extraction_backend,
+        )
+        labelled_fields = _labelled_identity_fields(text)
+        for field_name, labelled_field in labelled_fields.items():
+            record.setdefault(field_name, labelled_field["value"])
+        if "supplier_name" in labelled_fields:
+            supplier_name = labelled_fields["supplier_name"]["value"]
+            record.setdefault("name", supplier_name)
+            record.setdefault("organisation", supplier_name)
         run.stage(name, "detect", time.monotonic() - _t)
         # Metadata fills only what the body did not, so a name read from the
         # document always beats a name asserted by its header.
@@ -522,6 +735,18 @@ def _collect(report, paths, parse, jurisdiction, run) -> None:
         if not record:
             report.errors[name] = "no identity attributes found"
             continue
+        review_fields = dict(labelled_fields)
+        for field_name, value in record.items():
+            review_fields.setdefault(
+                field_name,
+                {
+                    "value": value,
+                    "source": report.record_provenance.get(name, {}).get(field_name, "document"),
+                    "confidence": 0.0,
+                    "span": None,
+                },
+            )
+        report.review_fields[name] = review_fields
         report.records[name] = record
         report.detections[name] = census
         info = getattr(parsed, "info", None)

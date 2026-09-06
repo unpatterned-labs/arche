@@ -825,10 +825,13 @@ def detect_sensitive_spans(
         backend=backend,
     )
 
-    # Also run existing PII detection for credit cards and other patterns
+    # Also run existing PII detection for credit cards and other patterns.
+    # A deterministic identity-extraction request must not silently initialize
+    # Presidio/spaCy through this secondary path.
     try:
         from .protect import detect_pii
-        pii_detections = detect_pii(text)
+        pii_backend = "regex" if backend == "deterministic" else "auto"
+        pii_detections = detect_pii(text, backend=pii_backend)
     except Exception:
         pii_detections = []
 

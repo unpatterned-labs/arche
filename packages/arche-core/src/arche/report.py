@@ -274,13 +274,6 @@ def crosswalk_report(
 """
 
 
-# ===================================================================
-# Review packs — the artifact a reviewer adjudicates
-# ===================================================================
-
-# The four columns a reviewer fills, and the only vocabulary the outcome column
-# accepts. Kept identical to `tools/arche-studio/state.py`: a pack whose
-# outcomes the studio rejects is a pack nobody can adjudicate.
 REVIEW_FIELDS = ("review_outcome", "reviewer", "reviewed_at", "reason")
 REVIEW_OUTCOMES = ("same_entity", "different", "unresolved")
 PACK_SCHEMA = "arche.review_pack.v1"
@@ -561,8 +554,8 @@ def report(obj, format: str = "table", **kwargs):
 # rebinds the package attribute from the function to the module, after which
 # calling it raises TypeError. Making the module callable means it stops
 # mattering which one the name resolved to.
-import sys as _sys
-from types import ModuleType as _ModuleType
+import sys as _sys  # noqa: E402 - module callable shim intentionally follows report()
+from types import ModuleType as _ModuleType  # noqa: E402 - see above
 
 
 class _CallableReportModule(_ModuleType):

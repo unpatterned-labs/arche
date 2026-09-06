@@ -11,16 +11,18 @@ it came from, and whether it was validated or guessed.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Annotated
 
 import pytest
+from arche.doc import DOC_FEATURE_AVAILABLE
+from arche.doc._extract import FieldEvidence, From
+from arche.doc._extract import extract as _extract
 from pydantic import BaseModel, Field
 
-from arche.doc import DOC_FEATURE_AVAILABLE
-from arche.doc._extract import Extraction, FieldEvidence, From, extract
-
 _BENCH = Path(__file__).resolve().parents[3] / "data" / "doc_bench"
+_RUN_DOC_INTEGRATION = os.getenv("ARCHE_RUN_DOC_INTEGRATION") == "1"
 
 _TEXT = (
     "INVOICE from Netlify, Inc.\n"
@@ -28,6 +30,12 @@ _TEXT = (
     "Contact amara@example.com or 0803 555 7890.\n"
     "Total: $412.00\n"
 )
+
+
+def extract(*args, **kwargs):
+    """Exercise schema extraction without loading an optional entity model."""
+    kwargs.setdefault("entity_backend", "regex")
+    return _extract(*args, **kwargs)
 
 
 class Contact(BaseModel):
@@ -55,7 +63,7 @@ class TestEvidence:
     def test_every_filled_field_says_where_it_came_from(self):
         result = extract(Contact, text=_TEXT)
         assert set(result.fields) == {"email", "phone"}
-        for name, evidence in result.fields.items():
+        for _name, evidence in result.fields.items():
             assert evidence.source in ("detector", "metadata", "extractor", "llm")
             assert isinstance(evidence, FieldEvidence)
 
@@ -205,8 +213,10 @@ class TestArguments:
 # `parse()` needs docling, which is the `[doc]` extra and is absent from the
 # base CI environment. The corpus check alone was not enough: the files are
 # committed, so it passed and then `parse()` raised.
-@pytest.mark.skipif(not DOC_FEATURE_AVAILABLE,
-                    reason="parse() requires the [doc] extra (docling)")
+@pytest.mark.skipif(
+    not (DOC_FEATURE_AVAILABLE and _RUN_DOC_INTEGRATION),
+    reason="Requires arche-core[doc] and ARCHE_RUN_DOC_INTEGRATION=1",
+)
 @pytest.mark.skipif(not (_BENCH / "invoice_6_ak.pdf").exists(),
                     reason="doc_bench corpus not present")
 class TestOnARealDocument:

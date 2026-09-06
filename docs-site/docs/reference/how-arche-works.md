@@ -48,8 +48,8 @@ Use `compare()` when the caller has already selected exactly two person referenc
 from arche.resolve import compare
 
 decision = compare(
-    "Fatima Abdullahi, NIN 12345678901",
-    "Fatuma Abdulahi, NIN 12345678901",
+    {"name": "Fatima Abdullahi", "national_id": "12345678901"},
+    {"name": "Fatuma Abdulahi", "national_id": "12345678901"},
 )
 
 print(decision.identity, decision.action, round(decision.score, 4))
@@ -61,7 +61,7 @@ same_entity merge 1.0
 national ID match; name similarity 91%
 ```
 
-`compare()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels.
+`compare()` can also return `review` or `different`. Its identity labels are not interchangeable with crosswalk labels. Structured records use the deterministic path; free text first needs a configured extraction backend.
 
 ## Process text with Pipeline
 
@@ -114,7 +114,8 @@ for filename, text in {
     (folder / filename).write_text(text, encoding="utf-8")
 
 report = resolve_documents(
-    str(folder), jurisdiction="NG", quiet=True, progress=False
+    str(folder), jurisdiction="NG", extraction_backend="regex", quiet=True,
+    progress=False,
 )
 print([(item["identity"], item["score"]) for item in report.decisions])
 print(report.table())
@@ -135,7 +136,7 @@ document a                   document b                   verdict        score
 invoice.txt                  statement.txt                same_entity   1.0000
 ```
 
-`DocumentReport` retains records, masked summaries, decisions, parser errors, and extraction provenance. Check `report.errors` before treating a folder run as complete.
+`DocumentReport` retains records, masked summaries, decisions, parser errors, and extraction provenance. This example selects the dependency-free `regex` extractor; choose an installed model backend deliberately when the document language or layout needs it. Check `report.errors` before treating a folder run as complete.
 
 ## Parse an address and label its spatial role
 

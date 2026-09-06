@@ -1,6 +1,6 @@
 # arche-mcp
 
-An MCP server for [arche](https://github.com/unpatterned-labs/arche). Gives an agent ten tools: work out which law governs a document, find out what this installation can and cannot detect, redact personal data to stable tokens with the statute section that required it, and reconcile two record lists.
+**Are these the same thing?** An MCP server for [arche](https://github.com/unpatterned-labs/arche), so an agent can ask that and get evidence back. Ten tools: work out which law governs a document, find out what this installation can and cannot detect, redact personal data to stable tokens with the statute section that required it, and reconcile two record lists. Give it a ledger file and it remembers: eight more tools look a decision up by id, explain it, replay it, show what the decisions have linked together and why, list what is still open, and take new evidence.
 
 ```sh
 uvx arche-mcp
@@ -25,6 +25,21 @@ Full guide: **[Let an agent call arche](https://arche.unpatterned.org/guides/mcp
 | `check_name_equivalence` | are these two names the same person's |
 | `extract_places` | place mentions with their spatial role |
 
+With `ARCHE_LEDGER` set, eight more:
+
+| tool | answers |
+| --- | --- |
+| `decision` | a recorded decision, by its id: verdict, factors, pins, which records |
+| `explain` | what supported it, what refuted it, what was missing |
+| `replay` | does the installed engine still say this, and if not what moved |
+| `entities` | what the decisions have linked together, and whether each entity is a clique or a chain |
+| `path` | why two records are one entity: the chain of decisions between them |
+| `cases` | pairs still at review, and which fields would settle each |
+| `observe` | add evidence about a record; decide its open pairs again |
+| `resolve` | a new record against the entities: found, review, ambiguous, conflict, not_found |
+
+`compare_records` records what it decides into the same file, so every edge it returns can be found again by `decision_id`. None of the eight returns a record value: labels, field names, factors and pins only. The values live in the operator's DuckDB file.
+
 ## Four calls, in order
 
 ```
@@ -42,7 +57,7 @@ The first two are not optional if you want to trust the fourth. `infer_jurisdict
 
 **Nothing touches the filesystem.** An earlier version had a tool that read two caller-supplied paths and wrote a report to a third. MCP has no consent model for a filesystem write. Use the `arche compare` CLI, where a person sees the command before it runs.
 
-**Nothing is remembered.** Every handler is a pure function — no session, no document handle, no store. The hashed token does the correlating instead: the same input value produces the same token across calls, so an agent can join an entity across documents without this server holding anything.
+**Nothing is remembered unless the operator says so.** Every handler is a pure function: no session, no document handle. For the protection tools that is the point; a redactor that keeps documents is a liability. For resolution it was a limit — `compare_records` returned edges and forgot them — and `ARCHE_LEDGER` is the answer: one DuckDB file the operator names, in which decisions are recorded and from which the [ledger](https://unpatterned-labs.github.io/arche/guides/keep-and-replay/) tools read them back. The agent chose nothing about where the memory lives and gets no value out of it; the hashed token from `guarded_scan` still correlates a person across documents without this server holding anything.
 
 ## See it work, without an agent
 
@@ -112,6 +127,18 @@ ARCHE_STATUTE           ceiling statute id; a call may not override it
 ARCHE_HASH_KEY          required for guarded_scan
 ARCHE_ALLOWED_PROVIDERS comma-separated model-provider allow-list
 ARCHE_TRANSFER_BASIS    declared cross-border transfer basis
+ARCHE_LEDGER            duckdb:///FILE (or a path); enables the ledger tools
+```
+
+The ledger flow, as an agent runs it:
+
+```
+compare_records(a, b, entity="organisation")   -> edges, each with a decision_id
+entities()                                     -> what got linked; held_together_by
+path(rec_a, rec_b)                             -> why two records are one entity
+cases()                                        -> what is still open, and what would settle it
+observe(rec, {"registration_id": "..."})       -> new evidence in, open pairs re-decided
+replay(decision_id)                            -> does it still hold?
 ```
 
 A ceiling, not a default: a per-call argument may narrow it and cannot widen it. Unset, the caller chooses, which is the mixed-document-stream case.
@@ -122,7 +149,9 @@ A ceiling, not a default: a per-call argument may narrow it and cannot widen it.
 
 ## Not yet
 
-HTTP and SSE transport, and authentication. It speaks stdio and expects to run on the machine holding the data.
+**Dedupe and find.** The library's `dedupe()` and `find()` have no tool; `compare_records(records, records)` self-links and returns self-pairs and mirrors you must filter yourself.
+
+**Transport.** HTTP and SSE, and authentication. It speaks stdio and expects to run on the machine holding the data.
 
 ## Licence
 

@@ -46,11 +46,9 @@ What comes back is per-pair: `a_id`, `b_id`, `score`, `decision`, `distinctive_m
 
 Three limits worth knowing before you build on this.
 
-**There is no dedupe entry point.** `compare_records(records, records)` self-links, and the result contains self-pairs (`x1 ~ x1`) and each real pair twice (`x1 ~ x2` and `x2 ~ x1`). Filter both yourself: drop `a_id == b_id`, then keep one ordering. arche resolves *between* lists; deduplicating *within* one is not a first-class operation yet.
+**There is no dedupe tool.** `compare_records(records, records)` self-links, and the result contains self-pairs (`x1 ~ x1`) and each real pair twice. Filter both yourself: drop `a_id == b_id`, then keep one ordering. The library's `dedupe()` does this; the tool does not yet.
 
-**There is no clustering.** Results are pairwise edges. If A matches B and B matches C, nothing here tells you A, B and C are one entity — transitive closure over `reconcile` output does not exist.
-
-**There is nowhere to put a `review` outcome.** `arche.review` in the library reads a pack, applies adjudicated outcomes and verifies them, and none of it is exposed as a tool. An agent can produce a review queue and cannot work one.
+**Nothing is remembered unless the operator sets `ARCHE_LEDGER`.** Without it, results are pairwise edges and the server keeps no state. With it — one DuckDB file the operator names — `compare_records` records every edge, and eight [ledger](keep-and-replay.md) tools read them back: `decision`, `explain`, `replay`, `entities`, `path`, `cases`, `observe`, `resolve`. So A~B and B~C *do* tell an agent that A, B and C are one entity (`entities`), and why (`path`), and a `review` has somewhere to go (`cases` → fetch a field → `observe`). None of the eight returns a record value. [Association analysis](association-analysis.md) walks the whole loop.
 
 **Scores are batch-dependent.** `entity=` routes through `reconcile`, which self-calibrates a token-frequency table over the two lists being linked. The same pair can score differently in a different batch, because how ordinary a shared name is depends on the company it keeps. The `pins` record which table was used, so two results with different `tf` pins were never expected to agree.
 
@@ -202,7 +200,7 @@ The `backend="splink"` scorer that `arche-core` 0.5.0a1 added is **not** reachab
 
 **Touch the filesystem.** Nothing reads or writes a path.
 
-**Remember anything.** Every handler is a pure function. There is no session, no document handle, no store. The stable token does the correlating instead.
+**Remember anything on its own.** Every handler is a pure function; there is no session and no document handle. Memory exists only as the ledger file an operator named in `ARCHE_LEDGER`, and the agent gets ids, labels, field names and numbers out of it, never a value. The stable token from `guarded_scan` does the cross-document correlating either way.
 
 **Run African ID detectors outside Africa.** Enforced, not defaulted: an eleven-digit German tax number is the same shape as a Nigerian NIN, and a confident mislabel in a signed audit log is worse than a miss.
 

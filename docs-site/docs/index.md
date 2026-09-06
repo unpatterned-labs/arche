@@ -1,83 +1,82 @@
 <div class="arche-hero" markdown>
 
-# Know what's real.
+# Are these the same thing?
 
-<p class="arche-hero__sub">An open-source engine for deciding when messy records of people, places, organisations, and products refer to the same real-world entity, with evidence, not just similarity scores or identifiers.</p>
+<p class="arche-hero__sub">arche decides whether messy records of people, organisations, places and products describe one real-world thing — shows the evidence, says <em>I don't know</em> when it should, and keeps a receipt you can replay later.</p>
 
-<span class="arche-hero__status">Alpha software · Apache-2.0</span>
+<span class="arche-hero__status">0.8.0 · Apache-2.0 · runs offline on CPU</span>
 
 </div>
 
-Two lists can refer to the same clinic, supplier, artist, organisation, or product in different ways. A spelling may vary, a code may be missing, or a common name may belong to several different entities. arche helps make that decision explicit.
+Three fragments of text mention someone. They share a national id and a name — once with a middle initial — disagree on an email, and none of the addresses match. Same person?
 
-```text
-Registry                         Survey                         Result
-Karfi Health Post, Kano          Karfi Health Post, Kano        match
-Central Clinic, Kano             Central Clinic, Kaduna         review
+```python
+import arche
+
+text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
+text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
+text3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 Elim Street"
+
+ledger = arche.attach("duckdb:///:memory:")            # a file path keeps it
+person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+
+r12 = arche.compare(text1, text2, **person)
+r13 = arche.compare(text1, text3, **person)
+r23 = arche.compare(text2, text3, **person)
+print(r12.identity, r12.action, "|", r23.identity, r23.action)
+
+(entity,) = ledger.entities()                          # three texts, one person
+print(entity.shared, entity.conflicts)
+print(ledger.replay(r12.decision_id).reproduced)       # the same decision, again
 ```
 
-## What arche does
+```text
+same_entity merge | same_entity merge
+{'national_id': '12345678901'} {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
+True
+```
 
-- Links two record lists with `reconcile()`.
-- Returns `match` when the evidence clears the configured gate.
-- Returns `review` when the records are plausible but the evidence is not enough for an automatic link.
-- Records comparator evidence, configuration pins, and a reproducible `decision_id` for every returned candidate.
+Two axes, on purpose. `identity` is what arche believes: all three pairs are the same person, because a shared national id is distinctive. `action` is what it recommends: `merge`, because the name corroborates the id — on a national id alone, with nothing else agreeing, it would say `hold`. The ledger notices that three pairwise answers describe one entity, keeps the receipts, and can make any of them again. The email the records disagree on is not averaged away: it sits in `conflicts`, beside the name spelled two ways, for whoever acts on the entity to see.
 
-The important outcome is often `review`. It preserves uncertainty instead of turning a similarity score into an unsupported assertion about a person, place, organisation, or product.
+## What you get back
+
+| | |
+|---|---|
+| **A verdict with a third option** | `same_entity`, `review`, `different` for a pair; `match`, `review` for a batch. `review` is a real answer, not a failure. |
+| **The evidence** | per-field agreement, the gate that cleared or refused, what was missing. |
+| **A receipt** | `decision_id` is a content hash over the evidence and the pinned versions. Same inputs, same id, byte for byte. Sign it; hand it to someone who does not trust you. |
+| **A ledger, if you want one** | `store=` records every verdict with the inputs it was made from. Look one up by id, replay it, see which records it linked into an entity, add evidence, decide again. |
 
 ## Start here
 
 ```bash
-pip install arche-core
+pip install "arche-core[ledger]"
 ```
 
-Then follow [Resolve two lists](getting-started/quickstart.md).
+- [Quickstart](getting-started/quickstart.md) — the example above, then two lists.
+- [Keep and replay a decision](guides/keep-and-replay.md) — the ledger.
+- [Association analysis](guides/association-analysis.md) — Mary Smith became Mary Jones; why the first record and the last are one person.
+- [Resolve documents](guides/documents-to-decision.md) — five PDFs in, linked entities out.
+- [Interpret a decision](guides/interpret-decisions.md) — what `review` means and what to do with it.
 
-## Run a first script
+## What it resolves
 
-Save this as `first_crosswalk.py`, then run `python first_crosswalk.py`. It uses only the installed package, not a notebook or a repository checkout.
+One engine, five calibrated packs. A pack is configuration and data, never a fork.
 
-```python
-from arche.resolve import reconcile
-
-left = [{"id": "registry-1", "name": "Gyaranya Health Post", "lat": 11.90, "lon": 8.50}]
-right = [{"id": "survey-1", "name": "Gyaranya Health Post", "lat": 11.94, "lon": 8.50}]
-
-edge = reconcile(left, right, entity="place")["matches"][0]
-print(edge["decision"], edge["score"], edge["evidence"])
-```
-
-```text
-match 0.8454 {'name': 1.0, 'name_tftoken': 1.0, 'name_type': 1.0,
-'geo': 0.227, 'distance_km': 4.45}
-```
-
-See [How arche works](reference/how-arche-works.md) for standalone scripts for Pipeline, document resolution, direct person comparison, address parsing, and spatial roles.
-
-## Scope for alpha
-
-arche is alpha software. Its APIs and calibration can change. Do not use it to make production decisions about personal data without independent privacy, security, legal, and accuracy review.
-
-The current documentation focuses on record resolution. Document extraction, policy, LLM integrations, product matching, and agent tooling exist at different stages of maturity and are not the alpha promise.
-
-There is no released arche MCP server. An agent can call the Python API through your own tool layer, but it should treat arche as an evidence service, not as a source of unquestionable identity truth.
+| Pack | For | The hard case it handles |
+|---|---|---|
+| `person` | people | *Diallo* and *Jallow* are one name; two *Ibrahim Musa* are two men |
+| `place` | facilities, addresses, settlements | identical names 282 km apart are two hospitals |
+| `organisation` | companies, cooperatives, unions | a site and the company operating it share a name **and** a coordinate |
+| `product_electronics` | catalogue items | a rare model code identifies; `Black T-Shirt` does not |
+| `artist` | creative works and performers | one act, many stage names and transliterations |
 
 ## How it relates to Splink
 
-**Splink is the better matcher, and arche can use it.** That is measured, not a courtesy: on Febrl 4, on Splink's `historical_50k`, and on a Nigerian school register chosen because collision-heavy names should have favoured arche, Splink wins every time. Its term-frequency adjustments are the same idea as arche's `tftoken` and have been in Splink for years.
+**Splink is the better matcher, and arche can use it.** Measured, not a courtesy: on Febrl 4, on Splink's `historical_50k`, and on a Nigerian school register, Splink wins every time. `reconcile(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-field evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, a review pack a person can work, and now a ledger. Use Splink directly when you want the best probability that two rows are the same person. Use arche when you need to show why a decision was made, and prove later that it has not changed. See [the benchmarks](reference/benchmarks.md), including the runs where arche loses.
 
-So `reconcile(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-comparator evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, and a review pack a person can work. Measured against the same Splink recipe run directly, the adapter reaches the same numbers. It is the same scorer with a decision layer attached, not a better one.
+## Scope
 
-Use Splink directly when you want the best available probability that two rows are the same person. Use arche when you need to show why a decision was made, what was refused and on what grounds, and to prove the artifact has not changed since. The two are not competing for the same job.
+arche is pre-1.0: 0.8.0 is the first release out of alpha, and its APIs and calibration can still change between minor versions. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
 
-See [the benchmarks](reference/benchmarks.md), including the runs where arche loses.
-
-## Next steps
-
-- [Prepare your data](guides/prepare-data.md)
-- [Interpret a decision](guides/interpret-decisions.md)
-- [See places and products in action](guides/places-and-products.md)
-- [Reconcile health facilities](guides/facility-reconciliation.md)
-- [Resolve people across documents](guides/documents-to-decision.md)
-- [Understand how arche works](reference/how-arche-works.md)
-- [Read the accuracy and scope notes](guides/accuracy-and-scope.md)
+The `regex` extractor used above is deterministic and offline; it reads identifiers, emails, and names from a shipped lexicon of 13,342 African given and family names, not streets. The model-backed extractors and the document parser are optional extras. `arche-mcp` is a separate, optional package that exposes the same functions to an agent; it does not yet expose the ledger.

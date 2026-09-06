@@ -1,0 +1,95 @@
+name: arche-core benchmark gate
+
+# Did the resolver drift? Runs the two complete-truth benchmarks that finish
+# in minutes -- DBLP-ACM (year refutes) and Febrl 4 (name + address) -- and
+# compares them with the result files committed beside them. Fails on a
+# precision drop of more than 0.5 points or a true-merge drop of more than
+# 0.5%. Reports an improvement so the baseline can be raised on purpose.
+#
+# Why: on 2026-08-22 a blocking change moved Febrl 4 precision from 0.9209 to
+# 0.8716 and nothing noticed for two weeks. The test suite guards behaviour;
+# this guards the numbers the docs quote. See data/scripts/benchmark_gate.py.
+#
+# Scoped to the resolver and the benchmark data. Docs, the CLI, the ledger's
+# storage code and detectors cannot move these numbers and should not pay
+# five minutes of CI for them.
+
+on:
+  push:
+    branches: [main, "release/**"]
+    paths:
+      - "packages/arche-core/src/arche/resolve/**"
+      - "packages/arche-core/src/arche/ids.py"
+      - "packages/arche-core/src/arche/canonical.py"
+      - "packages/arche-core/pyproject.toml"
+      - "data/er_bench/**"
+      - "datasets/names_dataops/bench_febrl*.py"
+      - "datasets/names_dataops/bench_febrl_result.json"
+      - "data/scripts/benchmark_gate.py"
+      - ".github/workflows/arche-core-benchmarks.yml"
+  pull_request:
+    paths:
+      - "packages/arche-core/src/arche/resolve/**"
+      - "packages/arche-core/src/arche/ids.py"
+      - "packages/arche-core/src/arche/canonical.py"
+      - "packages/arche-core/pyproject.toml"
+      - "data/er_bench/**"
+      - "datasets/names_dataops/bench_febrl*.py"
+      - "datasets/names_dataops/bench_febrl_result.json"
+      - "data/scripts/benchmark_gate.py"
+      - ".github/workflows/arche-core-benchmarks.yml"
+  workflow_dispatch:
+
+jobs:
+  gate:
+    name: benchmark gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Sync all workspace packages
+        run: uv sync --all-packages
+
+      - name: Cache the Febrl download
+        # bench_febrl fetches the two 5,000-row Febrl 4 files (BSD-3, synthetic)
+        # into data/_cache on first use. Keyed on the script so a change to
+        # what it fetches refreshes the cache.
+        uses: actions/cache@v4
+        with:
+          path: data/_cache/febrl
+          key: febrl4-${{ hashFiles('datasets/names_dataops/bench_febrl.py') }}
+
+      - name: Run the gate
+        run: uv run --no-sync python data/scripts/benchmark_gate.py --json gate.json
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Benchmark gate" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f gate.json ]; then
+            uv run --no-sync python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d = json.load(open("gate.json"))
+          print("| benchmark | status | precision | true merges | false merges | file |")
+          print("| --- | --- | --- | --- | --- | --- |")
+          for r in d["results"]:
+              a, b = r["recorded"], r["now"]
+              print(f"| {r['benchmark']} | **{r['status']}** | {a['precision']:.4f} -> {b['precision']:.4f} "
+                    f"| {a['true_merges']} -> {b['true_merges']} | {a['false_merges']} -> {b['false_merges']} "
+                    f"| `{r['file']}` |")
+          print()
+          print(f"Tolerances: precision -{d['tolerances']['precision']}, true merges -{d['tolerances']['true_merges']*100:.1f}%.")
+          PY
+          else
+            echo "gate did not produce gate.json" >> "$GITHUB_STEP_SUMMARY"
+          fi

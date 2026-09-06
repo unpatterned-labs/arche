@@ -139,6 +139,7 @@ print(score)
 
 `link()` applies the same comparator when it clusters entities across sources:
 
+<!-- docs-test: fragment -->
 ```python
 from arche import detect, link
 

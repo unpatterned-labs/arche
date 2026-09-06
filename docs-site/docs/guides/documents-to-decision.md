@@ -6,6 +6,7 @@ The [same person across documents notebook](https://github.com/unpatterned-labs/
 
 ## What the workflow does
 
+<!-- docs-test: fragment -->
 ```python
 from arche import resolve_documents
 
@@ -14,6 +15,30 @@ print(report.table())
 ```
 
 The report masks values by default, retains extracted records and decisions, and shows the evidence behind each verdict. A high score can still be `review` when the evidence does not justify an automatic identity claim.
+
+## Keep what it decided
+
+Hand the run a ledger and every verdict is recorded with the record it was made from. `ledger.entities()` then shows which documents describe one thing, and `ledger.replay()` can make any verdict again later.
+
+<!-- docs-test: fragment -->
+```python
+from arche import attach, resolve_documents
+
+ledger = attach("duckdb:///suppliers.duckdb")
+report = resolve_documents("shipments/*.pdf", entity="organisation", store=ledger)
+
+for entity in ledger.entities():
+    print([r.caller_id for r in entity.records], entity.shared, entity.conflicts)
+print(report.unlinked())            # documents no verdict tied to anything
+```
+
+The same from the command line, with a value-free entity summary in the JSON output:
+
+```bash
+arche resolve-documents "shipments/*.pdf" --entity organisation --store suppliers.duckdb --out review.json
+```
+
+See [Keep and replay a decision](keep-and-replay.md).
 
 ## Run it locally
 

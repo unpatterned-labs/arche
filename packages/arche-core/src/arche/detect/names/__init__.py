@@ -1,51 +1,42 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""African name detection via the bundled name lexicon.
+"""African name detection from the shipped lexicon.
 
-Public surface per the 2026-05-22 detection-scope expansion::
+Public surface::
 
-    from arche.detect.names import detect_names
+    from arche.detect.names import detect_names, person_spans
 
-    detections = detect_names(
-        "Met Adesola Okonkwo and Fatima Abdullahi today."
-    )
-    # → [Detection(category='PII-1-NAME', text='Adesola', ...),
-    #    Detection(category='PII-1-NAME', text='Fatima', ...)]
+    detect_names("Met Adesola Okonkwo and Fatima Abdullahi today.")
+    # -> one PII-1-NAME Detection per name token:
+    #    Adesola, Okonkwo, Fatima, Abdullahi
 
-Cross-cutting (not country-specific). Public module name per the
-v0.2.0a2 convention (matches ``arche.detect.ip``, ``arche.detect.digital_id``).
+    person_spans("Met Adesola Okonkwo and Fatima Abdullahi today.")
+    # -> [(4, 19, "Adesola Okonkwo"), (24, 40, "Fatima Abdullahi")]
 
-Returns canonical :class:`~arche.workflow._primitive.Detection` objects
-with ``category="PII-1-NAME"``. The Pipeline routing wires this into
-the default detector set for every jurisdiction so v0.1's "African
-names just work out of box" experience is restored.
+Two sources of names, both offline:
 
-Detection rules:
+* the **equivalence groups** (114 groups, ~440 spellings: *Diallo* /
+  *Jallow* / *Diaw*), matched case-insensitively as before;
+* the **name lexicon** that ships in the wheel — 13,342 given and family
+  names derived from Wikidata / ParaNames (CC-BY-4.0, see
+  ``arche/_data/README.md``) — matched token by token, and only when the
+  token is capitalised in the text. *Grace*, *Hope*, *Peace* and *Victor* are
+  names in this lexicon and ordinary words in English prose; the capital is
+  what separates the two, imperfectly, at confidence 0.7.
 
--   Lexicon-backed exact-match (case-insensitive) against the 114-group
-    African name equivalence dataset (or 20-group bundled starter when
-    the YAML dataset is unavailable).
--   Word-boundary anchored — ``mark`` does NOT match inside ``marker``.
--   Longest-match wins for overlapping terms.
--   Default confidence: 0.7 (the "name appears in our lexicon" floor;
-    context-aware adjustments are a v0.2.0a2-cherry-pick Lane A9
-    follow-up).
+Before the lexicon shipped, ``pip install arche-core`` detected 118 names and
+"Adesola Okonkwo" was not among them. The 13k lexicon existed only as a file
+in the source repository that the installed package could not see.
 
-Limitations:
+:func:`detect_names` keeps its per-token contract, which is what the PII
+pipeline redacts. :func:`person_spans` is for the extractors: it merges
+adjacent name tokens (allowing an initial between them) into one span and
+requires at least two, so a record gets ``name="Adesola E. Okonkwo"`` rather
+than ``name="Adesola"``, and a lone capitalised *May* is not a person.
 
--   Western and Eastern names rely on ``arche-core[detect]`` GLiNER2-PII
-    for multilingual NER. See the cookbook at
-    ``docs-site/docs/cookbooks/web-to-detection.md`` and
-    ``notebooks/cookbook-gliner-ner.ipynb`` for the upgrade path.
--   Common-word collisions (e.g. "Mark" the verb vs. the name) ship at
-    confidence 0.7 in v0.2.0a2; the context-aware confidence dial lands
-    in a follow-up commit.
-
-The full lexicon-load + regex-compile happens on the FIRST call to
-:func:`detect_names`. ``import arche.detect.names`` itself is cheap —
-no I/O or heavy work at module load time, preserving the PRD
-NFR-PERF-1 <1s cold-import budget.
+The lexicon loads on the first call, not at import; ``import arche.detect.names``
+stays within the cold-import budget.
 """
 
 from __future__ import annotations
@@ -56,40 +47,57 @@ from threading import Lock
 from arche.detect._base import _compile_lexicon, _lexicon_detect
 from arche.workflow._primitive import Detection
 
-# Lazy-init state. Compiled on first detect_names() call.
 _PATTERN: re.Pattern[str] | None = None
-_PATTERN_LOCK = Lock()
+_KNOWN: frozenset[str] | None = None
+_LOCK = Lock()
 
-
-#: Minimum length for a lexicon term to be searchable. Two-character
-#: "names" like "Ba" (a Senegalese / Fulani surname) collide with
-#: function words in Hausa / Swahili / Pidgin too often to be useful
-#: without context-aware filtering. Pure-rule lexicon detection caps
-#: at 3 chars; context-aware confidence (Lane A9 cherry-pick) will
-#: surface them with lowered confidence in a follow-up commit.
+#: Two-character "names" like *Ba* collide with function words in Hausa,
+#: Swahili and Pidgin too often to be useful without context.
 _MIN_LEXICON_TERM_LEN = 3
+
+#: English words that are also, somewhere, a name. A capital letter is the
+#: only context a lexicon match has, and every one of these is capitalised at
+#: the start of a sentence, in a date, or as a title. Excluding them costs the
+#: rare person actually called *Will* or *June*; keeping them costs a name
+#: token on every "The", "Monday" and "Dr". Virtue names -- *Grace*, *Peace*,
+#: *Patience*, *Mercy*, *Faith*, *Hope*, *Joy* -- are deliberately NOT here:
+#: they are among the commonest given names in Nigeria and Ghana, and a
+#: detector calibrated for that region cannot afford to drop them.
+_STOP: frozenset[str] = frozenset({
+    # function and frequent words
+    "the", "and", "for", "from", "with", "this", "that", "these", "those", "then",
+    "there", "their", "they", "them", "when", "where", "which", "while", "what",
+    "who", "whom", "why", "how", "all", "any", "some", "one", "two", "our", "your",
+    "his", "her", "its", "was", "were", "are", "have", "has", "had", "will", "would",
+    "can", "could", "may", "might", "must", "shall", "should", "not", "yes", "new",
+    "old", "day", "week", "month", "year", "time", "first", "last", "next", "more",
+    "most", "many", "much", "very", "also", "just", "only", "over", "under", "into",
+    "upon", "about", "after", "before", "between", "during", "since", "until",
+    "again", "here", "now", "today", "please", "thank", "thanks", "dear", "hello",
+    "general", "central", "north", "south", "east", "west", "saint", "san",
+    # months, weekdays
+    "january", "february", "march", "april", "june", "july", "august", "september",
+    "october", "november", "december", "monday", "tuesday", "wednesday", "thursday",
+    "friday", "saturday", "sunday",
+    # titles
+    "dr", "mr", "mrs", "ms", "miss", "prof", "sir", "madam", "rev", "hon", "chief",
+    "alhaji", "engr", "barr",
+})
+
+#: A word made of letters, allowing an internal apostrophe or hyphen
+#: (*N'Diaye*, *Abd al-Rahman*).
+_TOKEN = re.compile(r"[^\W\d_]+(?:['’\-][^\W\d_]+)*")
+#: An initial: one capital letter with an optional full stop.
+_INITIAL = re.compile(r"^[A-Z]\.?$")
 
 
 def _build_pattern() -> re.Pattern[str]:
-    """Compile the lexicon-backed name pattern.
-
-    Calls into the existing ``arche.detect._names.lexicon._load_all_groups``
-    which returns the full 114-group dataset when available, else the
-    20-group bundled starter set. Each group is a list of canonical +
-    variants; we flatten ALL of them into the searchable lexicon.
-
-    Terms shorter than :data:`_MIN_LEXICON_TERM_LEN` are filtered out
-    (see the constant's docstring for rationale).
-    """
+    """The equivalence-group pattern: every spelling in every group, longest first."""
     from arche.detect._names.lexicon import _load_all_groups
 
-    groups = _load_all_groups()
-    # Flatten + length-filter: each group contributes all its variants
-    # that pass the minimum-length gate. ~110-440 terms total depending
-    # on dataset.
     terms = [
         variant
-        for group in groups
+        for group in _load_all_groups()
         for variant in group
         if len(variant) >= _MIN_LEXICON_TERM_LEN
     ]
@@ -97,38 +105,116 @@ def _build_pattern() -> re.Pattern[str]:
 
 
 def _get_pattern() -> re.Pattern[str]:
-    """Lazy-compile the lexicon pattern. Thread-safe via double-checked lock."""
     global _PATTERN
     if _PATTERN is None:
-        with _PATTERN_LOCK:
+        with _LOCK:
             if _PATTERN is None:
                 _PATTERN = _build_pattern()
     return _PATTERN
 
 
-def detect_names(text: str, *, confidence: float = 0.7) -> list[Detection]:
-    """Find African names in ``text`` via the bundled lexicon.
+def _known() -> frozenset[str]:
+    """Normalised name tokens: equivalence groups plus the shipped lexicon."""
+    global _KNOWN
+    if _KNOWN is None:
+        with _LOCK:
+            if _KNOWN is None:
+                from arche.detect._names.lexicon import KNOWN_AFRICAN_NAMES
 
-    Args:
-        text: Free-form input.
-        confidence: Base confidence for matches. Default 0.7. The
-            "matched our lexicon, but common-word collision is possible"
-            floor. The context-aware confidence cherry-pick (v0.2.0a2
-            Lane A9) refines this per-match.
+                _KNOWN = frozenset(
+                    token for token in KNOWN_AFRICAN_NAMES
+                    if len(token) >= _MIN_LEXICON_TERM_LEN and token not in _STOP
+                )
+    return _KNOWN
 
-    Returns:
-        List of :class:`Detection` objects with category ``PII-1-NAME``.
-        Ordered by character offset.
+
+def _normalise(token: str) -> str:
+    from arche.detect._names.lexicon import _strip_diacritics
+
+    return _strip_diacritics(token).lower()
+
+
+def _name_tokens(text: str) -> list[tuple[int, int, str]]:
+    """Capitalised tokens of ``text`` that the lexicon knows, in offset order."""
+    known = _known()
+    out: list[tuple[int, int, str]] = []
+    for match in _TOKEN.finditer(text):
+        token = match.group(0)
+        if not token[0].isupper() or len(token) < _MIN_LEXICON_TERM_LEN:
+            continue
+        if _normalise(token) in known:
+            out.append((match.start(), match.end(), token))
+    return out
+
+
+def person_spans(text: str) -> list[tuple[int, int, str]]:
+    """Runs of two or more adjacent name tokens, each as one ``(start, end, text)``.
+
+    Adjacent means separated only by whitespace, optionally with an initial
+    (``E.``) in between. A single known token on its own is not returned:
+    one capitalised word that happens to be in a name lexicon is not evidence
+    of a person, and the extractors that call this build records from it.
     """
-    pattern = _get_pattern()
-    return _lexicon_detect(
+    tokens = _name_tokens(text)
+    spans: list[tuple[int, int, str]] = []
+    i = 0
+    while i < len(tokens):
+        start, end, _ = tokens[i]
+        count = 1
+        j = i + 1
+        while j < len(tokens):
+            gap = text[end:tokens[j][0]]
+            if gap.strip() == "" and gap:
+                end = tokens[j][1]
+                count += 1
+                j += 1
+                continue
+            # allow exactly one initial between two name tokens
+            between = gap.strip()
+            if _INITIAL.match(between) and gap[:1].isspace() and gap[-1:].isspace():
+                end = tokens[j][1]
+                count += 1
+                j += 1
+                continue
+            break
+        if count >= 2:
+            spans.append((start, end, text[start:end]))
+        i = j
+    return spans
+
+
+def detect_names(text: str, *, confidence: float = 0.7) -> list[Detection]:
+    """Find African names in ``text``: one ``PII-1-NAME`` detection per name token.
+
+    Equivalence-group spellings match case-insensitively; lexicon names match
+    only when capitalised in the text. Overlaps are resolved in favour of the
+    group match, which is the older and better-curated source.
+    """
+    detections = _lexicon_detect(
         text,
-        pattern,
+        _get_pattern(),
         category="PII-1-NAME",
         detector_name="rule:names_lexicon",
         identity_class="inferred",
         confidence=confidence,
     )
+    taken = [(d.start, d.end) for d in detections]
+    for start, end, token in _name_tokens(text):
+        if any(s < end and start < e for s, e in taken):
+            continue
+        detections.append(Detection(
+            id=f"det:name:{start}:{end}",
+            category="PII-1-NAME",
+            text=token,
+            start=start,
+            end=end,
+            confidence=confidence,
+            detector="rule:names_lexicon",
+            identity_class="inferred",
+            metadata={},
+        ))
+    detections.sort(key=lambda d: d.start)
+    return detections
 
 
-__all__ = ["detect_names"]
+__all__ = ["detect_names", "person_spans"]

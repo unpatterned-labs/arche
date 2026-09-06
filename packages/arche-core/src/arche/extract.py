@@ -139,11 +139,7 @@ def extract(
         return sorted(entities, key=lambda e: e.start)
     elif backend == "gliner":
         return sorted(_extract_gliner(text, entity_types), key=lambda e: e.start)
-    elif backend == "gliner2":
-        return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
-    elif backend == "gliner2":
-        return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
-    elif backend == "gliner2":
+    elif backend == "gliner2" or backend == "gliner2" or backend == "gliner2":
         return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
     elif backend == "regex":
         return sorted(_extract_regex(text, entity_types), key=lambda e: e.start)
@@ -395,6 +391,30 @@ def _extract_regex(text: str, entity_types: list[str] | None = None) -> list[Ent
                         source="regex",
                     )
                 )
+
+    # --- People, from the shipped name lexicon ---
+    # Two or more adjacent lexicon names (an initial allowed between them),
+    # capitalised in the text. A deterministic backend used to have no name
+    # rule at all, so a text-derived person record carried an id and an email
+    # and no name; the comparator then had nothing to corroborate the id with.
+    if _want("PERSON"):
+        try:
+            from .detect.names import person_spans
+
+            for start, end, span in person_spans(text):
+                if not _overlaps(entities, start, end):
+                    entities.append(
+                        Entity(
+                            text=span,
+                            entity_type="PERSON",
+                            confidence=0.70,
+                            start=start,
+                            end=end,
+                            source="lexicon",
+                        )
+                    )
+        except ImportError:
+            pass
 
     # --- Emails ---
     if _want("EMAIL"):

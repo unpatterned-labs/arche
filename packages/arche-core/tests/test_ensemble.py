@@ -234,39 +234,51 @@ class TestExtractIdentityEvidenceBasic:
 class TestDetectSensitiveSpans:
 
     def test_empty_text(self):
-        spans = detect_sensitive_spans("")
+        spans = detect_sensitive_spans("", backend="deterministic")
         assert spans == []
 
     def test_detects_email_as_sensitive(self):
-        spans = detect_sensitive_spans("Contact janet@example.com")
+        spans = detect_sensitive_spans(
+            "Contact janet@example.com", backend="deterministic"
+        )
         emails = [s for s in spans if s.label == "email"]
         assert len(emails) >= 1
         assert emails[0].text == "janet@example.com"
 
     def test_detects_phone_as_sensitive(self):
-        spans = detect_sensitive_spans("Call +234 803 555 7890")
+        spans = detect_sensitive_spans(
+            "Call +234 803 555 7890", backend="deterministic"
+        )
         phones = [s for s in spans if s.label == "phone_number"]
         assert len(phones) >= 1
 
     def test_returns_sensitive_span_type(self):
-        spans = detect_sensitive_spans("NIN is 12345678901")
+        spans = detect_sensitive_spans(
+            "NIN is 12345678901", backend="deterministic"
+        )
         for s in spans:
             assert isinstance(s, SensitiveSpan)
 
     def test_span_has_start_end(self):
-        spans = detect_sensitive_spans("Email is janet@example.com")
+        spans = detect_sensitive_spans(
+            "Email is janet@example.com", backend="deterministic"
+        )
         for s in spans:
             assert s.start >= 0
             assert s.end > s.start
 
     def test_redaction_recommendation_present(self):
-        spans = detect_sensitive_spans("NIN is 12345678901")
+        spans = detect_sensitive_spans(
+            "NIN is 12345678901", backend="deterministic"
+        )
         for s in spans:
             assert s.redaction in ("mask", "hash", "remove", "review_required")
 
     def test_high_confidence_gets_mask_redaction(self):
         """High-confidence detections should recommend masking."""
-        spans = detect_sensitive_spans("Email is janet@example.com")
+        spans = detect_sensitive_spans(
+            "Email is janet@example.com", backend="deterministic"
+        )
         emails = [s for s in spans if s.label == "email"]
         assert len(emails) >= 1
         assert emails[0].redaction == "mask"
@@ -274,7 +286,8 @@ class TestDetectSensitiveSpans:
     def test_nonsensitive_labels_excluded(self):
         """Labels like occupation, organization should NOT appear in sensitive spans."""
         spans = detect_sensitive_spans(
-            "Senior Systems Architect at Microsoft in New York"
+            "Senior Systems Architect at Microsoft in New York",
+            backend="deterministic",
         )
         labels = {s.label for s in spans}
         assert "occupation" not in labels
@@ -282,7 +295,8 @@ class TestDetectSensitiveSpans:
 
     def test_spans_sorted_by_position(self):
         spans = detect_sensitive_spans(
-            "janet@example.com called +234 803 555 7890"
+            "janet@example.com called +234 803 555 7890",
+            backend="deterministic",
         )
         starts = [s.start for s in spans]
         assert starts == sorted(starts)

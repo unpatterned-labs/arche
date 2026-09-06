@@ -54,13 +54,13 @@ dependencies = [
     # exists to prevent. `crosswalk` still works in 0.7 and would have kept
     # both floors open, but it warns, and shipping a server that emits a
     # DeprecationWarning on every call is not a saving.
-    "arche-core>=0.7.0a1,<0.8.0",
+    "arche-core>=0.8.0,<0.9.0",
 ]
 
 [project.optional-dependencies]
 # Named-entity detection needs a real NER backend. Without it `detect_entities`
 # falls back to regex only, which finds identifiers and no names at all.
-detect = ["arche-core[detect]>=0.7.0a1,<0.8.0"]
+detect = ["arche-core[detect]>=0.8.0,<0.9.0"]
 
 [project.urls]
 Homepage = "https://github.com/unpatterned-labs/arche"

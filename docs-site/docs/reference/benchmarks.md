@@ -14,6 +14,8 @@ There are three kinds of entry, and they support different claims.
 
 **Internal ablation.** One part of arche switched off, everything else held still. Says nothing about other tools.
 
+**Gated.** Two of these run in CI on every change to the resolver — DBLP-ACM (year refutes) and Febrl 4 (name + address) — and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). The gate exists because the Febrl number below drifted for two weeks before anyone looked.
+
 ## Against another package
 
 ### R `RecordLinkage`, Parrish tutorial
@@ -61,7 +63,7 @@ Both engines are run twice, because Splink's example blocks on and compares `soc
 | Splink, with `soc_sec_id` | 4,952 | 0 | 1.0000 | 0.9904 | 0.9952 |
 | arche, with `soc_sec_id` | 4,473 | 0 | 1.0000 | 0.8946 | 0.9444 |
 | Splink, without | 4,768 | 0 | 1.0000 | 0.9536 | 0.9762 |
-| arche, without | 4,190 | 24 | 0.9943 | 0.8380 | 0.9095 |
+| arche, without | 4,191 | 42 | 0.9901 | 0.8382 | 0.9078 |
 
 **Splink wins both arms, and it is not close.** Same precision or better, and roughly ten points more recall. On the harder arm arche also makes 24 false merges where Splink makes none.
 
@@ -72,7 +74,7 @@ One thing is worth adding, not as mitigation but because the two engines are ans
 | | auto-merged | surfaced (match + review) |
 | --- | ---: | ---: |
 | arche, with `soc_sec_id` | 0.8946 | 0.9692 |
-| arche, without | 0.8380 | 0.9724 |
+| arche, without | 0.8382 | 0.9726 |
 
 So most of the recall gap is pairs arche declined to decide rather than pairs it missed. That is the behaviour the distinctive-signal gate is for, and on this dataset it is costing more than it saves: Splink reaches 0.9904 with perfect precision and no queue at all.
 
@@ -254,6 +256,31 @@ The published claim holds only with the social security number in the record. Wi
 
 Script: `datasets/names_dataops/bench_febrl.py`.
 
+## Entity formation
+
+Every entry above scores *pairs*. The [ledger](../guides/keep-and-replay.md) does something no pairwise score measures: it unions `match` edges into entities, so A~B and B~C put A, B and C together whether or not A and C were ever compared. That is how a resolution system quietly merges two different things, and until this section nothing in the repository counted it.
+
+Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the configuration reported for each above, then every entity's records mapped back to the truth clusters they belong to. An entity whose records come from more than one truth cluster is a **cross-cluster merge** — the entity-level false merge, worse than a pairwise one because it propagates. `held` says whether the entity is a clique (`direct`, every pair itself decided `match`) or depends on a chain (`transitive`).
+
+| | DBLP-ACM, year refutes | Febrl 4, name + address |
+| --- | ---: | ---: |
+| records / true clusters | 4,910 / 2,224 | 10,000 / 5,000 |
+| pairwise: true merges / false merges | 2,215 / 115 | 3,285 / 484 |
+| entities built | 2,179 | 3,155 |
+| true clusters recovered whole | 2,135 (96.0%) | 2,960 (59.2%) |
+| **cross-cluster entities** | **44 (2.0%)** | **195 (6.2%)** |
+| records inside them | 187 | 848 |
+| of which `transitive` / `direct` | 44 / 0 | 184 / 11 |
+| largest cross-cluster entity | 12 records, 8 clusters | 17 records, 10 clusters |
+
+The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 184 of 195 are transitive; the 11 direct ones are two-record entities, which is to say ordinary pairwise false merges wearing an entity id. So `held == "direct"` is a usable guarantee — such an entity is exactly as trustworthy as its pairwise decisions — and `held == "transitive"` is where review effort belongs.
+
+The compounding is visible in the sizes. DBLP-ACM's 115 pairwise false merges become 44 bad entities holding 187 records; the worst is a 12-record entity built from eight different SIGMOD editorials that share a generic title. Febrl's 484 become 195 entities holding 848 records; the worst chains ten different people through seventeen records. A pairwise precision of 0.95 does not translate into 95% of entities being right when the errors cluster, and on DBLP-ACM they do: recurring generic titles pull many records toward one another.
+
+Two caveats. The Febrl pairwise line here (484 false merges) is not the 282 recorded on 2026-08-17, and the difference has been bisected to one commit: `e9cc9a8` (2026-08-22), which added **conjunction blocking** — a candidate key on a *pair* of over-common tokens, so two records both called *Nicholas Jackson* can be compared even though neither token is rare enough to block on alone. On `historical_50k` that recovered 27,055 true pairs that were never being proposed. On Febrl 4 it recovered none (3,285 true merges before and after; rare tokens already reached every true pair) and raised candidate pairs from 176,201 to 330,861, and among the extra pairs the scorer merged 202 more: identical common names with addresses agreeing at 0.70–0.78, scored above 0.94. The blocker did not get worse; it stopped hiding scorer errors. The number to fix is the scorer's, and the number to watch is this one — which nothing watched, because the benchmark was not gated in CI. And whole-cluster recovery (59% on Febrl) is bounded by pairwise recall (65.7% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
+
+Script: `data/scripts/benchmark_entity_formation.py`, result in `data/er_bench/benchmark_entity_formation_result.json`. Run with a results file already present and it adds to it rather than replacing it.
+
 ## Against string baselines
 
 Two school registers, same process both times, opposite conclusions.
@@ -353,12 +380,12 @@ Two cautions about reading NCVR here at all. Its negatives had to be rebuilt: `b
 | arm | true | false | precision | auto-resolved | refuted |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | name + address | 3,285 | 282 | 0.9209 | 0.6570 | 0 |
-| + date, weighted | 4,190 | 24 | 0.9943 | 0.8380 | 0 |
-| + date, refuting | 4,066 | 24 | 0.9941 | 0.8132 | **307** |
+| + date, weighted | 4,191 | 42 | 0.9901 | 0.8382 | 0 |
+| + date, refuting | 4,067 | 38 | 0.9907 | 0.8134 | **471** |
 
-Refutation fires 307 times here, so this is a real test rather than a no-op. It costs **124 true merges and prevents not one false merge**: the false count is 24 either way and precision is unchanged to three decimals. The weight has already excluded everything refutation would have caught, and all refutation adds is demoting correct matches to a queue.
+Refutation fires 471 times here, so this is a real test rather than a no-op. It costs **124 true merges and prevents four false merges**: 42 down to 38, precision 0.9901 to 0.9907. (Before conjunction blocking widened the candidate set it prevented none — 24 either way; the four it now catches are among the pairs that blocking newly admits.) The weight has already excluded nearly everything refutation would have caught, and what refutation mostly adds is demoting correct matches to a queue.
 
-Note also what the date comparator itself is worth on this arm: **282 false merges down to 24**, precision 0.9209 to 0.9943. Adding it to the pack was the right call. Adding refutation on top of it is not.
+Note also what the date comparator itself is worth on this arm: **484 false merges down to 42**, precision 0.8716 to 0.9901 (before conjunction blocking: 282 down to 24, 0.9209 to 0.9943 — the ratio barely moves). Adding it to the pack was the right call. Adding refutation on top of it is not.
 
 **Conclusion: no change.** The shipped pack declares a date comparator and no refutation. Three datasets: a small precision gain on Parrish, nothing at all on NCVR, and a clear loss on Febrl. Scripts: `bench_date_refutation.py` (NCVR) and `bench_febrl_dates.py` (Febrl).
 

@@ -7,7 +7,7 @@ pip install arche-core
 python -c "import arche; print(arche.__version__)"
 ```
 
-The core installation is enough for the record-resolution workflow in this site.
+The core installation is enough for `compare`, `reconcile`, `dedupe` and `find`. Add `[ledger]` to keep and replay decisions.
 
 ## Optional extras
 
@@ -15,6 +15,7 @@ Install an extra only when you need its capability.
 
 | Capability | Install |
 |---|---|
+| The decision ledger (`arche.attach`) | `pip install "arche-core[ledger]"` |
 | Document parsing | `pip install "arche-core[doc]"` |
 | OCR for scanned documents | `pip install "arche-core[doc-ocr]"` |
 | GLiNER PII detection | `pip install "arche-core[detect]"` |

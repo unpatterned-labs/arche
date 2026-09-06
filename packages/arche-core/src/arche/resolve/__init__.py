@@ -552,7 +552,7 @@ def _explain_pack(entity, identity, factors, gate) -> str:
     return "; ".join(parts) if parts else "no strong signals either way"
 
 
-def compare(a, b, *, entity: str = "person", **kwargs):
+def compare(a, b, *, entity: str = "person", store=None, **kwargs):
     """Are these two the same thing?
 
     The pairwise question, for any entity arche has a pack for. Returns a
@@ -578,7 +578,20 @@ def compare(a, b, *, entity: str = "person", **kwargs):
     a weighted mean over a comparator pack, and a 0.8 from each does not mean
     the same thing. That is why ``pins`` records which engine decided: read the
     verdict, and read `score` only against other scores from the same engine.
+
+    ``store=`` takes a :class:`arche.ledger.Ledger` (from :func:`arche.attach`).
+    The receipt is then also recorded, together with the two inputs it was made
+    from, so it can be found by ``decision_id`` and made again later. The
+    receipt itself is identical with or without a store.
     """
+    receipt = _compare(a, b, entity=entity, **kwargs)
+    if store is not None:
+        store.record_compare(receipt, a, b, call={"entity": entity, **kwargs})
+    return receipt
+
+
+def _compare(a, b, *, entity: str = "person", **kwargs):
+    """The dispatch behind :func:`compare`; see there."""
     if entity != "person":
         if entity not in ENTITY_PACKS:
             raise ValueError(
@@ -798,7 +811,7 @@ def describe_packs() -> dict[str, dict]:
 
 
 def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
-              entity: str | None = None, tf=None, decl=None, **kwargs):
+              entity: str | None = None, tf=None, decl=None, store=None, **kwargs):
     """Link two lists of records: which of these are the same thing?
 
     The batch question, the counterpart to :func:`compare`. Returns the
@@ -835,7 +848,28 @@ def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
     ``b_id`` and may include a route and retrieval score; the pins describe the
     retrieval system and are included in each decision. Splink candidate
     generation remains configured through its ``SettingsCreator``.
+
+    ``store=`` records every edge, and both lists, in a
+    :class:`arche.ledger.Ledger`, so an edge can be looked up by its
+    ``decision_id`` and replayed against the exact batch it was scored in.
     """
+    result = _reconcile(list_a, list_b, comparators, entity=entity, tf=tf,
+                        decl=decl, **kwargs)
+    if store is not None:
+        store.record_batch(result, list_a, list_b, call=_batch_call(
+            comparators, entity=entity, tf=tf, decl=decl, **kwargs))
+    return result
+
+
+def _batch_call(comparators, **kwargs) -> dict:
+    """The arguments a batch verb was called with, as the ledger stores them."""
+    call = {"comparators": comparators, **kwargs}
+    return {k: v for k, v in call.items() if v is not None}
+
+
+def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
+               entity: str | None = None, tf=None, decl=None, **kwargs):
+    """The engine dispatch behind :func:`reconcile`; see there."""
     extra_pins = dict(kwargs.pop("extra_pins", None) or {})
     # Read early: the token-frequency work below is arche's own scoring input,
     # and a backend that does not consume it must not pin one. Splink applies
@@ -974,7 +1008,7 @@ def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
 
 
 def dedupe(records, comparators: list[dict] | None = None, *,
-           entity: str | None = None, tf=None, decl=None, **kwargs):
+           entity: str | None = None, tf=None, decl=None, store=None, **kwargs):
     """Collapse one list: which of these records are the same thing?
 
     The third question, after :func:`compare` ("are these two the same?") and
@@ -1030,8 +1064,8 @@ def dedupe(records, comparators: list[dict] | None = None, *,
             )
         order[identity] = position
 
-    run = reconcile(records, records, comparators, entity=entity, tf=tf,
-                    decl=decl, **kwargs)
+    run = _reconcile(records, records, comparators, entity=entity, tf=tf,
+                     decl=decl, **kwargs)
 
     # One edge per unordered pair, and none from a record to itself. `order` is
     # consulted rather than comparing ids directly because ids need not be
@@ -1040,6 +1074,12 @@ def dedupe(records, comparators: list[dict] | None = None, *,
 
     matched = [(m["a_id"], m["b_id"]) for m in edges if m["decision"] == "match"]
     clusters = _clusters(identities, matched)
+    if store is not None:
+        store.record_batch(
+            {"matches": edges, "pins": run["pins"], "blocking": run["blocking"]},
+            records, records, verb="dedupe",
+            call=_batch_call(comparators, entity=entity, tf=tf, decl=decl, **kwargs),
+        )
     return {
         "matches": edges,
         "count": len(edges),
@@ -1186,7 +1226,7 @@ AMBIGUITY_MARGIN = 0.05
 
 def find(query: dict, within: list[dict], comparators: list[dict] | None = None, *,
          entity: str | None = None, tf=None, decl=None,
-         ambiguity_margin: float = AMBIGUITY_MARGIN, **kwargs):
+         ambiguity_margin: float = AMBIGUITY_MARGIN, store=None, **kwargs):
     """Which of these is this one?
 
     The lookup question: you hold one record -- a supplier read off an invoice,
@@ -1213,8 +1253,11 @@ def find(query: dict, within: list[dict], comparators: list[dict] | None = None,
     caller who disagrees with the verdict can see the same evidence it saw.
     """
     id_field = kwargs.get("id_field", "id")
-    run = reconcile([query], within, comparators, entity=entity, tf=tf,
-                    decl=decl, **kwargs)
+    run = _reconcile([query], within, comparators, entity=entity, tf=tf,
+                     decl=decl, **kwargs)
+    if store is not None:
+        store.record_batch(run, [query], within, verb="find", call=_batch_call(
+            comparators, entity=entity, tf=tf, decl=decl, **kwargs))
     edges = sorted(run["matches"], key=lambda m: m["score"], reverse=True)
     by_id = {r.get(id_field, i): r for i, r in enumerate(within)}
 

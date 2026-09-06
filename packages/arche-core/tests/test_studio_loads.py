@@ -518,26 +518,27 @@ class TestReadingSeveralDocumentsAtOnce:
         """The specific defect. `redacted_text` does not hide a PERSON under
         NDPA, so the tab must hide the spans it decided to hide itself."""
         for doc in masked["documents"]:
-            assert "Adesola" not in doc["text"]
-            assert "[PERSON]" in doc["text"]
+            assert "Adesola" not in doc["text"] and "Okonkwo" not in doc["text"]
+            # The statute tokenises the name it now detects, so the body carries
+            # its stable NAME_ token rather than this tab's own placeholder.
+            assert "NAME_" in doc["text"] or "[PERSON]" in doc["text"]
+            assert "[PERSON]AME_" not in doc["text"], "two hides spliced into one span"
 
-    def test_a_name_is_hidden_with_no_statute_behind_it_and_says_so(self, masked):
-        """Uncovered is not permission. A name draws no NDPA rule, and hiding it
-        anyway has to be labelled as this tab's choice, not a statute's.
+    def test_a_name_is_hidden_by_the_statute_that_covers_it(self, masked):
+        """The name detector ships a 13k-name lexicon, so under NDPA a person's
+        name is no longer a span the policy engine never saw: it is detected,
+        the statute has a rule for it, and the row says which rule.
 
-        The action label distinguishes two cases that used to share the word
-        `uncovered`. See `TestTheTwoDetectorsAreNotConflated` below for why.
+        Before the lexicon shipped this test asserted the opposite — that the
+        name was hidden as this tab's own choice with no statute behind it —
+        because the rule-based pass found no name at all.
         """
         person = next(e for e in masked["documents"][0]["entities"]
                       if e["type"] == "PERSON")
         assert person["masked"] is True
-        assert person["action"] in {"uncovered", "not evaluated"}
-        assert person["authority"] == ""
-        # Both labels must carry this, and the wording is the assertion. A
-        # first pass at the `not evaluated` rationale dropped the phrase, which
-        # this test caught: without it a reader can conclude a statute is what
-        # hid the name, which is the exact inference the tab must not invite.
-        assert "not because a statute" in person["rationale"]
+        assert person["origin"] == "policy"
+        assert person["action"] == "tokenize"
+        assert person["authority"].startswith("NDPA-2023")
 
     def test_a_removal_carries_its_citation(self, masked):
         nin = next(e for e in masked["documents"][0]["entities"]
@@ -598,8 +599,11 @@ class TestLinkingAcrossDocuments:
         other — and the answer would be about nothing.
         """
         person = next(k for k in masked["links"] if k["type"] == "PERSON")
-        assert person["a"] == "[PERSON]" and person["b"] == "[PERSON]"
-        assert 0.0 < person["score"] < 1.0
+        # The statute's stable token stands in for the value on both sides:
+        # equal tokens say "the same name" without saying which name.
+        assert person["a"].startswith("NAME_") and person["b"].startswith("NAME_")
+        assert "Adesola" not in person["a"] and "Okonkwo" not in person["a"]
+        assert 0.0 < person["score"] <= 1.0
         assert person["decision"] in {"match", "review", "no_match"}
 
     def test_the_score_is_the_same_whether_or_not_you_revealed(self, studio,

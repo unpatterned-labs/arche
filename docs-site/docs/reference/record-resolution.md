@@ -1,6 +1,6 @@
 # Record resolution API
 
-## `reconcile(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, **kwargs)`
+## `reconcile(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, store=None, **kwargs)`
 
 Link two record lists. Supply one of the following:
 
@@ -43,7 +43,7 @@ Key options include `threshold`, `review_margin`, `id_field`, and `truth_pairs`.
 
 Read the [decision contract](decision-contract.md) before sending these results to a downstream workflow.
 
-## `compare(a, b, *, entity="person", **kwargs)`
+## `compare(a, b, *, entity="person", store=None, **kwargs)`
 
 Resolve one direct person pair.
 
@@ -51,13 +51,17 @@ Resolve one direct person pair.
 from arche.resolve import compare
 
 decision = compare(
-    "Fatima Abdullahi, NIN 12345678901",
-    "Fatuma Abdulahi, NIN 12345678901",
+    {"name": "Fatima Abdullahi", "national_id": "12345678901"},
+    {"name": "Fatuma Abdulahi", "national_id": "12345678901"},
 )
 print(decision.identity)
 ```
 
-`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `reconcile()` and its labels should not be treated as interchangeable.
+`decision.identity` is `same_entity`, `review`, or `different`. This is a different contract from `reconcile()` and its labels should not be treated as interchangeable. Structured records take the deterministic resolution path; passing free text instead first invokes document extraction and therefore requires an extraction backend.
+
+## `store=`
+
+Every verb accepts `store=`, a `Ledger` from `arche.attach("duckdb:///...")`. The return value is unchanged; the receipt is additionally recorded with the inputs it was made from, so it can be looked up by `decision_id`, replayed, and joined with other receipts into entities. See [Keep and replay a decision](../guides/keep-and-replay.md).
 
 ## Signing crosswalk edges
 

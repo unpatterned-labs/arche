@@ -59,26 +59,36 @@ class PIIDetection:
 # ===================================================================
 
 
-def detect_pii(text: str) -> list[PIIDetection]:
-    """Detect all PII in *text* using Presidio + African patterns.
+def detect_pii(text: str, *, backend: str = "auto") -> list[PIIDetection]:
+    """Detect all PII in *text* using a selected detector backend.
 
     Parameters
     ----------
     text:
         Free-form input text to scan for PII.
+    backend:
+        ``"auto"`` (the default) uses Presidio when its NLP resources are
+        available and falls back to regex patterns. ``"regex"`` uses the
+        deterministic African and general PII patterns without initializing an
+        optional NLP model.
 
     Returns
     -------
     list[PIIDetection]
         All PII occurrences found, sorted by position.
     """
-    try:
-        detections = _detect_presidio(text)
-    except ImportError:
+    if backend == "regex":
         detections = _detect_regex(text)
-    except Exception as e:
-        _log.warning("Presidio PII detection failed, falling back to regex: %s", e)
-        detections = _detect_regex(text)
+    elif backend == "auto":
+        try:
+            detections = _detect_presidio(text)
+        except ImportError:
+            detections = _detect_regex(text)
+        except Exception as e:
+            _log.warning("Presidio PII detection failed, falling back to regex: %s", e)
+            detections = _detect_regex(text)
+    else:
+        raise ValueError("backend must be 'auto' or 'regex'")
 
     return sorted(detections, key=lambda d: d.start)
 

@@ -308,6 +308,9 @@ gliner = [
     { name = "gliner" },
     { name = "onnxruntime" },
 ]
+ledger = [
+    { name = "duckdb" },
+]
 litellm = [
     { name = "litellm" },
 ]
@@ -336,6 +339,9 @@ resolve = [
     { name = "duckdb" },
     { name = "splink" },
 ]
+runtime = [
+    { name = "duckdb" },
+]
 splink = [
     { name = "duckdb" },
     { name = "splink" },
@@ -350,7 +356,9 @@ requires-dist = [
     { name = "docling", marker = "extra == 'doc-ocr'", specifier = ">=2.0" },
     { name = "duckdb", marker = "extra == 'all'", specifier = ">=1.0" },
     { name = "duckdb", marker = "extra == 'geo'", specifier = ">=1.0" },
+    { name = "duckdb", marker = "extra == 'ledger'", specifier = ">=1.0" },
     { name = "duckdb", marker = "extra == 'resolve'", specifier = ">=1.0" },
+    { name = "duckdb", marker = "extra == 'runtime'", specifier = ">=1.0" },
     { name = "duckdb", marker = "extra == 'splink'", specifier = ">=1.0" },
     { name = "gliner", marker = "extra == 'all'", specifier = ">=0.2.8" },
     { name = "gliner", marker = "extra == 'detect'", specifier = ">=0.2.8" },
@@ -392,7 +400,7 @@ requires-dist = [
     { name = "splink", marker = "extra == 'resolve'", specifier = ">=4.0" },
     { name = "splink", marker = "extra == 'splink'", specifier = ">=4.0" },
 ]
-provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "litellm", "llm", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "splink", "za"]
+provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "ledger", "litellm", "llm", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "runtime", "splink", "za"]
 
 [[package]]
 name = "arche-mcp"

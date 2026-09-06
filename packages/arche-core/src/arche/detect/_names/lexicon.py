@@ -120,6 +120,22 @@ def _load_yaml_groups(dataset_dir: Path) -> list[list[str]]:
     return groups
 
 
+def _repo_datasets_dirs() -> list[Path]:
+    """Every ``datasets/`` directory above this file, nearest first.
+
+    The old search hard-coded three ancestor depths and the current working
+    directory, so the same test passed from the repository root and failed
+    from ``packages/arche-core``. Walking every ancestor costs nothing and
+    removes the dependence on where the process happened to start.
+    """
+    found: list[Path] = []
+    for ancestor in Path(__file__).resolve().parents:
+        candidate = ancestor / "datasets"
+        if candidate.is_dir():
+            found.append(candidate)
+    return found
+
+
 def _find_dataset_dir() -> Path | None:
     """Search for the naming dataset directory."""
     import os
@@ -141,9 +157,8 @@ def _find_dataset_dir() -> Path | None:
         if candidate.is_dir() and list(candidate.glob("*.yaml")):
             return candidate
 
-    this_dir = Path(__file__).resolve().parent
-    for ancestor in [this_dir.parents[4], this_dir.parents[3], this_dir.parents[2]]:
-        candidate = ancestor / "datasets" / "name_equivalences"
+    for datasets in _repo_datasets_dirs():
+        candidate = datasets / "name_equivalences"
         if candidate.is_dir() and list(candidate.glob("*.yaml")):
             return candidate
 
@@ -532,16 +547,19 @@ def _find_lexicon_path() -> Path | None:
         if candidate.is_file():
             return candidate
 
-    this_dir = Path(__file__).resolve().parent
-    for ancestor in [this_dir.parents[4], this_dir.parents[3], this_dir.parents[2]]:
+    for datasets in _repo_datasets_dirs():
         for candidate in [
-            ancestor / "datasets" / "data" / "african_names_unique_v1.jsonl",
-            ancestor / "datasets" / "data" / "african_names_lexicon_v1.jsonl",
+            datasets / "data" / "african_names_unique_v1.jsonl",
+            datasets / "data" / "african_names_lexicon_v1.jsonl",
         ]:
             if candidate.is_file():
                 return candidate
 
-    return None
+    # The copy that ships in the wheel. Same 13,342 names as the DataOps
+    # export above, gzipped to ~55 KB, CC-BY-4.0 (see arche/_data/README.md).
+    # Listed last so a newer export beside a source checkout still wins.
+    shipped = Path(__file__).resolve().parents[2] / "_data" / "african_names_v1.jsonl.gz"
+    return shipped if shipped.is_file() else None
 
 
 def _load_lexicon_names() -> set[str]:
@@ -550,9 +568,12 @@ def _load_lexicon_names() -> set[str]:
     if path is None:
         return set()
 
+    import gzip
+
     names: set[str] = set()
+    opener = gzip.open if path.suffix == ".gz" else open
     try:
-        with open(path, encoding="utf-8") as f:
+        with opener(path, "rt", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -564,11 +585,19 @@ def _load_lexicon_names() -> set[str]:
                     or row.get("name_display")
                     or "",
                 ).strip()
-                if not name:
+                # The export carries Wikidata labels that are not names:
+                # "Ebor, New South Wales", "Andrea (male first name)",
+                # "Michael the Archangel". A comma or a bracket marks the first
+                # two; the third leaks its lower-case words. Only capitalised
+                # tokens of plain entries enter the lookup, so `the`, `new`,
+                # `first` and `general` do not become names.
+                if not name or "," in name or "(" in name:
                     continue
-                for token in _normalise_tokens_for_lookup(name):
-                    token_norm = _strip_diacritics(token)
-                    if len(token_norm) >= 2:
+                for raw in name.replace("-", " ").split():
+                    if not raw[:1].isupper():
+                        continue
+                    token_norm = _strip_diacritics(raw).lower()
+                    if len(token_norm) >= 2 and token_norm.isalpha():
                         names.add(token_norm)
     except Exception as exc:
         _log.warning("Failed to load African lexicon from %s: %s", path, exc)

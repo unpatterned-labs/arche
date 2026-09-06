@@ -16,7 +16,6 @@ is the whole value of the answer.
 from __future__ import annotations
 
 import pytest
-
 from arche.doc.parse import DoclingNotInstalledError
 
 
@@ -40,7 +39,7 @@ def test_an_absent_parser_raises_rather_than_returning_an_empty_report(
     with pytest.raises(DoclingNotInstalledError):
         _documents._collect(
             _documents.DocumentReport(), list(_pdfs(tmp_path).glob("*.pdf")),
-            _no_docling, "auto", _FakeRun(),
+            _no_docling, "auto", _FakeRun(), extraction_backend="regex"
         )
 
 
@@ -59,7 +58,7 @@ def test_one_bad_file_is_still_not_fatal(tmp_path):
 
     report = _documents.DocumentReport()
     _documents._collect(report, sorted(_pdfs(tmp_path).glob("*.pdf")),
-                        _one_bad, "NG", _FakeRun())
+                        _one_bad, "NG", _FakeRun(), extraction_backend="regex")
     assert calls["n"] == 3, "the run stopped early on a bad file"
     assert "b.pdf" in report.errors
     assert "ValueError" in report.errors["b.pdf"]
@@ -159,7 +158,11 @@ class TestPlainTextNeedsNoParser:
             (tmp_path / name).write_text(text, encoding="utf-8")
 
         report = resolve_documents(
-            str(tmp_path), jurisdiction="NG", quiet=True, progress=False
+            str(tmp_path),
+            jurisdiction="NG",
+            quiet=True,
+            progress=False,
+            extraction_backend="regex",
         )
 
         assert len(report.records) == 2
