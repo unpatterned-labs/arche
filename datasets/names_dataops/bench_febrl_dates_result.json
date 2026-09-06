@@ -13,31 +13,31 @@
       "arm": "name + address",
       "pairs_truth": 5000,
       "true_merges": 3285,
-      "false_merges": 282,
-      "precision": 0.9209,
+      "false_merges": 484,
+      "precision": 0.8716,
       "auto_resolved": 0.657,
-      "surfaced": 0.9486,
+      "surfaced": 0.9488,
       "conflicts_flagged": 0
     },
     {
       "arm": "+ date, weighted",
       "pairs_truth": 5000,
-      "true_merges": 4190,
-      "false_merges": 24,
-      "precision": 0.9943,
-      "auto_resolved": 0.838,
-      "surfaced": 0.9724,
+      "true_merges": 4191,
+      "false_merges": 42,
+      "precision": 0.9901,
+      "auto_resolved": 0.8382,
+      "surfaced": 0.9726,
       "conflicts_flagged": 0
     },
     {
       "arm": "+ date, refuting",
       "pairs_truth": 5000,
-      "true_merges": 4066,
-      "false_merges": 24,
-      "precision": 0.9941,
-      "auto_resolved": 0.8132,
-      "surfaced": 0.9724,
-      "conflicts_flagged": 307
+      "true_merges": 4067,
+      "false_merges": 38,
+      "precision": 0.9907,
+      "auto_resolved": 0.8134,
+      "surfaced": 0.9726,
+      "conflicts_flagged": 471
     }
   ]
 }

@@ -13,10 +13,10 @@
     "name + address": {
       "pairs_truth": 5000,
       "true_merges": 3285,
-      "false_merges": 282,
-      "precision": 0.9209,
+      "false_merges": 484,
+      "precision": 0.8716,
       "auto_resolved": 0.657,
-      "surfaced": 0.9486
+      "surfaced": 0.9488
     },
     "name + address + soc_sec_id": {
       "pairs_truth": 5000,
