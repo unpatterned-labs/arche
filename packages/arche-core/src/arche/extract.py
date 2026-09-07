@@ -114,8 +114,10 @@ def extract(
     entity_types: list[str] | None = None,
     backend: str = "auto",
     llm_config: object | None = None,
-) -> list[Entity]:
-    """Extract entities from *text* using the specified backend.
+    *,
+    schema=None,
+):
+    """Extract entities from *text* -- or, with ``schema=``, one record in your own fields.
 
     Parameters
     ----------
@@ -124,6 +126,14 @@ def extract(
     entity_types:
         Optional list of entity types to restrict extraction to.
         When ``None`` all supported types are extracted.
+    schema:
+        A declaration (from :func:`arche.schema`: a YAML path, a dict or a
+        ``Declaration``). The call then returns an
+        :class:`arche.doc.Extraction` instead of a list: the declared fields
+        filled from the most trustworthy source that can answer each -- a
+        validated detector, then a model asked for *your* labels -- with the
+        evidence per field and the unfilled fields named. See
+        :func:`arche.doc.extract`.
     backend:
         ``"auto"`` -- GLiNER 2.5 when installed, plus ``basic`` (default).
         ``"basic"`` -- lexicon, validators and patterns; no model, no download.
@@ -142,6 +152,13 @@ def extract(
         Extracted entities sorted by their position in the text.
     """
     backend = canonical_backend(backend)
+    if schema is not None:
+        from .declare import schema as _schema
+        from .doc._extract import extract as _to_schema
+
+        decl = _schema(schema)
+        return _to_schema(decl, text=text, entity_backend=backend,
+                          jurisdiction=decl.jurisdiction if decl.jurisdiction != "default" else "NG")
     if backend in ("auto", "auto+llm"):
         try:
             entities = _extract_gliner2(text, entity_types)

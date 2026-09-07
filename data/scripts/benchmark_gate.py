@@ -25,6 +25,12 @@ exactly the configuration its result file records:
   (`data/er_bench/benchmark_leipzig_result.json`, `year_refutes_below_0.99`).
 * **Febrl 4**, name + address, identifier withheld
   (`datasets/names_dataops/bench_febrl_result.json`, `name + address`).
+* **Abt-Buy**, the `product_electronics` pack on product names alone
+  (`data/er_bench/benchmark_abt_buy_result.json`, `product_electronics`). This
+  one also carries two **invariants** the changelog once claimed a test
+  pinned: the `spec` refutation is neutral on this corpus, and the stop list
+  is inert on it (the frequency table does that work). Either invariant
+  breaking is a FAIL in its own right, whatever the precision did.
 
 The rule
 --------
@@ -57,6 +63,7 @@ TRUE_MERGE_TOLERANCE = 0.005
 
 LEIPZIG = _REPO / "data" / "er_bench" / "benchmark_leipzig_result.json"
 FEBRL = _REPO / "datasets" / "names_dataops" / "bench_febrl_result.json"
+ABT_BUY = _REPO / "data" / "er_bench" / "benchmark_abt_buy_result.json"
 
 
 def _dblp_acm() -> dict:
@@ -97,6 +104,57 @@ def _febrl() -> dict:
             "precision": r["precision"]}
 
 
+def _abt_buy() -> dict:
+    """The `product_electronics` pack on Abt-Buy names, plus its two invariants.
+
+    Three reconciles: the pack as shipped, the pack without `refutes_below`
+    on the spec comparator, and the pack with the electronics stop list
+    emptied. The first is the number; the other two must produce the same
+    auto-match set, or a claim the docs make has stopped being true.
+    """
+    import copy
+
+    from arche.resolve import ENTITY_PACKS, reconcile
+    from arche.resolve._productcode import (
+        PRODUCT_CATEGORIES,
+        ProductCategory,
+        register_category,
+    )
+
+    data = _REPO / "data" / "er_bench" / "products"
+
+    def read(name: str) -> list[dict]:
+        with open(data / name, encoding="utf-8-sig", errors="replace", newline="") as fh:
+            return list(csv.DictReader(fh))
+
+    a = [{"id": r["id"], "name": r["name"]} for r in read("Abt.csv")]
+    b = [{"id": r["id"], "name": r["name"]} for r in read("Buy.csv")]
+    truth = {(r["idAbt"], r["idBuy"]) for r in read("abt_buy_perfectMapping.csv")}
+
+    def auto(comparators) -> set:
+        res = reconcile(a, b, comparators=comparators, tf=None, id_field="id")
+        return {(e["a_id"], e["b_id"]) for e in res["matches"] if e["decision"] == "match"}
+
+    pack = ENTITY_PACKS["product_electronics"]
+    shipped = auto(pack)
+    without_refutation = auto([{k: v for k, v in s.items() if k != "refutes_below"}
+                               for s in copy.deepcopy(pack)])
+    original = PRODUCT_CATEGORIES["electronics"]
+    register_category(ProductCategory(name="electronics",
+                                      identity_units=original.identity_units,
+                                      stop_codes=frozenset()), replace=True)
+    try:
+        without_stop_list = auto(pack)
+    finally:
+        register_category(original, replace=True)
+
+    tp, fp = len(shipped & truth), len(shipped - truth)
+    return {"true_merges": tp, "false_merges": fp,
+            "precision": round(tp / (tp + fp), 4) if tp + fp else 0.0,
+            "invariants": {"spec_refutation_neutral": shipped == without_refutation,
+                           "stop_list_inert": shipped == without_stop_list}}
+
+
 def _recorded_dblp() -> dict:
     cfg = json.loads(LEIPZIG.read_text(encoding="utf-8"))["configurations"]
     c = cfg["year_refutes_below_0.99"]
@@ -107,6 +165,21 @@ def _recorded_febrl() -> dict:
     cfg = json.loads(FEBRL.read_text(encoding="utf-8"))["configurations"]["name + address"]
     return {"true_merges": cfg["true_merges"], "false_merges": cfg["false_merges"],
             "precision": cfg["precision"]}
+
+
+def _recorded_abt_buy() -> dict:
+    cfg = json.loads(ABT_BUY.read_text(encoding="utf-8"))["configurations"]["product_electronics"]
+    return {"true_merges": cfg["tp"], "false_merges": cfg["fp"],
+            "precision": round(cfg["precision"], 4)}
+
+
+def _write_abt_buy(now: dict) -> None:
+    doc = json.loads(ABT_BUY.read_text(encoding="utf-8"))
+    c = doc["configurations"]["product_electronics"]
+    c["tp"], c["fp"] = now["true_merges"], now["false_merges"]
+    c["precision"] = now["precision"]
+    c["recall"] = round(now["true_merges"] / doc["true_pairs"], 4)
+    ABT_BUY.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 
 def _write_dblp(now: dict) -> None:
@@ -128,19 +201,25 @@ def _write_febrl(now: dict) -> None:
 BENCHMARKS = (
     ("DBLP-ACM, year refutes", _dblp_acm, _recorded_dblp, _write_dblp, LEIPZIG),
     ("Febrl 4, name + address", _febrl, _recorded_febrl, _write_febrl, FEBRL),
+    ("Abt-Buy, product names", _abt_buy, _recorded_abt_buy, _write_abt_buy, ABT_BUY),
 )
 
 
 def judge(name: str, recorded: dict, now: dict) -> dict:
     precision_drop = recorded["precision"] - now["precision"]
     true_floor = recorded["true_merges"] * (1 - TRUE_MERGE_TOLERANCE)
-    failed = precision_drop > PRECISION_TOLERANCE or now["true_merges"] < true_floor
+    invariants = dict(now.get("invariants") or {})
+    broken = sorted(k for k, ok in invariants.items() if not ok)
+    failed = (precision_drop > PRECISION_TOLERANCE or now["true_merges"] < true_floor
+              or bool(broken))
     improved = (now["precision"] > recorded["precision"] + 1e-9
                 or now["true_merges"] > recorded["true_merges"])
     return {
         "benchmark": name,
         "recorded": recorded,
-        "now": now,
+        "now": {k: v for k, v in now.items() if k != "invariants"},
+        "invariants": invariants,
+        "broken_invariants": broken,
         "status": "FAIL" if failed else ("IMPROVED" if improved else "PASS"),
         "precision_delta": round(now["precision"] - recorded["precision"], 4),
         "true_merge_delta": now["true_merges"] - recorded["true_merges"],
@@ -153,7 +232,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--update", action="store_true",
                     help="re-record the baselines from this run (a deliberate act)")
     ap.add_argument("--json", default=None, help="write the summary here as JSON")
-    ap.add_argument("--only", choices=["dblp-acm", "febrl"], default=None)
+    ap.add_argument("--only", choices=["dblp-acm", "febrl", "abt-buy"], default=None)
     args = ap.parse_args(argv[1:])
 
     results = []
@@ -172,7 +251,10 @@ def main(argv: list[str]) -> int:
               f"precision {r['precision']:.4f} -> {n['precision']:.4f}"
               f"  true {r['true_merges']} -> {n['true_merges']}"
               f"  false {r['false_merges']} -> {n['false_merges']}  ({seconds}s)", flush=True)
-        if args.update and verdict["status"] != "PASS":
+        if verdict["invariants"]:
+            print("          invariants " + ", ".join(
+                f"{k}={'ok' if ok else 'BROKEN'}" for k, ok in verdict["invariants"].items()))
+        if args.update and verdict["status"] != "PASS" and not verdict["broken_invariants"]:
             write(now)
             print(f"          re-recorded in {verdict['file']}")
 

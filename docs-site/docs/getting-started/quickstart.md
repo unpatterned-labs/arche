@@ -112,6 +112,7 @@ s1 r2 review 0.5798
 ## Next
 
 - [Find and mask, then compare the copies](../guides/find-and-mask.md) — a tokenised copy still links.
+- [Extract to your schema](../guides/extract-to-your-schema.md) — your field names are the labels; the same declaration decides.
 - [Keep and replay a decision](../guides/keep-and-replay.md)
 - [Resolve documents](../guides/documents-to-decision.md)
 - [Interpret a decision](../guides/interpret-decisions.md)

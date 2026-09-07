@@ -198,7 +198,7 @@ def test_arche_extract_is_callable_whichever_way_it_resolved():
 _FROZEN_SURFACE = {
     # The vocabulary this branch settled: four questions, two conveniences,
     # the noun they hand back, and the pipeline primitives.
-    "attach", "compare", "reconcile", "dedupe", "find", "describe",
+    "attach", "compare", "reconcile", "dedupe", "find", "describe", "schema",
     "detect_pii", "deidentify",
     "Receipt", "Pipeline", "Result", "Detection", "DocumentReport",
     "__version__",

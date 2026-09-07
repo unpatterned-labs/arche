@@ -36,9 +36,14 @@ class Span:
     confidence: float
 
 
-def propose(text: str, labels: list[str], *, model: str | None = None,
+def propose(text: str, labels: list[str] | dict[str, str], *, model: str | None = None,
             threshold: float = 0.5) -> list[Span]:
     """Ask a GLiNER 2 model for ``labels`` in ``text``.
+
+    ``labels`` is a list of label names, or a ``{label: description}`` mapping
+    -- the description is what lets a caller's own field name (``vessel_id``)
+    mean one thing rather than every code on the page. Returned spans carry
+    the label (the key), not the description.
 
     ``model`` is a Hugging Face name or local path; ``None`` means the
     configured general model. Raises ``ImportError`` -- naming the extra --
