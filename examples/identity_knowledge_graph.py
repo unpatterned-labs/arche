@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Identity knowledge graph -- from one paragraph to an interactive graph.
 
-Extract entities from prose with GliNER plus the regex validators, match the
+Extract entities from prose with GLiNER 2.5 plus the basic validators, match the
 ISBN-10 to the ISBN-13, group what was found around the people and
 organisations it belongs to, build a NetworkX graph, and write a standalone
 vis.js page you can open in a browser.
@@ -17,7 +17,7 @@ Output:
     examples/identity_graph.html   (open in any browser)
     console output for each step
 
-``backend="auto"`` uses the GliNER model when ``arche-core[detect]`` is
+``backend="auto"`` uses GLiNER 2.5 when ``arche-core[detect2]`` is
 installed (first run downloads ~200 MB; later runs start in seconds) and falls
 back to the regex extractor otherwise. What the model finds is what is shown:
 the ground-truth check below prints the gaps rather than papering over them.
@@ -59,7 +59,7 @@ print()
 # ---------------------------------------------------------------------------
 # Step 1 -- detect entities
 # ---------------------------------------------------------------------------
-# backend="auto": GliNER for the fuzzy spans (people, organisations, places),
+# backend="auto": GLiNER 2.5 for the fuzzy spans (people, organisations, places),
 # regex with checksum validation for the structured ones (ISBNs, phones,
 # national ids). The merge prefers the validated regex span where both fire.
 print("Step 1: entity detection (backend='auto')")
@@ -258,7 +258,7 @@ def graph_html(graph: nx.DiGraph, title: str = "arche identity knowledge graph")
   <span class="legend">{legend}</span>
 </div>
 <div id="graph"></div>
-<div class="footer">Entities from arche.extract (GliNER + regex validators).
+<div class="footer">Entities from arche.extract (GLiNER 2.5 + the basic validators).
   Drag nodes to rearrange, scroll to zoom, hover for details.</div>
 <script>
   var nodes = new vis.DataSet({json.dumps(nodes)});

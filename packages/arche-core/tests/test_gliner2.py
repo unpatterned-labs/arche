@@ -212,15 +212,25 @@ def test_an_empty_response_is_not_an_error(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_the_v1_backend_is_untouched():
-    # GLiNER 2.5 is an addition, not a migration. v1 keeps its name, its model
-    # setting and its threshold, so nobody's pinned pipeline changes because a
-    # newer model became available.
+def test_the_v1_backend_is_gone_and_says_where_to_go():
+    # GLiNER v1 (`urchade/gliner_multi_pii-v1`, the [detect] extra) was removed
+    # in 0.9.0. A caller still asking for it gets the replacement's name, not a
+    # generic "unknown backend".
+    from arche.config import get_config
+
+    assert not hasattr(get_config(), "gliner_model")
+    with pytest.raises(ValueError, match="removed in 0.9.0.*gliner2"):
+        extract(_TEXT, backend="gliner")
+
+
+def test_the_two_gliner2_models_are_separate_settings():
+    # The general extractor and the PII proposer are different checkpoints
+    # with different thresholds; neither setting is read for the other.
     from arche.config import get_config
 
     config = get_config()
-    assert config.gliner_model and config.gliner2_model
-    assert config.gliner_model != config.gliner2_model
+    assert config.gliner2_model != config.gliner2_pii_model
+    assert "PII" in config.gliner2_pii_model
 
 
 def test_an_unknown_backend_lists_gliner2():

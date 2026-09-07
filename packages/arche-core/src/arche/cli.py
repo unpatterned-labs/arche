@@ -36,6 +36,7 @@ _COMMANDS = (
     ("list", "list supported CLI commands"),
     ("observe", "add evidence about a record and decide its open pairs again"),
     ("path", "why two records are one entity: the chain of decisions between them"),
+    ("redact", "a copy of a file or a text with the personal data removed, under its statute"),
     ("replay", "make a recorded decision again and report what moved"),
     ("resolve", "a new record against the entities a ledger holds: found, review, conflict..."),
     ("resolve-documents", "extract document fields, compare explicit candidates, and open cases"),
@@ -502,6 +503,70 @@ def _cmd_compare_text(args: argparse.Namespace) -> int:
 
 
 
+def _cmd_redact(args: argparse.Namespace) -> int:
+    """`arche redact FILE` / `arche redact --text T`: a copy you can hand on.
+
+    The masked text is the output -- stdout, or ``--out`` -- so it can be
+    piped. Everything about the decision (spans, citations, the id) is the
+    ``--json`` sidecar, which never carries a value.
+    """
+    import sys
+
+    from arche.protect import JurisdictionRequiredError, deidentify
+
+    if args.text:
+        text = args.source or ""
+        if not text:
+            raise SystemExit("arche redact --text needs the text as SOURCE")
+    else:
+        if not args.source:
+            raise SystemExit("arche redact needs a file, or --text and the text itself")
+        path = Path(args.source)
+        if not path.exists():
+            raise SystemExit(f"arche: no such file: {path}")
+        from arche.workflow._ingest import extract_text
+
+        text = extract_text(path)
+    ledger = _ledger(args.store) if (args.store or args.record) else None
+    try:
+        deid = deidentify(
+            text, jurisdiction=args.jurisdiction, backend=args.backend,
+            method=args.method, salt=args.salt or "", store=ledger,
+        )
+    except JurisdictionRequiredError as exc:
+        raise SystemExit(f"arche: {exc}") from None
+    payload = {
+        "decision_id": deid.decision_id,
+        "jurisdiction": deid.jurisdiction,
+        "statute": deid.statute,
+        "backend": deid.backend,
+        "model": deid.pins.get("model"),
+        "method": deid.method,
+        "count": deid.count,
+        "by_category": deid.by_category(),
+        "spans": deid.spans(),
+        "coverage": deid.coverage.get("verdict"),
+        "recorded": ledger is not None,
+    }
+    summary = (f"{deid.count} span(s) under {deid.statute} ({deid.jurisdiction}, "
+               f"{deid.pins.get('model') or deid.backend}, {deid.method})  "
+               f"decision_id {deid.decision_id}")
+    if args.out:
+        Path(args.out).write_text(deid.text + "\n", encoding="utf-8")
+        print(f"wrote {args.out}")
+        print(summary)
+    else:
+        print(deid.text)
+        print(summary, file=sys.stderr)
+    if args.json == "-":
+        print(json.dumps(payload, indent=2, default=str))
+    elif args.json:
+        Path(args.json).write_text(json.dumps(payload, indent=2, default=str) + "\n",
+                                   encoding="utf-8")
+        print(f"json  {args.json}", file=sys.stderr if not args.out else sys.stdout)
+    return 0
+
+
 def _write_json_output(payload: dict[str, object], output: str | None) -> None:
     """Print or write a machine-readable JSON artifact at an explicit path."""
     encoded = json.dumps(payload, indent=2, sort_keys=True, default=str)
@@ -864,8 +929,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     cmp_p.add_argument("--jurisdiction", default="NG", help="with --text: priors (default NG)")
     cmp_p.add_argument(
-        "--backend", default="regex",
-        help="with --text: extractor, regex (default, offline) or auto",
+        "--backend", default="basic",
+        help="with --text: extractor, basic (default, offline) or auto",
     )
     cmp_p.add_argument("--store", default=None, help="record every decision in this ledger file")
     cmp_p.add_argument("--record", action="store_true",
@@ -927,9 +992,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     documents_p.add_argument(
         "--extraction-backend",
-        choices=["auto", "regex"],
-        default="regex",
-        help="field extraction backend (default regex; auto may load local models)",
+        choices=["auto", "basic", "regex"],
+        default="basic",
+        help="field extraction backend (default basic; auto may load local models)",
     )
     documents_p.add_argument(
         "--progress", action="store_true", help="emit progress while parsing instead of JSON only"
@@ -949,6 +1014,34 @@ def main(argv: list[str] | None = None) -> int:
         "--out", default=None, help="write JSON review artifact instead of stdout"
     )
     documents_p.set_defaults(func=_cmd_resolve_documents)
+
+    red_p = sub.add_parser(
+        "redact",
+        help="a copy of a file or a text with the personal data removed, under its statute",
+    )
+    red_p.add_argument("source", nargs="?",
+                       help="a .txt/.md/.pdf/.docx file, or the text itself with --text")
+    red_p.add_argument("--text", action="store_true", help="SOURCE is the text, not a path")
+    red_p.add_argument(
+        "--jurisdiction", default=None,
+        help="NG, ZA, KE, GH, GB, ... (default: inferred from the text; refuses if it cannot)",
+    )
+    red_p.add_argument(
+        "--backend", default="auto",
+        help="basic (rules only), auto (default; adds GLiNER2-PII when installed), gliner2-pii",
+    )
+    red_p.add_argument(
+        "--method", choices=["statute", "mask", "token", "drop"], default="statute",
+        help="statute (default: the pack decides per category), mask, token or drop",
+    )
+    red_p.add_argument("--salt", default=None,
+                       help="key the tokens so two deployments never mint the same one")
+    red_p.add_argument("--out", default=None, help="write the masked text here (default: stdout)")
+    red_p.add_argument("--json", default=None,
+                       help="write the value-free span report here, or - for stdout")
+    red_p.add_argument("--store", default=None, help="record the decision in this ledger file")
+    red_p.add_argument("--record", action="store_true", help="record in the ARCHE_LEDGER file")
+    red_p.set_defaults(func=_cmd_redact)
 
     def ledger_args(parser, *, reveal: bool = True, entity_type: bool = False) -> None:
         parser.add_argument("--store", default=None,
@@ -995,7 +1088,7 @@ def main(argv: list[str] | None = None) -> int:
     res_p.add_argument("--record", default=None, help="the record as a JSON object, or @file.json")
     res_p.add_argument("--type", default="person", help="entity pack (default person)")
     res_p.add_argument("--jurisdiction", default="NG", help="with --text: priors (default NG)")
-    res_p.add_argument("--backend", default="regex", help="with --text: extractor (default regex)")
+    res_p.add_argument("--backend", default="basic", help="with --text: extractor (default basic)")
     ledger_args(res_p)
     res_p.set_defaults(func=_cmd_resolve)
 

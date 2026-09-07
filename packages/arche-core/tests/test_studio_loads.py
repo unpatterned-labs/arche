@@ -457,7 +457,7 @@ def _has_gliner() -> bool:
     dependency.
     """
     import importlib.util
-    return importlib.util.find_spec("gliner") is not None
+    return importlib.util.find_spec("gliner2") is not None
 
 
 needs_ner = pytest.mark.skipif(

@@ -199,6 +199,7 @@ _FROZEN_SURFACE = {
     # The vocabulary this branch settled: four questions, two conveniences,
     # the noun they hand back, and the pipeline primitives.
     "attach", "compare", "reconcile", "dedupe", "find", "describe",
+    "detect_pii", "deidentify",
     "Receipt", "Pipeline", "Result", "Detection", "DocumentReport",
     "__version__",
     # The place lane. Domain helpers rather than vocabulary -- they read as

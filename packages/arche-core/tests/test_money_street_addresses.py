@@ -49,20 +49,25 @@ class TestOrdinalStreetNumbersAreNotMoney:
     def test_no_currency_is_detected(self, text):
         assert currencies(text) == [], text
 
-    def test_the_address_survives_as_a_location(self):
+    def test_the_address_survives_the_currency_guard(self):
         """The point of the fix. Previously MONEY ate the span and `extract`
-        returned no LOCATION for a perfectly ordinary US address."""
+        returned no LOCATION for a perfectly ordinary US address.
+
+        The LOCATION itself was the model's finding (GLiNER v1 at the time);
+        the `basic` path has no US street parser. What this test can assert
+        without a model is the fix: the span is no longer claimed as money, so
+        it is free for whichever extractor reads addresses."""
         text = "227 N 5TH AVE, RIDGEFIELD WA"
-        found = {e.entity_type for e in extract(text)}
-        assert "LOCATION" in found
+        found = {e.entity_type for e in extract(text, backend="basic")}
         assert "MONEY" not in found
+        assert not [e for e in extract(text, backend="basic") if "5TH" in e.text]
 
     def test_a_southern_directional_was_never_affected(self):
         """`S` is not a currency symbol, so this always worked. Kept as the
         control: it shows the bug was the symbol list, not the address parser."""
         text = "12 S 4TH AVE"
         assert currencies(text) == []
-        assert "LOCATION" in {e.entity_type for e in extract(text)}
+        assert "MONEY" not in {e.entity_type for e in extract(text, backend="basic")}
 
 
 class TestRealAmountsStillDetect:

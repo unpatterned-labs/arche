@@ -20,7 +20,7 @@ text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple
 text3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 Elim Street"
 
 ledger = arche.attach("duckdb:///:memory:")            # a path keeps it: duckdb:///people.duckdb
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 r12 = arche.compare(text1, text2, **person)
 r13 = arche.compare(text1, text3, **person)
@@ -39,7 +39,7 @@ print(ledger.record(past.record_a).text)
 ```
 
 ```text
-same_entity merge | made with {'backend': 'regex', 'entity': 'person', 'jurisdiction': 'NG'}
+same_entity merge | made with {'backend': 'basic', 'entity': 'person', 'jurisdiction': 'NG'}
 arche-core@0.8.0 {'distinctive_floor': 0.75, 'match': 0.85, 'review': 0.4}
 Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com
 ```

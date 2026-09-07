@@ -5,7 +5,9 @@ from arche.config import configure, get_config
 
 def test_default_config():
     config = get_config()
-    assert config.gliner_threshold == 0.35
+    assert config.gliner2_threshold == 0.5
+    assert config.gliner2_pii_model == "fastino/gliner2-privacy-filter-PII-multi"
+    assert not hasattr(config, "gliner_model"), "GLiNER v1 was removed in 0.9.0"
     assert config.similarity_threshold == 0.80
     assert config.max_text_length == 500_000
     assert config.safe_logging is True
@@ -20,9 +22,9 @@ def test_configure_changes_values():
 
 
 def test_configure_preserves_other_fields():
-    old_gliner = get_config().gliner_threshold
+    old_gliner = get_config().gliner2_threshold
     configure(max_text_length=1_000_000)
-    assert get_config().gliner_threshold == old_gliner
+    assert get_config().gliner2_threshold == old_gliner
     # Restore
     configure(max_text_length=500_000)
 

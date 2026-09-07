@@ -117,9 +117,17 @@ class Pipeline:
         detections are returned).
     detectors:
         Which detector packages to run. Defaults to a sensible per-country
-        set when ``jurisdiction`` is provided. Stage 1 base: rule-based
-        government identifier detectors; ``arche-core[detect]`` adds
-        GLiNER2-PII for multilingual soft-PII.
+        set when ``jurisdiction`` is provided: rule-based identifier
+        detectors plus the cross-cutting names, locations, emails, phones.
+    backend:
+        What proposes the personal data the rules cannot see -- names the
+        lexicon does not hold, addresses written as prose, dates of birth.
+        ``"basic"`` (default) runs the rule packages alone: no model, no
+        download, the same output as every earlier release. ``"gliner2-pii"``
+        adds GLiNER2-PII (``arche-core[detect2]``) as a proposer and raises
+        if it is not installed; ``"auto"`` adds it when installed and warns
+        once when it is not. A proposal never overrides a validated
+        detection; see :mod:`arche.detect.model` for the merge rule.
     address_parsing:
         Run ``arche.addr.parse_address`` over the text. Stage 1 / Week 3
         delivery; the field exists today as a forward-compatibility hook.
@@ -158,7 +166,11 @@ class Pipeline:
         overlays: list[str] | None = None,
         transparency_notice: str | None = None,
         on_uncovered: str = "silent",
+        backend: str = "basic",
     ):
+        from arche.detect.model import resolve_backend
+
+        self.backend = resolve_backend(backend)
         self.jurisdiction = jurisdiction.upper() if jurisdiction else None
         self.statute_id = statute or (
             self._STATUTE_FOR_JURISDICTION.get(self.jurisdiction)
@@ -332,9 +344,18 @@ class Pipeline:
         """
         doc_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-        # 1. Detection
+        # 1. Detection: the rule packages, then -- if a backend asks for one --
+        #    a model proposing what the rules cannot see, merged so that a
+        #    validated detection always outranks a proposal.
         raw_detections = self._run_detectors(text)
         detections = [self._to_detection(d) for d in raw_detections]
+        model_name: str | None = None
+        if self.backend != "basic":
+            from arche.detect.model import merge, propose_pii
+
+            proposals, model_name = propose_pii(text, backend=self.backend)
+            if proposals:
+                detections = merge(detections, proposals)
 
         # 2. Statute-aware enrichment (Lane A 1B, 2026-05-22 detection-first
         # reposition). When a statute is loaded, walk each Detection and
@@ -406,6 +427,8 @@ class Pipeline:
                 "statute_id": self.statute_id,
                 "statute_version": statute.version if statute else None,
                 "detectors": list(self.detector_packages),
+                "backend": self.backend,
+                "model": model_name,
                 "address_parsing": self.address_parsing,
                 "audit": self.audit,
                 "pipeline_version": "v0.2",
@@ -459,6 +482,7 @@ class Pipeline:
             "jurisdiction": self.jurisdiction,
             "statute": self.statute_id,
             "detectors": list(self.detector_packages),
+            "backend": self.backend,
             "address_parsing": self.address_parsing,
             "audit": self.audit,
             "overlays": list(self.overlays),
@@ -568,8 +592,8 @@ class Pipeline:
                 results.extend(
                     detect_phones(text, default_country=self.jurisdiction or "NG")
                 )
-            # Other detector packages (gliner, presidio) load lazily via their
-            # own optional extras; pipeline doesn't fail if they're missing.
+            # A model proposer is not a package in this list; it is selected
+            # by `backend=` and merged after these run (see `process`).
 
         return results
 

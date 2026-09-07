@@ -234,7 +234,7 @@ def extract(
 
     ``entity_backend`` is passed to :func:`arche.extract.extract` for the
     local entity-extraction stage. It defaults to ``"auto"`` for compatibility;
-    pass ``"regex"`` for deterministic, air-gapped extraction.
+    pass ``"basic"`` for deterministic, air-gapped extraction.
 
     Returns an :class:`Extraction`. If the schema cannot be satisfied,
     ``data`` is ``None``, ``errors`` explains why, and ``fields`` still carries

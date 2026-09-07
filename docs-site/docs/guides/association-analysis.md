@@ -14,7 +14,7 @@ pip install "arche-core[ledger]"
 import arche
 
 ledger = arche.attach("duckdb:///:memory:")            # a path keeps it
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 t1 = "Mary Smith, NIN 12345678901, 12 Awolowo Road Ikoyi, mary.smith@example.com"
 t2 = "Mary Smith, NIN 12345678901, phone 08035557890, mary.smith@example.com"

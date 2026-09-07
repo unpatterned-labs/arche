@@ -8,7 +8,7 @@ Run with:
 
     uv run --no-sync python examples/association_analysis.py
 
-Offline; the ``regex`` extractor downloads nothing. The same walk, with the
+Offline; the ``basic`` extractor downloads nothing. The same walk, with the
 outputs explained, is the docs page *Association analysis*.
 """
 
@@ -17,7 +17,7 @@ from __future__ import annotations
 import arche
 
 ledger = arche.attach("duckdb:///:memory:")
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 texts = [
     "Mary Smith, NIN 12345678901, 12 Awolowo Road Ikoyi, mary.smith@example.com",

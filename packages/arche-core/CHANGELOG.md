@@ -2,6 +2,29 @@
 
 All notable changes to `arche-core` are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [Unreleased]
+
+**Find the personal data, make a copy you can hand on -- and a model that proposes.**
+
+### Added
+
+- **`arche.detect_pii(text, jurisdiction=)`** and **`arche.deidentify(text, jurisdiction=)`**: the personal data in a text with the statute section each span falls under, and the copy the statute permits. Both are `Pipeline` with the choices made, in two names a reader already knows. The jurisdiction is inferred from the text when not given and the call **refuses** (`JurisdictionRequiredError`) when the evidence is thin, because a redaction under the wrong law looks finished and is not; a country no pack covers gets the baseline floor and says so. `method="mask" | "token" | "drop"` overrides the rendering for every span while the citations stay the statute's.
+- **A redaction is a decision.** `Deidentified.decision_id` (`red:sha256:…`) is a content hash over the spans, their actions and citations, and the pins -- detectors, model, statute and version, method. `deidentify(..., store=ledger)` records it beside the matches; `ledger.explain(id)` gives the spans by category with their citations and never a value; `ledger.replay(id)` runs the detectors again over the stored text and reports whether the same spans would be found today.
+- **Linkable after masking.** `Deidentified.record()` gathers the tokens of a `method="token"` copy by field -- `national_id`, `phone`, `email`, `name`, `address` -- so two masked notes about one person still `compare` to `same_entity` on equal tokens, without either side holding the value. Masked (`[NIN]`) and dropped spans carry no identity and are left out, which is what makes `token` the method for a copy that has to stay comparable.
+- **A model in the detection path.** `Pipeline(backend=...)` -- and through it `detect_pii`, `deidentify`, `resolve_documents` and the studio -- accepts `basic` (default: the rule packages alone, no model, no download, unchanged output), `gliner2-pii` (GLiNER2-PII, `arche-core[detect2]`, raises if absent) and `auto` (the model when installed, a one-line notice when not). The model **proposes**: its 42 labels map onto `PII-*` categories so the statute assigns the action and the citation as for any rule detection; a proposal overlapping a validated detection loses to it; a whole name proposed by the model absorbs the lexicon's per-token names; labels arche has no category for are dropped and named (`arche.detect.model.UNMAPPED`). `Result.metadata["model"]` says what ran.
+- **`arche redact FILE | --text T`**: the masked text to stdout or `--out`, the value-free span report to `--json`, `--method`, `--salt`, `--store`. Reads `.txt`, `.md`, `.pdf`, `.docx`.
+- `arche.extract(text, backend="gliner2-pii")` for the PII model as an entity extractor.
+
+### Changed
+
+- **`backend="regex"` is now `backend="basic"`** everywhere -- `extract`, `compare`, `resolve_documents(extraction_backend=)`, `Pipeline`, the CLI. The old name said how the extractor worked; the new one says what it is: the lexicon, the validators and the patterns, no model. `regex` is accepted as an alias for one minor version.
+- `extract(backend="auto")` is now GLiNER 2.5 plus `basic`, and the warning when the model is absent names `arche-core[detect2]`.
+- `_extract_gliner2` and `get_gliner2` were each defined three times (a bad merge); once now, and both read one GLiNER 2 response reader, `arche.detect._gliner2.propose`.
+
+### Removed
+
+- **GLiNER v1** (`urchade/gliner_multi_pii-v1`, the `gliner` package, `onnxruntime`): `backend="gliner"`, `arche._models.get_gliner`, `config.gliner_model`, `gliner_fallback_model`, `gliner_threshold`. GLiNER 2.5 and GLiNER2-PII are better on every axis that matters here and 7 packages lighter to install. `backend="gliner"` raises naming `gliner2`; the `[detect]` extra is kept as an alias of `[detect2]` so an existing install line resolves.
+
 ## [0.8.0] — 2026-09-05
 
 **A local store for decisions, and a reset of what sits on top of it.**

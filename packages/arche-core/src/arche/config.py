@@ -33,36 +33,23 @@ class ArcheConfig:
     configurable here.
     """
 
-    # Entity extraction
-    # Primary: gliner_multi_pii-v1 — PII-focused model with 30 entity types
-    # including first_name, last_name, street_address, city, occupation.
-    # The PII model's tax_id attempts on NIN/BVN are harmlessly overridden
-    # by our deterministic African ID validators (adjudication layer ensures
-    # checksum-validated IDs always win over statistical guesses).
-    gliner_model: str = "urchade/gliner_multi_pii-v1"
-    # Fallback: medium-v2.1 is a general-purpose model that works with
-    # broader labels (person, organization, location). Less granular but
-    # still useful for name/org/location detection.
-    gliner_fallback_model: str = "urchade/gliner_medium-v2.1"
-    gliner_threshold: float = 0.35
-    # GLiNER 2.5 (Fastino) -- a separate model family, loaded through
-    # `AutoExtractor`, not a newer checkpoint for the loader above. Kept as its
-    # own setting so switching backends never silently reinterprets the v1
-    # model name as a v2 one.
+    # Entity extraction. Two Fastino models, both Apache-2.0, both behind
+    # `arche-core[detect2]`, both loaded through `AutoExtractor`:
+    #
+    # * GLiNER 2.5 is the general extractor -- people, organisations, places,
+    #   or whatever labels the caller declares -- used by `extract()`.
+    # * GLiNER2-PII proposes personal data (42 PII labels, seven European
+    #   languages) for `Pipeline(backend=...)`, `detect_pii` and `deidentify`.
+    #   Its precision on names is modest (0.35-0.37 on SPY), which is why it
+    #   only ever *proposes*: the validators, the statute pack and the merge
+    #   rule decide, and a checksummed identifier always beats a model span.
+    #
+    # GLiNER v1 (`urchade/gliner_multi_pii-v1`, the `[detect]` extra) was
+    # removed in 0.9.0; `[detect]` now installs the same thing as `[detect2]`.
     gliner2_model: str = "fastino/gliner2.5-base-v1"
     gliner2_threshold: float = 0.5
-    # GLiNER 2.5 (Fastino) -- a separate model family, loaded through
-    # `AutoExtractor`, not a newer checkpoint for the loader above. Kept as its
-    # own setting so switching backends never silently reinterprets the v1
-    # model name as a v2 one.
-    gliner2_model: str = "fastino/gliner2.5-base-v1"
-    gliner2_threshold: float = 0.5
-    # GLiNER 2.5 (Fastino) -- a separate model family, loaded through
-    # `AutoExtractor`, not a newer checkpoint for the loader above. Kept as its
-    # own setting so switching backends never silently reinterprets the v1
-    # model name as a v2 one.
-    gliner2_model: str = "fastino/gliner2.5-base-v1"
-    gliner2_threshold: float = 0.5
+    gliner2_pii_model: str = "fastino/gliner2-privacy-filter-PII-multi"
+    gliner2_pii_threshold: float = 0.5
 
     # Entity resolution
     similarity_threshold: float = 0.80

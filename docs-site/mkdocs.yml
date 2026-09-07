@@ -94,6 +94,7 @@ nav:
     - Installation: getting-started/installation.md
     - Quickstart: getting-started/quickstart.md
   - Guides:
+    - Find and mask: guides/find-and-mask.md
     - Keep and replay a decision: guides/keep-and-replay.md
     - Association analysis: guides/association-analysis.md
     - Resolve documents: guides/documents-to-decision.md

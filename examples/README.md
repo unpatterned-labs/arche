@@ -10,7 +10,7 @@ Copy-paste examples. All but `06_doc_pipeline.py` run with the base install
 | 06 | [`06_doc_pipeline.py`](06_doc_pipeline.py) | docling-backed PDF/DOCX ingest → Pipeline → policy → signed export. Requires `pip install arche-core[doc]`. |
 | — | [`quick_text_resolution.py`](quick_text_resolution.py) | Three texts, one person, five lines: `compare` with `store=`, then `ledger.entities()`, `explain` and `replay`. Offline, no model download. Walked through in [`notebooks/23_three_texts_one_person.ipynb`](notebooks/23_three_texts_one_person.ipynb). |
 | — | [`association_analysis.py`](association_analysis.py) | Mary Smith became Mary Jones: four records, adjacent pairs compared, one entity. `ledger.path` explains why the first and last are one person; `weak_links` says what the entity rests on. Walked through in the docs guide *Association analysis*. |
-| — | [`identity_knowledge_graph.py`](identity_knowledge_graph.py) | One paragraph to an interactive graph: `extract` (GliNER + regex), ISBN-10 matched to ISBN-13, entities grouped around the people and organisations they sit next to, a NetworkX graph and a standalone vis.js page. |
+| — | [`identity_knowledge_graph.py`](identity_knowledge_graph.py) | One paragraph to an interactive graph: `extract` (GLiNER 2.5 + basic), ISBN-10 matched to ISBN-13, entities grouped around the people and organisations they sit next to, a NetworkX graph and a standalone vis.js page. |
 
 Run any of them:
 

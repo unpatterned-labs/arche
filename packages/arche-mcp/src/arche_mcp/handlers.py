@@ -107,7 +107,7 @@ def capabilities() -> dict[str, Any]:
         "entity_packs": sorted(ENTITY_PACKS),
         "extras": {
             # `detect_entities` finds identifiers without this and no names.
-            "detect": _installed("gliner"),
+            "detect": _installed("gliner2"),
             # `compare_records` can use a Splink backend when present.
             "splink": _installed("splink"),
             # Document parsing for anything that is not plain text. Asks the
