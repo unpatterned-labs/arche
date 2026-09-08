@@ -147,7 +147,7 @@ def _attesting(fn):
 
 
 def _tool(fn):
-    """``@_tool`` with attestation in front of it."""
+    """``mcp.tool()`` with attestation in front of it."""
     return mcp.tool()(_attesting(fn))
 
 

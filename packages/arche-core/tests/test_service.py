@@ -149,3 +149,57 @@ class TestTheCli:
 
         from arche._studio import _home
         assert _home() == Path.home() / ".arche" / "studio"
+
+
+class TestAttestedAnswers:
+    @pytest.fixture()
+    def signed(self, tmp_path):
+        from arche.sign import generate_keypair, save_private_key
+        key = generate_keypair()
+        save_private_key(key, tmp_path / "k.pem")
+        return key, TestClient(create_app(ledger=None, signing_key=str(tmp_path / "k.pem")))
+
+    def test_absent_without_a_key(self, client):
+        body = client.post("/compare", json={"a": TestCompare.A, "b": TestCompare.B,
+                                             "jurisdiction": "NG"}).json()
+        assert "attestation" not in body
+        assert client.get("/capabilities").json()["attestation"] is None
+
+    def test_every_post_carries_one_that_verifies(self, signed):
+        from arche.attest import verify_attestation
+        key, c = signed
+        assert c.get("/capabilities").json()["attestation"] == {"signer": key.did_key}
+        for path, req in (
+            ("/detect", {"text": TEXT, "jurisdiction": "NG", "backend": "basic"}),
+            ("/deidentify", {"text": TEXT, "jurisdiction": "NG", "backend": "basic"}),
+            ("/compare", {"a": TestCompare.A, "b": TestCompare.B, "jurisdiction": "NG"}),
+        ):
+            body = c.post(path, json=req, headers={"X-Arche-Caller": "svc:billing"}).json()
+            env = body.pop("attestation")
+            assert env["tool"] == path.strip("/")
+            assert env["caller"] == "svc:billing"
+            check = verify_attestation(env, response=body, public_key=key.public_key)
+            assert check.ok and check.trusted, (path, check.problems)
+
+    def test_the_inputs_hash_is_over_the_full_request_model(self, signed):
+        """Defaults are part of what was asked: the same text with `method`
+        left to default and with `method="statute"` are the same question."""
+        from arche.attest import verify_attestation
+        key, c = signed
+        env = c.post("/deidentify", json={"text": TEXT, "jurisdiction": "NG",
+                                          "backend": "basic"}).json()["attestation"]
+        full = {"text": TEXT, "jurisdiction": "NG", "backend": "basic", "statute": None,
+                "method": "statute", "salt": "", "store": False}
+        assert verify_attestation(env, inputs=full, public_key=key.public_key).inputs_match
+
+    def test_the_decision_id_is_in_the_envelope(self, signed):
+        key, c = signed
+        body = c.post("/compare", json={"a": TestCompare.A, "b": TestCompare.B,
+                                        "jurisdiction": "NG"}).json()
+        assert body["attestation"]["decision_ids"] == [body["decision_id"]]
+
+    def test_caller_falls_back_to_the_client_address(self, signed):
+        _, c = signed
+        env = c.post("/detect", json={"text": TEXT, "jurisdiction": "NG",
+                                      "backend": "basic"}).json()["attestation"]
+        assert env["caller"]  # the test client reports one

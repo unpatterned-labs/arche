@@ -45,6 +45,17 @@ The `decision_id` re-derives from the same text and the same pins, so a second c
 
 There is none. The service binds `127.0.0.1` and is meant for the machine that has the data, the same rule the studio follows. `--host 0.0.0.0` exists for a container whose port is published to something that already does identity -- Tailscale, Cloudflare Access, `oauth2-proxy` -- and for nothing else. Every request carries text the caller chose to send; nothing is logged beyond uvicorn's warning line, and nothing leaves the process unless `store` is set, in which case it goes to the ledger file you named.
 
+## Attested answers
+
+Give the service a key and every POST answer carries an `attestation`: a signature by this installation over the endpoint, a hash of the request, a hash of the rest of the answer, the caller and the decision ids. It is how a downstream auditor checks that what a client says arche said is what arche said.
+
+```bash
+arche attest keygen ~/.arche/signing.pem
+arche serve --signing-key ~/.arche/signing.pem       # or ARCHE_SIGNING_KEY
+```
+
+`caller` is the `X-Arche-Caller` header when the auth proxy in front sets one, else the client address. `GET /capabilities` names the signer's did:key. The envelope and how to verify it are on [Attested answers](../reference/attestation.md).
+
 ## From Python
 
 `arche._service.create_app(ledger=None)` returns the FastAPI application, for a test client or for mounting under your own app. It is the whole service; `arche serve` is `uvicorn.run` around it.

@@ -37,8 +37,10 @@ is the ``X-Arche-Caller`` header when an auth proxy in front sets one, else
 the client address. See :mod:`arche.attest` and ``arche attest verify``.
 """
 
-from __future__ import annotations
-
+# No `from __future__ import annotations` here: FastAPI resolves a handler's
+# annotations by name, and `Request` is imported inside `create_app` so the
+# base wheel never imports fastapi. As strings those names would not resolve
+# and every body would be read as a query parameter (422 on every POST).
 import os
 from typing import Any
 

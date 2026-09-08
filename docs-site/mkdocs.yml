@@ -107,6 +107,7 @@ nav:
   - Reference:
     - Record resolution API: reference/record-resolution.md
     - Decision contract: reference/decision-contract.md
+    - Attested answers: reference/attestation.md
     - How arche works: reference/how-arche-works.md
     - Optional dependencies: reference/optional-dependencies.md
     - Benchmarks: reference/benchmarks.md
