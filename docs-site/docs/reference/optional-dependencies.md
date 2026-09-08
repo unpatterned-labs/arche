@@ -73,7 +73,7 @@ One word says what proposes the soft spans -- names the lexicon does not hold, a
 
 `regex` is accepted as a spelling of `basic`. `gliner` (v1) raises and names its replacement.
 
-Neither model is measured yet on arche's own detection benchmark; until it is, `auto` is described as "the model, if installed" and no recall number is quoted for it. GLiNER2-PII's own card reports precision 0.35–0.37 on the SPY set with a tendency to over-predict names, which is why it proposes and never decides: for a redaction an over-masked name is the cheap failure and a missed identifier the expensive one.
+Measured on the [detection benchmark](benchmarks.md#detection) (a constructed set, 908 spans): `basic` recalls 0.818 at 3 ms a text and finds no dates of birth, bank accounts or passwords, because it has no rule for them; `gliner2-pii` recalls 0.990 at ~0.65 s a text and adds false positives on order numbers the validators do not govern. GLiNER2-PII's own card reports precision 0.35–0.37 on the SPY set with a tendency to over-predict names, which is why it proposes and never decides: a checksummed identifier outranks it, and for a redaction an over-masked name is the cheap failure and a missed identifier the expensive one.
 
 !!! warning "`gliner2[local]`, not `gliner2`"
     The `[local]` marker is load-bearing. Bare `gliner2` installs an **API client that posts text to a hosted service**. Declaring it without `[local]` would ship a code path that looks exactly like on-device extraction while sending text off the machine. `arche-core[detect2]` pins `gliner2[local]`, and a test asserts it.

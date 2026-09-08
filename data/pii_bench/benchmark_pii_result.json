@@ -1,0 +1,393 @@
+{
+  "benchmark": "arche detection benchmark",
+  "set": "data\\pii_bench\\african_context_v0.jsonl",
+  "set_kind": "constructed",
+  "rows": 240,
+  "spans": 908,
+  "negatives": 540,
+  "scoring": "overlap of same category = hit; detection overlapping no truth span = false positive",
+  "results": [
+    {
+      "backend": "basic",
+      "model": null,
+      "rows": 240,
+      "seconds_per_text": 0.0036,
+      "recall": 0.8183,
+      "false_positives": 7,
+      "false_positives_per_100_texts": 2.92,
+      "nested": 196,
+      "categories": {
+        "PII-1-DOB": {
+          "truth": 60,
+          "hit": 0,
+          "predicted": 0,
+          "correct": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "PII-1-NAME": {
+          "truth": 240,
+          "hit": 232,
+          "predicted": 464,
+          "correct": 364,
+          "recall": 0.9667,
+          "precision": 0.7845
+        },
+        "PII-2-BVN": {
+          "truth": 6,
+          "hit": 6,
+          "predicted": 6,
+          "correct": 6,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-GHANA_CARD": {
+          "truth": 23,
+          "hit": 23,
+          "predicted": 23,
+          "correct": 23,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-HUDUMA": {
+          "truth": 9,
+          "hit": 9,
+          "predicted": 9,
+          "correct": 9,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-KRA_PIN": {
+          "truth": 14,
+          "hit": 14,
+          "predicted": 14,
+          "correct": 14,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-NATIONAL_ID": {
+          "truth": 18,
+          "hit": 18,
+          "predicted": 18,
+          "correct": 18,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-NIN": {
+          "truth": 17,
+          "hit": 16,
+          "predicted": 16,
+          "correct": 16,
+          "recall": 0.9412,
+          "precision": 1.0
+        },
+        "PII-2-PASSPORT": {
+          "truth": 5,
+          "hit": 5,
+          "predicted": 5,
+          "correct": 5,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-3-EMAIL": {
+          "truth": 120,
+          "hit": 120,
+          "predicted": 120,
+          "correct": 120,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-3-PHONE": {
+          "truth": 180,
+          "hit": 180,
+          "predicted": 189,
+          "correct": 180,
+          "recall": 1.0,
+          "precision": 0.9524
+        },
+        "PII-4-ADDRESS": {
+          "truth": 88,
+          "hit": 88,
+          "predicted": 95,
+          "correct": 95,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-4-LOCATION": {
+          "truth": 0,
+          "hit": 0,
+          "predicted": 94,
+          "correct": 0,
+          "recall": null,
+          "precision": 0.0
+        },
+        "PII-5-BANK_ACCOUNT": {
+          "truth": 32,
+          "hit": 0,
+          "predicted": 0,
+          "correct": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "PII-5-CARD": {
+          "truth": 32,
+          "hit": 0,
+          "predicted": 0,
+          "correct": 0,
+          "recall": 0.0,
+          "precision": null
+        },
+        "PII-8-IP_ADDRESS": {
+          "truth": 32,
+          "hit": 32,
+          "predicted": 32,
+          "correct": 32,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-8-PASSWORD": {
+          "truth": 32,
+          "hit": 0,
+          "predicted": 0,
+          "correct": 0,
+          "recall": 0.0,
+          "precision": null
+        }
+      },
+      "false_positives_by_category": {
+        "PII-3-PHONE": 7
+      },
+      "false_positives_landed_on": {
+        "order_no": 4,
+        "ten_digits": 3
+      },
+      "names_by_pool": {
+        "heldout": {
+          "truth": 88,
+          "hit": 80,
+          "recall": 0.9091
+        },
+        "lexicon": {
+          "truth": 152,
+          "hit": 152,
+          "recall": 1.0
+        }
+      },
+      "by_jurisdiction": {
+        "GH": {
+          "truth": 227,
+          "hit": 187,
+          "recall": 0.8238
+        },
+        "KE": {
+          "truth": 227,
+          "hit": 188,
+          "recall": 0.8282
+        },
+        "NG": {
+          "truth": 227,
+          "hit": 184,
+          "recall": 0.8106
+        },
+        "ZA": {
+          "truth": 227,
+          "hit": 184,
+          "recall": 0.8106
+        }
+      }
+    },
+    {
+      "backend": "gliner2-pii",
+      "model": "fastino/gliner2-privacy-filter-PII-multi",
+      "rows": 240,
+      "seconds_per_text": 0.6183,
+      "recall": 0.9901,
+      "false_positives": 58,
+      "false_positives_per_100_texts": 24.17,
+      "nested": 197,
+      "categories": {
+        "PII-1-DOB": {
+          "truth": 60,
+          "hit": 60,
+          "predicted": 60,
+          "correct": 60,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-1-NAME": {
+          "truth": 240,
+          "hit": 240,
+          "predicted": 351,
+          "correct": 251,
+          "recall": 1.0,
+          "precision": 0.7151
+        },
+        "PII-2-BVN": {
+          "truth": 6,
+          "hit": 6,
+          "predicted": 6,
+          "correct": 6,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-GHANA_CARD": {
+          "truth": 23,
+          "hit": 23,
+          "predicted": 23,
+          "correct": 23,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-HUDUMA": {
+          "truth": 9,
+          "hit": 9,
+          "predicted": 9,
+          "correct": 9,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-KRA_PIN": {
+          "truth": 14,
+          "hit": 14,
+          "predicted": 14,
+          "correct": 14,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-2-NATIONAL_ID": {
+          "truth": 18,
+          "hit": 18,
+          "predicted": 19,
+          "correct": 18,
+          "recall": 1.0,
+          "precision": 0.9474
+        },
+        "PII-2-NIN": {
+          "truth": 17,
+          "hit": 16,
+          "predicted": 16,
+          "correct": 16,
+          "recall": 0.9412,
+          "precision": 1.0
+        },
+        "PII-2-PASSPORT": {
+          "truth": 5,
+          "hit": 5,
+          "predicted": 10,
+          "correct": 5,
+          "recall": 1.0,
+          "precision": 0.5
+        },
+        "PII-3-EMAIL": {
+          "truth": 120,
+          "hit": 120,
+          "predicted": 120,
+          "correct": 120,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-3-PHONE": {
+          "truth": 180,
+          "hit": 180,
+          "predicted": 206,
+          "correct": 180,
+          "recall": 1.0,
+          "precision": 0.8738
+        },
+        "PII-4-ADDRESS": {
+          "truth": 88,
+          "hit": 88,
+          "predicted": 95,
+          "correct": 95,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-4-LOCATION": {
+          "truth": 0,
+          "hit": 0,
+          "predicted": 123,
+          "correct": 0,
+          "recall": null,
+          "precision": 0.0
+        },
+        "PII-5-BANK_ACCOUNT": {
+          "truth": 32,
+          "hit": 32,
+          "predicted": 32,
+          "correct": 32,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-5-CARD": {
+          "truth": 32,
+          "hit": 24,
+          "predicted": 24,
+          "correct": 24,
+          "recall": 0.75,
+          "precision": 1.0
+        },
+        "PII-8-IP_ADDRESS": {
+          "truth": 32,
+          "hit": 32,
+          "predicted": 32,
+          "correct": 32,
+          "recall": 1.0,
+          "precision": 1.0
+        },
+        "PII-8-PASSWORD": {
+          "truth": 32,
+          "hit": 32,
+          "predicted": 32,
+          "correct": 32,
+          "recall": 1.0,
+          "precision": 1.0
+        }
+      },
+      "false_positives_by_category": {
+        "PII-2-PASSPORT": 5,
+        "PII-3-PHONE": 24,
+        "PII-4-LOCATION": 29
+      },
+      "false_positives_landed_on": {
+        "amount": 2,
+        "free text": 23,
+        "order_no": 13,
+        "ten_digits": 20
+      },
+      "names_by_pool": {
+        "heldout": {
+          "truth": 88,
+          "hit": 88,
+          "recall": 1.0
+        },
+        "lexicon": {
+          "truth": 152,
+          "hit": 152,
+          "recall": 1.0
+        }
+      },
+      "by_jurisdiction": {
+        "GH": {
+          "truth": 227,
+          "hit": 225,
+          "recall": 0.9912
+        },
+        "KE": {
+          "truth": 227,
+          "hit": 227,
+          "recall": 1.0
+        },
+        "NG": {
+          "truth": 227,
+          "hit": 223,
+          "recall": 0.9824
+        },
+        "ZA": {
+          "truth": 227,
+          "hit": 224,
+          "recall": 0.9868
+        }
+      }
+    }
+  ]
+}

@@ -123,7 +123,15 @@ def detect_locations(text: str, *, confidence: float = 0.9) -> list[Detection]:
         # (shouldn't happen but defensive).
         return dict(term_map.get(match.group(0).lower(), {}))
 
-    return _lexicon_detect(
+    # A short, uncapitalised match is a word, not a place. "Next of kin" was
+    # read as Kinshasa (alias "Kin") 32 times in 240 texts on the detection
+    # benchmark; a place name in running text is capitalised, and the
+    # lowercase exception is kept only for names long enough not to be
+    # ordinary words ("lagos" in a chat message, yes; "kin", no).
+    def keep(d: Detection) -> bool:
+        return d.text[:1].isupper() or len(d.text) >= _LOWERCASE_MIN_LENGTH
+
+    return [d for d in _lexicon_detect(
         text,
         pattern,
         category="PII-4-LOCATION",
@@ -131,7 +139,10 @@ def detect_locations(text: str, *, confidence: float = 0.9) -> list[Detection]:
         identity_class="inferred",
         confidence=confidence,
         metadata_factory=factory,
-    )
+    ) if keep(d)]
 
+
+#: A lowercase gazetteer match shorter than this is treated as a word.
+_LOWERCASE_MIN_LENGTH = 5
 
 __all__ = ["detect_locations"]

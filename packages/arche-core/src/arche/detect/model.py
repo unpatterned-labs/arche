@@ -70,15 +70,20 @@ UNMAPPED: tuple[str, ...] = (
     "sensitive_date", "document_date", "expiration_date", "transaction_date",
 )
 
-#: What the model is actually asked for. Deliberately the coarse labels: asked
-#: for `person`, `first_name`, `last_name` and `full_name` together the model
-#: returns all four over one name at lower confidence each (0.76 for the whole
-#: name against 0.97 when asked for `person` alone, measured on the same
-#: sentence), and `street_address` + `city` split an address the statute
-#: treats as one span. Every label here has a category above; the finer labels
-#: stay mapped so a caller who asks for them gets a category too.
+#: What the model is actually asked for. Deliberately the coarse name label:
+#: asked for `person`, `first_name`, `last_name` and `full_name` together the
+#: model returns all four over one name at lower confidence each (0.76 for the
+#: whole name against 0.97 when asked for `person` alone, measured on the same
+#: sentence). The place labels ARE asked for separately: `address` alone gave
+#: zero LOCATION recall on a European set (548 city/state/country/postcode
+#: spans, none found), and asking for the four beside it recovered 0.81 of
+#: them at 0.81 precision without moving name precision (0.356 either way).
+#: Every label here has a category above; the finer name labels stay mapped so
+#: a caller who asks for them gets a category too.
 LABELS_ASKED: tuple[str, ...] = (
-    "person", "email", "phone_number", "address", "date_of_birth",
+    "person", "email", "phone_number", "address",
+    "city", "state_or_region", "postal_code", "country",
+    "date_of_birth",
     "national_id_number", "passport_number", "drivers_license_number", "tax_id",
     "bank_account", "iban", "payment_card", "ip_address", "password",
 )
@@ -134,7 +139,7 @@ def propose_pii(text: str, *, backend: str = "auto") -> tuple[list[Detection], s
     detections: list[Detection] = []
     for s in spans:
         category = CATEGORY_FOR_LABEL.get(s.label)
-        if category is None or s.end <= s.start:
+        if category is None or s.end <= s.start or not _plausible(s.label, s.text):
             continue
         detections.append(Detection(
             id=f"det:model:{s.label}:{s.start}:{s.end}",
@@ -148,6 +153,26 @@ def propose_pii(text: str, *, backend: str = "auto") -> tuple[list[Detection], s
             metadata={"label": s.label, "model": model},
         ))
     return detections, model
+
+
+def _plausible(label: str, text: str) -> bool:
+    """Shape checks on a proposal, from the detection benchmark's false positives.
+
+    A passport number with no letter in it is a number: every passport format
+    arche knows (NG, KE, ZA, GH, the EU) carries a letter, and the model read
+    18 ten-digit references as passports. A phone number is written with a
+    trunk zero or a plus, or is at least nine digits long; the model read 52
+    order numbers as phones. These are the same rules a reader applies before
+    the statute is consulted, not a validator -- the validators outrank the
+    model already.
+    """
+    if label == "passport_number":
+        return any(ch.isalpha() for ch in text)
+    if label == "phone_number":
+        digits = "".join(ch for ch in text if ch.isdigit())
+        stripped = text.strip()
+        return len(digits) >= 9 or stripped.startswith(("+", "0"))
+    return True
 
 
 _warned = False

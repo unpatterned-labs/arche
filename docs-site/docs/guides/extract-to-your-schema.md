@@ -113,6 +113,55 @@ catch_lot@0:sha256:14cb209a5c8872b4 | reproducible: False
 
 `reference()` turns the record into the canonical form the verbs compare, under the declaration's roles: `vessel_id` is the identifier (`national_id` is the slot's name, not a claim about the data), `quota_licence` is restricted and never disclosed. `schema=` on `compare`, `reconcile`, `dedupe` and `find` is the same argument as `decl=`, and the declaration's pin enters the decision hash beside the extraction pins -- so the receipt records that a model proposed the fields and the decision cannot be re-derived byte for byte from the text alone, only from the record.
 
+## Tried on four declarations
+
+[`examples/extract_to_schema.py`](https://github.com/unpatterned-labs/arche/blob/main/examples/extract_to_schema.py) runs the three shipped declarations (`person`, `place`, `artist`) and an organisation declared inline over four short texts, on `basic` and then on `auto`. What filled, from where, as of this release with GLiNER 2.5:
+
+| declaration, text | `basic` | `auto` |
+|---|---|---|
+| **person**, a KYC note | all six: id, phone, email, address from the validators; name from the lexicon; date from the basic extractor | the same six; the model's name and date replace the basic ones |
+| **place**, a facility survey | `address` from the address parser (the landmark anchor, *opposite the central mosque*); `name` and `admin_path` unresolved | `name` from the model (*Karfi Primary Health Centre*); `admin_path` from the generic extractor's nearest LOCATION, which is the wrong span (*Karfi village road*, not *Kumbotso LGA, Kano State*) |
+| **artist**, a royalty line | `name` from the lexicon (*Ayodeji Balogun*, the legal name); `mbid` and `isni` unresolved — arche has no validator for either | all three from the model, `name` as *WIZKID* |
+| **organisation**, an onboarding email | `rc_number`, `contact_email`, `contact_phone` from the validators; `supplier_name` unresolved | `supplier_name` from the model (*Kijani Tea Exporters Ltd*); the rest unchanged |
+
+Two of those rows are the point. The organisation's `supplier_name` on `basic` was *Amina Wanjiru* in the first draft — the finance contact, from the lexicon, at a confident 0.70 — because a `name` field fell back to any PERSON the basic extractor found. The declaration says `entity: organisation`; a supplier's name is not the person who signed the email, so a `name` field now falls back to PERSON only when the declared entity is one (`person`, `customer`, `patient`, `artist`, …) and to ORGANIZATION otherwise, which the basic extractor does not find. Unresolved is the right answer. And the place's `admin_path` on `auto` shows the same fallback failing in the other direction: the model was asked for *a place this sits inside* and offered nothing, the generic LOCATION stood in, and it is wrong. A containment field wants the administrative path, which is a place lane concern (the plan's M4), not something a nearest-entity fallback can guess.
+
+## What can go into a declaration
+
+Every key, with what it does at extraction and at matching. Unknown keys are errors, not warnings: a misspelt key that silently meant "unrestricted" would fail open.
+
+**Top level**
+
+| key | required | meaning |
+|---|---|---|
+| `arche_declaration` | yes, `1` | the format version; a dict passed to `arche.schema` gets it filled in |
+| `name` | yes | names the declaration in pins and reports; a dict defaults it to `entity` |
+| `version` | no, `"0"` | your version; part of the pin, so a changed weight changes every decision id |
+| `entity` | no, `name` | what a record is *of*. Decides whether a `name` field is a person's (`person`, `customer`, `patient`, `artist`, …) or an organisation's, and names the typed record |
+| `id_field` | no, `id` | the record's own key; kept as `record_id`, never treated as an attribute |
+| `statute` | no | a shipped pack (`NDPA-2023`, `POPIA`, `KENYA-DPA`, `GHANA-DPA`, `UK-GDPR`, `GDPR`, `HIPAA-SAFE-HARBOR`). Resolves each field's `statute_class` to a citation and an action; sets `jurisdiction` when you did not |
+| `jurisdiction` | no, `default` | the priors for matching and the detector set for extraction (`NG`, `ZA`, `KE`, `GH`, …) |
+| `on_unknown` | no, `warn` | what a record field the declaration does not name does at matching: `allow`, `warn`, or `error` |
+| `tf` | no | the token-frequency table for `tftoken` fields: a shipped pack's (`organisation`, `place`, `artist`, …) or your own |
+| `geo` | no | `{lat: <field>, lon: <field>, weight, decay_km}` — two of your fields are coordinates, scored by distance |
+| `fields` | yes | the mapping below |
+
+**Each field**
+
+| key | meaning |
+|---|---|
+| `role` | `identifies` (scored, can mint an entity id; needs a `kind`), `describes` (scored if it has a `kind`, never binds identity), or `ignore` (not extracted, not scored, not disclosed) |
+| `kind` | one or a list of: `name`, `placename`, `id`, `phone`, `email`, `address`, `date`, `tftoken`, `containment`, `postcode`, `type`. At matching it picks the comparator; at extraction it picks the source order — `phone`, `email`, `address` and an `id` of a family arche validates come from the validated detection first; everything else is the model's to propose, then the generic extractor's nearest entity type as a last resort |
+| `weight` | comparator weight, default `1.0` |
+| `id_family` | `kind: id` only. Names the identifier family so two declarations mint the same entity id for the same number, and tells extraction whether arche has a validator for it (`nin`, `bvn`, `passport`, `national_id`, `tin`, `rc`, `drivers_licence`, …). Reserved spellings (`nin`, `phone_number`, `passport_number`) are refused in favour of the canonical family, so a value cannot alias into the wrong one |
+| `statute_class` | a category of the declared `statute` (`PII-3-PHONE`, `PII-2-NIN`, …). Must exist in the pack; gives the field its citation and action |
+| `restricted` | never disclosed — not in reports, not in `as_record()`, not in a masked copy — but still usable for matching. A statute `drop` action sets it and cannot be overridden downward |
+| `pii` | default `true`; `false` says the field is not personal data (a port, a product code) |
+| `description` | the label the model sees, verbatim. *IMO vessel number, e.g. IMO-9074729* is the difference between the right identifier and the nearest one |
+| `type_domain` | required with `kind: type`: the vocabulary of type words to score against (`health_facility`, …) |
+
+Loading warns, and does not fail, when no field `identifies` (every match will be fuzzy), when several `id` fields compete for the one pairwise identifier slot (the first is used; batch verbs use all), and when a field is named like a built-in identity attribute but not declared `identifies` (the declaration wins; say so on purpose).
+
 ## What this is not
 
 It is not a promise that the model is right. GLiNER 2.5 is a proposer; the declared kinds decide where a validator overrules it, and the evidence on every field says which happened. Until the detection benchmark exists, no recall number is quoted for it, and `backend="basic"` remains the deterministic, air-gapped path -- with fewer fields filled and every gap named.

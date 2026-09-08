@@ -18,7 +18,6 @@ table — what the table earns is the separation inside what remains.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._productcode import (
