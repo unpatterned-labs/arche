@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/differences-v0.json",
+  "title": "differences",
+  "type": "object",
+  "required": [
+    "difference_id",
+    "observation_a",
+    "observation_b",
+    "attribute",
+    "difference_kind"
+  ],
+  "properties": {
+    "difference_id": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observation_a": {
+      "type": "string"
+    },
+    "observation_b": {
+      "type": "string"
+    },
+    "attribute": {
+      "type": "string"
+    },
+    "difference_kind": {
+      "type": "string"
+    },
+    "cause": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

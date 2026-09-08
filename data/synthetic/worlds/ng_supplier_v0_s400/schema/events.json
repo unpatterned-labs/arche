@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/events-v0.json",
+  "title": "events",
+  "type": "object",
+  "required": [
+    "event_id",
+    "entity_id",
+    "kind",
+    "event_at"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "event_at": {
+      "type": "string"
+    },
+    "attribute": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "old_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "new_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,43 @@
+world_id: ng_supplier_v0
+world_pack: ng_supplier_v0
+seed: 42
+generator_version: 0.0.1
+schema_version: 0
+counts:
+  entities:
+    organisation: 400
+    person: 600
+    place: 300
+  observations: 1198
+  events: 300
+  differences: 6233
+  difference_kinds:
+    change: 374
+    error: 2305
+    representation: 3554
+content_fingerprints:
+  observations: 3151b9cba0559e491debc681d19a994eaa5dba6ff107f07fa6517cea7284690e
+  truth: 0cf4c5a67fe97d85a566d45f038ff4f99e425704203c23b23209aeb6e7b50574
+  differences: c166d4be25eba5e1d60e3691caf5471b75d5a79ec7d2a365abe1be11780ce8e4
+  events: f91fccf52084490ed5141bbaaaf46c1a770704fc31f6bdebcf53466c7b1a35af
+provenance:
+- asset: given and family names
+  source: arche african_names_v1 lexicon (Wikidata/ParaNames, CC-BY-4.0)
+  method: seeded rank shuffle, Zipf weighting alpha=1.0
+  class: synthetic-assumption
+  filtered: 835 lexicon entries excluded as not-names (Wikidata blank-node URLs, property
+    labels, titles); see world._NOT_A_NAME
+  note: the lexicon carries no frequency data; the distribution SHAPE is modelled
+    and the ranking is arbitrary. Collision rates are realistic; the specific common
+    names are not a claim about Nigeria.
+- asset: RC numbers and TINs
+  source: arche.detect.ng.ids validators
+  method: generate-and-validate; every identifier passes at build time
+  class: public-data-derived
+invariants:
+- observations.parquet carries no truth column (enforced at write time)
+- no observed value is an entity id (enforced at write time)
+- record_id is a hash of (world_id, source, sequence) and holds no entity information
+horizon:
+- '2019-01-01'
+- '2026-01-01'

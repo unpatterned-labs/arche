@@ -1,0 +1,234 @@
+{
+  "world": "ng_supplier_v0_s150",
+  "records": 455,
+  "true_pairs": 567,
+  "arms": [
+    {
+      "arm": "exact",
+      "seconds": 0.0,
+      "overall": {
+        "claimed_pairs": 260,
+        "true_pairs": 567,
+        "precision": 0.9077,
+        "recall": 0.4162,
+        "f1": 0.5707,
+        "abstentions": 0,
+        "coverage": 0.4162
+      },
+      "bcubed": {
+        "precision": 0.9812,
+        "recall": 0.619,
+        "f1": 0.7591
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 86,
+          "recall": 0.1977
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 16,
+          "recall": 0.0625
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 6,
+          "recall": 0.5
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 45,
+          "recall": 0.0222
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 24,
+          "recall": 0.5
+        },
+        "error": {
+          "true_pairs": 428,
+          "recall": 0.2921
+        },
+        "error/digit_mutation": {
+          "true_pairs": 60,
+          "recall": 0.3333
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 249,
+          "recall": 0.2892
+        },
+        "error/truncation": {
+          "true_pairs": 191,
+          "recall": 0.2251
+        },
+        "error/typo": {
+          "true_pairs": 229,
+          "recall": 0.2402
+        },
+        "representation": {
+          "true_pairs": 509,
+          "recall": 0.3969
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 262,
+          "recall": 0.4122
+        },
+        "representation/ampersand": {
+          "true_pairs": 32,
+          "recall": 0.2188
+        },
+        "representation/case_upper": {
+          "true_pairs": 248,
+          "recall": 0.3468
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 237,
+          "recall": 0.4051
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 70,
+          "recall": 0.4
+        }
+      },
+      "entities": {
+        "clusters": 288,
+        "true_entities": 150,
+        "false_merge_clusters": 3,
+        "false_merge_rate": 0.0104,
+        "false_split_entities": 94,
+        "false_split_rate": 0.6267
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 24,
+        "city": 14
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 260,
+        "recall": 0.4162,
+        "reduction_ratio": 0.997483,
+        "pairs_per_record": 0.571
+      },
+      "notes": {
+        "rule": "normalised name + city, exact",
+        "blocking_note": "candidates == claims; a join blocks by deciding",
+        "oversized_blocks": 0
+      }
+    },
+    {
+      "arm": "splink",
+      "seconds": 6.47,
+      "overall": {
+        "claimed_pairs": 426,
+        "true_pairs": 567,
+        "precision": 0.9836,
+        "recall": 0.739,
+        "f1": 0.8439,
+        "abstentions": 0,
+        "coverage": 0.739
+      },
+      "bcubed": {
+        "precision": 0.9808,
+        "recall": 0.8815,
+        "f1": 0.9285
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 86,
+          "recall": 0.5116
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 16,
+          "recall": 0.75
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 6,
+          "recall": 0.6667
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 45,
+          "recall": 0.2222
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 24,
+          "recall": 0.8333
+        },
+        "error": {
+          "true_pairs": 428,
+          "recall": 0.722
+        },
+        "error/digit_mutation": {
+          "true_pairs": 60,
+          "recall": 0.65
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 249,
+          "recall": 0.7108
+        },
+        "error/truncation": {
+          "true_pairs": 191,
+          "recall": 0.6492
+        },
+        "error/typo": {
+          "true_pairs": 229,
+          "recall": 0.7074
+        },
+        "representation": {
+          "true_pairs": 509,
+          "recall": 0.7446
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 262,
+          "recall": 0.8473
+        },
+        "representation/ampersand": {
+          "true_pairs": 32,
+          "recall": 0.6562
+        },
+        "representation/case_upper": {
+          "true_pairs": 248,
+          "recall": 0.7218
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 237,
+          "recall": 0.7342
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 70,
+          "recall": 0.6429
+        }
+      },
+      "entities": {
+        "clusters": 187,
+        "true_entities": 150,
+        "false_merge_clusters": 4,
+        "false_merge_rate": 0.0214,
+        "false_split_entities": 33,
+        "false_split_rate": 0.22
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 4,
+        "nothing_obvious": 3,
+        "city": 3,
+        "address": 2
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 3596,
+        "recall": 0.9947,
+        "reduction_ratio": 0.965184,
+        "pairs_per_record": 7.903
+      },
+      "notes": {
+        "threshold": 0.5,
+        "seed": 42,
+        "scored_pairs": 3596,
+        "claims_at_threshold": {
+          "0.5": 426,
+          "0.9": 122,
+          "0.95": 111,
+          "0.99": 34
+        },
+        "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+      }
+    }
+  ]
+}
