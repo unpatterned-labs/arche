@@ -2,13 +2,25 @@
 
 `arche studio` is a small local tool with two jobs: decide whether two records are the same thing, and walk an adjudication pack marking outcomes.
 
-It is a handful of files and the standard library. No `pip install`, no framework, no network access.
+It is the standard library and nothing else, and it ships in the wheel: `pip install arche-core` is the whole install. No framework, no network access.
 
 ```bash
-python tools/arche-studio/serve.py
+arche studio
 ```
 
-It opens `http://127.0.0.1:8765` for you.
+It opens `http://127.0.0.1:8765` for you. Review packs are read from `./data/review_packs` when you run it inside a checkout that has one, and from `~/.arche/studio/review_packs` otherwise; `--packs DIR` names another directory, `ARCHE_STUDIO_HOME` moves the whole thing, and `--no-browser` keeps it from opening a tab. The reviewer's own state -- adjudications, the signing key -- lives beside the packs under `_studio/`, never inside a pack.
+
+## Explain a decision by id
+
+Give the studio a ledger and the *Explain* pane reads decisions back by id:
+
+```bash
+arche studio --ledger decisions.duckdb      # or: export ARCHE_LEDGER=decisions.duckdb
+```
+
+Paste a `dec:sha256:…` (a `compare`), `xwd:…` (a crosswalk) or `red:…` (a `deidentify`) id and you get, on one screen, what the three CLI verbs give separately: the verdict and its sentence; the fields that supported it, refuted it, or were missing, each with its bar; the shared values and the two records, masked until you tick *show values*; and a replay -- the engine installed now, run on the stored inputs -- that either reproduces the id byte for byte or names what moved. A redaction shows its spans by category and the statute section each fell under, and never the value.
+
+`http://127.0.0.1:8765/?explain=dec:sha256:…` opens straight onto a decision, which is the link to put in a ticket or an audit note.
 
 ## Compare
 
@@ -72,7 +84,7 @@ data/review_packs/register_x_survey/
 Start the studio and the pack is in the picker:
 
 ```sh
-python tools/arche-studio/serve.py
+arche studio --packs path/to/packs
 ```
 
 The CSV columns are `decision_id`, `decision`, `score`, `distinctive_max`, then each side under its own prefix, then `evidence` as JSON, then the four columns a reviewer fills. `distance_km` is added when the evidence carries one.

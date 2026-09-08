@@ -1,10 +1,11 @@
 name: arche-core benchmark gate
 
-# Did the resolver drift? Runs the two complete-truth benchmarks that finish
-# in minutes -- DBLP-ACM (year refutes) and Febrl 4 (name + address) -- and
-# compares them with the result files committed beside them. Fails on a
-# precision drop of more than 0.5 points or a true-merge drop of more than
-# 0.5%. Reports an improvement so the baseline can be raised on purpose.
+# Did the resolver drift? Runs the three complete-truth benchmarks that finish
+# in minutes -- DBLP-ACM (year refutes), Febrl 4 (name + address) and Abt-Buy
+# (product names) -- and compares them with the result files committed beside
+# them. Fails on a precision drop of more than 0.5 points, a true-merge drop
+# of more than 0.5%, or a broken invariant. Reports an improvement so the
+# baseline can be raised on purpose.
 #
 # Why: on 2026-08-22 a blocking change moved Febrl 4 precision from 0.9209 to
 # 0.8716 and nothing noticed for two weeks. The test suite guards behaviour;
@@ -25,6 +26,7 @@ on:
       - "data/er_bench/**"
       - "datasets/names_dataops/bench_febrl*.py"
       - "datasets/names_dataops/bench_febrl_result.json"
+      - "data/er_bench/benchmark_abt_buy_result.json"
       - "data/scripts/benchmark_gate.py"
       - ".github/workflows/arche-core-benchmarks.yml"
   pull_request:
@@ -36,6 +38,7 @@ on:
       - "data/er_bench/**"
       - "datasets/names_dataops/bench_febrl*.py"
       - "datasets/names_dataops/bench_febrl_result.json"
+      - "data/er_bench/benchmark_abt_buy_result.json"
       - "data/scripts/benchmark_gate.py"
       - ".github/workflows/arche-core-benchmarks.yml"
   workflow_dispatch:
@@ -80,13 +83,14 @@ jobs:
             uv run --no-sync python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           d = json.load(open("gate.json"))
-          print("| benchmark | status | precision | true merges | false merges | file |")
-          print("| --- | --- | --- | --- | --- | --- |")
+          print("| benchmark | status | precision | true merges | false merges | invariants | file |")
+          print("| --- | --- | --- | --- | --- | --- | --- |")
           for r in d["results"]:
               a, b = r["recorded"], r["now"]
+              inv = ", ".join(f"{k}={'ok' if ok else 'BROKEN'}" for k, ok in (r.get("invariants") or {}).items()) or "-"
               print(f"| {r['benchmark']} | **{r['status']}** | {a['precision']:.4f} -> {b['precision']:.4f} "
                     f"| {a['true_merges']} -> {b['true_merges']} | {a['false_merges']} -> {b['false_merges']} "
-                    f"| `{r['file']}` |")
+                    f"| {inv} | `{r['file']}` |")
           print()
           print(f"Tolerances: precision -{d['tolerances']['precision']}, true merges -{d['tolerances']['true_merges']*100:.1f}%.")
           PY

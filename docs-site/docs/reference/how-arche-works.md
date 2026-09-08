@@ -114,7 +114,7 @@ for filename, text in {
     (folder / filename).write_text(text, encoding="utf-8")
 
 report = resolve_documents(
-    str(folder), jurisdiction="NG", extraction_backend="regex", quiet=True,
+    str(folder), jurisdiction="NG", extraction_backend="basic", quiet=True,
     progress=False,
 )
 print([(item["identity"], item["score"]) for item in report.decisions])

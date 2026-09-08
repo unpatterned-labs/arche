@@ -23,6 +23,23 @@ Most tools give you a similarity score. arche gives you a decision, the evidence
 | **protect** | Apply the statute that governs the data, citing the section it came from. |
 | **attest** | Sign the decision together with the evidence and the exact representation that produced it. |
 
+## Find the personal data, and make a copy you can hand on
+
+```python
+from arche import detect_pii, deidentify
+
+note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+
+for d in detect_pii(note, jurisdiction="NG"):
+    print(d.category, (d.start, d.end), d.regulatory_citation)   # PII-2-NIN (27, 38) NDPA-2023 s.30, NIMC Act s.27
+
+safe = deidentify(note, jurisdiction="NG")
+print(safe.text)          # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+print(safe.decision_id)   # red:sha256:... -- explain it, replay it, same as a match
+```
+
+The statute decides what counts and what happens to it, and every span carries the section it fell under. Nothing leaves the process; the base install runs on CPU with no model, and `arche-core[detect2]` adds GLiNER2-PII as a proposer the validators and the statute still decide over. A tokenised copy is still comparable -- two masked notes about one person link on their tokens, without either side holding the value.
+
 ## What it resolves
 
 One engine, five calibrated packs. A pack is configuration and data, never a fork.
@@ -100,7 +117,7 @@ So: **general-purpose entity resolution that ships its representation data, buil
 ```bash
 pip install arche-core                   # ~3 MB, CPU only, no ML dependencies
 pip install "arche-core[doc]"            # PDF, DOCX, PPTX, XLSX, HTML
-pip install "arche-core[detect]"         # GLiNER2-PII soft-PII detection
+pip install "arche-core[detect2]"        # GLiNER2-PII and GLiNER 2.5 as proposers
 pip install "arche-core[presidio]"       # Microsoft Presidio integration
 pip install "arche-core[resolve]"        # Splink + DuckDB at scale
 ```
@@ -116,10 +133,10 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 
 ## Look at a decision
 
-`arche studio` is a local reading tool. Three files, the standard library, no framework and no install beyond `arche-core` itself.
+`arche studio` is a local reading tool. The standard library, no framework, and it is in the wheel: `pip install arche-core` is the whole install.
 
 ```bash
-python tools/arche-studio/serve.py     # opens http://127.0.0.1:8765
+arche studio     # opens http://127.0.0.1:8765
 ```
 
 Five modes over one evidence panel:

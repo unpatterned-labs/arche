@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Entity extraction with multi-backend fallback: GliNER -> regex -> LLM.
+"""Entity extraction: a model proposes, the validators decide.
 
 Usage:
     from arche.extract import extract
@@ -20,17 +20,23 @@ Usage:
     for e in entities:
         print(e.entity_type, e.text, e.confidence)
 
-GliNER is optional -- if not installed, falls back to regex patterns that always work.
-
-LLM support is opt-in via ``backend="auto+llm"`` -- the LLM acts as an additional
-proposer alongside GliNER and regex.  All three feed into the same ``_merge_entities()``
-pipeline with the same deterministic validators.
+The model is optional. Without ``arche-core[detect2]`` the ``basic`` extractor
+runs alone: the name lexicon, the address parser, and the identifier, phone
+and email patterns with their checksums and cue gates. With it, GLiNER 2.5
+proposes the fuzzy spans -- people, organisations, places -- and the same
+validators run over the result; a checksummed identifier always beats a
+model span for the same stretch of text (:func:`_merge_entities`).
 
 Backend options:
-    ``"auto"``      -- GliNER + regex + validators (default, works offline)
-    ``"auto+llm"``  -- GliNER + regex + LLM + validators (best accuracy, needs API key)
-    ``"regex"``     -- regex + validators only (air-gapped)
-    ``"gliner"``    -- GliNER only (raises if not installed)
+    ``"auto"``         -- GLiNER 2.5 if installed, plus ``basic`` (default)
+    ``"basic"``        -- lexicon + validators + patterns, no model, no download
+    ``"gliner2"``      -- GLiNER 2.5 only, general labels (raises if not installed)
+    ``"gliner2-pii"``  -- GLiNER2-PII only, personal-data labels (raises if not installed)
+    ``"auto+llm"``     -- ``auto`` plus an LLM proposer (needs an API key)
+
+``"regex"`` is accepted as an alias of ``"basic"`` -- the earlier name said how
+the extractor worked rather than what it was. GLiNER v1 (``"gliner"``) was
+removed in 0.9.0; ``"gliner2"`` is its replacement.
 """
 
 from __future__ import annotations
@@ -77,13 +83,41 @@ Entity = EntityReference
 # ===================================================================
 
 
+#: The backend vocabulary. One word each for what runs; ``regex`` survives as a
+#: spelling of ``basic`` because the name appeared in published examples.
+BACKENDS: tuple[str, ...] = ("auto", "basic", "gliner2", "gliner2-pii", "auto+llm")
+BACKEND_ALIASES: dict[str, str] = {"regex": "basic"}
+
+
+def canonical_backend(backend: str) -> str:
+    """``regex`` -> ``basic``; everything else unchanged.
+
+    Shared by every entry point that takes ``backend=`` so the alias means the
+    same thing in :func:`extract`, ``Pipeline``, ``compare`` and the CLI.
+    """
+    return BACKEND_ALIASES.get(backend, backend)
+
+
+def _unknown_backend(backend: str) -> ValueError:
+    hint = ""
+    if backend == "gliner":
+        hint = (" GLiNER v1 ('gliner', the [detect] extra) was removed in 0.9.0; "
+                "'gliner2' is its replacement and [detect] now installs it.")
+    return ValueError(
+        f"Unknown backend: {backend!r}. Use one of {', '.join(repr(b) for b in BACKENDS)} "
+        f"('regex' is accepted for 'basic').{hint}"
+    )
+
+
 def extract(
     text: str,
     entity_types: list[str] | None = None,
     backend: str = "auto",
     llm_config: object | None = None,
-) -> list[Entity]:
-    """Extract entities from *text* using the specified backend.
+    *,
+    schema=None,
+):
+    """Extract entities from *text* -- or, with ``schema=``, one record in your own fields.
 
     Parameters
     ----------
@@ -92,11 +126,21 @@ def extract(
     entity_types:
         Optional list of entity types to restrict extraction to.
         When ``None`` all supported types are extracted.
+    schema:
+        A declaration (from :func:`arche.schema`: a YAML path, a dict or a
+        ``Declaration``). The call then returns an
+        :class:`arche.doc.Extraction` instead of a list: the declared fields
+        filled from the most trustworthy source that can answer each -- a
+        validated detector, then a model asked for *your* labels -- with the
+        evidence per field and the unfilled fields named. See
+        :func:`arche.doc.extract`.
     backend:
-        ``"auto"`` -- GliNER + regex + validators (default, works offline).
-        ``"auto+llm"`` -- GliNER + regex + LLM + validators (best accuracy, needs API key).
-        ``"gliner"`` -- GliNER only (raises if not installed).
-        ``"regex"`` -- regex + validators only (air-gapped).
+        ``"auto"`` -- GLiNER 2.5 when installed, plus ``basic`` (default).
+        ``"basic"`` -- lexicon, validators and patterns; no model, no download.
+        ``"gliner2"`` -- GLiNER 2.5 only (raises if not installed).
+        ``"gliner2-pii"`` -- GLiNER2-PII only (raises if not installed).
+        ``"auto+llm"`` -- ``auto`` plus an LLM proposer (needs an API key).
+        ``"regex"`` is an alias of ``"basic"``.
     llm_config:
         An :class:`~arche.llm.LLMConfig` instance.  Required when
         ``backend="auto+llm"``.  If ``None`` and the backend needs LLM,
@@ -107,26 +151,33 @@ def extract(
     list[Entity]
         Extracted entities sorted by their position in the text.
     """
+    backend = canonical_backend(backend)
+    if schema is not None:
+        from .declare import schema as _schema
+        from .doc._extract import extract as _to_schema
+
+        decl = _schema(schema)
+        return _to_schema(decl, text=text, entity_backend=backend,
+                          jurisdiction=decl.jurisdiction if decl.jurisdiction != "default" else "NG")
     if backend in ("auto", "auto+llm"):
         try:
-            entities = _extract_gliner(text, entity_types)
-            # Supplement with regex patterns that GliNER may miss (phones, IDs, etc.)
+            entities = _extract_gliner2(text, entity_types)
+            # The validators fill in what the model has no checksum for.
             regex_entities = _extract_regex(text, entity_types)
             entities = _merge_entities(entities, regex_entities)
         except ImportError:
             warnings.warn(
-                "GliNER not available. Using regex-only extraction. "
-                "Person/organization/location detection is disabled. "
-                "Install with: pip install arche-core[gliner]",
+                "GLiNER 2.5 is not installed, so only the basic extractor ran: "
+                "identifiers, phones, emails and lexicon names, but no model-"
+                "proposed people, organisations or places. Install it with: "
+                "pip install 'arche-core[detect2]'",
                 stacklevel=2,
             )
             entities = list(_extract_regex(text, entity_types))
         except Exception as e:
-            _log.warning("GliNER extraction failed, falling back to regex: %s", e)
+            _log.warning("GLiNER 2.5 extraction failed, falling back to basic: %s", e)
             warnings.warn(
-                f"GliNER extraction failed ({e}). Using regex-only extraction. "
-                "Person/organization/location detection is disabled. "
-                "Install with: pip install arche-core[gliner]",
+                f"GLiNER 2.5 extraction failed ({e}); only the basic extractor ran.",
                 stacklevel=2,
             )
             entities = list(_extract_regex(text, entity_types))
@@ -137,35 +188,22 @@ def extract(
             entities = _merge_entities(entities, llm_entities)
 
         return sorted(entities, key=lambda e: e.start)
-    elif backend == "gliner":
-        return sorted(_extract_gliner(text, entity_types), key=lambda e: e.start)
-    elif backend == "gliner2" or backend == "gliner2" or backend == "gliner2":
+    elif backend == "gliner2":
         return sorted(_extract_gliner2(text, entity_types), key=lambda e: e.start)
-    elif backend == "regex":
+    elif backend == "gliner2-pii":
+        return sorted(_extract_gliner2_pii(text, entity_types), key=lambda e: e.start)
+    elif backend == "basic":
         return sorted(_extract_regex(text, entity_types), key=lambda e: e.start)
     else:
-        raise ValueError(
-            f"Unknown backend: {backend!r}. "
-            "Use 'auto', 'auto+llm', 'gliner', 'gliner2', or 'regex'."
-        )
+        raise _unknown_backend(backend)
 
 
 # ===================================================================
-# GliNER backend (optional)
+# GLiNER 2 backends (optional, `arche-core[detect2]`)
 # ===================================================================
 
-
-def _get_gliner_model():
-    """Load the GliNER model via the shared registry (cached, offline-aware)."""
-    from ._models import get_gliner
-
-    return get_gliner()  # uses config model name, checks ARCHE_MODEL_DIR
-
-
-# ── Identity-specific GliNER label set ───────────────────────────────────────
-# These labels are tuned for identity resolution use cases (DPI, KYC, health).
-# GliNER performs zero-shot NER — these labels describe what to extract.
-
+# ── Identity-specific label set ──────────────────────────────────────────────
+# Zero-shot labels for the general extractor: these describe what to look for.
 _IDENTITY_LABELS = [
     "person",
     "organization",
@@ -178,7 +216,7 @@ _IDENTITY_LABELS = [
     "money",
 ]
 
-# Map GliNER's raw labels to our normalised entity type taxonomy
+# Map the model's raw labels to arche's entity type taxonomy.
 _GLINER_LABEL_MAP: dict[str, str] = {
     "person": "PERSON",
     "organization": "ORGANIZATION",
@@ -194,44 +232,63 @@ _GLINER_LABEL_MAP: dict[str, str] = {
     "medical record number": "DOCUMENT",
 }
 
-def _extract_gliner(text: str, entity_types: list[str] | None = None) -> list[Entity]:
-    """Extract entities using the GliNER zero-shot NER model.
+# GLiNER2-PII's own vocabulary (42 labels) onto the same taxonomy. Labels not
+# listed here still come back, uppercased, so nothing the model found is lost;
+# these are the ones the rest of arche knows what to do with.
+_PII_LABEL_MAP: dict[str, str] = {
+    "person": "PERSON", "full_name": "PERSON", "first_name": "PERSON",
+    "middle_name": "PERSON", "last_name": "PERSON",
+    "email": "EMAIL",
+    "phone_number": "PHONE",
+    "address": "LOCATION", "street_address": "LOCATION", "city": "LOCATION",
+    "state_or_region": "LOCATION", "postal_code": "LOCATION", "country": "LOCATION",
+    "date_of_birth": "DATE",
+    "government_id": "NATIONAL_ID", "national_id_number": "NATIONAL_ID",
+    "passport_number": "NATIONAL_ID", "drivers_license_number": "NATIONAL_ID",
+    "tax_id": "NATIONAL_ID", "tax_number": "NATIONAL_ID",
+    "ip_address": "IP_ADDRESS",
+}
+_PII_LABELS = list(_PII_LABEL_MAP)
 
-    Uses identity-specific labels by default for better precision on
-    person names, national IDs, addresses, and phone numbers.
 
-    The confidence threshold is read from ``get_config().gliner_threshold``
-    so callers can tune it via ``configure(gliner_threshold=0.4)`` without
-    touching this module.
+def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
+    """Extract entities with GLiNER 2.5, the general extractor.
+
+    The caller's ``entity_types`` become the labels the model is asked for --
+    the whole point of a zero-shot extractor -- and default to the identity
+    set above. Spans come back through :func:`arche.detect._gliner2.propose`,
+    the one reader of the model's label-grouped response shape.
     """
     from .config import get_config
+    from .detect._gliner2 import propose
 
-    model = _get_gliner_model()
+    labels = [label.lower() for label in entity_types] if entity_types else _IDENTITY_LABELS
+    return [
+        Entity(text=s.text, entity_type=_GLINER_LABEL_MAP.get(s.label, s.label.upper()),
+               confidence=s.confidence, start=s.start, end=s.end, source="gliner2")
+        for s in propose(text, labels, threshold=get_config().gliner2_threshold)
+    ]
 
-    if entity_types:
-        # User-specified labels — normalise to lowercase for GliNER
-        labels = [l.lower() for l in entity_types]
-    else:
-        labels = _IDENTITY_LABELS
 
-    raw = model.predict_entities(text, labels, threshold=get_config().gliner_threshold)
+def _extract_gliner2_pii(text: str, entity_types: list[str] | None = None) -> list[Entity]:
+    """Extract entities with GLiNER2-PII, the personal-data proposer.
 
-    entities: list[Entity] = []
-    for ent in raw:
-        raw_label = ent["label"].lower()
-        entity_type = _GLINER_LABEL_MAP.get(raw_label, raw_label.upper())
+    Asked for its own vocabulary (or the caller's), mapped onto the taxonomy
+    above. Precision on names is modest by the model card's own numbers, so
+    treat the output as proposals: the validators in :func:`_merge_entities`
+    and the statute in ``Pipeline`` decide.
+    """
+    from .config import get_config
+    from .detect._gliner2 import propose
 
-        entities.append(
-            Entity(
-                text=ent["text"],
-                entity_type=entity_type,
-                confidence=float(ent["score"]),
-                start=ent["start"],
-                end=ent["end"],
-                source="gliner",
-            )
-        )
-    return entities
+    cfg = get_config()
+    labels = [label.lower() for label in entity_types] if entity_types else _PII_LABELS
+    return [
+        Entity(text=s.text, entity_type=_PII_LABEL_MAP.get(s.label, s.label.upper()),
+               confidence=s.confidence, start=s.start, end=s.end, source="gliner2-pii")
+        for s in propose(text, labels, model=cfg.gliner2_pii_model,
+                         threshold=cfg.gliner2_pii_threshold)
+    ]
 
 
 # ===================================================================
@@ -629,64 +686,6 @@ def _merge_entities(primary: list[Entity], secondary: list[Entity]) -> list[Enti
 
 
 # ===================================================================
-# GLiNER 2.5 backend (optional, `arche-core[detect2]`)
-# ===================================================================
-
-
-def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
-    """Extract entities with GLiNER 2.5.
-
-    The output shape differs from v1 and the difference matters. v1 returns a
-    flat list of spans each carrying its own label; 2.5 returns spans grouped
-    BY label::
-
-        {"entities": {"organization": [{"text": ..., "confidence": ...,
-                                        "start": ..., "end": ...}],
-                      "person": []}}
-
-    ``include_confidence`` and ``include_spans`` are both requested because
-    without them the model returns bare strings, and a mention with no offsets
-    cannot be cited back to the document it came from -- which is the whole
-    point of an arche :class:`Entity`.
-    """
-    from ._models import get_gliner2
-    from .config import get_config
-
-    model = get_gliner2()
-    labels = [label.lower() for label in entity_types] if entity_types \
-        else _IDENTITY_LABELS
-
-    result = model.extract_entities(
-        text, labels,
-        threshold=get_config().gliner2_threshold,
-        include_confidence=True,
-        include_spans=True,
-    )
-
-    out: list[Entity] = []
-    for label, spans in (result or {}).get("entities", {}).items():
-        entity_type = _GLINER_LABEL_MAP.get(label.lower(), label.upper())
-        for span in spans or []:
-            # A bare string means the model answered without offsets despite
-            # being asked for them. Skipping is right: an uncitable mention is
-            # worse than a missing one, because it looks like evidence.
-            if not isinstance(span, dict):
-                continue
-            start, end = span.get("start"), span.get("end")
-            if start is None or end is None:
-                continue
-            out.append(Entity(
-                text=span.get("text", text[start:end]),
-                entity_type=entity_type,
-                confidence=float(span.get("confidence", 0.0)),
-                start=int(start),
-                end=int(end),
-                source="gliner2",
-            ))
-    return out
-
-
-# ===================================================================
 # `arche.extract` is a module AND callable
 # ===================================================================
 # Without this, the name is ambiguous in a way that fails at a distance:
@@ -717,119 +716,3 @@ class _CallableExtractModule(_ModuleType):
 
 
 _sys.modules[__name__].__class__ = _CallableExtractModule
-
-
-# ===================================================================
-# GLiNER 2.5 backend (optional, `arche-core[detect2]`)
-# ===================================================================
-
-
-def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
-    """Extract entities with GLiNER 2.5.
-
-    The output shape differs from v1 and the difference matters. v1 returns a
-    flat list of spans each carrying its own label; 2.5 returns spans grouped
-    BY label::
-
-        {"entities": {"organization": [{"text": ..., "confidence": ...,
-                                        "start": ..., "end": ...}],
-                      "person": []}}
-
-    ``include_confidence`` and ``include_spans`` are both requested because
-    without them the model returns bare strings, and a mention with no offsets
-    cannot be cited back to the document it came from -- which is the whole
-    point of an arche :class:`Entity`.
-    """
-    from ._models import get_gliner2
-    from .config import get_config
-
-    model = get_gliner2()
-    labels = [label.lower() for label in entity_types] if entity_types \
-        else _IDENTITY_LABELS
-
-    result = model.extract_entities(
-        text, labels,
-        threshold=get_config().gliner2_threshold,
-        include_confidence=True,
-        include_spans=True,
-    )
-
-    out: list[Entity] = []
-    for label, spans in (result or {}).get("entities", {}).items():
-        entity_type = _GLINER_LABEL_MAP.get(label.lower(), label.upper())
-        for span in spans or []:
-            # A bare string means the model answered without offsets despite
-            # being asked for them. Skipping is right: an uncitable mention is
-            # worse than a missing one, because it looks like evidence.
-            if not isinstance(span, dict):
-                continue
-            start, end = span.get("start"), span.get("end")
-            if start is None or end is None:
-                continue
-            out.append(Entity(
-                text=span.get("text", text[start:end]),
-                entity_type=entity_type,
-                confidence=float(span.get("confidence", 0.0)),
-                start=int(start),
-                end=int(end),
-                source="gliner2",
-            ))
-    return out
-
-
-# ===================================================================
-# GLiNER 2.5 backend (optional, `arche-core[detect2]`)
-# ===================================================================
-
-
-def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[Entity]:
-    """Extract entities with GLiNER 2.5.
-
-    The output shape differs from v1 and the difference matters. v1 returns a
-    flat list of spans each carrying its own label; 2.5 returns spans grouped
-    BY label::
-
-        {"entities": {"organization": [{"text": ..., "confidence": ...,
-                                        "start": ..., "end": ...}],
-                      "person": []}}
-
-    ``include_confidence`` and ``include_spans`` are both requested because
-    without them the model returns bare strings, and a mention with no offsets
-    cannot be cited back to the document it came from -- which is the whole
-    point of an arche :class:`Entity`.
-    """
-    from ._models import get_gliner2
-    from .config import get_config
-
-    model = get_gliner2()
-    labels = [label.lower() for label in entity_types] if entity_types \
-        else _IDENTITY_LABELS
-
-    result = model.extract_entities(
-        text, labels,
-        threshold=get_config().gliner2_threshold,
-        include_confidence=True,
-        include_spans=True,
-    )
-
-    out: list[Entity] = []
-    for label, spans in (result or {}).get("entities", {}).items():
-        entity_type = _GLINER_LABEL_MAP.get(label.lower(), label.upper())
-        for span in spans or []:
-            # A bare string means the model answered without offsets despite
-            # being asked for them. Skipping is right: an uncitable mention is
-            # worse than a missing one, because it looks like evidence.
-            if not isinstance(span, dict):
-                continue
-            start, end = span.get("start"), span.get("end")
-            if start is None or end is None:
-                continue
-            out.append(Entity(
-                text=span.get("text", text[start:end]),
-                entity_type=entity_type,
-                confidence=float(span.get("confidence", 0.0)),
-                start=int(start),
-                end=int(end),
-                source="gliner2",
-            ))
-    return out

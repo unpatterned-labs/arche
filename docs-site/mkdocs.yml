@@ -94,6 +94,8 @@ nav:
     - Installation: getting-started/installation.md
     - Quickstart: getting-started/quickstart.md
   - Guides:
+    - Find and mask: guides/find-and-mask.md
+    - Extract to your schema: guides/extract-to-your-schema.md
     - Keep and replay a decision: guides/keep-and-replay.md
     - Association analysis: guides/association-analysis.md
     - Resolve documents: guides/documents-to-decision.md
@@ -101,9 +103,11 @@ nav:
     - Prepare your data: guides/prepare-data.md
     - Review and evaluate: guides/review-and-evaluate.md
     - Let an agent call arche: guides/mcp-server.md
+    - Serve over HTTP: guides/serve-over-http.md
   - Reference:
     - Record resolution API: reference/record-resolution.md
     - Decision contract: reference/decision-contract.md
+    - Attested answers: reference/attestation.md
     - How arche works: reference/how-arche-works.md
     - Optional dependencies: reference/optional-dependencies.md
     - Benchmarks: reference/benchmarks.md

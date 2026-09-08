@@ -17,10 +17,7 @@ table — what the table earns is the separation inside what remains.
 
 from __future__ import annotations
 
-import copy
-
 import pytest
-
 from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._gate import DISTINCTIVE_FLOOR
 from arche.resolve._productcode import (
@@ -323,92 +320,21 @@ class TestReproducibility:
                 != big["pins"]["code_tf"]["electronics"])
 
 
-class TestBenchmarkContract:
-    """Claims about the benchmark, enforced against the benchmark.
+class TestTheStopListOnASmallCatalogue:
+    """Where the table cannot help: every code looks rare in four records.
 
-    The CHANGELOG asserted that a test pinned the `spec` refutation's
-    neutrality. No such test existed — a claim about evidence, with no evidence
-    behind it, in a release that exists to be measured. This is that test.
+    The benchmark half of this class -- the published Abt-Buy figures, the
+    neutrality of the `spec` refutation and the inertness of the stop list on
+    that corpus -- moved to `data/scripts/benchmark_gate.py`, where it runs
+    on every change to the resolver instead of costing the unit suite three
+    minutes. What stays is the claim only a tiny catalogue can make.
     """
-
-    @pytest.fixture(scope="class")
-    def abtbuy(self):
-        import csv
-        from pathlib import Path
-
-        root = Path(__file__).resolve().parents[3] / "data" / "er_bench" / "products"
-        if not (root / "Abt.csv").exists():
-            pytest.skip("Leipzig Abt-Buy not present")
-
-        def read(name):
-            with open(root / name, encoding="utf-8-sig", errors="replace",
-                      newline="") as fh:
-                return list(csv.DictReader(fh))
-
-        return (
-            [{"id": r["id"], "name": r["name"]} for r in read("Abt.csv")],
-            [{"id": r["id"], "name": r["name"]} for r in read("Buy.csv")],
-            {(r["idAbt"], r["idBuy"]) for r in read("abt_buy_perfectMapping.csv")},
-        )
 
     @staticmethod
     def _auto(a, b, comparators):
         res = reconcile(a, b, comparators=comparators, tf=None, id_field="id")
         return {(e["a_id"], e["b_id"]) for e in res["matches"]
                 if e["decision"] == "match"}
-
-    def test_the_spec_refutation_is_neutral_on_the_benchmark(self, abtbuy):
-        """It must not start costing matches without someone noticing.
-
-        Measured: the auto-match sets with and without `refutes_below` are
-        identical. It earns its place from the SKU identity contract, not from
-        this corpus — but if a future change makes it *harmful*, that is a
-        different situation and this test is what surfaces it.
-        """
-        a, b, _ = abtbuy
-        with_ref = ENTITY_PACKS["product_electronics"]
-        without = [{k: v for k, v in s.items() if k != "refutes_below"}
-                   for s in copy.deepcopy(with_ref)]
-        assert self._auto(a, b, with_ref) == self._auto(a, b, without)
-
-    def test_the_published_abt_buy_figures_hold(self, abtbuy):
-        """TP 741, FP 22 — the numbers in the CHANGELOG.
-
-        Was TP 728 until 0.5.0a1. The rare-token blocker skipped any token over
-        its cost bound, so a record whose tokens were *all* common got no
-        blocking key and was never compared with anything. Keying on pairs of
-        over-common tokens recovered 13 true matches here and **no** false ones,
-        which is why the figure moved without the precision claim moving with
-        it. The recall claim did move, and this is the file that says so.
-        """
-        a, b, truth = abtbuy
-        auto = self._auto(a, b, ENTITY_PACKS["product_electronics"])
-        tp = len(auto & truth)
-        fp = len(auto - truth)
-        assert (tp, fp) == (741, 22)
-        assert round(tp / (tp + fp), 4) == 0.9712
-        assert round(tp / len(truth), 4) == 0.6755
-
-    def test_the_stop_list_is_inert_on_the_benchmark(self, abtbuy):
-        """The claim that the table, not the stop list, does the work.
-
-        Two earlier drafts got this attribution wrong in opposite directions.
-        The stop list earns its place on catalogues too small to estimate
-        frequency from, not on this one.
-        """
-        a, b, _ = abtbuy
-        original = PRODUCT_CATEGORIES["electronics"]
-        register_category(
-            ProductCategory(name="electronics",
-                            identity_units=original.identity_units,
-                            stop_codes=frozenset()),
-            replace=True,
-        )
-        try:
-            without_list = self._auto(a, b, ENTITY_PACKS["product_electronics"])
-        finally:
-            register_category(original, replace=True)
-        assert without_list == self._auto(a, b, ENTITY_PACKS["product_electronics"])
 
     def test_the_stop_list_earns_its_place_on_a_small_catalogue(self):
         """Where the table cannot help: every code looks rare in four records."""

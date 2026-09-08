@@ -1,0 +1,21 @@
+{
+  "benchmark": "Leipzig Abt-Buy (complete mapping)",
+  "source_url": "https://dbs.uni-leipzig.de/research/projects/benchmark-datasets-for-entity-resolution",
+  "records_abt": 1081,
+  "records_buy": 1092,
+  "true_pairs": 1097,
+  "configurations": {
+    "product_electronics": {
+      "comparators": "ENTITY_PACKS['product_electronics'] on the name field, tf=None",
+      "tp": 741,
+      "fp": 22,
+      "precision": 0.9712,
+      "recall": 0.6755,
+      "invariants": [
+        "spec_refutation_neutral: the auto-match set is identical with and without refutes_below on the spec comparator",
+        "stop_list_inert: the auto-match set is identical with the electronics stop list emptied"
+      ]
+    }
+  },
+  "note": "TP was 728 until 0.5.0a1; conjunction blocking recovered 13 true matches and no false ones. Recorded first as a unit-test assertion (test_product_lane.py), moved to the gate in 0.9.0 so the number is guarded where the resolver changes."
+}

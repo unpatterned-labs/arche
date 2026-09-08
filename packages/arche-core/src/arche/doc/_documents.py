@@ -553,7 +553,7 @@ def resolve_documents(
     ``quiet=False`` when you are debugging the parse itself.
 
     ``extraction_backend`` selects the entity extractor used after parsing.
-    ``"auto"`` keeps the default model-assisted behaviour; ``"regex"`` is
+    ``"auto"`` keeps the default model-assisted behaviour; ``"basic"`` is
     deterministic, air-gapped, and suitable for bounded CI or policy contexts.
 
     ``jurisdiction`` defaults to ``"auto"``: each document's own evidence — a

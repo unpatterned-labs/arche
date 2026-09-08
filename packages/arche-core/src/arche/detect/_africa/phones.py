@@ -591,8 +591,13 @@ def parse_african_phone(
         if parsed is None:
             parsed = _try_match_local(pure_digits, default_country)
 
-        # Last resort: try all countries
-        if parsed is None:
+        # Last resort: try all countries -- but only for a number written the
+        # way a person writes a phone number, with its trunk zero. A bare run
+        # of eight digits is a possible local number *somewhere* in Africa
+        # (97880932 parses as Niger), and on the detection benchmark 35 of
+        # 240 texts had an order number read as a phone that way. Without
+        # the zero or a +, the number carries no evidence of being one.
+        if parsed is None and pure_digits.startswith("0"):
             for iso in PHONE_PATTERNS:
                 parsed = _try_match_local(pure_digits, iso)
                 if parsed:

@@ -9,24 +9,35 @@ Everything else works without either, and the tab renders regardless, saying
 which piece is missing rather than disappearing.
 
 ```bash
-python tools/arche-studio/serve.py
+arche studio
 ```
 
-It opens `http://127.0.0.1:8765` for you.
+It opens `http://127.0.0.1:8765` for you. `--port`, `--packs DIR` and
+`--no-browser` are the whole option list; `ARCHE_STUDIO_HOME` moves packs and
+state together.
 
 ## The folder
 
+The studio ships inside the wheel, at `arche/_studio/`:
+
 ```
-tools/arche-studio/
-├── serve.py      a local server, standard library only
+packages/arche-core/src/arche/_studio/
+├── __init__.py   the server, standard library only; `main()` is `arche studio`
+├── __main__.py   so `python -m arche._studio` also works
 ├── index.html    the entire interface, one file
 ├── state.py      append-only adjudication store (SQLite)
-├── keyring.py    this installation's signing key
-└── README.md     this
+└── keyring.py    this installation's signing key
 ```
 
-That is the whole thing. No build step, no `pip install`, no framework.
-`index.html` is readable top to bottom.
+`tools/arche-studio/serve.py` is the old address and still runs, from a
+checkout, without installing anything. That is the whole thing. No build step,
+no framework. `index.html` is readable top to bottom.
+
+Where things live: packs are read from `./data/review_packs` when you run it
+inside a checkout that has one, otherwise from `~/.arche/studio/review_packs`.
+The reviewer's own state (adjudications, the signing key, the hash key) sits
+beside the packs under `_studio/`, never inside a pack, so sharing a pack never
+ships a key.
 
 It makes exactly one external request: two typefaces from Google Fonts. An
 earlier version made none, and that was worth giving up for a page that reads
@@ -281,13 +292,13 @@ per-user anything. Binding to localhost is not a security model: a container
 with a published port, a port-forward, or a browser induced into calling it can
 all reach a service that assumed nobody could. `POST /api/review` writes a file. Bound to `0.0.0.0` that
 becomes a remote write, and the only thing standing in front of it is the path
-check that keeps writes inside `data/review_packs/`. That is a guard against a
+check that keeps writes inside the packs directory. That is a guard against a
 mistake, not against an attacker.
 
 Three honest options, in order of how much they cost:
 
 **Run it locally, per person.** What it was built for. The data is already on
-that machine; the tool is three files and needs no install. This is the
+that machine; the tool is in the wheel you already have. This is the
 recommended answer and it stays the recommended answer for longer than you
 would expect.
 

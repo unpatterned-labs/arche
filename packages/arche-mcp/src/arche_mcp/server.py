@@ -29,6 +29,8 @@ the agent, and an agent that can pick its own statute can pick a weaker one.
   ARCHE_ALLOWED_PROVIDERS comma-separated model-provider allow-list
   ARCHE_TRANSFER_BASIS    declared cross-border transfer basis
   ARCHE_LEDGER            duckdb:///FILE (or a path): remember decisions there
+  ARCHE_SIGNING_KEY       PEM from `arche attest keygen`: every answer then
+                          carries a signed `attestation` (see arche.attest)
 
 With ``ARCHE_LEDGER`` set, ``compare_records`` records what it decides and
 eight more tools appear -- ``decision``, ``explain``, ``replay``, ``entities``,
@@ -104,6 +106,51 @@ _LEDGER_URI = os.environ.get("ARCHE_LEDGER") or None
 _LEDGER = None
 
 
+def _signing_key():
+    """The key that attests answers, loaded once; ``None`` means no attestation."""
+    from arche.attest import signing_key
+
+    return signing_key()
+
+
+_SIGNING_KEY = _signing_key()
+
+
+def _attesting(fn):
+    """Wrap a tool so its answer carries an attestation when a key is set.
+
+    The envelope is a JWS over the tool name, a hash of the arguments, a hash
+    of the answer and the decision ids in it, signed by this installation. It
+    lets an auditor check that what the agent *says* arche said is what arche
+    said. stdio has no caller identity, so ``caller`` is None here; the HTTP
+    service fills it from the proxy's header.
+    """
+    import functools
+    import inspect
+
+    if _SIGNING_KEY is None:
+        return fn
+    sig = inspect.signature(fn)
+
+    @functools.wraps(fn)
+    def wrapped(*args, **kwargs):
+        from arche.attest import attest
+
+        result = fn(*args, **kwargs)
+        if not isinstance(result, dict):
+            return result
+        inputs = sig.bind(*args, **kwargs).arguments
+        return {**result, "attestation": attest(fn.__name__, inputs, result,
+                                                keypair=_SIGNING_KEY)}
+
+    return wrapped
+
+
+def _tool(fn):
+    """``mcp.tool()`` with attestation in front of it."""
+    return mcp.tool()(_attesting(fn))
+
+
 def _ledger():
     """The one ledger this server process holds open, attached on first use."""
     global _LEDGER
@@ -133,7 +180,7 @@ def _statute(requested):
 
 # ── orientation ──────────────────────────────────────────────────────────────
 
-@mcp.tool()
+@_tool
 def capabilities() -> dict:
     """What this arche installation can actually do: which statutes ship, which
     jurisdictions can be inferred, which entity packs exist, and which optional
@@ -141,6 +188,7 @@ def capabilities() -> dict:
     document is clean" and "nothing here could read this document" — several
     tools return empty results rather than errors when an extra is missing."""
     report = handlers.capabilities()
+    report["attestation"] = {"signer": _SIGNING_KEY.did_key} if _SIGNING_KEY else None
     report["ledger"] = {
         "configured": bool(_LEDGER_URI),
         "tools": (["decision", "explain", "replay", "entities", "path", "cases", "observe",
@@ -149,7 +197,7 @@ def capabilities() -> dict:
     return report
 
 
-@mcp.tool()
+@_tool
 def infer_jurisdiction(text: str) -> dict:
     """Work out which jurisdiction governs a document from evidence inside it —
     identifiers, registrars, regulators, currency, phone shapes — and report
@@ -167,7 +215,7 @@ def infer_jurisdiction(text: str) -> dict:
     return handlers.infer_jurisdiction(text)
 
 
-@mcp.tool()
+@_tool
 def plan_protection(jurisdiction: str | None = None,
                     statute: str | None = None) -> dict:
     """Before handing over a document: what could this pipeline find, and what
@@ -187,7 +235,7 @@ def plan_protection(jurisdiction: str | None = None,
         jurisdiction=_jurisdiction(jurisdiction), statute=_statute(statute))
 
 
-@mcp.tool()
+@_tool
 def describe_pack(entity: EntityPack) -> dict:
     """Which record fields an entity pack reads, how much each one counts, and
     what it does with them.
@@ -200,7 +248,7 @@ def describe_pack(entity: EntityPack) -> dict:
 
 # ── detection ────────────────────────────────────────────────────────────────
 
-@mcp.tool()
+@_tool
 def detect_pii(text: str, jurisdiction: str | None = None) -> dict:
     """Detect personal data as offset spans with category, legal citation and
     sensitivity tier. Returns offsets into the ORIGINAL text, never raw values.
@@ -211,7 +259,7 @@ def detect_pii(text: str, jurisdiction: str | None = None) -> dict:
         text, jurisdiction=_jurisdiction(jurisdiction), statute=_statute(None))
 
 
-@mcp.tool()
+@_tool
 def detect_entities(text: str, entity_types: list[str] | None = None) -> dict:
     """Detect named entities (people, places, organizations) as typed offset
     spans into the ORIGINAL text.
@@ -224,7 +272,7 @@ def detect_entities(text: str, entity_types: list[str] | None = None) -> dict:
 
 # ── guarded egress ───────────────────────────────────────────────────────────
 
-@mcp.tool()
+@_tool
 def guarded_scan(text: str, jurisdiction: str | None = None,
                  provider: str | None = None, crosses_border: bool = False) -> dict:
     """Redact personal data to deterministic hashed IDs with legal citations,
@@ -305,7 +353,7 @@ def compare_records(list_a: list[dict], list_b: list[dict],
     )
 
 
-@mcp.tool()
+@_tool
 def why_unresolved(record_a: dict, record_b: dict,
                    entity: EntityPack = "place") -> dict:
     """Why a pair came back `review`, and which field would settle it.
@@ -334,7 +382,7 @@ def why_unresolved(record_a: dict, record_b: dict,
     return handlers.why_unresolved(record_a, record_b, entity=entity)
 
 
-@mcp.tool()
+@_tool
 def check_name_equivalence(name_a: str, name_b: str) -> dict:
     """Are two names the same person's, accounting for African name variation
     and transliteration?
@@ -355,7 +403,7 @@ compare_records = mcp.tool()(compare_records)
 
 # ── places ───────────────────────────────────────────────────────────────────
 
-@mcp.tool()
+@_tool
 def extract_places(text: str) -> dict:
     """Extract place mentions from free text with their spatial role (origin /
     destination / location / via / unknown) and the linguistic cue that decided
@@ -379,7 +427,7 @@ def extract_places(text: str) -> dict:
 
 if _LEDGER_URI:
 
-    @mcp.tool()
+    @_tool
     def decision(decision_id: str) -> dict:
         """A recorded decision by its id: verdict, action, factors, pins, which two
         records (by label, never by value), and the entity it now belongs to.
@@ -387,21 +435,21 @@ if _LEDGER_URI:
         the field-by-field reasoning and to `replay` to check it still holds."""
         return handlers.ledger_decision(_ledger(), decision_id)
 
-    @mcp.tool()
+    @_tool
     def explain(decision_id: str) -> dict:
         """Why a recorded decision came out as it did: the fields that supported
         it, the fields that refuted it, and the identifying fields neither
         record supplied. Field names only; the values stay in the ledger."""
         return handlers.ledger_explain(_ledger(), decision_id)
 
-    @mcp.tool()
+    @_tool
     def replay(decision_id: str) -> dict:
         """Make a recorded decision again under the engine installed now.
         `reproduced` is true when the new receipt has the same decision_id byte
         for byte; otherwise `changed` names every factor and pin that moved."""
         return handlers.ledger_replay(_ledger(), decision_id)
 
-    @mcp.tool()
+    @_tool
     def entities(entity_type: str | None = None) -> dict:
         """What the ledger's decisions have linked together. Each entity lists its
         records by label, the NAMES of fields they agree and disagree on, and
@@ -411,7 +459,7 @@ if _LEDGER_URI:
         transitive entity together."""
         return handlers.ledger_entities(_ledger(), entity_type=entity_type)
 
-    @mcp.tool()
+    @_tool
     def path(record_a: str, record_b: str) -> dict:
         """Why two records are one entity: the chain of decisions that joins them,
         each with its own evidence. One hop means they were compared directly;
@@ -420,14 +468,14 @@ if _LEDGER_URI:
         `entities` or `cases`."""
         return handlers.ledger_path(_ledger(), record_a, record_b)
 
-    @mcp.tool()
+    @_tool
     def cases(entity_type: str | None = None) -> dict:
         """Pairs still at `review`: the open questions. Each says what agreed,
         what refuted, and which fields would settle it. Fetch one of those
         fields from wherever you can and hand it to `observe`."""
         return handlers.ledger_cases(_ledger(), entity_type=entity_type)
 
-    @mcp.tool()
+    @_tool
     def resolve(record: dict, entity_type: EntityPack) -> dict:
         """A new record against the entities the ledger already holds -- transitive
         matching. Compared with every stored record of its type, grouped by the
@@ -438,7 +486,7 @@ if _LEDGER_URI:
         `entity_evidence` compares the record with the entity as a whole."""
         return handlers.ledger_resolve(_ledger(), record, entity_type=entity_type)
 
-    @mcp.tool()
+    @_tool
     def observe(record_id: str, evidence: dict) -> dict:
         """Add evidence about a record -- a field: value object such as a
         registration id from a registry -- and decide every open pair about it

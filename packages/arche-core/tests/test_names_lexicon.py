@@ -12,6 +12,14 @@ from arche.detect.names import detect_names, person_spans
 from arche.extract import extract
 
 
+def test_form_and_email_boilerplate_is_not_a_name():
+    # Measured on 300 English texts: "Given", "Best", "Holder" and "Law" were
+    # the four most frequent name false positives -- real surnames the lexicon
+    # holds, and in running prose a word first.
+    text = "Best regards, Account Holder. Given name: Adesola. Family law matters."
+    assert [d.text for d in detect_names(text)] == ["Adesola"]
+
+
 def _names(text: str) -> list[str]:
     return [d.text for d in detect_names(text)]
 

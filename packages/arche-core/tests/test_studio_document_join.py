@@ -41,12 +41,6 @@ from pathlib import Path
 
 import pytest
 
-_STUDIO = Path(__file__).resolve().parents[3] / "tools" / "arche-studio"
-
-pytestmark = pytest.mark.skipif(
-    not (_STUDIO / "serve.py").exists(),
-    reason="arche-studio is not present in this checkout",
-)
 
 #: German signals strong enough to infer: a Handelsregister number is tier A.
 GERMAN = ("Condor Flugdienst GmbH, An der Gehespitz 50, 63263 Neu-Isenburg. "
@@ -62,15 +56,13 @@ AMERICAN = ("Invoice from 1100 Rocky Drive, West Lawn PA, 19609 USA. "
 
 @pytest.fixture(scope="module")
 def studio():
-    sys.path.insert(0, str(_STUDIO))
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "arche_studio_serve_docjoin", _STUDIO / "serve.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        yield module
-    finally:
-        sys.path.remove(str(_STUDIO))
+    """The studio as installed: `arche._studio`, once loaded by path from tools/."""
+    import importlib
+
+    module = importlib.import_module("arche._studio")
+    module._real_layout = {"packs": module.PACKS, "key": module.KEY_PATH,
+                           "state": module.STATE.path}
+    yield module
 
 
 def run(studio, text, name="doc.txt", **extra):

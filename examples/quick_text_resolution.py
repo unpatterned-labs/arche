@@ -7,7 +7,7 @@ Run with:
 
     uv run --no-sync python examples/quick_text_resolution.py
 
-The ``regex`` extractor is deterministic and downloads nothing. The ledger is
+The ``basic`` extractor is deterministic and downloads nothing. The ledger is
 an in-memory DuckDB here; give ``attach`` a file path to keep it.
 """
 
@@ -20,7 +20,7 @@ TEXT_2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Mapl
 TEXT_3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 Elim Street"
 
 ledger = arche.attach("duckdb:///:memory:")
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 r12 = arche.compare(TEXT_1, TEXT_2, **person)
 r13 = arche.compare(TEXT_1, TEXT_3, **person)

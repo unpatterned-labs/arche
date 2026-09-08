@@ -1,10 +1,36 @@
 # Quickstart
 
-Two questions, in the order people meet them: *are these two the same?* and *which of these are the same as those?* Both run offline in seconds. Everything below is the installed package; no notebook, no repository checkout, no model download.
+Three questions, in the order people meet them: *what personal data is in this, and can I hand on a copy?*, *are these two the same?*, and *which of these are the same as those?* All run offline in seconds. Everything below is the installed package; no notebook, no repository checkout, no model download.
 
 ```bash
 pip install "arche-core[ledger]"
 ```
+
+## Find and mask
+
+```python
+import arche
+
+note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+
+for d in arche.detect_pii(note, jurisdiction="NG", backend="basic"):
+    print(d.category, (d.start, d.end), d.regulatory_citation)
+
+safe = arche.deidentify(note, jurisdiction="NG", backend="basic")
+print(safe.text)
+print(safe.decision_id[:40])
+```
+
+```text
+PII-2-NIN (27, 38) NDPA-2023 s.30, NIMC Act s.27
+PII-3-PHONE (52, 65) NDPA-2023 s.30
+Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+red:sha256:8f7ce784d66831a26668f36ccc462
+```
+
+Every span carries the section of the statute it was decided under, and the statute -- not the caller -- chose to mask the national id and tokenise the phone. `method="mask"`, `"token"` or `"drop"` overrides the rendering for every span; the citations stay. `jurisdiction=None` infers the country from the text and refuses when it cannot, because a redaction under the wrong law looks finished and is not.
+
+`backend="basic"` is the rules alone: identifiers with their checksums, phones, emails, and a 13,342-name lexicon. `backend="auto"` adds GLiNER2-PII when `arche-core[detect2]` is installed -- the names the lexicon does not hold, addresses written as prose -- and says so once when it is not. The `decision_id` is a content hash over the spans, their actions and the pins; with `store=` the ledger keeps it beside the matches below, and `explain` and `replay` work on it the same way.
 
 ## Are these two the same?
 
@@ -14,7 +40,7 @@ import arche
 text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
 text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
 
-receipt = arche.compare(text1, text2, entity="person", jurisdiction="NG", backend="regex")
+receipt = arche.compare(text1, text2, entity="person", jurisdiction="NG", backend="basic")
 print(receipt.identity, receipt.action, "|", receipt.explanation)
 print(receipt.factors)
 ```
@@ -34,7 +60,7 @@ Add `store=` and the same call also records the receipt, with the two inputs it 
 
 ```python
 ledger = arche.attach("duckdb:///:memory:")            # or duckdb:///people.duckdb
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 text3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 Elim Street"
 r12 = arche.compare(text1, text2, **person)
@@ -85,6 +111,8 @@ s1 r2 review 0.5798
 
 ## Next
 
+- [Find and mask, then compare the copies](../guides/find-and-mask.md) — a tokenised copy still links.
+- [Extract to your schema](../guides/extract-to-your-schema.md) — your field names are the labels; the same declaration decides.
 - [Keep and replay a decision](../guides/keep-and-replay.md)
 - [Resolve documents](../guides/documents-to-decision.md)
 - [Interpret a decision](../guides/interpret-decisions.md)

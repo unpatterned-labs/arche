@@ -13,7 +13,7 @@ What none of them had was somewhere to put it. This module is that place.
 
     ledger = arche.attach("duckdb:///suppliers.duckdb")
     r = arche.compare(text_a, text_b, entity="person", jurisdiction="NG",
-                      backend="regex", store=ledger)
+                      backend="basic", store=ledger)
 
     ledger.decision(r.decision_id)   # the receipt as recorded, plus its inputs
     ledger.replay(r.decision_id)     # re-run it: reproduced, or what moved
@@ -333,6 +333,45 @@ class Ledger:
         self._write_decision(decision)
         return decision
 
+    def record_deidentify(self, deid: Any, text: str, *, call: Mapping[str, Any]) -> Decision:
+        """Record a redaction beside the matches.
+
+        The text is stored as a ``document`` record so ``replay`` can run the
+        detectors over it again; the decision row carries the value-free
+        spans -- category, offsets, action, citation -- never the values. A
+        redaction links nothing: ``identity`` is ``deidentified``, which is
+        not a linking outcome, and both record columns name the one document.
+        """
+        call_record, unreplayable = _call_record(call)
+        record = self._record("document", text, None, "deidentify", None)
+        existing = self._decision_or_none(deid.decision_id)
+        if existing is not None:
+            return existing
+        if unreplayable:
+            call_record["_unreplayable"] = unreplayable
+        counts = deid.by_category()
+        decision = Decision(
+            decision_id=deid.decision_id,
+            verb="deidentify",
+            record_a=record.record_id,
+            record_b=record.record_id,
+            identity="deidentified",
+            action=deid.method,
+            score=float(deid.count),
+            factors={k: float(v) for k, v in counts.items()},
+            explanation=(f"{deid.count} span(s) under {deid.statute or 'no statute'}"
+                         f" ({deid.method})"),
+            evidence={"spans": deid.spans(), "statute": deid.statute,
+                      "jurisdiction": deid.jurisdiction, "coverage": deid.coverage,
+                      "document_hash": deid.document_hash},
+            pins=dict(deid.pins),
+            call=call_record,
+            run_id=None,
+            recorded_at=_now(),
+        )
+        self._write_decision(decision, entity_type="document")
+        return decision
+
     def record_batch(
         self,
         result: Mapping[str, Any],
@@ -603,6 +642,8 @@ class Ledger:
         national id matched" is the claim and the id is the evidence.
         """
         decision = self.decision(decision_id)
+        if decision.verb == "deidentify":
+            return _why_redaction(decision)
         record_a, record_b = self.record(decision.record_a), self.record(decision.record_b)
         return _why(decision, record_a, record_b)
 
@@ -760,7 +801,7 @@ class Ledger:
         *,
         entity_type: str,
         jurisdiction: str = "default",
-        backend: str = "regex",
+        backend: str = "basic",
     ) -> Resolution:
         """Resolve a new record against the entities this ledger already holds.
 
@@ -1178,6 +1219,17 @@ class Ledger:
         from arche.resolve import compare, reconcile
 
         call = {k: v for k, v in then.call.items() if not k.startswith("_")}
+        if then.verb == "deidentify":
+            from arche.protect import deidentify
+
+            document = self.record(then.record_a)
+            deid = deidentify(document.text or "", **call)
+            return {
+                "decision_id": deid.decision_id, "identity": "deidentified",
+                "action": deid.method, "score": float(deid.count),
+                "factors": {k: float(v) for k, v in deid.by_category().items()},
+                "pins": dict(deid.pins),
+            }
         if then.verb == "compare":
             record_a, record_b = self.record(then.record_a), self.record(then.record_b)
             a_in, b_in = record_a.as_input(), record_b.as_input()
@@ -1398,6 +1450,23 @@ def _why(decision: Decision, record_a: Record, record_b: Record) -> dict[str, An
         "missing": missing,
         "shared": shared,
         "gate": decision.evidence.get("gate", {}),
+    }
+
+
+def _why_redaction(decision: Decision) -> dict[str, Any]:
+    """A redaction, explained: which spans, under which section, rendered how."""
+    spans = list(decision.evidence.get("spans") or [])
+    return {
+        "verb": "deidentify",
+        "identity": decision.identity,
+        "action": decision.action,
+        "explanation": decision.explanation,
+        "statute": decision.evidence.get("statute"),
+        "jurisdiction": decision.evidence.get("jurisdiction"),
+        "spans": spans,
+        "by_category": {k: int(v) for k, v in decision.factors.items()},
+        "citations": sorted({s["citation"] for s in spans if s.get("citation")}),
+        "coverage": decision.evidence.get("coverage", {}),
     }
 
 

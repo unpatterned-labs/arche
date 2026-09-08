@@ -45,9 +45,30 @@ for edge in result["matches"]:
     print(edge["decision"], edge["score"], edge["evidence"])
 ```
 
+## Find the personal data, and make a copy you can hand on
+
+```python
+from arche import detect_pii, deidentify
+
+note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+
+for d in detect_pii(note, jurisdiction="NG", backend="basic"):
+    print(d.category, (d.start, d.end), d.regulatory_citation)   # PII-2-NIN (27, 38) NDPA-2023 s.30, NIMC Act s.27
+
+safe = deidentify(note, jurisdiction="NG", backend="basic")
+print(safe.text)          # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+print(safe.decision_id)   # red:sha256:... -- explain it, replay it, same as a match
+```
+
+The statute decides what counts and what happens to it -- NDPA masks a national id and tokenises a phone -- and every span carries the section it fell under. `method="mask"`, `"token"` or `"drop"` overrides the rendering; the citations stay. Leave `jurisdiction` out and it is inferred from the text, or refused when the evidence is thin. `backend="auto"` adds GLiNER2-PII as a proposer once `arche-core[detect2]` is installed: the names the lexicon does not hold, addresses written as prose, with the validators and the statute still deciding. A `method="token"` copy is still comparable: `safe.record()` is the tokens as a record, and two masked notes about one person `compare` to `same_entity` without either side holding the value.
+
+```bash
+arche redact note.txt --jurisdiction NG --out note.redacted.txt --json note.spans.json
+```
+
 ## Compare two pieces of person text
 
-For a fast, local first answer, pass the text directly to `compare`. This synthetic example uses the deterministic `regex` extractor, so it does not download or call a model.
+For a fast, local first answer, pass the text directly to `compare`. This synthetic example uses the deterministic `basic` extractor, so it does not download or call a model.
 
 ```python
 from arche import compare
@@ -55,7 +76,7 @@ from arche import compare
 text1 = "Adesola Okonkwo, NIN 12345678901, address: 123 Maple Street, adesola@example.com"
 text2 = "Adesola Okonkwo, NIN 12345678901, adesola@gmail.com, address: 124 Maple Street"
 
-receipt = compare(text1, text2, entity="person", jurisdiction="NG", backend="regex")
+receipt = compare(text1, text2, entity="person", jurisdiction="NG", backend="basic")
 print(receipt.identity, receipt.action, receipt.explanation)
 ```
 
@@ -63,7 +84,7 @@ print(receipt.identity, receipt.action, receipt.explanation)
 same_entity merge national ID match; name similarity 100%
 ```
 
-Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone — say the name had not been read — the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `regex` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. The model-assisted backend does, once its local model is installed.
+Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone — say the name had not been read — the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `basic` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. `backend="auto"` adds GLiNER 2.5 as a proposer once `arche-core[detect2]` is installed.
 
 The runnable form is [examples/quick_text_resolution.py](../../examples/quick_text_resolution.py), which goes one step further: three texts, a ledger, and the entity they turn out to describe. The notebook [23_three_texts_one_person.ipynb](../../examples/notebooks/23_three_texts_one_person.ipynb) walks the same path with replay and `observe`.
 
@@ -79,9 +100,9 @@ pip install "arche-core[ledger]"
 from arche import attach, compare
 
 ledger = attach("duckdb:///people.duckdb")
-r12 = compare(text1, text2, entity="person", jurisdiction="NG", backend="regex", store=ledger)
-r13 = compare(text1, text3, entity="person", jurisdiction="NG", backend="regex", store=ledger)
-r23 = compare(text2, text3, entity="person", jurisdiction="NG", backend="regex", store=ledger)
+r12 = compare(text1, text2, entity="person", jurisdiction="NG", backend="basic", store=ledger)
+r13 = compare(text1, text3, entity="person", jurisdiction="NG", backend="basic", store=ledger)
+r23 = compare(text2, text3, entity="person", jurisdiction="NG", backend="basic", store=ledger)
 
 person, = ledger.entities()          # three texts, one entity
 person.shared                        # {'national_id': '12345678901'}
@@ -150,7 +171,7 @@ for entity in ledger.entities():          # which documents describe one thing
 ledger.replay(report.decisions[0]["decision_id"]).reproduced   # True, or what moved
 ```
 
-`extraction_backend="regex"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
+`extraction_backend="basic"` is the deterministic, air-gapped choice; omit it to retain the model-assisted default.
 
 ## Decisions you can hand to someone who does not trust you
 
@@ -220,7 +241,7 @@ So: **general-purpose entity resolution that ships its representation data, buil
 ```bash
 pip install arche-core                   # ~3 MB, CPU only, no ML dependencies
 pip install "arche-core[doc]"            # PDF, DOCX, PPTX, XLSX, HTML
-pip install "arche-core[detect]"         # GLiNER2-PII soft-PII detection
+pip install "arche-core[detect2]"        # GLiNER2-PII and GLiNER 2.5 as proposers
 pip install "arche-core[presidio]"       # Microsoft Presidio integration
 pip install "arche-core[resolve]"        # Splink + DuckDB at scale
 ```
@@ -240,11 +261,11 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 
 ## Look at a decision
 
-[`arche studio`](https://github.com/unpatterned-labs/arche/tree/main/tools/arche-studio) is a local reading tool. Three files, the standard library, no
-framework and no install beyond `arche-core` itself.
+`arche studio` is a local reading tool. The standard library, no framework,
+and it is in the wheel: `pip install arche-core` is the whole install.
 
 ```bash
-python tools/arche-studio/serve.py     # opens http://127.0.0.1:8765
+arche studio     # opens http://127.0.0.1:8765
 ```
 
 Five modes over one evidence panel:

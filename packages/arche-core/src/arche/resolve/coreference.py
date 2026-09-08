@@ -629,7 +629,7 @@ def coref_documents(
         The two source documents.
     backend:
         Extraction backend passed to :func:`arche.extract.extract`
-        (``"auto"`` / ``"gliner"`` / ``"regex"`` / ``"auto+llm"``).
+        (``"auto"`` / ``"basic"`` / ``"gliner2"`` / ``"auto+llm"``).
     source_a, source_b:
         ``source_system`` labels recorded on each assembled reference (they make
         the two ``reference_id`` values differ even for identical attributes).

@@ -204,6 +204,10 @@ The `backend="splink"` scorer that `arche-core` 0.5.0a1 added is **not** reachab
 
 **Run African ID detectors outside Africa.** Enforced, not defaulted: an eleven-digit German tax number is the same shape as a Nigerian NIN, and a confident mislabel in a signed audit log is worse than a miss.
 
+## Attested answers
+
+With `ARCHE_SIGNING_KEY` set to a PEM from `arche attest keygen`, every tool's answer carries an `attestation`: a JWS by this installation over the tool name, a hash of the arguments, a hash of the answer and the decision ids in it. `capabilities` names the signer. stdio has no caller identity, so `caller` is `null` here; the point is the binding of question to answer, which lets an auditor check an agent's transcript against what arche signed. See [Attested answers](../reference/attestation.md).
+
 ## Not yet
 
 HTTP and SSE transport, and authentication. It speaks stdio and expects to run on the machine holding the data.

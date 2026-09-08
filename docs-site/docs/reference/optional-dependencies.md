@@ -46,9 +46,10 @@ Both read a text layer well enough for what arche does with one, so the tie is b
 | `parquet` | +1 | 21 | `pyarrow` | Apache-2.0 |
 | `geo` | +3 | 23 | `shapely`, `duckdb` | BSD-3-Clause |
 | `llm` | +8 | 28 | `openai`, `anthropic` | Apache-2.0 / MIT |
+| `service` | +8 | 28 | `fastapi`, `uvicorn` -- `arche serve` | MIT / BSD-3-Clause |
 | `resolve` | +20 | 40 | `splink`, `duckdb`, `pandas` | MIT |
 | `detect2` | +24 | 44 | `gliner2[local]`, **torch**, `transformers` | Apache-2.0 |
-| `detect` | +31 | 51 | `gliner`, **torch**, `onnxruntime` | Apache-2.0 / MIT |
+| `detect` | +24 | 44 | an alias of `detect2` since 0.9.0 | Apache-2.0 |
 | `presidio` | +40 | 60 | `presidio-analyzer`, `spacy` | MIT |
 | `litellm` | +44 | 64 | `litellm` | MIT |
 | `doc` | +92 | 112 | `docling`, **torch**, `transformers` | MIT |
@@ -56,32 +57,41 @@ Both read a text layer well enough for what arche does with one, so the tie is b
 
 Two things in that table are worth noticing.
 
-**`detect2` is lighter than `detect`.** GLiNER 2.5 adds 24 packages against GLiNER v1's 31, because it does not pull `onnxruntime`. The newer model is the smaller install.
+**`detect` and `detect2` are the same install.** GLiNER v1 (`gliner` + `onnxruntime`, 31 packages) was removed in 0.9.0; `detect` is kept as a name so an existing install line resolves, and it installs the GLiNER 2 family.
 
-**Four extras pull `torch`**: `detect`, `detect2`, `doc`, `doc-ocr`. If your deployment cannot carry it, those are the four to avoid, and the base wheel plus `[pdf]`, `[parquet]`, `[geo]` and `[resolve]` still covers record resolution, blocking, addresses, proof of address and Splink.
+**Three extras pull `torch`**: `detect2` (and its alias), `doc`, `doc-ocr`. If your deployment cannot carry it, those are the ones to avoid, and the base wheel plus `[pdf]`, `[parquet]`, `[geo]` and `[resolve]` still covers record resolution, blocking, addresses, proof of address, Splink -- and the `basic` detector path, which needs no model at all.
 
-## Named-entity detection
+## Which backend
 
-| | `arche-core[detect]` | `arche-core[detect2]` |
-|---|---|---|
-| **installs** | `gliner` + `onnxruntime` | `gliner2[local]` |
-| **added packages** | +31 | +24 |
-| **model** | GLiNER v1 (`urchade/gliner_multi_pii-v1`) | GLiNER 2.5 (`fastino/gliner2.5-base-v1`) |
-| **call** | `extract(text, backend="gliner")` | `extract(text, backend="gliner2")` |
-| **returns** | a flat list of spans, each carrying its label | spans grouped **by** label |
+One word says what proposes the soft spans -- names the lexicon does not hold, addresses written as prose. The validators, the statute pack and the merge rule run after every one of them, and a checksummed identifier always outranks a model span.
 
-Both are optional and neither is the default; without either, `extract` falls back to regex and finds identifiers but no names.
+| `backend=` | what runs | extra | download |
+|---|---|---|---|
+| `basic` | the name lexicon (13,342 names), the address parser, the identifier, phone and email patterns with their checksums and cue gates | none | none |
+| `gliner2` | GLiNER 2.5 (`fastino/gliner2.5-base-v1`), the general extractor -- `extract()` only, labels are the caller's | `detect2` | ~0.5 GB |
+| `gliner2-pii` | GLiNER2-PII (`fastino/gliner2-privacy-filter-PII-multi`): 42 personal-data labels, seven European languages -- `Pipeline`, `detect_pii`, `deidentify` | `detect2` | ~0.5 GB |
+| `auto` | `basic` plus the model when the extra is installed; a one-line notice when it is not | — | — |
+
+`regex` is accepted as a spelling of `basic`. `gliner` (v1) raises and names its replacement.
+
+Measured on the [detection benchmark](benchmarks.md#detection) (a constructed set, 908 spans): `basic` recalls 0.818 at 3 ms a text and finds no dates of birth, bank accounts or passwords, because it has no rule for them; `gliner2-pii` recalls 0.990 at ~0.65 s a text and adds false positives on order numbers the validators do not govern. GLiNER2-PII's own card reports precision 0.35–0.37 on the SPY set with a tendency to over-predict names, which is why it proposes and never decides: a checksummed identifier outranks it, and for a redaction an over-masked name is the cheap failure and a missed identifier the expensive one.
 
 !!! warning "`gliner2[local]`, not `gliner2`"
     The `[local]` marker is load-bearing. Bare `gliner2` installs an **API client that posts text to a hosted service**. Declaring it without `[local]` would ship a code path that looks exactly like on-device extraction while sending text off the machine. `arche-core[detect2]` pins `gliner2[local]`, and a test asserts it.
 
-`arche-core[presidio]` is a third option, adding Microsoft Presidio's recognisers via `spacy` (+40 packages).
+`arche-core[presidio]` installs Microsoft Presidio's recognisers via `spacy` (+40 packages). It is not yet a `backend=`: the extra installs the packages and nothing in arche calls them. It stays listed because a caller may use Presidio beside arche; it is not a claim that arche does.
+
+## The two front doors that are not Python
+
+`arche studio` needs no extra. It is the standard library's `http.server` and one HTML file, in the base wheel, and it binds `127.0.0.1`.
+
+`arche serve` needs `[service]`. It is the same verbs -- `detect_pii`, `deidentify`, `compare`, and the ledger by id -- behind FastAPI, for a container, a sidecar, or a tool that speaks HTTP and not Python. See [Serve over HTTP](../guides/serve-over-http.md), including the sentence about authentication, which is that there is none.
 
 ## Convenience aliases
 
 | alias | expands to |
 |---|---|
-| `gliner` | `[detect]` |
+| `gliner` | `[detect]`, itself an alias of `[detect2]` |
 | `pii` | `[presidio]` |
 | `splink` | `[resolve]` |
 | `all` | `[pdf,docx,detect,presidio,resolve,llm]` |

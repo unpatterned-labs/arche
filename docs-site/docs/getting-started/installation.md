@@ -18,7 +18,7 @@ Install an extra only when you need its capability.
 | The decision ledger (`arche.attach`) | `pip install "arche-core[ledger]"` |
 | Document parsing | `pip install "arche-core[doc]"` |
 | OCR for scanned documents | `pip install "arche-core[doc-ocr]"` |
-| GLiNER PII detection | `pip install "arche-core[detect]"` |
+| GLiNER2-PII as a proposer for `detect_pii` / `deidentify` / `Pipeline(backend="auto")`, GLiNER 2.5 for `extract` | `pip install "arche-core[detect2]"` |
 | Microsoft Presidio integration | `pip install "arche-core[presidio]"` |
 | Legacy Splink-backed resolver | `pip install "arche-core[resolve]"` |
 | LLM extraction integrations | `pip install "arche-core[llm]"` |

@@ -14,7 +14,7 @@ There are three kinds of entry, and they support different claims.
 
 **Internal ablation.** One part of arche switched off, everything else held still. Says nothing about other tools.
 
-**Gated.** Two of these run in CI on every change to the resolver — DBLP-ACM (year refutes) and Febrl 4 (name + address) — and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). The gate exists because the Febrl number below drifted for two weeks before anyone looked.
+**Gated.** Three of these run in CI on every change to the resolver — DBLP-ACM (year refutes), Febrl 4 (name + address) and Abt-Buy (product names) — and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). Abt-Buy also carries two invariants the product pack's documentation relies on — the `spec` refutation is neutral on that corpus and the stop list is inert on it — and either breaking fails the build whatever the precision did. The gate exists because the Febrl number below drifted for two weeks before anyone looked.
 
 ## Against another package
 
@@ -255,6 +255,34 @@ Febrl 4 is synthetic, 5,000 by 5,000, with complete truth, distributed with the 
 The published claim holds only with the social security number in the record. Without it, precision falls to 0.9209. Both configurations are legitimate; only one of them was ever quoted, and that was a fault in how we described it.
 
 Script: `datasets/names_dataops/bench_febrl.py`.
+
+## Detection
+
+What each backend finds, misses and invents, on a **constructed** set: `data/pii_bench/african_context_v0.jsonl`, 240 short texts over eight templates (a KYC note, a referral, an onboarding, a complaint, a register, a delivery note, a chat message, an invoice) in four jurisdictions, carrying 908 personal-data spans and 540 negatives — order numbers, ISBNs, amounts, times, plain dates, bare ten-digit references. Every identifier passes arche's own validator at build time; every span is computed by construction. Its data card says what it is not: text from the wild. These numbers say the detectors read what they were built to read. Run: `python data/scripts/benchmark_pii.py --backend basic,gliner2-pii`.
+
+A hit is a detection overlapping a truth span of the same category (the lexicon emits one span per name token; the question is whether the person was found). A **false positive** is a detection overlapping no truth span at all, and the set records which negative it landed on. A detection inside a truth span of another category — a LOCATION inside an ADDRESS — is *nested*, not false.
+
+| | `basic` | `gliner2-pii` |
+|---|---|---|
+| recall, all 908 spans | **0.818** | **0.990** |
+| false positives per 100 texts | **2.9** (was 28.3 before the cue-gate audit below) | **24.2** (was 54.6) |
+| ms per text (CPU) | 4 | 618 |
+| names, lexicon pool (152) | 1.000 | 1.000 |
+| names, held-out pool (88) | 0.909 | 1.000 |
+| identifiers with a validator (NIN, BVN, Ghana Card, SA ID, KRA PIN, Huduma, passport) | 0.99 | 0.99 |
+| phone / email / address / IP | 1.000 | 1.000 |
+| date of birth, bank account, password | 0.000 — no detector in the base install | 1.000 |
+| payment card | 0.000 — no detector | 0.750 |
+
+The held-out 0.909 on `basic` is mostly a lexicon first name overlapping a held-out surname, not the surname being read; the pool split is there so nobody quotes the name recall as the lexicon's.
+
+**Where the false positives landed, and the audit they paid for.** Before the cue-gate audit every one of `basic`'s 68 was on an order number or a bare ten-digit reference: 35 order numbers read as phones (a bare eight-digit run is a possible number somewhere in Africa, and the phone detector fell back to every prefix table), 25 seven- and eight-digit order numbers read as Kenyan national ids and NHIF numbers (bare-digit patterns at 0.40–0.45), 8 `INV-` and `ORD-` references read as Nigerian driving licences (`[A-Z]{3}-\d{10,12}`). The model added 18 passport readings of ten-digit references and 17 more phone readings. Each pattern got the rule a reader applies: the every-prefix fallback now only runs for a number written with its trunk zero; the Kenyan id and NHIF patterns are cue-anchored like Huduma (`ID No.`, `national ID`, `NHIF`); a three-letter document prefix (`INV`, `ORD`, `REF`, …) is not a state code; and the model's passport proposals must contain a letter, its phone proposals a trunk zero, a plus, or nine digits. Recall did not move on either backend. `basic` keeps 7 false positives (order references that begin with a zero, which is what a local number looks like); the model keeps 24 phone readings of ten-digit references, 5 passports and 29 LOCATION readings of ordinary words — the last being the price of asking for cities, under a category the statutes retain.
+
+**What the model buys.** Names the lexicon does not hold, dates of birth, bank accounts, passwords: categories the base install has no rule for. It runs at ~0.8 s a text on CPU against 4 ms, and it proposes; a checksummed identifier still outranks it, which is why the identifier columns are identical.
+
+**What this does not measure.** Recall on a clinic's actual notes, a bank's actual complaints, a WhatsApp export. That set has to be adjudicated by hand and kept with negatives, and it is the second half of the same task. The obvious public set, ai4privacy's 300k, is licensed for academic use only and forbids derivatives; it is treated the way OpenSanctions Pairs is — a licence to acquire on purpose — and nothing from it is here.
+
+Four things the first runs found in the data and in the code, before they found anything about the model. The generator gave Kenyan numbers seven digits after the prefix and Nigeria a twelve-digit form; the phone detector reported them missed, correctly, and the set was fixed. *Next of kin* matched the gazetteer alias *Kin* (Kinshasa) 32 times in 240 texts, case-insensitively; a short lowercase match is now a word. On 300 English texts from a set that could not be published (see the data card), *Given*, *Best*, *Holder* and *Law* were the four most frequent name false positives — surnames the lexicon holds, words in prose first — and joined the stop list; and the model, asked for `address` alone, found none of 548 city, state, country and postcode spans, so it is now asked for those four labels too (0.81 recall at 0.81 precision on that sample, name precision unmoved). That last one is the reason the `basic` row above reads 3 ms and the model row carries 28 LOCATION false positives it did not have before: a city label over ordinary words is the price of finding cities.
 
 ## Entity formation
 

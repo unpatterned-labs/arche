@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Shared model registry — single cache for GliNER and future models.
+"""Shared model registry -- one cache for the GLiNER 2 family.
 
-Provides offline loading via ``ARCHE_MODEL_DIR`` environment variable,
-standard cache at ``~/.cache/arche/models/``, and HuggingFace fallback.
+Provides offline loading via the ``ARCHE_MODEL_DIR`` environment variable,
+the standard cache at ``~/.cache/arche/models/``, and a Hugging Face fallback.
 
 Usage:
-    from arche._models import get_gliner
-    model = get_gliner()  # uses config model name, cached after first load
-    model = get_gliner("urchade/gliner_large-v2.1")  # specific model
+    from arche._models import get_gliner2
+    model = get_gliner2()                                   # the general extractor
+    model = get_gliner2("fastino/gliner2-privacy-filter-PII-multi")  # the PII proposer
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from typing import Any
 
 _log = logging.getLogger("arche.models")
 
-# Model cache: model_name_or_path -> loaded model object
+# Model cache: cache key -> loaded model object
 _cache: dict[str, Any] = {}
 
 
@@ -48,7 +48,7 @@ def _resolve_model_path(name_or_path: str) -> str:
     # 1. ARCHE_MODEL_DIR
     model_dir = os.environ.get("ARCHE_MODEL_DIR", "")
     if model_dir:
-        # Model name like "urchade/gliner_medium-v2.1" → folder name
+        # Model name like "fastino/gliner2.5-base-v1" -> folder name
         folder_name = name_or_path.replace("/", "--")
         candidate = Path(model_dir) / folder_name
         if candidate.is_dir() and any(candidate.iterdir()):
@@ -71,221 +71,62 @@ def _resolve_model_path(name_or_path: str) -> str:
     return name_or_path
 
 
-def get_gliner(name_or_path: str | None = None) -> Any:
-    """Load and cache a GliNER model.
+def get_gliner2(name_or_path: str | None = None) -> Any:
+    """Load a GLiNER 2 model, cached, offline-aware.
 
-    Parameters
-    ----------
-    name_or_path:
-        Model name (HuggingFace) or local path. If ``None``, reads from
-        ``get_config().gliner_model``.
+    Loaded through ``AutoExtractor``, which reads the checkpoint metadata and
+    dispatches to the span or boundary architecture -- so one loader serves
+    both the general GLiNER 2.5 checkpoints and GLiNER2-PII.
+    ``GLiNER2.from_pretrained`` is NOT used: it assumes the span architecture
+    and dies on a boundary checkpoint with a missing ``max_width``.
 
-    Returns
-    -------
-    GLiNER
-        The loaded model, cached for subsequent calls.
-
-    Raises
-    ------
-    ImportError
-        If the ``gliner`` package is not installed.
+    Requires ``arche-core[detect2]``. Note that this pulls ``gliner2[local]``
+    and not bare ``gliner2`` -- the base package is an API client that sends
+    text to a hosted service, which would quietly turn local extraction into a
+    network call on someone else's machine. The ``[local]`` extra is what
+    brings the on-device weights.
     """
     from .config import get_config
 
     if name_or_path is None:
-        name_or_path = get_config().gliner_model
+        name_or_path = get_config().gliner2_model
 
-    if name_or_path in _cache:
-        return _cache[name_or_path]
+    cache_key = f"gliner2:{name_or_path}"
+    if cache_key in _cache:
+        return _cache[cache_key]
 
-    from gliner import GLiNER
+    try:
+        from gliner2 import AutoExtractor
+    except ImportError as exc:  # pragma: no cover - exercised without the extra
+        raise ImportError(
+            "GLiNER 2 is not installed. Install it with:\n"
+            "    pip install 'arche-core[detect2]'\n"
+            "Note the [local] marker inside that extra: bare `gliner2` is an "
+            "API client that sends text to a hosted service, which is not what "
+            "arche means by extraction."
+        ) from exc
 
     resolved_path = _resolve_model_path(name_or_path)
     is_local = resolved_path != name_or_path
-
-    _log.info(
-        "Loading GliNER model '%s'%s...",
-        name_or_path,
-        f" (from {resolved_path})" if is_local else " (first use — downloading)",
-    )
-
+    _log.info("Loading GLiNER 2 model %r%s...", name_or_path,
+              f" (from {resolved_path})" if is_local else " (first use -- downloading)")
     t0 = time.perf_counter()
-    try:
-        model = GLiNER.from_pretrained(resolved_path)
-    except Exception as primary_err:
-        # Fallback: try the configured fallback model before giving up.
-        # Default chain: gliner_medium-v2.1 (primary) -> gliner_multi_pii-v1 (fallback).
-        cfg = get_config()
-        fallback = cfg.gliner_fallback_model
-        if fallback and fallback != name_or_path:
-            _log.warning(
-                "Primary model '%s' failed (%s), falling back to '%s'",
-                name_or_path, primary_err, fallback,
-            )
-            resolved_fallback = _resolve_model_path(fallback)
-            model = GLiNER.from_pretrained(resolved_fallback)
-            # Cache under both keys so the fallback is reused
-            _cache[fallback] = model
-            _cache[name_or_path] = model
-            elapsed = time.perf_counter() - t0
-            _log.info("Fallback model loaded in %.1fs.", elapsed)
-            return model
-        raise  # No fallback configured, propagate the error
-    elapsed = time.perf_counter() - t0
+    # gliner2 prints a configuration banner, emoji first, while it loads. On a
+    # Windows console or any cp1252 pipe -- a service manager's log, a CI
+    # step -- that print raises UnicodeEncodeError, a ValueError, from inside a
+    # detection call. The banner is not ours and not the caller's; swallow it.
+    import contextlib
+    import io
 
-    _log.info("Model loaded in %.1fs. Cached for subsequent calls.", elapsed)
+    with contextlib.redirect_stdout(io.StringIO()):
+        model = AutoExtractor.from_pretrained(resolved_path)
+    elapsed = time.perf_counter() - t0
+    _log.info("GLiNER 2 loaded in %.1fs.", elapsed)
     if elapsed > 60 and not is_local:
         _log.warning(
             "Model download took %.0fs. For faster startup, set ARCHE_MODEL_DIR "
-            "or run: arche models download %s",
-            elapsed,
-            name_or_path,
+            "to a directory holding %s", elapsed, name_or_path,
         )
-
-    _cache[name_or_path] = model
-    return model
-
-
-def get_gliner2(name_or_path: str | None = None) -> Any:
-    """Load a GLiNER 2.5 extractor, cached, offline-aware.
-
-    Separate from :func:`get_gliner` because GLiNER 2.5 is a different model
-    family with a different call signature, not a newer checkpoint for the same
-    loader. Sharing one function would mean guessing which API a given
-    checkpoint wants; two functions cannot guess wrong.
-
-    Loaded through ``AutoExtractor``, which reads the checkpoint metadata and
-    dispatches to the span or boundary architecture. ``GLiNER2.from_pretrained``
-    is NOT used: it assumes the span architecture and dies on a boundary
-    checkpoint with a missing ``max_width``.
-
-    Requires ``arche-core[detect2]``. Note that this pulls
-    ``gliner2[local]`` and not bare ``gliner2`` -- the base package is an API
-    client that sends text to a hosted service, which would quietly turn local
-    extraction into a network call on someone else's machine. The ``[local]``
-    extra is what brings the on-device weights.
-    """
-    from .config import get_config
-
-    if name_or_path is None:
-        name_or_path = get_config().gliner2_model
-
-    cache_key = f"gliner2:{name_or_path}"
-    if cache_key in _cache:
-        return _cache[cache_key]
-
-    try:
-        from gliner2 import AutoExtractor
-    except ImportError as exc:  # pragma: no cover - exercised without the extra
-        raise ImportError(
-            "GLiNER 2.5 is not installed. Install it with:\n"
-            "    pip install 'arche-core[detect2]'\n"
-            "Note the [local] marker inside that extra: bare `gliner2` is an "
-            "API client that sends text to a hosted service, which is not what "
-            "arche means by extraction."
-        ) from exc
-
-    resolved_path = _resolve_model_path(name_or_path)
-    _log.info("Loading GLiNER 2.5 model %r...", name_or_path)
-    t0 = time.perf_counter()
-    model = AutoExtractor.from_pretrained(resolved_path)
-    _log.info("GLiNER 2.5 loaded in %.1fs.", time.perf_counter() - t0)
-    _cache[cache_key] = model
-    return model
-
-
-def get_gliner2(name_or_path: str | None = None) -> Any:
-    """Load a GLiNER 2.5 extractor, cached, offline-aware.
-
-    Separate from :func:`get_gliner` because GLiNER 2.5 is a different model
-    family with a different call signature, not a newer checkpoint for the same
-    loader. Sharing one function would mean guessing which API a given
-    checkpoint wants; two functions cannot guess wrong.
-
-    Loaded through ``AutoExtractor``, which reads the checkpoint metadata and
-    dispatches to the span or boundary architecture. ``GLiNER2.from_pretrained``
-    is NOT used: it assumes the span architecture and dies on a boundary
-    checkpoint with a missing ``max_width``.
-
-    Requires ``arche-core[detect2]``. Note that this pulls
-    ``gliner2[local]`` and not bare ``gliner2`` -- the base package is an API
-    client that sends text to a hosted service, which would quietly turn local
-    extraction into a network call on someone else's machine. The ``[local]``
-    extra is what brings the on-device weights.
-    """
-    from .config import get_config
-
-    if name_or_path is None:
-        name_or_path = get_config().gliner2_model
-
-    cache_key = f"gliner2:{name_or_path}"
-    if cache_key in _cache:
-        return _cache[cache_key]
-
-    try:
-        from gliner2 import AutoExtractor
-    except ImportError as exc:  # pragma: no cover - exercised without the extra
-        raise ImportError(
-            "GLiNER 2.5 is not installed. Install it with:\n"
-            "    pip install 'arche-core[detect2]'\n"
-            "Note the [local] marker inside that extra: bare `gliner2` is an "
-            "API client that sends text to a hosted service, which is not what "
-            "arche means by extraction."
-        ) from exc
-
-    resolved_path = _resolve_model_path(name_or_path)
-    _log.info("Loading GLiNER 2.5 model %r...", name_or_path)
-    t0 = time.perf_counter()
-    model = AutoExtractor.from_pretrained(resolved_path)
-    _log.info("GLiNER 2.5 loaded in %.1fs.", time.perf_counter() - t0)
-    _cache[cache_key] = model
-    return model
-
-
-def get_gliner2(name_or_path: str | None = None) -> Any:
-    """Load a GLiNER 2.5 extractor, cached, offline-aware.
-
-    Separate from :func:`get_gliner` because GLiNER 2.5 is a different model
-    family with a different call signature, not a newer checkpoint for the same
-    loader. Sharing one function would mean guessing which API a given
-    checkpoint wants; two functions cannot guess wrong.
-
-    Loaded through ``AutoExtractor``, which reads the checkpoint metadata and
-    dispatches to the span or boundary architecture. ``GLiNER2.from_pretrained``
-    is NOT used: it assumes the span architecture and dies on a boundary
-    checkpoint with a missing ``max_width``.
-
-    Requires ``arche-core[detect2]``. Note that this pulls
-    ``gliner2[local]`` and not bare ``gliner2`` -- the base package is an API
-    client that sends text to a hosted service, which would quietly turn local
-    extraction into a network call on someone else's machine. The ``[local]``
-    extra is what brings the on-device weights.
-    """
-    from .config import get_config
-
-    if name_or_path is None:
-        name_or_path = get_config().gliner2_model
-
-    cache_key = f"gliner2:{name_or_path}"
-    if cache_key in _cache:
-        return _cache[cache_key]
-
-    try:
-        from gliner2 import AutoExtractor
-    except ImportError as exc:  # pragma: no cover - exercised without the extra
-        raise ImportError(
-            "GLiNER 2.5 is not installed. Install it with:\n"
-            "    pip install 'arche-core[detect2]'\n"
-            "Note the [local] marker inside that extra: bare `gliner2` is an "
-            "API client that sends text to a hosted service, which is not what "
-            "arche means by extraction."
-        ) from exc
-
-    resolved_path = _resolve_model_path(name_or_path)
-    _log.info("Loading GLiNER 2.5 model %r...", name_or_path)
-    t0 = time.perf_counter()
-    model = AutoExtractor.from_pretrained(resolved_path)
-    _log.info("GLiNER 2.5 loaded in %.1fs.", time.perf_counter() - t0)
     _cache[cache_key] = model
     return model
 

@@ -91,7 +91,19 @@ def _validate_ng_drivers_licence(text: str) -> tuple[bool, dict]:
     cleaned = text.upper().replace(" ", "")
     if not re.match(r"^[A-Z]{3}-\d{10,12}$", cleaned):
         return False, {}
+    # INV-3702838222 is an invoice, not a licence from a state called INV.
+    # The detection benchmark read eight such references as licences.
+    if cleaned[:3] in _DOCUMENT_PREFIXES:
+        return False, {}
     return True, {"state_code": cleaned[:3]}
+
+
+#: Three-letter prefixes of document references that share the licence's
+#: shape. Not state codes; never licences.
+_DOCUMENT_PREFIXES = frozenset({
+    "INV", "ORD", "REF", "DOC", "TXN", "TRX", "ACC", "PMT", "RCT", "SKU", "LOT", "BAT",
+    "PRO", "QUO", "TKT", "REQ",
+})
 
 
 NG_PATTERNS: dict[str, dict] = {

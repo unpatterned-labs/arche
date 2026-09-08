@@ -547,14 +547,14 @@ class TestExtractAutoLLM:
     SAMPLE_TEXT = "Fatima Abdullahi called from +234 803 555 7890"
 
     def test_auto_llm_merges_all_sources(self, monkeypatch):
-        """LLM entities should merge with GliNER + regex through _merge_entities."""
+        """LLM entities should merge with GLiNER 2.5 + basic through _merge_entities."""
         import sys
         _extract_mod = sys.modules["arche.extract"]
 
-        # Mock GliNER to raise ImportError (so only regex + LLM run)
+        # Mock GLiNER 2.5 to raise ImportError (so only basic + LLM run)
         def fail_gliner(*args, **kwargs):
             raise ImportError("GliNER not installed")
-        monkeypatch.setattr(_extract_mod, "_extract_gliner", fail_gliner)
+        monkeypatch.setattr(_extract_mod, "_extract_gliner2", fail_gliner)
 
         # Mock LLM to return a LOCATION that regex won't find
         def mock_llm(text, llm_config):
@@ -588,7 +588,7 @@ class TestExtractAutoLLM:
         # Mock GliNER to avoid needing the model
         def mock_gliner(text, entity_types):
             return []
-        monkeypatch.setattr(_extract_mod, "_extract_gliner", mock_gliner)
+        monkeypatch.setattr(_extract_mod, "_extract_gliner2", mock_gliner)
 
         extract(self.SAMPLE_TEXT, backend="auto")
         assert not called["llm"]
@@ -612,7 +612,7 @@ class TestBackendValidation:
 
         def mock_gliner(text, entity_types):
             return []
-        monkeypatch.setattr(_extract_mod, "_extract_gliner", mock_gliner)
+        monkeypatch.setattr(_extract_mod, "_extract_gliner2", mock_gliner)
 
         def mock_llm(text, llm_config):
             return []

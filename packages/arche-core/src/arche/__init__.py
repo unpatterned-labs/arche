@@ -144,6 +144,13 @@ def list_places(
 # Each entry maps an exposed name to (submodule, attribute_name).
 
 _LAZY: dict[str, tuple[str, str]] = {
+    # --- declare: your fields, once, for extraction and matching ------------
+    "schema": (".declare", "schema"),
+    "Declaration": (".declare", "Declaration"),
+    # --- protect: find the personal data, make a copy you can hand on -------
+    "detect_pii": (".protect", "detect_pii"),
+    "deidentify": (".protect", "deidentify"),
+    "Deidentified": (".protect", "Deidentified"),
     # --- ledger -------------------------------------------------------------
     # DuckDB loads only when attach() is called, so `import arche` stays within
     # its cold-import budget.
@@ -252,6 +259,11 @@ def __dir__() -> list[str]:
 # only v0.3 removal is the ``arche.resolve()`` callable shim (2026-08-07).
 __all__ = [
     "attach",
+    # Your fields, once: extraction, matching and masking read the same declaration.
+    "schema",
+    # Find the personal data in a text; make a copy you can hand on.
+    "detect_pii",
+    "deidentify",
     "Pipeline",
     # The pairwise question and what it hands back.
     "compare",

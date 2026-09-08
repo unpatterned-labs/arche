@@ -556,10 +556,25 @@ def compare(a, b, *, entity: str = "person", store=None, **kwargs):
     from, so it can be found by ``decision_id`` and made again later. The
     receipt itself is identical with or without a store.
     """
+    kwargs = _schema_to_decl(kwargs)
     receipt = _compare(a, b, entity=entity, **kwargs)
     if store is not None:
         store.record_compare(receipt, a, b, call={"entity": entity, **kwargs})
     return receipt
+
+
+def _schema_to_decl(kwargs: dict) -> dict:
+    """``schema=`` is the caller's word for ``decl=``: the same declaration
+    object that drove extraction drives the decision. Either spelling, never both."""
+    if "schema" in kwargs:
+        schema = kwargs.pop("schema")
+        if schema is not None:
+            if kwargs.get("decl") is not None:
+                raise ValueError("pass either schema= or decl=, not both")
+            from arche.declare import schema as _load
+
+            kwargs["decl"] = _load(schema)
+    return kwargs
 
 
 def _compare(a, b, *, entity: str = "person", **kwargs):
@@ -783,7 +798,7 @@ def describe_packs() -> dict[str, dict]:
 
 
 def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
-              entity: str | None = None, tf=None, decl=None, store=None, **kwargs):
+              entity: str | None = None, tf=None, decl=None, schema=None, store=None, **kwargs):
     """Link two lists of records: which of these are the same thing?
 
     The batch question, the counterpart to :func:`compare`. Returns the
@@ -825,6 +840,7 @@ def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
     :class:`arche.ledger.Ledger`, so an edge can be looked up by its
     ``decision_id`` and replayed against the exact batch it was scored in.
     """
+    decl = _schema_to_decl({"schema": schema, "decl": decl})["decl"]
     result = _reconcile(list_a, list_b, comparators, entity=entity, tf=tf,
                         decl=decl, **kwargs)
     if store is not None:
@@ -980,7 +996,7 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
 
 
 def dedupe(records, comparators: list[dict] | None = None, *,
-           entity: str | None = None, tf=None, decl=None, store=None, **kwargs):
+           entity: str | None = None, tf=None, decl=None, schema=None, store=None, **kwargs):
     """Collapse one list: which of these records are the same thing?
 
     The third question, after :func:`compare` ("are these two the same?") and
@@ -1012,6 +1028,7 @@ def dedupe(records, comparators: list[dict] | None = None, *,
     Ids must be unique. Two records sharing one is not a duplicate to be
     found; it is a list that cannot say which record an edge refers to.
     """
+    decl = _schema_to_decl({"schema": schema, "decl": decl})["decl"]
     id_field = kwargs.get("id_field", "id")
     # Positions, resolved exactly the way the engine resolves them, so the
     # ordering below refers to the same identities the edges carry.
@@ -1197,7 +1214,7 @@ AMBIGUITY_MARGIN = 0.05
 
 
 def find(query: dict, within: list[dict], comparators: list[dict] | None = None, *,
-         entity: str | None = None, tf=None, decl=None,
+         entity: str | None = None, tf=None, decl=None, schema=None,
          ambiguity_margin: float = AMBIGUITY_MARGIN, store=None, **kwargs):
     """Which of these is this one?
 
@@ -1224,6 +1241,7 @@ def find(query: dict, within: list[dict], comparators: list[dict] | None = None,
     ``candidates`` always carries what was actually compared, best first, so a
     caller who disagrees with the verdict can see the same evidence it saw.
     """
+    decl = _schema_to_decl({"schema": schema, "decl": decl})["decl"]
     id_field = kwargs.get("id_field", "id")
     run = _reconcile([query], within, comparators, entity=entity, tf=tf,
                      decl=decl, **kwargs)

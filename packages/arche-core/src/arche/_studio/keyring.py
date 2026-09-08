@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """The reviewer's signing key: one, kept, reused.
 
-    data/review_packs/_studio_key.pem   (gitignored, 0600 where the OS allows)
+    <studio home>/_studio/key.pem   (0600 where the OS allows)
 
 The problem this solves
 -----------------------

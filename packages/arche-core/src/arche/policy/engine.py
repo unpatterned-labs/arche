@@ -386,6 +386,7 @@ def apply_policy(
     *,
     tokenize_salt: str = "",
     detection_category_attr: str = "category",
+    action_override: str | None = None,
 ) -> tuple[str, list[PolicyOutcome]]:
     """Apply a loaded statute to a document and its detections.
 
@@ -393,6 +394,13 @@ def apply_policy(
     ``category`` attribute or whatever attribute name is passed in
     ``detection_category_attr``. They may optionally have ``id`` or ``text``
     attributes; sensible defaults are used otherwise.
+
+    ``action_override`` replaces the statute's per-category action with one
+    action for every span -- ``"mask"``, ``"tokenize"`` or ``"drop"`` -- while
+    the citation each outcome carries stays the statute's. It exists for
+    :func:`arche.deidentify`, where a caller may want a uniformly masked copy;
+    the statute still decides *what* is personal data, only the rendering
+    changes.
 
     Returns
     -------
@@ -421,6 +429,11 @@ def apply_policy(
     and stay true whether or not the span won its overlap. ``applied_value``
     reports what actually reached the text.
     """
+    if action_override is not None and action_override not in _ACTION_HANDLERS:
+        raise ValueError(
+            f"action_override must be one of {sorted(_ACTION_HANDLERS)}, "
+            f"got {action_override!r}"
+        )
     # ---- 1. resolve each detection to an action, keeping input order ------
     resolved: list[tuple[int, int, int, str, str, str, str, str]] = []
     for original_index, det in enumerate(detections):
@@ -431,6 +444,8 @@ def apply_policy(
         category = getattr(det, detection_category_attr, None) or "PII-1-UNKNOWN"
         det_id = getattr(det, "id", None) or f"det:{start}:{end}"
         action, statute_ref, rationale = statute.action_for(category)
+        if action_override is not None:
+            action = action_override
         resolved.append(
             (start, end, original_index, category, det_id, action, statute_ref, rationale)
         )

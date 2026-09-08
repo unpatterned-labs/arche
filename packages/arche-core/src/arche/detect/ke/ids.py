@@ -61,12 +61,20 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_ID": {
         "country": "KE",
         "id_type": "NATIONAL_ID",
-        "description": "Kenya National ID — 7 or 8 digits",
+        "description": "Kenya National ID — 7 or 8 digits, cue-anchored",
+        # Cue-anchored like KE_HUDUMA. Seven or eight bare digits are an
+        # order number, an invoice, a receipt as often as an id -- the
+        # detection benchmark read 25 of them as Kenyan ids in 240 texts --
+        # and the only evidence a reader has is the word "ID" beside them.
         "pattern": re.compile(
-            r"(?<![0-9])(\d{7,8})(?![0-9])"
+            r"\b(?:national\s+id(?:entity)?|kenyan\s+id|id(?:entity)?"
+            r"(?:\s*(?:card|no\.?|number|#))?)(?![a-z])"
+            r"[^0-9\n]{0,20}?"
+            r"(?<![0-9])(\d{7,8})(?![0-9])",
+            re.IGNORECASE,
         ),
         "validator": _always_valid,
-        "base_confidence": 0.40,  # short digit sequences are ambiguous
+        "base_confidence": 0.85,  # the cue word is doing the work
     },
     "KE_HUDUMA": {
         "country": "KE",
@@ -105,12 +113,15 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_NHIF": {
         "country": "KE",
         "id_type": "NHIF",
-        "description": "Kenya NHIF (National Hospital Insurance Fund) — 8 or 9 digits",
+        "description": "Kenya NHIF number — 8 or 9 digits, cue-anchored",
         "pattern": re.compile(
-            r"(?<![0-9])(\d{8,9})(?![0-9])"
+            r"\bnhif(?:\s*(?:card|no\.?|number|#|member(?:ship)?))?(?![a-z])"
+            r"[^0-9\n]{0,20}?"
+            r"(?<![0-9])(\d{8,9})(?![0-9])",
+            re.IGNORECASE,
         ),
         "validator": _validate_nhif,
-        "base_confidence": 0.45,  # ambiguous without "NHIF" context
+        "base_confidence": 0.85,  # the cue word is doing the work
     },
 }
 

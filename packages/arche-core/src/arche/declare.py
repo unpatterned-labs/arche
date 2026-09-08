@@ -23,6 +23,7 @@ import hashlib
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from arche.ids import _ID_FAMILY as _RESERVED_ID_FAMILIES
 from arche.ids import canonical_json
@@ -434,6 +435,87 @@ class Declaration:
             id_field=self.id_field, decl=self,
         )
         return ref, violations
+
+    # ── the extraction schema (GLiNER 2 labels + a typed record) ─────────────
+    def labels(self) -> dict[str, str]:
+        """``{field: description}`` -- what a zero-shot extractor is asked for.
+
+        The user's field names *are* the labels, so a model proposes straight
+        into the declaration and nothing is mapped afterwards. A field with no
+        description gets one from its kind, because a label like ``vessel_id``
+        alone leaves a model guessing between every identifier on the page.
+        """
+        out: dict[str, str] = {}
+        for f in self.fields.values():
+            if f.role == "ignore":
+                continue
+            out[f.name] = f.description or _KIND_DESCRIPTION.get(
+                f.kinds[0] if f.kinds else "", f.name.replace("_", " ")
+            )
+        return out
+
+    def model(self):
+        """A pydantic model with the declared fields, every one optional.
+
+        What :func:`arche.doc.extract` fills. Optional on purpose: a required
+        identifier is an instruction to invent one, and a field arche could not
+        fill is named in ``unresolved`` rather than defaulted.
+        """
+        cached = _MODELS.get(self.pin())
+        if cached is not None:
+            return cached
+        from pydantic import Field as _Field
+        from pydantic import create_model
+
+        spec = {
+            f.name: (str | None, _Field(default=None, description=f.description or None))
+            for f in self.fields.values() if f.role != "ignore"
+        }
+        model = create_model(self.entity.replace("-", "_").replace(" ", "_") or "record", **spec)
+        _MODELS[self.pin()] = model
+        return model
+
+
+#: Default label descriptions by kind, for fields declared without one.
+_KIND_DESCRIPTION: dict[str, str] = {
+    "name": "a personal or organisation name",
+    "placename": "the name of a place",
+    "id": "an identifier code or number",
+    "phone": "a phone number",
+    "email": "an email address",
+    "address": "a postal or street address",
+    "date": "a date",
+    "tftoken": "a name",
+    "type": "a type or category word",
+    "postcode": "a postal code",
+    "containment": "a place this sits inside",
+}
+_MODELS: dict[str, Any] = {}
+
+
+def schema(source: Declaration | str | Path | dict) -> Declaration:
+    """Load a declaration: a YAML path, a dict, or a Declaration as is.
+
+    The one function a caller needs to say what their fields mean; the same
+    object then drives extraction (:func:`arche.extract` with ``schema=``),
+    matching (``compare(..., schema=)``), masking and the pin in every signed
+    decision. A dict may omit ``arche_declaration`` and ``name`` -- they are
+    filled in as ``1`` and the entity -- because a dict written in code is
+    not the versioned file the format check exists for.
+    """
+    if isinstance(source, Declaration):
+        return source
+    if isinstance(source, dict):
+        raw = dict(source)
+        raw.setdefault("arche_declaration", 1)
+        raw.setdefault("name", raw.get("entity") or "record")
+        return Declaration.from_dict(raw)
+    if isinstance(source, (str, Path)):
+        return Declaration.from_yaml(source)
+    raise TypeError(
+        f"schema() takes a declaration file path, a dict or a Declaration; "
+        f"got {type(source).__name__}"
+    )
 
 
 def _apply_statute(
