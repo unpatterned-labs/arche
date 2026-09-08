@@ -46,6 +46,7 @@ Both read a text layer well enough for what arche does with one, so the tie is b
 | `parquet` | +1 | 21 | `pyarrow` | Apache-2.0 |
 | `geo` | +3 | 23 | `shapely`, `duckdb` | BSD-3-Clause |
 | `llm` | +8 | 28 | `openai`, `anthropic` | Apache-2.0 / MIT |
+| `service` | +8 | 28 | `fastapi`, `uvicorn` -- `arche serve` | MIT / BSD-3-Clause |
 | `resolve` | +20 | 40 | `splink`, `duckdb`, `pandas` | MIT |
 | `detect2` | +24 | 44 | `gliner2[local]`, **torch**, `transformers` | Apache-2.0 |
 | `detect` | +24 | 44 | an alias of `detect2` since 0.9.0 | Apache-2.0 |
@@ -79,6 +80,12 @@ Measured on the [detection benchmark](benchmarks.md#detection) (a constructed se
     The `[local]` marker is load-bearing. Bare `gliner2` installs an **API client that posts text to a hosted service**. Declaring it without `[local]` would ship a code path that looks exactly like on-device extraction while sending text off the machine. `arche-core[detect2]` pins `gliner2[local]`, and a test asserts it.
 
 `arche-core[presidio]` installs Microsoft Presidio's recognisers via `spacy` (+40 packages). It is not yet a `backend=`: the extra installs the packages and nothing in arche calls them. It stays listed because a caller may use Presidio beside arche; it is not a claim that arche does.
+
+## The two front doors that are not Python
+
+`arche studio` needs no extra. It is the standard library's `http.server` and one HTML file, in the base wheel, and it binds `127.0.0.1`.
+
+`arche serve` needs `[service]`. It is the same verbs -- `detect_pii`, `deidentify`, `compare`, and the ledger by id -- behind FastAPI, for a container, a sidecar, or a tool that speaks HTTP and not Python. See [Serve over HTTP](../guides/serve-over-http.md), including the sentence about authentication, which is that there is none.
 
 ## Convenience aliases
 

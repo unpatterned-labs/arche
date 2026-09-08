@@ -380,7 +380,7 @@ md("""
 
 The numbers above are an aggregate. Adjudicating is the other half, and it needs
 the pairs in something a person can sit in front of. `review_pack` writes the
-two files `tools/arche-studio` opens.
+two files `arche studio` opens.
 
 `reveal=True` because a masked pack cannot be judged: nobody can say whether two
 children are the same when both names are redacted. That makes the output a
@@ -403,7 +403,7 @@ for k in ("schema", "rows", "decisions", "disclosure"):
     print(f"{k:<12} {manifest[k]}")
 print(f"{'pins':<12} {manifest['pins'].get('comparators_sha256')}")
 print()
-print("open it with:  python tools/arche-studio/serve.py")
+print("open it with:  arche studio")
 ''')
 
 md("""

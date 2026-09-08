@@ -28,15 +28,12 @@ import sys
 from pathlib import Path
 
 import pytest
+
+#: The page as shipped, wherever the package is installed.
+_INDEX = Path(importlib.util.find_spec("arche._studio").origin).with_name("index.html")
 from arche.report import review_pack
 from arche.resolve import reconcile
 
-_STUDIO = Path(__file__).resolve().parents[3] / "tools" / "arche-studio"
-
-pytestmark = pytest.mark.skipif(
-    not (_STUDIO / "serve.py").exists(),
-    reason="arche-studio is not present in this checkout",
-)
 
 _A = [{"id": str(i), "name": n, "birth_date": d}
       for i, (n, d) in enumerate(
@@ -47,23 +44,13 @@ _A = [{"id": str(i), "name": n, "birth_date": d}
 
 @pytest.fixture(scope="module")
 def studio():
-    """Import serve.py without installing it. It imports `state` as a sibling."""
-    sys.path.insert(0, str(_STUDIO))
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "arche_studio_serve", _STUDIO / "serve.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        # The layout as the module configures it, captured before any test
-        # patches it. Two tests below assert on where the key and the database
-        # really live, and a patched path would let them pass while the shipped
-        # arrangement was wrong.
-        module._real_layout = {"packs": module.PACKS,
-                               "key": module.KEY_PATH,
-                               "state": module.STATE.path}
-        yield module
-    finally:
-        sys.path.remove(str(_STUDIO))
+    """The studio as installed: `arche._studio`, once loaded by path from tools/."""
+    import importlib
+
+    module = importlib.import_module("arche._studio")
+    module._real_layout = {"packs": module.PACKS, "key": module.KEY_PATH,
+                           "state": module.STATE.path}
+    yield module
 
 
 @pytest.fixture(autouse=True)
@@ -78,7 +65,7 @@ def _isolated_state(tmp_path, studio, monkeypatch):
 
     Autouse, because remembering to ask for it is the thing that failed.
     """
-    from state import Store
+    from arche._studio.state import Store
     monkeypatch.setattr(studio, "STATE", Store(tmp_path / "state.sqlite3"))
     monkeypatch.setattr(studio, "STUDIO_STATE", tmp_path)
     monkeypatch.setattr(studio, "KEY_PATH", tmp_path / "key.pem")
@@ -210,7 +197,7 @@ class TestAdjudicationVerification:
 
     @staticmethod
     def _signed(tmp_path):
-        import keyring
+        from arche._studio import keyring
         keypair = keyring.load_or_create(tmp_path / "k.pem")
         marks = {"d1": {"outcome": "same_entity", "reviewer": "dee",
                         "reason": "", "marked_at": "t"},
@@ -260,7 +247,7 @@ class TestSavingProducesBothArtifacts:
 
     @staticmethod
     def _save(studio, pack, tmp_path, monkeypatch):
-        monkeypatch.setattr(studio, "REPO", tmp_path)
+        monkeypatch.chdir(tmp_path)
         loaded = studio._load_pack(pack)
         did = loaded["rows"][0]["decision_id"]
         studio._mark({"pack": pack, "decision_id": did,
@@ -426,7 +413,7 @@ class TestWorkingTheQueueChangesSomething:
 
     def test_the_saved_copy_carries_the_merged_answer(self, studio, held,
                                                       tmp_path, monkeypatch):
-        monkeypatch.setattr(studio, "REPO", tmp_path)
+        monkeypatch.chdir(tmp_path)
         row = next(r for r in studio._load_pack(held)["rows"]
                    if r["decision"] == "review")
         studio._mark({"pack": held, "decision_id": row["decision_id"],
@@ -442,7 +429,8 @@ class TestWorkingTheQueueChangesSomething:
                                                  monkeypatch):
         """`relative_to` raises rather than falling back, so a pack directory
         outside the checkout turned a successful save into a subpath error."""
-        monkeypatch.setattr(studio, "REPO", tmp_path.parent / "elsewhere")
+        (tmp_path.parent / "elsewhere").mkdir(exist_ok=True)
+        monkeypatch.chdir(tmp_path.parent / "elsewhere")
         result = studio._save_review({"pack": held, "reviewer": "dee"})
         assert result["written"].endswith("pack_reviewed.csv")
 
@@ -661,7 +649,7 @@ class TestThePageHangsTogether:
 
     @pytest.fixture(scope="class")
     def page(self):
-        return (_STUDIO / "index.html").read_text(encoding="utf-8")
+        return _INDEX.read_text(encoding="utf-8")
 
     @staticmethod
     def _ids(page):
@@ -793,7 +781,7 @@ class TestThePageHangsTogether:
             pytest.skip("needs node to run the script")
         harness = Path(__file__).with_name("studio_boot.mjs")
         done = subprocess.run(
-            [node, str(harness), str(_STUDIO / "index.html")],
+            [node, str(harness), str(_INDEX)],
             capture_output=True, text=True, timeout=120)
         assert done.returncode == 0, done.stdout + done.stderr
 
@@ -900,7 +888,7 @@ class TestTheChatUsesTheRealToolSurface:
 
 def test_the_chat_tab_is_registered_in_the_page(studio):
     """Same structural contract as every other tab."""
-    page = (_STUDIO / "index.html").read_text(encoding="utf-8")
+    page = _INDEX.read_text(encoding="utf-8")
     assert 'id="t-chat"' in page and 'id="s-chat"' in page
     names = re.search(r"const tab=t=>\{for\(const k of\[([^\]]+)\]", page).group(1)
     assert '"chat"' in names

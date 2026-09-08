@@ -40,25 +40,17 @@ from pathlib import Path
 import pytest
 
 _REPO = Path(__file__).resolve().parents[3]
-_STUDIO = _REPO / "tools" / "arche-studio"
-
-pytestmark = pytest.mark.skipif(
-    not (_STUDIO / "serve.py").exists(),
-    reason="arche-studio is not present in this checkout",
-)
 
 
 @pytest.fixture(scope="module")
 def studio():
-    sys.path.insert(0, str(_STUDIO))
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "arche_studio_serve_hashkey", _STUDIO / "serve.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        yield module
-    finally:
-        sys.path.remove(str(_STUDIO))
+    """The studio as installed: `arche._studio`, once loaded by path from tools/."""
+    import importlib
+
+    module = importlib.import_module("arche._studio")
+    module._real_layout = {"packs": module.PACKS, "key": module.KEY_PATH,
+                           "state": module.STATE.path}
+    yield module
 
 
 class TestTheKeyItself:
@@ -126,9 +118,7 @@ class TestWhatTheServerSees:
         """
         done = subprocess.run(
             [sys.executable, "-c",
-             "import sys, os; sys.path.insert(0, sys.argv[1]);"
-             " import serve; print(os.environ['ARCHE_HASH_KEY'])",
-             str(_STUDIO)],
+             "import os, arche._studio; print(os.environ['ARCHE_HASH_KEY'])"],
             capture_output=True, text=True, cwd=_REPO,
             env={**os.environ, "ARCHE_HASH_KEY": "chosen-by-the-operator"})
         assert done.returncode == 0, done.stderr[-2000:]

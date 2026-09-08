@@ -42,6 +42,9 @@ _COMMANDS = (
     ("resolve-documents", "extract document fields, compare explicit candidates, and open cases"),
     ("review", "validate, apply, share, or verify review-pack outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
+    ("serve", "a local HTTP service: detect, deidentify, compare, and the ledger by id"),
+    ("attest", "make a signing key, or verify an attested answer"),
+    ("studio", "the local reading tool: compare two records, work a review queue"),
     ("version", "show the single-sourced arche-core version"),
 )
 
@@ -567,6 +570,30 @@ def _cmd_redact(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_studio(args: argparse.Namespace) -> int:
+    """`arche studio`: the local reading tool, from the wheel."""
+    from arche._studio import main as studio_main
+
+    argv = []
+    if args.port is not None:
+        argv += ["--port", str(args.port)]
+    if args.packs:
+        argv += ["--packs", args.packs]
+    if args.no_browser:
+        argv.append("--no-browser")
+    if args.ledger:
+        argv += ["--ledger", args.ledger]
+    return studio_main(argv)
+
+
+def _cmd_serve(args: argparse.Namespace) -> int:
+    """`arche serve`: the local HTTP service (needs `arche-core[service]`)."""
+    from arche._service import serve
+
+    return serve(host=args.host, port=args.port, ledger=args.ledger,
+                 signing_key=args.signing_key)
+
+
 def _write_json_output(payload: dict[str, object], output: str | None) -> None:
     """Print or write a machine-readable JSON artifact at an explicit path."""
     encoded = json.dumps(payload, indent=2, sort_keys=True, default=str)
@@ -892,6 +919,59 @@ def _cmd_review_verify(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def _cmd_attest_keygen(args: argparse.Namespace) -> int:
+    """One key for this installation, kept. Prints the did:key to publish."""
+    from arche.sign import generate_keypair, save_private_key
+
+    path = Path(args.out)
+    if path.exists() and not args.force:
+        print(f"arche: {path} exists; pass --force to replace it (envelopes signed "
+              "with the old key stop verifying against the new did:key)", file=sys.stderr)
+        return 2
+    keypair = generate_keypair()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    save_private_key(keypair, path)
+    print(f"key       {path}")
+    print(f"did:key   {keypair.did_key}")
+    print("publish the did:key; set ARCHE_SIGNING_KEY to the path for arche serve and arche-mcp")
+    return 0
+
+
+def _cmd_attest_verify(args: argparse.Namespace) -> int:
+    """Re-check an envelope, with the inputs and response beside it when given."""
+    from arche.attest import verify_attestation
+
+    envelope = json.loads(Path(args.envelope).read_text(encoding="utf-8"))
+    if "attestation" in envelope and "jws" not in envelope:
+        envelope = envelope["attestation"]  # a whole service response was passed
+    read = lambda p: json.loads(Path(p).read_text(encoding="utf-8")) if p else None  # noqa: E731
+    public_key = args.public_key
+    if public_key and Path(public_key).exists():
+        from arche.sign import load_public_key
+
+        public_key = load_public_key(Path(public_key).read_bytes())
+    check = verify_attestation(envelope, inputs=read(args.inputs), response=read(args.response),
+                               public_key=public_key)
+    if args.json:
+        print(json.dumps(check.as_dict(), indent=2))
+    else:
+        print(f"tool            {check.tool}")
+        print(f"signer          {check.signer}")
+        print(f"valid           {check.valid}")
+        print(f"trusted         {check.trusted}" + ("" if check.trusted else
+              "   (no key pinned: integrity shown, authorship not)"))
+        if check.inputs_match is not None:
+            print(f"inputs_match    {check.inputs_match}")
+        if check.response_match is not None:
+            print(f"response_match  {check.response_match}")
+        for did in check.decision_ids:
+            print(f"decision        {did}")
+        for problem in check.problems:
+            print(f"  ! {problem}")
+        print("OK" if check.ok else "NOT OK")
+    return 0 if check.ok else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="arche",
@@ -1042,6 +1122,43 @@ def main(argv: list[str] | None = None) -> int:
     red_p.add_argument("--store", default=None, help="record the decision in this ledger file")
     red_p.add_argument("--record", action="store_true", help="record in the ARCHE_LEDGER file")
     red_p.set_defaults(func=_cmd_redact)
+
+    studio_p = sub.add_parser(
+        "studio", help="the local reading tool: compare two records, work a review queue",
+    )
+    studio_p.add_argument("--port", type=int, default=None, help="listen on 127.0.0.1:PORT (default 8765)")
+    studio_p.add_argument("--packs", default=None, help="review pack directory")
+    studio_p.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
+    studio_p.add_argument("--ledger", default=None,
+                          help="ledger file the Explain pane reads (default: $ARCHE_LEDGER)")
+    studio_p.set_defaults(func=_cmd_studio)
+
+    serve_p = sub.add_parser(
+        "serve", help="a local HTTP service: detect, deidentify, compare, and the ledger by id",
+    )
+    serve_p.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1)")
+    serve_p.add_argument("--port", type=int, default=8766, help="port (default 8766)")
+    serve_p.add_argument("--ledger", default=None,
+                         help="ledger file for the decision endpoints (default: $ARCHE_LEDGER)")
+    serve_p.add_argument("--signing-key", default=None,
+                         help="PEM from `arche attest keygen`; answers then carry an "
+                              "attestation (default: $ARCHE_SIGNING_KEY)")
+    serve_p.set_defaults(func=_cmd_serve)
+
+    att_p = sub.add_parser("attest", help="make a signing key, or verify an attested answer")
+    att_sub = att_p.add_subparsers(dest="action", required=True)
+    akg = att_sub.add_parser("keygen", help="write an Ed25519 key and print its did:key")
+    akg.add_argument("out", help="where to write the PEM (keep it; 0600 where the OS allows)")
+    akg.add_argument("--force", action="store_true", help="replace an existing file")
+    akg.set_defaults(func=_cmd_attest_keygen)
+    avf = att_sub.add_parser("verify", help="re-check an attestation envelope")
+    avf.add_argument("envelope", help="the envelope JSON, or a whole service response carrying one")
+    avf.add_argument("--inputs", default=None, help="JSON file of the inputs, to check their hash")
+    avf.add_argument("--response", default=None, help="JSON file of the response, to check its hash")
+    avf.add_argument("--public-key", default=None,
+                     help="the signer's did:key or public PEM; without it the result is valid, not trusted")
+    avf.add_argument("--json", action="store_true", help="machine-readable report")
+    avf.set_defaults(func=_cmd_attest_verify)
 
     def ledger_args(parser, *, reveal: bool = True, entity_type: bool = False) -> None:
         parser.add_argument("--store", default=None,

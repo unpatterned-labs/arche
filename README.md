@@ -133,10 +133,10 @@ We mean this literally. Entity resolution has two halves. The mathematics of com
 
 ## Look at a decision
 
-`arche studio` is a local reading tool. Three files, the standard library, no framework and no install beyond `arche-core` itself.
+`arche studio` is a local reading tool. The standard library, no framework, and it is in the wheel: `pip install arche-core` is the whole install.
 
 ```bash
-python tools/arche-studio/serve.py     # opens http://127.0.0.1:8765
+arche studio     # opens http://127.0.0.1:8765
 ```
 
 Five modes over one evidence panel:

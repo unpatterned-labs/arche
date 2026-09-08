@@ -366,6 +366,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
     <button id="t-redact"  aria-current="false">Redact</button>
     <button id="t-verify"  aria-current="false">Verify</button>
     <button id="t-review"  aria-current="false">Review queue</button>
+    <button id="t-explain" aria-current="false">Explain</button>
     <button class="command-key" id="b-command" type="button">Open <kbd>Ctrl K</kbd></button>
   </nav>
 </div></header>
@@ -406,6 +407,11 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
       <div><strong>Which marketplace observations form one analyst case?</strong><span>Separate a product link from seller, place and enforcement questions.</span></div>
       <button class="go" type="button" data-go="threat">Open threat case -&gt;</button>
     </li>
+    <li>
+      <span class="qnum">05</span>
+      <div><strong>Why did the engine decide that, and would it still?</strong><span>Paste a decision id. Read what was decided, the evidence for and against, and whether today's engine reproduces it.</span></div>
+      <button class="go" type="button" data-go="explain">Explain a decision -&gt;</button>
+    </li>
    </ol>
   </div>
   <aside class="case-rail">
@@ -416,6 +422,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
       <dt>Entity packs</dt><dd id="home-entities">Loading</dd>
       <dt>Review packs</dt><dd id="home-packs">Loading</dd>
       <dt>Current workspace</dt><dd id="home-case">None loaded</dd>
+      <dt>Ledger</dt><dd id="home-ledger">Loading</dd>
     </dl>
    </div>
    <div class="desk-section">
@@ -684,6 +691,38 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 </section>
 
 <!-- ══════════════════════════════════════════════════════════ COMPARE ══ -->
+<!-- ══════════════════════════════════════════════════════════ EXPLAIN ══ -->
+<section id="s-explain" hidden>
+ <div class="split">
+  <div>
+    <p class="lede measure">A decision id is a handle. Paste one and the ledger gives
+      back what was decided, the fields that carried it and the ones that argued
+      against it, and whether the engine installed now makes the same decision.</p>
+    <p class="label">Decision id</p>
+    <input id="xid" type="text" spellcheck="false" style="max-width:var(--measure);font-family:var(--mono)"
+      placeholder="dec:sha256:…   xwd:sha256:…   red:sha256:…">
+    <div class="row">
+      <button class="act" id="b-explain">Explain</button>
+      <label class="meta" style="display:inline-flex;align-items:center;gap:6px;margin:0">
+        <input id="xreveal" type="checkbox" style="width:auto;margin:0"> show values</label>
+    </div>
+    <div id="xout"></div><div class="err" id="xerr"></div>
+  </div>
+  <aside class="margin" id="xmargin">
+    <p><b>Three questions, one id.</b> <i>decision</i> is what was recorded.
+      <i>explain</i> is the evidence sorted into supporting, refuting and missing.
+      <i>replay</i> runs it again from the stored inputs and says whether the same
+      id comes out.</p>
+    <p>Values are masked until you ask. The decision is the object here; the
+      identifiers it was made from are not.</p>
+    <p>A replay that does not reproduce is not an error. It names what moved:
+      a factor, a pin, an outcome. That is the difference between "something
+      changed" and knowing what.</p>
+    <p class="meta" id="xledger"></p>
+  </aside>
+ </div>
+</section>
+
 <section id="s-compare">
  <div class="split">
   <div>
@@ -748,6 +787,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
    <button type="button" data-go="threat">Threat case<small>Read a marketplace investigation</small></button>
    <button type="button" data-go="extract">Documents<small>Extract and resolve references</small></button>
    <button type="button" data-go="review">Review queue<small>Decide uncertain candidate pairs</small></button>
+   <button type="button" data-go="explain">Explain<small>Read a recorded decision by its id</small></button>
    <button type="button" data-go="places">Spatial roles<small>Read a place in sentence context</small></button>
    <button type="button" data-go="verify">Verify<small>Check signed evidence</small></button>
    <button type="button" data-go="redact">Redact<small>Prepare text for a safer workflow</small></button>
@@ -771,9 +811,10 @@ const WORKSPACE_COPY={
   places:"Read each place in the context of its role.",
   redact:"Prepare text for a safer downstream workflow.",
   verify:"Check whether signed evidence is still intact.",
-  review:"Resolve the uncertainty that the engine should not settle alone."
+  review:"Resolve the uncertainty that the engine should not settle alone.",
+  explain:"Read a recorded decision: what, why, and whether it still holds."
 };
-const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review"]){
+const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","explain"]){
   const button=$("#t-"+k),section=$("#s-"+k);
   if(button)button.setAttribute("aria-current",String(k===t));
   if(section)section.hidden=k!==t;
@@ -931,6 +972,77 @@ function panel(r){
     <p class="note">${why(r)}</p>
     ${r.decision_id?`<p class="meta">${esc(r.decision_id)}<br>${
       Object.entries(r.pins||{}).map(([k,v])=>esc(k)+" "+esc(v)).join("<br>")}</p>`:""}`;
+}
+/* ═══════════════════════════════════════════════════════════ explain ══ */
+const IDENTITY_WORD={same_entity:"match",match:"match",review:"review",different:"no_match",
+  no_match:"no_match",deidentified:"match"};
+const IDENTITY_LABEL={same_entity:"Same entity",review:"Held for a human",different:"Different",
+  match:"Merged",no_match:"Kept apart",deidentified:"De-identified"};
+function factorRows(names,factors){
+  return names.map(k=>{const v=factors[k];const num=typeof v==="number";
+    const pct=num?Math.max(0,Math.min(1,v))*100:0;
+    return `<tr><td>${esc(k)}</td><td class="barcell"><span class="bar"><i style="width:${pct}%"></i></span></td>
+      <td class="num">${num?v.toFixed(3):(v==null?"":esc(v))}</td></tr>`;}).join("");
+}
+function kv(obj){
+  return Object.entries(obj||{}).map(([k,v])=>`${esc(k)} ${esc(typeof v==="object"?JSON.stringify(v):v)}`).join("<br>");
+}
+function explainView(x){
+  const d=x.decision,w=x.why,r=x.replay;
+  const cls=IDENTITY_WORD[d.identity]||"review";
+  const head=`<div class="verdict vrule-${cls}"><div class="vhead">
+      <span class="vword"><span class="dt d-${cls}" style="font-size:11px;margin-right:9px">&#9632;</span>${IDENTITY_LABEL[d.identity]||esc(d.identity)}</span>
+      <span class="vscore">${esc(d.verb)} · ${d.action?esc(d.action)+" · ":""}score ${n3(d.score)}</span></div></div>
+    <p class="note">${esc(d.explanation||"")}</p>`;
+  let body="";
+  if(d.verb==="deidentify"){
+    const spans=(w.spans||[]).map(s=>`<tr><td>${esc(s.category)}</td><td class="num">${s.start}–${s.end}</td>
+      <td>${esc(s.action||"")}</td><td>${esc(s.citation||"")}</td><td class="num">${n3(s.confidence)}</td></tr>`).join("");
+    body=`<p class="label">${(w.spans||[]).length} spans under ${esc(w.statute||"no statute")} (${esc(w.jurisdiction||"?")})</p>
+      <table class="ev-table"><thead><tr><th>Category</th><th class="num">Offsets</th><th>Action</th><th>Citation</th><th class="num">Conf.</th></tr></thead><tbody>${spans}</tbody></table>`;
+  }else{
+    const f=d.factors||{};
+    const block=(name,keys,note)=>keys&&keys.length
+      ?`<p class="label">${name} · ${keys.length}</p><table class="ev-table"><tbody>${factorRows(keys,f)}</tbody></table>`
+      :`<p class="label">${name} · none</p><p class="meta">${note}</p>`;
+    body=block("Supporting",w.supporting,"No field agreed.")
+        +block("Refuting",w.refuting,"Nothing disagreed or vetoed.")
+        +block("Missing",w.missing,"Both records supplied every identifying field.");
+    const shared=w.shared&&Object.keys(w.shared).length
+      ?`<p class="label">Shared values${x.reveal?"":" · masked"}</p><p class="meta">${kv(w.shared)}</p>`:"";
+    body+=shared;
+    if(x.records&&x.records.length)
+      body+=`<p class="label">Records${x.reveal?"":" · masked"}</p>`+x.records.map(rec=>rec.missing
+        ?`<p class="meta">${esc(rec.record_id)} — not in this ledger</p>`
+        :`<p class="meta"><b>${esc(rec.record_id)}</b> ${esc(rec.entity_type||"")}<br>${kv(rec.attributes)}${rec.text?"<br>"+esc(rec.text):""}</p>`).join("");
+  }
+  let again;
+  if(r.unreplayable)again=`<p class="note">Cannot be replayed from here: ${esc(r.unreplayable)}</p>`;
+  else if(r.reproduced)again=`<p class="note"><b>Reproduced.</b> The engine installed now returns the same decision id, byte for byte.</p>`;
+  else again=`<p class="note"><b>Not reproduced.</b> What moved:</p><p class="meta">${kv(r.changed)}</p>`;
+  return head+body+`<p class="label">Replay</p>`+again
+    +`<p class="meta">${esc(d.decision_id)}<br>recorded ${esc(d.recorded_at)}${d.supersedes?"<br>supersedes "+esc(d.supersedes):""}${d.superseded_by?"<br>superseded by "+esc(d.superseded_by):""}<br>${kv(d.pins)}</p>`;
+}
+async function explain(){
+  const id=$("#xid").value.trim();
+  $("#xerr").textContent="";
+  if(!id){$("#xerr").textContent="paste a decision id first";return;}
+  $("#xout").innerHTML='<p class="working">reading the ledger…</p>';
+  try{
+    const reveal=$("#xreveal").checked?"1":"0";
+    const x=await(await fetch(`/api/explain?id=${encodeURIComponent(id)}&reveal=${reveal}`)).json();
+    if(x.error){$("#xout").innerHTML="";$("#xerr").textContent=x.error;return;}
+    $("#xout").innerHTML=explainView(x);
+    history.replaceState(null,"",`?explain=${encodeURIComponent(id)}`);
+  }catch(e){$("#xout").innerHTML="";$("#xerr").textContent="request failed: "+e.message;}
+}
+async function ledgerStatus(){
+  try{
+    const l=await(await fetch("/api/ledger")).json();
+    const text=l.attached?`ledger ${l.uri}`:"no ledger attached — start with --ledger FILE or set ARCHE_LEDGER";
+    $("#xledger").textContent=text;
+    $("#home-ledger").textContent=l.attached?esc(l.uri):"None attached";
+  }catch(e){$("#home-ledger").textContent="Unknown";}
 }
 let THREAT=null,THREAT_SELECTED=null,THREAT_LOADING=null;
 const threatWord=d=>WORD[d]||d.replaceAll("_"," ");
@@ -1473,6 +1585,10 @@ for(const button of document.querySelectorAll("[data-go]"))
   button.addEventListener("click",()=>goTo(button.dataset.go));
 on("t-home","click",()=>tab("home"));
 on("t-compare","click",()=>tab("compare"));
+on("t-explain","click",()=>tab("explain"));
+on("b-explain","click",explain);
+on("xreveal","change",()=>{if($("#xout").innerHTML)explain();});
+$("#xid").addEventListener("keydown",e=>{if(e.key==="Enter")explain();});
 on("t-threat","click",()=>{tab("threat");loadThreat();});
 on("t-places","click",()=>tab("places"));
 on("t-redact","click",()=>tab("redact"));
@@ -1545,7 +1661,11 @@ $("#ptext").addEventListener("input",count);
   $("#entity").innerHTML=Object.keys(ENTITIES).map(
     x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
   $("#entity").addEventListener("change",()=>describeEntity(""));
-  example();pexample();rexample();await loadPacks();homeSummary();
+  example();pexample();rexample();await loadPacks();homeSummary();ledgerStatus();
+  // `?explain=ID` opens straight onto a decision: the link a CLI or a service
+  // response can carry so "explain by id" is a click, not a paste.
+  const deep=(String(typeof location==="undefined"?"":location.search).match(/[?&]explain=([^&]+)/)||[])[1];
+  if(deep){$("#xid").value=decodeURIComponent(deep);tab("explain");explain();}
 })();
 </script>
 </body>

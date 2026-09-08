@@ -111,7 +111,15 @@ def get_gliner2(name_or_path: str | None = None) -> Any:
     _log.info("Loading GLiNER 2 model %r%s...", name_or_path,
               f" (from {resolved_path})" if is_local else " (first use -- downloading)")
     t0 = time.perf_counter()
-    model = AutoExtractor.from_pretrained(resolved_path)
+    # gliner2 prints a configuration banner, emoji first, while it loads. On a
+    # Windows console or any cp1252 pipe -- a service manager's log, a CI
+    # step -- that print raises UnicodeEncodeError, a ValueError, from inside a
+    # detection call. The banner is not ours and not the caller's; swallow it.
+    import contextlib
+    import io
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        model = AutoExtractor.from_pretrained(resolved_path)
     elapsed = time.perf_counter() - t0
     _log.info("GLiNER 2 loaded in %.1fs.", elapsed)
     if elapsed > 60 and not is_local:

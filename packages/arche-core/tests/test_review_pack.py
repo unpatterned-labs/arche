@@ -4,7 +4,7 @@
 """Tests for `review_pack`, the export a reviewer adjudicates.
 
 The contract this has to keep is not with arche, it is with
-`tools/arche-studio`, which reads the pack back. Three things in particular:
+`arche studio` (`arche._studio`), which reads the pack back. Three things in particular:
 
 * a `decision_id` column, because the studio digests it to notice an edited pack
 * two column families sharing an underscore prefix, because that is how the
@@ -65,11 +65,9 @@ class TestTheStudioContract:
     def test_outcome_vocabulary_matches_the_studio_store(self, tmp_path):
         """Drift here produces packs whose outcomes the studio refuses."""
         from pathlib import Path
-        state = (Path(__file__).resolve().parents[3]
-                 / "tools" / "arche-studio" / "state.py")
-        if not state.exists():
-            pytest.skip("studio not present in this checkout")
-        text = state.read_text(encoding="utf-8")
+
+        from arche._studio import state as studio_state
+        text = Path(studio_state.__file__).read_text(encoding="utf-8")
         for outcome in REVIEW_OUTCOMES:
             assert f'"{outcome}"' in text
 

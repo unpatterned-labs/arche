@@ -103,6 +103,7 @@ nav:
     - Prepare your data: guides/prepare-data.md
     - Review and evaluate: guides/review-and-evaluate.md
     - Let an agent call arche: guides/mcp-server.md
+    - Serve over HTTP: guides/serve-over-http.md
   - Reference:
     - Record resolution API: reference/record-resolution.md
     - Decision contract: reference/decision-contract.md

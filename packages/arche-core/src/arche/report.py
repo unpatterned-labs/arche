@@ -327,7 +327,7 @@ def review_pack(
 
     The machine-readable sibling of :func:`crosswalk_report`. That one produces
     an artifact to *read*; this produces one to *work*, in the shape
-    ``tools/arche-studio`` opens::
+    ``arche studio`` opens::
 
         out_dir/pack.csv        one row per decision, four blank review columns
         out_dir/manifest.json   what was run, and a digest of the decision ids

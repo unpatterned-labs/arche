@@ -3,10 +3,11 @@
 
 """Regression checks for the Evidence Desk controls in arche studio."""
 
+import importlib.util
 from pathlib import Path
 
-
-_STUDIO = Path(__file__).resolve().parents[3] / "tools" / "arche-studio"
+#: The page as shipped, wherever the package is installed.
+_INDEX = Path(importlib.util.find_spec("arche._studio").origin).with_name("index.html")
 
 
 def test_command_dialog_respects_the_hidden_attribute():
@@ -16,6 +17,6 @@ def test_command_dialog_respects_the_hidden_attribute():
     hidden treatment. This rule keeps the command dialog from masking the
     workspace after the user chooses a destination.
     """
-    page = (_STUDIO / "index.html").read_text(encoding="utf-8")
+    page = _INDEX.read_text(encoding="utf-8")
 
     assert ".command[hidden]{display:none}" in page

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Where the studio keeps what a reviewer decided.
 
-    data/review_packs/_studio.sqlite3
+    <studio home>/_studio/state.sqlite3
 
 Why this exists
 ---------------

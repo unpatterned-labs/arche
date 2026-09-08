@@ -1,7 +1,7 @@
 // Run the studio's script against a stub DOM and a stub server, and report
 // anything it throws.
 //
-// `tools/arche-studio/index.html` is one file of hand-written HTML and
+// `arche/_studio/index.html` is one file of hand-written HTML and
 // JavaScript with no build step, which is deliberate — it is meant to be
 // readable top to bottom by somebody who did not write it. The cost is that
 // nothing checks it. A syntax error anywhere kills the whole script, so no
@@ -61,6 +61,7 @@ const RESPONSES = {
                                      unresolved: "review" },
                  outcomes: ["same_entity", "different", "unresolved"] },
   "/api/marks": { current: {}, outstanding: 1, summary: { marked: 0, by_outcome: {} } },
+  "/api/ledger": { attached: false, uri: null },
   "/api/documents": { jurisdiction: "NG", revealed: false, counts: { PERSON: 2 },
     documents: [{ name: "a.txt", chars: 10, text: "[PERSON]", entities: [
       { id: "e1", type: "PERSON", span: [0, 8], confidence: 0.9, detector: "gliner",
