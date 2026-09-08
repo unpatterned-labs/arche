@@ -8,24 +8,24 @@ counts:
     organisation: 150
     person: 225
     place: 112
-  observations: 455
+  observations: 444
   events: 118
-  differences: 2393
+  differences: 2283
   difference_kinds:
-    change: 134
-    error: 934
-    representation: 1325
+    change: 143
+    error: 859
+    representation: 1281
 content_fingerprints:
-  observations: 681bb43189f46659a77b7b00418defaa4edfd7dcf5b0d63f17c52f7d7d7598f8
-  truth: ecec787db8702ba9e0d1a8e578717c5b8b955523b6acb02ab0ecd1e3548f3574
-  differences: c68f8ca9e1309bf3895f6ad63daae44ad0998d9d11133b51802421c2e1a6c1a1
-  events: 128fef553e451de03f99302f151dc579a327ddea4494a6dd41d9bf25479d4e5e
+  observations: 943e92d1f8b3835cfdc9034b812248cfd277802748bdd8f682d9bd40ca41870f
+  truth: 79207ca0c8c78360096c17708674a1709abb9316bb387d05d79367abb93bf14f
+  differences: 02931ec67aff7503f3a47c1f2b83ba606e3ff08532ab3ec80b02b3c4d89bc1f0
+  events: fa7f4e5baac627ce051d465454f5610b3a84f9ff3c7762fbb9c88cc0e9467bdc
 provenance:
 - asset: given and family names
   source: arche african_names_v1 lexicon (Wikidata/ParaNames, CC-BY-4.0)
   method: seeded rank shuffle, Zipf weighting alpha=1.0
   class: synthetic-assumption
-  filtered: 835 lexicon entries excluded as not-names (Wikidata blank-node URLs, property
+  filtered: 973 lexicon entries excluded as not-names (Wikidata blank-node URLs, property
     labels, titles); see world._NOT_A_NAME
   note: the lexicon carries no frequency data; the distribution SHAPE is modelled
     and the ranking is arbitrary. Collision rates are realistic; the specific common

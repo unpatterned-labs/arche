@@ -147,7 +147,8 @@ def write(world: World, out: Path, *, generator_version: str,
             continue
         _write_parquet(out / f"{name}.parquet", rows)
         (out / "schema" / f"{name}.json").write_text(
-            json.dumps(_schema(name, rows, required), indent=2) + "\n", encoding="utf-8")
+            json.dumps(_schema(name, rows, required), indent=2) + "\n",
+            encoding="utf-8", newline="\n")
         fingerprints[name] = content_fingerprint(rows)
 
     kinds: dict[str, int] = {}
@@ -178,8 +179,12 @@ def write(world: World, out: Path, *, generator_version: str,
         ],
         **(notes or {}),
     }
+    # newline="\n" is not cosmetic: without it Windows writes CRLF into files
+    # the repository pins to LF, so a rebuild of an unchanged world shows as a
+    # diff and the "identical world" check has to be read past it.
     (out / "manifest.yaml").write_text(
-        yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True),
+        encoding="utf-8", newline="\n")
     return manifest
 
 

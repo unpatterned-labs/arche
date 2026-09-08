@@ -76,10 +76,13 @@ def main() -> int:
         print(f"{row}   (n={n})")
 
     out = Path(args.out) if args.out else world / "benchmark_result.json"
+    # newline="\n": the repository pins LF, and without it every run of the
+    # benchmark on Windows rewrites this file entirely as a line-ending diff.
     out.write_text(json.dumps({"world": world.name,
                                "records": len(bench.truth),
                                "true_pairs": len(bench.true_pairs),
-                               "arms": reports}, indent=2) + "\n", encoding="utf-8")
+                               "arms": reports}, indent=2) + "\n",
+                   encoding="utf-8", newline="\n")
     print(f"\n  written to {out}")
     return 0
 

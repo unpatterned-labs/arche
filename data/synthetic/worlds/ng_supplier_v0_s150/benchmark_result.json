@@ -1,110 +1,107 @@
 {
   "world": "ng_supplier_v0_s150",
-  "records": 455,
-  "true_pairs": 567,
+  "records": 444,
+  "true_pairs": 545,
   "arms": [
     {
       "arm": "exact",
       "seconds": 0.0,
       "overall": {
-        "claimed_pairs": 260,
-        "true_pairs": 567,
-        "precision": 0.9077,
-        "recall": 0.4162,
-        "f1": 0.5707,
+        "claimed_pairs": 254,
+        "true_pairs": 545,
+        "precision": 1.0,
+        "recall": 0.4661,
+        "f1": 0.6358,
         "abstentions": 0,
-        "coverage": 0.4162
+        "coverage": 0.4661
       },
       "bcubed": {
-        "precision": 0.9812,
-        "recall": 0.619,
-        "f1": 0.7591
+        "precision": 1.0,
+        "recall": 0.6598,
+        "f1": 0.7951
       },
       "recall_by_stratum": {
         "change": {
-          "true_pairs": 86,
-          "recall": 0.1977
+          "true_pairs": 92,
+          "recall": 0.2609
         },
         "change/ACCOUNT_CHANGED": {
-          "true_pairs": 16,
-          "recall": 0.0625
+          "true_pairs": 9,
+          "recall": 0.5556
         },
         "change/DIRECTOR_CHANGED": {
-          "true_pairs": 6,
-          "recall": 0.5
+          "true_pairs": 7,
+          "recall": 0.4286
         },
         "change/ORG_RELOCATED": {
-          "true_pairs": 45,
-          "recall": 0.0222
+          "true_pairs": 55,
+          "recall": 0.0182
         },
         "change/ORG_RENAMED": {
-          "true_pairs": 24,
-          "recall": 0.5
+          "true_pairs": 31,
+          "recall": 0.4839
         },
         "error": {
-          "true_pairs": 428,
-          "recall": 0.2921
+          "true_pairs": 389,
+          "recall": 0.329
         },
         "error/digit_mutation": {
-          "true_pairs": 60,
-          "recall": 0.3333
+          "true_pairs": 54,
+          "recall": 0.3889
         },
         "error/ocr_confusion": {
-          "true_pairs": 249,
-          "recall": 0.2892
+          "true_pairs": 204,
+          "recall": 0.2549
         },
         "error/truncation": {
-          "true_pairs": 191,
-          "recall": 0.2251
+          "true_pairs": 174,
+          "recall": 0.2586
         },
         "error/typo": {
-          "true_pairs": 229,
-          "recall": 0.2402
+          "true_pairs": 241,
+          "recall": 0.2905
         },
         "representation": {
-          "true_pairs": 509,
-          "recall": 0.3969
+          "true_pairs": 480,
+          "recall": 0.4396
         },
         "representation/address_abbreviated": {
-          "true_pairs": 262,
-          "recall": 0.4122
+          "true_pairs": 244,
+          "recall": 0.4836
         },
         "representation/ampersand": {
-          "true_pairs": 32,
-          "recall": 0.2188
+          "true_pairs": 23,
+          "recall": 0.3043
         },
         "representation/case_upper": {
-          "true_pairs": 248,
-          "recall": 0.3468
+          "true_pairs": 225,
+          "recall": 0.36
         },
         "representation/legal_suffix_abbreviated": {
-          "true_pairs": 237,
-          "recall": 0.4051
+          "true_pairs": 256,
+          "recall": 0.4336
         },
         "representation/legal_suffix_dropped": {
-          "true_pairs": 70,
-          "recall": 0.4
+          "true_pairs": 64,
+          "recall": 0.4688
         }
       },
       "entities": {
-        "clusters": 288,
+        "clusters": 273,
         "true_entities": 150,
-        "false_merge_clusters": 3,
-        "false_merge_rate": 0.0104,
-        "false_split_entities": 94,
-        "false_split_rate": 0.6267
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 84,
+        "false_split_rate": 0.56
       },
-      "false_merges_by_what_was_shared": {
-        "surname_head": 24,
-        "city": 14
-      },
+      "false_merges_by_what_was_shared": {},
       "blocking": {
         "measured": true,
         "source": "recomputed from the candidate pairs the arm reported",
-        "candidate_pairs": 260,
-        "recall": 0.4162,
-        "reduction_ratio": 0.997483,
-        "pairs_per_record": 0.571
+        "candidate_pairs": 254,
+        "recall": 0.4661,
+        "reduction_ratio": 0.997417,
+        "pairs_per_record": 0.572
       },
       "notes": {
         "rule": "normalised name + city, exact",
@@ -113,121 +110,664 @@
       }
     },
     {
-      "arm": "splink",
-      "seconds": 6.47,
+      "arm": "jaro_winkler",
+      "seconds": 0.01,
       "overall": {
-        "claimed_pairs": 426,
-        "true_pairs": 567,
-        "precision": 0.9836,
-        "recall": 0.739,
-        "f1": 0.8439,
+        "claimed_pairs": 532,
+        "true_pairs": 545,
+        "precision": 0.8816,
+        "recall": 0.8606,
+        "f1": 0.8709,
         "abstentions": 0,
-        "coverage": 0.739
+        "coverage": 0.8606
       },
       "bcubed": {
-        "precision": 0.9808,
-        "recall": 0.8815,
-        "f1": 0.9285
+        "precision": 0.9465,
+        "recall": 0.9206,
+        "f1": 0.9334
       },
       "recall_by_stratum": {
         "change": {
-          "true_pairs": 86,
-          "recall": 0.5116
+          "true_pairs": 92,
+          "recall": 0.837
         },
         "change/ACCOUNT_CHANGED": {
-          "true_pairs": 16,
-          "recall": 0.75
+          "true_pairs": 9,
+          "recall": 0.8889
         },
         "change/DIRECTOR_CHANGED": {
-          "true_pairs": 6,
-          "recall": 0.6667
+          "true_pairs": 7,
+          "recall": 0.8571
         },
         "change/ORG_RELOCATED": {
-          "true_pairs": 45,
-          "recall": 0.2222
+          "true_pairs": 55,
+          "recall": 0.8182
         },
         "change/ORG_RENAMED": {
-          "true_pairs": 24,
-          "recall": 0.8333
+          "true_pairs": 31,
+          "recall": 0.871
         },
         "error": {
-          "true_pairs": 428,
-          "recall": 0.722
+          "true_pairs": 389,
+          "recall": 0.8046
         },
         "error/digit_mutation": {
-          "true_pairs": 60,
-          "recall": 0.65
+          "true_pairs": 54,
+          "recall": 0.8704
         },
         "error/ocr_confusion": {
-          "true_pairs": 249,
-          "recall": 0.7108
+          "true_pairs": 204,
+          "recall": 0.7696
         },
         "error/truncation": {
-          "true_pairs": 191,
-          "recall": 0.6492
+          "true_pairs": 174,
+          "recall": 0.7471
         },
         "error/typo": {
-          "true_pairs": 229,
-          "recall": 0.7074
+          "true_pairs": 241,
+          "recall": 0.7344
         },
         "representation": {
-          "true_pairs": 509,
-          "recall": 0.7446
+          "true_pairs": 480,
+          "recall": 0.8542
         },
         "representation/address_abbreviated": {
-          "true_pairs": 262,
-          "recall": 0.8473
+          "true_pairs": 244,
+          "recall": 0.8648
         },
         "representation/ampersand": {
-          "true_pairs": 32,
-          "recall": 0.6562
+          "true_pairs": 23,
+          "recall": 0.9565
         },
         "representation/case_upper": {
-          "true_pairs": 248,
-          "recall": 0.7218
+          "true_pairs": 225,
+          "recall": 0.8578
         },
         "representation/legal_suffix_abbreviated": {
-          "true_pairs": 237,
-          "recall": 0.7342
+          "true_pairs": 256,
+          "recall": 0.8477
         },
         "representation/legal_suffix_dropped": {
-          "true_pairs": 70,
-          "recall": 0.6429
+          "true_pairs": 64,
+          "recall": 0.8438
         }
       },
       "entities": {
-        "clusters": 187,
+        "clusters": 165,
         "true_entities": 150,
-        "false_merge_clusters": 4,
-        "false_merge_rate": 0.0214,
-        "false_split_entities": 33,
-        "false_split_rate": 0.22
+        "false_merge_clusters": 7,
+        "false_merge_rate": 0.0424,
+        "false_split_entities": 23,
+        "false_split_rate": 0.1533
       },
       "false_merges_by_what_was_shared": {
-        "surname_head": 4,
-        "nothing_obvious": 3,
-        "city": 3,
-        "address": 2
+        "surname_head": 59,
+        "whole_name": 12,
+        "nothing_obvious": 4
       },
       "blocking": {
         "measured": true,
         "source": "recomputed from the candidate pairs the arm reported",
-        "candidate_pairs": 3596,
-        "recall": 0.9947,
-        "reduction_ratio": 0.965184,
-        "pairs_per_record": 7.903
+        "candidate_pairs": 1792,
+        "recall": 0.9468,
+        "reduction_ratio": 0.981779,
+        "pairs_per_record": 4.036
+      },
+      "notes": {
+        "threshold": 0.92,
+        "block": "first 3 chars of normalised name",
+        "oversized_blocks": 0
+      }
+    },
+    {
+      "arm": "splink",
+      "seconds": 7.54,
+      "overall": {
+        "claimed_pairs": 432,
+        "true_pairs": 545,
+        "precision": 0.9884,
+        "recall": 0.7835,
+        "f1": 0.8741,
+        "abstentions": 0,
+        "coverage": 0.7835
+      },
+      "bcubed": {
+        "precision": 0.9807,
+        "recall": 0.9344,
+        "f1": 0.957
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 92,
+          "recall": 0.5326
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 9,
+          "recall": 0.7778
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 7,
+          "recall": 1.0
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 55,
+          "recall": 0.3091
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 31,
+          "recall": 0.7419
+        },
+        "error": {
+          "true_pairs": 389,
+          "recall": 0.7609
+        },
+        "error/digit_mutation": {
+          "true_pairs": 54,
+          "recall": 0.6667
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 204,
+          "recall": 0.7402
+        },
+        "error/truncation": {
+          "true_pairs": 174,
+          "recall": 0.6782
+        },
+        "error/typo": {
+          "true_pairs": 241,
+          "recall": 0.7635
+        },
+        "representation": {
+          "true_pairs": 480,
+          "recall": 0.7917
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 244,
+          "recall": 0.8279
+        },
+        "representation/ampersand": {
+          "true_pairs": 23,
+          "recall": 0.7826
+        },
+        "representation/case_upper": {
+          "true_pairs": 225,
+          "recall": 0.7422
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 256,
+          "recall": 0.793
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 64,
+          "recall": 0.7656
+        }
+      },
+      "entities": {
+        "clusters": 166,
+        "true_entities": 150,
+        "false_merge_clusters": 4,
+        "false_merge_rate": 0.0241,
+        "false_split_entities": 19,
+        "false_split_rate": 0.1267
+      },
+      "false_merges_by_what_was_shared": {
+        "city": 4,
+        "address": 2,
+        "surname_head": 2,
+        "nothing_obvious": 1
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 1432,
+        "recall": 0.9743,
+        "reduction_ratio": 0.985439,
+        "pairs_per_record": 3.225
       },
       "notes": {
         "threshold": 0.5,
         "seed": 42,
-        "scored_pairs": 3596,
+        "scored_pairs": 1432,
         "claims_at_threshold": {
-          "0.5": 426,
-          "0.9": 122,
-          "0.95": 111,
-          "0.99": 34
+          "0.5": 432,
+          "0.9": 251,
+          "0.95": 139,
+          "0.99": 124
         },
         "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+      }
+    },
+    {
+      "arm": "arche/pack",
+      "seconds": 343.39,
+      "overall": {
+        "claimed_pairs": 408,
+        "true_pairs": 545,
+        "precision": 0.9951,
+        "recall": 0.745,
+        "f1": 0.852,
+        "abstentions": 704,
+        "coverage": 0.9688
+      },
+      "bcubed": {
+        "precision": 0.994,
+        "recall": 0.8698,
+        "f1": 0.9278
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 92,
+          "recall": 0.3913
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 9,
+          "recall": 0.8889
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 7,
+          "recall": 0.4286
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 55,
+          "recall": 0.1455
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 31,
+          "recall": 0.5484
+        },
+        "error": {
+          "true_pairs": 389,
+          "recall": 0.6632
+        },
+        "error/digit_mutation": {
+          "true_pairs": 54,
+          "recall": 0.4074
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 204,
+          "recall": 0.6324
+        },
+        "error/truncation": {
+          "true_pairs": 174,
+          "recall": 0.592
+        },
+        "error/typo": {
+          "true_pairs": 241,
+          "recall": 0.6432
+        },
+        "representation": {
+          "true_pairs": 480,
+          "recall": 0.725
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 244,
+          "recall": 0.7418
+        },
+        "representation/ampersand": {
+          "true_pairs": 23,
+          "recall": 0.7826
+        },
+        "representation/case_upper": {
+          "true_pairs": 225,
+          "recall": 0.7022
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 256,
+          "recall": 0.7227
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 64,
+          "recall": 0.7344
+        }
+      },
+      "entities": {
+        "clusters": 195,
+        "true_entities": 150,
+        "false_merge_clusters": 1,
+        "false_merge_rate": 0.0051,
+        "false_split_entities": 40,
+        "false_split_rate": 0.2667
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 2,
+        "whole_name": 1
+      },
+      "blocking": {
+        "measured": true,
+        "source": "reported by the arm, not recomputed",
+        "recall": 0.9798,
+        "candidate_pairs": 32210,
+        "reduction_ratio": 0.672483
+      },
+      "notes": {
+        "engine": "crosswalk.v1",
+        "candidate_pairs": 32210,
+        "blocking_recall_reported_by_arche": 0.9798
+      }
+    },
+    {
+      "arm": "arche/custom",
+      "seconds": 260.36,
+      "overall": {
+        "claimed_pairs": 378,
+        "true_pairs": 545,
+        "precision": 1.0,
+        "recall": 0.6936,
+        "f1": 0.8191,
+        "abstentions": 385,
+        "coverage": 0.9211
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.8752,
+        "f1": 0.9335
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 92,
+          "recall": 0.3696
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 9,
+          "recall": 0.3333
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 7,
+          "recall": 0.4286
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 55,
+          "recall": 0.1636
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 31,
+          "recall": 0.6774
+        },
+        "error": {
+          "true_pairs": 389,
+          "recall": 0.5913
+        },
+        "error/digit_mutation": {
+          "true_pairs": 54,
+          "recall": 0.1852
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 204,
+          "recall": 0.5147
+        },
+        "error/truncation": {
+          "true_pairs": 174,
+          "recall": 0.5115
+        },
+        "error/typo": {
+          "true_pairs": 241,
+          "recall": 0.5477
+        },
+        "representation": {
+          "true_pairs": 480,
+          "recall": 0.6687
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 244,
+          "recall": 0.6721
+        },
+        "representation/ampersand": {
+          "true_pairs": 23,
+          "recall": 0.5652
+        },
+        "representation/case_upper": {
+          "true_pairs": 225,
+          "recall": 0.6356
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 256,
+          "recall": 0.6641
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 64,
+          "recall": 0.6406
+        }
+      },
+      "entities": {
+        "clusters": 194,
+        "true_entities": 150,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 40,
+        "false_split_rate": 0.2667
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "reported by the arm, not recomputed",
+        "recall": 0.9853,
+        "candidate_pairs": 33964,
+        "reduction_ratio": 0.654648
+      },
+      "notes": {
+        "engine": "crosswalk.v1",
+        "candidate_pairs": 33964,
+        "blocking_recall_reported_by_arche": 0.9853
+      }
+    },
+    {
+      "arm": "arche/ledger",
+      "seconds": 547.12,
+      "overall": {
+        "claimed_pairs": 424,
+        "true_pairs": 545,
+        "precision": 1.0,
+        "recall": 0.778,
+        "f1": 0.8751,
+        "abstentions": 0,
+        "coverage": 0.778
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.9414,
+        "f1": 0.9698
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 92,
+          "recall": 0.5217
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 9,
+          "recall": 0.8889
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 7,
+          "recall": 0.5714
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 55,
+          "recall": 0.3091
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 31,
+          "recall": 0.6129
+        },
+        "error": {
+          "true_pairs": 389,
+          "recall": 0.7172
+        },
+        "error/digit_mutation": {
+          "true_pairs": 54,
+          "recall": 0.5556
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 204,
+          "recall": 0.7206
+        },
+        "error/truncation": {
+          "true_pairs": 174,
+          "recall": 0.6782
+        },
+        "error/typo": {
+          "true_pairs": 241,
+          "recall": 0.6846
+        },
+        "representation": {
+          "true_pairs": 480,
+          "recall": 0.7729
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 244,
+          "recall": 0.8033
+        },
+        "representation/ampersand": {
+          "true_pairs": 23,
+          "recall": 0.8696
+        },
+        "representation/case_upper": {
+          "true_pairs": 225,
+          "recall": 0.7644
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 256,
+          "recall": 0.7578
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 64,
+          "recall": 0.7812
+        }
+      },
+      "entities": {
+        "clusters": 115,
+        "true_entities": 150,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 1,
+        "false_split_rate": 0.0067
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": false,
+        "why": "the arm does not enumerate its candidate pairs"
+      },
+      "notes": {
+        "ingested_in": "observed_at order",
+        "records": 444,
+        "open_cases_after_ingest": 642,
+        "clusters": 115,
+        "transitive_clusters": 30
+      }
+    },
+    {
+      "arm": "arche/ledger+observe",
+      "seconds": 436.72,
+      "overall": {
+        "claimed_pairs": 460,
+        "true_pairs": 545,
+        "precision": 0.9435,
+        "recall": 0.7963,
+        "f1": 0.8637,
+        "abstentions": 0,
+        "coverage": 0.7963
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 1.0177,
+        "f1": 1.0088
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 92,
+          "recall": 0.5761
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 9,
+          "recall": 0.8889
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 7,
+          "recall": 0.7143
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 55,
+          "recall": 0.4
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 31,
+          "recall": 0.6452
+        },
+        "error": {
+          "true_pairs": 389,
+          "recall": 0.7378
+        },
+        "error/digit_mutation": {
+          "true_pairs": 54,
+          "recall": 0.5926
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 204,
+          "recall": 0.7353
+        },
+        "error/truncation": {
+          "true_pairs": 174,
+          "recall": 0.6897
+        },
+        "error/typo": {
+          "true_pairs": 241,
+          "recall": 0.7137
+        },
+        "representation": {
+          "true_pairs": 480,
+          "recall": 0.7917
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 244,
+          "recall": 0.8156
+        },
+        "representation/ampersand": {
+          "true_pairs": 23,
+          "recall": 0.8696
+        },
+        "representation/case_upper": {
+          "true_pairs": 225,
+          "recall": 0.7822
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 256,
+          "recall": 0.7891
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 64,
+          "recall": 0.7812
+        }
+      },
+      "entities": {
+        "clusters": 117,
+        "true_entities": 150,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 1,
+        "false_split_rate": 0.0067
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 26,
+        "whole_name": 26,
+        "rc_number": 26,
+        "bank": 25,
+        "city": 24,
+        "phone": 24,
+        "address": 23
+      },
+      "blocking": {
+        "measured": false,
+        "why": "the arm does not enumerate its candidate pairs"
+      },
+      "notes": {
+        "ingested_in": "observed_at order",
+        "records": 444,
+        "open_cases_after_ingest": 642,
+        "cases_with_a_registry_lookup": 473,
+        "records_updated_by_observe": 129,
+        "open_cases_after_observe": 602,
+        "assisted": "addresses were re-fetched from the registry record sharing each record's RC number; an identifier in the data, not the answer key, but an assist",
+        "clusters": 117,
+        "transitive_clusters": 44
       }
     }
   ]

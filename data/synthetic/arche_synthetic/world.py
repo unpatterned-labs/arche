@@ -82,9 +82,23 @@ _NOT_A_NAME = re.compile(r"https?://|[()\d]|[^\w\s'\-.]", re.UNICODE)
 
 
 def _usable(name: str) -> bool:
-    """A name pool entry: one or two tokens, no markup, no metadata."""
+    """A name pool entry: one or two tokens, no markup, no metadata.
+
+    The uppercase requirement is doing more work than it looks. A further 139
+    entries survive every other check while being obvious rubbish --
+    `almaerifaa.com`, and the Wikidata concept labels `femme blanche`, `homme
+    blanc`, `pessoa branca`, `humano branco` in four languages. They are all
+    lowercase, and names in this lexicon are capitalised. But the test cannot
+    be "the first character is uppercase": `d'Arboussier` and `de Sardan` are
+    real surname forms that start lowercase, and `Ba`, `Ka`, `Sy` and `Ly` are
+    real Senegalese and Malian surnames that a length cut would delete. So the
+    rule is that a name must contain an uppercase letter *somewhere*, which
+    keeps the particles and the two-letter surnames and drops the concept
+    labels.
+    """
     return (2 <= len(name) <= 24
             and name.count(" ") <= 1
+            and any(c.isupper() for c in name)
             and not _NOT_A_NAME.search(name))
 
 

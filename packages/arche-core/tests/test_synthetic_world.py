@@ -29,6 +29,12 @@ import pytest
 REPO = Path(__file__).resolve().parents[3]
 SYNTHETIC = REPO / "data" / "synthetic"
 
+# `arche_synthetic` writes Parquet, and pyarrow is an arche *extra*
+# (`arche-core[parquet]`), not a base dependency. Without this the whole
+# module ERRORS in a checkout that has not installed it, rather than
+# skipping -- which is what happened in CI.
+pytest.importorskip("pyarrow")
+
 pytestmark = pytest.mark.skipif(
     not (SYNTHETIC / "arche_synthetic" / "__init__.py").exists(),
     reason="data/synthetic is not present in this checkout",
@@ -212,12 +218,30 @@ class TestChangeIsNotError:
         assert checked, "no pair straddled a real change; the test proved nothing"
 
     def test_the_stale_source_is_the_one_that_lags(self, world):
-        """The ERP should be the source most often looking at an older state."""
-        stale = {"erp": 0, "registry": 0, "invoice": 0}
+        """The ERP should be the source most often behind *at the moment it wrote*.
+
+        Two earlier versions of this test were wrong in instructive ways.
+
+        It first compared raw counts across sources, which cannot work: the
+        registry covers every supplier and the ERP covers 85%, so the registry
+        wins on volume before staleness is considered at all. Rates, not counts.
+
+        It also called a record "stale" whenever it was not looking at the
+        entity's *final* state -- but an invoice filed in 2020 was never going
+        to know about a 2024 relocation, and that is age, not lag. The
+        discriminating question is whether the source was behind **relative to
+        what was true on the day it observed**, which is what a lagging system
+        does and a merely old record does not.
+        """
+        behind = {"erp": 0, "registry": 0, "invoice": 0}
+        total = {"erp": 0, "registry": 0, "invoice": 0}
         for o in world.observations:
-            if o.state_index < len(world.states[o.entity_id]) - 1:
-                stale[o.source] += 1
-        assert stale["erp"] > stale["registry"]
+            total[o.source] += 1
+            current_then, _ = world.state_at(o.entity_id, o.observed_at)
+            if o.state_index < current_then:
+                behind[o.source] += 1
+        rate = {k: behind[k] / total[k] for k in total if total[k]}
+        assert rate["erp"] > rate["registry"], rate
 
 
 class TestRepresentationIsNotError:

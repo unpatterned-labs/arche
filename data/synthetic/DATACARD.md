@@ -84,9 +84,17 @@ representation  ampersand                    424      representation  diacritic_
 
 `packages/arche-core/tests/test_synthetic_world.py` holds all five, plus reproducibility.
 
+## Known defect: the names have no correlation
+
+**Given names and surnames are drawn independently**, so this world contains `Zubeyde Saliou` (a Turkish given name with a West African surname), `Bachir Edwards` and `Fabiano Anaehobi`. There is no correlation between the two halves of a name, none between a name and a region, and none between a name and an era.
+
+This is not only cosmetic. It corrupts the `common_names` stratum: real name collisions are *structured* -- a common Yoruba surname collides with other Yoruba records in Lagos -- and these collide at random across the whole world. A matcher that learned "this combination is implausible, so those records were merged in error" would be right here and wrong on real data. Raised by Robin Linacre; the fix is a conditional distribution `P(given | region, era)`, planned as N1 in `docs/ARCHE_SYNTHETIC_PLAN.md` section 7b. **Read any number from the `common_names` stratum with this in mind.**
+
 ## Found while building it
 
-The generator drew `njirimara ezinụlọnjirimara ezinụlọ Steel Global` as a company name — Igbo for "family identifier", doubled. That is not a generator bug: **770 of the 13,342 entries in arche's shipped name lexicon (5.8%) are not names.** 514 are raw Wikidata blank-node URLs (`http://www.wikidata.org/.well-known/genid/…`), 153 are property labels in various languages (`Abas (nom de famille)`, `Akinfenwa (aha ezinụlọ)`), and the rest are titles and full person names filed as surnames. The generator filters them (`world._usable`); the lexicon needs fixing at source, and the published "13,342 names" figure is overstated by about 5.8%.
+The generator drew `njirimara ezinụlọnjirimara ezinụlọ Steel Global` as a company name — Igbo for "family identifier", doubled. That is not a generator bug: **770 of the 13,342 entries in arche's shipped name lexicon (5.8%) are not names.** 514 are raw Wikidata blank-node URLs (`http://www.wikidata.org/.well-known/genid/…`), 153 are property labels in various languages (`Abas (nom de famille)`, `Akinfenwa (aha ezinụlọ)`), and the rest are titles and full person names filed as surnames.
+
+A second pass found 139 more that survived every other check: `almaerifaa.com`, and the Wikidata concept labels `femme blanche`, `homme blanc`, `pessoa branca` and `humano branco` in four languages -- all lowercase, where names in this lexicon are capitalised. The filter cannot simply require an initial capital, because `d'Arboussier` and `de Sardan` are real surname forms, and `Ba`, `Ka`, `Sy` and `Ly` are real Senegalese and Malian surnames that a length cut would delete; it requires an uppercase letter *somewhere*. **12,369 of 13,342 entries survive -- 7.3% of the shipped lexicon is not a name.** The generator filters them (`world._usable`); the lexicon needs fixing at source, and the published "13,342 names" figure is overstated by that much.
 
 ## Reproducing
 

@@ -25,6 +25,12 @@ import pytest
 REPO = Path(__file__).resolve().parents[3]
 SYNTHETIC = REPO / "data" / "synthetic"
 
+# `arche_synthetic` writes Parquet, and pyarrow is an arche *extra*
+# (`arche-core[parquet]`), not a base dependency. Without this the whole
+# module ERRORS in a checkout that has not installed it, rather than
+# skipping -- which is what happened in CI.
+pytest.importorskip("pyarrow")
+
 pytestmark = pytest.mark.skipif(
     not (SYNTHETIC / "arche_synthetic" / "evaluate.py").exists(),
     reason="data/synthetic is not present in this checkout",
