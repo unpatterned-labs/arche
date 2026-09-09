@@ -84,6 +84,25 @@ representation  ampersand                    424      representation  diacritic_
 
 `packages/arche-core/tests/test_synthetic_world.py` holds all five, plus reproducibility.
 
+## How large this world can honestly get: about 4,000 suppliers
+
+Measured 2026-09-09. The generator will produce any number of records; past a few thousand suppliers it stops producing a *realistic* one. Exact-duplicate company names, against the **12.0%** measured on 51,022 real GRID3 facility names:
+
+| organisations | exact-duplicate names | commonest surname used |
+|---:|---:|---:|
+| 2,000 | 8.1% | 205 times |
+| 3,000 | 11.0% | 306 |
+| **4,000** | **12.0%** | 392 |
+| 6,000 | 16.8% | 653 |
+| 10,000 | 20.2% | 1,067 |
+| 40,000 | 33.8% | 4,249 |
+
+All measured through `build()`, so **after** the lifecycle renames — which is what the benchmark actually contains. Measuring the initial names instead (`generate()` alone) gives a slightly higher rate, because a rename spreads a name out; mixing the two methods in one table is an easy and misleading mistake.
+
+The binding constraint is not the record count, it is the **name space**: 12,369 usable surnames x 18 trades x 10 legal forms, drawn Zipf so the head is used far more often than the tail. At 40,000 suppliers a third of companies share an exact name with another, nearly three times the real rate, and every one of those collisions is region-random rather than structured.
+
+**So: 4,000 organisations is where this world's difficulty matches the real register, and 2,000-3,000 leaves headroom.** Larger runs are legitimate for measuring *throughput*, and their accuracy numbers should not be compared with the real-world figures in this card. Widening the naming model (plan N1) is what raises the ceiling; more records is not.
+
 ## Known defect: the names have no correlation
 
 **Given names and surnames are drawn independently**, so this world contains `Zubeyde Saliou` (a Turkish given name with a West African surname), `Bachir Edwards` and `Fabiano Anaehobi`. There is no correlation between the two halves of a name, none between a name and a region, and none between a name and an era.

@@ -371,23 +371,38 @@ class Observer:
 # ------------------------------------------------------------ differences --
 
 
-def _event_for(world: World, entity_id_: str, attribute: str,
-               state_a: int, state_b: int) -> Any | None:
-    """The event that moved ``attribute`` between two states of one entity.
+#: A flat record field is carried by a state field: `address` and `city` both
+#: come from `place_id`, `name` from `legal_name`, `director_name` from
+#: `director_id`.
+_CARRIER = {"address": "place_id", "city": "place_id", "name": "legal_name",
+            "director_name": "director_id", "bank": "bank",
+            "account_number": "account_number"}
 
-    A flat record field (``address``) is carried by a state field
-    (``place_id``), so the lookup maps back through that.
+
+def _index_events(world: World) -> dict[tuple[str, Any], list[Any]]:
+    """Events keyed by (entity, date), built once.
+
+    The previous version scanned `world.events` for every difference it had to
+    explain. At 2,000 suppliers that is 1,435 events against 33,000
+    differences and merely wasteful; at 40,000 it is the reason the generator
+    stops finishing.
     """
-    carrier = {"address": "place_id", "city": "place_id", "name": "legal_name",
-               "director_name": "director_id", "bank": "bank",
-               "account_number": "account_number"}.get(attribute, attribute)
-    low, high = sorted((state_a, state_b))
-    chain = world.states[entity_id_]
-    window = {s.valid_from for s in chain[low + 1: high + 1]}
+    index: dict[tuple[str, Any], list[Any]] = {}
     for event in world.events:
-        if (event.entity_id == entity_id_ and event.event_at in window
-                and carrier in event.changes):
-            return event
+        index.setdefault((event.entity_id, event.event_at), []).append(event)
+    return index
+
+
+def _event_for(index: dict[tuple[str, Any], list[Any]], world: World,
+               entity_id_: str, attribute: str,
+               state_a: int, state_b: int) -> Any | None:
+    """The event that moved ``attribute`` between two states of one entity."""
+    carrier = _CARRIER.get(attribute, attribute)
+    low, high = sorted((state_a, state_b))
+    for state in world.states[entity_id_][low + 1: high + 1]:
+        for event in index.get((entity_id_, state.valid_from), ()):
+            if carrier in event.changes:
+                return event
     return None
 
 
@@ -402,6 +417,7 @@ def differences(world: World) -> list[Difference]:
     by_entity: dict[str, list[Observation]] = {}
     for observation in world.observations:
         by_entity.setdefault(observation.entity_id, []).append(observation)
+    index = _index_events(world)
 
     out: list[Difference] = []
     for entity_id_, group in sorted(by_entity.items()):
@@ -413,7 +429,7 @@ def differences(world: World) -> list[Difference]:
                     kinds: list[tuple[str, str, str | None]] = []
 
                     if a.state_index != b.state_index:
-                        event = _event_for(world, entity_id_, attribute,
+                        event = _event_for(index, world, entity_id_, attribute,
                                            a.state_index, b.state_index)
                         if event is not None:
                             kinds.append(("change", event.kind, event.event_id))
