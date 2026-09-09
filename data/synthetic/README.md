@@ -59,6 +59,10 @@ arche_synthetic/
 
 Verified rather than asserted: installed into an empty virtualenv with only `pyarrow` and `pyyaml` beside it, the package generates a world whose content fingerprints are **identical** to one built inside this repo.
 
+## Is it realistic enough to measure on?
+
+`examples/notebooks/24_is_the_synthetic_world_realistic.ipynb` holds this world up against **51,023 real Nigerian facility names** (GRID3) and tests three hypotheses stated in advance. Summary: the collision *rate* is realistic (13.5% against 12.0%), the vocabulary is 2.8x thinner at matched sample size, and **0.0% of generated name tokens carry regional signal against 90.4% of real ones** — the correlation defect, measured rather than asserted. Which published numbers that does and does not affect is the notebook's last cell.
+
 ## Output
 
 See [DATACARD.md](DATACARD.md) for what the shipped world contains, every measured number, and — as importantly — what it is not.
