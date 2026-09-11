@@ -41,6 +41,13 @@ __version__ = "0.0.1"
 #: director and change a bank account without the events piling into one month.
 HORIZON = (date(2019, 1, 1), date(2026, 1, 1))
 
+#: The world packs this generator knows. `ng_supplier_v0` is the one
+#: `RESULTS.md` was measured on -- names drawn from a pan-African lexicon, with
+#: the correlation defect that notebook 24 measured. `ng_supplier_v1` draws
+#: both halves of a name from one country's real pairs (Wikidata, CC0). v0 is
+#: kept unchanged rather than fixed in place, because a benchmark that changes
+#: under its own name cannot be cited.
+#:
 #: v0.1 scale. Small enough to run in CI and to audit by hand, big enough that
 #: a Zipf surname draw actually collides. The detection set that moved arche's
 #: numbers most was 240 rows; scale is not the thing that makes a benchmark

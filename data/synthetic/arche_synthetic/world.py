@@ -50,6 +50,22 @@ from .ids import entity_id
 #: keeps working when it moves to its own repository and arche is not present.
 _LOCAL_LEXICON = Path(__file__).resolve().parent / "data" / "african_names_v1.jsonl.gz"
 
+#: Real given+family pairs pulled from Wikidata (CC0) by
+#: `datasets/pull_wikidata.py`. Optional: without it the generator falls back to
+#: the lexicon, and says so in the manifest rather than pretending.
+_PAIRS_NAME = "wikidata_name_pairs.jsonl"
+_PAIRS_CANDIDATES = (
+    Path(__file__).resolve().parent / "data" / _PAIRS_NAME,
+    Path(__file__).resolve().parents[3] / "datasets" / "data" / _PAIRS_NAME,
+)
+
+
+def _pairs_path() -> Path | None:
+    for candidate in _PAIRS_CANDIDATES:
+        if candidate.exists():
+            return candidate
+    return None
+
 
 def _lexicon_path() -> Path:
     """Where the name pool lives.
@@ -79,6 +95,19 @@ def _lexicon_path() -> Path:
 #: source; until then this filter is not optional, and a generator that silently
 #: emits junk names measures nothing.
 _NOT_A_NAME = re.compile(r"https?://|[()\d]|[^\w\s'\-.]", re.UNICODE)
+
+
+def _cumulative(weights: list[float] | list[int]) -> list[float]:
+    """Running totals, for `random.choices(cum_weights=)`.
+
+    Precomputed on purpose: `random.choices(weights=)` rebuilds this on every
+    call, measured at 1,113 us a draw against 4.3 us here.
+    """
+    out, running = [], 0.0
+    for w in weights:
+        running += w
+        out.append(running)
+    return out
 
 
 def _usable(name: str) -> bool:
@@ -123,6 +152,23 @@ def valid_tin(text: str) -> bool:
     return cleaned.isdigit() and len(cleaned) in (10, 14)
 
 
+#: What each world pack means. A published benchmark must not change under its
+#: own name: `ng_supplier_v0` is what RESULTS.md was measured on and keeps
+#: drawing from the pan-African lexicon, defect and all. N1 arrives as
+#: `ng_supplier_v1`, and anyone comparing the two is comparing the fix.
+WORLD_PACKS = {
+    "ng_supplier_v0": {"countries": (), "names": "lexicon"},
+    "ng_supplier_v1": {"countries": ("NG",), "names": "wikidata-pairs"},
+    # N1b. Country conditioning cannot show up in a single-country world: a
+    # Nigerian name cannot fail to predict a Nigerian city. Four countries, each
+    # with its own name pool, cities, legal forms, phone shapes, banks and
+    # registration identifier, is what makes "does a name predict where it is"
+    # a question with an answer.
+    "africa_supplier_v1": {"countries": ("NG", "KE", "GH", "ZA"),
+                           "names": "wikidata-pairs"},
+}
+
+
 #: Zipf exponent for the surname draw. 1.0 is the classic Zipf law and gives a
 #: heavy head: with 2,000 organisations over a few thousand ranked surnames,
 #: the commonest surname lands on roughly 1 in 12. That is the collision rate
@@ -132,13 +178,12 @@ ZIPF_ALPHA = 1.0
 #: Nigerian company-name furniture. Legal forms carry real weight here: the
 #: suffix is the single most abbreviated, dropped and re-cased token in a
 #: supplier master, which is exactly why `representation` is its own kind.
+#: Used only by `ng_supplier_v0`, which predates the country profiles and must
+#: keep generating exactly what RESULTS.md was measured on.
 _LEGAL_FORMS = ["Limited", "Limited", "Limited", "Nigeria Limited", "Ventures Limited",
                 "and Sons Limited", "Global Limited", "International Limited",
                 "Enterprises", "Nigeria Enterprises"]
-_TRADES = ["Engineering", "Logistics", "Supplies", "Agro", "Foods", "Petroleum",
-           "Construction", "Technologies", "Pharmaceuticals", "Textiles", "Motors",
-           "Chemicals", "Trading", "Farms", "Steel", "Printing", "Services", "Haulage"]
-_CITIES = {
+_V0_CITIES = {
     "Lagos": ["Ikeja", "Apapa", "Surulere", "Yaba", "Victoria Island", "Ojota"],
     "Kano": ["Fagge", "Nassarawa", "Dala", "Gwale", "Tarauni"],
     "Abuja": ["Garki", "Wuse", "Maitama", "Gwarinpa", "Utako"],
@@ -146,11 +191,110 @@ _CITIES = {
     "Ibadan": ["Bodija", "Dugbe", "Ring Road", "Mokola"],
     "Enugu": ["Independence Layout", "New Haven", "Ogui", "Achara Layout"],
 }
-_STREETS = ["Zaria Road", "Awolowo Way", "Aminu Kano Crescent", "Ahmadu Bello Way",
-            "Herbert Macaulay Street", "Murtala Muhammed Road", "Ikot Ekpene Road",
-            "Nnamdi Azikiwe Street", "Marina Road", "Allen Avenue", "Broad Street"]
-_BANKS = ["Zenith Bank", "First Bank", "GTBank", "Access Bank", "UBA", "Fidelity Bank",
-          "Union Bank", "Sterling Bank", "Ecobank", "Stanbic IBTC"]
+_V0_STATES = {"Lagos": "Lagos", "Kano": "Kano", "Abuja": "FCT",
+              "Port Harcourt": "Rivers", "Ibadan": "Oyo", "Enugu": "Enugu"}
+_V0_STREETS = ["Zaria Road", "Awolowo Way", "Aminu Kano Crescent", "Ahmadu Bello Way",
+               "Herbert Macaulay Street", "Murtala Muhammed Road", "Ikot Ekpene Road",
+               "Nnamdi Azikiwe Street", "Marina Road", "Allen Avenue", "Broad Street"]
+_V0_BANKS = ["Zenith Bank", "First Bank", "GTBank", "Access Bank", "UBA", "Fidelity Bank",
+             "Union Bank", "Sterling Bank", "Ecobank", "Stanbic IBTC"]
+_V0_TRADES = ["Engineering", "Logistics", "Supplies", "Agro", "Foods", "Petroleum",
+              "Construction", "Technologies", "Pharmaceuticals", "Textiles", "Motors",
+              "Chemicals", "Trading", "Farms", "Steel", "Printing", "Services", "Haulage"]
+#: Widened from 18. Notebook 24 measured the generated naming vocabulary as
+#: 2.8x thinner than a real register's at matched sample size, and the
+#: descriptive middle -- what the company actually does -- is where the
+#: shortfall sits.
+_TRADES = ["Engineering", "Logistics", "Supplies", "Agro", "Foods", "Petroleum",
+           "Construction", "Technologies", "Pharmaceuticals", "Textiles", "Motors",
+           "Chemicals", "Trading", "Farms", "Steel", "Printing", "Services", "Haulage",
+           "Fisheries", "Poultry", "Cement", "Plastics", "Packaging", "Timber",
+           "Mining", "Energy", "Telecom", "Consulting", "Security", "Catering",
+           "Garments", "Furniture", "Glass", "Paints", "Fertilisers", "Aluminium",
+           "Beverages", "Dairy", "Milling", "Tyres", "Cables", "Roofing",
+           "Plumbing", "Electricals", "Automotive", "Marine", "Aviation", "Freight",
+           "Warehousing", "Refrigeration", "Irrigation", "Seeds", "Feeds", "Brewing"]
+
+
+
+#: What differs by country, and it is more than the city list. A South African
+#: company is a `(Pty) Ltd` and a Ghanaian one is not; a Kenyan supplier carries
+#: a KRA PIN where a Nigerian one carries an RC number. Those are the signals a
+#: matcher can learn from, and a world that shares them across countries teaches
+#: nothing about where a record came from.
+COUNTRY_PROFILES = {
+    "NG": {
+        "name": "Nigeria",
+        "cities": {
+            "Lagos": (["Ikeja", "Apapa", "Surulere", "Yaba", "Victoria Island"], "Lagos"),
+            "Kano": (["Fagge", "Nassarawa", "Dala", "Gwale"], "Kano"),
+            "Abuja": (["Garki", "Wuse", "Maitama", "Gwarinpa"], "FCT"),
+            "Port Harcourt": (["Diobu", "Trans Amadi", "GRA"], "Rivers"),
+            "Ibadan": (["Bodija", "Dugbe", "Ring Road"], "Oyo"),
+            "Enugu": (["Independence Layout", "New Haven", "Ogui"], "Enugu"),
+        },
+        "streets": ["Zaria Road", "Awolowo Way", "Aminu Kano Crescent",
+                    "Ahmadu Bello Way", "Herbert Macaulay Street", "Marina Road"],
+        "forms": ["Limited", "Limited", "Nigeria Limited", "Ventures Limited",
+                  "and Sons Limited", "Enterprises", "Plc"],
+        "phones": ["0803", "0805", "0806", "0703", "0810", "0813", "0816", "0902"],
+        "banks": ["Zenith Bank", "First Bank", "GTBank", "Access Bank", "UBA",
+                  "Fidelity Bank", "Union Bank", "Sterling Bank"],
+    },
+    "KE": {
+        "name": "Kenya",
+        "cities": {
+            "Nairobi": (["Westlands", "Karen", "Industrial Area", "Kilimani"], "Nairobi"),
+            "Mombasa": (["Nyali", "Likoni", "Changamwe"], "Mombasa"),
+            "Kisumu": (["Milimani", "Nyalenda", "Mamboleo"], "Kisumu"),
+            "Nakuru": (["Lanet", "Naka", "Section 58"], "Nakuru"),
+            "Eldoret": (["Langas", "Kapsoya", "Huruma"], "Uasin Gishu"),
+        },
+        "streets": ["Moi Avenue", "Kenyatta Avenue", "Ngong Road", "Thika Road",
+                    "Haile Selassie Avenue", "Waiyaki Way"],
+        "forms": ["Limited", "Limited", "Company Limited", "Ltd", "Enterprises",
+                  "Holdings Limited"],
+        "phones": ["0722", "0733", "0710", "0720", "0740", "0790"],
+        "banks": ["Equity Bank", "KCB Bank", "Co-operative Bank", "NCBA Bank",
+                  "Absa Bank Kenya", "Stanbic Bank Kenya"],
+    },
+    "GH": {
+        "name": "Ghana",
+        "cities": {
+            "Accra": (["Osu", "Adabraka", "East Legon", "Dansoman"], "Greater Accra"),
+            "Kumasi": (["Adum", "Asokwa", "Bantama"], "Ashanti"),
+            "Takoradi": (["Market Circle", "Effia", "Anaji"], "Western"),
+            "Tamale": (["Lamashegu", "Sagnarigu", "Vittin"], "Northern"),
+        },
+        "streets": ["Liberation Road", "Independence Avenue", "Ring Road Central",
+                    "Oxford Street", "Spintex Road", "Kwame Nkrumah Avenue"],
+        "forms": ["Limited", "Company Limited", "Limited", "Ltd", "Enterprise",
+                  "Ventures Limited"],
+        "phones": ["024", "054", "055", "059", "020", "050"],
+        "banks": ["GCB Bank", "Ecobank Ghana", "Absa Bank Ghana",
+                  "Fidelity Bank Ghana", "Stanbic Bank Ghana", "CalBank"],
+    },
+    "ZA": {
+        "name": "South Africa",
+        "cities": {
+            "Johannesburg": (["Sandton", "Braamfontein", "Randburg", "Midrand"],
+                             "Gauteng"),
+            "Cape Town": (["Woodstock", "Claremont", "Bellville", "Century City"],
+                          "Western Cape"),
+            "Durban": (["Umhlanga", "Pinetown", "Westville"], "KwaZulu-Natal"),
+            "Pretoria": (["Hatfield", "Centurion", "Arcadia"], "Gauteng"),
+            "Gqeberha": (["Newton Park", "Walmer", "Summerstrand"], "Eastern Cape"),
+        },
+        "streets": ["Commissioner Street", "Long Street", "West Street",
+                    "Church Street", "Rivonia Road", "Voortrekker Road"],
+        # The distinctive one: a South African company is a (Pty) Ltd.
+        "forms": ["(Pty) Ltd", "(Pty) Ltd", "Proprietary Limited",
+                  "Holdings (Pty) Ltd", "CC", "Limited"],
+        "phones": ["082", "083", "072", "074", "076", "084"],
+        "banks": ["Standard Bank", "ABSA", "FNB", "Nedbank", "Capitec Bank",
+                  "Investec"],
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -195,6 +339,12 @@ class World:
 
     world_id: str
     seed: int
+    #: The countries this world was built for. Empty for `ng_supplier_v0`,
+    #: which predates the country profiles: its places say `country: NG`, but
+    #: it must draw from the original flat lists, not from NG's profile. Code
+    #: downstream asks the world rather than inferring from a place, because
+    #: inferring is exactly what silently changed every v0 world once.
+    countries: tuple[str, ...] = ()
     entities: dict[str, Entity] = field(default_factory=dict)
     states: dict[str, list[State]] = field(default_factory=dict)
     relationships: list[Relationship] = field(default_factory=list)
@@ -219,16 +369,96 @@ class World:
 
 
 class Names:
-    """Frequency-weighted draws from the shipped lexicon.
+    """Names drawn from a country's own pool, with the frequencies it really has.
 
-    The ranking is a seeded shuffle, so it is stable for a given seed and
-    arbitrary in the sense that matters: it is not a claim about which
-    Nigerian surnames are actually common. What it does reproduce is the
-    *shape* -- and the shape is what creates the name collisions a matcher has
-    to survive.
+    **What changed, and why it was needed.** The first version drew a given name
+    and a family name independently from one pan-African lexicon of 12,369
+    entries, ranked by a seeded shuffle and weighted Zipf. That produced
+    `Zubeyde Saliou` -- a Turkish given name on a West African surname -- and,
+    measured against 51,022 real Nigerian facility names, **0.0% of generated
+    name tokens carried regional signal against 90.4% of real ones**. Robin
+    Linacre named the defect from the design; the notebook measured it.
+
+    Now both halves come from the **same country's** pool, built from real
+    given+family pairs on real people (Wikidata, CC0), and weighted by the
+    frequency each name actually has in that pool rather than by an invented
+    rank. Two things improve at once: a generated name is one a person from
+    that country plausibly has, and the frequency distribution is
+    `public-data-derived` instead of `synthetic-assumption`.
+
+    **What it still does not do.** Nigeria's naming is Yoruba, Igbo, Hausa,
+    Efik and more, and this conditions only on the country. Measured on the
+    931 Nigerian pairs: 548 distinct given names and 653 distinct family names,
+    with **zero repeated pairs** against 0.9 expected under independence -- the
+    sample is too sparse to learn sub-national structure from, and its
+    commonest given names (Joseph, Henry, John, Samuel) are Anglophone
+    Christian names that genuinely cross Nigerian ethnic lines. So a Hausa
+    given name can still meet an Igbo surname here. Conditioning at that level
+    needs data this pull does not contain, and the world being single-country
+    means country conditioning cannot show up in a name-predicts-city test
+    either. Both are open; see the plan.
     """
 
-    def __init__(self, rng: random.Random) -> None:
+    def __init__(self, rng: random.Random, country: str | None = None,
+                 countries: tuple[str, ...] = ()) -> None:
+        # A multi-country world needs one pool per country, so that a name can
+        # carry information about where its owner is. `countries` builds those;
+        # `country` is the single-country form v1 uses.
+        self.pools: dict[str, Names] = {}
+        if countries:
+            for iso in countries:
+                self.pools[iso] = Names(random.Random(rng.random() * 1e9), country=iso)
+            self.country = countries[0]
+            self.source = "wikidata:" + "+".join(countries)
+            self.dropped = 0
+            first = self.pools[countries[0]]
+            self.given, self.family = first.given, first.family
+            self._given_cw, self._family_cw = first._given_cw, first._family_cw
+            self._rng = rng
+            return
+        self.country = country
+        self.source = "lexicon"
+        self.dropped = 0
+        pairs = _pairs_path()
+        if country and pairs is not None:
+            given_counts: dict[str, int] = {}
+            family_counts: dict[str, int] = {}
+            with pairs.open(encoding="utf-8") as handle:
+                for line in handle:
+                    row = json.loads(line)
+                    if row.get("country") != country:
+                        continue
+                    for value, counts in ((row["given"], given_counts),
+                                          (row["family"], family_counts)):
+                        if _usable(value):
+                            counts[value] = counts.get(value, 0) + 1
+            # A pool too thin to draw from would produce a handful of names
+            # repeated thousands of times, which is worse than the defect it
+            # was meant to fix.
+            if len(given_counts) >= 100 and len(family_counts) >= 100:
+                self.source = f"wikidata:{country}"
+                # Two separate claims, and they need separate treatment.
+                #
+                # WHICH names exist and go together comes from real people, and
+                # is `public-data-derived`. HOW CONCENTRATED the distribution is
+                # cannot come from this sample: Wikidata holds *notable* people,
+                # where almost every name occurs once or twice, and drawing on
+                # those raw counts made the world far too easy -- 2.8% duplicate
+                # company names at 4,000 suppliers against 12.0% in the real
+                # register. A population is much more concentrated than its
+                # celebrities.
+                #
+                # So the real counts decide the ORDER (which names are commoner)
+                # and a Zipf curve supplies the SHAPE. The ordering is evidence;
+                # the shape stays a declared assumption, and the manifest says
+                # so on its own line.
+                self.given = sorted(given_counts, key=lambda n: (-given_counts[n], n))
+                self.family = sorted(family_counts, key=lambda n: (-family_counts[n], n))
+                self._given_cw = self._zipf_cumulative(len(self.given))
+                self._family_cw = self._zipf_cumulative(len(self.family))
+                self._rng = rng
+                return
+
         with gzip.open(_lexicon_path(), "rt", encoding="utf-8") as handle:
             rows = [json.loads(line) for line in handle]
         self.family = [r["name"] for r in rows
@@ -249,29 +479,36 @@ class Names:
 
     @staticmethod
     def _zipf_cumulative(n: int) -> list[float]:
-        out, running = [], 0.0
-        for i in range(n):
-            running += 1.0 / ((i + 1) ** ZIPF_ALPHA)
-            out.append(running)
-        return out
+        return _cumulative([1.0 / ((i + 1) ** ZIPF_ALPHA) for i in range(n)])
 
-    def surname(self) -> str:
-        return self._rng.choices(self.family, cum_weights=self._family_cw, k=1)[0]
+    def _pool(self, country: str | None) -> Names:
+        return self.pools.get(country, self) if country else self
 
-    def given_name(self) -> str:
-        return self._rng.choices(self.given, cum_weights=self._given_cw, k=1)[0]
+    def surname(self, country: str | None = None) -> str:
+        pool = self._pool(country)
+        return pool._rng.choices(pool.family, cum_weights=pool._family_cw, k=1)[0]
 
-    def person(self) -> str:
-        return f"{self.given_name()} {self.surname()}"
+    def given_name(self, country: str | None = None) -> str:
+        pool = self._pool(country)
+        return pool._rng.choices(pool.given, cum_weights=pool._given_cw, k=1)[0]
+
+    def person(self, country: str | None = None) -> str:
+        return f"{self.given_name(country)} {self.surname(country)}"
 
 
 class Generator:
     """Seeded construction of a Nigerian supplier world."""
 
-    def __init__(self, world_id: str, seed: int) -> None:
+    def __init__(self, world_id: str, seed: int, country: str | None = None) -> None:
+        pack = WORLD_PACKS.get(world_id, WORLD_PACKS["ng_supplier_v0"])
+        self.countries = pack["countries"] if country is None else (country,)
+        self.country = self.countries[0] if self.countries else None
+        self.multi = len(self.countries) > 1
         self.rng = random.Random(seed)
-        self.names = Names(random.Random(seed ^ 0x5EED))
-        self.world = World(world_id=world_id, seed=seed)
+        self.world = World(world_id=world_id, seed=seed, countries=self.countries)
+        self.names = Names(random.Random(seed ^ 0x5EED),
+                           country=None if self.multi else self.country,
+                           countries=self.countries if self.multi else ())
         self._n = {"organisation": 0, "person": 0, "place": 0}
         self.start = date(2019, 1, 1)
 
@@ -292,14 +529,18 @@ class Generator:
             if valid_tin(candidate):
                 return candidate
 
-    def phone(self) -> str:
-        prefix = self.rng.choice(["0803", "0805", "0806", "0703", "0810", "0813", "0814",
-                                  "0816", "0701", "0902", "0903", "0905", "0704"])
+    def phone(self, country: str | None = None) -> str:
+        prefixes = (COUNTRY_PROFILES[country]["phones"] if country and self.multi
+                    else ["0803", "0805", "0806", "0703", "0810", "0813", "0814",
+                          "0816", "0701", "0902", "0903", "0905", "0704"])
+        prefix = self.rng.choice(prefixes)
         rest = "".join(str(self.rng.randint(0, 9)) for _ in range(7))
         return f"{prefix} {rest[:3]} {rest[3:]}"
 
-    def account(self) -> tuple[str, str]:
-        return (self.rng.choice(_BANKS),
+    def account(self, country: str | None = None) -> tuple[str, str]:
+        banks = (COUNTRY_PROFILES[country]["banks"] if country and self.multi
+                 else _V0_BANKS)
+        return (self.rng.choice(banks),
                 "".join(str(self.rng.randint(0, 9)) for _ in range(10)))
 
     # -- entities ------------------------------------------------------------
@@ -312,19 +553,29 @@ class Generator:
         return eid
 
     def place(self) -> str:
-        city = self.rng.choice(list(_CITIES))
+        if not self.multi:
+            city = self.rng.choice(list(_V0_CITIES))
+            return self._new("place", {
+                "street": f"{self.rng.randint(1, 240)} {self.rng.choice(_V0_STREETS)}",
+                "area": self.rng.choice(_V0_CITIES[city]),
+                "city": city,
+                "state": _V0_STATES[city],
+                "country": "NG",
+            }, self.start)
+        iso = self.rng.choice(self.countries)
+        profile = COUNTRY_PROFILES[iso]
+        city = self.rng.choice(list(profile["cities"]))
+        areas, region = profile["cities"][city]
         return self._new("place", {
-            "street": f"{self.rng.randint(1, 240)} {self.rng.choice(_STREETS)}",
-            "area": self.rng.choice(_CITIES[city]),
+            "street": f"{self.rng.randint(1, 240)} {self.rng.choice(profile['streets'])}",
+            "area": self.rng.choice(areas),
             "city": city,
-            "state": {"Lagos": "Lagos", "Kano": "Kano", "Abuja": "FCT",
-                      "Port Harcourt": "Rivers", "Ibadan": "Oyo",
-                      "Enugu": "Enugu"}[city],
-            "country": "NG",
+            "state": region,
+            "country": iso,
         }, self.start)
 
-    def person(self) -> str:
-        full = self.names.person()
+    def person(self, country: str | None = None) -> str:
+        full = self.names.person(country)
         return self._new("person", {
             "full_name": full,
             "phone": self.phone(),
@@ -341,19 +592,40 @@ class Generator:
         pair is the false-merge trap the benchmark needs, and it is generated
         rather than hoped for.
         """
-        surname = self.names.surname()
-        trade = self.rng.choice(_TRADES)
-        form = self.rng.choice(_LEGAL_FORMS)
-        place = self.rng.choice(places)
+        # The place is chosen first, and everything else follows from where it
+        # is: the surname comes from that country's pool, the legal form from
+        # its company law, the phone from its numbering plan, the bank from its
+        # banks. That chain is the whole point of N1b -- it is what lets a name
+        # carry information about where a record is from, which is what the
+        # single-country world could not express.
+        if self.multi:
+            place = self.rng.choice(places)
+            iso = self.world.current(place).attributes.get("country")
+            profile = COUNTRY_PROFILES[iso]
+            surname = self.names.surname(iso)
+            trade = self.rng.choice(_TRADES)
+            form = self.rng.choice(profile["forms"])
+        else:
+            # v0's original order, preserved exactly. Drawing the place first --
+            # which the multi-country path must do, because the place decides
+            # the country and the country decides the name -- consumes the
+            # random stream differently and changes every v0 world.
+            iso = None
+            surname = self.names.surname()
+            trade = self.rng.choice(_V0_TRADES)
+            form = self.rng.choice(_LEGAL_FORMS)
+            place = self.rng.choice(places)
         director = self.rng.choice(people)
-        bank, account = self.account()
+        bank, account = self.account(iso)
         incorporated = self.start - timedelta(days=self.rng.randint(200, 5000))
+        domain = {"NG": "com.ng", "KE": "co.ke", "GH": "com.gh",
+                  "ZA": "co.za"}.get(iso or "NG", "com.ng")
         oid = self._new("organisation", {
             "legal_name": f"{surname} {trade} {form}",
             "rc_number": self.rc_number(),
             "tin": self.tin(),
-            "phone": self.phone(),
-            "email": f"info@{surname.lower()}{trade.lower()}.com.ng",
+            "phone": self.phone(iso),
+            "email": f"info@{surname.lower()}{trade.lower()}.{domain}",
             "place_id": place,
             "director_id": director,
             "bank": bank,
@@ -369,14 +641,32 @@ class Generator:
     def build(self, organisations: int, people: int, places: int) -> World:
         """Generate the world in a fixed order, so the seed fully determines it."""
         place_ids = [self.place() for _ in range(places)]
-        people_ids = [self.person() for _ in range(people)]
+        people_ids = [self.person(self.rng.choice(self.countries) if self.multi else None)
+                      for _ in range(people)]
         for _ in range(organisations):
             self.organisation(place_ids, people_ids)
+        from_wikidata = self.names.source.startswith("wikidata")
         self.world.provenance.append({
             "asset": "given and family names",
-            "source": "arche african_names_v1 lexicon (Wikidata/ParaNames, CC-BY-4.0)",
-            "method": f"seeded rank shuffle, Zipf weighting alpha={ZIPF_ALPHA}",
-            "class": "synthetic-assumption",
+            "source": ("Wikidata given+family pairs (CC0) for "
+                       f"{'+'.join(self.countries)}, via datasets/pull_wikidata.py"
+                       if from_wikidata else
+                       "arche african_names_v1 lexicon (Wikidata/ParaNames, CC-BY-4.0)"),
+            "method": ("pool and pairing from one country's real names; names "
+                       "ordered by the frequency they have in that sample, then "
+                       f"weighted Zipf alpha={ZIPF_ALPHA} for concentration"
+                       if from_wikidata else
+                       f"seeded rank shuffle, Zipf weighting alpha={ZIPF_ALPHA}"),
+            "class": ("public-data-derived (which names exist and co-occur); "
+                      "synthetic-assumption (how concentrated the distribution is)"
+                      if from_wikidata else "synthetic-assumption"),
+            "pool": f"{len(self.names.given):,} given, {len(self.names.family):,} family",
+            "limitation": ("conditions on country only; Nigeria's Yoruba, Igbo and "
+                           "Hausa naming are not separated, because the pull has "
+                           "931 Nigerian pairs with zero repeats and cannot support it"
+                           if from_wikidata else
+                           "given and family names are drawn independently, so the "
+                           "two halves of a name need not belong together"),
             "filtered": (f"{self.names.dropped} lexicon entries excluded as not-names "
                          "(Wikidata blank-node URLs, property labels, titles); see "
                          "world._NOT_A_NAME"),
@@ -395,10 +685,15 @@ class Generator:
 
 
 def generate(world_id: str, seed: int, *, organisations: int, people: int,
-             places: int) -> World:
-    """Build a world. Same arguments and seed produce the same world."""
-    return Generator(world_id, seed).build(organisations, people, places)
+             places: int, country: str | None = None) -> World:
+    """Build a world. Same arguments and seed produce the same world.
+
+    ``country`` is normally left to the world pack; pass it only to override.
+    """
+    return Generator(world_id, seed, country=country).build(
+        organisations, people, places)
 
 
-__all__ = ["Entity", "Generator", "Names", "Relationship", "State", "World",
+__all__ = ["WORLD_PACKS", "Entity", "Generator", "Names", "Relationship",
+           "State", "World",
            "ZIPF_ALPHA", "generate", "valid_rc", "valid_tin"]

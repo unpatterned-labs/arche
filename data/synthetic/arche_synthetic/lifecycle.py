@@ -96,9 +96,21 @@ class Lifecycle:
     # -- the four events -----------------------------------------------------
 
     def relocate(self, org: str, when: date, places: list[str]) -> Event | None:
-        """The supplier moved. The old address stays true for its interval."""
+        """The supplier moved. The old address stays true for its interval.
+
+        Within its own country. An earlier version drew from every place in the
+        world, so a Lagos supplier could relocate to Eldoret and keep its
+        Nigerian bank -- which is not a relocation, it is a different company,
+        and it would have taught a matcher that country is not evidence.
+        """
         current = self.world.current(org).attributes["place_id"]
-        options = [p for p in places if p != current]
+        home = self.world.current(current).attributes.get("country")
+        options = [p for p in places
+                   if p != current
+                   and (not self.world.countries
+                        or self.world.current(p).attributes.get("country") == home)]
+        if not options:
+            return None
         return self._apply(org, "ORG_RELOCATED", when,
                            {"place_id": self.rng.choice(options)})
 
@@ -140,10 +152,21 @@ class Lifecycle:
         a supplier's account changing is exactly what an invoice-redirection
         attack looks like, which is why *legitimate* account change has to be
         representable before the adversarial version means anything."""
-        from .world import _BANKS
+        from .world import _V0_BANKS, COUNTRY_PROFILES
 
-        current = self.world.current(org).attributes["bank"]
-        bank = self.rng.choice([b for b in _BANKS if b != current])
+        attributes = self.world.current(org).attributes
+        current = attributes["bank"]
+        # A Nigerian supplier does not move its account to Capitec. In a
+        # multi-country world the replacement comes from the same country's
+        # banks, which is also what makes a changed bank weak evidence of a
+        # different entity rather than strong evidence of a different country.
+        place = self.world.current(attributes["place_id"]).attributes
+        profile = (COUNTRY_PROFILES.get(place.get("country"))
+                   if self.world.countries else None)
+        banks = profile["banks"] if profile else _V0_BANKS
+        options = [b for b in banks if b != current] or [b for b in _V0_BANKS
+                                                         if b != current]
+        bank = self.rng.choice(options)
         return self._apply(org, "ACCOUNT_CHANGED", when, {
             "bank": bank,
             "account_number": "".join(str(self.rng.randint(0, 9)) for _ in range(10)),

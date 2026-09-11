@@ -103,11 +103,58 @@ The binding constraint is not the record count, it is the **name space**: 12,369
 
 **So: 4,000 organisations is where this world's difficulty matches the real register, and 2,000-3,000 leaves headroom.** Larger runs are legitimate for measuring *throughput*, and their accuracy numbers should not be compared with the real-world figures in this card. Widening the naming model (plan N1) is what raises the ceiling; more records is not.
 
-## Known defect: the names have no correlation
+## Three world packs, and why v0 was not fixed in place
 
-**Given names and surnames are drawn independently**, so this world contains `Zubeyde Saliou` (a Turkish given name with a West African surname), `Bachir Edwards` and `Fabiano Anaehobi`. There is no correlation between the two halves of a name, none between a name and a region, and none between a name and an era.
+`ng_supplier_v0` is what everything in `RESULTS.md` was measured on. **It has not been changed**, because a benchmark that moves under its own name cannot be cited. The name defect below is real and stays in v0.
 
-This is not only cosmetic. It corrupts the `common_names` stratum: real name collisions are *structured* -- a common Yoruba surname collides with other Yoruba records in Lagos -- and these collide at random across the whole world. A matcher that learned "this combination is implausible, so those records were merged in error" would be right here and wrong on real data. Raised by Robin Linacre; the fix is a conditional distribution `P(given | region, era)`, planned as N1 in `docs/ARCHE_SYNTHETIC_PLAN.md` section 7b. **Read any number from the `common_names` stratum with this in mind.**
+`ng_supplier_v1` is N1: both halves of a name are drawn from **one country's real given+family pairs** (Wikidata, CC0, `datasets/data/wikidata_name_pairs.jsonl`) rather than independently from a pan-African lexicon.
+
+```
+v0:  Zubeyde Saliou, Bachir Edwards, Fabiano Anaehobi, nk Regina
+v1:  Babatunde Williams, Samuel Okafor, John Obi, Beatrice Ajibola
+```
+
+**Two separate provenance claims, and they need separating.** *Which* names exist and plausibly go together is `public-data-derived`. *How concentrated* the distribution is cannot be: Wikidata holds **notable** people, where almost every name occurs once, and drawing on those raw counts made the world far too easy — 2.8% duplicate company names at 4,000 suppliers against 12.0% in the real register. A population is much more concentrated than its celebrities. So the real counts decide the **order** and a Zipf curve supplies the **shape**, and the manifest says both on their own lines.
+
+**The trade v1 makes.** The Nigerian pool is 546 given x 652 family, against the lexicon's 6,003 x 6,366. Realistic pairing costs name-space size, so v1's honest ceiling is lower:
+
+| organisations | v0 duplicates | v1 duplicates |
+|---:|---:|---:|
+| 2,000 | 8.1% | **12.8%** |
+| 3,000 | 11.0% | 17.3% |
+| 4,000 | **12.0%** | 19.6% |
+
+Against the real 12.0%: **generate v0 at 4,000 or v1 at 2,000.**
+
+### `africa_supplier_v1` — N1b, four countries
+
+v1 conditions on country, and a single-country world cannot show that: a Nigerian name cannot fail to predict a Nigerian city. So `africa_supplier_v1` spans **NG, KE, GH and ZA**, each with its own name pool, cities, streets, legal forms, phone prefixes and banks.
+
+```
+[ZA] Head Supplies (Pty) Ltd                Cape Town    Standard Bank
+[GH] Boateng Pharmaceuticals Company Limited Accra       GCB Bank
+[KE] Korir Farms Limited                    Nakuru       KCB Bank
+[NG] Bello Freight Nigeria Limited          Kano         Fidelity Bank
+```
+
+`(Pty) Ltd` is South African and nothing else is; `and Sons Limited` is Nigerian. Those are signals a matcher can learn, and a world that shared them across countries would teach nothing about where a record came from.
+
+**Measured with notebook 24's own H3 test** — the share of frequent name tokens that are concentrated in one region at three times the baseline rate:
+
+| | | |
+|---|---|---:|
+| real GRID3 facility names | by state | 90.4% |
+| `ng_supplier_v0` | by city | 0.0% |
+| `ng_supplier_v1` | by city | 0.0% |
+| **`africa_supplier_v1`** | **by country** | **24.1%** |
+
+The marked tokens are `and` and `sons` (Nigeria's *and Sons Limited*, at 4.2x) and surnames like `okafor` and `bello`. Both halves of the naming carry country now.
+
+**24.1% is not 90.4%, and the gap is honest.** Real facility names embed the settlement they sit in, which is a far stronger locator than a surname and a legal form. Company names are not facility names, and closing the rest of that gap would mean generating company names that contain their city — which some real ones do and most do not.
+
+**What none of the three packs fix.** Nigeria's Yoruba, Igbo and Hausa naming are not separated. The pull has 931 Nigerian pairs with 548 distinct given names, 653 distinct family names and **zero repeated pairs**, which cannot support sub-national conditioning; its commonest given names (Joseph, Henry, John, Samuel) are Anglophone Christian names that genuinely cross Nigerian ethnic lines.
+
+**What v1 still does not fix.** It conditions on *country*, and that world is entirely Nigerian, so a name still cannot predict a city — notebook 24's H3 will not move for `ng_supplier_v1`. Nigeria's Yoruba, Igbo and Hausa naming are not separated either: the pull has 931 Nigerian pairs with **548 distinct given names, 653 distinct family names and zero repeated pairs**, which is too sparse to learn sub-national structure from. Its commonest given names — Joseph, Henry, John, Samuel — are Anglophone Christian names that genuinely cross Nigerian ethnic lines, so the sparsity is partly real and partly Wikidata's notability bias. Making country conditioning visible needs a multi-country world; making tradition conditioning possible needs data this pull does not contain.
 
 ## Found while building it
 
