@@ -205,9 +205,50 @@ That split is worth stating plainly because the two have different meanings. Blo
 
 Script: `datasets/names_dataops/bench_sweep_historical.py`. arche is run with `threshold=0.0, review_margin=0.0` so the curve is limited by blocking rather than by the default decision point. That is not a production setting; it exists to separate "scored badly" from "never seen".
 
+### Splink, on the England schools crosswalk
+
+The three Splink sections above are all **dedupe** problems, and two of the three use labels somebody constructed. This one is neither. It is a **link** between two registers that do not share an identifier, which is the shape most reconciliation work actually has, and the labels were not made for it: 93% of Leeds OpenStreetMap school features carry a `ref:edubase` tag, which is an editor asserting *this mapped school is that URN*. Neither engine sees the tag.
+
+306 GIAS establishments, 308 OSM features, 282 truth pairs. Splink runs `link_type="link_only"`; arche runs `reconcile(..., entity="place")` with the shipped pack, unretuned. Both get name and coordinates, and the same string baselines from the [schools guide](../guides/school-reconciliation.md) are repeated so the table stands alone.
+
+The guide's scoring rule counts any predicted pair outside the truth set as a false merge, and 26 OSM features carry no label at all, so a correct link to one of those is scored as an error. That rule is kept, because it is the one the guide's table uses. **Restricted** is reported beside it: only pairs whose OSM feature carries a label are scored, so a false merge there is a merge of two things an editor said were different. Neither rule is the right one; they bound the answer from both sides.
+
+| approach | precision | recall | F1 | true | false | restricted false |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| exact name (casefold) | 0.992 | 0.876 | 0.930 | 247 | 2 | 0 |
+| token Jaccard >= 0.5 | 0.053 | 0.989 | 0.101 | 279 | 4,953 | 4,882 |
+| `token_set_ratio` >= 90 | 0.671 | 0.947 | 0.785 | 267 | 131 | 122 |
+| arche, name + coords | 0.883 | 0.986 | 0.931 | 278 | 37 | 32 |
+| Splink, p >= 0.5 | 0.982 | 0.986 | 0.984 | 278 | 5 | 2 |
+| **Splink, p >= 0.9** | **0.989** | **0.986** | **0.988** | **278** | **3** | **0** |
+| Splink, p >= 0.99 | 0.995 | 0.777 | 0.873 | 219 | 1 | 0 |
+
+**Splink wins the fourth one too, and this is the cleanest loss of the four.** Both engines find **exactly the same 278 true pairs** — not a similar number, the same set. Neither finds one the other misses, and the four they both miss are the same four. Recall is identical to three decimal places. The entire difference is false merges: 32 against 0 under the restricted rule.
+
+So on this dataset the representation argument has nothing to point at on the recall side, and loses on the precision side.
+
+**Where arche's 32 go, and what Splink said about them.** Nineteen are one academy chain:
+
+```text
+Co-op Academy Woodlands   x  Co-op Academy Leeds        arche: match   splink: p=0.022
+Co-op Academy Leeds       x  Co-op Academy Nightingale  arche: match   splink: never proposed
+Hunslet Moor Primary      x  Hunslet Carr Primary       arche: match   splink: p=0.172
+Corpus Christi College    x  Corpus Christi Primary     arche: match   splink: p=0.813
+```
+
+Splink **proposed 17 of the 32** and scored every one of them below 0.9; it never proposed the other 15. So this is not blocking luck. A trained Fellegi-Sunter model looked at the same pairs arche merged and put them at 0.022 to 0.813, and the highest of them — a Catholic college and a Catholic primary school sharing a saint's name — is still the pair a human would want to see rather than merge.
+
+**The threshold-fragility argument does not rescue it here.** On the Nigerian register the comparison turned on Splink needing a threshold a caller cannot choose without labels. Not on this data: Splink beats arche at **every** threshold from 0.1 to 0.95, and only cliffs at 0.99. Its default operating point is already ahead.
+
+**Two things this does not say.** It does not say the place pack is badly built; 0.986 recall on a country and an entity type away from where it was calibrated is the part that transfers. And the 32 are a known, named failure mode — chain branding, where a shared prefix is two thirds of every name and the campuses are close enough that coordinates do not settle it. The guide surfaced that family from a UKPRN audit before Splink was ever run here. What this section adds is that a well-trained probabilistic model does not fall for it.
+
+**Caveats.** Leeds only, 306 establishments: one local authority, and one with unusually standardised school naming — exact name matching already reaches F1 0.930 here. The `names only` arms are not like-for-like and are reported in the result file rather than above: a one-comparison Splink model cannot be EM-trained at all (blocking on the only comparison leaves it no variation, and blocking on a prefix of it raises inside Splink's own counting SQL), so that arm predicts with default `m` values and tops out at p = 0.607. Splink's `estimate_u_using_random_sampling` is unseeded, but unlike the Febrl arm this one reproduced exactly across runs.
+
+Script: `datasets/names_dataops/bench_splink_england_schools.py`. Stage the sources first with `python data/scripts/fetch_england_schools.py --la Leeds`.
+
 ### arche using Splink, rather than against it
 
-The three sections above measure arche's own matcher against Splink and it loses all three. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
+The four sections above measure arche's own matcher against Splink and it loses all four. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
 
 The question a benchmark can answer about an adapter is not "is it better" but "is it faithful". Does wrapping the scorer change what the scorer says?
 
