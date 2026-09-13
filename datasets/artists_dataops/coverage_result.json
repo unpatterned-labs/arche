@@ -1,0 +1,31 @@
+{
+  "truth_groups": 1464,
+  "truth_pairs": 3503,
+  "list_groups": 449,
+  "list_pairs": 1755,
+  "covered": 367,
+  "coverage": 0.1048,
+  "by_stratum": {
+    "alias": {
+      "covered": 297,
+      "total": 2806
+    },
+    "spelling": {
+      "covered": 70,
+      "total": 697
+    }
+  },
+  "by_known": {
+    "artist in MusicBrainz": {
+      "covered": 364,
+      "total": 2002
+    },
+    "artist not in MusicBrainz": {
+      "covered": 3,
+      "total": 1501
+    }
+  },
+  "extra_pairs": 1388,
+  "list_collisions": 1,
+  "list_duplicates": 44
+}

@@ -156,6 +156,60 @@ The marked tokens are `and` and `sons` (Nigeria's *and Sons Limited*, at 4.2x) a
 
 **What v1 still does not fix.** It conditions on *country*, and that world is entirely Nigerian, so a name still cannot predict a city — notebook 24's H3 will not move for `ng_supplier_v1`. Nigeria's Yoruba, Igbo and Hausa naming are not separated either: the pull has 931 Nigerian pairs with **548 distinct given names, 653 distinct family names and zero repeated pairs**, which is too sparse to learn sub-national structure from. Its commonest given names — Joseph, Henry, John, Samuel — are Anglophone Christian names that genuinely cross Nigerian ethnic lines, so the sparsity is partly real and partly Wikidata's notability bias. Making country conditioning visible needs a multi-country world; making tradition conditioning possible needs data this pull does not contain.
 
+## A second kind of world: `artists_v0`
+
+The supplier worlds ask *is this the same company after it moved, renamed and changed bank?* The artist world asks one narrower question, put to us by Splink's author: **what is a name-variant list worth to a matcher, and what does it cost?**
+
+`Wizkid` and `Ayodeji Ibrahim Balogun` are one person and share nothing an edit distance can see. No string method, no term-frequency weighting and no phonetic key will ever pair them. Only a list that says they are the same can, and until now nobody has measured how much such a list buys on real alias data.
+
+### Where the truth comes from, and why it is not the list
+
+**The truth is not invented.** Every alias group is a real African musician with the alternate names Wikidata records for them (CC0; `datasets/pull_wikidata.py aliases`, 1,468 artists). Filler artists are real people's names from the same pull, one name each. The generator decides *which* alias each catalogue writes and *what it does to it*; it never decides what an artist is called.
+
+**The list a matcher is given comes from somewhere else.** MusicBrainz alias sets (CC0), joined to the truth by Wikidata property P434 -- an identifier, never a name, because a name search for `Tyla` returns a UK artist of the same name. Two editorial communities, two opinions about what an artist is called. Where they disagree is where the experiment lives; a list derived from the truth would win by construction and prove nothing. **Coverage** -- the share of truth pairs the list knows -- is reported before any matcher runs and bounds the gain.
+
+### Sources
+
+| source | coverage | writes | habit |
+|---|---:|---|---|
+| `catalogue` | 90% | the stage name, mostly | clean |
+| `press` | 60% | whatever the journalist used | loses diacritics, 3% typos |
+| `lineup` | 50% | the stage name, IN CAPITALS | 45% upper-cased, truncates |
+| `registry` | 35% | the legal name (longest alias) | loses diacritics |
+
+### Strata
+
+| difference | cause | meaning |
+|---|---|---|
+| representation | `alias` | two records name the artist differently and the names are **not** string-similar (Jaro-Winkler < 0.88). The list's whole case |
+| representation | `spelling` | different names, string-similar (`Wiz Kid` / `Wizkid`). A matcher already handles these; the list should add little |
+| representation | `case_upper`, `diacritic_loss` | a catalogue's house style |
+| error | `typo`, `truncation` | a mistake |
+
+0.88 is Splink's own second Jaro-Winkler level, so a stratum here maps onto a comparison level there.
+
+**Collisions** -- two *different* artists sharing a name exactly -- are written to `collisions.parquet`. They are found in the data, not made: the wrong-Tyla case is real. A false merge on a collision pair is the cost a variant list is expected to have, and the file exists so the evaluator can say what that cost was.
+
+### Seed 42, 10,000 records
+
+```
+artists        2,941   (1,468 with 2+ names, 1,473 filler)
+records        9,944
+differences    7,656
+  alias        3,002       spelling      832
+  case_upper   2,847       diacritics    157
+  typo           677       truncation    141
+collisions        28
+```
+
+`--scale` sets the record target; the alias groups are always all present and filler makes up the rest, so a bigger world has a thinner alias share, not more aliases.
+
+### What it is not
+
+- **Not a statistical replica of any catalogue.** Source coverage and error rates are declared assumptions; the names, aliases and countries are public data. The manifest says which is which.
+- **Not evidence about African names in general.** Wikidata's alias coverage is uneven -- well-known artists carry legal and stage names, lesser-known ones a single spelling variant -- and the filler is notable people, not the population.
+- **Not a benchmark of arche against anyone.** The experiment it exists for runs Splink four ways (plan §7d), and arche appears as one arm for the record.
+
 ## Found while building it
 
 The generator drew `njirimara ezinụlọnjirimara ezinụlọ Steel Global` as a company name — Igbo for "family identifier", doubled. That is not a generator bug: **770 of the 13,342 entries in arche's shipped name lexicon (5.8%) are not names.** 514 are raw Wikidata blank-node URLs (`http://www.wikidata.org/.well-known/genid/…`), 153 are property labels in various languages (`Abas (nom de famille)`, `Akinfenwa (aha ezinụlọ)`), and the rest are titles and full person names filed as surnames.
@@ -167,4 +221,5 @@ A second pass found 139 more that survived every other check: `almaerifaa.com`, 
 ```bash
 python data/synthetic/build_ng_supplier_v0.py                 # the full world, ~7s
 python data/synthetic/build_ng_supplier_v0.py --scale 100     # a small one to read
+python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0
 ```

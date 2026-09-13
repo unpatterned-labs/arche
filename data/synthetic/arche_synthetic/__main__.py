@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from . import SCALE, build
+from . import SCALE, artists, build
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,7 +20,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--world-pack", default="ng_supplier_v0")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--scale", type=int, default=None,
-                    help="organisations; people and places scale with it")
+                    help="organisations (people and places scale with it); for "
+                         "artists_v0, records")
     ap.add_argument("--out", default="worlds/ng_supplier_v0")
     args = ap.parse_args(argv)
 
@@ -31,7 +32,13 @@ def main(argv: list[str] | None = None) -> int:
                  "people": max(2, int(SCALE["people"] * ratio)),
                  "places": max(2, int(SCALE["places"] * ratio))}
 
-    _, manifest = build(args.world_pack, seed=args.seed, out=Path(args.out), scale=scale)
+    if args.world_pack == artists.WORLD_PACK:
+        # A different kind of world: `--scale` is records, not organisations.
+        _, manifest = artists.build(seed=args.seed, records=args.scale or 10_000,
+                                    out=Path(args.out))
+    else:
+        _, manifest = build(args.world_pack, seed=args.seed, out=Path(args.out),
+                            scale=scale)
     counts = manifest["counts"]
     print(f"  {manifest['world_id']}  seed {manifest['seed']}")
     print(f"  entities     {counts['entities']}")

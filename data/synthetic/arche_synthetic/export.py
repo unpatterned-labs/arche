@@ -47,20 +47,21 @@ class LeakError(AssertionError):
     """The generator produced a dataset that would give the answer away."""
 
 
-def _rows_observations(world: World) -> list[dict[str, Any]]:
+def _rows_observations(world: World, columns: tuple[str, ...] = OBSERVATION_COLUMNS
+                       ) -> list[dict[str, Any]]:
     rows = []
     for o in world.observations:
         row: dict[str, Any] = {"record_id": o.record_id, "source": o.source,
                                "observed_at": o.observed_at.isoformat()}
-        for column in OBSERVATION_COLUMNS[3:]:
+        for column in columns[3:]:
             row[column] = o.attributes.get(column)
         rows.append(row)
     return rows
 
 
-def _rows_truth(world: World) -> list[dict[str, Any]]:
+def _rows_truth(world: World, entity_type: str = "organisation") -> list[dict[str, Any]]:
     return [{"record_id": o.record_id, "truth_entity_id": o.entity_id,
-             "entity_type": "organisation", "source": o.source,
+             "entity_type": entity_type, "source": o.source,
              "state_index": o.state_index}
             for o in world.observations]
 
@@ -126,18 +127,31 @@ def _write_parquet(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def write(world: World, out: Path, *, generator_version: str,
-          world_pack: str, notes: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Write the whole benchmark and return its manifest."""
+          world_pack: str, notes: dict[str, Any] | None = None,
+          columns: tuple[str, ...] = OBSERVATION_COLUMNS,
+          entity_type: str = "organisation",
+          extra_tables: dict[str, tuple[list[dict[str, Any]], list[str]]] | None = None,
+          ) -> dict[str, Any]:
+    """Write the whole benchmark and return its manifest.
+
+    ``columns``, ``entity_type`` and ``extra_tables`` exist so a second kind of
+    world (artists) can use the same contract, the same leak check and the
+    same manifest without a second copy of this function. Their defaults are
+    the supplier world's, so nothing about that world's output moved when they
+    were added -- checked by fingerprint.
+    """
     out.mkdir(parents=True, exist_ok=True)
     (out / "schema").mkdir(exist_ok=True)
 
     tables = {
-        "observations": (_rows_observations(world), ["record_id", "source", "observed_at"]),
-        "truth": (_rows_truth(world), ["record_id", "truth_entity_id"]),
+        "observations": (_rows_observations(world, columns),
+                         ["record_id", "source", "observed_at"]),
+        "truth": (_rows_truth(world, entity_type), ["record_id", "truth_entity_id"]),
         "differences": (_rows_differences(world),
                         ["difference_id", "observation_a", "observation_b",
                          "attribute", "difference_kind"]),
         "events": (_rows_events(world), ["event_id", "entity_id", "kind", "event_at"]),
+        **(extra_tables or {}),
     }
     check_no_leak(tables["observations"][0], world)
 
@@ -163,7 +177,7 @@ def write(world: World, out: Path, *, generator_version: str,
         "schema_version": 0,
         "counts": {
             "entities": {t: len(world.of_type(t))
-                         for t in ("organisation", "person", "place")},
+                         for t in sorted({e.entity_type for e in world.entities.values()})},
             "observations": len(world.observations),
             "events": len(world.events),
             "differences": len(world.differences),

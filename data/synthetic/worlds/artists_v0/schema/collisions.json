@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/collisions-v0.json",
+  "title": "collisions",
+  "type": "object",
+  "required": [
+    "entity_a",
+    "entity_b",
+    "shared_name"
+  ],
+  "properties": {
+    "entity_a": {
+      "type": "string"
+    },
+    "entity_b": {
+      "type": "string"
+    },
+    "shared_name": {
+      "type": "string"
+    },
+    "kind_a": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind_b": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
