@@ -6,6 +6,8 @@ The pieces that teach you to *use* arche moved to [Tutorials](../tutorials/intro
 
 ## Latest
 
+- **[What a name list is worth](what-a-name-list-is-worth.md)**. Splink's author asked what an alias list actually buys. A world of real African artists, a rule that keeps the list and the truth apart, one alias in ten in the public data, and Splink pricing the list itself at +10.7 bits — with the cost in the collision column.
+
 - **[The number we could not reproduce](the-number-we-could-not-reproduce.md)**. We went looking for the evidence behind our own headline result and it was not there. What we built instead disagreed with us three times, and the one we found and chose not to fix.
 
 - **[Similar is not the same](similar-is-not-the-same.md)**. Embeddings, Fellegi-Sunter, and what a machine has to know before it may merge two records. Plus where explicit vectors *do* belong: retrieval for agentic entity resolution.

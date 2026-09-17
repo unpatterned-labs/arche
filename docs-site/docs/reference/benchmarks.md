@@ -139,10 +139,28 @@ What it establishes is narrower and, for a shipped library, more useful: **arche
 
 Because the alternative reading is available and should be stated: at `p >= 0.9` Splink also holds 0-2 false merges at every filler size. A higher threshold compensates for a thinner batch. But **choosing that threshold requires labels**, and a caller with 400 records to reconcile and no ground truth has no way to know that 0.5 is wrong for their data and 0.9 is right. The shipped prior removes that choice rather than winning an argument about it.
 
-Run it with:
+**Can the property be handed to Splink?** If the table is the moat, the question for an architecture that scores with Splink is whether Splink can *read* the table. Splink accepts a pre-computed term-frequency lookup in place of the one it counts from the batch, so `bench_population_tf_into_splink.py` registers one built from the full register — 98,591 distinct names, the most favourable population possible — and re-runs the same labels:
+
+| filler | arm | true | false at p ≥ 0.9 | false at p ≥ 0.5 |
+| ---: | --- | ---: | ---: | ---: |
+| 0 | Splink, batch TF | 190 | 2 | 368 |
+| 0 | **Splink, population TF** | 190 | **364** | 368 |
+| 0 | arche | 146 | 2 | — |
+| 500 | Splink, batch TF | 190 | 0 | 2 |
+| 500 | Splink, population TF | 190 | 13 | 13 |
+| 2,000 | Splink, population TF | 190 | 12 | 13 |
+
+**It does not transfer, and it gets worse.** Two things the run exposed, both of them about mechanism rather than about Splink.
+
+First, the negatives are pairs of schools that share a name across a state line, and many of those names are *rare in the register* — `Mercy Nursery Primary School` occurs five times in 107,670. Value-level term frequency does what it should with that: it boosts an exact match on a rare value, here by a factor of 22.9, and two different schools with one rare name merge at p = 0.97. arche does not, because its table is per *token* — `mercy`, `nursery`, `primary`, `school` are each common — and because a geo veto refutes a pair a state apart without needing to be trained. The small-batch property is not "a population prior"; it is token-level rarity plus a veto, and neither is expressible as a Splink TF lookup.
+
+Second, and a caveat on the table above this one: **at filler 0 the Splink model's name levels are untrained.** EM on the coordinate rule sees only the constructed positives, whose names differ by construction, so Splink reports *"Exact match on name … not observed, unable to train m value"* and predicts with defaults. The 368 is real behaviour of the published recipe on a 1,200-record batch, and it is default-m plus a batch TF that is identical for every name (each appears exactly twice), not a trained model's opinion.
+
+Run both with:
 
 ```sh
 uv run python datasets/names_dataops/bench_population_vs_batch.py
+uv run python datasets/names_dataops/bench_population_tf_into_splink.py
 ```
 
 **One caveat on the harness.** It builds four Splink models in one process. At filler 12,000 the `p >= 0.9` arm returned 1 true where the standalone `bench_splink_nigeria.py` reproduces 190 exactly, byte for byte. The `p >= 0.5` arm is stable across repeated runs at every size, so the ranking is reproducible and the absolute probability calibration at that size is not. The figures quoted above are from `p >= 0.5` for that reason, and the discrepancy is unexplained rather than diagnosed.
@@ -248,7 +266,7 @@ Script: `datasets/names_dataops/bench_splink_england_schools.py`. Stage the sour
 
 ### arche using Splink, rather than against it
 
-The four sections above measure arche's own matcher against Splink and it loses all four. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
+The five Splink sections above measure arche's own matcher against Splink; it loses four and wins the product one, for a reason that is about declaration rather than estimation. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
 
 The question a benchmark can answer about an adapter is not "is it better" but "is it faithful". Does wrapping the scorer change what the scorer says?
 
@@ -283,6 +301,30 @@ Fixing all three left the part that cannot be fixed by inference. A derived conf
 Same edges, same order, three different answers, straddling arche's own engine at 0.8382. Without labels you cannot know which one you are on. So `splink_settings=` is required, `splink_settings="derive"` warns, and `threshold=` is required too: at `p >= 0.99` the Nigerian recipe merges nothing while Febrl merges 4,765.
 
 Scripts: `datasets/names_dataops/bench_backend_compare.py`.
+
+### Splink, on Abt-Buy
+
+The fifth Splink comparison, and the first on products. Abt-Buy is the labelled product benchmark the resolver gates in CI: 1,081 Abt records against 1,092 Buy records, 1,097 true pairs, product names only (`description` and Buy's `manufacturer` withheld so the evidence matches the gated arche arm).
+
+Splink cannot compare a model code it has not been given, so arche's representation runs first — `extract_product_code_candidates` pulls `pslx350h` out of `Sony Turntable - PSLX350H`, `extract_specs` pulls `500gb` out of a drive — and Splink is handed the columns. Two recipes, because the contrast between them is the result:
+
+- **descriptive**: everything extracted (code, brand, specs) *plus* the title itself as Jaro-Winkler and token-overlap comparisons. What a Splink user would write.
+- **identity**: only the columns the pack declares identity-bearing — code and brand — with title similarity withheld from the model entirely.
+
+| arm | precision | recall | F1 | true | false |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arche `product_electronics`, gated, no threshold | 0.971 | 0.675 | 0.797 | 741 | 22 |
+| Splink, descriptive, best F1 (p ≥ 0.80, chosen on labels) | 0.407 | 0.788 | 0.537 | 864 | 1,256 |
+| Splink, identity, p ≥ 0.5 | 0.937 | 0.667 | 0.780 | 732 | 49 |
+| Splink, identity, best F1 (p ≥ 0.35, chosen on labels) | 0.938 | 0.675 | 0.785 | 740 | 49 |
+
+**arche wins this one, and the reason is not the estimator.** Given only the identity columns, Splink lands at arche's recall to within one pair (740 against 741) with more than twice the false merges (49 against 22). Given the title as well — the natural thing to do — it collapses to precision 0.41, because EM cannot tell *same product* from *same brand, same kind of product, similar title*, and the learned weights show it doing exactly that: the same shared-code level is worth **+10.05 bits** in the identity model and **+6.08** in the descriptive one, and "no shared code" goes from **−4.13** to **−0.09** — neutral. Adding descriptive similarity taught the model to stop caring about the identifier.
+
+That is the point the product pack makes by declaration: which field carries identity is not something an unsupervised estimator can learn from titles, because titles are similar for reasons that have nothing to do with identity. Splink scores the columns it is given; deciding which columns to give it, and which to withhold, was the whole difference between 0.537 and 0.785.
+
+**The two invariants do not survive inside the model.** The gate holds that on Abt-Buy the spec refutation is neutral and the electronics stop list is inert. In the learned identity model, dropping the spec comparison moves 9 pairs at the same threshold (+3 / −6) and emptying the stop list adds 67 merges; in the descriptive model the numbers are +75 / −2 and +18 / −45. EM priced "both carry a spec and share none" at −4.86 bits in one model and −1.42 in the other: a refutation whose strength depends on what else was in the model, not a guarantee. A guarantee has to sit outside the estimator.
+
+Script: `datasets/products_dataops/bench_splink_abt_buy.py`, ~50 s for both recipes and their ablations.
 
 ### Python `recordlinkage`, Febrl 4
 
