@@ -24,6 +24,14 @@ python data/synthetic/build_ng_supplier_v0.py          # ~7s, writes worlds/ng_s
 python data/synthetic/run_benchmark.py --world data/synthetic/worlds/ng_supplier_v0_s150
 ```
 
+## A second world: artists, for the variant-list question
+
+`artists_v0` is 9,944 records of 2,941 real African musicians under their real Wikidata aliases, built to answer one question put to us by Splink's author: what is a name-variant list worth to a matcher? The world, the independent MusicBrainz-derived list, a ninety-line Splink example and the full six-arm result are in [`datasets/artists_dataops/`](../../datasets/artists_dataops/README.md).
+
+```bash
+python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out data/synthetic/worlds/artists_v0
+```
+
 ## Why this exists
 
 arche keeps being blocked by data licensing. ai4privacy's 300k is academic-only and forbids derivatives; i2b2 needs a data-use agreement; OpenSanctions Pairs is a purchase. Every one of those is somebody else's permission. This is the path that needs nobody's.
