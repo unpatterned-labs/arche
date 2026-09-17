@@ -52,11 +52,27 @@ approach                 precision   recall      F1  false merges
 exact name (casefold)        0.992    0.876   0.930             2
 token Jaccard >= 0.5         0.053    0.989   0.101         4,953
 token_set_ratio >= 90        0.671    0.947   0.785           131
-arche, names only            0.651    0.986   0.784           149
+arche, names only            0.602    0.986   0.747           184
 arche, name + coords         0.883    0.986   0.931            37
+Splink, p >= 0.9             0.989    0.986   0.988             3
 ```
 
-Read that honestly. On F1 the shipped pack and plain exact matching are level here, because English school names are unusually standardised. What arche buys is recall: 0.986 against 0.876, which is 31 more true pairs found. If your two sources spell things identically, exact matching is a fine answer.
+!!! note "Which frequency table these numbers came from"
+
+    `shipped:place@sha256:c94f20a1c2dfba18+phrases@sha256:ed19b623d77407d3`.
+    Token rarity is a **blocking key** as well as a comparator input, so
+    rebuilding the table changes which pairs are proposed at all and moves the
+    counts even when no threshold did. The `arche, names only` row above read
+    0.651 / 149 against the previous table and was corrected when this page
+    was re-measured; the `name + coords` row was unchanged at 278 / 37.
+    Coordinates carry the blocking there, so that arm is the less
+    table-sensitive of the two.
+
+Read that honestly, starting from the bottom row. **Splink wins.** Given the same two columns it finds *exactly the same 278 true pairs* arche does — the same set, not a similar count — and merges 3 things it should not where arche merges 37. Under the stricter rule that scores only labelled features it merges none at all. There is no recall story to tell against it here.
+
+Above that row: on F1 the shipped pack and plain exact matching are level, because English school names are unusually standardised. What arche buys over *exact matching* is recall, 0.986 against 0.876, which is 31 more true pairs found. If your two sources spell things identically, exact matching is a fine answer.
+
+The full sweep, what Splink said about each pair arche got wrong, and why the "needs labels to pick a threshold" argument does not apply on this data are in [the benchmarks page](../reference/benchmarks.md#splink-on-the-england-schools-crosswalk).
 
 The fuzzy rows show why one threshold cannot serve both directions. Loosening from exact to token overlap takes recall from 0.876 to 0.989 and turns 2 false merges into 4,953.
 

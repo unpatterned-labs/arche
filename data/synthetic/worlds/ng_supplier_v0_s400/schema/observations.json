@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/observations-v0.json",
+  "title": "observations",
+  "type": "object",
+  "required": [
+    "record_id",
+    "source",
+    "observed_at"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rc_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bank": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "account_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "director_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "incorporated_on": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

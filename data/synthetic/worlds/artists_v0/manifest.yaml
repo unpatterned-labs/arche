@@ -1,0 +1,50 @@
+world_id: artists_v0
+world_pack: artists_v0
+seed: 42
+generator_version: 0.0.1
+schema_version: 0
+counts:
+  entities:
+    artist: 2941
+  observations: 9944
+  events: 0
+  differences: 7656
+  difference_kinds:
+    error: 818
+    representation: 6838
+content_fingerprints:
+  observations: 84574e870ade449611667bca3f86449a3f48ee0984a51e2956419e15668c5126
+  truth: b510c4245f164059dd3f21a8d6c2b04ec22cfec973e7b9331f575d0550fdf16e
+  differences: 53866b5e0ad865d6ce7a06466af78e1a97cdbf872d64230ab401496cc1eccade
+  collisions: 4ed00a689d9c755a42365cd53ad1f2871825fa20a2932d7a676c0199c2fb9033
+provenance:
+- asset: artist alias groups (the truth)
+  source: Wikidata skos:altLabel for African musicians (CC0), via datasets/pull_wikidata.py
+    aliases
+  method: every alias group is a real artist; the generator chooses which alias each
+    source writes and what it does to it, never what the artist is called
+  class: public-data-derived
+  pool: 1,464 artists with 2+ names
+  limitation: 'Wikidata''s alias coverage is uneven: well-known artists carry legal
+    names and stage names, lesser-known ones a single spelling variant'
+- asset: filler artists
+  source: Wikidata given+family pairs (CC0), via datasets/pull_wikidata.py names
+  method: one real name each, no aliases; only corruptions apply
+  class: public-data-derived
+  pool: 1,477 names
+- asset: the variant list a matcher may be given
+  source: MusicBrainz alias sets (CC0), via datasets/artists_dataops/pull_musicbrainz.py
+  method: joined to the truth by Wikidata P434, never by name; a different editorial
+    community from the one that supplied the truth, so the two can disagree
+  class: public-data-derived
+  note: NOT used to build this world. It is the ablation's independent variable and
+    lives beside the world, not inside it
+invariants:
+- observations.parquet carries no truth column (enforced at write time)
+- no observed value is an entity id (enforced at write time)
+- record_id is a hash of (world_id, source, sequence) and holds no entity information
+horizon:
+- '2015-01-01'
+- '2026-01-01'
+spelling_boundary: 0.88
+collisions: 28

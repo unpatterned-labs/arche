@@ -28,6 +28,10 @@ dev = [
     "ruff>=0.4",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
+    # `data/synthetic` writes Parquet. It is an arche extra rather than a base
+    # dependency, so without it here the synthetic tests skip in CI and read as
+    # coverage they are not providing.
+    "pyarrow>=14",
 ]
 
 [tool.ruff]

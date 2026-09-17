@@ -1,0 +1,311 @@
+{
+  "gias": 306,
+  "osm": 308,
+  "truth": 282,
+  "arms": {
+    "exact name (casefold)": {
+      "guide_rule": {
+        "true": 247,
+        "false": 2,
+        "precision": 0.991968,
+        "recall": 0.875887,
+        "f1": 0.93032
+      },
+      "restricted": {
+        "true": 247,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.875887,
+        "f1": 0.933837
+      }
+    },
+    "token Jaccard >= 0.5": {
+      "guide_rule": {
+        "true": 279,
+        "false": 4953,
+        "precision": 0.053326,
+        "recall": 0.989362,
+        "f1": 0.101197
+      },
+      "restricted": {
+        "true": 279,
+        "false": 4882,
+        "precision": 0.054059,
+        "recall": 0.989362,
+        "f1": 0.102517
+      }
+    },
+    "token_set_ratio >= 90": {
+      "guide_rule": {
+        "true": 267,
+        "false": 131,
+        "precision": 0.670854,
+        "recall": 0.946809,
+        "f1": 0.785294
+      },
+      "restricted": {
+        "true": 267,
+        "false": 122,
+        "precision": 0.686375,
+        "recall": 0.946809,
+        "f1": 0.795827
+      }
+    },
+    "arche, names only": {
+      "guide_rule": {
+        "true": 278,
+        "false": 184,
+        "precision": 0.601732,
+        "recall": 0.985816,
+        "f1": 0.747312
+      },
+      "restricted": {
+        "true": 278,
+        "false": 177,
+        "precision": 0.610989,
+        "recall": 0.985816,
+        "f1": 0.75441
+      }
+    },
+    "arche, names only (surfaced)": {
+      "guide_rule": {
+        "true": 281,
+        "false": 1061,
+        "precision": 0.209389,
+        "recall": 0.996454,
+        "f1": 0.346059
+      },
+      "restricted": {
+        "true": 281,
+        "false": 1049,
+        "precision": 0.211278,
+        "recall": 0.996454,
+        "f1": 0.348635
+      }
+    },
+    "splink p >= 0.01, names only": {
+      "guide_rule": {
+        "true": 278,
+        "false": 66,
+        "precision": 0.80814,
+        "recall": 0.985816,
+        "f1": 0.888179
+      },
+      "restricted": {
+        "true": 278,
+        "false": 59,
+        "precision": 0.824926,
+        "recall": 0.985816,
+        "f1": 0.898223
+      }
+    },
+    "splink p >= 0.1, names only": {
+      "guide_rule": {
+        "true": 246,
+        "false": 2,
+        "precision": 0.991935,
+        "recall": 0.87234,
+        "f1": 0.928302
+      },
+      "restricted": {
+        "true": 246,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.87234,
+        "f1": 0.931818
+      }
+    },
+    "splink p >= 0.5, names only": {
+      "guide_rule": {
+        "true": 246,
+        "false": 2,
+        "precision": 0.991935,
+        "recall": 0.87234,
+        "f1": 0.928302
+      },
+      "restricted": {
+        "true": 246,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.87234,
+        "f1": 0.931818
+      }
+    },
+    "splink p >= 0.9, names only": {
+      "guide_rule": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "restricted": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "splink p >= 0.95, names only": {
+      "guide_rule": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "restricted": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "splink p >= 0.99, names only": {
+      "guide_rule": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "restricted": {
+        "true": 0,
+        "false": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "arche, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 37,
+        "precision": 0.88254,
+        "recall": 0.985816,
+        "f1": 0.931323
+      },
+      "restricted": {
+        "true": 278,
+        "false": 32,
+        "precision": 0.896774,
+        "recall": 0.985816,
+        "f1": 0.939189
+      }
+    },
+    "arche, name + coords (surfaced)": {
+      "guide_rule": {
+        "true": 281,
+        "false": 515,
+        "precision": 0.353015,
+        "recall": 0.996454,
+        "f1": 0.521336
+      },
+      "restricted": {
+        "true": 281,
+        "false": 502,
+        "precision": 0.358876,
+        "recall": 0.996454,
+        "f1": 0.5277
+      }
+    },
+    "splink p >= 0.01, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 45,
+        "precision": 0.860681,
+        "recall": 0.985816,
+        "f1": 0.919008
+      },
+      "restricted": {
+        "true": 278,
+        "false": 41,
+        "precision": 0.871473,
+        "recall": 0.985816,
+        "f1": 0.925125
+      }
+    },
+    "splink p >= 0.1, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 10,
+        "precision": 0.965278,
+        "recall": 0.985816,
+        "f1": 0.975439
+      },
+      "restricted": {
+        "true": 278,
+        "false": 7,
+        "precision": 0.975439,
+        "recall": 0.985816,
+        "f1": 0.9806
+      }
+    },
+    "splink p >= 0.5, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 5,
+        "precision": 0.982332,
+        "recall": 0.985816,
+        "f1": 0.984071
+      },
+      "restricted": {
+        "true": 278,
+        "false": 2,
+        "precision": 0.992857,
+        "recall": 0.985816,
+        "f1": 0.989324
+      }
+    },
+    "splink p >= 0.9, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 3,
+        "precision": 0.989324,
+        "recall": 0.985816,
+        "f1": 0.987567
+      },
+      "restricted": {
+        "true": 278,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.985816,
+        "f1": 0.992857
+      }
+    },
+    "splink p >= 0.95, name + coords": {
+      "guide_rule": {
+        "true": 278,
+        "false": 3,
+        "precision": 0.989324,
+        "recall": 0.985816,
+        "f1": 0.987567
+      },
+      "restricted": {
+        "true": 278,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.985816,
+        "f1": 0.992857
+      }
+    },
+    "splink p >= 0.99, name + coords": {
+      "guide_rule": {
+        "true": 219,
+        "false": 1,
+        "precision": 0.995455,
+        "recall": 0.776596,
+        "f1": 0.87251
+      },
+      "restricted": {
+        "true": 219,
+        "false": 0,
+        "precision": 1.0,
+        "recall": 0.776596,
+        "f1": 0.874251
+      }
+    }
+  }
+}

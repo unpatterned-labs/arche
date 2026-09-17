@@ -1,0 +1,166 @@
+{
+  "records": {
+    "abt": 1081,
+    "buy": 1092
+  },
+  "true_pairs": 1097,
+  "arche_gate": {
+    "comparators": "ENTITY_PACKS['product_electronics'] on the name field, tf=None",
+    "tp": 741,
+    "fp": 22,
+    "precision": 0.9712,
+    "recall": 0.6755,
+    "invariants": [
+      "spec_refutation_neutral: the auto-match set is identical with and without refutes_below on the spec comparator",
+      "stop_list_inert: the auto-match set is identical with the electronics stop list emptied"
+    ]
+  },
+  "arms": {
+    "descriptive": {
+      "results": {
+        "p>=0.5": {
+          "true": 940,
+          "false": 2538,
+          "precision": 0.2703,
+          "recall": 0.8569,
+          "f1": 0.4109
+        },
+        "p>=0.9": {
+          "true": 806,
+          "false": 1105,
+          "precision": 0.4218,
+          "recall": 0.7347,
+          "f1": 0.5359
+        },
+        "p>=0.99": {
+          "true": 605,
+          "false": 886,
+          "precision": 0.4058,
+          "recall": 0.5515,
+          "f1": 0.4675
+        },
+        "best-F1 (p>=0.80, chosen on labels)": {
+          "true": 864,
+          "false": 1256,
+          "precision": 0.4075,
+          "recall": 0.7876,
+          "f1": 0.5371
+        }
+      },
+      "learned_bits": {
+        "code: Exact match on code1": 6.08,
+        "code: Array intersection size >= 1": 6.07,
+        "code: All other comparisons": -0.09,
+        "brand: Exact match on brand": 4.14,
+        "brand: All other comparisons": -3.54,
+        "name: Exact match on name": 9.77,
+        "name: Jaro-Winkler distance of name >= 0.92": 9.11,
+        "name: Jaro-Winkler distance of name >= 0.85": 7.61,
+        "name: All other comparisons": -0.5,
+        "tokens: Array intersection size >= 4": 7.01,
+        "tokens: Array intersection size >= 3": 5.03,
+        "tokens: Array intersection size >= 2": 3.83,
+        "tokens: All other comparisons": -6.8,
+        "spec: Array intersection size >= 1": 3.58,
+        "spec: All other comparisons": -1.42
+      },
+      "seconds": 13.5,
+      "invariants": {
+        "threshold": 0.8,
+        "spec_refutation_neutral": false,
+        "spec_delta": {
+          "only_with_spec": 75,
+          "only_without": 2,
+          "without_spec": {
+            "true": 859,
+            "false": 1188,
+            "precision": 0.4196,
+            "recall": 0.783,
+            "f1": 0.5464
+          }
+        },
+        "stop_list_inert": false,
+        "stop_delta": {
+          "only_with_stop": 18,
+          "only_without": 45,
+          "without_stop_list": {
+            "true": 871,
+            "false": 1276,
+            "precision": 0.4057,
+            "recall": 0.794,
+            "f1": 0.537
+          }
+        }
+      }
+    },
+    "identity": {
+      "results": {
+        "p>=0.5": {
+          "true": 732,
+          "false": 49,
+          "precision": 0.9373,
+          "recall": 0.6673,
+          "f1": 0.7796
+        },
+        "p>=0.9": {
+          "true": 484,
+          "false": 32,
+          "precision": 0.938,
+          "recall": 0.4412,
+          "f1": 0.6001
+        },
+        "p>=0.99": {
+          "true": 113,
+          "false": 9,
+          "precision": 0.9262,
+          "recall": 0.103,
+          "f1": 0.1854
+        },
+        "best-F1 (p>=0.35, chosen on labels)": {
+          "true": 740,
+          "false": 49,
+          "precision": 0.9379,
+          "recall": 0.6746,
+          "f1": 0.7847
+        }
+      },
+      "learned_bits": {
+        "code: Exact match on code1": 10.05,
+        "code: Array intersection size >= 1": 10.11,
+        "code: All other comparisons": -4.13,
+        "brand: Exact match on brand": 4.1,
+        "brand: All other comparisons": -3.13,
+        "spec: Array intersection size >= 1": 4.16,
+        "spec: All other comparisons": -4.86
+      },
+      "seconds": 10.9,
+      "invariants": {
+        "threshold": 0.35,
+        "spec_refutation_neutral": false,
+        "spec_delta": {
+          "only_with_spec": 3,
+          "only_without": 6,
+          "without_spec": {
+            "true": 737,
+            "false": 55,
+            "precision": 0.9306,
+            "recall": 0.6718,
+            "f1": 0.7803
+          }
+        },
+        "stop_list_inert": false,
+        "stop_delta": {
+          "only_with_stop": 0,
+          "only_without": 67,
+          "without_stop_list": {
+            "true": 740,
+            "false": 116,
+            "precision": 0.8645,
+            "recall": 0.6746,
+            "f1": 0.7578
+          }
+        }
+      }
+    }
+  }
+}

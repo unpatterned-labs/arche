@@ -1,0 +1,3250 @@
+{
+  "world": "artists_v0",
+  "records": 9944,
+  "true_pairs": 15171,
+  "collision_pairs": 327,
+  "alias_ceiling": {
+    "indep": 0.1336,
+    "oracle": 1.0
+  },
+  "arms": {
+    "splink raw p>=0.1": {
+      "arm": "splink raw p>=0.1",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 20398,
+        "true_pairs": 15171,
+        "precision": 0.5905,
+        "recall": 0.7939,
+        "f1": 0.6773,
+        "abstentions": 0,
+        "coverage": 0.7939
+      },
+      "bcubed": {
+        "precision": 0.751,
+        "recall": 0.8627,
+        "f1": 0.803
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.6067
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.9007
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5451
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5089
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0623
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7921
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5478
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.8702
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 2902,
+        "true_entities": 2905,
+        "false_merge_clusters": 320,
+        "false_merge_rate": 0.1103,
+        "false_split_entities": 776,
+        "false_split_rate": 0.2671
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 6725,
+        "nothing_obvious": 1628,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 8353,
+      "false_on_collisions": 165
+    },
+    "splink raw p>=0.2": {
+      "arm": "splink raw p>=0.2",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 15628,
+        "true_pairs": 15171,
+        "precision": 0.6964,
+        "recall": 0.7174,
+        "f1": 0.7067,
+        "abstentions": 0,
+        "coverage": 0.7174
+      },
+      "bcubed": {
+        "precision": 0.8325,
+        "recall": 0.8272,
+        "f1": 0.8299
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5709
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.766
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5303
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4408
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0586
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7004
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5096
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6575
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 3408,
+        "true_entities": 2905,
+        "false_merge_clusters": 312,
+        "false_merge_rate": 0.0915,
+        "false_split_entities": 918,
+        "false_split_rate": 0.316
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3576,
+        "nothing_obvious": 1169,
+        "whole_name": 95
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 4745,
+      "false_on_collisions": 111
+    },
+    "splink raw p>=0.3": {
+      "arm": "splink raw p>=0.3",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 9757,
+        "true_pairs": 15171,
+        "precision": 0.8246,
+        "recall": 0.5304,
+        "f1": 0.6455,
+        "abstentions": 0,
+        "coverage": 0.5304
+      },
+      "bcubed": {
+        "precision": 0.933,
+        "recall": 0.7136,
+        "f1": 0.8086
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5598
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7376
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5229
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.3141
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.005
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.4823
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.4968
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6526
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 4624,
+        "true_entities": 2905,
+        "false_merge_clusters": 144,
+        "false_merge_rate": 0.0311,
+        "false_split_entities": 1361,
+        "false_split_rate": 0.4685
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 1450,
+        "nothing_obvious": 261,
+        "whole_name": 90
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 1711,
+      "false_on_collisions": 102
+    },
+    "splink raw p>=0.5": {
+      "arm": "splink raw p>=0.5",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 7072,
+        "true_pairs": 15171,
+        "precision": 0.8347,
+        "recall": 0.3891,
+        "f1": 0.5308,
+        "abstentions": 0,
+        "coverage": 0.3891
+      },
+      "bcubed": {
+        "precision": 0.9591,
+        "recall": 0.5729,
+        "f1": 0.7173
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.2602
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.3121
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.2526
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.1927
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0043
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.2845
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.3057
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.4351
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 6104,
+        "true_entities": 2905,
+        "false_merge_clusters": 130,
+        "false_merge_rate": 0.0213,
+        "false_split_entities": 2037,
+        "false_split_rate": 0.7012
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 962,
+        "nothing_obvious": 207,
+        "whole_name": 84
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 1169,
+      "false_on_collisions": 90
+    },
+    "splink raw p>=0.9": {
+      "arm": "splink raw p>=0.9",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 0,
+        "true_pairs": 15171,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "abstentions": 0,
+        "coverage": 0.0
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.2921,
+        "f1": 0.4522
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 9944,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2649,
+        "false_split_rate": 0.9119
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink raw best-F1 (p>=0.15)": {
+      "arm": "splink raw best-F1 (p>=0.15)",
+      "seconds": 22.02,
+      "overall": {
+        "claimed_pairs": 16544,
+        "true_pairs": 15171,
+        "precision": 0.7123,
+        "recall": 0.7768,
+        "f1": 0.7432,
+        "abstentions": 0,
+        "coverage": 0.7768
+      },
+      "bcubed": {
+        "precision": 0.8282,
+        "recall": 0.8548,
+        "f1": 0.8413
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5709
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.766
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5303
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4724
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0586
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7682
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5096
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6575
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 3217,
+        "true_entities": 2905,
+        "false_merge_clusters": 312,
+        "false_merge_rate": 0.097,
+        "false_split_entities": 821,
+        "false_split_rate": 0.2826
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3590,
+        "nothing_obvious": 1169,
+        "whole_name": 109
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 35744,
+        "recall": 0.8071,
+        "reduction_ratio": 0.999277,
+        "pairs_per_record": 3.595
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.75,
+          "Jaro-Winkler distance of name >= 0.92": 10.29,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.07,
+          "All other comparisons": -6.66
+        },
+        "best_threshold": 0.15
+      },
+      "false": 4759,
+      "false_on_collisions": 125
+    },
+    "splink canon/indep p>=0.1": {
+      "arm": "splink canon/indep p>=0.1",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 21077,
+        "true_pairs": 15171,
+        "precision": 0.5903,
+        "recall": 0.8201,
+        "f1": 0.6865,
+        "abstentions": 0,
+        "coverage": 0.8201
+      },
+      "bcubed": {
+        "precision": 0.7475,
+        "recall": 0.8804,
+        "f1": 0.8085
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.598
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.8298
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5495
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5741
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.2045
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.817
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5478
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.851
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1647
+        }
+      },
+      "entities": {
+        "clusters": 2805,
+        "true_entities": 2905,
+        "false_merge_clusters": 318,
+        "false_merge_rate": 0.1134,
+        "false_split_entities": 683,
+        "false_split_rate": 0.2351
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 6543,
+        "nothing_obvious": 2092,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 8635,
+      "false_on_collisions": 167
+    },
+    "splink canon/indep p>=0.2": {
+      "arm": "splink canon/indep p>=0.2",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 16167,
+        "true_pairs": 15171,
+        "precision": 0.6928,
+        "recall": 0.7383,
+        "f1": 0.7148,
+        "abstentions": 0,
+        "coverage": 0.7383
+      },
+      "bcubed": {
+        "precision": 0.829,
+        "recall": 0.8425,
+        "f1": 0.8357
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5635
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7092
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5332
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4998
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1845
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7201
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6659
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1419
+        }
+      },
+      "entities": {
+        "clusters": 3318,
+        "true_entities": 2905,
+        "false_merge_clusters": 307,
+        "false_merge_rate": 0.0925,
+        "false_split_entities": 831,
+        "false_split_rate": 0.2861
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3495,
+        "nothing_obvious": 1472,
+        "whole_name": 95
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 4967,
+      "false_on_collisions": 112
+    },
+    "splink canon/indep p>=0.3": {
+      "arm": "splink canon/indep p>=0.3",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 9946,
+        "true_pairs": 15171,
+        "precision": 0.8202,
+        "recall": 0.5377,
+        "f1": 0.6496,
+        "abstentions": 0,
+        "coverage": 0.5377
+      },
+      "bcubed": {
+        "precision": 0.9301,
+        "recall": 0.7197,
+        "f1": 0.8115
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5512
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.6738
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5258
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.3484
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0963
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.4875
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5032
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6178
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0942
+        }
+      },
+      "entities": {
+        "clusters": 4598,
+        "true_entities": 2905,
+        "false_merge_clusters": 147,
+        "false_merge_rate": 0.032,
+        "false_split_entities": 1318,
+        "false_split_rate": 0.4537
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 1447,
+        "nothing_obvious": 341,
+        "whole_name": 89
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 1788,
+      "false_on_collisions": 105
+    },
+    "splink canon/indep p>=0.5": {
+      "arm": "splink canon/indep p>=0.5",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 7315,
+        "true_pairs": 15171,
+        "precision": 0.8349,
+        "recall": 0.4025,
+        "f1": 0.5432,
+        "abstentions": 0,
+        "coverage": 0.4025
+      },
+      "bcubed": {
+        "precision": 0.957,
+        "recall": 0.5824,
+        "f1": 0.7241
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.2589
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.2908
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.2555
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.2265
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0793
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.2947
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.3057
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.4147
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0779
+        }
+      },
+      "entities": {
+        "clusters": 6008,
+        "true_entities": 2905,
+        "false_merge_clusters": 138,
+        "false_merge_rate": 0.023,
+        "false_split_entities": 2014,
+        "false_split_rate": 0.6933
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 945,
+        "nothing_obvious": 263,
+        "whole_name": 84
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 1208,
+      "false_on_collisions": 95
+    },
+    "splink canon/indep p>=0.9": {
+      "arm": "splink canon/indep p>=0.9",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 0,
+        "true_pairs": 15171,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "abstentions": 0,
+        "coverage": 0.0
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.2921,
+        "f1": 0.4522
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 9944,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2649,
+        "false_split_rate": 0.9119
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink canon/indep best-F1 (p>=0.15)": {
+      "arm": "splink canon/indep best-F1 (p>=0.15)",
+      "seconds": 37.48,
+      "overall": {
+        "claimed_pairs": 17196,
+        "true_pairs": 15171,
+        "precision": 0.7103,
+        "recall": 0.8052,
+        "f1": 0.7548,
+        "abstentions": 0,
+        "coverage": 0.8052
+      },
+      "bcubed": {
+        "precision": 0.8245,
+        "recall": 0.8733,
+        "f1": 0.8482
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5635
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7092
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5332
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5433
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.2002
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7977
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6767
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1607
+        }
+      },
+      "entities": {
+        "clusters": 3104,
+        "true_entities": 2905,
+        "false_merge_clusters": 307,
+        "false_merge_rate": 0.0989,
+        "false_split_entities": 724,
+        "false_split_rate": 0.2492
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3509,
+        "nothing_obvious": 1472,
+        "whole_name": 109
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.69,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.06,
+          "All other comparisons": -6.66
+        },
+        "best_threshold": 0.15
+      },
+      "false": 4981,
+      "false_on_collisions": 126
+    },
+    "splink level/indep p>=0.1": {
+      "arm": "splink level/indep p>=0.1",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 20790,
+        "true_pairs": 15171,
+        "precision": 0.5977,
+        "recall": 0.8191,
+        "f1": 0.6911,
+        "abstentions": 0,
+        "coverage": 0.8191
+      },
+      "bcubed": {
+        "precision": 0.7429,
+        "recall": 0.8806,
+        "f1": 0.8059
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.6067
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.9007
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5451
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5715
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1855
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.8198
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5478
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.8846
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1414
+        }
+      },
+      "entities": {
+        "clusters": 2787,
+        "true_entities": 2905,
+        "false_merge_clusters": 315,
+        "false_merge_rate": 0.113,
+        "false_split_entities": 681,
+        "false_split_rate": 0.2344
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 6726,
+        "nothing_obvious": 1637,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        }
+      },
+      "false": 8363,
+      "false_on_collisions": 171
+    },
+    "splink level/indep p>=0.2": {
+      "arm": "splink level/indep p>=0.2",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 16062,
+        "true_pairs": 15171,
+        "precision": 0.704,
+        "recall": 0.7453,
+        "f1": 0.724,
+        "abstentions": 0,
+        "coverage": 0.7453
+      },
+      "bcubed": {
+        "precision": 0.8263,
+        "recall": 0.8459,
+        "f1": 0.836
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5709
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.766
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5303
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5103
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1842
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.732
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.7103
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1414
+        }
+      },
+      "entities": {
+        "clusters": 3286,
+        "true_entities": 2905,
+        "false_merge_clusters": 308,
+        "false_merge_rate": 0.0937,
+        "false_split_entities": 820,
+        "false_split_rate": 0.2823
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3577,
+        "nothing_obvious": 1178,
+        "whole_name": 95
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        }
+      },
+      "false": 4755,
+      "false_on_collisions": 117
+    },
+    "splink level/indep p>=0.3": {
+      "arm": "splink level/indep p>=0.3",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 10217,
+        "true_pairs": 15171,
+        "precision": 0.8312,
+        "recall": 0.5598,
+        "f1": 0.669,
+        "abstentions": 0,
+        "coverage": 0.5598
+      },
+      "bcubed": {
+        "precision": 0.9312,
+        "recall": 0.7364,
+        "f1": 0.8224
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5598
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7376
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5229
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.3873
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1379
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.5146
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5159
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.7055
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1414
+        }
+      },
+      "entities": {
+        "clusters": 4468,
+        "true_entities": 2905,
+        "false_merge_clusters": 145,
+        "false_merge_rate": 0.0325,
+        "false_split_entities": 1252,
+        "false_split_rate": 0.431
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 1454,
+        "nothing_obvious": 271,
+        "whole_name": 90
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        }
+      },
+      "false": 1725,
+      "false_on_collisions": 112
+    },
+    "splink level/indep p>=0.5": {
+      "arm": "splink level/indep p>=0.5",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 7246,
+        "true_pairs": 15171,
+        "precision": 0.8402,
+        "recall": 0.4013,
+        "f1": 0.5432,
+        "abstentions": 0,
+        "coverage": 0.4013
+      },
+      "bcubed": {
+        "precision": 0.9585,
+        "recall": 0.5828,
+        "f1": 0.7248
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.2602
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.3121
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.2526
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.2241
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0683
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.2922
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.3057
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.4411
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0665
+        }
+      },
+      "entities": {
+        "clusters": 6012,
+        "true_entities": 2905,
+        "false_merge_clusters": 132,
+        "false_merge_rate": 0.022,
+        "false_split_entities": 2010,
+        "false_split_rate": 0.6919
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 949,
+        "nothing_obvious": 209,
+        "whole_name": 68
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        }
+      },
+      "false": 1158,
+      "false_on_collisions": 79
+    },
+    "splink level/indep p>=0.9": {
+      "arm": "splink level/indep p>=0.9",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 0,
+        "true_pairs": 15171,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "abstentions": 0,
+        "coverage": 0.0
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.2921,
+        "f1": 0.4522
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 9944,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2649,
+        "false_split_rate": 0.9119
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink level/indep best-F1 (p>=0.15)": {
+      "arm": "splink level/indep best-F1 (p>=0.15)",
+      "seconds": 29.57,
+      "overall": {
+        "claimed_pairs": 16978,
+        "true_pairs": 15171,
+        "precision": 0.7191,
+        "recall": 0.8048,
+        "f1": 0.7595,
+        "abstentions": 0,
+        "coverage": 0.8048
+      },
+      "bcubed": {
+        "precision": 0.822,
+        "recall": 0.8735,
+        "f1": 0.847
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5709
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.766
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5303
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.542
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1842
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7998
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.7103
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1414
+        }
+      },
+      "entities": {
+        "clusters": 3095,
+        "true_entities": 2905,
+        "false_merge_clusters": 308,
+        "false_merge_rate": 0.0995,
+        "false_split_entities": 723,
+        "false_split_rate": 0.2489
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3591,
+        "nothing_obvious": 1178,
+        "whole_name": 109
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36111,
+        "recall": 0.8307,
+        "reduction_ratio": 0.99927,
+        "pairs_per_record": 3.631
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.74,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 10.26,
+          "Jaro-Winkler distance of name >= 0.88": 8.7,
+          "Jaro-Winkler distance of name >= 0.7": 7.04,
+          "All other comparisons": -7.0
+        },
+        "best_threshold": 0.15
+      },
+      "false": 4769,
+      "false_on_collisions": 131
+    },
+    "splink both/indep p>=0.1": {
+      "arm": "splink both/indep p>=0.1",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 21077,
+        "true_pairs": 15171,
+        "precision": 0.5903,
+        "recall": 0.8201,
+        "f1": 0.6865,
+        "abstentions": 0,
+        "coverage": 0.8201
+      },
+      "bcubed": {
+        "precision": 0.7475,
+        "recall": 0.8804,
+        "f1": 0.8085
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.598
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.8298
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5495
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5741
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.2045
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.817
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5478
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.851
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1647
+        }
+      },
+      "entities": {
+        "clusters": 2805,
+        "true_entities": 2905,
+        "false_merge_clusters": 318,
+        "false_merge_rate": 0.1134,
+        "false_split_entities": 683,
+        "false_split_rate": 0.2351
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 6543,
+        "nothing_obvious": 2092,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        }
+      },
+      "false": 8635,
+      "false_on_collisions": 167
+    },
+    "splink both/indep p>=0.2": {
+      "arm": "splink both/indep p>=0.2",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 16167,
+        "true_pairs": 15171,
+        "precision": 0.6928,
+        "recall": 0.7383,
+        "f1": 0.7148,
+        "abstentions": 0,
+        "coverage": 0.7383
+      },
+      "bcubed": {
+        "precision": 0.829,
+        "recall": 0.8425,
+        "f1": 0.8357
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5635
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7092
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5332
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4998
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.1845
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7201
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6659
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1419
+        }
+      },
+      "entities": {
+        "clusters": 3318,
+        "true_entities": 2905,
+        "false_merge_clusters": 307,
+        "false_merge_rate": 0.0925,
+        "false_split_entities": 831,
+        "false_split_rate": 0.2861
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3495,
+        "nothing_obvious": 1472,
+        "whole_name": 95
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        }
+      },
+      "false": 4967,
+      "false_on_collisions": 112
+    },
+    "splink both/indep p>=0.3": {
+      "arm": "splink both/indep p>=0.3",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 9946,
+        "true_pairs": 15171,
+        "precision": 0.8202,
+        "recall": 0.5377,
+        "f1": 0.6496,
+        "abstentions": 0,
+        "coverage": 0.5377
+      },
+      "bcubed": {
+        "precision": 0.9301,
+        "recall": 0.7197,
+        "f1": 0.8115
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5512
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.6738
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5258
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.3484
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0963
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.4875
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5032
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6178
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0942
+        }
+      },
+      "entities": {
+        "clusters": 4598,
+        "true_entities": 2905,
+        "false_merge_clusters": 147,
+        "false_merge_rate": 0.032,
+        "false_split_entities": 1318,
+        "false_split_rate": 0.4537
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 1447,
+        "nothing_obvious": 341,
+        "whole_name": 89
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        }
+      },
+      "false": 1788,
+      "false_on_collisions": 105
+    },
+    "splink both/indep p>=0.5": {
+      "arm": "splink both/indep p>=0.5",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 7315,
+        "true_pairs": 15171,
+        "precision": 0.8349,
+        "recall": 0.4025,
+        "f1": 0.5432,
+        "abstentions": 0,
+        "coverage": 0.4025
+      },
+      "bcubed": {
+        "precision": 0.957,
+        "recall": 0.5824,
+        "f1": 0.7241
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.2589
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.2908
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.2555
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.2265
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0793
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.2947
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.3057
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.4147
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0779
+        }
+      },
+      "entities": {
+        "clusters": 6008,
+        "true_entities": 2905,
+        "false_merge_clusters": 138,
+        "false_merge_rate": 0.023,
+        "false_split_entities": 2014,
+        "false_split_rate": 0.6933
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 945,
+        "nothing_obvious": 263,
+        "whole_name": 84
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        }
+      },
+      "false": 1208,
+      "false_on_collisions": 95
+    },
+    "splink both/indep p>=0.9": {
+      "arm": "splink both/indep p>=0.9",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 0,
+        "true_pairs": 15171,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "abstentions": 0,
+        "coverage": 0.0
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.2921,
+        "f1": 0.4522
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 9944,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2649,
+        "false_split_rate": 0.9119
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink both/indep best-F1 (p>=0.15)": {
+      "arm": "splink both/indep best-F1 (p>=0.15)",
+      "seconds": 40.27,
+      "overall": {
+        "claimed_pairs": 17196,
+        "true_pairs": 15171,
+        "precision": 0.7103,
+        "recall": 0.8052,
+        "f1": 0.7548,
+        "abstentions": 0,
+        "coverage": 0.8052
+      },
+      "bcubed": {
+        "precision": 0.8245,
+        "recall": 0.8733,
+        "f1": 0.8482
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.5635
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.7092
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.5332
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.5433
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.2002
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7977
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5287
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.6767
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.1607
+        }
+      },
+      "entities": {
+        "clusters": 3104,
+        "true_entities": 2905,
+        "false_merge_clusters": 307,
+        "false_merge_rate": 0.0989,
+        "false_split_entities": 724,
+        "false_split_rate": 0.2492
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3509,
+        "nothing_obvious": 1472,
+        "whole_name": 109
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 36917,
+        "recall": 0.8324,
+        "reduction_ratio": 0.999253,
+        "pairs_per_record": 3.712
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.7,
+          "Jaro-Winkler distance of canonical >= 0.92": 10.22,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.67,
+          "Jaro-Winkler distance of canonical >= 0.7": 7.07,
+          "All other comparisons": -6.98
+        },
+        "best_threshold": 0.15
+      },
+      "false": 4981,
+      "false_on_collisions": 126
+    },
+    "splink canon/oracle p>=0.1": {
+      "arm": "splink canon/oracle p>=0.1",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 23581,
+        "true_pairs": 15171,
+        "precision": 0.6434,
+        "recall": 1.0,
+        "f1": 0.783,
+        "abstentions": 0,
+        "coverage": 1.0
+      },
+      "bcubed": {
+        "precision": 0.7593,
+        "recall": 1.0,
+        "f1": 0.8632
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 1.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 1.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 2186,
+        "true_entities": 2905,
+        "false_merge_clusters": 285,
+        "false_merge_rate": 0.1304,
+        "false_split_entities": 0,
+        "false_split_rate": 0.0
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 5910,
+        "nothing_obvious": 2500,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        }
+      },
+      "false": 8410,
+      "false_on_collisions": 270
+    },
+    "splink canon/oracle p>=0.2": {
+      "arm": "splink canon/oracle p>=0.2",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 19542,
+        "true_pairs": 15171,
+        "precision": 0.7763,
+        "recall": 1.0,
+        "f1": 0.8741,
+        "abstentions": 0,
+        "coverage": 1.0
+      },
+      "bcubed": {
+        "precision": 0.8461,
+        "recall": 1.0,
+        "f1": 0.9166
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 1.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 1.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 2446,
+        "true_entities": 2905,
+        "false_merge_clusters": 292,
+        "false_merge_rate": 0.1194,
+        "false_split_entities": 0,
+        "false_split_rate": 0.0
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 2745,
+        "nothing_obvious": 1626,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        }
+      },
+      "false": 4371,
+      "false_on_collisions": 264
+    },
+    "splink canon/oracle p>=0.3": {
+      "arm": "splink canon/oracle p>=0.3",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 15790,
+        "true_pairs": 15171,
+        "precision": 0.9253,
+        "recall": 0.963,
+        "f1": 0.9438,
+        "abstentions": 0,
+        "coverage": 0.963
+      },
+      "bcubed": {
+        "precision": 0.9489,
+        "recall": 0.9827,
+        "f1": 0.9655
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.9519
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.9504
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.9527
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.9528
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.9427
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.9501
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.9745
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.9627
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.9439
+        }
+      },
+      "entities": {
+        "clusters": 2864,
+        "true_entities": 2905,
+        "false_merge_clusters": 123,
+        "false_merge_rate": 0.0429,
+        "false_split_entities": 60,
+        "false_split_rate": 0.0207
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 889,
+        "nothing_obvious": 291,
+        "whole_name": 94
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        }
+      },
+      "false": 1180,
+      "false_on_collisions": 159
+    },
+    "splink canon/oracle p>=0.5": {
+      "arm": "splink canon/oracle p>=0.5",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 8899,
+        "true_pairs": 15171,
+        "precision": 0.8693,
+        "recall": 0.5099,
+        "f1": 0.6428,
+        "abstentions": 0,
+        "coverage": 0.5099
+      },
+      "bcubed": {
+        "precision": 0.9605,
+        "recall": 0.6719,
+        "f1": 0.7907
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.4562
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.3901
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.4727
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4588
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.4943
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.3871
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.5032
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.506
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.4807
+        }
+      },
+      "entities": {
+        "clusters": 5212,
+        "true_entities": 2905,
+        "false_merge_clusters": 123,
+        "false_merge_rate": 0.0236,
+        "false_split_entities": 1552,
+        "false_split_rate": 0.5343
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 879,
+        "nothing_obvious": 284,
+        "whole_name": 84
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        }
+      },
+      "false": 1163,
+      "false_on_collisions": 142
+    },
+    "splink canon/oracle p>=0.9": {
+      "arm": "splink canon/oracle p>=0.9",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 347,
+        "true_pairs": 15171,
+        "precision": 1.0,
+        "recall": 0.0229,
+        "f1": 0.0447,
+        "abstentions": 0,
+        "coverage": 0.0229
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.327,
+        "f1": 0.4929
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.021
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0071
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0236
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0187
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0187
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0162
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0255
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.024
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0203
+        }
+      },
+      "entities": {
+        "clusters": 9597,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2302,
+        "false_split_rate": 0.7924
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink canon/oracle best-F1 (p>=0.30)": {
+      "arm": "splink canon/oracle best-F1 (p>=0.30)",
+      "seconds": 18.46,
+      "overall": {
+        "claimed_pairs": 15790,
+        "true_pairs": 15171,
+        "precision": 0.9253,
+        "recall": 0.963,
+        "f1": 0.9438,
+        "abstentions": 0,
+        "coverage": 0.963
+      },
+      "bcubed": {
+        "precision": 0.9489,
+        "recall": 0.9827,
+        "f1": 0.9655
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.9519
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.9504
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.9527
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.9528
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.9427
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.9501
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.9745
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.9627
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.9439
+        }
+      },
+      "entities": {
+        "clusters": 2864,
+        "true_entities": 2905,
+        "false_merge_clusters": 123,
+        "false_merge_rate": 0.0429,
+        "false_split_entities": 60,
+        "false_split_rate": 0.0207
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 889,
+        "nothing_obvious": 291,
+        "whole_name": 94
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 39054,
+        "recall": 1.0,
+        "reduction_ratio": 0.99921,
+        "pairs_per_record": 3.927
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on canonical": 10.68,
+          "Jaro-Winkler distance of canonical >= 0.92": 8.9,
+          "Jaro-Winkler distance of canonical >= 0.88": 8.01,
+          "Jaro-Winkler distance of canonical >= 0.7": 6.67,
+          "All other comparisons": -6.26
+        },
+        "best_threshold": 0.3
+      },
+      "false": 1180,
+      "false_on_collisions": 159
+    },
+    "splink level/oracle p>=0.1": {
+      "arm": "splink level/oracle p>=0.1",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 20073,
+        "true_pairs": 15171,
+        "precision": 0.7558,
+        "recall": 1.0,
+        "f1": 0.8609,
+        "abstentions": 0,
+        "coverage": 1.0
+      },
+      "bcubed": {
+        "precision": 0.7934,
+        "recall": 1.0,
+        "f1": 0.8848
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 1.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 1.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 2308,
+        "true_entities": 2905,
+        "false_merge_clusters": 293,
+        "false_merge_rate": 0.1269,
+        "false_split_entities": 0,
+        "false_split_rate": 0.0
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3634,
+        "nothing_obvious": 1268,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        }
+      },
+      "false": 4902,
+      "false_on_collisions": 264
+    },
+    "splink level/oracle p>=0.2": {
+      "arm": "splink level/oracle p>=0.2",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 17177,
+        "true_pairs": 15171,
+        "precision": 0.7483,
+        "recall": 0.8473,
+        "f1": 0.7947,
+        "abstentions": 0,
+        "coverage": 0.8473
+      },
+      "bcubed": {
+        "precision": 0.8259,
+        "recall": 0.925,
+        "f1": 0.8727
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.9183
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.8251
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 2902,
+        "true_entities": 2905,
+        "false_merge_clusters": 303,
+        "false_merge_rate": 0.1044,
+        "false_split_entities": 285,
+        "false_split_rate": 0.0981
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3109,
+        "nothing_obvious": 1214,
+        "whole_name": 95
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        }
+      },
+      "false": 4323,
+      "false_on_collisions": 209
+    },
+    "splink level/oracle p>=0.3": {
+      "arm": "splink level/oracle p>=0.3",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 11670,
+        "true_pairs": 15171,
+        "precision": 0.8896,
+        "recall": 0.6843,
+        "f1": 0.7736,
+        "abstentions": 0,
+        "coverage": 0.6843
+      },
+      "bcubed": {
+        "precision": 0.9469,
+        "recall": 0.8413,
+        "f1": 0.891
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.8161
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.6063
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 3918,
+        "true_entities": 2905,
+        "false_merge_clusters": 133,
+        "false_merge_rate": 0.0339,
+        "false_split_entities": 777,
+        "false_split_rate": 0.2675
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 982,
+        "nothing_obvious": 306,
+        "whole_name": 86
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        }
+      },
+      "false": 1288,
+      "false_on_collisions": 199
+    },
+    "splink level/oracle p>=0.5": {
+      "arm": "splink level/oracle p>=0.5",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 7803,
+        "true_pairs": 15171,
+        "precision": 0.9567,
+        "recall": 0.4921,
+        "f1": 0.6499,
+        "abstentions": 0,
+        "coverage": 0.4921
+      },
+      "bcubed": {
+        "precision": 0.987,
+        "recall": 0.6454,
+        "f1": 0.7805
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.4439
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.3617
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.4638
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4382
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.4807
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.3565
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.4841
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.4916
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.4648
+        }
+      },
+      "entities": {
+        "clusters": 5584,
+        "true_entities": 2905,
+        "false_merge_clusters": 44,
+        "false_merge_rate": 0.0079,
+        "false_split_entities": 1811,
+        "false_split_rate": 0.6234
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 248,
+        "nothing_obvious": 90,
+        "whole_name": 68
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        }
+      },
+      "false": 338,
+      "false_on_collisions": 126
+    },
+    "splink level/oracle p>=0.9": {
+      "arm": "splink level/oracle p>=0.9",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 0,
+        "true_pairs": 15171,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "abstentions": 0,
+        "coverage": 0.0
+      },
+      "bcubed": {
+        "precision": 1.0,
+        "recall": 0.2921,
+        "f1": 0.4522
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0
+        }
+      },
+      "entities": {
+        "clusters": 9944,
+        "true_entities": 2905,
+        "false_merge_clusters": 0,
+        "false_merge_rate": 0.0,
+        "false_split_entities": 2649,
+        "false_split_rate": 0.9119
+      },
+      "false_merges_by_what_was_shared": {},
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        }
+      },
+      "false": 0,
+      "false_on_collisions": 0
+    },
+    "splink level/oracle best-F1 (p>=0.10)": {
+      "arm": "splink level/oracle best-F1 (p>=0.10)",
+      "seconds": 39.3,
+      "overall": {
+        "claimed_pairs": 20073,
+        "true_pairs": 15171,
+        "precision": 0.7558,
+        "recall": 1.0,
+        "f1": 0.8609,
+        "abstentions": 0,
+        "coverage": 1.0
+      },
+      "bcubed": {
+        "precision": 0.7934,
+        "recall": 1.0,
+        "f1": 0.8848
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 1.0
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 1.0
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 1.0
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 1.0
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 1.0
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 1.0
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 1.0
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 1.0
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 1.0
+        }
+      },
+      "entities": {
+        "clusters": 2308,
+        "true_entities": 2905,
+        "false_merge_clusters": 293,
+        "false_merge_rate": 0.1269,
+        "false_split_entities": 0,
+        "false_split_rate": 0.0
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 3634,
+        "nothing_obvious": 1268,
+        "whole_name": 149
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 38770,
+        "recall": 1.0,
+        "reduction_ratio": 0.999216,
+        "pairs_per_record": 3.899
+      },
+      "notes": {
+        "learned_bits": {
+          "Exact match on name": 10.63,
+          "Array intersection size >= 1": 10.7,
+          "Jaro-Winkler distance of name >= 0.92": 9.27,
+          "Jaro-Winkler distance of name >= 0.88": 8.25,
+          "Jaro-Winkler distance of name >= 0.7": 6.86,
+          "All other comparisons": -7.1
+        },
+        "best_threshold": 0.1
+      },
+      "false": 4902,
+      "false_on_collisions": 264
+    },
+    "arche artist pack (curated list)": {
+      "arm": "arche artist pack (curated list)",
+      "seconds": 108.9,
+      "overall": {
+        "claimed_pairs": 11214,
+        "true_pairs": 15171,
+        "precision": 0.9784,
+        "recall": 0.7232,
+        "f1": 0.8317,
+        "abstentions": 13883,
+        "coverage": 0.8216
+      },
+      "bcubed": {
+        "precision": 0.9919,
+        "recall": 0.8094,
+        "f1": 0.8914
+      },
+      "recall_by_stratum": {
+        "error": {
+          "true_pairs": 811,
+          "recall": 0.037
+        },
+        "error/truncation": {
+          "true_pairs": 141,
+          "recall": 0.1135
+        },
+        "error/typo": {
+          "true_pairs": 677,
+          "recall": 0.0207
+        },
+        "representation": {
+          "true_pairs": 6096,
+          "recall": 0.4455
+        },
+        "representation/alias": {
+          "true_pairs": 3002,
+          "recall": 0.065
+        },
+        "representation/case_upper": {
+          "true_pairs": 2847,
+          "recall": 0.7215
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 157,
+          "recall": 0.7325
+        },
+        "representation/spelling": {
+          "true_pairs": 832,
+          "recall": 0.5673
+        },
+        "representation/alias<0.7": {
+          "true_pairs": 2016,
+          "recall": 0.0134
+        }
+      },
+      "entities": {
+        "clusters": 4175,
+        "true_entities": 2905,
+        "false_merge_clusters": 30,
+        "false_merge_rate": 0.0072,
+        "false_split_entities": 1016,
+        "false_split_rate": 0.3497
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 219,
+        "whole_name": 138,
+        "nothing_obvious": 23
+      },
+      "blocking": {
+        "measured": false,
+        "why": "the arm does not enumerate its candidate pairs"
+      },
+      "notes": {},
+      "false": 242,
+      "false_on_collisions": 142
+    }
+  }
+}

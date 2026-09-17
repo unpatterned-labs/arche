@@ -1,0 +1,108 @@
+{
+  "benchmark": "the population table as a Splink input",
+  "question": "does registering a population-derived term-frequency lookup give Splink the small-batch property arche's shipped table gives arche?",
+  "population": "value-level frequencies over the full Nigerian school register (107,670 names) -- the most favourable population, an upper bound",
+  "labels": "identical at every filler size (bench_splink_nigeria)",
+  "seed": 20260816,
+  "results": {
+    "0": {
+      "records": 1200,
+      "splink / batch TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 2
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 368
+        }
+      },
+      "splink / population TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 364
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 368
+        }
+      },
+      "arche": {
+        "arche_match": {
+          "true": 146,
+          "false": 2
+        },
+        "arche_surfaced": {
+          "true": 199,
+          "false": 400
+        }
+      }
+    },
+    "500": {
+      "records": 1700,
+      "splink / batch TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 0
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 2
+        }
+      },
+      "splink / population TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 13
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 13
+        }
+      },
+      "arche": {
+        "arche_match": {
+          "true": 146,
+          "false": 2
+        },
+        "arche_surfaced": {
+          "true": 199,
+          "false": 400
+        }
+      }
+    },
+    "2000": {
+      "records": 3200,
+      "splink / batch TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 0
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 2
+        }
+      },
+      "splink / population TF": {
+        "splink@0.9": {
+          "true": 190,
+          "false": 12
+        },
+        "splink@0.5": {
+          "true": 190,
+          "false": 13
+        }
+      },
+      "arche": {
+        "arche_match": {
+          "true": 146,
+          "false": 2
+        },
+        "arche_surfaced": {
+          "true": 199,
+          "false": 398
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "world": "ng_supplier_v0_s400",
+  "records": 1198,
+  "true_pairs": 1485,
+  "arms": [
+    {
+      "arm": "exact",
+      "seconds": 0.0,
+      "overall": {
+        "claimed_pairs": 718,
+        "true_pairs": 1485,
+        "precision": 0.8579,
+        "recall": 0.4148,
+        "f1": 0.5592,
+        "abstentions": 0,
+        "coverage": 0.4148
+      },
+      "bcubed": {
+        "precision": 0.9685,
+        "recall": 0.6207,
+        "f1": 0.7566
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 249,
+          "recall": 0.261
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 35,
+          "recall": 0.2571
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 19,
+          "recall": 0.6842
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 125,
+          "recall": 0.072
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 94,
+          "recall": 0.3723
+        },
+        "error": {
+          "true_pairs": 1110,
+          "recall": 0.2874
+        },
+        "error/digit_mutation": {
+          "true_pairs": 137,
+          "recall": 0.4161
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 579,
+          "recall": 0.2245
+        },
+        "error/truncation": {
+          "true_pairs": 468,
+          "recall": 0.2244
+        },
+        "error/typo": {
+          "true_pairs": 625,
+          "recall": 0.248
+        },
+        "representation": {
+          "true_pairs": 1316,
+          "recall": 0.3959
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 651,
+          "recall": 0.3825
+        },
+        "representation/ampersand": {
+          "true_pairs": 49,
+          "recall": 0.2449
+        },
+        "representation/case_upper": {
+          "true_pairs": 693,
+          "recall": 0.3579
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 4,
+          "recall": 0.0
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 584,
+          "recall": 0.4058
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 187,
+          "recall": 0.3636
+        }
+      },
+      "entities": {
+        "clusters": 753,
+        "true_entities": 400,
+        "false_merge_clusters": 19,
+        "false_merge_rate": 0.0252,
+        "false_split_entities": 255,
+        "false_split_rate": 0.6375
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 102,
+        "city": 73,
+        "address": 5,
+        "whole_name": 3,
+        "bank": 3
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 718,
+        "recall": 0.4148,
+        "reduction_ratio": 0.998999,
+        "pairs_per_record": 0.599
+      },
+      "notes": {
+        "rule": "normalised name + city, exact",
+        "oversized_blocks": 0
+      }
+    },
+    {
+      "arm": "jaro_winkler",
+      "seconds": 0.06,
+      "overall": {
+        "claimed_pairs": 3161,
+        "true_pairs": 1485,
+        "precision": 0.4277,
+        "recall": 0.9104,
+        "f1": 0.582,
+        "abstentions": 0,
+        "coverage": 0.9104
+      },
+      "bcubed": {
+        "precision": 0.8028,
+        "recall": 0.9536,
+        "f1": 0.8717
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 249,
+          "recall": 0.9237
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 35,
+          "recall": 0.8857
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 19,
+          "recall": 0.9474
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 125,
+          "recall": 0.928
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 94,
+          "recall": 0.9255
+        },
+        "error": {
+          "true_pairs": 1110,
+          "recall": 0.8802
+        },
+        "error/digit_mutation": {
+          "true_pairs": 137,
+          "recall": 0.8978
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 579,
+          "recall": 0.8428
+        },
+        "error/truncation": {
+          "true_pairs": 468,
+          "recall": 0.8697
+        },
+        "error/typo": {
+          "true_pairs": 625,
+          "recall": 0.8752
+        },
+        "representation": {
+          "true_pairs": 1316,
+          "recall": 0.9027
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 651,
+          "recall": 0.9171
+        },
+        "representation/ampersand": {
+          "true_pairs": 49,
+          "recall": 0.9796
+        },
+        "representation/case_upper": {
+          "true_pairs": 693,
+          "recall": 0.9019
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 4,
+          "recall": 0.0
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 584,
+          "recall": 0.8904
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 187,
+          "recall": 0.8877
+        }
+      },
+      "entities": {
+        "clusters": 361,
+        "true_entities": 400,
+        "false_merge_clusters": 32,
+        "false_merge_rate": 0.0886,
+        "false_split_entities": 36,
+        "false_split_rate": 0.09
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 1736,
+        "city": 136,
+        "whole_name": 74,
+        "nothing_obvious": 69,
+        "bank": 25,
+        "address": 7
+      },
+      "blocking": {
+        "measured": true,
+        "source": "recomputed from the candidate pairs the arm reported",
+        "candidate_pairs": 24887,
+        "recall": 0.9684,
+        "reduction_ratio": 0.96529,
+        "pairs_per_record": 20.774
+      },
+      "notes": {
+        "threshold": 0.92,
+        "block": "first 3 chars of normalised name",
+        "oversized_blocks": 0
+      }
+    },
+    {
+      "arm": "arche/pack",
+      "seconds": 720.97,
+      "overall": {
+        "claimed_pairs": 1258,
+        "true_pairs": 1485,
+        "precision": 0.8831,
+        "recall": 0.7481,
+        "f1": 0.8101,
+        "abstentions": 4441,
+        "coverage": 0.9778
+      },
+      "bcubed": {
+        "precision": 0.8881,
+        "recall": 0.8849,
+        "f1": 0.8865
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 249,
+          "recall": 0.4056
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 35,
+          "recall": 0.6
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 19,
+          "recall": 0.6316
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 125,
+          "recall": 0.088
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 94,
+          "recall": 0.6489
+        },
+        "error": {
+          "true_pairs": 1110,
+          "recall": 0.682
+        },
+        "error/digit_mutation": {
+          "true_pairs": 137,
+          "recall": 0.3431
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 579,
+          "recall": 0.6701
+        },
+        "error/truncation": {
+          "true_pairs": 468,
+          "recall": 0.6346
+        },
+        "error/typo": {
+          "true_pairs": 625,
+          "recall": 0.6768
+        },
+        "representation": {
+          "true_pairs": 1316,
+          "recall": 0.7386
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 651,
+          "recall": 0.7097
+        },
+        "representation/ampersand": {
+          "true_pairs": 49,
+          "recall": 0.6122
+        },
+        "representation/case_upper": {
+          "true_pairs": 693,
+          "recall": 0.7287
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 4,
+          "recall": 0.5
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 584,
+          "recall": 0.7449
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 187,
+          "recall": 0.7005
+        }
+      },
+      "entities": {
+        "clusters": 463,
+        "true_entities": 400,
+        "false_merge_clusters": 15,
+        "false_merge_rate": 0.0324,
+        "false_split_entities": 98,
+        "false_split_rate": 0.245
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 143,
+        "city": 8,
+        "address": 6,
+        "whole_name": 6,
+        "bank": 2,
+        "nothing_obvious": 2
+      },
+      "blocking": {
+        "measured": true,
+        "source": "reported by the arm, not recomputed",
+        "recall": 0.9953,
+        "candidate_pairs": 106884,
+        "reduction_ratio": 0.850929
+      },
+      "notes": {
+        "engine": "crosswalk.v1",
+        "candidate_pairs": 106884,
+        "blocking_recall_reported_by_arche": 0.9953
+      }
+    },
+    {
+      "arm": "arche/custom",
+      "seconds": 652.39,
+      "overall": {
+        "claimed_pairs": 1073,
+        "true_pairs": 1485,
+        "precision": 0.9478,
+        "recall": 0.6848,
+        "f1": 0.7952,
+        "abstentions": 2169,
+        "coverage": 0.936
+      },
+      "bcubed": {
+        "precision": 0.9047,
+        "recall": 0.8888,
+        "f1": 0.8967
+      },
+      "recall_by_stratum": {
+        "change": {
+          "true_pairs": 249,
+          "recall": 0.3414
+        },
+        "change/ACCOUNT_CHANGED": {
+          "true_pairs": 35,
+          "recall": 0.2286
+        },
+        "change/DIRECTOR_CHANGED": {
+          "true_pairs": 19,
+          "recall": 0.6316
+        },
+        "change/ORG_RELOCATED": {
+          "true_pairs": 125,
+          "recall": 0.072
+        },
+        "change/ORG_RENAMED": {
+          "true_pairs": 94,
+          "recall": 0.6064
+        },
+        "error": {
+          "true_pairs": 1110,
+          "recall": 0.5973
+        },
+        "error/digit_mutation": {
+          "true_pairs": 137,
+          "recall": 0.1606
+        },
+        "error/ocr_confusion": {
+          "true_pairs": 579,
+          "recall": 0.5406
+        },
+        "error/truncation": {
+          "true_pairs": 468,
+          "recall": 0.5406
+        },
+        "error/typo": {
+          "true_pairs": 625,
+          "recall": 0.5776
+        },
+        "representation": {
+          "true_pairs": 1316,
+          "recall": 0.6733
+        },
+        "representation/address_abbreviated": {
+          "true_pairs": 651,
+          "recall": 0.6421
+        },
+        "representation/ampersand": {
+          "true_pairs": 49,
+          "recall": 0.6531
+        },
+        "representation/case_upper": {
+          "true_pairs": 693,
+          "recall": 0.6436
+        },
+        "representation/diacritic_loss": {
+          "true_pairs": 4,
+          "recall": 0.25
+        },
+        "representation/legal_suffix_abbreviated": {
+          "true_pairs": 584,
+          "recall": 0.6558
+        },
+        "representation/legal_suffix_dropped": {
+          "true_pairs": 187,
+          "recall": 0.6096
+        }
+      },
+      "entities": {
+        "clusters": 465,
+        "true_entities": 400,
+        "false_merge_clusters": 13,
+        "false_merge_rate": 0.028,
+        "false_split_entities": 94,
+        "false_split_rate": 0.235
+      },
+      "false_merges_by_what_was_shared": {
+        "surname_head": 54,
+        "city": 5,
+        "address": 4,
+        "whole_name": 2,
+        "nothing_obvious": 1
+      },
+      "blocking": {
+        "measured": true,
+        "source": "reported by the arm, not recomputed",
+        "recall": 0.9973,
+        "candidate_pairs": 120506,
+        "reduction_ratio": 0.831931
+      },
+      "notes": {
+        "engine": "crosswalk.v1",
+        "candidate_pairs": 120506,
+        "blocking_recall_reported_by_arche": 0.9973
+      }
+    }
+  ]
+}

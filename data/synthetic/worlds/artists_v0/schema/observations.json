@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/observations-v0.json",
+  "title": "observations",
+  "type": "object",
+  "required": [
+    "record_id",
+    "source",
+    "observed_at"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
