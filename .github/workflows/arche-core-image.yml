@@ -1,0 +1,70 @@
+name: arche-core image
+
+# Builds packages/arche-core/Dockerfile. The build is the test: it installs
+# every model extra on Linux and calls `arche._service.warm()`, which fails
+# the build if GLiNER 2, GLiNER2-PII or docling's converter does not load.
+# That is the only check in the repository that proves the extras compose --
+# the unit suite runs without them -- and it is what caught the CUDA-torch
+# default and the torchvision/transformers import failure.
+#
+# The image is not pushed anywhere. It is built, its health endpoint is
+# asked whether the warm start finished, and it is thrown away.
+#
+# Runs weekly and on changes to the Dockerfile or the extras' declarations,
+# not on every push: it pulls several gigabytes of weights each time.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - "packages/arche-core/Dockerfile"
+      - "packages/arche-core/.dockerignore"
+      - "packages/arche-core/pyproject.toml"
+      - "packages/arche-core/src/arche/_service.py"
+      - "packages/arche-core/src/arche/_models.py"
+      - ".github/workflows/arche-core-image.yml"
+  pull_request:
+    paths:
+      - "packages/arche-core/Dockerfile"
+      - "packages/arche-core/.dockerignore"
+      - ".github/workflows/arche-core-image.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build, warm, /livez
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (the warm-up gate runs inside the build)
+        run: docker build -t arche-core:ci packages/arche-core
+
+      - name: Start and wait for the warm start
+        run: |
+          docker run -d --name arche -p 8766:8766 arche-core:ci
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8766/livez | grep -q '"warm":true'; then
+              echo "warm after ${i}x5s"; exit 0
+            fi
+            sleep 5
+          done
+          echo "the service never reported warm:true"; docker logs arche; exit 1
+
+      - name: Capabilities
+        run: curl -sf http://127.0.0.1:8766/capabilities | python3 -m json.tool
+
+      - name: A document through the whole path
+        run: |
+          printf 'INVOICE\nSupplier: Bello Freight Nigeria Limited\nRC 1234567\nContact: Adesola Okonkwo, adesola@example.com, 08031234567\n' > a.txt
+          printf 'PURCHASE ORDER\nVendor: Bello Freight Nigeria Ltd\nAttn: Adesola E. Okonkwo, adesola@example.com\n' > b.txt
+          curl -sf -F files=@a.txt -F files=@b.txt -F entity=organisation -F jurisdiction=NG \
+               http://127.0.0.1:8766/documents \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); (dec,)=d['decisions']; print(dec['identity'], dec['score']); assert dec['identity']=='same_entity', dec"
+
+      - name: Stop
+        if: always()
+        run: docker rm -f arche || true

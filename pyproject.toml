@@ -19,6 +19,7 @@ members = [
 
 [tool.uv.sources]
 arche-core = { workspace = true }
+arche-mcp = { workspace = true }
 arche-adapters = { workspace = true }
 arche-graph = { workspace = true }
 arche-live = { workspace = true }
@@ -32,6 +33,16 @@ dev = [
     # dependency, so without it here the synthetic tests skip in CI and read as
     # coverage they are not providing.
     "pyarrow>=14",
+    # `arche serve` is behind the `service` extra, which `arche-core[all]`
+    # deliberately leaves out so the library wheel stays a library. Without
+    # these here the two service test modules skip in CI for the same reason
+    # the synthetic ones did.
+    "arche-core[service]",
+    "httpx>=0.27",
+    # The studio's hash-key tests import the MCP server. It is a workspace
+    # member, not a dependency of the root, so a plain `uv sync` dropped it
+    # and three tests failed on a clean checkout.
+    "arche-mcp",
 ]
 
 [tool.ruff]

@@ -70,6 +70,12 @@ _DETECTION_FIELDS = {
     "SSN": "national_id",
     "PASSPORT": "passport",
     "ADDRESS": "address",
+    # Company identifiers. `registration_id` is the organisation pack's
+    # highest-weighted field, and until these two lines a detected RC number
+    # sat in the census and never reached the record that was compared.
+    "RC": "registration_id",
+    "BN": "registration_id",
+    "TIN": "tin",
 }
 
 
@@ -79,6 +85,14 @@ _DETECTION_FIELDS = {
 # document adapter rather than an attempt to infer arbitrary relationships.
 _LABELLED_IDENTITY_FIELDS = {
     "supplier": "supplier_name",
+    # The same party under the labels the other side of a trade writes. A
+    # purchase order says `Vendor:` for what the invoice calls `Supplier:`,
+    # and without these the two documents about one company compared the
+    # invoice's company against the order's contact person.
+    "vendor": "supplier_name",
+    "seller": "supplier_name",
+    "payee": "supplier_name",
+    "contractor": "supplier_name",
     "distributor": "distributor_name",
     "estate": "estate_name",
     "registration id": "registration_id",
@@ -88,7 +102,7 @@ _LABELLED_IDENTITY_FIELDS = {
     "origin": "country",
 }
 _LABELLED_IDENTITY_RE = re.compile(
-    r"^\s*(?P<label>supplier|distributor|estate|registration\s+id|"
+    r"^\s*(?P<label>supplier|vendor|seller|payee|contractor|distributor|estate|registration\s+id|"
     r"registration\s+number|registration\s+no|country|origin)\s*:\s*"
     r"(?P<value>\S(?:.*\S)?)\s*$",
     re.IGNORECASE | re.MULTILINE,
@@ -414,6 +428,33 @@ def _record_from_metadata(info) -> dict[str, Any]:
     return out
 
 
+def _side_for(entity: str, record: dict[str, Any]) -> dict[str, Any]:
+    """The record as the pack for ``entity`` reads it.
+
+    A document's record is entity-agnostic: ``name`` is the best person the
+    extractor found, ``organisation`` the best organisation. The organisation
+    pack reads ``name`` -- so, unshaped, two supplier documents were compared
+    on the *contact's* name, found no field in common, and came back
+    `different` with no factors at all (measured, 2026-09-18). For an
+    organisation the company is the name, the person moves to
+    ``contact_name`` where nothing in the pack will mistake it, and the
+    supplier label a commercial document carries is the same field again.
+    """
+    if entity not in ("organisation", "organization"):
+        return record
+    side = dict(record)
+    company = record.get("organisation") or record.get("supplier_name")
+    if record.get("name") and record["name"] != company:
+        side["contact_name"] = record["name"]
+    # No company found means no `name` for this pack -- not the contact's.
+    # Comparing a person's name against a company's under the organisation
+    # pack is a comparison of two different kinds of thing, and "compared,
+    # below the floor, different" would be the wrong honest answer; with the
+    # field absent the receipt says nothing was compared.
+    side["name"] = company
+    return side
+
+
 def _record_from_text(text: str, jurisdiction: str | None,
                       inferred: bool = False,
                       extraction_backend: str = "auto") -> tuple[dict, dict]:
@@ -606,6 +647,7 @@ def resolve_documents(
     _t = time.monotonic()
 
     refs = {doc: Reference.from_record(rec) for doc, rec in report.records.items()}
+    sides = {doc: _side_for(entity, rec) for doc, rec in report.records.items()}
     if candidate_rows is not None:
         pair_count = len(refs) * len(candidate_rows)
         if pair_count > max_candidate_pairs:
@@ -625,7 +667,7 @@ def resolve_documents(
             )
         for document, document_ref in refs.items():
             rows: list[dict[str, Any]] = []
-            document_input = report.records[document] if entity != "person" else document_ref
+            document_input = sides[document] if entity != "person" else document_ref
             for candidate_id, candidate_input in candidate_inputs.items():
                 extraction = {"extraction": {"document": report.provenance.get(document, {})}}
                 decision = resolve.compare(
@@ -655,8 +697,8 @@ def resolve_documents(
                 if report.provenance.get(doc)
             }
             extraction = {"extraction": extraction} if extraction else None
-            side_a = refs[a] if entity == "person" else report.records[a]
-            side_b = refs[b] if entity == "person" else report.records[b]
+            side_a = refs[a] if entity == "person" else sides[a]
+            side_b = refs[b] if entity == "person" else sides[b]
             decision = resolve.compare(side_a, side_b, entity=entity, extra_pins=extraction)
             report.decisions.append(_decision_row(a, b, decision))
             if store is not None:

@@ -1,0 +1,6 @@
+# The build needs the package source and its pyproject; tests, examples and
+# caches are never read by the image and should not be sent to the daemon.
+tests/
+examples/
+**/__pycache__/
+**/*.pyc

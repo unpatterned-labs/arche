@@ -17,10 +17,13 @@ The ledger is what makes `/decision`, `/explain` and `/replay` answer; without o
 | `POST /detect` | `{"text", "jurisdiction"?, "backend"?, "statute"?}` -- the spans, as offsets, categories, confidence and citations. **Never the value.** |
 | `POST /deidentify` | as `/detect` plus `"method"?` (`statute`, `mask`, `token`, `drop`), `"salt"?`, `"store"?` -- the masked copy, its `decision_id`, the spans by category, and the `record` a `token` copy can be compared on |
 | `POST /compare` | `{"a", "b", "entity"?, "jurisdiction"?, "backend"?, "store"?}` -- two dicts or two strings; the receipt |
+| `POST /documents` | multipart `files` plus form fields `entity`?, `jurisdiction`?, `backend`?, `store`?, `reveal`? -- one resolved record per document, the verdicts between them, the review pack, and per-file errors. [`resolve_documents`](documents-to-decision.md) with a socket in front |
+| `POST /places` | `{"text"}` -- place mentions with their spatial role (`origin`, `destination`, `via`, `location`, or `unknown` when the cues conflict), each with the cue that decided it |
+| `POST /extract` | `{"text", "entity_types"?, "backend"?}` -- proposed entities of the types named |
 | `GET /decision/{id}` | the stored decision, values masked; `?reveal=true` shows them |
 | `GET /explain/{id}` | why, in the ledger's words |
 | `GET /replay/{id}` | run it again from the stored inputs and say whether the same id comes out |
-| `GET /livez`, `GET /capabilities` | up; version, whether a ledger and a model are present |
+| `GET /livez`, `GET /capabilities` | up, and whether the warm start finished; version, whether a ledger and a model are present, which parsers this build has |
 
 Defaults are the library's: `detect` and `deidentify` run `backend="auto"` (the rules, plus the model when `[detect2]` is installed), `compare` runs `basic`. A jurisdiction the text does not settle is a 400 with the same message the Python call raises, because a redaction under the wrong statute looks finished and is not. FastAPI publishes the OpenAPI document at `/docs`.
 
@@ -40,6 +43,19 @@ curl -s localhost:8766/deidentify -H 'content-type: application/json' \
 That is the NDPA's rendering: the name and the phone are tokenised, so two notes about one person still compare on equal tokens (`record` is what `compare` takes), and the national identity number is masked outright. `model` names the proposer that ran because `[detect2]` was installed on that machine; without it the same call says `"backend": "basic", "model": null` and the lexicon and validators do the finding.
 
 The `decision_id` re-derives from the same text and the same pins, so a second call with the same input returns the same id, and `/replay/{id}` later says whether today's detectors still find the same spans.
+
+## Documents
+
+```bash
+curl -s localhost:8766/documents -F files=@invoice.pdf -F files=@purchase_order.pdf \
+     -F entity=organisation -F jurisdiction=NG
+```
+
+Each file is parsed -- plain text natively, PDF and DOCX through their extras, everything else through docling, scanned pages through RapidOCR when `[doc-ocr]` is installed -- then detected under its jurisdiction, mined for names and places, and resolved against the other files in the same request. Values come back masked unless `reveal=true`; `store=true` records the verdicts in the ledger. A parser this build does not have is a 400 naming the extra, not a report that says the documents contained nothing.
+
+## Warm start
+
+Every model and parser loads on first use, which on a fresh process is a slow first request: two GLiNER models and docling's layout models are a thirty-second wait. `--warm` (or `ARCHE_WARM=1`) loads them at startup instead, and `/livez` answers `"warm": true` once that has finished -- the line a container health check should wait for. `arche._service.warm()` is the same function, public so an image build can call it and ship the weights. `packages/arche-core/Dockerfile` does exactly that -- every parser and both models inside, nothing fetched at runtime, and the build fails if a model does not load -- and is the image to put an auth proxy in front of.
 
 ## Authentication
 

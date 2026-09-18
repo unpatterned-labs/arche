@@ -18,21 +18,6 @@ from __future__ import annotations
 
 import warnings as _warnings
 
-from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
-from arche.resolve.artists import artist_aliases  # noqa: E402,F401
-
-# The engine, imported privately. The public `reconcile` below IS this
-# function plus entity-pack lookup: handed the same comparators the two
-# produce byte-identical output, `decision_id` included, which is why they
-# are merged into one verb rather than kept as two names for one question.
-from arche.resolve.reconcile import reconcile as _reconcile_engine  # noqa: E402,F401
-
-# What would settle a pair the engine declined to settle. Imported here rather
-# than left private because the caller who needs it most is an agent, and an
-# agent reaches for the documented surface. It reads `ENTITY_PACKS` from this
-# module, so it imports that lazily inside the call to keep the cycle broken.
-from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
-
 # The keys that make a lookup a lookup. Public because a master list is
 # asked about many times and its keys do not change between questions;
 # computing them once is what lets `find` scale past a scan.
@@ -40,6 +25,20 @@ from arche.resolve._fingerprint import (  # noqa: E402,F401
     FingerprintIndex,
     fingerprint,
 )
+from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
+
+# What would settle a pair the engine declined to settle. Imported here rather
+# than left private because the caller who needs it most is an agent, and an
+# agent reaches for the documented surface. It reads `ENTITY_PACKS` from this
+# module, so it imports that lazily inside the call to keep the cycle broken.
+from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
+from arche.resolve.artists import artist_aliases  # noqa: E402,F401
+
+# The engine, imported privately. The public `reconcile` below IS this
+# function plus entity-pack lookup: handed the same comparators the two
+# produce byte-identical output, `decision_id` included, which is why they
+# are merged into one verb rather than kept as two names for one question.
+from arche.resolve.reconcile import reconcile as _reconcile_engine  # noqa: E402,F401
 
 # ---------------------------------------------------------------------------
 #
@@ -481,10 +480,23 @@ def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
         the_id = edge["decision_id"]
         basis = f"pack:{entity}"
     else:
-        identity, action = "different", "no_op"
+        # Two very different silences. The engine compared what it was given
+        # and nothing reached the floor: that is `different`, and it is an
+        # answer. Or neither record carried a field the pack compares at all,
+        # so nothing was compared: that is not an answer, and reporting it as
+        # `different` at score 0.0 is the failure this library exists to
+        # refuse. Measured on two supplier documents whose records arrived
+        # under `organisation`/`supplier_name` while the pack reads `name`:
+        # `different`, factors `{}`, and a merge with the fields renamed.
+        compared = _comparable_fields(a, b, entity, kwargs.get("comparators"))
+        if compared:
+            identity, action = "different", "no_op"
+        else:
+            identity, action = "review", "hold"
         factors, gate, score = {}, {
             "surfacing_floor": round(threshold - review_margin, 4),
             "surfaced": False,
+            "comparable_fields": sorted(compared),
         }, 0.0
         # No edge means the engine issued no receipt, so there is no engine id
         # to quote. This address is computed the way the person path computes
@@ -493,10 +505,11 @@ def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
         # plainly that it came from here rather than from an emitted edge.
         the_id = _ids.decision_id(
             reference_id_a=ref_id_a, reference_id_b=ref_id_b,
-            decision="different", factors={}, gate=gate, vetoes={},
+            decision=identity, factors={}, gate=gate, vetoes={},
             jurisdiction="default", pins=pins, key=issuer_key,
         )
-        basis = f"pack:{entity} (below surfacing floor)"
+        basis = (f"pack:{entity} (below surfacing floor)" if compared
+                 else f"pack:{entity} (no comparable fields)")
 
     return Receipt(
         identity=identity, action=action, basis=basis, score=score,
@@ -509,11 +522,32 @@ def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
     )
 
 
+def _comparable_fields(a, b, entity, comparators=None) -> set:
+    """The pack's fields both records actually carry a value for.
+
+    Empty means nothing was compared -- not that the comparison failed. A
+    geo comparator names `lat`/`lon` rather than `field`, so both spellings
+    are read.
+    """
+    packs = comparators if comparators is not None else ENTITY_PACKS.get(entity, [])
+    fields = set()
+    for spec in packs:
+        for key in ("field", "lat", "lon"):
+            name = spec.get(key)
+            if name and a.get(name) not in (None, "") and b.get(name) not in (None, ""):
+                fields.add(name)
+    return fields
+
+
 def _explain_pack(entity, identity, factors, gate) -> str:
     """One sentence a reviewer can read without knowing the pack."""
     if identity == "different":
         return (f"no {entity} evidence reached the surfacing floor of "
                 f"{gate.get('surfacing_floor')}")
+    if not factors and gate.get("comparable_fields") == []:
+        return (f"neither record carries a field the {entity} pack compares; "
+                f"nothing was compared, so this is not an answer either way "
+                f"(see arche.describe({entity!r}) for the fields it reads)")
     agreeing = sorted((k for k, v in factors.items() if v >= 0.8))
     refuting = sorted((k for k, v in factors.items() if v <= 0.01))
     parts = []
@@ -797,6 +831,60 @@ def describe_packs() -> dict[str, dict]:
     return {name: describe_pack(name) for name in sorted(ENTITY_PACKS)}
 
 
+#: Records at and above this count are scored by a shipped Splink recipe when
+#: ``backend="auto"`` and one exists for the entity; below it, by arche's own
+#: engine. Measured on the supplier world (`data/synthetic/bench_size_floor.py`,
+#: 2026-09-18): at 444 and 1,215 records the two are level on false merges
+#: (2 vs 5, 39 vs 47) and the engine is the one with no threshold to choose;
+#: at 3,081 the engine's false merges go to 456 against Splink's 49, and at
+#: 6,144 to 917 against 103 -- and it takes nine hours to Splink's 22 seconds.
+#: 1,000 is under the point where the engine's precision turns and past the
+#: point where its runtime stops being reasonable (~15 minutes at 1,215).
+AUTO_SPLINK_FLOOR = 1_000
+
+
+def _choose_backend(list_a, list_b, entity, kwargs) -> tuple[str, dict]:
+    """What ``backend="auto"`` picks, and why -- the why goes in the pins.
+
+    Splink only when every one of these holds: it is installed; the entity has
+    a shipped recipe; the records carry that recipe's columns; the batch is
+    at or above :data:`AUTO_SPLINK_FLOOR`; and no external candidates were
+    supplied (the Splink path generates its own). Otherwise arche's engine.
+    Never ``"derive"``: auto chooses between two measured configurations, not
+    an inferred one.
+    """
+    import importlib.util
+
+    from arche.resolve.recipes import RECIPES
+
+    size = len(list_a) if list_a is list_b else len(list_a) + len(list_b)
+    why = {"floor": AUTO_SPLINK_FLOOR, "records": size}
+
+    def arche(reason: str) -> tuple[str, dict]:
+        return "arche", {**why, "chosen": "arche", "reason": reason}
+
+    if "candidate_pairs" in kwargs or "candidate_pins" in kwargs:
+        return arche("external candidates supplied; the arche engine consumes them")
+    if size < AUTO_SPLINK_FLOOR:
+        return arche(f"{size} records is below the floor of {AUTO_SPLINK_FLOOR}")
+    recipe = RECIPES.get(entity or "")
+    if recipe is None:
+        return arche(f"no shipped Splink recipe for entity {entity!r}")
+    if importlib.util.find_spec("splink") is None:
+        return arche("splink is not installed (arche-core[resolve])")
+    try:
+        recipe.check(list_a, side="list_a")
+        recipe.check(list_b, side="list_b")
+    except ValueError as exc:
+        # The records are not in the recipe's schema -- a `name` blob where
+        # the recipe reads given_name and surname. The engine reads blobs.
+        return arche(f"records do not carry the recipe's columns: {exc}")
+    return "splink", {**why, "chosen": "splink",
+                      "reason": f"{size} records at or above the floor, recipe "
+                                f"{recipe.name} fits the records",
+                      "recipe": recipe.name}
+
+
 def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
               entity: str | None = None, tf=None, decl=None, schema=None, store=None, **kwargs):
     """Link two lists of records: which of these are the same thing?
@@ -823,12 +911,24 @@ def reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
     used, and the tf table's provenance); sign edges with
     :func:`arche.resolve.reconcile.sign_edges`.
 
-    ``backend="splink"`` swaps the scorer for Splink and keeps everything
-    around it. It additionally requires ``splink_settings=``, a Splink
-    ``SettingsCreator`` you wrote (or the string ``"derive"``, which infers one
-    from the pack, warns, and is best-effort). See
-    :mod:`arche.resolve._splink_backend` for why arche does not pick one for
-    you.
+    ``backend`` defaults to ``"auto"``: arche's own engine below
+    :data:`AUTO_SPLINK_FLOOR` records, and above it a shipped Splink recipe
+    (:mod:`arche.resolve.recipes`) when the entity has one, Splink is
+    installed, and the records carry the recipe's columns -- otherwise the
+    engine again. The choice and its reason are returned as
+    ``result["backend"]`` -- on the result, not in the pins, because which
+    scorer ran is already pinned and hashed into every decision id, while
+    *why it was chosen* names the batch size and must not move an id. A ``person`` caller with
+    one ``name`` blob stays on the engine at every size; the recipe reads
+    ``given_name`` and ``surname``, because that split is where Splink's
+    recall comes from.
+
+    ``backend="arche"`` is the engine regardless of size. ``backend="splink"``
+    is Splink regardless of size, and requires ``splink_settings=``: a
+    :class:`~arche.resolve.recipes.Recipe`, a ``SettingsCreator`` you wrote,
+    or the string ``"derive"`` (infers one from the pack, warns, best-effort).
+    See :mod:`arche.resolve._splink_backend` for why arche does not infer one
+    by default.
 
     ``candidate_pairs=`` and ``candidate_pins=`` accept externally retrieved
     candidates on the default arche backend. Each candidate names ``a_id`` and
@@ -909,7 +1009,21 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
             raise ValueError(
                 f"unknown entity pack {entity!r}; available: {sorted(ENTITY_PACKS)}"
             ) from None
-    if (backend in (None, "arche")
+    chosen: dict | None = None
+    if backend in (None, "auto"):
+        backend, chosen = _choose_backend(list_a, list_b, entity, kwargs)
+        # The choice is provenance of the RUN, not an input to any decision:
+        # the same pair scored by the engine is the same decision whether the
+        # caller asked for the engine or auto picked it, and the reason names
+        # the batch size, which an unrelated record would change. So it goes
+        # on the result, never into the pins the decision ids hash over. The
+        # scorer itself is already in the pins (`engine`, `backend`,
+        # `settings`), which is what a decision id must move with.
+        if backend == "splink":
+            from arche.resolve.recipes import RECIPES
+
+            kwargs.setdefault("splink_settings", RECIPES[entity])
+    if (backend == "arche"
             and tf is None
             and any(c.get("kind") == "tftoken" for c in comparators)):
         domain = _PACK_TF_DOMAIN.get(entity or "")
@@ -974,24 +1088,30 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
     # it (evidence, refusal, pins, decision ids), returning the same result
     # shape so `review_pack`, `crosswalk_report` and the studio are unaffected.
     #
-    # It is opt-in because it is a different scoring model with different
-    # provenance: it trains on the corpus, so its pins name a model and a
-    # corpus rather than a comparator set alone. Selecting it is a decision, not
-    # a default somebody inherits.
-    #
-    # It also requires `splink_settings=`. arche will not infer a Splink
+    # It is a different scoring model with different provenance: it trains
+    # on the corpus, so its pins name a model and a corpus rather than a
+    # comparator set alone. `auto` reaches for it only through a shipped,
+    # benchmarked recipe and only above the size floor, and records the
+    # reason in the pins; an explicit `backend="splink"` is the caller's own
+    # decision and requires `splink_settings=`. arche will not infer a Splink
     # configuration from a comparator pack behind the caller's back: a pack
     # says "compare this as a name" and says nothing about column dtype, date
     # format or field cardinality, and inferring them measured worse than
     # arche's own engine. `splink_settings="derive"` opts into the inference
     # and warns.
-    if backend in (None, "arche"):
-        return _reconcile_engine(list_a, list_b, comparators, tf=tf,
-                                 extra_pins=extra_pins or None, **kwargs)
-    if backend == "splink":
-        return _splink(list_a, list_b, comparators, extra_pins, kwargs)
+    if backend == "arche":
+        result = _reconcile_engine(list_a, list_b, comparators, tf=tf,
+                                   extra_pins=extra_pins or None, **kwargs)
+    elif backend == "splink":
+        result = _splink(list_a, list_b, comparators, extra_pins, kwargs)
+    else:
+        result = None
+    if result is not None:
+        if chosen is not None:
+            result["backend"] = chosen
+        return result
     raise ValueError(
-        f"unknown backend {backend!r}; available: 'arche' (default), 'splink'"
+        f"unknown backend {backend!r}; available: 'auto' (default), 'arche', 'splink'"
     )
 
 

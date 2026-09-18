@@ -31,6 +31,14 @@ exactly the configuration its result file records:
   pinned: the `spec` refutation is neutral on this corpus, and the stop list
   is inert on it (the frequency table does that work). Either invariant
   breaking is a FAIL in its own right, whatever the precision did.
+* **Febrl 4 through the shipped Splink recipe**, `arche.resolve.recipes.PERSON`
+  via `reconcile(backend="splink")`
+  (`datasets/names_dataops/bench_recipe_person_result.json`). A recipe is
+  data the wheel ships, like a pack, and it drifts the same way: a Splink
+  upgrade, a changed blocking rule, a lost seed. Skipped with a notice when
+  Splink is not installed, never silently. Its invariant is the pin: the
+  result must say `settings: recipe:person/febrl-v1@...`, so a run that
+  quietly fell back to the caller path or to derivation fails.
 
 The rule
 --------
@@ -64,6 +72,7 @@ TRUE_MERGE_TOLERANCE = 0.005
 LEIPZIG = _REPO / "data" / "er_bench" / "benchmark_leipzig_result.json"
 FEBRL = _REPO / "datasets" / "names_dataops" / "bench_febrl_result.json"
 ABT_BUY = _REPO / "data" / "er_bench" / "benchmark_abt_buy_result.json"
+RECIPE_PERSON = _REPO / "datasets" / "names_dataops" / "bench_recipe_person_result.json"
 
 
 def _dblp_acm() -> dict:
@@ -182,6 +191,49 @@ def _write_abt_buy(now: dict) -> None:
     ABT_BUY.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 
+class _SkipError(Exception):
+    """A benchmark that cannot run here, with the reason. Reported, never hidden."""
+
+
+def _recipe_person() -> dict:
+    """`arche.resolve.recipes.PERSON` on Febrl 4, identifier withheld, through the adapter."""
+    import importlib.util
+
+    if importlib.util.find_spec("splink") is None:
+        raise _SkipError("splink is not installed (arche-core[resolve])")
+
+    import bench_splink_febrl as febrl
+    from arche.resolve import reconcile
+    from arche.resolve.recipes import PERSON
+
+    a_rows, b_rows = (list(febrl._fetch(f)) for f in febrl.FILES)
+    n_true = febrl._truth(a_rows, b_rows)
+    a = [febrl.splink_record(r) for r in a_rows]
+    b = [febrl.splink_record(r) for r in b_rows]
+    res = reconcile(a, b, id_field="id", backend="splink", splink_settings=PERSON)
+    pairs = [(e["a_id"], e["b_id"]) for e in res["matches"] if e["decision"] == "match"]
+    scored = febrl._score_pairs(pairs, n_true, "recipe")
+    settings_pin = str(res["pins"].get("settings", ""))
+    return {"true_merges": scored["true_merges"], "false_merges": scored["false_merges"],
+            "precision": scored["precision"],
+            "invariants": {"scored_by_the_shipped_recipe":
+                           settings_pin.startswith(f"recipe:{PERSON.name}@")},
+            "pin": settings_pin}
+
+
+def _recorded_recipe_person() -> dict:
+    c = json.loads(RECIPE_PERSON.read_text(encoding="utf-8"))["result"]
+    return {"true_merges": c["true_merges"], "false_merges": c["false_merges"],
+            "precision": c["precision"]}
+
+
+def _write_recipe_person(now: dict) -> None:
+    doc = json.loads(RECIPE_PERSON.read_text(encoding="utf-8"))
+    doc["result"] = {k: now[k] for k in ("true_merges", "false_merges", "precision")}
+    doc["pin"] = now.get("pin")
+    RECIPE_PERSON.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+
 def _write_dblp(now: dict) -> None:
     doc = json.loads(LEIPZIG.read_text(encoding="utf-8"))
     c = doc["configurations"]["year_refutes_below_0.99"]
@@ -202,6 +254,8 @@ BENCHMARKS = (
     ("DBLP-ACM, year refutes", _dblp_acm, _recorded_dblp, _write_dblp, LEIPZIG),
     ("Febrl 4, name + address", _febrl, _recorded_febrl, _write_febrl, FEBRL),
     ("Abt-Buy, product names", _abt_buy, _recorded_abt_buy, _write_abt_buy, ABT_BUY),
+    ("Recipe person, Febrl 4 via Splink", _recipe_person, _recorded_recipe_person,
+     _write_recipe_person, RECIPE_PERSON),
 )
 
 
@@ -232,7 +286,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--update", action="store_true",
                     help="re-record the baselines from this run (a deliberate act)")
     ap.add_argument("--json", default=None, help="write the summary here as JSON")
-    ap.add_argument("--only", choices=["dblp-acm", "febrl", "abt-buy"], default=None)
+    ap.add_argument("--only", choices=["dblp-acm", "febrl", "abt-buy", "recipe"], default=None)
     args = ap.parse_args(argv[1:])
 
     results = []
@@ -240,7 +294,13 @@ def main(argv: list[str]) -> int:
         if args.only and not name.lower().startswith(args.only):
             continue
         t0 = time.perf_counter()
-        now = run()
+        try:
+            now = run()
+        except _SkipError as why:
+            print(f"{'SKIPPED':<9} {name:<26} {why}", flush=True)
+            results.append({"benchmark": name, "status": "SKIPPED", "why": str(why),
+                            "file": str(path.relative_to(_REPO))})
+            continue
         seconds = round(time.perf_counter() - t0, 1)
         verdict = judge(name, recorded_fn(), now)
         verdict["seconds"] = seconds
