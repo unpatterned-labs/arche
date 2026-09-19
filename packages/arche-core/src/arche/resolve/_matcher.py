@@ -40,7 +40,7 @@ import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date as _date
-from functools import cache
+from functools import cache, lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -190,8 +190,15 @@ def get_priors(jurisdiction: str = "default") -> JurisdictionPriors:
 # ===================================================================
 
 
+@lru_cache(maxsize=131072)
 def _normalise_text(text: str) -> str:
-    """Lowercase, strip diacritics, collapse whitespace."""
+    """Lowercase, strip diacritics, collapse whitespace.
+
+    Memoised: a pair-wise engine normalises the same few thousand strings --
+    every record's name, every token the frequency table is asked about --
+    tens of thousands of times each. Pure on its input, so the cache cannot
+    change an answer; on a 444-record dedupe it removed 1.8M of 1.86M calls.
+    """
     text = text.strip().lower()
     nfkd = unicodedata.normalize("NFKD", text)
     # Drop combining marks AND format/control codepoints (zero-width spaces,
@@ -412,6 +419,7 @@ def _coerce_address(addr: Any) -> tuple[str, dict[str, str]]:
     return raw, comps
 
 
+@lru_cache(maxsize=65536)
 def _address_components(addr: str) -> dict[str, str]:
     """Parse an address string into a dict of non-empty matchable components.
 
@@ -882,6 +890,26 @@ def compare_postcodes(
     return _CATEGORICAL_NEUTRAL * boundary_doubt(distance_km, boundary_km)
 
 
+@lru_cache(maxsize=4096)
+def _compiled_vocab(items: tuple[tuple[str, str], ...]) -> tuple[tuple[Any, str, str], ...]:
+    """The vocabulary once: longest synonym first, normalised, compiled.
+
+    Before this cache every call to :func:`normalize_type_token` sorted the
+    vocabulary and re-normalised every synonym in it -- about sixty
+    ``_normalise_text`` calls per call, on every pair, on every side, on every
+    pass of the stacked-form stripper. On a 444-record supplier dedupe that
+    was 18.4 million normalisations and 488 of 557 seconds (PERF-1,
+    2026-09-19). The vocabulary does not change between pairs.
+    """
+    out = []
+    for syn, canonical in sorted(items, key=lambda kv: len(kv[0]), reverse=True):
+        syn_norm = _normalise_text(syn)
+        if not syn_norm:
+            continue
+        out.append((re.compile(r"\b" + re.escape(syn_norm) + r"\b"), canonical, syn_norm))
+    return tuple(out)
+
+
 def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]:
     """Split a name into ``(canonical_type, residual_name)`` via a synonym vocab.
 
@@ -899,14 +927,19 @@ def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, 
     Matching and the returned residual are normalised (lowercased, diacritics
     stripped). Returns ``(None, normalised_text)`` when no synonym matches.
     """
+    # `vocab` is a dict and dicts are not hashable; the tuple of its items is,
+    # and building it is microseconds against the sort-and-normalise it saves.
+    return _normalize_type_token_cached(text, tuple(vocab.items()))
+
+
+@lru_cache(maxsize=65536)
+def _normalize_type_token_cached(text: str, items: tuple[tuple[str, str], ...]
+                                 ) -> tuple[str | None, str]:
     low = _normalise_text(text)
-    for syn in sorted(vocab, key=len, reverse=True):
-        syn_norm = _normalise_text(syn)
-        if not syn_norm:
-            continue
-        if re.search(r"\b" + re.escape(syn_norm) + r"\b", low):
-            residual = re.sub(r"\b" + re.escape(syn_norm) + r"\b", " ", low)
-            return vocab[syn], re.sub(r"\s+", " ", residual).strip()
+    for pattern, canonical, _syn in _compiled_vocab(items):
+        if pattern.search(low):
+            residual = pattern.sub(" ", low)
+            return canonical, re.sub(r"\s+", " ", residual).strip()
     return None, low
 
 

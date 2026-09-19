@@ -105,7 +105,7 @@ arche/pack   P 0.995   R 0.745   F1 0.852   343.4 s
 
 Two independently written engines, one of them not ours, landing within 0.04 recall and 0.007 precision. **The gap is inside the noise band, so the correct statement is that they are indistinguishable at this scale — not that either leads.** An earlier draft of this file claimed they agreed "to three decimal places," which was one draw dressed up as a measurement.
 
-What the row does support is the thing that matters: an engine we did not write, on our data, lands in the same region as ours. That is evidence the benchmark measures the problem rather than a quirk of our implementation, and it **completes the trigger for cutting the separate repository**. Splink is also ~46× faster.
+What the row does support is the thing that matters: an engine we did not write, on our data, lands in the same region as ours. That is evidence the benchmark measures the problem rather than a quirk of our implementation, and it **completes the trigger for cutting the separate repository**. Splink was also ~46× faster when this was measured; on 2026-09-19 the engine's per-pair recomputation was memoised (`ARCHE_SYNTHETIC_PLAN.md` §7k) and the same 150-supplier run takes 5 s to Splink's 5 s, with every number on this page unchanged.
 
 Getting this arm to be fair took two corrections, both recorded because both would have flattered arche:
 
@@ -128,5 +128,5 @@ The reason is structural. Those fields are disproportionately the ones that *leg
 - **The names have no correlation.** Given name and surname are drawn independently, so this world contains `Zübeyde Saliou` and `Fabiano Anaehobi`. That corrupts the `common_names` stratum specifically — real collisions are structured by region and these are random. See `DATACARD.md` and plan §7b (N1).
 - **`ORG_RENAMED` is easier here than it should be.** The rename mostly swaps the legal form, which every arm normalises away. Until N2 lands, the rename numbers flatter every arm.
 - **`DIRECTOR_CHANGED` has n=7** at this scale, `ACCOUNT_CHANGED` n=9. Reported, not scoreable. `diacritic_loss` did not populate at all.
-- **arche's runtime is the binding constraint.** ~160 pairs/second, measured as *not* the frequency table (75 s vs 81 s with `tf` off on a fixed subset). It caps the scale, which is what makes the noise band as wide as it is.
+- **arche's runtime was the binding constraint** when this was written: ~160 pairs/second, measured as *not* the frequency table. It was the type-vocabulary normalisation per pair; memoised 2026-09-19, the engine now runs the 400-supplier world in 18 s. The noise band is a property of 150 suppliers, not of the runtime any more; a bigger world is now cheap to run.
 - **Company names are `<Surname> <Trade> <Form>` over 18 trades and 10 forms**, which makes token blocking collapse harder than on a real register.

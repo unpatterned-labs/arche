@@ -210,6 +210,45 @@ collisions        28
 - **Not evidence about African names in general.** Wikidata's alias coverage is uneven -- well-known artists carry legal and stage names, lesser-known ones a single spelling variant -- and the filler is notable people, not the population.
 - **Not a benchmark of arche against anyone.** The experiment it exists for runs Splink four ways (plan §7d), and arche appears as one arm for the record.
 
+## A third kind of world: `places_v0`
+
+The supplier worlds ask *is this the same company?*; the artist world asks *what is a name list worth?*; this one asks the question the place request exists for: **at these policy numbers, how often does a verified endpoint point at the wrong door, and how many questions does that cost?**
+
+A master sheet whose contents are known (500 addresses and ~60 landmarks across NG and KE, built from the supplier world's country profiles), 1,000 delivery requests whose endpoints are known to be in the sheet or known not to be, and every endpoint labelled with how the sentence rendered it:
+
+| rendering | rate | what it looks like | the right outcome |
+|---|---:|---|---|
+| `exact` | 35% | `124 Elim Street` | verified |
+| `typo` | 15% | `124 Elim Streat`, `Kenyatta Aveune` | a question |
+| `landmark` | 15% | `the blue gate behind Elim Pharmacy, 124 Elim Street` | verified |
+| `landmark_only` | 8% | `behind Elim Pharmacy` | a question among the addresses near it |
+| `partial` | 7% | `Awolowo Way` | a question -- which number? |
+| `ambiguous` | 10% | a number on a street the sheet has in two areas | a question |
+| `unknown` | 10% | an address the sheet does not hold | **refused**, never verified |
+
+The sheet is a declared assumption (no real address is in it); which place a request means is by construction, exactly as in the other worlds.
+
+### What it measured, 2026-09-19
+
+The first run found four defects in `arche.addr.request` in a quarter of an hour: 17% of exact addresses were never found (the clause was cut at the `to` in `next to`, and a role cue the extractor could not bind was dropped); `landmark_only` was refused 89% of the time (a landmark proposed nothing on its own); `partial` was refused (no number, no street captured); and `unknown` addresses were *asked about* 82% of the time because a landmark row's street matched. All four fixed, then:
+
+```
+rendering       ver_right  ver_wrong  asked_right  asked_wrong  ref_right
+exact                0.77       0.00         0.23         0.00       0.00
+typo                 0.12       0.00         0.87         0.01       0.00
+landmark             0.62       0.00         0.38         0.00       0.00
+landmark_only        0.00       0.00         0.96         0.04       0.00
+partial              0.00       0.00         0.07         0.93       0.00
+ambiguous            0.00       0.00         0.99         0.01       0.00
+unknown              0.00       0.00         0.00         0.00       1.00
+```
+
+**`verified_wrong` is zero in every row, at every policy setting in the sweep** (0.70 to 0.95, typo rule on and off). On this world the scorer never verifies the wrong door; what the policy numbers move is how much gets verified versus asked. `verified_at` has no effect between 0.7 and 0.9 -- the score distribution is bimodal, 0.9 for an exact match and 0.5 or less for anything partial -- and 0.95 collapses verification to 9%. The typo rule costs 9 points of automatic verification at 0.7 and buys nothing *here*, because this sheet has no confusable street pairs at scale; its value is an upper bound until a world has `Elim Street` and `Elm Street` side by side.
+
+The 23% of exact addresses that become questions are twins: the same number on the same street in another area or another city, and a sentence that carries neither. That is the sheet's ambiguity, not the resolver's, and the question is the right answer.
+
+`partial` is the honest gap: a street with no number produces a question whose candidate list cannot hold the answer (there are a dozen numbers on that street). The right question is *which number on Awolowo Way?* -- a question shape the request module does not have yet.
+
 ## Found while building it
 
 The generator drew `njirimara ezinụlọnjirimara ezinụlọ Steel Global` as a company name — Igbo for "family identifier", doubled. That is not a generator bug: **770 of the 13,342 entries in arche's shipped name lexicon (5.8%) are not names.** 514 are raw Wikidata blank-node URLs (`http://www.wikidata.org/.well-known/genid/…`), 153 are property labels in various languages (`Abas (nom de famille)`, `Akinfenwa (aha ezinụlọ)`), and the rest are titles and full person names filed as surnames.
@@ -222,4 +261,6 @@ A second pass found 139 more that survived every other check: `almaerifaa.com`, 
 python data/synthetic/build_ng_supplier_v0.py                 # the full world, ~7s
 python data/synthetic/build_ng_supplier_v0.py --scale 100     # a small one to read
 python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0
+python -m arche_synthetic --world-pack places_v0 --scale 1000 --out worlds/places_v0
+python data/synthetic/bench_place_request.py                  # the policy against the twin
 ```

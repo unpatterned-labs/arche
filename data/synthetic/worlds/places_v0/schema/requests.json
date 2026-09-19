@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/requests-v0.json",
+  "title": "requests",
+  "type": "object",
+  "required": [
+    "request_id",
+    "text",
+    "action"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

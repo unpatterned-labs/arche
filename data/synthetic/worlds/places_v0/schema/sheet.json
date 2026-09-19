@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/sheet-v0.json",
+  "title": "sheet",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "street_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "street": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "area": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lat": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "lon": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

@@ -55,7 +55,7 @@ keeps only ids can follow when someone needs it.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -372,6 +372,72 @@ class Ledger:
         self._write_decision(decision, entity_type="document")
         return decision
 
+    def record_place_request(self, result: Any, *, sources: Sequence[Any],
+                             now: Any = None) -> list[Decision]:
+        """Record every endpoint of a place request as a decision, verb ``place``.
+
+        The sentence is stored once as a ``document`` record; each endpoint's
+        decision row names it on both sides (an endpoint links nothing) and
+        carries the status as ``identity``, the chosen place id -- or ``ask``
+        / ``refuse`` / ``none`` -- as ``action``, the candidates with their
+        evidence, and the question if one was asked. The call keeps every
+        replayable source in full: a master sheet is its rows, and a live
+        geocoder is named as unreplayable so ``replay`` declines honestly.
+        """
+        from datetime import date as _date
+
+        text = result.text
+        record = self._record("document", text, None, "place", None)
+        sheets = []
+        unreplayable = []
+        for src in sources:
+            as_call = getattr(src, "as_call", None)
+            if callable(as_call):
+                sheets.append(as_call())
+            else:
+                unreplayable.append(f"source:{getattr(src, 'name', type(src).__name__)}")
+        call: dict[str, Any] = {"action": result.action, "policy": dict(vars(result.policy)),
+                                "sources": sheets}
+        if now is not None:
+            call["now"] = now.isoformat() if isinstance(now, _date) else str(now)
+        if unreplayable:
+            call["_unreplayable"] = unreplayable
+        out = []
+        for role, ep in result.endpoints.items():
+            existing = self._decision_or_none(ep.decision_id)
+            if existing is not None:
+                out.append(existing)
+                continue
+            chosen = ep.chosen
+            verbs = {"clarification_required": "ask", "refused": "refuse"}
+            action = chosen.place_id if chosen else verbs.get(ep.status, "none")
+            top = ep.candidates[0].confidence if ep.candidates else 0.0
+            decision = Decision(
+                decision_id=ep.decision_id,
+                verb="place",
+                record_a=record.record_id,
+                record_b=record.record_id,
+                identity=ep.status,
+                action=action,
+                score=float(top),
+                factors={c.place_id: float(c.confidence) for c in ep.candidates},
+                explanation=(ep.question or
+                             f"{role}: {ep.status}"
+                             + (f" -> {chosen.display_name}" if chosen else "")),
+                evidence={"role": role,
+                          "mention": ({k: v for k, v in ep.mention.to_dict().items()}
+                                      if ep.mention else None),
+                          "candidates": [c.to_dict() for c in ep.candidates],
+                          "question": ep.question},
+                pins=dict(ep.pins),
+                call={**call, "role": role},
+                run_id=None,
+                recorded_at=_now(),
+            )
+            self._write_decision(decision, entity_type="document")
+            out.append(decision)
+        return out
+
     def record_batch(
         self,
         result: Mapping[str, Any],
@@ -644,6 +710,8 @@ class Ledger:
         decision = self.decision(decision_id)
         if decision.verb == "deidentify":
             return _why_redaction(decision)
+        if decision.verb == "place":
+            return _why_place(decision)
         record_a, record_b = self.record(decision.record_a), self.record(decision.record_b)
         return _why(decision, record_a, record_b)
 
@@ -1230,6 +1298,34 @@ class Ledger:
                 "factors": {k: float(v) for k, v in deid.by_category().items()},
                 "pins": dict(deid.pins),
             }
+        if then.verb == "place":
+            from datetime import date as _date
+
+            from arche.addr.request import MasterSheet, Policy, resolve_place_request
+
+            document = self.record(then.record_a)
+            sources = [MasterSheet(src["records"], name=src.get("name", "master_sheet"),
+                                   id_field=src.get("id_field", "id"),
+                                   landmark_radius_m=src.get("landmark_radius_m", 250.0))
+                       for src in call.get("sources", []) if src.get("kind") == "master_sheet"]
+            now = _date.fromisoformat(call["now"]) if call.get("now") else None
+            result = resolve_place_request(document.text or "", action=call["action"],
+                                           sources=sources, policy=Policy(**call["policy"]),
+                                           now=now)
+            ep = result.endpoints.get(call["role"])
+            if ep is None:
+                return {"decision_id": None, "identity": "missing", "action": "none",
+                        "score": 0.0, "factors": {}, "pins": {}}
+            chosen = ep.chosen
+            return {
+                "decision_id": ep.decision_id, "identity": ep.status,
+                "action": (chosen.place_id if chosen else
+                           {"clarification_required": "ask",
+                            "refused": "refuse"}.get(ep.status, "none")),
+                "score": float(ep.candidates[0].confidence) if ep.candidates else 0.0,
+                "factors": {c.place_id: float(c.confidence) for c in ep.candidates},
+                "pins": dict(ep.pins),
+            }
         if then.verb == "compare":
             record_a, record_b = self.record(then.record_a), self.record(then.record_b)
             a_in, b_in = record_a.as_input(), record_b.as_input()
@@ -1450,6 +1546,35 @@ def _why(decision: Decision, record_a: Record, record_b: Record) -> dict[str, An
         "missing": missing,
         "shared": shared,
         "gate": decision.evidence.get("gate", {}),
+    }
+
+
+def _why_place(decision: Decision) -> dict[str, Any]:
+    """An endpoint, explained: what was read, who was considered, why this status."""
+    ev = decision.evidence
+    cands = list(ev.get("candidates") or [])
+    top = cands[0] if cands else None
+    mention = ev.get("mention") or {}
+    why = {
+        "verified": (f"top candidate at {top['confidence']} with "
+                     f"{', '.join(top['evidence'])}; no contest within the margin"
+                     if top else "verified"),
+        "clarification_required": (ev.get("question") or "asked"),
+        "refused": (f"best candidate at {top['confidence']} is below the policy minimum"
+                    if top else "no source returned a candidate"),
+        "missing": "the sentence names no such endpoint",
+    }[decision.identity]
+    return {
+        "verb": "place",
+        "role": ev.get("role"),
+        "identity": decision.identity,
+        "action": decision.action,
+        "read": {k: mention.get(k) for k in ("target_text", "relation_kind", "reference_text",
+                                             "access_hint", "street_number", "street")},
+        "candidates": cands,
+        "why": why,
+        "policy": decision.call.get("policy"),
+        "pins": decision.pins,
     }
 
 

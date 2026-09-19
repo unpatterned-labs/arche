@@ -43,6 +43,7 @@ _COMMANDS = (
     ("review", "validate, apply, share, or verify review-pack outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
     ("serve", "a local HTTP service: detect, deidentify, compare, and the ledger by id"),
+    ("mcp", "the MCP server on stdio, for an agent runtime (needs arche-mcp)"),
     ("attest", "make a signing key, or verify an attested answer"),
     ("studio", "the local reading tool: compare two records, work a review queue"),
     ("version", "show the single-sourced arche-core version"),
@@ -584,6 +585,20 @@ def _cmd_studio(args: argparse.Namespace) -> int:
     if args.ledger:
         argv += ["--ledger", args.ledger]
     return studio_main(argv)
+
+
+def _cmd_mcp(args: argparse.Namespace) -> int:
+    """`arche mcp`: the MCP server on stdio. The server is its own package
+    (`arche-mcp`); this is the one place the core knows its name, so that a
+    container with both installed can be started as `arche mcp`."""
+    try:
+        from arche_mcp.server import main as mcp_main
+    except ImportError:
+        raise SystemExit(
+            "arche mcp needs the arche-mcp package: pip install arche-mcp "
+            "(or run the container, which ships it)") from None
+    mcp_main()
+    return 0
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
@@ -1147,6 +1162,9 @@ def main(argv: list[str] | None = None) -> int:
                          help="load models and parsers at startup, not on the first request "
                               "(also ARCHE_WARM=1)")
     serve_p.set_defaults(func=_cmd_serve)
+
+    mcp_p = sub.add_parser("mcp", help="the MCP server on stdio (needs arche-mcp)")
+    mcp_p.set_defaults(func=_cmd_mcp)
 
     att_p = sub.add_parser("attest", help="make a signing key, or verify an attested answer")
     att_sub = att_p.add_subparsers(dest="action", required=True)
