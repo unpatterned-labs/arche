@@ -248,6 +248,11 @@ def _frame(records: list[dict], columns: Sequence[str], types: dict[str, str],
                 return float(value)
             except (TypeError, ValueError):
                 return None
+        if isinstance(value, (list, tuple, set, frozenset)):
+            # An array column -- a recipe's `codes` or `specs` -- for an
+            # array-intersect level. Stringifying it would compare the
+            # repr of two lists, which agree only when identical.
+            return [str(v) for v in value]
         return str(value)
 
     frame = pd.DataFrame([
@@ -690,7 +695,14 @@ def splink_crosswalk(
         recipe = splink_settings
         recipe.check(list_a, side="list_a")
         recipe.check(list_b, side="list_b")
-        splink_settings = recipe.settings()
+        dedupe_call = list_a is list_b
+        if recipe.prepare is not None:
+            # The representation step, then the frame. The ids are carried
+            # through untouched; only the compared columns are derived.
+            prepared_a = recipe.prepare(list_a)
+            prepared_b = prepared_a if dedupe_call else recipe.prepare(list_b)
+            list_a, list_b = prepared_a, prepared_b
+        splink_settings = recipe.settings("dedupe_only" if dedupe_call else "link_only")
         if splink_train is None:
             splink_train = lambda ln, _r=recipe: _r.train(ln, seed)  # noqa: E731
         if threshold is None:

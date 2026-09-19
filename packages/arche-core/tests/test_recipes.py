@@ -118,3 +118,39 @@ class TestThroughTheAdapter:
         res = reconcile(a, b, id_field="id", backend="splink", splink_settings=PERSON,
                         threshold=0.5)
         assert res["pins"]["threshold"] == 0.5
+
+
+class TestTheOtherTwo:
+    def test_place_reads_name_and_coordinates(self):
+        from arche.resolve.recipes import PLACE
+
+        assert PLACE.columns == ("name", "lat", "lon")
+        assert PLACE.threshold == 0.9 and PLACE.auto is True
+
+    def test_place_prepare_makes_coordinates_numeric(self):
+        from arche.resolve.recipes import PLACE
+
+        rows = PLACE.prepare([{"name": "x", "lat": "53.8", "lon": "-1.5"},
+                              {"name": "y", "lat": None, "lon": "bad"}])
+        assert rows[0]["lat"] == 53.8 and rows[0]["lon"] == -1.5
+        assert rows[1]["lat"] is None and rows[1]["lon"] is None
+
+    def test_product_requires_a_name_and_reads_derived_columns(self):
+        from arche.resolve.recipes import PRODUCT
+
+        assert PRODUCT.requires == ("name",)
+        assert set(PRODUCT.columns) == {"code1", "codes", "brand", "specs"}
+        assert PRODUCT.auto is False
+
+    def test_product_prepare_withholds_the_title(self):
+        from arche.resolve.recipes import PRODUCT
+
+        (row,) = PRODUCT.prepare([{"id": "1", "name": "Sony Turntable - PSLX350H"}])
+        assert row["code1"] == "pslx350h" and row["brand"] == "sony"
+        assert "name" not in row and row["id"] == "1"
+
+    def test_the_registry_answers_by_entity_and_by_name(self):
+        from arche.resolve.recipes import PLACE, PRODUCT, RECIPES
+
+        assert RECIPES["place"] is PLACE and RECIPES["product_electronics"] is PRODUCT
+        assert RECIPES[PLACE.name] is PLACE

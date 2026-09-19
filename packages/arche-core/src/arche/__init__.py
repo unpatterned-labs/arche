@@ -163,6 +163,11 @@ _LAZY: dict[str, tuple[str, str]] = {
     "Entity": (".extract", "Entity"),
     "extract": (".extract", "extract"),
     "extract_places": (".addr.roles", "extract_places"),
+    # A place request: endpoints with roles, relations and access hints,
+    # resolved against the caller's sources into verified / a question / a
+    # refusal, with the action blocked until the policy is satisfied.
+    "resolve_place_request": (".addr.request", "resolve_place_request"),
+    "SpatialMention": (".addr.request", "SpatialMention"),
     "extract_text": (".workflow._ingest", "extract_text"),
     # Additive canonical vocabulary. ``Entity`` above stays the *reference*
     # (mention) for back-compat; the canonical *resolved* Entity is reached
@@ -290,6 +295,9 @@ __all__ = [
     "list_places",
     # v0.3.0a1 — spatial role labeling (place-lane-v0.1)
     "extract_places",
+    # place requests: mention -> sources -> policy -> verified / question / refusal
+    "resolve_place_request",
+    "SpatialMention",
     # Versioning
     "__version__",
 ]

@@ -870,6 +870,11 @@ def _choose_backend(list_a, list_b, entity, kwargs) -> tuple[str, dict]:
     recipe = RECIPES.get(entity or "")
     if recipe is None:
         return arche(f"no shipped Splink recipe for entity {entity!r}")
+    if not recipe.auto:
+        return arche(f"recipe {recipe.name} exists but the engine won its benchmark; "
+                     f"pass splink_settings=recipes.PRODUCT to use it deliberately"
+                     if entity == "product_electronics" else
+                     f"recipe {recipe.name} is not enabled for auto")
     if importlib.util.find_spec("splink") is None:
         return arche("splink is not installed (arche-core[resolve])")
     try:

@@ -121,3 +121,22 @@ class TestSplinkWhenItFits:
 
     def test_the_recipes_columns_are_the_contract(self):
         assert set(PERSON_COLUMNS) <= set(_split_names(1, "a")[0])
+
+
+class TestARecipeThatLostStaysOut:
+    def test_products_stay_on_the_engine_and_the_reason_names_the_recipe(self):
+        pytest.importorskip("splink")
+        rows = [{"id": f"p{i}", "name": f"Brand{i % 30} Widget X{i}"} for i in range(AUTO_SPLINK_FLOOR + 5)]
+        res = reconcile(rows, rows, entity="product_electronics")
+        assert res["backend"]["chosen"] == "arche"
+        assert "engine won its benchmark" in res["backend"]["reason"]
+
+    def test_places_above_the_floor_go_to_splink(self):
+        pytest.importorskip("splink")
+        rng = random.Random(5)
+        a = [{"id": f"a{i}", "name": f"school {i % 200} {rng.choice(['primary', 'high'])}",
+              "lat": 53.8 + i * 1e-4, "lon": -1.5 + i * 1e-4} for i in range(AUTO_SPLINK_FLOOR // 2 + 5)]
+        b = [dict(r, id="b" + r["id"][1:]) for r in a]
+        res = reconcile(a, b, entity="place")
+        assert res["backend"]["chosen"] == "splink"
+        assert res["backend"]["recipe"] == "place/name-coords-v1"

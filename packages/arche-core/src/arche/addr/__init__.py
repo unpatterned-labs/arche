@@ -25,6 +25,7 @@ Stage 1 MVP focuses on Nigerian and South African patterns; Kenya and
 Ghana addresses parse best-effort via the shared gazetteer.
 """
 
+from arche.addr import request
 from arche.addr.parse import (
     Address,
     AddressComponents,
@@ -34,7 +35,6 @@ from arche.addr.parse import (
     parse_address,
     parse_addresses,
 )
-
 from arche.addr.roles import (
     GoldSentence,
     PlaceGrade,
@@ -57,6 +57,7 @@ __all__ = [
     "RolePack",
     "extract_anchor",
     "extract_places",
+    "request",
     "grade_places",
     "infer_jurisdiction",
     "load_gold",

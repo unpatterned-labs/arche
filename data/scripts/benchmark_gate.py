@@ -31,14 +31,19 @@ exactly the configuration its result file records:
   pinned: the `spec` refutation is neutral on this corpus, and the stop list
   is inert on it (the frequency table does that work). Either invariant
   breaking is a FAIL in its own right, whatever the precision did.
-* **Febrl 4 through the shipped Splink recipe**, `arche.resolve.recipes.PERSON`
-  via `reconcile(backend="splink")`
-  (`datasets/names_dataops/bench_recipe_person_result.json`). A recipe is
-  data the wheel ships, like a pack, and it drifts the same way: a Splink
-  upgrade, a changed blocking rule, a lost seed. Skipped with a notice when
-  Splink is not installed, never silently. Its invariant is the pin: the
-  result must say `settings: recipe:person/febrl-v1@...`, so a run that
-  quietly fell back to the caller path or to derivation fails.
+* **The shipped Splink recipes**, each via `reconcile(backend="splink",
+  splink_settings=<recipe>)`, each with the invariant that the result's pin
+  names the recipe -- so a run that quietly fell back to caller settings or
+  to derivation fails whatever its precision did. A recipe is data the wheel
+  ships, like a pack, and it drifts the same way: a Splink upgrade, a changed
+  blocking rule, a lost seed. Skipped with a notice when Splink is not
+  installed, never silently.
+  - `PERSON` on Febrl 4 (`datasets/names_dataops/bench_recipe_person_result.json`)
+  - `PLACE` on the England schools link
+    (`datasets/names_dataops/bench_recipe_place_result.json`); the sources are
+    fetched, not committed, so this arm is skipped where
+    `data/_cache/schools/` has not been staged and runs everywhere else
+  - `PRODUCT` on Abt-Buy (`datasets/products_dataops/bench_recipe_product_result.json`)
 
 The rule
 --------
@@ -73,6 +78,8 @@ LEIPZIG = _REPO / "data" / "er_bench" / "benchmark_leipzig_result.json"
 FEBRL = _REPO / "datasets" / "names_dataops" / "bench_febrl_result.json"
 ABT_BUY = _REPO / "data" / "er_bench" / "benchmark_abt_buy_result.json"
 RECIPE_PERSON = _REPO / "datasets" / "names_dataops" / "bench_recipe_person_result.json"
+RECIPE_PLACE = _REPO / "datasets" / "names_dataops" / "bench_recipe_place_result.json"
+RECIPE_PRODUCT = _REPO / "datasets" / "products_dataops" / "bench_recipe_product_result.json"
 
 
 def _dblp_acm() -> dict:
@@ -221,6 +228,81 @@ def _recipe_person() -> dict:
             "pin": settings_pin}
 
 
+def _recipe_place() -> dict:
+    """`recipes.PLACE` on the England schools link, scored the guide's way."""
+    import importlib.util
+
+    if importlib.util.find_spec("splink") is None:
+        raise _SkipError("splink is not installed (arche-core[resolve])")
+    if not (_REPO / "data" / "_cache" / "schools" / "gias.csv").exists():
+        raise _SkipError("England schools not staged "
+                         "(python data/scripts/fetch_england_schools.py --la Leeds)")
+
+    import bench_splink_england_schools as england
+    from arche.resolve import reconcile
+    from arche.resolve.recipes import PLACE
+
+    gias, osm, truth = england.load()
+    labelled = {o for o, _ in truth}
+    a = [{"id": o["osm_id"], "name": o["name"], "lat": o["lat"], "lon": o["lon"]} for o in osm]
+    b = [{"id": g["urn"], "name": g["name"], "lat": g["lat"], "lon": g["lon"]} for g in gias]
+    res = reconcile(a, b, id_field="id", backend="splink", splink_settings=PLACE)
+    pairs = {(e["a_id"], e["b_id"]) for e in res["matches"] if e["decision"] == "match"}
+    scored = england.score(pairs, truth, labelled)["guide_rule"]
+    pin = str(res["pins"].get("settings", ""))
+    return {"true_merges": scored["true"], "false_merges": scored["false"],
+            "precision": round(scored["precision"], 4),
+            "invariants": {"scored_by_the_shipped_recipe":
+                           pin.startswith(f"recipe:{PLACE.name}@")},
+            "pin": pin}
+
+
+def _recipe_product() -> dict:
+    """`recipes.PRODUCT` on Abt-Buy: code and brand, the title withheld."""
+    import importlib.util
+
+    if importlib.util.find_spec("splink") is None:
+        raise _SkipError("splink is not installed (arche-core[resolve])")
+
+    from arche.resolve import reconcile
+    from arche.resolve.recipes import PRODUCT
+
+    data = _REPO / "data" / "er_bench" / "products"
+
+    def read(name: str) -> list[dict]:
+        with open(data / name, encoding="utf-8-sig", errors="replace", newline="") as fh:
+            return list(csv.DictReader(fh))
+
+    a = [{"id": r["id"], "name": r["name"]} for r in read("Abt.csv")]
+    b = [{"id": r["id"], "name": r["name"]} for r in read("Buy.csv")]
+    truth = {(r["idAbt"], r["idBuy"]) for r in read("abt_buy_perfectMapping.csv")}
+    res = reconcile(a, b, id_field="id", backend="splink", splink_settings=PRODUCT)
+    pairs = {(e["a_id"], e["b_id"]) for e in res["matches"] if e["decision"] == "match"}
+    tp, fp = len(pairs & truth), len(pairs - truth)
+    pin = str(res["pins"].get("settings", ""))
+    return {"true_merges": tp, "false_merges": fp,
+            "precision": round(tp / (tp + fp), 4) if tp + fp else 0.0,
+            "invariants": {"scored_by_the_shipped_recipe":
+                           pin.startswith(f"recipe:{PRODUCT.name}@")},
+            "pin": pin}
+
+
+def _recorded_result(path: Path):
+    def read() -> dict:
+        c = json.loads(path.read_text(encoding="utf-8"))["result"]
+        return {k: c[k] for k in ("true_merges", "false_merges", "precision")}
+    return read
+
+
+def _write_result(path: Path):
+    def write(now: dict) -> None:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        doc["result"] = {k: now[k] for k in ("true_merges", "false_merges", "precision")}
+        doc["pin"] = now.get("pin")
+        path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    return write
+
+
 def _recorded_recipe_person() -> dict:
     c = json.loads(RECIPE_PERSON.read_text(encoding="utf-8"))["result"]
     return {"true_merges": c["true_merges"], "false_merges": c["false_merges"],
@@ -256,6 +338,10 @@ BENCHMARKS = (
     ("Abt-Buy, product names", _abt_buy, _recorded_abt_buy, _write_abt_buy, ABT_BUY),
     ("Recipe person, Febrl 4 via Splink", _recipe_person, _recorded_recipe_person,
      _write_recipe_person, RECIPE_PERSON),
+    ("Recipe place, England schools", _recipe_place, _recorded_result(RECIPE_PLACE),
+     _write_result(RECIPE_PLACE), RECIPE_PLACE),
+    ("Recipe product, Abt-Buy", _recipe_product, _recorded_result(RECIPE_PRODUCT),
+     _write_result(RECIPE_PRODUCT), RECIPE_PRODUCT),
 )
 
 
@@ -286,7 +372,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--update", action="store_true",
                     help="re-record the baselines from this run (a deliberate act)")
     ap.add_argument("--json", default=None, help="write the summary here as JSON")
-    ap.add_argument("--only", choices=["dblp-acm", "febrl", "abt-buy", "recipe"], default=None)
+    ap.add_argument("--only", choices=["dblp-acm", "febrl", "abt-buy", "recipe"], default=None,
+                    help="'recipe' runs all three recipe arms")
     args = ap.parse_args(argv[1:])
 
     results = []
