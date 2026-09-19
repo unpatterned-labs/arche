@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import contextlib
 import warnings
+from functools import lru_cache
 from typing import Any
 
 from arche.resolve._block import blocking_recall as _blocking_recall
@@ -160,11 +161,22 @@ def _text_values(
         a_val, b_val = split_place_name(a_val)[0], split_place_name(b_val)[0]
     domain = spec.get("strip_type")
     if domain:
-        vocab = load_type_vocab(str(domain))
-        if vocab:
-            a_val = _strip_all_type_tokens(a_val, vocab)
-            b_val = _strip_all_type_tokens(b_val, vocab)
+        a_val = _strip_type_cached(a_val, str(domain))
+        b_val = _strip_type_cached(b_val, str(domain))
     return a_val, b_val
+
+
+@lru_cache(maxsize=65536)
+def _strip_type_cached(value: str, domain: str) -> str:
+    """:func:`_strip_all_type_tokens` once per distinct value.
+
+    A record's name is stripped for every pair the record appears in --
+    a few hundred times in a 444-record dedupe -- and the answer is the same
+    each time. Keyed on the domain name rather than the vocabulary dict so
+    the key is hashable; :func:`load_type_vocab` is itself cached per domain.
+    """
+    vocab = load_type_vocab(domain)
+    return _strip_all_type_tokens(value, vocab) if vocab else value
 
 
 def _strip_all_type_tokens(value: str, vocab: dict[str, str], _max: int = 4) -> str:

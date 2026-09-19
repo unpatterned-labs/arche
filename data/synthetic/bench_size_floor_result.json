@@ -28,7 +28,7 @@
             "true_pairs": 92,
             "recall": 0.3913
           },
-          "seconds": 340.78,
+          "seconds": 5.32,
           "notes": {
             "engine": "crosswalk.v1",
             "candidate_pairs": 32210,
@@ -50,7 +50,7 @@
             "true_pairs": 92,
             "recall": 0.5326
           },
-          "seconds": 6.58,
+          "seconds": 4.93,
           "notes": {
             "threshold": 0.5,
             "seed": 42,
@@ -79,7 +79,7 @@
             "true_pairs": 92,
             "recall": 0.2935
           },
-          "seconds": 5.49,
+          "seconds": 4.76,
           "notes": {
             "threshold": 0.9,
             "seed": 42,
@@ -114,7 +114,7 @@
             "true_pairs": 246,
             "recall": 0.4268
           },
-          "seconds": 904.16,
+          "seconds": 18.49,
           "notes": {
             "engine": "crosswalk.v1",
             "candidate_pairs": 109719,
@@ -136,7 +136,7 @@
             "true_pairs": 246,
             "recall": 0.6057
           },
-          "seconds": 8.64,
+          "seconds": 6.75,
           "notes": {
             "threshold": 0.5,
             "seed": 42,
@@ -165,7 +165,7 @@
             "true_pairs": 246,
             "recall": 0.2642
           },
-          "seconds": 7.75,
+          "seconds": 6.74,
           "notes": {
             "threshold": 0.9,
             "seed": 42,
@@ -200,7 +200,7 @@
             "true_pairs": 619,
             "recall": 0.4249
           },
-          "seconds": 2056.32,
+          "seconds": 52.08,
           "notes": {
             "engine": "crosswalk.v1",
             "candidate_pairs": 312489,
@@ -222,7 +222,7 @@
             "true_pairs": 619,
             "recall": 0.4863
           },
-          "seconds": 10.55,
+          "seconds": 9.12,
           "notes": {
             "threshold": 0.5,
             "seed": 42,
@@ -251,7 +251,7 @@
             "true_pairs": 619,
             "recall": 0.1535
           },
-          "seconds": 10.27,
+          "seconds": 8.73,
           "notes": {
             "threshold": 0.9,
             "seed": 42,
@@ -286,7 +286,7 @@
             "true_pairs": 1117,
             "recall": 0.4297
           },
-          "seconds": 32478.65,
+          "seconds": 70.23,
           "notes": {
             "engine": "crosswalk.v1",
             "candidate_pairs": 566542,
@@ -308,7 +308,7 @@
             "true_pairs": 1117,
             "recall": 0.4879
           },
-          "seconds": 22.18,
+          "seconds": 22.92,
           "notes": {
             "threshold": 0.5,
             "seed": 42,
@@ -337,7 +337,7 @@
             "true_pairs": 1117,
             "recall": 0.1522
           },
-          "seconds": 22.01,
+          "seconds": 23.28,
           "notes": {
             "threshold": 0.9,
             "seed": 42,

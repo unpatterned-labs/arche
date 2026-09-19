@@ -833,13 +833,15 @@ def describe_packs() -> dict[str, dict]:
 
 #: Records at and above this count are scored by a shipped Splink recipe when
 #: ``backend="auto"`` and one exists for the entity; below it, by arche's own
-#: engine. Measured on the supplier world (`data/synthetic/bench_size_floor.py`,
-#: 2026-09-18): at 444 and 1,215 records the two are level on false merges
-#: (2 vs 5, 39 vs 47) and the engine is the one with no threshold to choose;
-#: at 3,081 the engine's false merges go to 456 against Splink's 49, and at
-#: 6,144 to 917 against 103 -- and it takes nine hours to Splink's 22 seconds.
-#: 1,000 is under the point where the engine's precision turns and past the
-#: point where its runtime stops being reasonable (~15 minutes at 1,215).
+#: engine. Measured on the supplier world (`data/synthetic/bench_size_floor.py`):
+#: at 444 and 1,215 records the two are level on false merges (2 vs 5, 39 vs
+#: 47) and the engine is the one with no threshold to choose; at 3,081 the
+#: engine's false merges go to 456 against Splink's 49, and at 6,144 to 917
+#: against 103. The floor sits under the point where the engine's precision
+#: turns. It is a precision floor, not a runtime one: the engine's runtime
+#: used to be the other reason (nine hours at 6,144 records) until the
+#: per-pair recomputation was memoised on 2026-09-19 -- the same sweep now
+#: runs in 70 s, within 3x of Splink everywhere.
 AUTO_SPLINK_FLOOR = 1_000
 
 

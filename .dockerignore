@@ -1,0 +1,20 @@
+# For builds whose context is the repository root -- the dev image. Nothing
+# under these is read by that build; they are mounted at run time or
+# regenerated. Sending them to the daemon cost 1.35 GB and ninety seconds
+# before this file existed. (The runtime image builds from packages/arche-core
+# and has its own.)
+.git/
+.venv/
+**/__pycache__/
+**/*.pyc
+data/_cache/
+datasets/data/_cache/
+data/synthetic/worlds/
+docs-site/site/
+node_modules/
+# Local-only material that git already ignores. It must never reach an image
+# layer: a dev image is published, and a published layer is forever.
+data/confidential/
+data/hf/
+datasets/data/_cache/
+*.duckdb

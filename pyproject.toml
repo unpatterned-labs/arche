@@ -20,6 +20,19 @@ members = [
 [tool.uv.sources]
 arche-core = { workspace = true }
 arche-mcp = { workspace = true }
+# arche runs on CPU by design. On Linux, PyPI's `torch` is the CUDA build --
+# 2.7 GB of driver libraries plus a 640 MB triton -- and it is what
+# `gliner2[local]` and docling pull unless told otherwise. Windows and macOS
+# wheels on PyPI are already CPU. Measured on the first dev-image build:
+# 12.8 GB in one layer, with the CPU torch that `uv pip install` had put in
+# replaced by the lock's CUDA one on the next `uv sync`.
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 arche-adapters = { workspace = true }
 arche-graph = { workspace = true }
 arche-live = { workspace = true }
@@ -43,6 +56,18 @@ dev = [
     # member, not a dependency of the root, so a plain `uv sync` dropped it
     # and three tests failed on a clean checkout.
     "arche-mcp",
+]
+# Everything, for the dev image and anyone who wants the document parsers and
+# OCR locally. Opt-in (`uv sync --group full`): docling and the OCR runtime
+# are large, and a laptop `uv sync` should stay the light default.
+full = [
+    "arche-core[all,doc,doc-ocr,service,ledger,detect2]",
+    # Named here so the CPU-index source below applies: a uv source only
+    # attaches to a *direct* dependency, and torch is otherwise reached
+    # transitively through gliner2 and docling, where the source is ignored
+    # and the CUDA build wins.
+    "torch",
+    "torchvision",
 ]
 
 [tool.ruff]

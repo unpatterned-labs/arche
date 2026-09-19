@@ -43,6 +43,7 @@ import math
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
+from functools import lru_cache
 from pathlib import Path
 
 from arche.resolve._matcher import _normalise_text
@@ -112,15 +113,23 @@ def _tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
     ``rule`` selects an emission from :data:`TOKEN_RULES`. Pass the rule the
     *table* was built with — see :attr:`TokenFrequencyTable.token_rule` — never
     a rule chosen at the call site.
+
+    Returns a fresh list each call; the memo underneath holds a tuple, so a
+    caller that appends to the result cannot poison the next caller's.
     """
+    return list(_tokens_cached(text or "", rule))
+
+
+@lru_cache(maxsize=65536)
+def _tokens_cached(text: str, rule: str) -> tuple[str, ...]:
     if rule not in TOKEN_RULES:
         raise ValueError(f"unknown token rule {rule!r}; expected one of {list(TOKEN_RULES)}")
-    norm = _normalise_text(text or "")
+    norm = _normalise_text(text)
     out = _TOKEN_RE.findall(norm)
     if rule == "possessive":
         # Alongside, never instead. See TOKEN_RULES.
         out.extend(m.group(1) + "s" for m in _POSSESSIVE_RE.finditer(norm))
-    return out
+    return tuple(out)
 
 
 def _phrase_tokens(text: str, rule: str = DEFAULT_TOKEN_RULE) -> list[str]:
