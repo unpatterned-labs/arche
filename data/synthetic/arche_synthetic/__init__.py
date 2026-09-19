@@ -32,7 +32,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from . import artists, evaluate, export, ids, lifecycle, observe, world
+from . import artists, evaluate, export, ids, lifecycle, observe, places, world
 from .evaluate import Benchmark, Predictions
 
 __version__ = "0.0.1"
@@ -76,4 +76,4 @@ def build(world_pack: str = "ng_supplier_v0", *, seed: int = 42,
 
 
 __all__ = ["HORIZON", "SCALE", "Benchmark", "Predictions", "__version__", "artists",
-           "build", "evaluate", "export", "ids", "lifecycle", "observe", "world"]
+           "build", "evaluate", "export", "ids", "lifecycle", "observe", "places", "world"]

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arche.dev/schemas/synthetic/truth-v0.json",
+  "title": "truth",
+  "type": "object",
+  "required": [
+    "request_id",
+    "role",
+    "rendering"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "place_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rendering": {
+      "type": "string"
+    },
+    "endpoint_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_phrase": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
