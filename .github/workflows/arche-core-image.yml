@@ -32,6 +32,7 @@ on:
     tags: ["arche-core-v*"]
     paths:
       - "packages/arche-core/**"
+      - "packages/arche-mcp/**"
       - ".devcontainer/**"
       - ".dockerignore"
       - "pyproject.toml"
@@ -76,7 +77,8 @@ jobs:
       - name: Build (the warm-up gate runs inside the build)
         uses: docker/build-push-action@v6
         with:
-          context: packages/arche-core
+          context: .
+          file: packages/arche-core/Dockerfile
           load: true
           push: false
           tags: arche-core:ci
@@ -109,6 +111,29 @@ jobs:
         if: always()
         run: docker rm -f arche || true
 
+      - name: It runs as a non-root user
+        run: |
+          set -euo pipefail
+          UID_IN_IMAGE=$(docker run --rm --entrypoint id arche-core:ci -u)
+          [ "$UID_IN_IMAGE" != "0" ] || { echo "::error::The image runs as root."; exit 1; }
+
+      - name: Every subcommand is reachable through the entrypoint
+        run: |
+          set -euo pipefail
+          docker run --rm arche-core:ci --version
+          docker run --rm arche-core:ci redact --text --jurisdiction NG \
+            "Adaeze Okonkwo, NIN 12345678901" > /tmp/redact.txt 2>/dev/null
+          grep -qF "[NIN]" /tmp/redact.txt \
+            || { echo "::error::arche redact did not mask the NIN in the image."; cat /tmp/redact.txt; exit 1; }
+
+      # The MCP server is the case a container helps most, so the handshake is
+      # the thing that has to work. The driver writes one request at a time
+      # and waits for each reply: piping a file in closes the server's stdin
+      # at EOF, and a server still running a slow tool exits before it
+      # answers, which looks like a lost response and is a lost client.
+      - name: The MCP server answers a handshake, lists its tools, and answers one
+        run: python3 .github/scripts/mcp_smoke.py docker run -i --rm arche-core:ci mcp
+
       - name: Log in to GHCR
         if: github.event_name == 'push'
         uses: docker/login-action@v3
@@ -121,7 +146,8 @@ jobs:
         if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
-          context: packages/arche-core
+          context: .
+          file: packages/arche-core/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
