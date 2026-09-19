@@ -340,6 +340,7 @@ runtime = [
 ]
 service = [
     { name = "fastapi" },
+    { name = "python-multipart" },
     { name = "uvicorn" },
 ]
 splink = [
@@ -388,6 +389,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "python-docx", marker = "extra == 'all'", specifier = ">=1.1" },
     { name = "python-docx", marker = "extra == 'docx'", specifier = ">=1.1" },
+    { name = "python-multipart", marker = "extra == 'service'", specifier = ">=0.0.9" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rapidfuzz", specifier = ">=3.0" },
     { name = "rapidocr-onnxruntime", marker = "extra == 'doc-ocr'", specifier = ">=1.3" },
@@ -433,6 +435,9 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "arche-core", extra = ["service"] },
+    { name = "arche-mcp" },
+    { name = "httpx" },
     { name = "pyarrow" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -447,6 +452,9 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "arche-core", extras = ["service"], editable = "packages/arche-core" },
+    { name = "arche-mcp", editable = "packages/arche-mcp" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "pyarrow", specifier = ">=14" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.23" },

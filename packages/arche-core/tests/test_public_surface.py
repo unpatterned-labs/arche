@@ -207,6 +207,11 @@ _FROZEN_SURFACE = {
     "compare_geo", "compare_place_qualifiers", "extract_places", "list_places",
     "load_type_vocab", "normalize_type_token", "resolve_places",
     "split_place_name",
+    # The place request (2026-09-18): a sentence -> endpoints with roles,
+    # relations and access hints -> verified / one question / refused. One
+    # verb and the noun it reads; the sources and the policy live in
+    # `arche.addr.request` and are not vocabulary.
+    "resolve_place_request", "SpatialMention",
     # `match` resolves to arche.resolve._matcher.match -- a different engine
     # from `compare`, not an older spelling of it; it stays until someone runs
     # the comparison. `detect` and `resolve` are the subpackages.

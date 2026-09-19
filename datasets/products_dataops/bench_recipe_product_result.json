@@ -1,0 +1,13 @@
+{
+  "benchmark": "arche.resolve.recipes.PRODUCT on Abt-Buy (names only; code and brand extracted, the title withheld), via reconcile(backend='splink')",
+  "recipe": "product/identity-v1",
+  "threshold": 0.5,
+  "true_pairs": 1097,
+  "result": {
+    "true_merges": 732,
+    "false_merges": 49,
+    "precision": 0.9373
+  },
+  "pin": "recipe:product/identity-v1@sha256:bbdc0a0651eca723",
+  "note": "Seeded; two consecutive runs agree. The engine's product_electronics pack on the same labels: 741 true, 22 false -- which is why this recipe is auto=False."
+}

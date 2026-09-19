@@ -1,0 +1,357 @@
+{
+  "benchmark": "the size floor: where Splink overtakes arche's own engine",
+  "world_pack": "ng_supplier_v0",
+  "seed": 42,
+  "scales": [
+    150,
+    400,
+    1000,
+    2000
+  ],
+  "results": {
+    "150": {
+      "records": 444,
+      "true_pairs": 545,
+      "arms": {
+        "arche/pack": {
+          "overall": {
+            "claimed_pairs": 408,
+            "true_pairs": 545,
+            "precision": 0.9951,
+            "recall": 0.745,
+            "f1": 0.852,
+            "abstentions": 704,
+            "coverage": 0.9688
+          },
+          "false_merges": 2,
+          "change": {
+            "true_pairs": 92,
+            "recall": 0.3913
+          },
+          "seconds": 340.78,
+          "notes": {
+            "engine": "crosswalk.v1",
+            "candidate_pairs": 32210,
+            "blocking_recall_reported_by_arche": 0.9798
+          }
+        },
+        "splink@0.5": {
+          "overall": {
+            "claimed_pairs": 432,
+            "true_pairs": 545,
+            "precision": 0.9884,
+            "recall": 0.7835,
+            "f1": 0.8741,
+            "abstentions": 0,
+            "coverage": 0.7835
+          },
+          "false_merges": 5,
+          "change": {
+            "true_pairs": 92,
+            "recall": 0.5326
+          },
+          "seconds": 6.58,
+          "notes": {
+            "threshold": 0.5,
+            "seed": 42,
+            "scored_pairs": 1432,
+            "claims_at_threshold": {
+              "0.5": 432,
+              "0.9": 251,
+              "0.95": 139,
+              "0.99": 124
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        },
+        "splink@0.9": {
+          "overall": {
+            "claimed_pairs": 251,
+            "true_pairs": 545,
+            "precision": 1.0,
+            "recall": 0.4606,
+            "f1": 0.6307,
+            "abstentions": 0,
+            "coverage": 0.4606
+          },
+          "false_merges": 0,
+          "change": {
+            "true_pairs": 92,
+            "recall": 0.2935
+          },
+          "seconds": 5.49,
+          "notes": {
+            "threshold": 0.9,
+            "seed": 42,
+            "scored_pairs": 1432,
+            "claims_at_threshold": {
+              "0.5": 432,
+              "0.9": 251,
+              "0.95": 139,
+              "0.99": 124
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        }
+      }
+    },
+    "400": {
+      "records": 1215,
+      "true_pairs": 1520,
+      "arms": {
+        "arche/pack": {
+          "overall": {
+            "claimed_pairs": 1173,
+            "true_pairs": 1520,
+            "precision": 0.9668,
+            "recall": 0.7461,
+            "f1": 0.8422,
+            "abstentions": 3465,
+            "coverage": 0.9717
+          },
+          "false_merges": 39,
+          "change": {
+            "true_pairs": 246,
+            "recall": 0.4268
+          },
+          "seconds": 904.16,
+          "notes": {
+            "engine": "crosswalk.v1",
+            "candidate_pairs": 109719,
+            "blocking_recall_reported_by_arche": 0.9901
+          }
+        },
+        "splink@0.5": {
+          "overall": {
+            "claimed_pairs": 1214,
+            "true_pairs": 1520,
+            "precision": 0.9613,
+            "recall": 0.7678,
+            "f1": 0.8537,
+            "abstentions": 0,
+            "coverage": 0.7678
+          },
+          "false_merges": 47,
+          "change": {
+            "true_pairs": 246,
+            "recall": 0.6057
+          },
+          "seconds": 8.64,
+          "notes": {
+            "threshold": 0.5,
+            "seed": 42,
+            "scored_pairs": 5442,
+            "claims_at_threshold": {
+              "0.5": 1214,
+              "0.9": 589,
+              "0.95": 334,
+              "0.99": 308
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        },
+        "splink@0.9": {
+          "overall": {
+            "claimed_pairs": 589,
+            "true_pairs": 1520,
+            "precision": 1.0,
+            "recall": 0.3875,
+            "f1": 0.5586,
+            "abstentions": 0,
+            "coverage": 0.3875
+          },
+          "false_merges": 0,
+          "change": {
+            "true_pairs": 246,
+            "recall": 0.2642
+          },
+          "seconds": 7.75,
+          "notes": {
+            "threshold": 0.9,
+            "seed": 42,
+            "scored_pairs": 5442,
+            "claims_at_threshold": {
+              "0.5": 1214,
+              "0.9": 589,
+              "0.95": 334,
+              "0.99": 308
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        }
+      }
+    },
+    "1000": {
+      "records": 3081,
+      "true_pairs": 3940,
+      "arms": {
+        "arche/pack": {
+          "overall": {
+            "claimed_pairs": 3393,
+            "true_pairs": 3940,
+            "precision": 0.8656,
+            "recall": 0.7454,
+            "f1": 0.801,
+            "abstentions": 17446,
+            "coverage": 0.9703
+          },
+          "false_merges": 456,
+          "change": {
+            "true_pairs": 619,
+            "recall": 0.4249
+          },
+          "seconds": 2056.32,
+          "notes": {
+            "engine": "crosswalk.v1",
+            "candidate_pairs": 312489,
+            "blocking_recall_reported_by_arche": 0.9868
+          }
+        },
+        "splink@0.5": {
+          "overall": {
+            "claimed_pairs": 2741,
+            "true_pairs": 3940,
+            "precision": 0.9821,
+            "recall": 0.6832,
+            "f1": 0.8059,
+            "abstentions": 0,
+            "coverage": 0.6832
+          },
+          "false_merges": 49,
+          "change": {
+            "true_pairs": 619,
+            "recall": 0.4863
+          },
+          "seconds": 10.55,
+          "notes": {
+            "threshold": 0.5,
+            "seed": 42,
+            "scored_pairs": 14142,
+            "claims_at_threshold": {
+              "0.5": 2741,
+              "0.9": 910,
+              "0.95": 848,
+              "0.99": 749
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        },
+        "splink@0.9": {
+          "overall": {
+            "claimed_pairs": 910,
+            "true_pairs": 3940,
+            "precision": 1.0,
+            "recall": 0.231,
+            "f1": 0.3753,
+            "abstentions": 0,
+            "coverage": 0.231
+          },
+          "false_merges": 0,
+          "change": {
+            "true_pairs": 619,
+            "recall": 0.1535
+          },
+          "seconds": 10.27,
+          "notes": {
+            "threshold": 0.9,
+            "seed": 42,
+            "scored_pairs": 14142,
+            "claims_at_threshold": {
+              "0.5": 2741,
+              "0.9": 910,
+              "0.95": 848,
+              "0.99": 749
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        }
+      }
+    },
+    "2000": {
+      "records": 6144,
+      "true_pairs": 7863,
+      "arms": {
+        "arche/pack": {
+          "overall": {
+            "claimed_pairs": 6711,
+            "true_pairs": 7863,
+            "precision": 0.8634,
+            "recall": 0.7369,
+            "f1": 0.7951,
+            "abstentions": 31787,
+            "coverage": 0.9458
+          },
+          "false_merges": 917,
+          "change": {
+            "true_pairs": 1117,
+            "recall": 0.4297
+          },
+          "seconds": 32478.65,
+          "notes": {
+            "engine": "crosswalk.v1",
+            "candidate_pairs": 566542,
+            "blocking_recall_reported_by_arche": 0.9634
+          }
+        },
+        "splink@0.5": {
+          "overall": {
+            "claimed_pairs": 5410,
+            "true_pairs": 7863,
+            "precision": 0.981,
+            "recall": 0.6749,
+            "f1": 0.7997,
+            "abstentions": 0,
+            "coverage": 0.6749
+          },
+          "false_merges": 103,
+          "change": {
+            "true_pairs": 1117,
+            "recall": 0.4879
+          },
+          "seconds": 22.18,
+          "notes": {
+            "threshold": 0.5,
+            "seed": 42,
+            "scored_pairs": 17339,
+            "claims_at_threshold": {
+              "0.5": 5410,
+              "0.9": 1873,
+              "0.95": 1746,
+              "0.99": 1507
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        },
+        "splink@0.9": {
+          "overall": {
+            "claimed_pairs": 1873,
+            "true_pairs": 7863,
+            "precision": 0.9989,
+            "recall": 0.2379,
+            "f1": 0.3843,
+            "abstentions": 0,
+            "coverage": 0.2379
+          },
+          "false_merges": 2,
+          "change": {
+            "true_pairs": 1117,
+            "recall": 0.1522
+          },
+          "seconds": 22.01,
+          "notes": {
+            "threshold": 0.9,
+            "seed": 42,
+            "scored_pairs": 17339,
+            "claims_at_threshold": {
+              "0.5": 5410,
+              "0.9": 1873,
+              "0.95": 1746,
+              "0.99": 1507
+            },
+            "note": "candidates are the pairs Splink scored above 0.01, so blocking recall is a lower bound on what its blocking rules retrieved"
+          }
+        }
+      }
+    }
+  }
+}

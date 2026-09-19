@@ -128,6 +128,11 @@ backend="splink" needs a Splink configuration; arche will not invent one.
       Best-effort derivation from the arche comparator pack. Opt in with a
       measurement in hand: on Febrl 4 it has measured BELOW arche's own
       engine. See datasets/names_dataops/bench_backend_compare.py.
+
+  splink_settings=arche.resolve.recipes.PERSON
+      A shipped recipe: hand-written, benchmarked, gated in CI, carrying the
+      column schema it expects and the threshold it was measured at. The
+      supported path when your columns match its contract.
 """
 
 _NO_THRESHOLD = """\
@@ -243,6 +248,11 @@ def _frame(records: list[dict], columns: Sequence[str], types: dict[str, str],
                 return float(value)
             except (TypeError, ValueError):
                 return None
+        if isinstance(value, (list, tuple, set, frozenset)):
+            # An array column -- a recipe's `codes` or `specs` -- for an
+            # array-intersect level. Stringifying it would compare the
+            # repr of two lists, which agree only when identical.
+            return [str(v) for v in value]
         return str(value)
 
     frame = pd.DataFrame([
@@ -673,6 +683,35 @@ def splink_crosswalk(
 
     if splink_settings is None:
         raise SplinkBackendError(_NO_SETTINGS)
+
+    # A shipped recipe carries its own training plan, columns and operating
+    # point. It is unpacked here so the rest of this function sees exactly
+    # what a caller-supplied SettingsCreator would give it, plus a pin that
+    # names the recipe rather than "caller".
+    from arche.resolve.recipes import Recipe
+
+    recipe: Recipe | None = None
+    if isinstance(splink_settings, Recipe):
+        recipe = splink_settings
+        recipe.check(list_a, side="list_a")
+        recipe.check(list_b, side="list_b")
+        dedupe_call = list_a is list_b
+        if recipe.prepare is not None:
+            # The representation step, then the frame. The ids are carried
+            # through untouched; only the compared columns are derived.
+            prepared_a = recipe.prepare(list_a)
+            prepared_b = prepared_a if dedupe_call else recipe.prepare(list_b)
+            list_a, list_b = prepared_a, prepared_b
+        splink_settings = recipe.settings("dedupe_only" if dedupe_call else "link_only")
+        if splink_train is None:
+            splink_train = lambda ln, _r=recipe: _r.train(ln, seed)  # noqa: E731
+        if threshold is None:
+            threshold = recipe.threshold
+        if review_margin is None:
+            review_margin = recipe.review_margin
+        if columns is None:
+            columns = (id_field, *recipe.columns)
+
     if threshold is None:
         raise SplinkBackendError(_NO_THRESHOLD)
 
@@ -790,8 +829,11 @@ def splink_crosswalk(
         "backend": "splink",
         # Who configured the scorer. A derived run and a hand-written run are
         # not the same decision, and the pin says which one happened.
-        "settings": "derived" if derived else "caller",
-        "training": "caller" if splink_train is not None else "default",
+        "settings": ("derived" if derived
+                     else f"recipe:{recipe.name}@{recipe.digest}" if recipe
+                     else "caller"),
+        "training": ("recipe" if recipe else
+                     "caller" if splink_train is not None else "default"),
         "link_type": "dedupe_only" if dedupe else "link_only",
         "splink_version": splink.__version__,
         "duckdb_version": duckdb.__version__,

@@ -105,37 +105,28 @@ def splink_record(r: dict) -> dict:
 
 
 def splink_settings(*, with_ssn: bool):
-    """The hand-written configuration, in one place.
+    """The hand-written configuration, in one place -- and that place is now
+    the wheel.
 
-    `bench_backend_compare.py` runs the SAME object through the adapter. A
-    second copy of these settings living over there would be able to drift
-    until the two arms stopped being comparable.
+    Without the identifier this IS `arche.resolve.recipes.PERSON`, imported
+    rather than copied, so the benchmark measures the recipe arche ships and
+    the two cannot drift apart. The `with_ssn` arm reproduces Splink's
+    published example and stays here: it is a reproduction, not a recipe
+    anyone should run on real data.
     """
+    from arche.resolve.recipes import PERSON
+
+    if not with_ssn:
+        return PERSON.settings()
+
     import splink.comparison_library as cl
     from splink import SettingsCreator, block_on
 
-    # Splink's own blocking rules from the published example.
-    blocking = [
-        block_on("given_name", "surname"),
-        "l.given_name = r.surname and l.surname = r.given_name",
-        block_on("date_of_birth"),
-        block_on("state", "address_1"),
-        block_on("street_number", "address_1"),
-        block_on("postcode"),
-    ]
-    comparisons = [
-        cl.NameComparison("given_name").configure(term_frequency_adjustments=True),
-        cl.NameComparison("surname").configure(term_frequency_adjustments=True),
-        cl.DateOfBirthComparison("date_of_birth", input_is_string=True,
-                                 datetime_format="%Y%m%d"),
-        cl.ExactMatch("street_number").configure(term_frequency_adjustments=True),
-        cl.DamerauLevenshteinAtThresholds("postcode", [1, 2]).configure(
-            term_frequency_adjustments=True),
-    ]
-    if with_ssn:
-        blocking.insert(3, block_on("soc_sec_id"))
-        comparisons.append(cl.DamerauLevenshteinAtThresholds("soc_sec_id", [1, 2]))
-
+    base = PERSON.settings()
+    blocking = list(base.blocking_rules_to_generate_predictions)
+    blocking.insert(3, block_on("soc_sec_id"))
+    comparisons = list(base.comparisons)
+    comparisons.append(cl.DamerauLevenshteinAtThresholds("soc_sec_id", [1, 2]))
     return SettingsCreator(
         link_type="link_only",
         comparisons=comparisons,
@@ -144,16 +135,20 @@ def splink_settings(*, with_ssn: bool):
     )
 
 
-def splink_train(linker, *, with_ssn: bool) -> None:
+def splink_train(linker, *, with_ssn: bool, seed: int = 20260816) -> None:
     """The hand-written training recipe, in one place. See `splink_settings`."""
+    from arche.resolve.recipes import PERSON
+
+    if not with_ssn:
+        PERSON.train(linker, seed)
+        return
+
     from splink import block_on
 
-    deterministic = [block_on("given_name", "surname", "date_of_birth")]
-    if with_ssn:
-        deterministic.insert(0, block_on("soc_sec_id"))
     linker.training.estimate_probability_two_random_records_match(
-        deterministic, recall=0.8)
-    linker.training.estimate_u_using_random_sampling(max_pairs=2e6)
+        [block_on("soc_sec_id"), block_on("given_name", "surname", "date_of_birth")],
+        recall=0.8)
+    linker.training.estimate_u_using_random_sampling(max_pairs=2e6, seed=seed)
     for rule in (block_on("date_of_birth"), block_on("postcode")):
         linker.training.estimate_parameters_using_expectation_maximisation(rule)
 

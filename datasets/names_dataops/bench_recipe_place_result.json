@@ -1,0 +1,14 @@
+{
+  "benchmark": "arche.resolve.recipes.PLACE on the England schools link (Leeds; GIAS x OSM, 282 ref:edubase labels), via reconcile(backend='splink'), scored under the schools guide's rule (every pair outside the truth set is a false merge)",
+  "recipe": "place/name-coords-v1",
+  "threshold": 0.9,
+  "true_pairs": 282,
+  "result": {
+    "true_merges": 278,
+    "false_merges": 3,
+    "precision": 0.9893
+  },
+  "restricted_false_merges": 0,
+  "pin": "recipe:place/name-coords-v1@sha256:c7b89bf4b53b38b7",
+  "note": "Seeded; two consecutive runs agree. The engine's place pack on the same labels: 278 true, 37 false. Sources are fetched, not committed; the gate skips with a notice where they are not staged."
+}

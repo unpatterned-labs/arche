@@ -300,7 +300,26 @@ Fixing all three left the part that cannot be fixed by inference. A derived conf
 
 Same edges, same order, three different answers, straddling arche's own engine at 0.8382. Without labels you cannot know which one you are on. So `splink_settings=` is required, `splink_settings="derive"` warns, and `threshold=` is required too: at `p >= 0.99` the Nigerian recipe merges nothing while Febrl merges 4,765.
 
-Scripts: `datasets/names_dataops/bench_backend_compare.py`.
+#### The recipe arche ships instead, and the gate that holds it
+
+If arche will not infer a configuration, it can still ship one it wrote. `arche.resolve.recipes.PERSON` is Splink's own published Febrl 4 configuration, identifier withheld, with three things a derived configuration cannot have: the **column schema it expects** (`given_name` and `surname` as two columns, `date_of_birth` as `%Y%m%d`), the **threshold it was benchmarked at**, and a **seeded** u-sample. Records that do not carry its columns are refused by name before Splink sees a frame.
+
+<!-- docs-test: fragment -->
+```python
+from arche.resolve import reconcile
+from arche.resolve.recipes import PERSON
+
+result = reconcile(a, b, id_field="id", backend="splink", splink_settings=PERSON)
+result["pins"]["settings"]     # 'recipe:person/febrl-v1@sha256:9c953287a3011f24'
+```
+
+| Febrl 4, no `soc_sec_id` | true | false | precision | recall |
+| --- | ---: | ---: | ---: | ---: |
+| `PERSON`, seeded, two consecutive runs | 4,761 / 4,761 | 0 | 1.0000 | 0.9522 |
+
+Four fewer true pairs than the unseeded row above, and the same on every run, which is the trade a gate needs. It runs in `data/scripts/benchmark_gate.py` beside the three engine benchmarks (`datasets/names_dataops/bench_recipe_person_result.json`), with one invariant of its own: the result's pin must name the recipe, so a run that quietly fell back to caller settings or to derivation fails the build whatever its precision did. A recipe is data the wheel ships, like a pack, and it is held to the same drift discipline.
+
+Scripts: `datasets/names_dataops/bench_backend_compare.py`; the recipe gate is in `data/scripts/benchmark_gate.py --only recipe`.
 
 ### Splink, on Abt-Buy
 

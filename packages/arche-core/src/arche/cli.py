@@ -591,7 +591,7 @@ def _cmd_serve(args: argparse.Namespace) -> int:
     from arche._service import serve
 
     return serve(host=args.host, port=args.port, ledger=args.ledger,
-                 signing_key=args.signing_key)
+                 signing_key=args.signing_key, warm_start=True if args.warm else None)
 
 
 def _write_json_output(payload: dict[str, object], output: str | None) -> None:
@@ -1143,6 +1143,9 @@ def main(argv: list[str] | None = None) -> int:
     serve_p.add_argument("--signing-key", default=None,
                          help="PEM from `arche attest keygen`; answers then carry an "
                               "attestation (default: $ARCHE_SIGNING_KEY)")
+    serve_p.add_argument("--warm", action="store_true",
+                         help="load models and parsers at startup, not on the first request "
+                              "(also ARCHE_WARM=1)")
     serve_p.set_defaults(func=_cmd_serve)
 
     att_p = sub.add_parser("attest", help="make a signing key, or verify an attested answer")

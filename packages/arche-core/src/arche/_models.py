@@ -98,6 +98,18 @@ def get_gliner2(name_or_path: str | None = None) -> Any:
     try:
         from gliner2 import AutoExtractor
     except ImportError as exc:  # pragma: no cover - exercised without the extra
+        import importlib.util
+
+        if importlib.util.find_spec("gliner2") is not None:
+            # The package is there and something *inside* it failed to import
+            # -- a missing transitive dependency, a torch build that does not
+            # load on this machine. Saying "not installed" here sent one
+            # container build chasing the wrong fix; name the real failure.
+            raise ImportError(
+                f"GLiNER 2 is installed but failed to import: {exc}\n"
+                "The `gliner2[local]` extra's own dependencies (torch, "
+                "transformers) are the usual cause; `pip check` will name it."
+            ) from exc
         raise ImportError(
             "GLiNER 2 is not installed. Install it with:\n"
             "    pip install 'arche-core[detect2]'\n"

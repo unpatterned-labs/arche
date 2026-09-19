@@ -37,7 +37,8 @@ class TestLiveness:
     def test_livez_carries_the_version(self, client):
         from arche import __version__
         body = client.get("/livez").json()
-        assert body == {"ok": True, "version": __version__}
+        assert body["ok"] is True and body["version"] == __version__
+        assert body["warm"] is None            # not asked to warm, so no claim either way
 
     def test_capabilities_say_whether_a_ledger_is_attached(self, client, ledger_client):
         assert client.get("/capabilities").json()["ledger"] is False

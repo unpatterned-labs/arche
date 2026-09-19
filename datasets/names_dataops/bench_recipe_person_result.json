@@ -1,0 +1,13 @@
+{
+  "benchmark": "arche.resolve.recipes.PERSON on Febrl 4 (identifier withheld), via reconcile(backend='splink')",
+  "recipe": "person/febrl-v1",
+  "threshold": 0.99,
+  "true_pairs": 5000,
+  "result": {
+    "true_merges": 4761,
+    "false_merges": 0,
+    "precision": 1.0
+  },
+  "pin": "recipe:person/febrl-v1@sha256:9c953287a3011f24",
+  "note": "Seeded u-sampling; two consecutive runs agree to the pair. The unseeded published recipe measured 4,765-4,768 on different days, which a gate cannot hold."
+}

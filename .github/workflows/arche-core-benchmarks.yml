@@ -86,6 +86,12 @@ jobs:
           print("| benchmark | status | precision | true merges | false merges | invariants | file |")
           print("| --- | --- | --- | --- | --- | --- | --- |")
           for r in d["results"]:
+              if r["status"] == "SKIPPED":
+                  # A benchmark that could not run here says why, and the
+                  # summary says so too rather than crashing on the columns
+                  # it does not have.
+                  print(f"| {r['benchmark']} | **SKIPPED** | - | - | - | {r.get('why', '')} | `{r['file']}` |")
+                  continue
               a, b = r["recorded"], r["now"]
               inv = ", ".join(f"{k}={'ok' if ok else 'BROKEN'}" for k, ok in (r.get("invariants") or {}).items()) or "-"
               print(f"| {r['benchmark']} | **{r['status']}** | {a['precision']:.4f} -> {b['precision']:.4f} "
