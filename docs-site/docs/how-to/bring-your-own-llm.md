@@ -233,5 +233,5 @@ So arche gives it the two jobs it is genuinely best at: reading messy text into 
 ## Next
 
 - Declare your schema, where the contract comes from
-- [Read the crosswalk output](read-crosswalk-output.md): what the engine returns at scale
-- [Extract places with spatial roles](extract-places-with-roles.md): the same grade-your-own-extractor pattern, with a labelled gold set shipped in the wheel
+- [Read the crosswalk output](../guides/resolve-a-batch.md): what the engine returns at scale
+- [Extract places with spatial roles](../how-it-works/places.md): the same grade-your-own-extractor pattern, with a labelled gold set shipped in the wheel

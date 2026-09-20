@@ -1,12 +1,32 @@
 # Benchmarks
 
-Every number here is produced by a script in this repository, against data you can fetch yourself. Where a published result exists, we reproduce it first and show the reproduction, because a comparison you cannot check is not a comparison.
+At the end of this page you have every number the rest of this site rests on: five head-to-heads with Splink, of which arche loses four; the detection set; what happens when pairs are unioned into entities; the string baselines; the ablations; the size floor that decides when `backend="auto"` hands scoring to Splink; and the place request measured against a synthetic twin. Every number is produced by a script in this repository, against data you can fetch yourself, and the results that make arche look bad are here with the same status as the ones that do not.
 
-Results that make arche look bad are on this page too. That is the point of keeping it.
+```sh
+uv run python data/scripts/benchmark_gate.py            # the three gated engine benchmarks and the recipes, against the committed results
+uv run python data/scripts/benchmark_gate.py --update   # re-record the baselines, a deliberate act
+```
+
+```text
+PASS      DBLP-ACM, year refutes     precision 0.9506 -> 0.9506  true 2215 -> 2215  false 115 -> 115  (171.5s)
+PASS      Febrl 4, name + address    precision 0.8716 -> 0.8716  true 3285 -> 3285  false 484 -> 484  (40.1s)
+PASS      Abt-Buy, product names     precision 0.9712 -> 0.9712  true 741 -> 741  false 22 -> 22  (61.0s)
+          invariants spec_refutation_neutral=ok, stop_list_inert=ok
+PASS      Recipe person, Febrl 4 via Splink precision 1.0000 -> 1.0000  true 4761 -> 4761  false 0 -> 0  (18.7s)
+          invariants scored_by_the_shipped_recipe=ok
+PASS      Recipe place, England schools precision 0.9893 -> 0.9893  true 278 -> 278  false 3 -> 3  (2.2s)
+          invariants scored_by_the_shipped_recipe=ok
+PASS      Recipe product, Abt-Buy    precision 0.9373 -> 0.9373  true 732 -> 732  false 49 -> 49  (4.2s)
+          invariants scored_by_the_shipped_recipe=ok
+
+GATE PASSED
+```
+
+That is the run from 2026-09-20 with Splink's training log cut out; each line is a benchmark against the result file committed beside it, and the recipe lines are the three shipped Splink configurations held at the numbers they were benchmarked at.
 
 ## How to read this
 
-There are three kinds of entry, and they support different claims.
+Where a published result exists, it is reproduced first and the reproduction is shown, because a comparison you cannot check is not a comparison. There are three kinds of entry, and they support different claims.
 
 **Against another package.** Someone else published a method and a number on a public dataset. We reproduce their number exactly, then run arche on the same records against the same truth. This is the only kind that supports a sentence of the form "arche did better than X".
 
@@ -14,45 +34,15 @@ There are three kinds of entry, and they support different claims.
 
 **Internal ablation.** One part of arche switched off, everything else held still. Says nothing about other tools.
 
-**Gated.** Three of these run in CI on every change to the resolver — DBLP-ACM (year refutes), Febrl 4 (name + address) and Abt-Buy (product names) — and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). Abt-Buy also carries two invariants the product pack's documentation relies on — the `spec` refutation is neutral on that corpus and the stop list is inert on it — and either breaking fails the build whatever the precision did. The gate exists because the Febrl number below drifted for two weeks before anyone looked.
+**Gated.** Three of these run in CI on every change to the resolver, DBLP-ACM (year refutes), Febrl 4 (name + address) and Abt-Buy (product names), and are compared with the result files committed beside them: a precision drop of more than 0.5 points, or a true-merge drop of more than 0.5%, fails the build; an improvement passes and is reported so the baseline can be raised deliberately (`data/scripts/benchmark_gate.py --update`). Abt-Buy also carries two invariants the product pack's documentation relies on, that the `spec` refutation is neutral on that corpus and that the stop list is inert on it, and either breaking fails the build whatever the precision did. The gate exists because the Febrl number below drifted for two weeks before anyone looked.
 
-## Against another package
+**Numbers.** Every table is copied from the result file its script writes. Where a run wobbles between days (Splink's unseeded u-sampling), the wobble is stated rather than a single draw quoted as a constant.
 
-### R `RecordLinkage`, Parrish tutorial
+## Against Splink
 
-Jared Parrish's [record linkage tutorial](https://rstudio-pubs-static.s3.amazonaws.com/1203076_6c678b417f564183a8708e3b4720c6c0.html) links two files of child records, 1,183 and 302 rows. Both files carry the identifiers needed to score: 294 of the 302 sampled records have a true match, and 8 have none.
+[Splink](https://moj-analytical-services.github.io/splink/) is the closest thing to a standard in probabilistic record linkage, and it does inference better than arche does: Fellegi-Sunter with EM-trained m and u parameters, term frequency adjustments, the full apparatus. arche's claim is not that it estimates better, it is that most of the available gain sits in what the records look like before any estimator sees them. Handing a better estimator the same records is the way to test that. Five datasets below; arche loses four of them, and the losses come first.
 
-Reproduction first. The tutorial's deterministic step reports 205 linked, 97 not, 67.9%, on a register deduplicated from 1,183 to 986:
-
-| step | tutorial | reproduced |
-| --- | --- | --- |
-| register after dedup | 986 | 986 |
-| duplicates removed | 197 | 197 |
-| linked | 205 | 205 |
-| linkage rate | 67.9% | 67.9% |
-
-Scored against the truth the tutorial sets aside:
-
-| method | linked | TP | FP | precision | recall | F1 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Parrish deterministic | 205 | 205 | 0 | 1.0000 | 0.6973 | 0.8216 |
-| arche, person pack *before* 0.4.0a4 | 233 | 219 | **14** | 0.9399 | 0.7449 | 0.8311 |
-| arche, shipped person pack | 266 | 265 | 1 | 0.9962 | 0.9014 | 0.9464 |
-| arche, plus date refutation | 259 | 259 | 0 | 1.0000 | 0.8810 | 0.9367 |
-
-Given a date of birth, arche finds 60 more true pairs than the exact key. They are dropped middle names and keying errors: `SARI` for `SORRY`, `HANA` for `HANNA`, `LEE` for `LEELEA`.
-
-**Read the second row.** Until 0.4.0a4 the shipped pack was *less precise than the R tutorial*, because it declared no date comparator and never looked at the birthday it was handed. All 14 of its false positives were two different children with the same name. That benchmark is what put a date in the pack, and the row is kept here because a page that quietly drops its own bad results is not worth reading.
-
-The fourth row adds `refutes_below`, which the shipped pack deliberately does not declare. See [refutation is not on by default](#refutation-is-not-on-by-default).
-
-One trap for anyone reproducing this: the tutorial's prose names five comparison fields, but its own uniqueness table uses four, without middle name. The five-field key gives 174, not 205.
-
-Notebook: `examples/notebooks/15_parrish_record_linkage.ipynb`.
-
-### Splink, on Febrl 4
-
-[Splink](https://moj-analytical-services.github.io/splink/) is the closest thing to a standard in probabilistic record linkage, and it does inference better than arche does: Fellegi-Sunter with EM-trained m and u parameters, term frequency adjustments, the full apparatus. arche's claim is not that it estimates better, it is that most of the available gain sits in what the records look like before any estimator sees them. Handing a better estimator the same records is the way to test that.
+### Febrl 4
 
 Reproduction first. Splink's published Febrl 4 example reports **4,959 clusters of size 2** at a 0.99 match probability, and no accuracy figures. Running its recipe here gives **4,952**, 0.14% apart. The precision and recall below are computed here, identically for both engines, against the same complete truth.
 
@@ -82,9 +72,9 @@ So most of the recall gap is pairs arche declined to decide rather than pairs it
 
 Script: `datasets/names_dataops/bench_splink_febrl.py`.
 
-### Splink, on Nigerian school names
+### Nigerian school names
 
-The two runs below are on data where a name is a reasonably distinctive thing. This is the one where it is not, and it was chosen because it is the case arche is designed for: `COMMUNITY PRIMARY SCHOOL` occurs 200 times across 21 states. If the representation argument holds anywhere against a strong baseline, it holds here.
+Febrl is data where a name is a reasonably distinctive thing. This is the one where it is not, and it was chosen because it is the case arche is designed for: `COMMUNITY PRIMARY SCHOOL` occurs 200 times across 21 states. If the representation argument holds anywhere against a strong baseline, it holds here.
 
 13,200 records. Negatives are **observed**: 400 pairs sharing a name exactly across a state line, and two schools in different states are not one school. Positives are **constructed**: one record recorded twice with an ordinary recording difference and a jittered coordinate, so the true-merge column is a statement about that construction. Both engines face the same construction, and both are given name and coordinates.
 
@@ -97,8 +87,7 @@ The two runs below are on data where a name is a reasonably distinctive thing. T
 | **arche, match** | **146** | **2** |
 | arche, match + review | 199 | 393 (queued, not merged) |
 
-The two denominators differ and an earlier version of this page printed both as
-400. There are 400 observed negatives and 200 constructed positives: 800 negative records plus 400 positive records plus 12,000 filler is the 13,200 above.
+The two denominators differ and an earlier version of this page printed both as 400. There are 400 observed negatives and 200 constructed positives: 800 negative records plus 400 positive records plus 12,000 filler is the 13,200 above.
 
 **Splink wins on both axes.** At its best operating point it finds 190 true merges and makes none of the 400 false ones. arche finds 146 and makes 2.
 
@@ -106,17 +95,17 @@ This is the result that matters most on this page, because this dataset was pick
 
 Two things about arche's last row. `review` is a queue, not a merge, so 393 is not a false-merge count; it is the gate surfacing nearly every same-name pair for a human. That is the designed behaviour and it is also an operational cost nobody should discover later.
 
-**Caveats.** Splink reported one comparison level it could not train ("Distance less than 2km ... not observed"), which if anything understates it. Its probabilities cliff sharply between 0.95 and 0.9, so the operating point matters more here than on the other two datasets. And the positives are constructed, so read the true-merge column as a control that both engines can still find things, not as recall.
+**Caveats.** Splink reported one comparison level it could not train ("Distance less than 2km ... not observed"), which if anything understates it. Its probabilities cliff sharply between 0.95 and 0.9, so the operating point matters more here than on the other datasets. And the positives are constructed, so read the true-merge column as a control that both engines can still find things, not as recall.
 
 Script: `datasets/names_dataops/bench_splink_nigeria.py`.
 
-### A shipped population table against batch-estimated frequency
+#### A shipped population table against batch-estimated frequency
 
-The Nigerian register above shows Splink ahead: 190 true of 200 at 0 false of 400, against arche's 146 and 2. That comparison is fair and it is not the whole claim.
+The register above shows Splink ahead: 190 true of 200 at 0 false of 400, against arche's 146 and 2. That comparison is fair and it is not the whole claim.
 
-arche's frequency tables rest on a specific assertion — that estimating `u` from the batch fails when the batch is small, because a handful of records cannot know which words are ordinary. **A 13,200-record register cannot test that.** Splink's term-frequency adjustment has an excellent sample of Nigerian school names there and uses it well.
+arche's frequency tables rest on a specific assertion: that estimating `u` from the batch fails when the batch is small, because a handful of records cannot know which words are ordinary. **A 13,200-record register cannot test that.** Splink's term-frequency adjustment has an excellent sample of Nigerian school names there and uses it well.
 
-So this run holds the labels fixed — the same 400 observed negatives and 200 constructed positives, imported from `bench_splink_nigeria.py` so they cannot drift — and varies only the **filler**, which is the population Splink learns frequencies from. arche reads the same shipped 1.25M-record place table at every size.
+So this run holds the labels fixed, the same 400 observed negatives and 200 constructed positives, imported from `bench_splink_nigeria.py` so they cannot drift, and varies only the **filler**, which is the population Splink learns frequencies from. arche reads the same shipped 1.25M-record place table at every size.
 
 | filler | records | `splink@0.5` true | false | arche match true | false |
 | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -125,7 +114,7 @@ So this run holds the labels fixed — the same 400 observed negatives and 200 c
 | 2,000 | 3,200 | 190 | 2 | 146 | 2 |
 | 12,000 | 13,200 | 190 | 12 | 146 | 2 |
 
-**With nothing to learn from, Splink merges 368 of 400 known negatives.** Every name in the labelled block appears exactly twice, so nothing in the batch says `COMMUNITY PRIMARY SCHOOL` is common — and two schools of that name in different states duly merge. Add 500 filler records and it collapses to 2.
+**With nothing to learn from, Splink merges 368 of 400 known negatives.** Every name in the labelled block appears exactly twice, so nothing in the batch says `COMMUNITY PRIMARY SCHOOL` is common, and two schools of that name in different states duly merge. Add 500 filler records and it collapses to 2.
 
 arche is **2 at every size**, because the table it reads does not change.
 
@@ -139,22 +128,22 @@ What it establishes is narrower and, for a shipped library, more useful: **arche
 
 Because the alternative reading is available and should be stated: at `p >= 0.9` Splink also holds 0-2 false merges at every filler size. A higher threshold compensates for a thinner batch. But **choosing that threshold requires labels**, and a caller with 400 records to reconcile and no ground truth has no way to know that 0.5 is wrong for their data and 0.9 is right. The shipped prior removes that choice rather than winning an argument about it.
 
-**Can the property be handed to Splink?** If the table is the moat, the question for an architecture that scores with Splink is whether Splink can *read* the table. Splink accepts a pre-computed term-frequency lookup in place of the one it counts from the batch, so `bench_population_tf_into_splink.py` registers one built from the full register — 98,591 distinct names, the most favourable population possible — and re-runs the same labels:
+**Can the property be handed to Splink?** If the table is the moat, the question for an architecture that scores with Splink is whether Splink can *read* the table. Splink accepts a pre-computed term-frequency lookup in place of the one it counts from the batch, so `bench_population_tf_into_splink.py` registers one built from the full register, 98,591 distinct names, the most favourable population possible, and re-runs the same labels:
 
 | filler | arm | true | false at p ≥ 0.9 | false at p ≥ 0.5 |
 | ---: | --- | ---: | ---: | ---: |
 | 0 | Splink, batch TF | 190 | 2 | 368 |
 | 0 | **Splink, population TF** | 190 | **364** | 368 |
-| 0 | arche | 146 | 2 | — |
+| 0 | arche | 146 | 2 | n/a |
 | 500 | Splink, batch TF | 190 | 0 | 2 |
 | 500 | Splink, population TF | 190 | 13 | 13 |
 | 2,000 | Splink, population TF | 190 | 12 | 13 |
 
 **It does not transfer, and it gets worse.** Two things the run exposed, both of them about mechanism rather than about Splink.
 
-First, the negatives are pairs of schools that share a name across a state line, and many of those names are *rare in the register* — `Mercy Nursery Primary School` occurs five times in 107,670. Value-level term frequency does what it should with that: it boosts an exact match on a rare value, here by a factor of 22.9, and two different schools with one rare name merge at p = 0.97. arche does not, because its table is per *token* — `mercy`, `nursery`, `primary`, `school` are each common — and because a geo veto refutes a pair a state apart without needing to be trained. The small-batch property is not "a population prior"; it is token-level rarity plus a veto, and neither is expressible as a Splink TF lookup.
+First, the negatives are pairs of schools that share a name across a state line, and many of those names are *rare in the register*: `Mercy Nursery Primary School` occurs five times in 107,670. Value-level term frequency does what it should with that: it boosts an exact match on a rare value, here by a factor of 22.9, and two different schools with one rare name merge at p = 0.97. arche does not, because its table is per *token*, `mercy`, `nursery`, `primary`, `school` are each common, and because a geo veto refutes a pair a state apart without needing to be trained. The small-batch property is not "a population prior"; it is token-level rarity plus a veto, and neither is expressible as a Splink TF lookup.
 
-Second, and a caveat on the table above this one: **at filler 0 the Splink model's name levels are untrained.** EM on the coordinate rule sees only the constructed positives, whose names differ by construction, so Splink reports *"Exact match on name … not observed, unable to train m value"* and predicts with defaults. The 368 is real behaviour of the published recipe on a 1,200-record batch, and it is default-m plus a batch TF that is identical for every name (each appears exactly twice), not a trained model's opinion.
+Second, and a caveat on the table above this one: **at filler 0 the Splink model's name levels are untrained.** EM on the coordinate rule sees only the constructed positives, whose names differ by construction, so Splink reports *"Exact match on name ... not observed, unable to train m value"* and predicts with defaults. The 368 is real behaviour of the published recipe on a 1,200-record batch, and it is default-m plus a batch TF that is identical for every name (each appears exactly twice), not a trained model's opinion.
 
 Run both with:
 
@@ -165,7 +154,7 @@ uv run python datasets/names_dataops/bench_population_tf_into_splink.py
 
 **One caveat on the harness.** It builds four Splink models in one process. At filler 12,000 the `p >= 0.9` arm returned 1 true where the standalone `bench_splink_nigeria.py` reproduces 190 exactly, byte for byte. The `p >= 0.5` arm is stable across repeated runs at every size, so the ranking is reproducible and the absolute probability calibration at that size is not. The figures quoted above are from `p >= 0.5` for that reason, and the discrepancy is unexplained rather than diagnosed.
 
-### Splink, on `historical_50k`
+### `historical_50k`
 
 Febrl's records were invented by a generator and then corrupted by it. This is the harder test: 50,578 records describing 5,156 real UK historical figures from Wikidata, with errors introduced afterwards. The names, places and occupations are real and distributed the way real ones are, which is the part a generator cannot fake and the part arche's thesis is about.
 
@@ -223,13 +212,13 @@ That split is worth stating plainly because the two have different meanings. Blo
 
 Script: `datasets/names_dataops/bench_sweep_historical.py`. arche is run with `threshold=0.0, review_margin=0.0` so the curve is limited by blocking rather than by the default decision point. That is not a production setting; it exists to separate "scored badly" from "never seen".
 
-### Splink, on the England schools crosswalk
+### The England schools link
 
-The three Splink sections above are all **dedupe** problems, and two of the three use labels somebody constructed. This one is neither. It is a **link** between two registers that do not share an identifier, which is the shape most reconciliation work actually has, and the labels were not made for it: 93% of Leeds OpenStreetMap school features carry a `ref:edubase` tag, which is an editor asserting *this mapped school is that URN*. Neither engine sees the tag.
+The three sections above are all **dedupe** problems, and two of the three use labels somebody constructed. This one is neither. It is a **link** between two registers that do not share an identifier, which is the shape most reconciliation work actually has, and the labels were not made for it: 93% of Leeds OpenStreetMap school features carry a `ref:edubase` tag, which is an editor asserting *this mapped school is that URN*. Neither engine sees the tag.
 
-306 GIAS establishments, 308 OSM features, 282 truth pairs. Splink runs `link_type="link_only"`; arche runs `reconcile(..., entity="place")` with the shipped pack, unretuned. Both get name and coordinates, and the same string baselines from the [schools guide](../guides/school-reconciliation.md) are repeated so the table stands alone.
+306 GIAS establishments, 308 OSM features, 282 truth pairs. Splink runs `link_type="link_only"`; arche runs `reconcile(..., entity="place")` with the shipped pack, unretuned. Both get name and coordinates, and the same string baselines from the Leeds notebook (`examples/notebooks/13_england_schools.ipynb`) are repeated so the table stands alone.
 
-The guide's scoring rule counts any predicted pair outside the truth set as a false merge, and 26 OSM features carry no label at all, so a correct link to one of those is scored as an error. That rule is kept, because it is the one the guide's table uses. **Restricted** is reported beside it: only pairs whose OSM feature carries a label are scored, so a false merge there is a merge of two things an editor said were different. Neither rule is the right one; they bound the answer from both sides.
+The notebook's scoring rule counts any predicted pair outside the truth set as a false merge, and 26 OSM features carry no label at all, so a correct link to one of those is scored as an error. That rule is kept, because it is the one the notebook's table uses. **Restricted** is reported beside it: only pairs whose OSM feature carries a label are scored, so a false merge there is a merge of two things an editor said were different. Neither rule is the right one; they bound the answer from both sides.
 
 | approach | precision | recall | F1 | true | false | restricted false |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -241,7 +230,7 @@ The guide's scoring rule counts any predicted pair outside the truth set as a fa
 | **Splink, p >= 0.9** | **0.989** | **0.986** | **0.988** | **278** | **3** | **0** |
 | Splink, p >= 0.99 | 0.995 | 0.777 | 0.873 | 219 | 1 | 0 |
 
-**Splink wins the fourth one too, and this is the cleanest loss of the four.** Both engines find **exactly the same 278 true pairs** — not a similar number, the same set. Neither finds one the other misses, and the four they both miss are the same four. Recall is identical to three decimal places. The entire difference is false merges: 32 against 0 under the restricted rule.
+**Splink wins the fourth one too, and this is the cleanest loss of the four.** Both engines find **exactly the same 278 true pairs**: not a similar number, the same set. Neither finds one the other misses, and the four they both miss are the same four. Recall is identical to three decimal places. The entire difference is false merges: 32 against 0 under the restricted rule.
 
 So on this dataset the representation argument has nothing to point at on the recall side, and loses on the precision side.
 
@@ -254,19 +243,69 @@ Hunslet Moor Primary      x  Hunslet Carr Primary       arche: match   splink: p
 Corpus Christi College    x  Corpus Christi Primary     arche: match   splink: p=0.813
 ```
 
-Splink **proposed 17 of the 32** and scored every one of them below 0.9; it never proposed the other 15. So this is not blocking luck. A trained Fellegi-Sunter model looked at the same pairs arche merged and put them at 0.022 to 0.813, and the highest of them — a Catholic college and a Catholic primary school sharing a saint's name — is still the pair a human would want to see rather than merge.
+Splink **proposed 17 of the 32** and scored every one of them below 0.9; it never proposed the other 15. So this is not blocking luck. A trained Fellegi-Sunter model looked at the same pairs arche merged and put them at 0.022 to 0.813, and the highest of them, a Catholic college and a Catholic primary school sharing a saint's name, is still the pair a human would want to see rather than merge.
 
 **The threshold-fragility argument does not rescue it here.** On the Nigerian register the comparison turned on Splink needing a threshold a caller cannot choose without labels. Not on this data: Splink beats arche at **every** threshold from 0.1 to 0.95, and only cliffs at 0.99. Its default operating point is already ahead.
 
-**Two things this does not say.** It does not say the place pack is badly built; 0.986 recall on a country and an entity type away from where it was calibrated is the part that transfers. And the 32 are a known, named failure mode — chain branding, where a shared prefix is two thirds of every name and the campuses are close enough that coordinates do not settle it. The guide surfaced that family from a UKPRN audit before Splink was ever run here. What this section adds is that a well-trained probabilistic model does not fall for it.
+**Two things this does not say.** It does not say the place pack is badly built; 0.986 recall on a country and an entity type away from where it was calibrated is the part that transfers. And the 32 are a known, named failure mode, chain branding, where a shared prefix is two thirds of every name and the campuses are close enough that coordinates do not settle it. The notebook surfaced that family from a UKPRN audit before Splink was ever run here. What this section adds is that a well-trained probabilistic model does not fall for it.
 
-**Caveats.** Leeds only, 306 establishments: one local authority, and one with unusually standardised school naming — exact name matching already reaches F1 0.930 here. The `names only` arms are not like-for-like and are reported in the result file rather than above: a one-comparison Splink model cannot be EM-trained at all (blocking on the only comparison leaves it no variation, and blocking on a prefix of it raises inside Splink's own counting SQL), so that arm predicts with default `m` values and tops out at p = 0.607. Splink's `estimate_u_using_random_sampling` is unseeded, but unlike the Febrl arm this one reproduced exactly across runs.
+**Caveats.** Leeds only, 306 establishments: one local authority, and one with unusually standardised school naming, where exact name matching already reaches F1 0.930. The `names only` arms are not like-for-like and are reported in the result file rather than above: a one-comparison Splink model cannot be EM-trained at all (blocking on the only comparison leaves it no variation, and blocking on a prefix of it raises inside Splink's own counting SQL), so that arm predicts with default `m` values and tops out at p = 0.607. Splink's `estimate_u_using_random_sampling` is unseeded, but unlike the Febrl arm this one reproduced exactly across runs.
 
 Script: `datasets/names_dataops/bench_splink_england_schools.py`. Stage the sources first with `python data/scripts/fetch_england_schools.py --la Leeds`.
 
+### Abt-Buy
+
+The fifth comparison, and the first on products. Abt-Buy is the labelled product benchmark the resolver gates in CI: 1,081 Abt records against 1,092 Buy records, 1,097 true pairs, product names only (`description` and Buy's `manufacturer` withheld so the evidence matches the gated arche arm).
+
+Splink cannot compare a model code it has not been given, so arche's representation runs first (`extract_product_code_candidates` pulls `pslx350h` out of `Sony Turntable - PSLX350H`, `extract_specs` pulls `500gb` out of a drive) and Splink is handed the columns. Two recipes, because the contrast between them is the result:
+
+- **descriptive**: everything extracted (code, brand, specs) *plus* the title itself as Jaro-Winkler and token-overlap comparisons. What a Splink user would write.
+- **identity**: only the columns the pack declares identity-bearing, code and brand, with title similarity withheld from the model entirely.
+
+| arm | precision | recall | F1 | true | false |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| arche `product_electronics`, gated, no threshold | 0.971 | 0.675 | 0.797 | 741 | 22 |
+| Splink, descriptive, best F1 (p ≥ 0.80, chosen on labels) | 0.407 | 0.788 | 0.537 | 864 | 1,256 |
+| Splink, identity, p ≥ 0.5 | 0.937 | 0.667 | 0.780 | 732 | 49 |
+| Splink, identity, best F1 (p ≥ 0.35, chosen on labels) | 0.938 | 0.675 | 0.785 | 740 | 49 |
+
+**arche wins this one, and the reason is not the estimator.** Given only the identity columns, Splink lands at arche's recall to within one pair (740 against 741) with more than twice the false merges (49 against 22). Given the title as well, the natural thing to do, it collapses to precision 0.41, because EM cannot tell *same product* from *same brand, same kind of product, similar title*, and the learned weights show it doing exactly that: the same shared-code level is worth **+10.05 bits** in the identity model and **+6.08** in the descriptive one, and "no shared code" goes from **−4.13** to **−0.09**, which is neutral. Adding descriptive similarity taught the model to stop caring about the identifier.
+
+That is the point the product pack makes by declaration: which field carries identity is not something an unsupervised estimator can learn from titles, because titles are similar for reasons that have nothing to do with identity. Splink scores the columns it is given; deciding which columns to give it, and which to withhold, was the whole difference between 0.537 and 0.785.
+
+**The two invariants do not survive inside the model.** The gate holds that on Abt-Buy the spec refutation is neutral and the electronics stop list is inert. In the learned identity model, dropping the spec comparison moves 9 pairs at the same threshold (+3 / −6) and emptying the stop list adds 67 merges; in the descriptive model the numbers are +75 / −2 and +18 / −45. EM priced "both carry a spec and share none" at −4.86 bits in one model and −1.42 in the other: a refutation whose strength depends on what else was in the model, not a guarantee. A guarantee has to sit outside the estimator.
+
+Script: `datasets/products_dataops/bench_splink_abt_buy.py`, ~50 s for both recipes and their ablations.
+
+### The size floor
+
+The five datasets above are one size each. `backend="auto"` needs a rule about size: below how many records is arche's engine, with its shipped frequency table and no threshold to choose, the safer scorer, and above how many does a Fellegi-Sunter model trained on the batch in front of it stop paying for the thinness of that batch? The Nigerian register showed the mechanism (with nothing to learn from, Splink merges 368 of 400 known-different schools) but a register is one shape. This sweeps the synthetic supplier world instead, because the floor is a property of the world, not of the engine, and the supplier world is the shape the reconciliation work looks like.
+
+Same generator (`ng_supplier_v0`), same seed (42), same source parameters, four sizes. Two arms: the shipped `organisation` pack with no threshold to tune, and the published Splink recipe at 0.5, its own decision boundary, and at 0.9. Read false merges first.
+
+| suppliers | records | true pairs | engine false merges | precision | Splink @0.5 false merges | precision | Splink @0.9 false merges | precision |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 150 | 444 | 545 | 2 | 0.9951 | 5 | 0.9884 | 0 | 1.0000 |
+| 400 | 1,215 | 1,520 | 39 | 0.9668 | 47 | 0.9613 | 0 | 1.0000 |
+| 1,000 | 3,081 | 3,940 | **456** | 0.8656 | 49 | 0.9821 | 0 | 1.0000 |
+| 2,000 | 6,144 | 7,863 | **917** | 0.8634 | 103 | 0.9810 | 2 | 0.9989 |
+
+| suppliers | records | engine recall | Splink @0.5 recall | Splink @0.9 recall | engine seconds | Splink @0.5 seconds |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 150 | 444 | 0.7450 | 0.7835 | 0.4606 | 5.32 | 4.93 |
+| 400 | 1,215 | 0.7461 | 0.7678 | 0.3875 | 18.49 | 6.75 |
+| 1,000 | 3,081 | 0.7454 | 0.6832 | 0.2310 | 52.08 | 9.12 |
+| 2,000 | 6,144 | 0.7369 | 0.6749 | 0.2379 | 70.23 | 22.92 |
+
+At 444 and 1,215 records the two are level on false merges (2 against 5, 39 against 47) and the engine is the one with no threshold to choose. At 3,081 the engine's false merges go to 456 against Splink's 49, and at 6,144 to 917 against 103. The engine's recall holds at about 0.74 throughout; its precision is what turns. `AUTO_SPLINK_FLOOR` is 1,000, which sits under the point where it turns. It is a precision floor, not a runtime one: the engine's runtime used to be the other reason (nine hours at 6,144 records) until its per-pair recomputation was memoised on 2026-09-19; the same sweep now runs in 70 s at 6,144 records against Splink's 23 s, and the seconds column above is that run.
+
+Splink at 0.9 makes almost no false merges at any size and finds less than half the true pairs; that is the same threshold trade the Nigerian register showed, and the reason the shipped recipes name the threshold they were benchmarked at rather than leaving it to the caller.
+
+Script: `data/synthetic/bench_size_floor.py`, result in `data/synthetic/bench_size_floor_result.json`. The same numbers are recorded in the 0.9.0 entry of `packages/arche-core/CHANGELOG.md`.
+
 ### arche using Splink, rather than against it
 
-The five Splink sections above measure arche's own matcher against Splink; it loses four and wins the product one, for a reason that is about declaration rather than estimation. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
+The five comparisons above measure arche's own matcher against Splink; it loses four and wins the product one, for a reason that is about declaration rather than estimation. `reconcile(backend="splink")` is the response: hand the scoring to Splink and keep the decision layer arche puts around a score.
 
 The question a benchmark can answer about an adapter is not "is it better" but "is it faithful". Does wrapping the scorer change what the scorer says?
 
@@ -321,29 +360,39 @@ Four fewer true pairs than the unseeded row above, and the same on every run, wh
 
 Scripts: `datasets/names_dataops/bench_backend_compare.py`; the recipe gate is in `data/scripts/benchmark_gate.py --only recipe`.
 
-### Splink, on Abt-Buy
+## Against two other linkage packages
 
-The fifth Splink comparison, and the first on products. Abt-Buy is the labelled product benchmark the resolver gates in CI: 1,081 Abt records against 1,092 Buy records, 1,097 true pairs, product names only (`description` and Buy's `manufacturer` withheld so the evidence matches the gated arche arm).
+### R `RecordLinkage`, Parrish tutorial
 
-Splink cannot compare a model code it has not been given, so arche's representation runs first — `extract_product_code_candidates` pulls `pslx350h` out of `Sony Turntable - PSLX350H`, `extract_specs` pulls `500gb` out of a drive — and Splink is handed the columns. Two recipes, because the contrast between them is the result:
+Jared Parrish's [record linkage tutorial](https://rstudio-pubs-static.s3.amazonaws.com/1203076_6c678b417f564183a8708e3b4720c6c0.html) links two files of child records, 1,183 and 302 rows. Both files carry the identifiers needed to score: 294 of the 302 sampled records have a true match, and 8 have none.
 
-- **descriptive**: everything extracted (code, brand, specs) *plus* the title itself as Jaro-Winkler and token-overlap comparisons. What a Splink user would write.
-- **identity**: only the columns the pack declares identity-bearing — code and brand — with title similarity withheld from the model entirely.
+Reproduction first. The tutorial's deterministic step reports 205 linked, 97 not, 67.9%, on a register deduplicated from 1,183 to 986:
 
-| arm | precision | recall | F1 | true | false |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| arche `product_electronics`, gated, no threshold | 0.971 | 0.675 | 0.797 | 741 | 22 |
-| Splink, descriptive, best F1 (p ≥ 0.80, chosen on labels) | 0.407 | 0.788 | 0.537 | 864 | 1,256 |
-| Splink, identity, p ≥ 0.5 | 0.937 | 0.667 | 0.780 | 732 | 49 |
-| Splink, identity, best F1 (p ≥ 0.35, chosen on labels) | 0.938 | 0.675 | 0.785 | 740 | 49 |
+| step | tutorial | reproduced |
+| --- | --- | --- |
+| register after dedup | 986 | 986 |
+| duplicates removed | 197 | 197 |
+| linked | 205 | 205 |
+| linkage rate | 67.9% | 67.9% |
 
-**arche wins this one, and the reason is not the estimator.** Given only the identity columns, Splink lands at arche's recall to within one pair (740 against 741) with more than twice the false merges (49 against 22). Given the title as well — the natural thing to do — it collapses to precision 0.41, because EM cannot tell *same product* from *same brand, same kind of product, similar title*, and the learned weights show it doing exactly that: the same shared-code level is worth **+10.05 bits** in the identity model and **+6.08** in the descriptive one, and "no shared code" goes from **−4.13** to **−0.09** — neutral. Adding descriptive similarity taught the model to stop caring about the identifier.
+Scored against the truth the tutorial sets aside:
 
-That is the point the product pack makes by declaration: which field carries identity is not something an unsupervised estimator can learn from titles, because titles are similar for reasons that have nothing to do with identity. Splink scores the columns it is given; deciding which columns to give it, and which to withhold, was the whole difference between 0.537 and 0.785.
+| method | linked | TP | FP | precision | recall | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Parrish deterministic | 205 | 205 | 0 | 1.0000 | 0.6973 | 0.8216 |
+| arche, person pack *before* 0.4.0a4 | 233 | 219 | **14** | 0.9399 | 0.7449 | 0.8311 |
+| arche, shipped person pack | 266 | 265 | 1 | 0.9962 | 0.9014 | 0.9464 |
+| arche, plus date refutation | 259 | 259 | 0 | 1.0000 | 0.8810 | 0.9367 |
 
-**The two invariants do not survive inside the model.** The gate holds that on Abt-Buy the spec refutation is neutral and the electronics stop list is inert. In the learned identity model, dropping the spec comparison moves 9 pairs at the same threshold (+3 / −6) and emptying the stop list adds 67 merges; in the descriptive model the numbers are +75 / −2 and +18 / −45. EM priced "both carry a spec and share none" at −4.86 bits in one model and −1.42 in the other: a refutation whose strength depends on what else was in the model, not a guarantee. A guarantee has to sit outside the estimator.
+Given a date of birth, arche finds 60 more true pairs than the exact key. They are dropped middle names and keying errors: `SARI` for `SORRY`, `HANA` for `HANNA`, `LEE` for `LEELEA`.
 
-Script: `datasets/products_dataops/bench_splink_abt_buy.py`, ~50 s for both recipes and their ablations.
+**Read the second row.** Until 0.4.0a4 the shipped pack was *less precise than the R tutorial*, because it declared no date comparator and never looked at the birthday it was handed. All 14 of its false positives were two different children with the same name. That benchmark is what put a date in the pack, and the row is kept here because a page that quietly drops its own bad results is not worth reading.
+
+The fourth row adds `refutes_below`, which the shipped pack deliberately does not declare. See [refutation is not on by default](#refutation-is-not-on-by-default).
+
+One trap for anyone reproducing this: the tutorial's prose names five comparison fields, but its own uniqueness table uses four, without middle name. The five-field key gives 174, not 205.
+
+Notebook: `examples/notebooks/15_parrish_record_linkage.ipynb`.
 
 ### Python `recordlinkage`, Febrl 4
 
@@ -360,9 +409,9 @@ Script: `datasets/names_dataops/bench_febrl.py`.
 
 ## Detection
 
-What each backend finds, misses and invents, on a **constructed** set: `data/pii_bench/african_context_v0.jsonl`, 240 short texts over eight templates (a KYC note, a referral, an onboarding, a complaint, a register, a delivery note, a chat message, an invoice) in four jurisdictions, carrying 908 personal-data spans and 540 negatives — order numbers, ISBNs, amounts, times, plain dates, bare ten-digit references. Every identifier passes arche's own validator at build time; every span is computed by construction. Its data card says what it is not: text from the wild. These numbers say the detectors read what they were built to read. Run: `python data/scripts/benchmark_pii.py --backend basic,gliner2-pii`.
+What each backend finds, misses and invents, on a **constructed** set: `data/pii_bench/african_context_v0.jsonl`, 240 short texts over eight templates (a KYC note, a referral, an onboarding, a complaint, a register, a delivery note, a chat message, an invoice) in four jurisdictions, carrying 908 personal-data spans and 540 negatives: order numbers, ISBNs, amounts, times, plain dates, bare ten-digit references. Every identifier passes arche's own validator at build time; every span is computed by construction. Its data card says what it is not: text from the wild. These numbers say the detectors read what they were built to read. Run: `python data/scripts/benchmark_pii.py --backend basic,gliner2-pii`.
 
-A hit is a detection overlapping a truth span of the same category (the lexicon emits one span per name token; the question is whether the person was found). A **false positive** is a detection overlapping no truth span at all, and the set records which negative it landed on. A detection inside a truth span of another category — a LOCATION inside an ADDRESS — is *nested*, not false.
+A hit is a detection overlapping a truth span of the same category (the lexicon emits one span per name token; the question is whether the person was found). A **false positive** is a detection overlapping no truth span at all, and the set records which negative it landed on. A detection inside a truth span of another category, a LOCATION inside an ADDRESS, is *nested*, not false.
 
 | | `basic` | `gliner2-pii` |
 |---|---|---|
@@ -373,24 +422,24 @@ A hit is a detection overlapping a truth span of the same category (the lexicon 
 | names, held-out pool (88) | 0.909 | 1.000 |
 | identifiers with a validator (NIN, BVN, Ghana Card, SA ID, KRA PIN, Huduma, passport) | 0.99 | 0.99 |
 | phone / email / address / IP | 1.000 | 1.000 |
-| date of birth, bank account, password | 0.000 — no detector in the base install | 1.000 |
-| payment card | 0.000 — no detector | 0.750 |
+| date of birth, bank account, password | 0.000, no detector in the base install | 1.000 |
+| payment card | 0.000, no detector | 0.750 |
 
 The held-out 0.909 on `basic` is mostly a lexicon first name overlapping a held-out surname, not the surname being read; the pool split is there so nobody quotes the name recall as the lexicon's.
 
-**Where the false positives landed, and the audit they paid for.** Before the cue-gate audit every one of `basic`'s 68 was on an order number or a bare ten-digit reference: 35 order numbers read as phones (a bare eight-digit run is a possible number somewhere in Africa, and the phone detector fell back to every prefix table), 25 seven- and eight-digit order numbers read as Kenyan national ids and NHIF numbers (bare-digit patterns at 0.40–0.45), 8 `INV-` and `ORD-` references read as Nigerian driving licences (`[A-Z]{3}-\d{10,12}`). The model added 18 passport readings of ten-digit references and 17 more phone readings. Each pattern got the rule a reader applies: the every-prefix fallback now only runs for a number written with its trunk zero; the Kenyan id and NHIF patterns are cue-anchored like Huduma (`ID No.`, `national ID`, `NHIF`); a three-letter document prefix (`INV`, `ORD`, `REF`, …) is not a state code; and the model's passport proposals must contain a letter, its phone proposals a trunk zero, a plus, or nine digits. Recall did not move on either backend. `basic` keeps 7 false positives (order references that begin with a zero, which is what a local number looks like); the model keeps 24 phone readings of ten-digit references, 5 passports and 29 LOCATION readings of ordinary words — the last being the price of asking for cities, under a category the statutes retain.
+**Where the false positives landed, and the audit they paid for.** Before the cue-gate audit every one of `basic`'s 68 was on an order number or a bare ten-digit reference: 35 order numbers read as phones (a bare eight-digit run is a possible number somewhere in Africa, and the phone detector fell back to every prefix table), 25 seven- and eight-digit order numbers read as Kenyan national ids and NHIF numbers (bare-digit patterns at 0.40–0.45), 8 `INV-` and `ORD-` references read as Nigerian driving licences (`[A-Z]{3}-\d{10,12}`). The model added 18 passport readings of ten-digit references and 17 more phone readings. Each pattern got the rule a reader applies: the every-prefix fallback now only runs for a number written with its trunk zero; the Kenyan id and NHIF patterns are cue-anchored like Huduma (`ID No.`, `national ID`, `NHIF`); a three-letter document prefix (`INV`, `ORD`, `REF` and the like) is not a state code; and the model's passport proposals must contain a letter, its phone proposals a trunk zero, a plus, or nine digits. Recall did not move on either backend. `basic` keeps 7 false positives (order references that begin with a zero, which is what a local number looks like); the model keeps 24 phone readings of ten-digit references, 5 passports and 29 LOCATION readings of ordinary words, the last being the price of asking for cities, under a category the statutes retain.
 
 **What the model buys.** Names the lexicon does not hold, dates of birth, bank accounts, passwords: categories the base install has no rule for. It runs at ~0.8 s a text on CPU against 4 ms, and it proposes; a checksummed identifier still outranks it, which is why the identifier columns are identical.
 
-**What this does not measure.** Recall on a clinic's actual notes, a bank's actual complaints, a WhatsApp export. That set has to be adjudicated by hand and kept with negatives, and it is the second half of the same task. The obvious public set, ai4privacy's 300k, is licensed for academic use only and forbids derivatives; it is treated the way OpenSanctions Pairs is — a licence to acquire on purpose — and nothing from it is here.
+**What this does not measure.** Recall on a clinic's actual notes, a bank's actual complaints, a WhatsApp export. That set has to be adjudicated by hand and kept with negatives, and it is the second half of the same task. The obvious public set, ai4privacy's 300k, is licensed for academic use only and forbids derivatives; it is treated the way OpenSanctions Pairs is, as a licence to acquire on purpose, and nothing from it is here.
 
-Four things the first runs found in the data and in the code, before they found anything about the model. The generator gave Kenyan numbers seven digits after the prefix and Nigeria a twelve-digit form; the phone detector reported them missed, correctly, and the set was fixed. *Next of kin* matched the gazetteer alias *Kin* (Kinshasa) 32 times in 240 texts, case-insensitively; a short lowercase match is now a word. On 300 English texts from a set that could not be published (see the data card), *Given*, *Best*, *Holder* and *Law* were the four most frequent name false positives — surnames the lexicon holds, words in prose first — and joined the stop list; and the model, asked for `address` alone, found none of 548 city, state, country and postcode spans, so it is now asked for those four labels too (0.81 recall at 0.81 precision on that sample, name precision unmoved). That last one is the reason the `basic` row above reads 3 ms and the model row carries 28 LOCATION false positives it did not have before: a city label over ordinary words is the price of finding cities.
+Four things the first runs found in the data and in the code, before they found anything about the model. The generator gave Kenyan numbers seven digits after the prefix and Nigeria a twelve-digit form; the phone detector reported them missed, correctly, and the set was fixed. *Next of kin* matched the gazetteer alias *Kin* (Kinshasa) 32 times in 240 texts, case-insensitively; a short lowercase match is now a word. On 300 English texts from a set that could not be published (see the data card), *Given*, *Best*, *Holder* and *Law* were the four most frequent name false positives, surnames the lexicon holds and words in prose first, and joined the stop list; and the model, asked for `address` alone, found none of 548 city, state, country and postcode spans, so it is now asked for those four labels too (0.81 recall at 0.81 precision on that sample, name precision unmoved). That last one is the reason the `basic` row above reads 3 ms and the model row carries 28 LOCATION false positives it did not have before: a city label over ordinary words is the price of finding cities.
 
 ## Entity formation
 
 Every entry above scores *pairs*. The [ledger](../guides/keep-and-replay.md) does something no pairwise score measures: it unions `match` edges into entities, so A~B and B~C put A, B and C together whether or not A and C were ever compared. That is how a resolution system quietly merges two different things, and until this section nothing in the repository counted it.
 
-Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the configuration reported for each above, then every entity's records mapped back to the truth clusters they belong to. An entity whose records come from more than one truth cluster is a **cross-cluster merge** — the entity-level false merge, worse than a pairwise one because it propagates. `held` says whether the entity is a clique (`direct`, every pair itself decided `match`) or depends on a chain (`transitive`).
+Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the configuration reported for each above, then every entity's records mapped back to the truth clusters they belong to. An entity whose records come from more than one truth cluster is a **cross-cluster merge**: the entity-level false merge, worse than a pairwise one because it propagates. `held` says whether the entity is a clique (`direct`, every pair itself decided `match`) or depends on a chain (`transitive`).
 
 | | DBLP-ACM, year refutes | Febrl 4, name + address |
 | --- | ---: | ---: |
@@ -403,13 +452,55 @@ Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the 
 | of which `transitive` / `direct` | 44 / 0 | 184 / 11 |
 | largest cross-cluster entity | 12 records, 8 clusters | 17 records, 10 clusters |
 
-The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 184 of 195 are transitive; the 11 direct ones are two-record entities, which is to say ordinary pairwise false merges wearing an entity id. So `held == "direct"` is a usable guarantee — such an entity is exactly as trustworthy as its pairwise decisions — and `held == "transitive"` is where review effort belongs.
+The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 184 of 195 are transitive; the 11 direct ones are two-record entities, which is to say ordinary pairwise false merges wearing an entity id. So `held == "direct"` is a usable guarantee, such an entity is exactly as trustworthy as its pairwise decisions, and `held == "transitive"` is where review effort belongs.
 
 The compounding is visible in the sizes. DBLP-ACM's 115 pairwise false merges become 44 bad entities holding 187 records; the worst is a 12-record entity built from eight different SIGMOD editorials that share a generic title. Febrl's 484 become 195 entities holding 848 records; the worst chains ten different people through seventeen records. A pairwise precision of 0.95 does not translate into 95% of entities being right when the errors cluster, and on DBLP-ACM they do: recurring generic titles pull many records toward one another.
 
-Two caveats. The Febrl pairwise line here (484 false merges) is not the 282 recorded on 2026-08-17, and the difference has been bisected to one commit: `e9cc9a8` (2026-08-22), which added **conjunction blocking** — a candidate key on a *pair* of over-common tokens, so two records both called *Nicholas Jackson* can be compared even though neither token is rare enough to block on alone. On `historical_50k` that recovered 27,055 true pairs that were never being proposed. On Febrl 4 it recovered none (3,285 true merges before and after; rare tokens already reached every true pair) and raised candidate pairs from 176,201 to 330,861, and among the extra pairs the scorer merged 202 more: identical common names with addresses agreeing at 0.70–0.78, scored above 0.94. The blocker did not get worse; it stopped hiding scorer errors. The number to fix is the scorer's, and the number to watch is this one — which nothing watched, because the benchmark was not gated in CI. And whole-cluster recovery (59% on Febrl) is bounded by pairwise recall (65.7% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
+Two caveats. The Febrl pairwise line here (484 false merges) is not the 282 recorded on 2026-08-17, and the difference has been bisected to one commit: `e9cc9a8` (2026-08-22), which added **conjunction blocking**, a candidate key on a *pair* of over-common tokens, so two records both called *Nicholas Jackson* can be compared even though neither token is rare enough to block on alone. On `historical_50k` that recovered 27,055 true pairs that were never being proposed. On Febrl 4 it recovered none (3,285 true merges before and after; rare tokens already reached every true pair) and raised candidate pairs from 176,201 to 330,861, and among the extra pairs the scorer merged 202 more: identical common names with addresses agreeing at 0.70–0.78, scored above 0.94. The blocker did not get worse; it stopped hiding scorer errors. The number to fix is the scorer's, and the number to watch is this one, which nothing watched, because the benchmark was not gated in CI. And whole-cluster recovery (59% on Febrl) is bounded by pairwise recall (65.7% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
 
 Script: `data/scripts/benchmark_entity_formation.py`, result in `data/er_bench/benchmark_entity_formation_result.json`. Run with a results file already present and it adds to it rather than replacing it.
+
+## The place request against its twin
+
+`resolve_place_request` turns a sentence into verified endpoints, one question, or a refusal. The question a benchmark can ask of it is the one the policy numbers exist for: at these numbers, how often does a *verified* endpoint point at the wrong door, and how many questions does that cost? No real address book comes with that label, so the measurement is against a synthetic twin: a master sheet whose contents are known, requests whose endpoints are known to be in the sheet or known not to be, and every endpoint labelled with how the sentence rendered it.
+
+| rendering | what it looks like | the right outcome |
+|---|---|---|
+| `exact` | `124 Elim Street` | verified |
+| `typo` | `124 Elim Streat`, `Kenyatta Aveune` | a question |
+| `landmark` | `the blue gate behind Elim Pharmacy, 124 Elim Street` | verified |
+| `landmark_only` | `behind Elim Pharmacy` | a question among the addresses near it |
+| `partial` | `Awolowo Way` | a question: which number? |
+| `ambiguous` | a number on a street the sheet has in two areas | a question |
+| `unknown` | an address the sheet does not hold | **refused**, never verified |
+
+`places_v1` adds three things, each there to make one claim testable. **Confusable streets**: some streets get a near-twin spelling in the same area (`Herbert Macaulay Street` / `Herbrt Macaulay Street`) with the same number on both, so `confusable` is the exact address (right answer: verified), `confusable_typo` a slip on it (right answer: a question naming both), and `unknown_confusable` a number the sheet holds *only* under the twin spelling, written against the original: a door that is not in the sheet, one slip from one that is. **Landmarks that face somewhere**: every landmark row carries `front_bearing`, its anchor address sits on one declared side and a decoy address at the same distance on the other, so *behind Elim Pharmacy* is undecidable by proximity and decidable by the relation. **A dedicated sheet**, with no accidental duplicate doors. Seed 42: 611 addresses, 54 landmarks, 10 confusable pairs, 1,000 requests, 2,000 endpoints. At the shipped policy (`verified_at=0.85`, `clarify_margin=0.15`, `minimum=0.4`, three candidates shown, typo matches confirmed):
+
+```text
+rendering            ver_right  ver_wrong  asked_right  asked_wrong   top-right of asked
+exact                     0.77       0.00         0.23         0.00      0.38 (twins)
+typo                      0.09       0.00         0.90         0.00      0.87
+confusable                1.00       0.00         0.00         0.00
+confusable_typo           0.03       0.00         0.97         0.00      0.82
+landmark                  0.83       0.00         0.17         0.00      1.00
+landmark_only             0.00       0.00         0.97         0.03      0.75
+partial                   0.00       0.00         1.00         0.00      1.00
+ambiguous                 0.00       0.00         1.00         0.00      0.43 (twins)
+unknown                   refused   1.00
+unknown_confusable        asked     1.00   (verified_wrong 0.00)
+```
+
+`verified_wrong` is zero in every row. The 23% of exact addresses that become questions are twins: the same number on the same street in another area, and a sentence that carries neither. That is the sheet's ambiguity, not the resolver's, and the question is the right answer.
+
+**What the typo rule is worth, measured.** Defaults: `verified_wrong` 0.000. `verified_at=0.7` with the rule on: 0.000, 40% auto-verified. `verified_at=0.7` with the rule **off**: 48% auto-verified and **`verified_wrong` 0.034**, every `unknown_confusable` endpoint verified at the wrong door. Eight points of automatic verification buy 34 wrong doors per 1,000 endpoints. That is the number the rule was declared on faith to protect, and it is now a measurement. At 0.8 and above the rule is inert on this world because a typo-tolerant match cannot reach 0.8 alone.
+
+**What the relation's geometry is worth, measured.** Same world, `front_bearing` stripped from the sheet: `landmark_only` asks with the right door first 42% of the time and puts it outside the shown three 17% of the time. With the bearings: 75% first, 3% outside. The remaining quarter is the *beside* third of landmarks, where both sides agree with the sentence by construction, a tie the relation cannot break, and the question is the right answer. The address-plus-landmark rendering went 62% -> 83% verified, because agreement with the relation is evidence the cross-area twin does not get.
+
+**What it found on first contact.** The first run of the earlier world, `places_v0`, found four defects in the request module in a quarter of an hour (17% of exact addresses never found, `landmark_only` refused 89% of the time, `partial` refused, `unknown` asked about 82% of the time because a landmark row's street matched), and `places_v1` found three more (a landmark name with an area after its comma, a school name with a number in the middle, a parquet writer that dropped the `front_bearing` column). All are fixed in 0.9.0, and the numbers above are after the fixes.
+
+**What this does not measure.** The sheet is a declared assumption; no real address is in it, and which place a request means is by construction. Whether a sentence written by a real customer renders the way the generator renders it is the question the twin cannot answer.
+
+Script: `data/synthetic/bench_place_request.py`, result in `data/synthetic/bench_place_request_places_v1.json`; the world and its labels are described in `data/synthetic/DATACARD.md`.
 
 ## Against string baselines
 
@@ -428,11 +519,13 @@ Two school registers, same process both times, opposite conclusions.
 
 `COMMUNITY PRIMARY SCHOOL` occurs 200 times across 21 states. Exact matching goes from the safest method available in Leeds to the most dangerous one here.
 
-Notebooks: `13_england_schools.ipynb`, `14_nigeria_schools.ipynb`.
+Notebooks: `examples/notebooks/13_england_schools.ipynb`, `examples/notebooks/14_nigeria_schools.ipynb`.
 
-## Internal ablation
+## Internal ablations
 
-**Name frequency, NCVR Alamance County.** Three arms of the person pack's `tftoken` comparator on 1,114 observed negatives and 1,500 constructed positives:
+### Name frequency, NCVR Alamance County
+
+Three arms of the person pack's `tftoken` comparator on 1,114 observed negatives and 1,500 constructed positives:
 
 | arm | false merges | precision | recall | F1 |
 | --- | ---: | ---: | ---: | ---: |
@@ -444,7 +537,7 @@ The frequency signal is doing real work. It also costs half the recall, and the 
 
 Script: `datasets/names_dataops/bench_name_frequency.py`.
 
-## The boundary discount does nothing at its default, on this data
+### The boundary discount does nothing at its default, on this data
 
 `compare_containment` discounts a state-level disagreement by distance, so two records either side of a line are not refuted on the strength of a boundary file's positional error. The ramp behaves as specified, checked directly:
 
@@ -486,10 +579,14 @@ res = reconcile(
     [{"id": "2", "name": "Angel Gonzalez", "birth_date": "2017-08-30"}],
     entity="person", id_field="id", comparators=REFUTING,
 )
-assert [e["decision"] for e in res["matches"]] != ["match"]
+print([e["decision"] for e in res["matches"]])
 ```
 
-It also cost recall on that set (0.8810 against 0.9014), which is not an argument either way at one data point.
+```text
+['review']
+```
+
+Refutation demotes the pair: same name, a birthday a year apart, and the answer is `review` rather than `match`. It also cost recall on the Parrish set (0.8810 against 0.9014), which is not an argument either way at one data point.
 
 **A second opinion, on NCVR.** The North Carolina voter register was the obvious second dataset, and the result is that refutation does nothing there:
 
@@ -513,11 +610,11 @@ Two cautions about reading NCVR here at all. Its negatives had to be rebuilt: `b
 | + date, weighted | 4,191 | 42 | 0.9901 | 0.8382 | 0 |
 | + date, refuting | 4,067 | 38 | 0.9907 | 0.8134 | **471** |
 
-Refutation fires 471 times here, so this is a real test rather than a no-op. It costs **124 true merges and prevents four false merges**: 42 down to 38, precision 0.9901 to 0.9907. (Before conjunction blocking widened the candidate set it prevented none — 24 either way; the four it now catches are among the pairs that blocking newly admits.) The weight has already excluded nearly everything refutation would have caught, and what refutation mostly adds is demoting correct matches to a queue.
+Refutation fires 471 times here, so this is a real test rather than a no-op. It costs **124 true merges and prevents four false merges**: 42 down to 38, precision 0.9901 to 0.9907. (Before conjunction blocking widened the candidate set it prevented none, 24 either way; the four it now catches are among the pairs that blocking newly admits.) The weight has already excluded nearly everything refutation would have caught, and what refutation mostly adds is demoting correct matches to a queue.
 
-Note also what the date comparator itself is worth on this arm: **484 false merges down to 42**, precision 0.8716 to 0.9901 (before conjunction blocking: 282 down to 24, 0.9209 to 0.9943 — the ratio barely moves). Adding it to the pack was the right call. Adding refutation on top of it is not.
+Note also what the date comparator itself is worth on this arm: **484 false merges down to 42**, precision 0.8716 to 0.9901 (before conjunction blocking: 282 down to 24, 0.9209 to 0.9943; the ratio barely moves). Adding it to the pack was the right call. Adding refutation on top of it is not.
 
-**Conclusion: no change.** The shipped pack declares a date comparator and no refutation. Three datasets: a small precision gain on Parrish, nothing at all on NCVR, and a clear loss on Febrl. Scripts: `bench_date_refutation.py` (NCVR) and `bench_febrl_dates.py` (Febrl).
+**Conclusion: no change.** The shipped pack declares a date comparator and no refutation. Three datasets: a small precision gain on Parrish, nothing at all on NCVR, and a clear loss on Febrl. Scripts: `datasets/names_dataops/bench_date_refutation.py` (NCVR) and `datasets/names_dataops/bench_febrl_dates.py` (Febrl).
 
 ### What the date comparator will not do
 
@@ -539,19 +636,48 @@ It also costs something, visible in the single false merge that survives above. 
 
 ## Running these
 
+Every script writes a JSON result next to itself, holding the numbers above and a statement of what the run does not measure. From the repository root:
+
 ```sh
-python examples/notebooks/build_15.py     # Parrish, R RecordLinkage
-python datasets/names_dataops/bench_febrl.py
-python datasets/names_dataops/bench_name_frequency.py
-python data/scripts/nigeria_school_false_merges.py
+uv run python data/scripts/benchmark_gate.py                              # DBLP-ACM, Febrl 4, Abt-Buy, the PERSON recipe; the CI gate
+uv run python datasets/names_dataops/bench_splink_febrl.py                # Splink, Febrl 4
+uv run python datasets/names_dataops/bench_splink_nigeria.py              # Splink, Nigerian school names
+uv run python datasets/names_dataops/bench_population_vs_batch.py         # the population table against batch frequency
+uv run python datasets/names_dataops/bench_population_tf_into_splink.py   # the same table handed to Splink
+uv run python datasets/names_dataops/bench_splink_historical.py           # Splink, historical_50k
+uv run python datasets/names_dataops/bench_sweep_historical.py            # the matched-precision sweep
+uv run python data/scripts/fetch_england_schools.py --la Leeds            # stage the England sources first
+uv run python datasets/names_dataops/bench_splink_england_schools.py      # Splink, the England schools link
+uv run python datasets/products_dataops/bench_splink_abt_buy.py           # Splink, Abt-Buy
+uv run python data/synthetic/bench_size_floor.py                          # the size floor, four sizes of the supplier world
+uv run python datasets/names_dataops/bench_backend_compare.py             # the adapter against the recipe run directly
+uv run python examples/notebooks/build_15.py                              # Parrish, R RecordLinkage
+uv run python datasets/names_dataops/bench_febrl.py                       # Python recordlinkage, Febrl 4
+uv run python data/scripts/benchmark_pii.py --backend basic,gliner2-pii   # detection
+uv run python data/scripts/benchmark_entity_formation.py                  # entity formation
+uv run python data/synthetic/bench_place_request.py                       # the place request against places_v1
+uv run python datasets/names_dataops/bench_name_frequency.py              # name frequency ablation, NCVR
+uv run python data/scripts/nigeria_school_false_merges.py                 # string baselines, Nigeria
+uv run python datasets/names_dataops/bench_date_refutation.py             # refutation, NCVR
+uv run python datasets/names_dataops/bench_febrl_dates.py                 # refutation, Febrl 4
 ```
 
-Each writes a JSON result next to itself, holding the numbers above and a statement of what the run does not measure.
+The Splink arms need `arche-core[resolve]`; the detection run with `gliner2-pii` needs `arche-core[detect2]` and the model download. Splink's unseeded u-sampling means the Febrl arms move in the third decimal between days; the recipe arm is seeded and does not.
 
 ## What none of this measures
 
 Febrl and the Parrish files are synthetic. Their errors were generated, so they are tidier than the errors a real register makes, and a benchmark that only looks clean on synthetic data has told you very little.
 
-The Nigeria and NCVR negatives are certain, but the positives are constructed, so recall on those two is a statement about the constructions.
+The Nigeria and NCVR negatives are certain, but the positives are constructed, so recall on those two is a statement about the constructions. The supplier and place worlds are constructed end to end: the floor and the place numbers say how the engine behaves on a world whose causes are known, not on yours.
 
 No benchmark here measures a population arche has not been shown. Nothing on this page is evidence about your data.
+
+## Where to read next
+
+| You want to | Read |
+|---|---|
+| what `backend="auto"` decides with these numbers | [Backends](../how-it-works/backends.md) |
+| to run a batch and read the result | [Resolve a batch](../guides/resolve-a-batch.md) |
+| the place request, end to end | [Resolve a delivery address](../guides/resolve-a-delivery-address.md) |
+| the extra each script needs | [Extras](extras.md) |
+| how the decision is made, in the engine's terms | [The decision](../how-it-works/the-decision.md) |

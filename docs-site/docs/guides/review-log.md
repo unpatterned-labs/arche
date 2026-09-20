@@ -1,3 +1,4 @@
+<!-- superseded by guides/review-a-queue.md on 2026-09-20; kept as working material -->
 # Compare two records, or work a review queue
 
 `arche studio` is a small local tool with two jobs: decide whether two records are the same thing, and walk an adjudication pack marking outcomes.

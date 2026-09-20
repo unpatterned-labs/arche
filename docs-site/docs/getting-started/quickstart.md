@@ -1,3 +1,4 @@
+<!-- superseded by get-started/five-minutes.md and get-started/python.md on 2026-09-20; kept as working material, not built -->
 # Quickstart
 
 Three questions, in the order people meet them: *what personal data is in this, and can I hand on a copy?*, *are these two the same?*, and *which of these are the same as those?* All run offline in seconds. Everything below is the installed package; no notebook, no repository checkout, no model download.
@@ -114,6 +115,6 @@ s1 r2 review 0.5798
 - [Find and mask, then compare the copies](../guides/find-and-mask.md) — a tokenised copy still links.
 - [Extract to your schema](../guides/extract-to-your-schema.md) — your field names are the labels; the same declaration decides.
 - [Keep and replay a decision](../guides/keep-and-replay.md)
-- [Resolve documents](../guides/documents-to-decision.md)
-- [Interpret a decision](../guides/interpret-decisions.md)
-- [Record resolution API](../reference/record-resolution.md)
+- [Resolve documents](../guides/resolve-documents.md)
+- [Interpret a decision](../guides/compare-two-records.md)
+- [Backends](../how-it-works/backends.md)

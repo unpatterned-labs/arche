@@ -1,3 +1,4 @@
+<!-- superseded by guides/compare-two-records.md on 2026-09-20; kept as working material, not built -->
 # How to Match African Names
 
 ```python
@@ -190,4 +191,4 @@ Contributions to the naming dataset are welcome. See the [Contributing guide](ht
 ## What's next
 
 - [API: Pipeline](../api/pipeline.md) -- full function documentation
-- [Quick Start](../getting-started/quickstart.md) -- more examples
+- [Quick Start](../get-started/five-minutes.md) -- more examples

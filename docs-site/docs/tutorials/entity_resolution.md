@@ -285,7 +285,7 @@ valid: True | trusted: True | key_source: pinned
 payload keys: ['a_id', 'b_id', 'decision', 'decision_id', 'distinctive_max', 'evidence', 'pins', 'schema', 'score']
 ```
 
-Edges carry ids and numeric evidence only, never raw values, so a signed edge is exactly as shareable as the crosswalk output it came from. Pass `public_key=` as above: without it `verify` reports `valid=True, trusted=False`, which is an integrity check and not an authentication. [Attest](../how-to/attest.md#valid-is-not-trusted) explains why that distinction is load-bearing.
+Edges carry ids and numeric evidence only, never raw values, so a signed edge is exactly as shareable as the crosswalk output it came from. Pass `public_key=` as above: without it `verify` reports `valid=True, trusted=False`, which is an integrity check and not an authentication. [Attest](../how-it-works/attestation.md#valid-is-not-trusted) explains why that distinction is load-bearing.
 
 ## The v0.2 surface, and where Splink actually sits
 
@@ -307,6 +307,6 @@ Stated so nobody plans around it.
 
 - Person resolution at scale, the same engine on Febrl4, scored against ground truth
 - [Place resolution at scale](place_resolution_at_scale.md): the Nigerian facility crosswalk end to end
-- [Read the crosswalk output](../how-to/read-crosswalk-output.md): every field on an edge, and what to do with it
+- [Read the crosswalk output](../guides/resolve-a-batch.md): every field on an edge, and what to do with it
 - Declare your schema, when your field names are not arche's
 - Architecture, which component is permitted to conclude anything

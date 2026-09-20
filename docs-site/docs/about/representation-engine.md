@@ -66,7 +66,7 @@ decision.decision_id   # reproducible content address
 signed = attest(decision, issuer_keypair, mode="jws")
 ```
 
-`reconcile` links lists at scale (blocking + gate + evidence; see [reading its output](../how-to/read-crosswalk-output.md)); `compare` returns a signable co-reference decision and is person-shaped today. The two share primitives and the gate but are deliberately distinct scoring paths.
+`reconcile` links lists at scale (blocking + gate + evidence; see [reading its output](../guides/resolve-a-batch.md)); `compare` returns a signable co-reference decision and is person-shaped today. The two share primitives and the gate but are deliberately distinct scoring paths.
 
 ## Can an LLM be the representation?
 
@@ -104,4 +104,4 @@ The [symbol grounding problem](https://doi.org/10.1016/0167-2789(90)90087-6) (Ha
 
 ---
 
-*Related: [the data packs](https://github.com/unpatterned-labs/arche/tree/main/datasets) (the representations themselves) · why arche, and when to use it (the inference landscape) · from place to entity (the math, worked by hand) · [how arche works](../tutorials/how-it-works.md).*
+*Related: [the data packs](https://github.com/unpatterned-labs/arche/tree/main/datasets) (the representations themselves) · why arche, and when to use it (the inference landscape) · from place to entity (the math, worked by hand) · [how arche works](../how-it-works/evidence.md).*

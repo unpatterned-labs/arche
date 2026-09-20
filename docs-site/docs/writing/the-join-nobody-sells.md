@@ -149,7 +149,7 @@ We would rather find that out from a tea buyer than from a slide.
 
 ---
 
-*Reproduce anything here with [what matching looks like](../tutorials/what-matching-looks-like.md), or check a decision yourself with [re-verify a decision](../how-to/re-verify-a-decision.md). The organisation pack, its frequency table and the curated vocabulary all ship in `arche-core` under Apache-2.0.*
+*Reproduce anything here with [Compare two records](../guides/compare-two-records.md), or check a decision yourself with [Keep, explain, replay](../guides/keep-and-replay.md). The organisation pack, its frequency table and the curated vocabulary all ship in `arche-core` under Apache-2.0.*
 
 ## Acknowledgements
 

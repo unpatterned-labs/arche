@@ -282,5 +282,5 @@ Which is the honest caveat on this whole page. Nominatim serves OSM data. For Ni
 ## Next
 
 - The place benchmark for the independence test and the geographic veto this adapter's `tolerance_km` mirrors
-- [Read the crosswalk output](read-crosswalk-output.md) for the evidence structure a verdict attaches to
+- [Read the crosswalk output](../guides/resolve-a-batch.md) for the evidence structure a verdict attaches to
 - Bring your own LLM for the same evidence-not-decisions contract applied to a model

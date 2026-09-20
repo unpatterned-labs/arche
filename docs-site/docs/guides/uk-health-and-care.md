@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-a-batch.md on 2026-09-20; kept as working material, not built -->
 # Prepare health and care locations in England
 
 Use a regulated location, not a generic health-care organisation, as the first entity. The Care Quality Commission (CQC) directory provides location and provider IDs, names, addresses, postcodes, and service types under the Open Government Licence.

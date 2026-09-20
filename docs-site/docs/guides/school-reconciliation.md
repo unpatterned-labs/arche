@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-a-batch.md on 2026-09-20; kept as working material -->
 # Reconcile schools
 
 You have an authoritative register and a map somebody else made. Neither carries the other's identifiers. This is the shape of most reconciliation work, and this guide runs it end to end on public school data.

@@ -345,5 +345,5 @@ result = Pipeline(jurisdiction="NG").process("your text here")
 - Entity resolution, the shipped resolution surface, end to end
 - The place benchmark, what a benchmark number can and cannot tell you, and a ten-line test for dataset independence
 - [Architecture](../api/architecture.md): which component is permitted to conclude anything
-- [Match African names](../how-to/match-african-names.md): the name packs in practice
+- [Match African names](../guides/compare-two-records.md): the name packs in practice
 - Bring your own LLM, models propose, curators accept, the engine executes

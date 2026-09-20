@@ -18,7 +18,7 @@ For the deeper substrate APIs, import from the substrate package directly; hand-
 | `Detection` | A single detected PII span with category, span, confidence | pipeline.md |
 | [`detect`](detect.md) | The Level-2 workhorse functions | per-page |
 | [`resolve.compare` / `resolve.reconcile` / `sign_edges`](reconcile.md) | Entity resolution: signable per-pair decisions + list-scale crosswalks | reconcile.md |
-| [`extract_places` / `grade_places` / `PlaceMention`](addr.md) | Spatial role labeling + the shipped referee | addr.md |
+| [`extract_places` / `grade_places` / `PlaceMention`](../how-it-works/places.md) | Spatial role labeling + the shipped referee | addr.md |
 
 Plus `__version__`. **v0.3 note:** the v0.1 callable `arche.resolve(text)` is removed; `arche.resolve` is the facade package documented on reconcile.md.
 
@@ -136,11 +136,11 @@ from arche.llm import LLMConfig, extract_declared, extract_places_llm
 from arche.llm import grade_pairs, grade_extractions
 ```
 
-Models propose, the engine verifies: declaration-driven extraction (`extract_declared`), cue-verified spatial role proposals (`extract_places_llm`), and the harness that grades a judge against the deterministic engine (`grade_pairs`). Guides: [Bring your own LLM](../how-to/bring-your-own-llm.md), [Extract places](../how-to/extract-places-with-roles.md).
+Models propose, the engine verifies: declaration-driven extraction (`extract_declared`), cue-verified spatial role proposals (`extract_places_llm`), and the harness that grades a judge against the deterministic engine (`grade_pairs`). Guides: [Bring your own LLM](../how-to/bring-your-own-llm.md), [Extract places](../how-it-works/places.md).
 
 ---
 
 ## See also
 
-- [Quick Start](../getting-started/quickstart.md): five copy-paste examples.
+- [Quick Start](../get-started/five-minutes.md): five copy-paste examples.
 - [Why arche & when to use it](../tutorials/arche_vs_alternatives.md): persona guide + cross-tool benchmark.

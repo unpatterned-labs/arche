@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-a-batch.md on 2026-09-20; kept as working material, not built -->
 # Reconcile health facilities
 
 Health-facility reconciliation is a good place-resolution workflow because a wrong merge can remove a clinic from an allocation, while a missed link leaves two records to be reviewed. Both risks matter.

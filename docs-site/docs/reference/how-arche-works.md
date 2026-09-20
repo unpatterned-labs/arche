@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/evidence.md on 2026-09-20; kept as working material, not built -->
 # How arche works
 
 arche has related capabilities, but they answer different questions. Keeping them separate prevents a useful score or extraction from becoming an unsupported identity claim.

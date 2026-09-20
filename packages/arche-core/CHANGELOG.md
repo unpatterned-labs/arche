@@ -4,6 +4,10 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Docs
+
+- **The documentation site was rebuilt.** One landing page with the real command and its real output, then four sections: Get started, Guides (one job per page), How it works, Reference, and the essays under Writing. Every Python example on a published page is executed against the installed package before it is published, and two more rules are tests now: no em-dashes, and a task page shows its first example on the first screen. The look is the project's own (paper, ink, one accent used as a mark, Source Serif 4 and JetBrains Mono, no dark mode). Every URL that was published before still answers; sixty-odd older pages stay in the repository as working material and are not built.
+
 ## [0.9.0] — 2026-09-20
 
 **Find the personal data, make a copy you can hand on, a model that proposes -- and the place a sentence means, with a receipt. Splink underneath when it should be. One image, one package, one compose file.**

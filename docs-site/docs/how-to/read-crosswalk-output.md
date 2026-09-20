@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-a-batch.md on 2026-09-20; kept as working material -->
 # Read crosswalk output: every number explained
 
 You ran a place crosswalk and got this back:

@@ -85,4 +85,4 @@ The attestation carries content-addressed ids and numeric evidence, never raw va
 - **Places have H3; people have keys.** Everything else, the entity pack, the distinctive gate, the shipped frequency table, the metrics, is the same engine.
 - **Bulk and signable are one continuum**: `reconcile` for the list, `compare` + `attest` for the link you must prove.
 
-**Next:** [read crosswalk output field-by-field](../how-to/read-crosswalk-output.md) · places at scale · the resolution-attestation notebook for the full signing story.
+**Next:** [read crosswalk output field-by-field](../guides/resolve-a-batch.md) · places at scale · the resolution-attestation notebook for the full signing story.

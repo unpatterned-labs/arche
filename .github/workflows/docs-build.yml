@@ -33,7 +33,7 @@ jobs:
 
       - name: Build docs-site
         working-directory: docs-site
-        run: uv run --with mkdocs --with mkdocs-material mkdocs build --strict
+        run: uv run --with mkdocs --with mkdocs-material --with mkdocs-redirects mkdocs build --strict
 
       - name: Print summary
         if: always()

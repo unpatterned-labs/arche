@@ -1,3 +1,4 @@
+<!-- superseded by guides/compare-two-records.md on 2026-09-20; kept as working material -->
 # Interpret a decision
 
 `reconcile()` returns candidate edges with two labels.

@@ -1,1069 +1,1130 @@
-/* Material loads only the `font.text` and `font.code` families named in
-   mkdocs.yml. Instrument Serif carries h1/h2 and has to be pulled in here.
-   Georgia is the fallback in the stack below, so headings stay readable if
-   this request fails. */
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+/* arche documentation: Material for MkDocs restyled to DESIGN.md.
+ *
+ * Paper, ink, one accent used only as a mark. Source Serif 4 for prose and
+ * headings, JetBrains Mono for code and every number. No dark mode, no
+ * radius, no shadow, no cards: 1px rules do the separating, whitespace does
+ * the grouping. Material supplies the structure (sidebar tree, page
+ * outline, prev/next, search); this file supplies the look.
+ *
+ * THE RULE: body text is always ink. --accent never appears as running
+ * copy. On this site it is exactly:
+ *   1. the underline on the active sidebar item
+ *   2. the focus ring on an input and on a link
+ *   3. the rule above a verdict (.pair-verdict)
+ *   4. the left rule beside a note (.arche-note, admonitions)
+ *   5. the underline on a hovered link in running text
+ * Five uses, all marks. If it is carrying meaning in a sentence, the
+ * sentence is wrong.
+ */
 
-/* arche documentation design system.
-   Source of truth for these decisions: DESIGN.md at the repo root.
-
-   The previous stylesheet was 80 lines: a green header, a few heading
-   colours, and no dark mode. The brand colour appeared in the header bar and
-   then disappeared for the rest of the page. This replaces it with a token
-   system that works in both schemes and carries meaning in colour. */
-
-/* ------------------------------------------------------------------ *
- * Tokens: light
- * ------------------------------------------------------------------ */
+/* ------------------------------------------------------------ tokens ---- */
 
 :root {
-  --arche-ink: #131a18;
-  --arche-ink-muted: #55625d;
-  --arche-surface: #ffffff;
-  --arche-surface-sunken: #f4f7f5;
-  --arche-line: #dde5e1;
+  --paper: #FFFFF8;
+  --ink: #111111;
+  --muted: #5C5C54;
+  --rule: #E0E0D4;
+  --accent: #A33B1F;
+  --code-surface: #F4F4EC;
 
-  --arche-green-900: #12241f;
-  --arche-green-700: #1f3d36;
-  --arche-green-500: #2f6f63;
-  --arche-green-100: #e4efea;
+  /* Verdicts, and nothing else. Desaturated so the page stays quiet. */
+  --ok: #2F6B4F;
+  --hold: #8A6410;
+  --no: #9B2C1E;
 
-  /* Verdict states. See DESIGN.md: `review` is amber because abstention is
-     the product thesis, not a failure. Colouring it red would say the
-     opposite of what the engine is for. */
-  --arche-verdict-match: #2f6f63;
-  --arche-verdict-review: #9a6410;
-  --arche-verdict-refused: #8c2f2a;
+  --serif: "Source Serif 4", "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --measure: 92ch;
 
-  --arche-measure: 68ch;
-
-  /* Material overrides */
-  --md-primary-fg-color: var(--arche-green-700);
-  --md-primary-bg-color: #ffffff;
-  --md-accent-fg-color: var(--arche-green-500);
-  --md-typeset-a-color: var(--arche-green-500);
-  --md-default-fg-color: var(--arche-ink);
-  --md-code-bg-color: var(--arche-surface-sunken);
+  /* Material's own variables, pointed at ours. */
+  --md-default-bg-color: var(--paper);
+  --md-default-fg-color: var(--ink);
+  --md-default-fg-color--light: var(--muted);
+  --md-default-fg-color--lighter: var(--muted);
+  --md-default-fg-color--lightest: var(--rule);
+  --md-primary-fg-color: var(--paper);
+  --md-primary-fg-color--light: var(--paper);
+  --md-primary-fg-color--dark: var(--paper);
+  --md-primary-bg-color: var(--ink);
+  --md-primary-bg-color--light: var(--muted);
+  --md-accent-fg-color: var(--ink);
+  --md-accent-fg-color--transparent: var(--code-surface);
+  --md-accent-bg-color: var(--paper);
+  --md-typeset-a-color: var(--ink);
+  --md-typeset-color: var(--ink);
+  --md-typeset-kbd-color: var(--code-surface);
+  --md-code-bg-color: var(--code-surface);
+  --md-code-fg-color: var(--ink);
+  --md-code-hl-color: var(--rule);
+  --md-typeset-table-color: var(--rule);
+  --md-typeset-mark-color: var(--code-surface);
+  --md-footer-bg-color: var(--paper);
+  --md-footer-bg-color--dark: var(--paper);
+  --md-footer-fg-color: var(--ink);
+  --md-footer-fg-color--light: var(--muted);
+  --md-footer-fg-color--lighter: var(--muted);
+  --md-admonition-fg-color: var(--ink);
+  --md-admonition-bg-color: var(--paper);
+  --md-text-font: var(--serif);
+  --md-code-font: var(--mono);
 }
 
-/* ------------------------------------------------------------------ *
- * Tokens: dark. Surfaces are redesigned, not inverted; the accent is
- * lifted so it keeps contrast against a dark ground.
- * ------------------------------------------------------------------ */
-
-[data-md-color-scheme="slate"] {
-  --arche-ink: #e6ede9;
-  --arche-ink-muted: #8ea099;
-  --arche-surface: #0e1614;
-  --arche-surface-sunken: #131f1c;
-  --arche-line: #243330;
-
-  --arche-green-900: #0a1210;
-  --arche-green-700: #1a332d;
-  --arche-green-500: #5cab9b;
-  --arche-green-100: #1b2f2a;
-
-  --arche-verdict-match: #5cab9b;
-  --arche-verdict-review: #d99b3c;
-  --arche-verdict-refused: #d97a72;
-
-  --md-default-bg-color: var(--arche-surface);
-  --md-default-fg-color: var(--arche-ink);
-  --md-typeset-a-color: var(--arche-green-500);
-  --md-accent-fg-color: var(--arche-green-500);
-  --md-code-bg-color: var(--arche-surface-sunken);
+/* Syntax colours: a restrained set that reads on the code surface. Keywords
+ * and strings are told apart by weight and one dark hue each, not a rainbow. */
+:root {
+  --md-code-hl-keyword-color: #3B3B8F;
+  --md-code-hl-function-color: var(--ink);
+  --md-code-hl-string-color: #2F6B4F;
+  --md-code-hl-number-color: var(--ink);
+  --md-code-hl-constant-color: var(--ink);
+  --md-code-hl-special-color: var(--ink);
+  --md-code-hl-name-color: var(--ink);
+  --md-code-hl-operator-color: var(--muted);
+  --md-code-hl-punctuation-color: var(--muted);
+  --md-code-hl-comment-color: var(--muted);
+  --md-code-hl-generic-color: var(--muted);
+  --md-code-hl-variable-color: var(--ink);
 }
 
-/* ------------------------------------------------------------------ *
- * Chrome
- * ------------------------------------------------------------------ */
+/* -------------------------------------------------------------- base ---- */
 
-.md-header,
-.md-tabs {
-  background: var(--arche-green-900);
-  box-shadow: none;
+html {
+  background: var(--paper);
 }
 
-[data-md-color-scheme="slate"] .md-header,
-[data-md-color-scheme="slate"] .md-tabs {
-  border-bottom: 1px solid var(--arche-line);
+body,
+.md-typeset {
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
-
-.md-footer,
-.md-footer-meta {
-  background: var(--arche-green-900);
-}
-
-.md-main__inner {
-  margin-top: 1.4rem;
-}
-
-.md-content {
-  max-width: 960px;
-}
-
-/* ------------------------------------------------------------------ *
- * Typography
- *
- * Material sets the root to 125%, so 1rem = 20px. The previous system used
- * 0.78rem body (15.6px) inside an 880px column, which is ~100 characters per
- * line, well past comfortable. Prose is capped to a measure below; tables
- * and code are deliberately exempt, because truncating a code line is worse
- * than a wide block.
- * ------------------------------------------------------------------ */
 
 .md-typeset {
-  font-size: 0.82rem;
-  line-height: 1.68;
-  color: var(--arche-ink);
+  font-size: 0.85rem;            /* 17px on Material's 20px root */
+  line-height: 1.6;
 }
 
-/* Cap the measure on prose only. */
-.md-typeset > p,
-.md-typeset > ul,
-.md-typeset > ol,
-.md-typeset > blockquote {
-  max-width: var(--arche-measure);
+/* Prose gets a measure; tables and code get the column. */
+.md-typeset p,
+.md-typeset li,
+.md-typeset blockquote,
+.md-typeset dl {
+  max-width: var(--measure);
 }
 
 .md-typeset h1,
-.md-typeset h2 {
-  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  color: var(--ink);
+  text-wrap: balance;
 }
 
-/* h1 was 31.2px against a 24.4px h2: a 1.28x step reads as no hierarchy at
-   all. 42/28 restores a legible jump. */
 .md-typeset h1 {
-  font-size: 2.1rem;
+  font-size: 2rem;               /* 40px */
   line-height: 1.12;
-  color: var(--arche-ink);
-  margin-bottom: 0.6rem;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.2rem;
 }
 
 .md-typeset h2 {
-  font-size: 1.4rem;
-  line-height: 1.2;
-  color: var(--arche-ink);
-  margin-top: 2.6rem;
-  margin-bottom: 0.7rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--arche-line);
+  font-size: 1.3rem;             /* 26px */
+  line-height: 1.22;
+  letter-spacing: -0.005em;
+  margin: 2.4rem 0 0.8rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--rule);
 }
 
 .md-typeset h3 {
-  font-size: 1rem;
-  font-weight: 650;
+  font-size: 1.05rem;            /* 21px */
   line-height: 1.3;
-  margin-top: 1.8rem;
+  margin: 1.8rem 0 0.5rem;
 }
 
 .md-typeset h4 {
-  font-size: 0.86rem;
-  font-weight: 650;
-  color: var(--arche-ink-muted);
+  font-size: 0.9rem;
+  margin: 1.4rem 0 0.4rem;
+}
+
+/* Section labels: small caps in muted, per DESIGN.md. */
+.md-typeset .label,
+.md-nav--primary .md-nav__item--section > .md-nav__link,
+.md-nav--secondary .md-nav__title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 0.65rem;            /* 13px */
+  line-height: 1.3;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
-/* ------------------------------------------------------------------ *
- * Code
- * ------------------------------------------------------------------ */
-
-.md-typeset code {
-  border-radius: 3px;
-  font-size: 0.86em;
+/* Links in running text: ink, underlined with the rule colour; the accent
+ * appears on hover as the underline, never as the word. */
+.md-typeset a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+  transition: text-decoration-color 140ms ease;
 }
 
-.md-typeset pre > code {
-  font-size: 0.72rem;
-  line-height: 1.6;
-  border-radius: 3px;
-  overflow-x: auto;
+.md-typeset a:hover,
+.md-typeset a:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--accent);
 }
 
-.md-typeset pre {
-  max-width: 100%;
+.md-typeset a code {
+  color: inherit;
 }
 
-/* ------------------------------------------------------------------ *
- * Tables
- * ------------------------------------------------------------------ */
-
-.md-typeset table:not([class]) {
-  font-size: 0.75rem;
-  border: 1px solid var(--arche-line);
-  border-radius: 0;
+.md-typeset strong {
+  font-weight: 600;
 }
 
-.md-typeset table:not([class]) th {
-  background: var(--arche-surface-sunken);
-  color: var(--arche-ink);
-  font-weight: 650;
-  border-bottom: 1px solid var(--arche-line);
+.md-typeset em {
+  font-style: italic;
 }
 
-.md-typeset table:not([class]) td {
-  border-top: 1px solid var(--arche-line);
-}
-
-/* Wide tables scroll inside their own container instead of pushing the page
-   sideways. */
-.md-typeset__scrollwrap {
-  overflow-x: auto;
-}
-
-/* ------------------------------------------------------------------ *
- * Verdict states: the abstention palette
- *
- * Used wherever a decision is displayed, in prose or in output. Markup:
- *   <span class="verdict verdict--review">review</span>
- * ------------------------------------------------------------------ */
-
-.verdict {
-  display: inline-block;
-  padding: 0.1em 0.5em;
-  border-radius: 3px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  border: 1px solid currentcolor;
-}
-
-.verdict--match {
-  color: var(--arche-verdict-match);
-}
-
-.verdict--review {
-  color: var(--arche-verdict-review);
-}
-
-.verdict--refused {
-  color: var(--arche-verdict-refused);
-}
-
-/* ------------------------------------------------------------------ *
- * Home page: hero and the four-verb strip
- *
- * Deliberately not a three-column icon grid. It is a linear pipeline,
- * because that is what the product is.
- * ------------------------------------------------------------------ */
-
-.arche-hero {
-  padding: 2.4rem 0 1.6rem;
-  border-bottom: 1px solid var(--arche-line);
-  margin-bottom: 2rem;
-}
-
-.arche-hero__tagline {
-  font-family: "Instrument Serif", Georgia, serif;
-  font-size: 2.6rem;
-  line-height: 1.05;
-  letter-spacing: -0.015em;
-  margin: 0 0 0.6rem;
-  color: var(--arche-ink);
-}
-
-.arche-hero__sub {
-  font-size: 0.95rem;
-  line-height: 1.55;
-  max-width: 52ch;
-  color: var(--arche-ink-muted);
-  margin: 0 0 1.4rem;
-}
-
-.arche-hero__status {
-  display: inline-block;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
-  color: var(--arche-verdict-review);
-  border: 1px solid currentcolor;
-  border-radius: 3px;
-  padding: 0.15em 0.6em;
-}
-
-.arche-verbs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--arche-line);
-  border: 1px solid var(--arche-line);
+.md-typeset hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
   margin: 2rem 0;
 }
 
-.arche-verb {
-  background: var(--arche-surface);
-  padding: 1.1rem 1rem;
+.md-typeset blockquote {
+  border-left: 1px solid var(--rule);
+  color: var(--ink);
+  font-style: italic;
 }
 
-.arche-verb__name {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.74rem;
-  font-weight: 500;
-  color: var(--arche-green-500);
-  margin: 0 0 0.4rem;
+/* Every number is mono with tabular figures. Tables and code are already
+ * mono; this catches the numerals in prose that name a measurement. */
+.md-typeset .num,
+.md-typeset table:not([class]) td {
+  font-variant-numeric: tabular-nums;
 }
 
-.arche-verb__body {
-  font-size: 0.74rem;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------- code ---- */
+
+.md-typeset code,
+.md-typeset kbd,
+.md-typeset pre {
+  font-family: var(--mono);
+  font-feature-settings: "liga" 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-typeset code {
+  font-size: 0.78em;
+  background: var(--code-surface);
+  color: var(--ink);
+  border-radius: 0;
+  padding: 0.05em 0.3em;
+}
+
+.md-typeset pre {
+  margin: 1.2rem 0;
+}
+
+.md-typeset pre > code {
+  font-size: 0.75rem;            /* 15px */
+  line-height: 1.6;
+  padding: 0.9rem 1rem;
+  background: var(--code-surface);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.md-typeset .highlight,
+.md-typeset .highlighttable,
+.md-typeset .highlight pre,
+.md-typeset .md-code__content {
+  border-radius: 0;
+}
+
+/* Output blocks follow their code: no top rule, so the two read as one. */
+.md-typeset .highlight + .highlight pre {
+  margin-top: -1.2rem;
+}
+
+.md-typeset .highlight + .highlight pre > code {
+  border-top: 0;
+  color: var(--muted);
+}
+
+.md-typeset .md-clipboard {
+  color: var(--muted);
+  transition: color 140ms ease;
+}
+
+.md-typeset .md-clipboard:hover {
+  color: var(--ink);
+}
+
+.md-typeset .highlight .hll {
+  background: var(--rule);
+}
+
+/* ------------------------------------------------------------ tables ---- */
+
+.md-typeset table:not([class]) {
+  font-size: 0.75rem;
+  border: 0;
+  border-top: 1px solid var(--ink);
+  border-radius: 0;
+  box-shadow: none;
+  display: table;
+  width: 100%;
+}
+
+.md-typeset table:not([class]) th {
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.6rem 0.9rem 0.5rem 0;
+  vertical-align: bottom;
+  min-width: 0;
+}
+
+.md-typeset table:not([class]) td {
+  border-top: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.55rem 0.9rem 0.55rem 0;
+  vertical-align: top;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background: var(--code-surface);
+}
+
+/* A name in a cell is one word; it does not break in the middle. */
+.md-typeset table:not([class]) td code,
+.md-typeset table:not([class]) th code {
+  white-space: nowrap;
+}
+
+.md-typeset .md-typeset__table {
+  display: block;
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------- admonitions ---- */
+
+.md-typeset .admonition,
+.md-typeset details {
+  font-size: 0.8rem;
+  border: 0;
+  border-left: 1px solid var(--accent);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0 0 0 1rem;
+  margin: 1.4rem 0;
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  font-weight: 600;
+  background: transparent !important;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 0.2rem 0 !important;
+  color: var(--ink);
+}
+
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  display: none !important;
+}
+
+.md-typeset .admonition > :last-child,
+.md-typeset details > :last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------ header ---- */
+
+.md-header {
+  background: var(--paper);
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  box-shadow: none !important;
+}
+
+.md-header__inner {
+  padding: 0.25rem 0.2rem;
+}
+
+.md-header__title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.md-header__topic:first-child {
+  font-weight: 600;
+}
+
+/* The header keeps the site name; the page title lives on the page. */
+.md-header__topic:not(:first-child) {
+  display: none;
+}
+
+.md-header__title--active .md-header__topic:first-child {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.md-header__button.md-logo {
+  display: none;
+}
+
+.md-header__button {
+  color: var(--ink);
+}
+
+.md-header__source {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+}
+
+.md-source__facts {
+  display: none;
+}
+
+/* Search: an underlined field, not a pill. */
+.md-search__form {
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid var(--rule);
+  box-shadow: none;
+}
+
+.md-search__form:hover {
+  background: transparent;
+}
+
+.md-search__input {
+  font-family: var(--serif);
+  color: var(--ink);
+}
+
+.md-search__input::placeholder {
+  color: var(--muted);
+}
+
+.md-search__icon {
+  color: var(--muted);
+}
+
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+  background: var(--paper);
+  border-radius: 0;
+}
+
+.md-search__output {
+  border-radius: 0;
+  box-shadow: none;
+  border: 1px solid var(--rule);
+  border-top: 0;
+}
+
+.md-search-result__meta {
+  background: var(--code-surface);
+  color: var(--muted);
+}
+
+.md-search-result mark {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+/* --------------------------------------------------------- sidebars ---- */
+
+.md-sidebar {
+  font-family: var(--serif);
+}
+
+.md-nav {
+  font-size: 0.75rem;            /* 15px */
+  line-height: 1.45;
+}
+
+.md-nav__title {
+  color: var(--muted);
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.md-nav--primary > .md-nav__title {
+  display: none;
+}
+
+.md-nav--primary .md-nav__item--section {
+  margin-top: 1.4rem;
+}
+
+.md-nav--primary .md-nav__item--section:first-child {
+  margin-top: 0.4rem;
+}
+
+.md-nav--primary .md-nav__item--section > .md-nav__link {
+  margin: 0 0 0.35rem;
+  pointer-events: auto;
+}
+
+.md-nav__link {
+  color: var(--ink);
+  margin-top: 0.35em;
+}
+
+.md-nav__link:hover,
+.md-nav__link:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 0.16em;
+}
+
+.md-nav__item .md-nav__link--active,
+.md-nav__item .md-nav__link--active:hover,
+.md-nav__item .md-nav__link--active .md-ellipsis,
+.md-nav__item .md-nav__link--active code {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+/* Section index pages: the heading is a link to the section's own page. */
+.md-nav--primary .md-nav__item--section > .md-nav__link--active {
+  color: var(--ink);
+}
+
+/* The page outline on the right. */
+.md-nav--secondary {
+  border-left: 1px solid var(--rule);
+  padding-left: 0.8rem;
+}
+
+.md-nav--secondary .md-nav__title {
+  padding: 0 0 0.4rem;
+}
+
+.md-nav--secondary .md-nav__link {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.md-nav--secondary .md-nav__link--active {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.md-nav--secondary .md-nav__link:hover {
+  color: var(--ink);
+}
+
+/* ----------------------------------------------------------- content ---- */
+
+.md-grid {
+  max-width: 76rem;
+}
+
+.md-content__inner {
+  padding-top: 1.2rem;
+  margin-bottom: 3rem;
+}
+
+.md-content__inner::before {
+  height: 0;
+}
+
+.md-content__button {
+  display: none;
+}
+
+/* ------------------------------------------------------------ footer ---- */
+
+.md-footer {
+  background: var(--paper);
+  color: var(--ink);
+  border-top: 1px solid var(--rule);
+}
+
+.md-footer__inner {
+  padding: 0.8rem 0.2rem;
+}
+
+.md-footer__link {
+  color: var(--ink);
+  opacity: 1;
+}
+
+.md-footer__title {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.md-footer__direction {
+  font-size: 0.6rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 1;
+}
+
+.md-footer__button {
+  color: var(--muted);
+}
+
+.md-footer-meta {
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+
+.md-footer-meta__inner {
+  color: var(--muted);
+  font-size: 0.6rem;
+}
+
+.md-copyright,
+.md-copyright__highlight {
+  color: var(--muted);
+}
+
+.md-social__link {
+  color: var(--muted);
+}
+
+.md-social__link:hover {
+  color: var(--ink);
+}
+
+.md-top {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--serif);
+}
+
+/* ----------------------------------------------------------- home ------- */
+
+/* The landing page. Paper is the ground; the terminal is ink, the primary
+ * button is accent, the cards sit on the code surface. This is the one page
+ * that uses surfaces and a small radius, because a landing page is a poster
+ * and the rest of the site is a book. */
+
+.arche-home .md-content__inner {
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 3.2rem 1.2rem 3rem;
+}
+
+.arche-home .md-typeset section {
+  margin: 0 0 4rem;
+}
+
+/* -- hero */
+
+.arche-home .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 11fr) minmax(0, 10fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+.arche-home .md-typeset .kicker {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1.1rem;
+}
+
+.arche-home .md-typeset .hero h1 {
+  font-size: 3.4rem;             /* 68px */
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 14ch;
+  margin: 0 0 1.2rem;
+}
+
+.arche-home .md-typeset .lede {
+  font-size: 1.1rem;
   line-height: 1.5;
-  color: var(--arche-ink-muted);
+  color: var(--muted);
+  max-width: 34rem;
+  margin: 0 0 1.6rem;
+}
+
+.arche-home .md-typeset .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 1.4rem;
+}
+
+.arche-home .md-typeset .btn {
+  display: inline-block;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.8rem 1.2rem;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--paper);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.arche-home .md-typeset .btn:hover,
+.arche-home .md-typeset .btn:focus-visible {
+  background: #8C321A;
+  border-color: #8C321A;
+  color: var(--paper);
+  text-decoration: none;
+}
+
+.arche-home .md-typeset .btn.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule);
+}
+
+.arche-home .md-typeset .btn.secondary:hover,
+.arche-home .md-typeset .btn.secondary:focus-visible {
+  background: var(--code-surface);
+  border-color: var(--muted);
+  color: var(--ink);
+}
+
+.arche-home .md-typeset .position {
+  font-size: 0.8rem;
+  color: var(--muted);
   margin: 0;
 }
 
-@media screen and (max-width: 60em) {
-  .arche-verbs {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.arche-home .md-typeset .position strong {
+  color: var(--ink);
+}
 
-  .arche-hero__tagline {
-    font-size: 1.9rem;
+/* -- the terminal */
+
+.arche-home .term {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: var(--mono);
+  min-width: 0;
+}
+
+.arche-home .term-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 248, 0.12);
+}
+
+.arche-home .term-bar i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 248, 0.22);
+}
+
+.arche-home .term-bar span {
+  margin-left: 6px;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 248, 0.5);
+}
+
+.arche-home .md-typeset .term pre {
+  margin: 0;
+  padding: 1rem 1.1rem 1.2rem;
+  background: transparent;
+  color: var(--paper);
+  font-size: 0.68rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.arche-home .term .dim {
+  color: rgba(255, 255, 248, 0.5);
+}
+
+.arche-home .term .ok {
+  color: #E9A48F;                /* the accent, lifted to read on ink */
+}
+
+/* -- three cards */
+
+.arche-home .cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.arche-home .card {
+  background: var(--code-surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.3rem 1.3rem 1.2rem;
+}
+
+.arche-home .md-typeset .card h3 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
+.arche-home .md-typeset .card p {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+  max-width: none;
+}
+
+/* -- built for */
+
+.arche-home .md-typeset .section-title,
+.arche-home .md-typeset .map-kicker {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+.arche-home .for {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.6rem 2rem;
+  border-top: 1px solid var(--ink);
+  padding-top: 1.4rem;
+}
+
+.arche-home .md-typeset .for h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+}
+
+.arche-home .md-typeset .for p {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+  max-width: none;
+}
+
+/* -- the Python example */
+
+.arche-home .example-head,
+.arche-home .docs-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.2rem;
+}
+
+.arche-home .md-typeset .example-head h2,
+.arche-home .md-typeset .docs-head h2 {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.arche-home .example-head span,
+.arche-home .docs-head span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 34rem;
+}
+
+.arche-home .md-typeset .example pre > code {
+  font-size: 0.72rem;
+}
+
+.arche-home .md-typeset .example-note {
+  font-size: 0.85rem;
+  max-width: none;
+  margin: 1rem 0 0;
+}
+
+/* -- docs map */
+
+.arche-home .map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.2rem 1.6rem;
+}
+
+.arche-home .map > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.9rem;
+}
+
+.arche-home .md-typeset .map a {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.arche-home .md-typeset .map a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.arche-home .md-typeset .map a.map-kicker {
+  margin: 0 0 0.3rem;
+  color: var(--ink);
+}
+
+.arche-home .md-typeset .map a.map-kicker--second {
+  margin-top: 1rem;
+}
+
+.arche-home .md-typeset .meta {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: none;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.8rem;
+  margin: 0;
+}
+
+@media (max-width: 62em) {
+  .arche-home .hero {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .arche-home .md-typeset .hero h1 {
+    font-size: 2.6rem;
+  }
+  .arche-home .cards {
+    grid-template-columns: 1fr;
+  }
+  .arche-home .for,
+  .arche-home .map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media screen and (max-width: 30em) {
-  .arche-verbs {
+@media (max-width: 40em) {
+  .arche-home .md-content__inner {
+    padding: 2rem 0.8rem 2rem;
+  }
+  .arche-home .md-typeset .hero h1 {
+    font-size: 2rem;
+  }
+  .arche-home .for,
+  .arche-home .map {
     grid-template-columns: 1fr;
   }
 }
 
-/* ------------------------------------------------------------------ *
- * Pipeline flow: the four verbs as an ordered sequence
- *
- * These were a fenced code block, which said "this is output you can
- * copy" when it is actually the shape of the product. A numbered rule-
- * separated list reads as a sequence and survives a narrow screen.
- *
- *   <div class="flow" markdown>
- *   <div class="flow__step" markdown>
- *   <span class="flow__n">1</span>
- *   <span class="flow__verb">detect</span>
- *   <span class="flow__what">…</span>
- *   </div>
- *   </div>
- * ------------------------------------------------------------------ */
+/* ------------------------------------------------- essay components ----- */
 
-.flow {
-  border-top: 1px solid var(--arche-line);
-  margin: 1.8rem 0;
+/* A pair of records and the verdict between them. Used by the essays and
+ * by "Compare two records". The accent is the rule above the verdict; the
+ * verdict word carries the semantic colour and nothing else does. */
+.md-typeset .arche-pairs {
+  margin: 1.6rem 0;
 }
 
-.flow__step {
-  display: grid;
-  grid-template-columns: 2rem 7.5rem 1fr;
-  gap: 0 1rem;
-  align-items: baseline;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid var(--arche-line);
+.md-typeset .pair {
+  border-top: 1px solid var(--rule);
+  padding: 0.9rem 0 0.9rem;
+  margin: 0;
 }
 
-/* `md_in_html` wraps the three spans in a `<p>`, which would leave the
-   grid with one child and collapse the columns. `display: contents`
-   promotes the spans back to grid items, and is harmless if a future
-   markdown version stops wrapping. */
-.flow__step > p { display: contents; }
-
-.flow__n {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.66rem;
-  color: var(--arche-ink-muted);
-  padding-top: 0.15em;
+.md-typeset .pair:last-child {
+  border-bottom: 1px solid var(--rule);
 }
 
-.flow__verb {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--arche-green-500);
-}
-
-.flow__what {
-  font-size: 0.78rem;
-  line-height: 1.55;
-  color: var(--arche-ink-muted);
-}
-
-.flow__what strong { color: var(--arche-ink); font-weight: 600; }
-
-@media screen and (max-width: 45em) {
-  .flow__step { grid-template-columns: 1.6rem 1fr; }
-  .flow__verb { grid-column: 2; }
-  .flow__what { grid-column: 2; margin-top: 0.3rem; }
-}
-
-/* A pair of records shown with the verdict each one earned. Used where
-   two identical strings get different answers, the argument that no
-   amount of reading the text can settle. */
-
-.pairs { border-top: 1px solid var(--arche-line-strong, var(--arche-line)); margin: 1.8rem 0; }
-
-.pairs__row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--arche-line);
-}
-
-.pairs__names {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.76rem;
-  line-height: 1.5;
-  color: var(--arche-ink);
-  word-break: break-word;
-}
-
-.pairs__why {
-  display: block;
-  font-family: var(--md-text-font-family, inherit);
+.md-typeset .pair-records {
+  font-family: var(--mono);
   font-size: 0.72rem;
-  color: var(--arche-ink-muted);
-  margin-top: 0.35rem;
-}
-
-@media screen and (max-width: 45em) {
-  .pairs__row { grid-template-columns: 1fr; gap: 0.6rem; }
-}
-
-/* ------------------------------------------------------------------ *
- * Layer stack: the authority diagram on the architecture page
- *
- * This was ASCII art in a code fence: unreadable on a phone, invisible
- * to a screen reader, and it re-flowed into nonsense whenever the font
- * fell back. The accent edge is not decoration: it marks the one band
- * that is permitted to conclude something, which is the whole argument
- * of the page.
- *
- *   <div class="layers" markdown>
- *   <div class="layer layer--decides" markdown>
- *   <div class="layer__label" markdown>
- *   <span class="layer__name">deciders</span>
- *   <span class="layer__role">…</span>
- *   </div>
- *   <div class="layer__body" markdown>…</div>
- *   </div>
- *   </div>
- * ------------------------------------------------------------------ */
-
-.layers {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin: 1.8rem 0;
-}
-
-.layer {
-  display: grid;
-  grid-template-columns: 9.5rem 1fr;
-  gap: 0 1.25rem;
-  padding: 0.9rem 1rem;
-  background: var(--arche-surface-sunken);
-  border-left: 2px solid var(--arche-line);
-}
-
-/* The one band allowed to reach a verdict, and the one that binds it. */
-.layer--decides { border-left-color: var(--arche-green-500); }
-.layer--binds { border-left-color: var(--arche-green-500); opacity: 0.95; }
-
-/* The `<p>` md_in_html inserts would otherwise push the two columns out
-   of alignment with each other. */
-.layer__label > p,
-.layer__body > p { margin: 0; }
-
-.layer__name {
-  display: block;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--arche-ink);
-}
-
-.layer__role {
-  display: block;
-  font-size: 0.7rem;
-  line-height: 1.45;
-  color: var(--arche-ink-muted);
-  margin-top: 0.3rem;
-}
-
-.layer__body {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.76rem;
   line-height: 1.6;
-  color: var(--arche-ink);
-  align-self: center;
+  margin: 0 0 0.5rem;
 }
 
-.layer__body code { background: none; padding: 0; font-size: inherit; }
+.md-typeset .pair-records p {
+  margin: 0;
+}
 
-.layer__note {
+.md-typeset .pair-verdict {
+  display: inline-block;
+  border-top: 1px solid var(--accent);
+  padding-top: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 0.3rem;
+}
+
+.md-typeset .pair.match .pair-verdict {
+  color: var(--ok);
+}
+
+.md-typeset .pair.review .pair-verdict {
+  color: var(--hold);
+}
+
+.md-typeset .pair.different .pair-verdict,
+.md-typeset .pair.refused .pair-verdict {
+  color: var(--no);
+}
+
+.md-typeset .pair-why {
+  font-size: 0.8rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.md-typeset p.verdict {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  border-top: 1px solid var(--accent);
+  padding-top: 0.4rem;
+  max-width: var(--measure);
+}
+
+/* A ranked list of candidates, the chosen one marked. */
+.md-typeset .arche-candidates {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.md-typeset .arche-candidates li {
+  border-top: 1px solid var(--rule);
+  padding: 0.4rem 0;
+  max-width: var(--measure);
+}
+
+.md-typeset .arche-candidates li:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.md-typeset .arche-candidates .chosen {
+  font-weight: 600;
+}
+
+.md-typeset .arche-candidates mark {
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+/* A note: ink text beside an accent rule. */
+.md-typeset .arche-note {
+  border-left: 1px solid var(--accent);
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--ink);
+  margin: 1.2rem 0;
+  max-width: var(--measure);
+}
+
+/* Collapsible worked examples. */
+.md-typeset details.arche-examples {
+  border-left: 1px solid var(--rule);
+}
+
+.md-typeset details.arche-examples[open] {
+  border-left-color: var(--accent);
+}
+
+/* The pipeline flow: a numbered sequence, because the order is real. */
+.md-typeset .flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0 1.6rem;
+  border-top: 1px solid var(--ink);
+  margin: 1.6rem 0;
+}
+
+.md-typeset .flow__step {
+  padding: 0.8rem 0;
+}
+
+.md-typeset .flow__n {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
   display: block;
-  font-family: var(--md-text-font-family, inherit);
-  font-size: 0.7rem;
-  color: var(--arche-ink-muted);
-  margin-top: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
-@media screen and (max-width: 45em) {
-  .layer { grid-template-columns: 1fr; gap: 0.5rem; }
+.md-typeset .flow__verb {
+  font-weight: 600;
+  display: block;
 }
 
-/* ------------------------------------------------------------------ *
- * Navigation
- * ------------------------------------------------------------------ */
-
-.md-nav__title {
-  font-weight: 650;
-}
-
-.md-nav__link--active,
-.md-nav__link:is(:focus, :hover) {
-  color: var(--arche-green-500);
-}
-
-/* ------------------------------------------------------------------ *
- * Admonitions
- * ------------------------------------------------------------------ */
-
-.md-typeset .admonition,
-.md-typeset details {
-  border-radius: 6px;
+.md-typeset .flow__what {
   font-size: 0.78rem;
-  border-width: 1px;
+  color: var(--ink);
+  margin: 0.2rem 0 0;
 }
 
-.md-typeset blockquote {
-  border-left-color: var(--arche-green-500);
-  color: var(--arche-ink-muted);
-}
-
-/* ------------------------------------------------------------------ *
- * Motion: functional only, and off entirely when the reader asks.
- * ------------------------------------------------------------------ */
-
-.md-typeset a {
-  transition: color 120ms ease-out;
-}
+/* ------------------------------------------------------------ motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
   }
-}
-
-/* ==========================================================================
-   Record-pair comparison cards
-   --------------------------------------------------------------------------
-   Two records as a reader would meet them, and the verdict beside them.
-
-   Three verdicts, not two. A component that can only say yes or no cannot
-   express the thing arche is for: `review` is a first-class answer and has to
-   look like an answer rather than a warning.
-
-   Material styles every <details> as an admonition: blue rule, tinted panel,
-   its own icon plus a chevron. Left alone that fights this component and you
-   get two markers on one summary bar, so the chrome is reset explicitly here
-   rather than layered over.
-   ========================================================================== */
-
-/* --- the collapsible shell ------------------------------------------------ */
-
-.md-typeset details.arche-examples {
-  background: var(--arche-surface);
-  border: 1px solid var(--arche-line);
-  border-radius: 10px;
-  box-shadow: none;
-  color: inherit;
-  font-size: inherit;
-  margin: 1.6rem 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-.md-typeset details.arche-examples > summary {
-  background: var(--arche-surface-sunken);
-  border: 0;
-  border-bottom: 1px solid transparent;
-  border-radius: 0;
-  cursor: pointer;
-  font-size: 0.76rem;
-  font-weight: 600;
-  list-style: none;
-  margin: 0;
-  padding: 0.7rem 2.4rem 0.7rem 1rem;
-  position: relative;
-}
-
-/* Material draws its own icon and chevron. Both go, so the single marker
-   below is the only one on the bar. */
-.md-typeset details.arche-examples > summary::before,
-.md-typeset details.arche-examples > summary::-webkit-details-marker {
-  content: none;
-  display: none;
-}
-
-.md-typeset details.arche-examples > summary::after {
-  background: none;
-  color: var(--arche-ink-muted);
-  content: "\203A";
-  font-size: 1.1rem;
-  font-weight: 400;
-  height: auto;
-  -webkit-mask-image: none;
-  mask-image: none;
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  transition: transform 0.15s ease;
-  width: auto;
-}
-
-.md-typeset details.arche-examples[open] > summary::after {
-  transform: translateY(-50%) rotate(-90deg);
-}
-
-.md-typeset details.arche-examples[open] > summary {
-  border-bottom-color: var(--arche-line);
-}
-
-.md-typeset details.arche-examples > summary:focus-visible {
-  outline: 2px solid var(--arche-green-500);
-  outline-offset: -2px;
-}
-
-/* --- the cards ------------------------------------------------------------ */
-
-.arche-pairs {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin: 0.9rem 1rem;
-}
-
-.arche-pairs .pair {
-  align-items: center;
-  background: var(--arche-surface);
-  border: 1px solid var(--arche-line);
-  border-left: 3px solid var(--arche-line);
-  border-radius: 7px;
-  display: flex;
-  gap: 1rem;
-  padding: 0.7rem 0.9rem;
-}
-
-.arche-pairs .pair-records {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 0;
-}
-
-.arche-pairs .pair-records code {
-  background: var(--arche-surface-sunken);
-  border-radius: 4px;
-  display: block;
-  font-size: 0.74rem;
-  line-height: 1.5;
-  overflow-x: auto;
-  padding: 0.4rem 0.55rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* One compact pill, icon and word together. */
-.arche-pairs .pair-verdict {
-  align-items: center;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 0.62rem;
-  font-weight: 700;
-  gap: 0.3rem;
-  letter-spacing: 0.06em;
-  padding: 0.2rem 0.6rem;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.arche-pairs .pair-verdict::before {
-  font-size: 0.8rem;
-  line-height: 1;
-}
-
-.arche-pairs .pair.match { border-left-color: var(--arche-verdict-match); }
-.arche-pairs .pair.match .pair-verdict { color: var(--arche-verdict-match); }
-.arche-pairs .pair.match .pair-verdict::before { content: "\2713"; }
-
-.arche-pairs .pair.review { border-left-color: var(--arche-verdict-review); }
-.arche-pairs .pair.review .pair-verdict { color: var(--arche-verdict-review); }
-.arche-pairs .pair.review .pair-verdict::before { content: "?"; }
-
-.arche-pairs .pair.different { border-left-color: var(--arche-verdict-refused); }
-.arche-pairs .pair.different .pair-verdict { color: var(--arche-verdict-refused); }
-.arche-pairs .pair.different .pair-verdict::before { content: "\2715"; }
-
-.md-typeset .arche-pairs .pair-why {
-  border-left: 2px solid var(--arche-line);
-  color: var(--arche-ink-muted);
-  font-size: 0.73rem;
-  line-height: 1.6;
-  margin: 0.1rem 0 0.7rem 1.1rem;
-  padding-left: 0.8rem;
-}
-
-.md-typeset .arche-pairs .pair-why strong {
-  color: var(--arche-ink);
-  font-weight: 600;
-}
-
-/* --- candidate ranking ---------------------------------------------------- */
-
-.arche-candidates { margin: 0.9rem 1rem; }
-
-.md-typeset .arche-candidates .cand-label {
-  color: var(--arche-ink-muted);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  margin: 0 0 0.3rem;
-  text-transform: uppercase;
-}
-
-.arche-candidates code {
-  background: var(--arche-surface-sunken);
-  border-radius: 4px;
-  display: block;
-  font-size: 0.74rem;
-  overflow-x: auto;
-  padding: 0.4rem 0.55rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.md-typeset .arche-candidates ol { margin: 0.3rem 0 0; }
-.md-typeset .arche-candidates li { margin: 0.3rem 0; }
-
-.arche-candidates li.chosen code {
-  background: var(--arche-green-100);
-  border: 1px solid var(--arche-verdict-match);
-}
-
-.md-typeset .arche-candidates mark {
-  background: #ffe9a8;
-  border-radius: 3px;
-  color: inherit;
-  font-weight: 700;
-  padding: 0 0.15em;
-}
-
-.md-typeset details.arche-examples > p.arche-note {
-  color: var(--arche-ink-muted);
-  font-size: 0.75rem;
-  line-height: 1.65;
-  margin: 0 1rem 0.9rem;
-}
-
-@media screen and (max-width: 44.9375em) {
-  .arche-pairs .pair {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-
-[data-md-color-scheme="slate"] .md-typeset details.arche-examples > summary {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-[data-md-color-scheme="slate"] .arche-candidates li.chosen code {
-  background: rgba(47, 111, 99, 0.22);
-}
-
-[data-md-color-scheme="slate"] .md-typeset .arche-candidates mark {
-  background: #6b5410;
-  color: #f7efd6;
-}/* ==========================================================================
-   Identity-attribute map
-   --------------------------------------------------------------------------
-   An annotated diagram: the thing in the middle, leader lines out to the
-   attributes a record carries, each coloured by the job it does.
-
-   Three roles, because two is the mistake this diagram exists to correct.
-   An attribute is not simply "identifying or not". A third of them switch
-   sides depending on the granularity you declared, and that switch is where
-   product matching goes wrong.
-
-   Inline SVG rather than an image: it scales, it themes with the page, it
-   needs no JavaScript, and the labels are selectable text.
-   ========================================================================== */
-
-.arche-attrmap {
-  margin: 1.6rem 0;
-}
-
-.arche-attrmap svg {
-  display: block;
-  height: auto;
-  max-width: 100%;
-  width: 100%;
-}
-
-/* The subject in the middle. */
-.arche-attrmap .subject {
-  fill: var(--arche-surface-sunken);
-  stroke: var(--arche-ink-muted);
-  stroke-width: 1.5;
-}
-
-.arche-attrmap .subject-label {
-  fill: var(--arche-ink);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.arche-attrmap .subject-sub {
-  fill: var(--arche-ink-muted);
-  font-size: 10.5px;
-}
-
-/* Leader lines and their attribute chips. */
-.arche-attrmap .lead {
-  fill: none;
-  stroke-width: 1.25;
-}
-
-.arche-attrmap .chip {
-  rx: 4;
-  stroke-width: 1.25;
-}
-
-.arche-attrmap .chip-text {
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.arche-attrmap .chip-note {
-  font-size: 9.5px;
-  fill: var(--arche-ink-muted);
-}
-
-/* Role 1: carries identity. Agreeing here is real evidence. */
-.arche-attrmap .identity .lead   { stroke: var(--arche-verdict-match); }
-.arche-attrmap .identity .chip   { fill: var(--arche-green-100); stroke: var(--arche-verdict-match); }
-.arche-attrmap .identity .chip-text { fill: var(--arche-green-700); }
-
-/* Role 2: depends on the granularity you declared. */
-.arche-attrmap .depends .lead    { stroke: var(--arche-verdict-review); stroke-dasharray: 4 3; }
-.arche-attrmap .depends .chip    { fill: none; stroke: var(--arche-verdict-review); }
-.arche-attrmap .depends .chip-text { fill: var(--arche-verdict-review); }
-
-/* Role 3: describes, never identifies. Agreeing here is worth nothing. */
-.arche-attrmap .describes .lead  { stroke: var(--arche-line); }
-.arche-attrmap .describes .chip  { fill: none; stroke: var(--arche-line); }
-.arche-attrmap .describes .chip-text { fill: var(--arche-ink-muted); }
-
-/* Legend under the diagram. */
-.arche-attrmap .legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 1.1rem;
-  font-size: 0.7rem;
-  margin-top: 0.7rem;
-  padding: 0 0.2rem;
-}
-
-.arche-attrmap .legend span {
-  align-items: center;
-  color: var(--arche-ink-muted);
-  display: inline-flex;
-  gap: 0.35rem;
-}
-
-.arche-attrmap .legend i {
-  border-radius: 3px;
-  display: inline-block;
-  height: 0.62rem;
-  width: 0.62rem;
-}
-
-.arche-attrmap .legend .k-identity  { background: var(--arche-green-100); border: 1.5px solid var(--arche-verdict-match); }
-.arche-attrmap .legend .k-depends   { border: 1.5px dashed var(--arche-verdict-review); }
-.arche-attrmap .legend .k-describes { border: 1.5px solid var(--arche-line); }
-
-[data-md-color-scheme="slate"] .arche-attrmap .identity .chip {
-  fill: rgba(47, 111, 99, 0.25);
-}
-
-[data-md-color-scheme="slate"] .arche-attrmap .identity .chip-text {
-  fill: var(--arche-ink);
-}
-
-[data-md-color-scheme="slate"] .arche-attrmap .legend .k-identity {
-  background: rgba(47, 111, 99, 0.25);
-}
-
-/* ==========================================================================
-   Tier stack
-   --------------------------------------------------------------------------
-   Durand's three tiers of identity data, as three bands.
-
-   The first attempt drew this as a subject in the middle with leader lines to
-   labelled chips. Wrong shape twice over: the notes collided with the lines at
-   any realistic label length, and tiers are a *hierarchy*, so spokes said
-   nothing about the ordering that is the entire point. Bands say it for free.
-
-   HTML and CSS rather than SVG, so the text wraps, the layout reflows on a
-   phone, and nothing depends on hand-placed coordinates.
-   ========================================================================== */
-
-.arche-tiers {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 1.6rem 0;
-}
-
-.arche-tiers .tier {
-  border: 1px solid var(--arche-line);
-  border-left: 4px solid var(--arche-line);
-  border-radius: 8px;
-  padding: 0.75rem 0.95rem;
-  background: var(--arche-surface);
-}
-
-.arche-tiers .tier-head {
-  align-items: baseline;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.55rem;
-  margin-bottom: 0.55rem;
-}
-
-.arche-tiers .tier-n {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.arche-tiers .tier-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--arche-ink);
-}
-
-.arche-tiers .tier-life {
-  color: var(--arche-ink-muted);
-  font-size: 0.72rem;
-}
-
-.arche-tiers .tier-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.arche-tiers .tier-items span {
-  border: 1px solid var(--arche-line);
-  border-radius: 5px;
-  font-size: 0.73rem;
-  padding: 0.22rem 0.5rem;
-  background: var(--arche-surface-sunken);
-}
-
-/* Tier 1: yours, and durable. */
-.arche-tiers .t1 { border-left-color: var(--arche-verdict-match); }
-.arche-tiers .t1 .tier-n { color: var(--arche-verdict-match); }
-.arche-tiers .t1 .tier-items span {
-  border-color: var(--arche-verdict-match);
-  background: var(--arche-green-100);
-}
-
-/* Tier 2: lent by a relationship, and it expires with the relationship. */
-.arche-tiers .t2 { border-left-color: var(--arche-verdict-review); }
-.arche-tiers .t2 .tier-n { color: var(--arche-verdict-review); }
-.arche-tiers .t2 .tier-items span { border-color: var(--arche-verdict-review); }
-
-/* Tier 3: assigned to you by someone you never contracted with. */
-.arche-tiers .t3 { border-left-color: var(--arche-verdict-refused); }
-.arche-tiers .t3 .tier-n { color: var(--arche-verdict-refused); }
-.arche-tiers .t3 .tier-items span {
-  border-style: dashed;
-  border-color: var(--arche-verdict-refused);
-}
-
-.arche-tiers .tier-foot {
-  color: var(--arche-ink-muted);
-  font-size: 0.72rem;
-  line-height: 1.55;
-  margin-top: 0.55rem;
-}
-
-[data-md-color-scheme="slate"] .arche-tiers .t1 .tier-items span {
-  background: rgba(47, 111, 99, 0.22);
-}
-
-/* ==========================================================================
-   Split panel
-   --------------------------------------------------------------------------
-   Two things that look symmetrical and are not. Used for failure directions
-   that carry very different consequences, where a table would give them equal
-   visual weight and lose the argument.
-   ========================================================================== */
-
-.arche-split {
-  display: grid;
-  gap: 0.7rem;
-  grid-template-columns: 1fr 1fr;
-  margin: 1.6rem 0;
-}
-
-.arche-split > div {
-  border: 1px solid var(--arche-line);
-  border-top: 3px solid var(--arche-line);
-  border-radius: 8px;
-  padding: 0.85rem 0.95rem;
-}
-
-.arche-split h4 {
-  font-size: 0.68rem !important;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  margin: 0 0 0.15rem !important;
-  text-transform: uppercase;
-}
-
-.md-typeset .arche-split p {
-  font-size: 0.76rem;
-  line-height: 1.6;
-  margin: 0.45rem 0 0;
-}
-
-.arche-split .verdict {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--arche-ink);
-}
-
-.arche-split .loud { border-top-color: var(--arche-verdict-review); }
-.arche-split .loud h4 { color: var(--arche-verdict-review); }
-.arche-split .silent { border-top-color: var(--arche-verdict-refused); }
-.arche-split .silent h4 { color: var(--arche-verdict-refused); }
-
-@media screen and (max-width: 44.9375em) {
-  .arche-split { grid-template-columns: 1fr; }
 }

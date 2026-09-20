@@ -207,7 +207,7 @@ no key      valid=True  trusted=False key_source=self-asserted
 pinned key  valid=True  trusted=True  key_source=pinned
 ```
 
-Read those two rows carefully, because the difference is the whole security model. **`valid` says the signature matches the key that was resolved. `trusted` says that key came from somewhere the verifier controls.** With no key supplied, the verifier falls back to the `did:key` the token names about itself, which any impostor can also do, with their own keypair and a matching `kid`. That check proves the letter has not been altered since it was signed. It proves nothing at all about who signed it. [Attest](../how-to/attest.md#valid-is-not-trusted) has the forged-token demonstration.
+Read those two rows carefully, because the difference is the whole security model. **`valid` says the signature matches the key that was resolved. `trusted` says that key came from somewhere the verifier controls.** With no key supplied, the verifier falls back to the `did:key` the token names about itself, which any impostor can also do, with their own keypair and a matching `kid`. That check proves the letter has not been altered since it was signed. It proves nothing at all about who signed it. [Attest](../how-it-works/attestation.md#valid-is-not-trusted) has the forged-token demonstration.
 
 Altering the letter breaks the envelope outright:
 

@@ -218,4 +218,4 @@ Everything in this post is reproducible. The benchmarks run from `data/scripts/b
 
 If you find a number here that a re-run does not reproduce, that is a bug and we want the issue.
 
-*Related: [Similar is not the same](../blog/similar-is-not-the-same.md)*
+*Related: [Similar is not the same](../writing/similar-is-not-the-same.md)*

@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/attestation.md on 2026-09-20; kept as working material, not built -->
 # Attested answers
 
 When an agent asks arche a question and acts on the answer, the record of that action is usually the agent's own transcript: *arche said these two were the same*. Nothing in a transcript stops the agent, or whoever edits the transcript later, from saying arche said something else. An attestation is the answer's own receipt -- a signature by the arche installation over what was asked, what was answered, and which decision ids the answer carried -- so a downstream auditor can check that *what the agent says arche said* is what arche said.

@@ -1,3 +1,4 @@
+<!-- superseded by guides/compare-two-records.md on 2026-09-20; kept as working material, not built -->
 # Places and products in action
 
 The [places and products notebook](https://github.com/unpatterned-labs/arche/blob/main/examples/notebooks/11_places_and_products_tour.ipynb) is the shortest end-to-end demonstration of arche's record-resolution API. It contains both a small, inspectable example and a run against a public labelled product benchmark.
