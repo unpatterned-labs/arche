@@ -28,6 +28,7 @@ from arche.resolve._matcher import (
     compare_place_names,
     haversine_km,
 )
+
 # Only `sign_edges` comes from the module: `reconcile` is imported above
 # from the facade, and re-importing the engine under the same name here
 # silently shadowed it -- the calls below pass `entity=`, which only the

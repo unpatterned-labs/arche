@@ -22,7 +22,6 @@ and the token-distinctiveness primitives.
 from __future__ import annotations
 
 import contextlib
-
 from typing import TYPE_CHECKING
 
 from arche.resolve._tokenfreq import DEFAULT_TOKEN_RULE, _tokens

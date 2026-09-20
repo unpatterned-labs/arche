@@ -48,6 +48,7 @@ one decision travels on its own to someone who should not see the rest.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
@@ -68,10 +69,8 @@ def load_or_create(path: Path) -> Any:
     save_private_key(kp, path)
     # Best effort: on POSIX this matters, on Windows it is a no-op and the file
     # is protected by the user profile instead.
-    try:
+    with contextlib.suppress(OSError):
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
-    except OSError:
-        pass
     return kp
 
 

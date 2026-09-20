@@ -4,8 +4,8 @@
 
 """Talk to arche in English, and watch a model decide which tools to call.
 
-    uv run python packages/arche-mcp/chat.py
-    uv run python packages/arche-mcp/chat.py "is this safe to send? NIN 12345678901"
+    uv run python examples/mcp_chat.py
+    uv run python examples/mcp_chat.py "is this safe to send? NIN 12345678901"
 
 This is the demo `demo.py` is not. `demo.py` calls the handler functions in a
 fixed order, which shows that the engine works and says nothing about MCP.
@@ -129,7 +129,7 @@ async def run(first_prompt: str | None) -> None:
     # The real server, as a subprocess, over stdio. Same command a client uses.
     params = StdioServerParameters(
         command="uv",
-        args=["run", "--directory", str(REPO), "arche-mcp"],
+        args=["run", "--directory", str(REPO), "arche", "mcp"],
         env={**os.environ, "ARCHE_HASH_KEY": os.environ.get("ARCHE_HASH_KEY", "demo-key")},
     )
 
@@ -137,7 +137,7 @@ async def run(first_prompt: str | None) -> None:
         await session.initialize()
         listed = await session.list_tools()
         tools = [to_openai_tool(t) for t in listed.tools]
-        print(f"connected to arche-mcp: {len(tools)} tools, model {MODEL}")
+        print(f"connected to arche mcp: {len(tools)} tools, model {MODEL}")
         print("type a question, or 'quit'. try:")
         print('  "is this safe to send to a model? Dr Adaeze Okonkwo, NIN 12345678901, Kano"')
         print('  "are General Hospital and General Hospital the same place?"\n')

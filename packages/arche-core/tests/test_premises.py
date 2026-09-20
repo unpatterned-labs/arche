@@ -11,7 +11,6 @@ a similarity over the whole string cannot see a changed digit anyway.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import COMPARATOR_NOTES, ENTITY_PACKS, reconcile
 from arche.resolve._premises import compare_premises, premises_designator
 

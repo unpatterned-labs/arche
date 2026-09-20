@@ -8,7 +8,7 @@
 
     POST /detect      {"text", "jurisdiction"?, "backend"?}          -> spans, no values
     POST /deidentify  {"text", "jurisdiction"?, "backend"?, "method"?, "salt"?}
-                                                                      -> the masked copy + decision_id
+                                                                    -> the masked copy + decision_id
     POST /compare     {"a", "b", "entity"?, "jurisdiction"?, "backend"?} -> the receipt
     POST /documents   multipart files + entity?, jurisdiction?, backend?, store?
                                                   -> one record per document, resolved, masked

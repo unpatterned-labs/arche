@@ -141,7 +141,8 @@ def test_the_model_proposes_straight_into_the_users_fields(schema, fake_model):
     assert ex.record["vessel_id"] == "IMO 9074729"
     assert ex.record["quota_licence"] == "KQ-2026-0417"
     assert ex.fields["vessel_id"].detail == "proposed by the model for vessel_id"
-    assert ex.fields["vessel_id"].span == (TEXT.index("IMO 9074729"), TEXT.index("IMO 9074729") + 11)
+    assert ex.fields["vessel_id"].span == (TEXT.index("IMO 9074729"),
+                                           TEXT.index("IMO 9074729") + 11)
     assert ex.model == "fastino/gliner2.5-base-v1" and ex.backend == "auto"
 
 
@@ -216,7 +217,8 @@ def test_a_lone_field_of_its_kind_may_fall_back_to_the_generic_extractor(no_mode
         "phone": {"role": "identifies", "kind": "phone"},
     }})
     ex = arche.extract("Reach Amina Wanjiru on +254 722 123456.", schema=decl, backend="basic")
-    assert ex.record["full_name"] == "Amina Wanjiru" and ex.fields["full_name"].source == "extractor"
+    assert ex.record["full_name"] == "Amina Wanjiru"
+    assert ex.fields["full_name"].source == "extractor"
 
 
 def test_doc_extract_and_arche_extract_are_one_function(schema, fake_model):

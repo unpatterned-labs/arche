@@ -138,6 +138,6 @@ class TestTheEdges:
         assert Pipeline._STATUTE_FOR_JURISDICTION is STATUTE_FOR_JURISDICTION
 
     def test_it_serialises_for_a_tool_response(self):
-        """arche-mcp returns this over the wire, so it has to be plain data."""
+        """The MCP server returns this over the wire, so it has to be plain data."""
         import json
         json.dumps(statute_for("US").as_dict())

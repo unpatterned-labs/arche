@@ -20,7 +20,6 @@ import json
 import logging
 
 import pytest
-
 from arche.doc._progress import (
     Event,
     JsonlProgress,

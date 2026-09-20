@@ -2,9 +2,9 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""A demo of what an agent gets from arche-mcp, without needing an agent.
+"""A demo of what an agent gets from the arche MCP server, without needing an agent.
 
-    uv run python packages/arche-mcp/demo.py
+    uv run python examples/mcp_demo.py
 
 Calls the same handler functions the MCP tools call, in the order an agent
 would, and prints what comes back. No MCP client, no model, no API key — so it
@@ -23,7 +23,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-from arche_mcp import handlers  # noqa: E402
+from arche.mcp import handlers  # noqa: E402
 
 NG = ("Referral: Dr Adaeze Okonkwo, NIN 12345678901, at Karfi Health Post, "
       "Kano. Tel 08031234567, adaeze@example.ng. RC 1234567.")
@@ -121,7 +121,7 @@ def main() -> None:
 
     print(f"\n{RULE}")
     print("Every number above came from the same functions the MCP tools call.")
-    print("Wire it to a client with the config in packages/arche-mcp/README.md.")
+    print("Wire it to a client with the config in docs-site/docs/guides/mcp-server.md.")
     print(RULE)
 
 

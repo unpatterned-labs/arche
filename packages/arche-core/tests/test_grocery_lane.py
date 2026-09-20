@@ -30,14 +30,13 @@ the failure an adversarial review of the product lane called out by name.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import ENTITY_PACKS, reconcile, describe_pack
+from arche.resolve import ENTITY_PACKS, describe_pack, reconcile
 from arche.resolve._productcode import (
     PRODUCT_CATEGORIES,
     compare_specs,
     extract_product_code_candidates,
     extract_specs,
 )
-
 
 #: Filler so the frequency table is a catalogue rather than two rows.
 #:
@@ -61,7 +60,7 @@ SHELF = [
 
 
 def decide(name_a: str, name_b: str, entity: str = "product_grocery") -> str:
-    from arche.resolve import TokenFrequencyTable, reconcile
+    from arche.resolve import TokenFrequencyTable
 
     table = TokenFrequencyTable.from_corpus([*SHELF, name_a, name_b])
     edges = reconcile([{"id": "a", "name": name_a}], [{"id": "b", "name": name_b}],

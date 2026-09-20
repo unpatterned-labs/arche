@@ -33,7 +33,6 @@ are not lost while the remaining cluster is worked on.
 
 from __future__ import annotations
 
-import pytest
 from arche.resolve import reconcile
 from arche.resolve._productcode import (
     PRODUCT_CATEGORIES,

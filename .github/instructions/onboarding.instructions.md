@@ -8,7 +8,7 @@ applyTo:
 Read this once when you first touch the repo or come back after a long gap. Then route to the more specific instruction files.
 
 ## Mental model
-- **`arche-core`** (in `packages/arche-core/`) is the published Python SDK. It is the canonical product of this repo. Everything else either consumes it (`api/`, `web/`, `demo/`, `arche-mcp/`) or feeds it (`datasets/`).
+- **`arche-core`** (in `packages/arche-core/`) is the published Python SDK. It is the canonical product of this repo. Everything else either consumes it (`api/`, `web/`, `demo/`) or feeds it (`datasets/`).
 - **The five-step identity lifecycle**: `Detect → Resolve → Link → Verify → Govern`. Each step is its own module: `arche.detect`, `arche.resolve`, `arche.link` (Stage 2), `arche.sign` + `arche.credentials`, `arche.policy` + `arche.graph.audit`.
 - **`Pipeline` is the v0.2 primitive.** It composes detect + statute policy + audit for one jurisdiction. The v0.1 `resolve()` god-function still works through a lazy deprecation shim but is not the recommended path.
 

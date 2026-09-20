@@ -43,7 +43,9 @@ from __future__ import annotations
 
 import logging
 import re
+import sys as _sys
 import warnings
+from types import ModuleType as _ModuleType
 
 _log = logging.getLogger("arche")
 
@@ -157,8 +159,8 @@ def extract(
         from .doc._extract import extract as _to_schema
 
         decl = _schema(schema)
-        return _to_schema(decl, text=text, entity_backend=backend,
-                          jurisdiction=decl.jurisdiction if decl.jurisdiction != "default" else "NG")
+        jurisdiction = decl.jurisdiction if decl.jurisdiction != "default" else "NG"
+        return _to_schema(decl, text=text, entity_backend=backend, jurisdiction=jurisdiction)
     if backend in ("auto", "auto+llm"):
         try:
             entities = _extract_gliner2(text, entity_types)
@@ -421,7 +423,8 @@ def _extract_regex(text: str, entity_types: list[str] | None = None) -> list[Ent
                             start=hit["start"],
                             end=hit["end"],
                             source="african",
-                            metadata={"country": hit["country"], "international": hit["international"]},
+                            metadata={"country": hit["country"],
+                                      "international": hit["international"]},
                         )
                     )
         except ImportError:
@@ -603,10 +606,7 @@ def _extract_regex(text: str, entity_types: list[str] | None = None) -> list[Ent
 
 def _overlaps(entities: list[Entity], start: int, end: int) -> bool:
     """Check whether a span overlaps any existing entity."""
-    for e in entities:
-        if start < e.end and end > e.start:
-            return True
-    return False
+    return any(start < e.end and end > e.start for e in entities)
 
 
 def _extract_llm(text: str, llm_config: object | None) -> list[Entity]:
@@ -704,8 +704,6 @@ def _merge_entities(primary: list[Entity], secondary: list[Entity]) -> list[Enti
 # The fix is the one `arche.detect` already uses and documents (decision
 # 2026-08-07): make the module itself callable, so it stops mattering which of
 # the two the name resolved to first. Both spellings work, in any import order.
-import sys as _sys
-from types import ModuleType as _ModuleType
 
 
 class _CallableExtractModule(_ModuleType):

@@ -15,7 +15,6 @@
 """C2-T1: the egress guard is fail-closed and never leaks raw PII."""
 
 import pytest
-
 from arche.guard import EgressGuard, GuardDenied, GuardedProjection
 from arche.policy import load_statute
 from arche.workflow._primitive import Detection, Pipeline

@@ -72,8 +72,8 @@ vertical is the evidence base.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from arche.resolve._matcher import _normalise_id, _normalise_text
 from arche.resolve._tokenfreq import TokenFrequencyTable

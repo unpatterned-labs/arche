@@ -120,12 +120,22 @@ pip install "arche-core[doc]"            # PDF, DOCX, PPTX, XLSX, HTML
 pip install "arche-core[detect2]"        # GLiNER2-PII and GLiNER 2.5 as proposers
 pip install "arche-core[presidio]"       # Microsoft Presidio integration
 pip install "arche-core[resolve]"        # Splink + DuckDB at scale
+pip install "arche-core[service,mcp]"    # `arche serve` over HTTP, `arche mcp` for an agent
 ```
+
+Or the container, with every parser and both models inside it and nothing fetched at runtime:
+
+```bash
+docker run --rm -p 8766:8766 ghcr.io/unpatterned-labs/arche-core        # arche serve
+docker run --rm -i ghcr.io/unpatterned-labs/arche-core mcp              # the MCP server, stdio
+```
+
+`deploy/` has a compose file that puts an auth proxy in front of both.
 
 Runs offline by default. Nothing leaves the machine unless you configure a backend that does, and an `EgressGuard` has to be cleared before it can.
 
 > [!WARNING]
-> `arche-core` is pre-beta. Suitable for research, prototyping, evaluation, benchmarking and contribution. APIs may change between alpha releases. Do not use it against real personal data until you have completed your own legal, privacy and security review.
+> `arche-core` is pre-1.0. Suitable for research, prototyping, evaluation, benchmarking and contribution. APIs may change between minor releases. Do not use it against real personal data until you have completed your own legal, privacy and security review.
 
 ## If your problem is inference, use Splink
 

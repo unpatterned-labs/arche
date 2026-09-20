@@ -15,7 +15,7 @@ A thing worth understanding before any of them: **an MCP server has no interface
 ## 1. The script
 
 ```sh
-uv run python packages/arche-mcp/demo.py
+uv run python examples/mcp_demo.py
 ```
 
 No client, no model, no key, about fifteen seconds. It calls the same functions the tools call, in the order an agent would.
@@ -50,7 +50,7 @@ The official MCP client, as a web UI or a one-shot CLI. Nothing to install perma
   "mcpServers": {
     "arche": {
       "command": "uv",
-      "args": ["run", "--directory", "C:/Users/Dee/arche/arche", "arche-mcp"],
+      "args": ["run", "--directory", "C:/Users/Dee/arche/arche", "arche", "mcp"],
       "env": { "ARCHE_HASH_KEY": "change-me-to-a-long-random-string" }
     }
   }
@@ -76,13 +76,13 @@ npx @modelcontextprotocol/inspector --cli --config mcp-demo.json --server arche 
   --tool-arg "text=NIN 12345678901, RC 1234567, Karfi Health Post, Kano"
 ```
 
-**Use the config-file form.** Passing the command inline (`--cli uv run arche-mcp --method tools/list`) does not work: everything after the command is forwarded to the server, so `--method` reaches `arche-mcp` instead of the Inspector and the connection closes.
+**Use the config-file form.** Passing the command inline (`--cli uv run arche mcp --method tools/list`) does not work: everything after the command is forwarded to the server, so `--method` reaches `arche mcp` instead of the Inspector and the connection closes.
 
 ## 3. Chat, with a model choosing
 
 ```sh
-uv run python packages/arche-mcp/chat.py
-uv run python packages/arche-mcp/chat.py "is this safe to send? NIN 12345678901, Kano"
+uv run python examples/mcp_chat.py
+uv run python examples/mcp_chat.py "is this safe to send? NIN 12345678901, Kano"
 ```
 
 This starts the real server as a subprocess, speaks the protocol to it, hands the tool schemas to a model, and lets the model decide. Nothing in the script picks the order.
@@ -123,14 +123,22 @@ Same config, dropped into Claude Desktop's `claude_desktop_config.json`, then re
   "mcpServers": {
     "arche": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/arche", "arche-mcp"],
+      "args": ["run", "--directory", "/path/to/arche", "arche", "mcp"],
       "env": { "ARCHE_HASH_KEY": "a-long-random-string-you-keep" }
     }
   }
 }
 ```
 
-Once `arche-mcp` is published this becomes `"command": "uvx", "args": ["arche-mcp"]` and needs no checkout at all.
+Without a checkout, `"command": "uvx", "args": ["--from", "arche-core[mcp]", "arche", "mcp"]`; or the container, `"command": "docker", "args": ["run", "-i", "--rm", "-e", "ARCHE_HASH_KEY", "ghcr.io/unpatterned-labs/arche-core", "mcp"]`.
+
+## 5. Over the network
+
+```sh
+arche mcp --transport streamable-http --host 0.0.0.0 --port 8765
+```
+
+Same tools at `http://HOST:8765/mcp` for a client that is not on this machine. The server has no authentication of its own -- a proxy in front of it does, and `deploy/compose.yaml` is that arrangement with the HTTP service beside it.
 
 ## Configuration
 
@@ -154,6 +162,6 @@ The jurisdiction and statute settings are a **ceiling, not a default**: a per-ca
 
 **`uv` prints a `VIRTUAL_ENV` mismatch warning.** Harmless. It goes to stderr, so it does not corrupt the JSON-RPC stream on stdout. Worth knowing because if it went to stdout every client would disconnect.
 
-**`detect_entities` returns nothing.** Check `capabilities()["extras"]["detect"]`. Without a NER backend it finds pattern-shaped identifiers and no personal names at all, and returns an empty list rather than erroring. Install `arche-mcp[detect]`.
+**`detect_entities` returns nothing.** Check `capabilities()["extras"]["detect"]`. Without a NER backend it finds pattern-shaped identifiers and no personal names at all, and returns an empty list rather than erroring. Install `arche-core[detect]`.
 
 **Empty results generally.** Read the `coverage` block before believing them. A pipeline with no detector for the locale returns a clean-looking result that means nothing was looked for.

@@ -48,7 +48,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
 
@@ -276,7 +276,7 @@ def _parse_pdf_date(raw: str) -> tuple[datetime | None, int | None]:
         offset_minutes: int | None = None
         tzinfo = None
         if zulu:
-            offset_minutes, tzinfo = 0, timezone.utc
+            offset_minutes, tzinfo = 0, UTC
         elif sign in ("+", "-"):
             offset_minutes = int(off_h or 0) * 60 + int(off_m or 0)
             if sign == "-":

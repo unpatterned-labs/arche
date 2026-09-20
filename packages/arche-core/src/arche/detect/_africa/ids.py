@@ -35,7 +35,6 @@ import re
 # this module finishes loading).
 from arche.detect._base import NationalID, _always_valid, _luhn_check  # noqa: F401
 
-
 # ---------------------------------------------------------------------------
 # Non-launch country validators
 # ---------------------------------------------------------------------------
@@ -100,11 +99,10 @@ def _validate_rwanda_nid(text: str) -> tuple[bool, dict]:
 # the per-country modules can safely `from arche.detect._africa.ids import
 # NationalID, _luhn_check, _always_valid` at their module load time.
 
-from arche.detect.ng.ids import NG_PATTERNS, _validate_bvn, _validate_nin  # noqa: E402,F401
-from arche.detect.ke.ids import KE_PATTERNS  # noqa: E402
-from arche.detect.za.ids import ZA_PATTERNS, _validate_sa_id  # noqa: E402,F401
 from arche.detect.gh.ids import GH_PATTERNS, _validate_ghana_card  # noqa: E402,F401
-
+from arche.detect.ke.ids import KE_PATTERNS  # noqa: E402
+from arche.detect.ng.ids import NG_PATTERNS, _validate_bvn, _validate_nin  # noqa: E402,F401
+from arche.detect.za.ids import ZA_PATTERNS, _validate_sa_id  # noqa: E402,F401
 
 # ---------------------------------------------------------------------------
 # Non-launch African country patterns (11 countries)

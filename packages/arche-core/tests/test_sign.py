@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from arche.sign import (
     Keypair,
     decode_did_key,
@@ -20,7 +19,6 @@ from arche.sign import (
     sign,
     verify,
 )
-
 
 # ── Keypair generation + did:key encoding ───────────────────────────────────
 
@@ -97,7 +95,7 @@ def test_export_private_pem_with_password():
 def test_load_private_pem_wrong_password_fails():
     kp = generate_keypair()
     pem = export_private_pem(kp, password=b"hunter2")
-    with pytest.raises(Exception):  # cryptography raises a specific error
+    with pytest.raises(ValueError):  # cryptography: bad decrypt
         load_private_key_pem(pem, password=b"wrong")
 
 

@@ -41,7 +41,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-
 _VALID_PROVIDERS = {"openai", "anthropic", "ollama", "litellm"}
 
 

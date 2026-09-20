@@ -20,7 +20,6 @@ from __future__ import annotations
 import datetime as dt
 
 import pytest
-
 from arche.doc._residence import ResidenceCheck, assess_residence
 
 TODAY = dt.date.today()
@@ -200,7 +199,7 @@ def test_a_referenced_date_is_not_this_documents_date():
     # A contract-termination letter said "dated August 1, 2025" -- the date of
     # the contract BEING terminated. Treating `dated` as an issue-date cue read
     # the letter as thirteen months older than it was.
-    letter = f"""
+    letter = """
 9 June 2026
 Mr. Dennis Irorere
 3 Marina Place, Birmingham B16 8WS

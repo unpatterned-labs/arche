@@ -15,7 +15,6 @@
 """D2: an 11-digit Nigerian mobile must not be mis-detected as a NIN."""
 
 import pytest
-
 from arche.detect.ng.ids import detect_nigerian_ids
 
 

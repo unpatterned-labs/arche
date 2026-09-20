@@ -113,7 +113,6 @@ def test_gliner2_is_not_a_core_dependency():
 
 
 def test_a_missing_install_says_which_extra_and_why():
-    pytest.importorskip
     try:
         import gliner2  # noqa: F401
     except ImportError:

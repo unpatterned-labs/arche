@@ -1,0 +1,39 @@
+# Auth in front of arche. The service and the MCP server have none of their
+# own, on purpose: they run on the machine that holds the data, and who may
+# reach them is the deployment's decision, made once, here.
+#
+# Day one: one shared user. The hash is `change-me`; regenerate with
+#   docker run --rm caddy:2 caddy hash-password --plaintext 'your password'
+# More than one person: replace basic_auth with forward_auth to your identity
+# provider (Authelia, Authentik, any OIDC front Caddy supports) and keep the
+# header_up line -- the service reads X-Arche-Caller as the caller on every
+# attested answer, whoever sets it.
+
+:8080 {
+	basic_auth {
+		arche $2a$14$RDZP.W/VDlaiBSO9lo8e4uR5RO8dgSvXXapMY9KK2CrMpbB1YHCtW
+	}
+
+	# The MCP server, streamable HTTP. Answers arrive as an event stream, so
+	# nothing may be buffered.
+	handle /mcp* {
+		reverse_proxy mcp:8765 {
+			flush_interval -1
+		}
+	}
+
+	# Everything else is the HTTP service. Documents are uploads (a scanned
+	# PDF is tens of megabytes) and a twenty-page scan through OCR and two
+	# models takes a while.
+	handle {
+		request_body {
+			max_size 100MB
+		}
+		reverse_proxy arche:8766 {
+			header_up X-Arche-Caller {http.auth.user.id}
+			transport http {
+				read_timeout 600s
+			}
+		}
+	}
+}

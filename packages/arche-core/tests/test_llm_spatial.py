@@ -155,8 +155,7 @@ class TestProviderCallSignature:
     """
 
     def test_provider_receives_config_first(self, monkeypatch):
-        from arche.llm import LLMConfig
-        from arche.llm import providers
+        from arche.llm import LLMConfig, providers
 
         seen: dict = {}
 
@@ -174,8 +173,7 @@ class TestProviderCallSignature:
         assert all("role" in m and "content" in m for m in seen["messages"])
 
     def test_config_path_pins_the_model_name(self, monkeypatch):
-        from arche.llm import LLMConfig
-        from arche.llm import providers
+        from arche.llm import LLMConfig, providers
 
         monkeypatch.setattr(providers, "complete", lambda config, messages: "[]")
         cfg = LLMConfig(model="test-model", api_key="k")

@@ -238,7 +238,7 @@ def detect_pii(text: str, *, jurisdiction: str | None = None,
 def detect_entities(text: str, *, entity_types: list[str] | None = None) -> dict[str, Any]:
     """Named entities (NER) as typed offset spans. No raw text echoed.
 
-    Needs a NER backend (``arche-mcp[detect]``). Without one this finds
+    Needs a NER backend (``arche-core[detect]``). Without one this finds
     identifiers by pattern and no personal names at all, so check
     ``capabilities()["extras"]["detect"]`` before trusting an empty result.
     """

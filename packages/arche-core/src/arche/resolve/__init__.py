@@ -687,8 +687,12 @@ COMPARATOR_NOTES = {
     "id": "an exact identifier. Strong when it agrees",
     "code": "a product or model code",
     "spec": "a specification drawn out of the name, such as a capacity or size",
-    "premises": "whether two addresses name the same door — the unit, plot or street number, compared on its own. Two different units on one estate share nearly all their address text, so this is the only part that separates them",
-    "tokenset": "how much of the shorter text is also in the longer one, as a bag of words. Order- and length-tolerant, for long titles and descriptions",
+    "premises": "whether two addresses name the same door — the unit, plot or street "
+                "number, compared on its own. Two different units on one estate share "
+                "nearly all their address text, so this is the only part that separates "
+                "them",
+    "tokenset": "how much of the shorter text is also in the longer one, as a bag of "
+                "words. Order- and length-tolerant, for long titles and descriptions",
     "rival": "whether each side names something distinctive the other does "
              "not. Two listings that each carry their own rare identifier "
              "are identifying different things. It can only hold a pair "
@@ -743,8 +747,11 @@ ENTITY_PACK_PURPOSE: dict[str, str] = {
     "artist": "performing artists and recording names, including aliases and "
               "stage names",
     "product_electronics": "electronic products, by model code and specification",
-    "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes — size, colour, material, shape and length. Use this rather than `product_electronics` for anything without a model code",
-    "product_grocery": "supermarket groceries, by brand and net contents — a 200g pack and a 500g pack of one item are two products",
+    "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes — size, "
+                          "colour, material, shape and length. Use this rather than "
+                          "`product_electronics` for anything without a model code",
+    "product_grocery": "supermarket groceries, by brand and net contents — a 200g pack and "
+                       "a 500g pack of one item are two products",
 }
 
 

@@ -120,7 +120,8 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_BVN": {
         "country": "NG",
         "id_type": "BVN",
-        "description": "Nigeria Bank Verification Number — 11 digits starting with 22, NIBSS-issued",
+        "description": ("Nigeria Bank Verification Number — 11 digits starting with 22, "
+                        "NIBSS-issued"),
         "pattern": re.compile(
             r"(?<![0-9])(22\d{9})(?![0-9])"
         ),
@@ -173,7 +174,8 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_DRIVERS": {
         "country": "NG",
         "id_type": "DRIVERS_LICENCE",
-        "description": "Nigeria Driver's Licence — 3-letter state code + dash + 10-12 digits (FRSC)",
+        "description": ("Nigeria Driver's Licence — 3-letter state code + dash + 10-12 digits "
+                        "(FRSC)"),
         # Mandatory dash separator avoids false positives from any
         # 3-letter context word ("BVN 22100987654", "NIN 12345678901", etc.).
         "pattern": re.compile(

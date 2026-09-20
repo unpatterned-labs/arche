@@ -224,7 +224,6 @@ def test_merge_propagates_min_floor():
 
 def test_reconcile_rejects_unknown_tf_string():
     import pytest
-
     from arche.resolve import reconcile
 
     with pytest.raises(ValueError, match="unknown frequency-table domain"):

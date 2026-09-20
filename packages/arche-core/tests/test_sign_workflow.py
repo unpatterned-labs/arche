@@ -6,10 +6,9 @@ high-level sign-share-extract surface."""
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
-
 from arche import Pipeline
 from arche.sign import (
     ArcheSignedDocument,
@@ -19,7 +18,6 @@ from arche.sign import (
     document_hash,
     generate_keypair,
 )
-
 
 # ── ArcheSignedDocument ─────────────────────────────────────────────────────
 
@@ -80,7 +78,7 @@ def test_envelope_from_dict_round_trip():
 
 
 def test_envelope_is_expired_when_in_past():
-    past = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    past = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
     e = ArcheSignedDocument(
         doc_hash="x", redacted_text="x", expires_at=past,
     )
@@ -88,7 +86,7 @@ def test_envelope_is_expired_when_in_past():
 
 
 def test_envelope_is_not_expired_when_in_future():
-    future = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    future = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
     e = ArcheSignedDocument(
         doc_hash="x", redacted_text="x", expires_at=future,
     )
@@ -184,7 +182,8 @@ def test_verify_extract_tampered_payload_strict_raises():
 
     # Tamper: replace payload segment with something else
     header, _, signature = jws.split(".")
-    import base64, json
+    import base64
+    import json
     evil_payload = base64.urlsafe_b64encode(
         json.dumps({"doc_hash": "evil"}, sort_keys=True, separators=(",", ":")).encode()
     ).rstrip(b"=").decode("ascii")
@@ -200,7 +199,8 @@ def test_verify_extract_tampered_payload_non_strict_returns_invalid():
     jws = SignWorkflow(jurisdiction="NG").sign("NIN 12345678901.", kp)
 
     header, _, signature = jws.split(".")
-    import base64, json
+    import base64
+    import json
     evil_payload = base64.urlsafe_b64encode(
         json.dumps({"doc_hash": "evil"}, sort_keys=True, separators=(",", ":")).encode()
     ).rstrip(b"=").decode("ascii")
@@ -237,7 +237,7 @@ def test_verify_extract_jurisdiction_mismatch_rejected():
 def test_verify_extract_expiry_rejected():
     """A signed envelope past its expires_at is rejected."""
     kp = generate_keypair()
-    past = datetime.now(timezone.utc) - timedelta(seconds=1)
+    past = datetime.now(UTC) - timedelta(seconds=1)
     jws = SignWorkflow(jurisdiction="NG").sign(
         "NIN 12345678901.", kp, expires_at=past
     )
@@ -251,7 +251,7 @@ def test_verify_extract_expiry_rejected():
 def test_verify_extract_can_skip_expiry_check():
     """check_expiry=False lets us inspect expired envelopes."""
     kp = generate_keypair()
-    past = datetime.now(timezone.utc) - timedelta(seconds=1)
+    past = datetime.now(UTC) - timedelta(seconds=1)
     jws = SignWorkflow(jurisdiction="NG").sign(
         "NIN 12345678901.", kp, expires_at=past
     )

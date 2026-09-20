@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from arche.addr import infer_jurisdiction, parse_address
 
-
 # ── UK postcode detection (full + partial) ──────────────────────────────────
 
 

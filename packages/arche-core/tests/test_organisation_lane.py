@@ -23,7 +23,6 @@ and none should be quoted from this file.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._matcher import compare_categories, load_type_vocab, normalize_type_token
 from arche.resolve.reconcile import _DISTINCTIVE_KINDS, _FIELD_COMPARATORS

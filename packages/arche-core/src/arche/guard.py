@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from arche.workflow._primitive import Detection, Pipeline
 
 
-class GuardDenied(Exception):
+class GuardDenied(Exception):  # noqa: N818 -- public API; the name is the contract
     """Raised when the egress guard refuses to emit a projection.
 
     Carries a human-readable ``reason`` and, where a statute drove the refusal,

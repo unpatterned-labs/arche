@@ -107,9 +107,11 @@ def test_propose_pii_applies_the_shape_checks(monkeypatch):
     class Fake:
         def extract_entities(self, text, labels, **kw):
             return {"entities": {
-                "passport_number": [{"text": "9876543210", "confidence": 0.9, "start": 0, "end": 10}],
-                "phone_number": [{"text": "55062048", "confidence": 0.9, "start": 11, "end": 19},
-                                 {"text": "0803 555 7890", "confidence": 0.9, "start": 20, "end": 33}],
+                "passport_number": [
+                    {"text": "9876543210", "confidence": 0.9, "start": 0, "end": 10}],
+                "phone_number": [
+                    {"text": "55062048", "confidence": 0.9, "start": 11, "end": 19},
+                    {"text": "0803 555 7890", "confidence": 0.9, "start": 20, "end": 33}],
             }}
     monkeypatch.setattr("arche._models.get_gliner2", lambda *a, **k: Fake())
     detections, _ = propose_pii("9876543210 55062048 0803 555 7890", backend="gliner2-pii")

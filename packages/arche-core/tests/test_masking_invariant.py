@@ -68,10 +68,10 @@ def test_statute_drop_categories_never_map_to_disclosable_attributes():
 def test_safe_descriptor_list_is_reviewed_canary():
     # The allowlist is the load-bearing PII default; additions must be
     # deliberate. This canary fails if someone casually widens it.
-    assert SAFE_DESCRIPTOR_NAMES <= {
+    assert {
         "country", "source_system", "entity_type", "category",
         "jurisdiction", "type", "id_type",
-    }
+    } >= SAFE_DESCRIPTOR_NAMES
 
 
 def test_every_mapped_category_attribute_is_pii_or_location():

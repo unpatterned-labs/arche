@@ -128,6 +128,15 @@ presidio = ["presidio-analyzer>=2.2", "presidio-anonymizer>=2.2"]
 # nothing: it is the standard library's http.server, in the base wheel.
 # python-multipart is what lets `/documents` accept file uploads.
 service = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+# --- `arche mcp`: the same verbs as tools an agent runtime can call ----------
+# The server lived in its own package (`arche-mcp`) until 0.9.0. It was one
+# module and a pin, and a second package meant a second release, a second
+# changelog and a closed version range that had to be moved by hand every
+# arche-core minor -- ceremony for what is an optional import. It is
+# `arche.mcp` now, behind this extra, the way `serve` is behind `service`.
+# >=2.0 because the SDK removed `mcp.server.fastmcp` in 2.0 and the server
+# uses `mcp.server.MCPServer`.
+mcp = ["mcp>=2.0,<3"]
 # Splink + DuckDB for billion-row entity resolution (~200MB). Stage 2+.
 resolve = ["splink>=4.0", "duckdb>=1.0"]
 # The local decision ledger behind `arche.attach("duckdb:///...")`.
@@ -161,7 +170,7 @@ pii = ["arche-core[presidio]"]   # v0.1 name; use [presidio]
 splink = ["arche-core[resolve]"] # v0.1 name; use [resolve]
 
 # --- Convenience -----------------------------------------------------------
-all = ["arche-core[pdf,docx,detect,presidio,resolve,llm]"]
+all = ["arche-core[pdf,docx,detect,presidio,resolve,llm,mcp]"]
 dev = ["pytest>=8.0", "pytest-asyncio", "ruff>=0.4", "mypy>=1.10"]
 
 [project.urls]
@@ -179,6 +188,10 @@ Issues = "https://github.com/unpatterned-labs/arche/issues"
 # (``arche resolve/extract/review``) stays retired.
 [project.scripts]
 arche = "arche.cli:main"
+# `arche-mcp` stays as a name: agent configs written against the old package
+# say `"command": "arche-mcp"`, and `uvx --from "arche-core[mcp]" arche-mcp`
+# still works. `arche mcp` is the documented spelling.
+arche-mcp = "arche.mcp.server:main"
 
 [tool.hatch.version]
 path = "src/arche/_version.py"

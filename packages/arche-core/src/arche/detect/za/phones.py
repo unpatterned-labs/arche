@@ -8,8 +8,8 @@ from __future__ import annotations
 from typing import Any
 
 from arche.detect._africa.phones import (
-    PHONE_PATTERNS,
     _PHONE_RE,
+    PHONE_PATTERNS,
     normalize_e164,
     parse_african_phone,
     validate_phone,

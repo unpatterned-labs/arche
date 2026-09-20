@@ -1,0 +1,73 @@
+# arche on one machine: the HTTP service, the MCP server and an auth proxy.
+#
+#   docker compose -f deploy/compose.yaml up                 # the published image
+#   docker compose -f deploy/compose.yaml up --build         # built from this checkout
+#   curl -u arche:change-me http://localhost:8080/livez
+#
+# Only `proxy` is published on a host port. `arche` (HTTP) and `mcp`
+# (streamable HTTP) sit behind it and are reached at http://localhost:8080/
+# and http://localhost:8080/mcp. The proxy authenticates and sets
+# X-Arche-Caller, which the service records as the caller on every attested
+# answer. The basic-auth block works on day one; the Caddyfile says how to
+# replace it with your identity provider.
+
+x-arche: &arche
+  image: ghcr.io/unpatterned-labs/arche-core:${ARCHE_VERSION:-latest}
+  build:
+    context: ..
+    dockerfile: packages/arche-core/Dockerfile
+  environment: &arche-env
+    ARCHE_WARM: "1"
+    # Stable tokens across calls: `guarded_scan` refuses without a key.
+    # Set it once and keep it; changing it changes every token.
+    ARCHE_HASH_KEY: ${ARCHE_HASH_KEY:?set ARCHE_HASH_KEY to a long random string}
+    # Optional. Made with
+    #   docker compose -f deploy/compose.yaml run --rm arche attest keygen /data/signing.pem
+    # When set, every answer carries a signed attestation.
+    # ARCHE_SIGNING_KEY: /data/signing.pem
+  volumes:
+    - arche-data:/data
+  restart: unless-stopped
+
+services:
+  arche:
+    <<: *arche
+    environment:
+      <<: *arche-env
+      ARCHE_LEDGER: /data/ledger.duckdb
+    expose:
+      - "8766"
+
+  mcp:
+    <<: *arche
+    command: ["mcp", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8765"]
+    environment:
+      <<: *arche-env
+      # Its own file: DuckDB allows one writing process per database, and
+      # the service already holds ledger.duckdb. Two ledgers, one volume.
+      ARCHE_LEDGER: /data/mcp-ledger.duckdb
+    expose:
+      - "8765"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import socket; socket.create_connection(('127.0.0.1', 8765), 3).close()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+
+  proxy:
+    image: caddy:2
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - arche
+      - mcp
+    restart: unless-stopped
+
+volumes:
+  arche-data:
+  caddy-data:

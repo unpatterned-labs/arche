@@ -42,7 +42,8 @@ _API_BASE = "https://restcountries.com/v3.1"
 
 # Vendored snapshot — 250 countries, fetched 2026-05-20. See
 # ``arche/_data/README.md`` for source, refresh policy, and license.
-_SNAPSHOT_PATH = Path(__file__).resolve().parent.parent / "_data" / "restcountries-v3.1-snapshot.json"
+_SNAPSHOT_PATH = (Path(__file__).resolve().parent.parent / "_data"
+                  / "restcountries-v3.1-snapshot.json")
 
 # Fields requested at fetch time (kept under the 10-field API cap).
 _FIELDS = "name,cca2,cca3,idd,currencies,languages,capital,region,subregion,borders"
@@ -66,7 +67,8 @@ def _load_snapshot() -> None:
     _snapshot_loaded = True
 
     if not _SNAPSHOT_PATH.exists():
-        _log.warning("restcountries snapshot not found at %s; will fall back to live API", _SNAPSHOT_PATH)
+        _log.warning("restcountries snapshot not found at %s; will fall back to live API",
+                     _SNAPSHOT_PATH)
         return
 
     try:

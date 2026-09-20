@@ -1,12 +1,15 @@
 # Let an agent call arche
 
-`arche-mcp` is an MCP server. It gives an agent ten tools for two jobs: **resolving entities** — are these two records the same thing, and what is the evidence — and **protecting data** — what may leave this boundary, and on whose authority.
+`arche mcp` is an MCP server. It gives an agent ten tools for two jobs: **resolving entities** — are these two records the same thing, and what is the evidence — and **protecting data** — what may leave this boundary, and on whose authority.
 
 ```sh
-uvx arche-mcp
+pip install "arche-core[mcp]"
+arche mcp
 ```
 
-That is the whole install. It speaks stdio, so point any MCP client at that command.
+That is the whole install. It speaks stdio by default, so point any MCP client at that command; `uvx --from "arche-core[mcp]" arche mcp` runs it with no install at all. For a client on another machine, `arche mcp --transport streamable-http --host 0.0.0.0 --port 8765` serves the same tools at `/mcp` -- with no authentication of its own, so put it behind a proxy that has one, as [`deploy/`](https://github.com/unpatterned-labs/arche/tree/main/deploy) shows. The container image serves both: `docker run -i ghcr.io/unpatterned-labs/arche-core mcp`.
+
+Until 0.9.0 this was a separate package, `arche-mcp`. It is part of `arche-core` now; the `arche-mcp` command still exists for configs written against the old name.
 
 ## The shape of the thing
 
@@ -210,4 +213,4 @@ With `ARCHE_SIGNING_KEY` set to a PEM from `arche attest keygen`, every tool's a
 
 ## Not yet
 
-HTTP and SSE transport, and authentication. It speaks stdio and expects to run on the machine holding the data.
+Authentication. Over stdio the client is the process that started it; over streamable HTTP anyone who can reach the port can call every tool, which is why the transport binds `127.0.0.1` unless told otherwise and why the compose file in `deploy/` puts a proxy in front. The proxy's `X-Arche-Caller` header is not read by the MCP transport yet, so attested MCP answers over HTTP carry `caller: null`, as they do over stdio.

@@ -15,7 +15,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from arche.extract import Entity, _merge_entities, extract
 from arche.llm import LLMConfig
 from arche.llm.extraction import (
@@ -25,7 +24,6 @@ from arche.llm.extraction import (
     _repair_offsets,
     extract_with_llm,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LLMConfig validation
@@ -208,7 +206,8 @@ class TestParseResponse:
         assert entities[1].entity_type == "NATIONAL_ID"
 
     def test_json_in_markdown_code_block(self):
-        response = '```json\n{"entities": [{"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 16}]}\n```'
+        response = ('```json\n{"entities": [{"text": "Fatima Abdullahi", "entity_type": "PERSON", '
+                    '"confidence": 0.9, "start": 0, "end": 16}]}\n```')
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
         assert len(entities) == 1
         assert entities[0].entity_type == "PERSON"
@@ -282,8 +281,10 @@ class TestParseResponse:
     def test_confidence_clamped(self):
         response = json.dumps({
             "entities": [
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 1.5, "start": 0, "end": 16},
-                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": -0.5, "start": 22, "end": 33},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 1.5,
+                 "start": 0, "end": 16},
+                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": -0.5,
+                 "start": 22, "end": 33},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -302,7 +303,8 @@ class TestParseResponse:
     def test_lowercase_entity_type_normalised(self):
         response = json.dumps({
             "entities": [
-                {"text": "Fatima Abdullahi", "entity_type": "person", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "Fatima Abdullahi", "entity_type": "person", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -312,7 +314,8 @@ class TestParseResponse:
         """Some LLMs use 'label' instead of 'entity_type'."""
         response = json.dumps({
             "entities": [
-                {"text": "Fatima Abdullahi", "label": "PERSON", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "Fatima Abdullahi", "label": "PERSON", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -338,7 +341,8 @@ class TestParseResponse:
     def test_source_is_always_llm(self):
         response = json.dumps({
             "entities": [
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -347,8 +351,10 @@ class TestParseResponse:
     def test_sorted_by_position(self):
         response = json.dumps({
             "entities": [
-                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": 0.9, "start": 22, "end": 33},
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": 0.9,
+                 "start": 22, "end": 33},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -358,7 +364,8 @@ class TestParseResponse:
         response = json.dumps({
             "entities": [
                 "this is not a dict",
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -368,7 +375,8 @@ class TestParseResponse:
         response = json.dumps({
             "entities": [
                 {"text": "", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 0},
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9, "start": 0, "end": 16},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.9,
+                 "start": 0, "end": 16},
             ]
         })
         entities = _parse_llm_response(response, self.SAMPLE_TEXT)
@@ -493,9 +501,12 @@ class TestExtractWithLLM:
     def test_basic_extraction(self, monkeypatch):
         mock = self._mock_complete({
             "entities": [
-                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.95, "start": 4, "end": 20},
-                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": 0.90, "start": 26, "end": 37},
-                {"text": "Lagos", "entity_type": "LOCATION", "confidence": 0.85, "start": 48, "end": 53},
+                {"text": "Fatima Abdullahi", "entity_type": "PERSON", "confidence": 0.95,
+                 "start": 4, "end": 20},
+                {"text": "12345678901", "entity_type": "NATIONAL_ID", "confidence": 0.90,
+                 "start": 26, "end": 37},
+                {"text": "Lagos", "entity_type": "LOCATION", "confidence": 0.85,
+                 "start": 48, "end": 53},
             ]
         })
         monkeypatch.setattr("arche.llm.providers.complete", mock)
@@ -676,4 +687,4 @@ class TestPublicSurface:
         import arche.llm as llm
 
         with pytest.raises(AttributeError, match="has no attribute"):
-            llm.not_a_real_name
+            _ = llm.not_a_real_name

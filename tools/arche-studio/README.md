@@ -76,11 +76,11 @@ same referral note as the first, moved to Britain, comes back with nothing
 removed and an explanation of why a clean result there means less than it looks.
 
 **These are the real tools.** Schemas and dispatch come from the arche MCP
-server itself (`arche_mcp.server.mcp`), so the descriptions, the enums and the
+server itself (`arche.mcp.server.mcp`), so the descriptions, the enums and the
 results are what an agent sees over the wire. What is skipped is the JSON-RPC
 framing and the subprocess: a threaded HTTP server managing an async stdio
 child per request is a lot of machinery for a difference no viewer can observe.
-`packages/arche-mcp/chat.py` speaks the real protocol when the transport is the
+`examples/mcp_chat.py` speaks the real protocol when the transport is the
 thing you want to prove.
 
 **Nothing is stored.** The conversation lives in the page. Reload and it is

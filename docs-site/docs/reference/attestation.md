@@ -73,7 +73,7 @@ From a shell, `arche attest verify ENVELOPE.json --inputs in.json --response out
 arche attest keygen ~/.arche/signing.pem     # prints the did:key to publish
 export ARCHE_SIGNING_KEY=~/.arche/signing.pem
 arche serve                                  # every POST answer carries `attestation`
-arche-mcp                                    # every tool answer does too
+arche mcp                                    # every tool answer does too
 ```
 
 `capabilities` -- the endpoint and the MCP tool -- names the signer, which is how a client learns which did:key to pin. The key is never generated on the fly: a key that exists for one process and vanishes signs envelopes nobody can attribute, and a signature nobody can attribute is a checksum with extra steps. Replacing a key (`keygen --force`) means envelopes signed with the old one stop verifying against the new did:key; publish both while the old ones matter.

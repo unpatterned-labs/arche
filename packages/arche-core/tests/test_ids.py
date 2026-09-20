@@ -139,7 +139,8 @@ def test_binding_family_links_national_id_and_nin():
     nb = _ref(nin="NIN-5")
     assert identity_binding_key(na) == identity_binding_key(nb) == ("national_id", "nin5")
     key = b"k" * 32
-    assert entity_id(identity_binding_key(na), key=key) == entity_id(identity_binding_key(nb), key=key)
+    assert (entity_id(identity_binding_key(na), key=key)
+            == entity_id(identity_binding_key(nb), key=key))
 
 
 # ── keyed ids (C1): PII-derived ids must be un-brute-forceable when shared ────

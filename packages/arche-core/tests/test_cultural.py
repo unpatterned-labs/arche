@@ -1,8 +1,8 @@
 """Tests for cultural naming intelligence."""
 
 from arche.detect._names.lexicon import (
-    KNOWN_AFRICAN_NAMES,
     _FULL_EQUIVALENCE_GROUPS,
+    KNOWN_AFRICAN_NAMES,
     NAME_EQUIVALENCES,
     are_names_equivalent,
     is_known_african_name,

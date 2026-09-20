@@ -35,7 +35,8 @@ class TestTheChoiceIsNotInTheId:
         auto = reconcile(rows, rows, entity="person")
         explicit = reconcile(rows, rows, entity="person", backend="arche")
         assert auto["pins"] == explicit["pins"]
-        assert [m["decision_id"] for m in auto["matches"]] ==                [m["decision_id"] for m in explicit["matches"]]
+        assert ([m["decision_id"] for m in auto["matches"]]
+                == [m["decision_id"] for m in explicit["matches"]])
 
 
 class TestTheFloor:
@@ -126,7 +127,8 @@ class TestSplinkWhenItFits:
 class TestARecipeThatLostStaysOut:
     def test_products_stay_on_the_engine_and_the_reason_names_the_recipe(self):
         pytest.importorskip("splink")
-        rows = [{"id": f"p{i}", "name": f"Brand{i % 30} Widget X{i}"} for i in range(AUTO_SPLINK_FLOOR + 5)]
+        rows = [{"id": f"p{i}", "name": f"Brand{i % 30} Widget X{i}"}
+                for i in range(AUTO_SPLINK_FLOOR + 5)]
         res = reconcile(rows, rows, entity="product_electronics")
         assert res["backend"]["chosen"] == "arche"
         assert "engine won its benchmark" in res["backend"]["reason"]
@@ -135,7 +137,8 @@ class TestARecipeThatLostStaysOut:
         pytest.importorskip("splink")
         rng = random.Random(5)
         a = [{"id": f"a{i}", "name": f"school {i % 200} {rng.choice(['primary', 'high'])}",
-              "lat": 53.8 + i * 1e-4, "lon": -1.5 + i * 1e-4} for i in range(AUTO_SPLINK_FLOOR // 2 + 5)]
+              "lat": 53.8 + i * 1e-4, "lon": -1.5 + i * 1e-4}
+             for i in range(AUTO_SPLINK_FLOOR // 2 + 5)]
         b = [dict(r, id="b" + r["id"][1:]) for r in a]
         res = reconcile(a, b, entity="place")
         assert res["backend"]["chosen"] == "splink"

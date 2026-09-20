@@ -17,7 +17,6 @@ reduction, at a cost of 38,991 records reachable under no key at all.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import FingerprintIndex, fingerprint
 
 _MASTER = [

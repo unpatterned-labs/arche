@@ -24,9 +24,10 @@ call.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -37,7 +38,6 @@ from arche.sign.envelope import ArcheSignedDocument
 from arche.sign.jws import VerificationResult, sign, verify
 from arche.sign.keys import Keypair, encode_did_key
 from arche.workflow._primitive import Pipeline, Result
-
 
 # ---------------------------------------------------------------------------
 # SignWorkflow — issuer side
