@@ -307,12 +307,12 @@ def compare_phones(phone_a: str, phone_b: str) -> float:
     # Handle country code variations: +234xxx vs 0xxx
     # Strip leading country codes for comparison
     for prefix in ("234", "233", "254", "27", "225", "221"):
-        if norm_a.startswith(prefix) and norm_b.startswith("0"):
-            if norm_a[len(prefix):] == norm_b[1:]:
-                return 1.0
-        if norm_b.startswith(prefix) and norm_a.startswith("0"):
-            if norm_b[len(prefix):] == norm_a[1:]:
-                return 1.0
+        if (norm_a.startswith(prefix) and norm_b.startswith("0")
+                and norm_a[len(prefix):] == norm_b[1:]):
+            return 1.0
+        if (norm_b.startswith(prefix) and norm_a.startswith("0")
+                and norm_b[len(prefix):] == norm_a[1:]):
+            return 1.0
 
     return 1.0 if norm_a == norm_b else 0.0
 
@@ -1382,7 +1382,8 @@ def match(
 
         # Dict-based record comparison (Fellegi-Sunter)
         match(
-            {"name": "Fatima Abdullahi", "phone": "+234 803 555 7890", "national_id": "12345678901"},
+            {"name": "Fatima Abdullahi", "phone": "+234 803 555 7890",
+             "national_id": "12345678901"},
             {"name": "Fatoumata Abdoulaye", "phone": "08035557890"},
             jurisdiction="NG",
         )

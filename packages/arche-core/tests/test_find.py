@@ -22,8 +22,6 @@ master list it is indistinguishable from a correct answer.
 
 from __future__ import annotations
 
-import pytest
-
 from arche.resolve import AMBIGUITY_MARGIN, find
 
 #: Two entries share a name and differ only by address. That is the shape the
@@ -191,7 +189,7 @@ def test_candidates_are_always_returned_best_first():
 def test_the_run_keeps_its_pins():
     result = _find({"name": "Zenith Bank Plc"})
     assert result["pins"]["engine"] == "crosswalk.v1"
-    assert result["pins"]["entity_pack"] if "entity_pack" in result["pins"] else True
+    assert result["pins"].get("entity_pack", True)
 
 
 def test_lookups_reproduce():

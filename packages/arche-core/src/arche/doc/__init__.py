@@ -34,19 +34,18 @@ Or compose with the v0.2 Pipeline::
     # -> Detection + policy on the OCR'd text
 """
 
-from arche.doc.parse import (
-    DOC_FEATURE_AVAILABLE,
-    DoclingNotInstalledError,
-    ParsedDocument,
-    parse,
-)
-
 from arche.doc._documents import DocumentReport, resolve_documents  # noqa: E402
 from arche.doc._extract import Extraction, FieldEvidence, From, extract  # noqa: E402
 from arche.doc._metadata import DocumentMetadata, read_metadata  # noqa: E402
 from arche.doc._residence import (  # noqa: E402
     ResidenceCheck,
     assess_residence,
+)
+from arche.doc.parse import (
+    DOC_FEATURE_AVAILABLE,
+    DoclingNotInstalledError,
+    ParsedDocument,
+    parse,
 )
 
 __all__ = [

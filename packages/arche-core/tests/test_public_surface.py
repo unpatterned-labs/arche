@@ -23,10 +23,10 @@ from __future__ import annotations
 import importlib
 import warnings
 
-import pytest
-
 import arche
+import pytest
 from arche import _DEPRECATED, _LAZY
+
 
 def _uncached(name: str):
     """Access ``arche.<name>`` with the PEP 562 cache cleared first.

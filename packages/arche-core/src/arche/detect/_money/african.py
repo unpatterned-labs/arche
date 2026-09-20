@@ -78,7 +78,8 @@ CURRENCY_PATTERNS: dict[str, dict] = {
     "XOF": {
         "code": "XOF",
         "name": "CFA Franc (West African)",
-        "country": "UEMOA (Senegal, Mali, Cote d'Ivoire, Burkina Faso, Niger, Togo, Benin, Guinea-Bissau)",
+        "country": ("UEMOA (Senegal, Mali, Cote d'Ivoire, Burkina Faso, Niger, Togo, Benin, "
+                    "Guinea-Bissau)"),
         "symbols": ["FCFA", "CFA", "XOF", "F CFA"],
         "prefix_symbols": ["FCFA", "CFA", "XOF", "F CFA"],
         "word_names": ["cfa", "cfa franc", "fcfa", "franc cfa"],
@@ -382,7 +383,7 @@ def _parse_amount(raw: str) -> float:
     elif "," in cleaned:
         # Could be thousands separator or decimal
         after_comma = cleaned.split(",")[-1]
-        if len(after_comma) <= 2:
+        if len(after_comma) <= 2:  # noqa: SIM108 -- the two branches carry their own comments
             # Treat as decimal (e.g. "500,50")
             cleaned = cleaned.replace(",", ".")
         else:

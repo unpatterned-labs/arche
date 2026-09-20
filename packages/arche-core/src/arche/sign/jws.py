@@ -34,8 +34,9 @@ from __future__ import annotations
 
 import base64
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
@@ -44,7 +45,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 )
 
 from arche.sign.keys import decode_did_key
-
 
 # ---------------------------------------------------------------------------
 # Base64url helpers (no padding, per RFC 7515 §2)
@@ -288,7 +288,8 @@ def verify(
         pk = resolver(kid)
         if pk is not None:
             key_source = "resolver"
-    if pk is None and allow_did_key_from_kid and isinstance(kid, str) and kid.startswith("did:key:"):
+    if (pk is None and allow_did_key_from_kid and isinstance(kid, str)
+            and kid.startswith("did:key:")):
         try:
             pk = decode_did_key(kid)
             key_source = "self-asserted"

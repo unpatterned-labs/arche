@@ -308,7 +308,8 @@ NAMING_CONVENTIONS = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ADDRESS_NORMS = {
-    "format": "[Unit/Complex], [Street Number] [Street Name], [Suburb], [City], [Province] [Postal Code]",
+    "format": ("[Unit/Complex], [Street Number] [Street Name], [Suburb], [City], "
+               "[Province] [Postal Code]"),
     "provinces": [
         "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal",
         "Limpopo", "Mpumalanga", "Northern Cape", "North West",

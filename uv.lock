@@ -27,7 +27,6 @@ resolution-markers = [
 [manifest]
 members = [
     "arche-core",
-    "arche-mcp",
     "arche-workspace",
 ]
 
@@ -273,6 +272,7 @@ all = [
     { name = "anthropic" },
     { name = "duckdb" },
     { name = "gliner2", extra = ["local"] },
+    { name = "mcp" },
     { name = "openai" },
     { name = "presidio-analyzer" },
     { name = "presidio-anonymizer" },
@@ -318,6 +318,9 @@ litellm = [
 llm = [
     { name = "anthropic" },
     { name = "openai" },
+]
+mcp = [
+    { name = "mcp" },
 ]
 parquet = [
     { name = "pyarrow" },
@@ -374,6 +377,8 @@ requires-dist = [
     { name = "h3", specifier = ">=4.0" },
     { name = "jellyfish", specifier = ">=1.0" },
     { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.40" },
+    { name = "mcp", marker = "extra == 'all'", specifier = ">=2.0,<3" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0,<3" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "networkx", specifier = ">=3.0" },
     { name = "openai", marker = "extra == 'all'", specifier = ">=1.0" },
@@ -405,29 +410,7 @@ requires-dist = [
     { name = "splink", marker = "extra == 'splink'", specifier = ">=4.0" },
     { name = "uvicorn", marker = "extra == 'service'", specifier = ">=0.29" },
 ]
-provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "ledger", "litellm", "llm", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "runtime", "service", "splink", "za"]
-
-[[package]]
-name = "arche-mcp"
-version = "0.1.0a1"
-source = { editable = "packages/arche-mcp" }
-dependencies = [
-    { name = "arche-core" },
-    { name = "mcp" },
-]
-
-[package.optional-dependencies]
-detect = [
-    { name = "arche-core", extra = ["detect"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "arche-core", editable = "packages/arche-core" },
-    { name = "arche-core", extras = ["detect"], marker = "extra == 'detect'", editable = "packages/arche-core" },
-    { name = "mcp", specifier = ">=2.0,<3" },
-]
-provides-extras = ["detect"]
+provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "ledger", "litellm", "llm", "mcp", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "runtime", "service", "splink", "za"]
 
 [[package]]
 name = "arche-workspace"
@@ -440,8 +423,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "arche-core", extra = ["service"] },
-    { name = "arche-mcp" },
+    { name = "arche-core", extra = ["mcp", "service"] },
     { name = "httpx" },
     { name = "pyarrow" },
     { name = "pytest" },
@@ -449,7 +431,7 @@ dev = [
     { name = "ruff" },
 ]
 full = [
-    { name = "arche-core", extra = ["all", "detect2", "doc", "doc-ocr", "ledger", "service"] },
+    { name = "arche-core", extra = ["all", "detect2", "doc", "doc-ocr", "ledger", "mcp", "service"] },
     { name = "torch", version = "2.14.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
     { name = "torch", version = "2.14.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'linux'" },
     { name = "torchvision", version = "0.29.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
@@ -464,8 +446,8 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "arche-core", extras = ["mcp"], editable = "packages/arche-core" },
     { name = "arche-core", extras = ["service"], editable = "packages/arche-core" },
-    { name = "arche-mcp", editable = "packages/arche-mcp" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "pyarrow", specifier = ">=14" },
     { name = "pytest", specifier = ">=8.0" },
@@ -473,7 +455,7 @@ dev = [
     { name = "ruff", specifier = ">=0.4" },
 ]
 full = [
-    { name = "arche-core", extras = ["all", "doc", "doc-ocr", "service", "ledger", "detect2"], editable = "packages/arche-core" },
+    { name = "arche-core", extras = ["all", "doc", "doc-ocr", "service", "ledger", "detect2", "mcp"], editable = "packages/arche-core" },
     { name = "torch", marker = "sys_platform != 'linux'" },
     { name = "torch", marker = "sys_platform == 'linux'", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torchvision", marker = "sys_platform != 'linux'" },

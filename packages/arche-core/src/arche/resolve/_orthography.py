@@ -108,7 +108,7 @@ class OrthographyPack:
             if key:
                 out.setdefault(key, set()).add(token)
         if self.collapse_boundaries:
-            for left, right in zip(seq, seq[1:]):
+            for left, right in zip(seq, seq[1:], strict=False):
                 joined = self.key(f"{left}{right}")
                 if joined:
                     out.setdefault(joined, set()).update((left, right))

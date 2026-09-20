@@ -6,9 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
-
 from arche.workflow._ingest import extract_text
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TXT extraction
@@ -146,7 +144,7 @@ def test_extract_pdf_multipage(tmp_path: Path) -> None:
 
     f = tmp_path / "multi.pdf"
     doc = fitz.open()
-    for i, text in enumerate(["Page one content", "Page two content"]):
+    for _i, text in enumerate(["Page one content", "Page two content"]):
         page = doc.new_page()
         page.insert_text((72, 72), text)
     doc.save(str(f))

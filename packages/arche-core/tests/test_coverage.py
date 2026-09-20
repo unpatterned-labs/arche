@@ -52,7 +52,7 @@ from arche.coverage import (
     coverage,
     detectable_categories,
 )
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 
 
 class TestTheReportedBug:
@@ -130,14 +130,14 @@ class TestTheFifthTooth:
 
     def test_zero_coverage_is_denied(self):
         guard = EgressGuard(Pipeline(jurisdiction="GB", detectors=["ng"]), key="k")
-        with pytest.raises(GuardDenied, match="nothing was looked for"):
+        with pytest.raises(GuardDeniedError, match="nothing was looked for"):
             guard.guarded("Björn Svensson")
 
     def test_the_denial_cites_the_statute(self):
         guard = EgressGuard(Pipeline(jurisdiction="GB", detectors=["ng"]), key="k")
         try:
             guard.guarded("Björn Svensson")
-        except GuardDenied as exc:
+        except GuardDeniedError as exc:
             assert exc.citation == "UK-GDPR"
 
     def test_partial_coverage_is_not_denied(self):

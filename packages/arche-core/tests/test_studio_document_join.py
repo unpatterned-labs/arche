@@ -35,12 +35,7 @@ returns GDPR and reports it available; the tab simply never asked.
 
 from __future__ import annotations
 
-import importlib.util
-import sys
-from pathlib import Path
-
 import pytest
-
 
 #: German signals strong enough to infer: a Handelsregister number is tier A.
 GERMAN = ("Condor Flugdienst GmbH, An der Gehespitz 50, 63263 Neu-Isenburg. "

@@ -56,7 +56,7 @@ class TestWithoutALedger:
         monkeypatch.setattr(studio, "LEDGER_URI", None)
         monkeypatch.setattr(studio, "Studio", lambda *a, **k: (_ for _ in ()).throw(OSError("no")))
         studio.main(["--ledger", str(tmp_path / "x.duckdb"), "--no-browser", "--port", "1"])
-        assert studio.LEDGER_URI == str(tmp_path / "x.duckdb")
+        assert str(tmp_path / "x.duckdb") == studio.LEDGER_URI
 
 
 class TestAMatch:

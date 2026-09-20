@@ -76,10 +76,10 @@ def _complete_openai(config: LLMConfig, messages: list[dict[str, str]]) -> str:
     """OpenAI / Azure OpenAI completion."""
     try:
         import openai  # lazy import
-    except ImportError:
+    except ImportError as err:
         raise RuntimeError(
             "openai package not installed. Install with: pip install arche-core[llm]"
-        )
+        ) from err
 
     client = openai.OpenAI(
         api_key=config.api_key,  # None = uses OPENAI_API_KEY env var
@@ -101,10 +101,10 @@ def _complete_anthropic(config: LLMConfig, messages: list[dict[str, str]]) -> st
     """Anthropic Claude completion."""
     try:
         import anthropic  # lazy import
-    except ImportError:
+    except ImportError as err:
         raise RuntimeError(
             "anthropic package not installed. Install with: pip install arche-core[llm]"
-        )
+        ) from err
 
     client = anthropic.Anthropic(
         api_key=config.api_key,  # None = uses ANTHROPIC_API_KEY env var
@@ -162,10 +162,10 @@ def _complete_litellm(config: LLMConfig, messages: list[dict[str, str]]) -> str:
     """LiteLLM -- 100+ providers through one interface."""
     try:
         import litellm  # lazy import
-    except ImportError:
+    except ImportError as err:
         raise RuntimeError(
             "litellm package not installed. Install with: pip install arche-core[litellm]"
-        )
+        ) from err
 
     response = litellm.completion(
         model=config.model,

@@ -24,16 +24,14 @@ import json
 import re
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
-
-#: The page as shipped, wherever the package is installed.
-_INDEX = Path(importlib.util.find_spec("arche._studio").origin).with_name("index.html")
 from arche.report import review_pack
 from arche.resolve import reconcile
 
+#: The page as shipped, wherever the package is installed.
+_INDEX = Path(importlib.util.find_spec("arche._studio").origin).with_name("index.html")
 
 _A = [{"id": str(i), "name": n, "birth_date": d}
       for i, (n, d) in enumerate(
@@ -791,7 +789,7 @@ class TestTheChatTabDegradesHonestly:
     cannot guarantee.
 
     Everything else in the tool runs on the standard library plus arche-core.
-    The chat needs `openai`, an API key, and an importable `arche-mcp`, and any
+    The chat needs `openai`, an API key, and the `mcp` extra, and any
     of the three can be absent on a machine where the rest works perfectly.
 
     So the tab always renders and says which one is missing. A single "chat
@@ -840,7 +838,7 @@ class TestTheChatTabDegradesHonestly:
 class TestTheChatUsesTheRealToolSurface:
     """The point of threading MCP through rather than reimplementing.
 
-    Schemas come from `arche_mcp.server.mcp.list_tools()` and dispatch goes
+    Schemas come from `arche.mcp.server.mcp.list_tools()` and dispatch goes
     through `mcp.call_tool()`, so the descriptions, the enums and the results
     are the ones a real client sees. What is skipped is the JSON-RPC framing.
 
@@ -858,7 +856,7 @@ class TestTheChatUsesTheRealToolSurface:
         """The mechanism the tab depends on."""
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         result = asyncio.run(mcp.call_tool(
             "infer_jurisdiction", {"text": "NIN 12345678901, RC 1234567"}))
         text = "".join(c.text for c in result.content if getattr(c, "text", None))
@@ -868,9 +866,9 @@ class TestTheChatUsesTheRealToolSurface:
         """A literal, and deliberately so.
 
         The studio is a consumer of the MCP surface, not its owner. Adding a
-        tool in `arche-mcp` should make somebody confirm the consumer still
+        tool in `arche.mcp` should make somebody confirm the consumer still
         renders it, and a hard number is the cheapest way to force that
-        acknowledgement. `arche-mcp` has its own inventory test naming every
+        acknowledgement. `arche.mcp` has its own inventory test naming every
         tool; this one only asks whether the count moved under the studio's
         feet.
 
@@ -878,7 +876,7 @@ class TestTheChatUsesTheRealToolSurface:
         """
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         assert len(asyncio.run(mcp.list_tools())) == 11
 
     def test_the_step_cap_is_bounded(self, studio):

@@ -4,7 +4,7 @@
 
 <p class="arche-hero__sub">arche decides whether messy records of people, organisations, places and products describe one real-world thing — shows the evidence, says <em>I don't know</em> when it should, and keeps a receipt you can replay later.</p>
 
-<span class="arche-hero__status">0.8.0 · Apache-2.0 · runs offline on CPU</span>
+<span class="arche-hero__status">0.9.0 · Apache-2.0 · runs offline on CPU</span>
 
 </div>
 
@@ -93,6 +93,6 @@ One engine, five calibrated packs. A pack is configuration and data, never a for
 
 ## Scope
 
-arche is pre-1.0: 0.8.0 is the first release out of alpha, and its APIs and calibration can still change between minor versions. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
+arche is pre-1.0: 0.9.0 is the second release out of alpha, and its APIs and calibration can still change between minor versions. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
 
 The `basic` extractor used above is deterministic and offline; it reads identifiers, emails, and names from a shipped lexicon of 13,342 African given and family names, not streets. `backend="auto"` adds GLiNER2-PII when the `[detect2]` extra is installed, as a proposer the validators and the statute still decide over. The document parser is an optional extra too. `arche-mcp` is a separate, optional package that exposes the same functions to an agent, including the ledger.

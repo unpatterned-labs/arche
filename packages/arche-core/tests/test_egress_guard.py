@@ -15,8 +15,7 @@
 """C2-T1: the egress guard is fail-closed and never leaks raw PII."""
 
 import pytest
-
-from arche.guard import EgressGuard, GuardDenied, GuardedProjection
+from arche.guard import EgressGuard, GuardDeniedError, GuardedProjection
 from arche.policy import load_statute
 from arche.workflow._primitive import Detection, Pipeline
 
@@ -38,7 +37,7 @@ def test_requires_non_empty_key():
 def test_deny_when_no_statute_configured():
     # A bare Pipeline applies no policy; the guard must refuse, not pass raw text.
     guard = EgressGuard(Pipeline(), key="k")
-    with pytest.raises(GuardDenied):
+    with pytest.raises(GuardDeniedError):
         guard.guarded("Fatima, NIN 12345678901")
 
 
@@ -46,7 +45,7 @@ def test_deny_disallowed_provider():
     guard = EgressGuard(
         Pipeline(statute="NDPA-2023"), key="k", allowed_providers={"bedrock"}
     )
-    with pytest.raises(GuardDenied):
+    with pytest.raises(GuardDeniedError):
         guard.guarded("hello", provider="sketchy-ai")
 
 
@@ -60,7 +59,7 @@ def test_allow_listed_provider_passes():
 
 def test_deny_cross_border_without_basis_and_cites():
     guard = EgressGuard(Pipeline(statute="GDPR"), key="k")
-    with pytest.raises(GuardDenied) as ei:
+    with pytest.raises(GuardDeniedError) as ei:
         guard.guarded("hello", crosses_border=True)
     assert ei.value.citation and "GDPR" in ei.value.citation
 
@@ -69,7 +68,7 @@ def test_deny_cross_border_with_impermissible_basis():
     guard = EgressGuard(
         Pipeline(statute="GDPR"), key="k", transfer_basis="pinky_promise"
     )
-    with pytest.raises(GuardDenied):
+    with pytest.raises(GuardDeniedError):
         guard.guarded("hello", crosses_border=True)
 
 
@@ -240,3 +239,14 @@ def test_end_to_end_address_does_not_leak_through_the_guard():
     for det in result.detections:
         if det.text:
             assert det.text not in projection.redacted_text
+
+
+def test_the_old_name_still_catches_it():
+    """`GuardDenied` was the name until 0.9.0; code written against it must
+    keep working, so the alias is the same class, not a subclass."""
+    from arche.guard import GuardDenied
+
+    assert GuardDenied is GuardDeniedError
+    with pytest.raises(GuardDenied):
+        raise GuardDeniedError("still caught")
+

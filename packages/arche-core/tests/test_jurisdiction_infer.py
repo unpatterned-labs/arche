@@ -19,10 +19,8 @@ from __future__ import annotations
 import warnings
 
 import pytest
-
 from arche.jurisdictions.infer import (
     RULESET_VERSION,
-    JurisdictionInference,
     infer_jurisdiction,
 )
 

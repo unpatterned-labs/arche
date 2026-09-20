@@ -32,13 +32,11 @@
 # ---- 1. build the wheels from this checkout ---------------------------------
 FROM python:3.12-slim AS build
 WORKDIR /src
-# Context is the repository root: the MCP server is a second workspace package
-# (`packages/arche-mcp`, not yet on PyPI) and the image ships it beside the
-# core. The root .dockerignore keeps caches, worlds and local data out.
+# Context is the repository root, so `deploy/compose.yaml` can build it with
+# `context: ..`. The root .dockerignore keeps caches, worlds and local data out.
 COPY packages/arche-core /src/arche-core
-COPY packages/arche-mcp /src/arche-mcp
 RUN pip install --no-cache-dir hatchling \
- && pip wheel --no-deps --no-cache-dir -w /wheels /src/arche-core /src/arche-mcp
+ && pip wheel --no-deps --no-cache-dir -w /wheels /src/arche-core
 
 # ---- 2. the runtime, with weights baked in ----------------------------------
 FROM python:3.12-slim AS runtime
@@ -75,13 +73,11 @@ RUN apt-get update \
 # PreTrainedModel. Measured on the first build of this file.
 RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-# The core wheel with every parser and model extra, plus the MCP server's
-# wheel, built from the same checkout so the two cannot drift. The `[local]`
-# marker inside `detect2` is load-bearing: bare `gliner2` is an API client that
-# posts text to a hosted service.
+# The core wheel with every parser and model extra, the service and the MCP
+# server. The `[local]` marker inside `detect2` is load-bearing: bare `gliner2`
+# is an API client that posts text to a hosted service.
 COPY --from=build /wheels /wheels
-RUN pip install "$(ls /wheels/arche_core-*.whl)[pdf,docx,doc,doc-ocr,detect2,service,resolve,ledger]" \
-                "$(ls /wheels/arche_mcp-*.whl)" \
+RUN pip install "$(ls /wheels/arche_core-*.whl)[pdf,docx,doc,doc-ocr,detect2,service,resolve,ledger,mcp]" \
  && rm -rf /wheels
 
 # Pull every model once, at build time, through the same code path the

@@ -121,7 +121,7 @@ print(sorted(round(c, 2) for c in nx.degree_centrality(g).values()))
 [0.67, 0.67, 0.67, 0.67]
 ```
 
-From the shell, the same questions are `arche entities`, `arche path A B` and `arche decision ID`; from an agent, the `entities`, `path` and `decision` tools of `arche-mcp` when the operator has set `ARCHE_LEDGER`. See [Keep and replay a decision](keep-and-replay.md) for the rest of the ledger.
+From the shell, the same questions are `arche entities`, `arche path A B` and `arche decision ID`; from an agent, the `entities`, `path` and `decision` tools of `arche mcp` when the operator has set `ARCHE_LEDGER`. See [Keep and replay a decision](keep-and-replay.md) for the rest of the ledger.
 
 ## A fifth record, against the entity
 

@@ -32,7 +32,6 @@ on:
     tags: ["arche-core-v*"]
     paths:
       - "packages/arche-core/**"
-      - "packages/arche-mcp/**"
       - ".devcontainer/**"
       - ".dockerignore"
       - "pyproject.toml"
@@ -180,7 +179,7 @@ jobs:
       - name: The suite and the recipe gate run inside it
         run: |
           docker run --rm arche-dev:ci bash -c \
-            "uv run --no-sync pytest packages/arche-core/tests packages/arche-mcp/tests -q -p no:cacheprovider \
+            "uv run --no-sync pytest packages/arche-core/tests -q -p no:cacheprovider \
              && uv run --no-sync python data/scripts/benchmark_gate.py --only recipe"
 
       - name: Nothing local leaked into the image

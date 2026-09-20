@@ -20,7 +20,6 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-
 from arche.doc._metadata import (
     PRODUCER_FAMILIES,
     ContentCredentials,

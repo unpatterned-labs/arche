@@ -36,7 +36,6 @@ WORKDIR /workspace
 # sources are mounted or copied afterwards.
 COPY pyproject.toml uv.lock ./
 COPY packages/arche-core/pyproject.toml packages/arche-core/README.md packages/arche-core/
-COPY packages/arche-mcp/pyproject.toml packages/arche-mcp/README.md packages/arche-mcp/
 # The wheel needs the version file to exist even for a metadata-only build.
 COPY packages/arche-core/src/arche/_version.py packages/arche-core/src/arche/_version.py
 

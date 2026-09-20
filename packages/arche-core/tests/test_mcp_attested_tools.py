@@ -13,7 +13,6 @@ agent actually passed, and is absent when no key is configured.
 from __future__ import annotations
 
 import pytest
-
 from arche.attest import verify_attestation
 from arche.sign import generate_keypair
 
@@ -22,7 +21,7 @@ from arche.sign import generate_keypair
 def server():
     """Imported here, not at module scope.
 
-    ``arche_mcp.server`` reads ``ARCHE_HASH_KEY`` once, at import. pytest
+    ``arche.mcp.server`` reads ``ARCHE_HASH_KEY`` once, at import. pytest
     imports every test module during collection, before a single test runs, so
     a top-level import here would fix that read before the studio tests get to
     set the key -- and two tests over in arche-core, which assert the server
@@ -32,7 +31,7 @@ def server():
     """
     import importlib
 
-    return importlib.import_module("arche_mcp.server")
+    return importlib.import_module("arche.mcp.server")
 
 
 @pytest.fixture()

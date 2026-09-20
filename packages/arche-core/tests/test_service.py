@@ -16,9 +16,8 @@ import pytest
 
 fastapi = pytest.importorskip("fastapi")
 pytest.importorskip("httpx")
-from fastapi.testclient import TestClient  # noqa: E402
-
 from arche._service import create_app  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 TEXT = "Contact Adaeze Okonkwo on +234 803 123 4567 or adaeze@example.com."
 

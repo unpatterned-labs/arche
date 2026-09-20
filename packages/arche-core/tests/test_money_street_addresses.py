@@ -97,7 +97,7 @@ class TestRealAmountsStillDetect:
     def test_money_and_an_address_can_coexist(self):
         text = "Send N 5,000 to 227 N 5TH AVE"
         assert currencies(text) == ["NGN"]
-        assert "N 5,000" in {t["text"] if "text" in t else "" for t in
+        assert "N 5,000" in {t.get("text", "") for t in
                              detect_african_currency(text)} or True
         # The amount is the only currency; the street number is not a second one.
         assert len(detect_african_currency(text)) == 1

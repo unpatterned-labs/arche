@@ -32,7 +32,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
-
 # ---------------------------------------------------------------------------
 # Multibase / multicodec helpers (did:key)
 # ---------------------------------------------------------------------------
@@ -132,7 +131,7 @@ class Keypair:
     def __repr__(self) -> str:  # avoid accidentally printing private key
         return f"Keypair(did_key={self.did_key!r})"
 
-    def public_only(self) -> "Keypair":
+    def public_only(self) -> Keypair:
         """Return a copy with the private key dropped (for sharing)."""
         # Construct a Keypair-shaped object without exposing a private key.
         # Use a sentinel that raises on use.

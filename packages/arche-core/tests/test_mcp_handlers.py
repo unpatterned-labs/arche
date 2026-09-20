@@ -30,7 +30,7 @@ import json
 import warnings
 
 import pytest
-from arche_mcp import handlers
+from arche.mcp import handlers
 
 
 @pytest.fixture(autouse=True)
@@ -212,14 +212,14 @@ class TestTheToolThatWasRemoved:
     def test_and_is_not_registered_as_a_tool(self):
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         names = {t.name for t in asyncio.run(mcp.list_tools())}
         assert "compare_files" not in names
 
     def test_the_expected_tools_are_registered(self):
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         names = {t.name for t in asyncio.run(mcp.list_tools())}
         assert names == {
             "capabilities", "infer_jurisdiction", "plan_protection",
@@ -232,7 +232,7 @@ class TestTheToolThatWasRemoved:
         """The description IS the documentation. An agent reads nothing else."""
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         for tool in asyncio.run(mcp.list_tools()):
             assert tool.description and len(tool.description) > 60, tool.name
 
@@ -263,17 +263,17 @@ class TestConfigurationIsACeiling:
     """
 
     def test_an_unset_ceiling_lets_the_caller_choose(self, monkeypatch):
-        from arche_mcp import server
+        from arche.mcp import server
         monkeypatch.setattr(server, "_JURISDICTION", None)
         assert server._jurisdiction("NG") == "NG"
 
     def test_a_set_ceiling_wins_over_the_argument(self, monkeypatch):
-        from arche_mcp import server
+        from arche.mcp import server
         monkeypatch.setattr(server, "_JURISDICTION", "NG")
         assert server._jurisdiction("US") == "NG"
 
     def test_the_same_holds_for_the_statute(self, monkeypatch):
-        from arche_mcp import server
+        from arche.mcp import server
         monkeypatch.setattr(server, "_STATUTE", "BASELINE")
         assert server._statute("GDPR") == "BASELINE"
 
@@ -314,7 +314,7 @@ class TestTheSchemasTeachTheModel:
     def _schemas():
         import asyncio
 
-        from arche_mcp.server import mcp
+        from arche.mcp.server import mcp
         return {t.name: t for t in asyncio.run(mcp.list_tools())}
 
     def test_describe_pack_offers_the_packs_as_an_enum(self):
@@ -483,10 +483,10 @@ class TestLedgerToolsAppearOnlyWhenConfigured:
             monkeypatch.delenv("ARCHE_LEDGER", raising=False)
         else:
             monkeypatch.setenv("ARCHE_LEDGER", uri)
-        sys.modules.pop("arche_mcp.server", None)
-        server = importlib.import_module("arche_mcp.server")
+        sys.modules.pop("arche.mcp.server", None)
+        server = importlib.import_module("arche.mcp.server")
         names = {t.name for t in asyncio.run(server.mcp.list_tools())}
-        sys.modules.pop("arche_mcp.server", None)
+        sys.modules.pop("arche.mcp.server", None)
         return names, server
 
     def test_absent_when_unset(self, monkeypatch):

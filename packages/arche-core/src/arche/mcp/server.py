@@ -14,7 +14,7 @@
 
 """arche MCP server.
 
-Thin registration layer over :mod:`arche_mcp.handlers`. Every tool returns
+Thin registration layer over :mod:`arche.mcp.handlers`. Every tool returns
 projections, offsets or ids — never raw PII.
 
 Configuration is a **ceiling, not a default**. Environment variables set the
@@ -44,7 +44,10 @@ intended flow is `infer_jurisdiction` then `plan_protection` then
 ceiling when a deployment handles one jurisdiction and an agent has no business
 choosing.
 
-Run: ``arche-mcp`` (stdio). HTTP/SSE transport and auth are a follow-up.
+Run: ``arche mcp`` (stdio, the default) or ``arche mcp --transport
+streamable-http --host 0.0.0.0 --port 8765`` for a client over the network.
+The HTTP transport has no authentication of its own: put it behind a proxy
+that has (``deploy/`` shows one), exactly as for ``arche serve``.
 
 NOTE: no ``from __future__ import annotations`` here — the server introspects
 the real annotation objects to build tool schemas, and stringized annotations
@@ -54,10 +57,10 @@ break it.
 import os
 from typing import Literal
 
-from arche.resolve import ENTITY_PACK_PURPOSE, ENTITY_PACKS
 from mcp.server import MCPServer
 
-from arche_mcp import handlers
+from arche.mcp import handlers
+from arche.resolve import ENTITY_PACK_PURPOSE, ENTITY_PACKS
 
 # The entity packs, as a schema enum rather than a bare string.
 #
@@ -496,8 +499,26 @@ if _LEDGER_URI:
         return handlers.ledger_observe(_ledger(), record_id, evidence)
 
 
-def main() -> None:
-    mcp.run()
+def main(argv: list[str] | None = None) -> None:
+    """``arche mcp`` / ``arche-mcp``: stdio by default, streamable HTTP on request."""
+    import argparse
+
+    ap = argparse.ArgumentParser(prog="arche mcp", description="the arche MCP server")
+    ap.add_argument("--transport", choices=("stdio", "streamable-http"), default="stdio",
+                    help="stdio for a local agent runtime (default); streamable-http "
+                         "for a client over the network")
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="bind address for streamable-http (default 127.0.0.1)")
+    ap.add_argument("--port", type=int, default=8765,
+                    help="port for streamable-http (default 8765)")
+    ap.add_argument("--path", default="/mcp",
+                    help="URL path for streamable-http (default /mcp)")
+    args = ap.parse_args(argv)
+    if args.transport == "stdio":
+        mcp.run()
+    else:
+        mcp.run("streamable-http", host=args.host, port=args.port,
+                streamable_http_path=args.path)
 
 
 if __name__ == "__main__":

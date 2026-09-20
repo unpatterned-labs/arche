@@ -62,9 +62,11 @@ def test_token_style_requires_key():
 
 
 def _same_person_decision():
-    a = Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "NIN-1", "phone": "0803"})
+    a = Reference.from_record({"full_name": "Fatima Abdullahi", "national_id": "NIN-1",
+                               "phone": "0803"})
     a.source_system = "clinic"
-    b = Reference.from_record({"full_name": "Fatima Abdulahi", "national_id": "NIN-1", "address": "12 Bello"})
+    b = Reference.from_record({"full_name": "Fatima Abdulahi", "national_id": "NIN-1",
+                               "address": "12 Bello"})
     b.source_system = "vaccination"
     return coref_references(a, b, jurisdiction="NG", issuer_key=b"x" * 32)
 

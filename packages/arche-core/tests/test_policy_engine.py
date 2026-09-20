@@ -8,7 +8,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-
 from arche.policy import (
     ACTIONS,
     PolicyOutcome,
@@ -33,7 +32,7 @@ class _Det:
 
 def test_action_set_is_closed():
     """PRD §6.3: the action set is deliberately closed and small."""
-    assert ACTIONS == frozenset({"mask", "tokenize", "drop", "generalize", "audit", "retain"})
+    assert frozenset({"mask", "tokenize", "drop", "generalize", "audit", "retain"}) == ACTIONS
 
 
 def test_available_statutes_includes_ndpa():

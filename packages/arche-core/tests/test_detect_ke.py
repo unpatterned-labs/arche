@@ -11,6 +11,7 @@ Namba, which would invert the bug rather than fix it.
 """
 
 from __future__ import annotations
+
 # ── Huduma Namba (NIIMS) ─────────────────────────────────────────────────────
 #
 # The README listed Huduma under detected government IDs while no pattern

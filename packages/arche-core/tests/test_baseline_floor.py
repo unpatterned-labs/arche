@@ -25,7 +25,6 @@ from __future__ import annotations
 import warnings
 
 import pytest
-
 from arche import Pipeline
 
 _TEXT = "Contact Jane Smith at jane.smith@monzo.com or 07700 900123."

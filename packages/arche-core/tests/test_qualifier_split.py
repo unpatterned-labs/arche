@@ -31,7 +31,6 @@ from __future__ import annotations
 import copy
 
 import pytest
-
 from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._matcher import compare_place_qualifiers, split_place_name
 

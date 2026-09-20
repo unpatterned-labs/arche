@@ -49,7 +49,7 @@ from typing import Any
 
 from arche.coverage import coverage as _coverage
 from arche.extract import extract
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 from arche.jurisdictions.infer import infer_jurisdiction as _infer_jurisdiction
 from arche.policy import statute_for as _statute_for
 from arche.resolve import ENTITY_PACKS, compare_names, reconcile
@@ -238,7 +238,7 @@ def detect_pii(text: str, *, jurisdiction: str | None = None,
 def detect_entities(text: str, *, entity_types: list[str] | None = None) -> dict[str, Any]:
     """Named entities (NER) as typed offset spans. No raw text echoed.
 
-    Needs a NER backend (``arche-mcp[detect]``). Without one this finds
+    Needs a NER backend (``arche-core[detect]``). Without one this finds
     identifiers by pattern and no personal names at all, so check
     ``capabilities()["extras"]["detect"]`` before trusting an empty result.
     """
@@ -295,7 +295,7 @@ def guarded_scan(text: str, *, key: str | bytes, jurisdiction: str | None = None
     )
     try:
         proj = guard.guarded(text, provider=provider, crosses_border=crosses_border)
-    except GuardDenied as exc:
+    except GuardDeniedError as exc:
         return {"denied": True, "reason": exc.reason, "citation": exc.citation,
                 "coverage": _coverage(pipeline)}
     return {

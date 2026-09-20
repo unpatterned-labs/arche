@@ -19,7 +19,6 @@ every real pair. On three records that is five edges where one is true.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import dedupe, reconcile
 
 _ORGS = [

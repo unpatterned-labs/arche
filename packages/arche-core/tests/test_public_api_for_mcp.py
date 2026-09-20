@@ -1,9 +1,10 @@
 # Copyright 2026 unpatterned.org
 # SPDX-License-Identifier: Apache-2.0
 
-"""The functions `arche-mcp` depends on, promoted out of private modules.
+"""The functions the MCP server depends on, promoted out of private modules.
 
-Publishing a package freezes everything it imports. `arche-mcp` reached into
+Publishing a package freezes everything it imports. The MCP server (then
+`arche-mcp`, now `arche.mcp`) reached into
 `arche.cli._load_records` and `arche.resolve._matcher.compare_names`, which
 meant arche-core could no longer rename either without breaking a released
 artifact — and a version pin does not help, because a *patch* release could do
@@ -117,7 +118,7 @@ class TestReadRecords:
 def test_neither_private_name_is_needed_any_more():
     """The point of the exercise, stated as a test.
 
-    If a future `arche-mcp` reintroduces a private import, this does not catch
+    If a future `arche.mcp` reintroduces a private import, this does not catch
     it — but it does prove the public route exists, so there is no excuse.
     """
     from arche.resolve import compare_names

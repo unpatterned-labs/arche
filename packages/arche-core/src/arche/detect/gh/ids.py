@@ -51,7 +51,8 @@ def _validate_gh_tin(text: str) -> tuple[bool, dict]:
     """
     cleaned = text.upper().replace(" ", "")
     if re.match(r"^[PCG]\d{10}$", cleaned):
-        return True, {"taxpayer_type": {"P": "individual", "C": "company", "G": "government"}.get(cleaned[0], "unknown")}
+        kinds = {"P": "individual", "C": "company", "G": "government"}
+        return True, {"taxpayer_type": kinds.get(cleaned[0], "unknown")}
     if cleaned.isdigit() and len(cleaned) == 11:
         return True, {}
     return False, {}

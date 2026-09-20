@@ -25,7 +25,6 @@ survive into `redacted_text`.
 from __future__ import annotations
 
 import pytest
-
 from arche import Pipeline
 
 # Actions that must remove the original from the output. `audit` and `retain`
@@ -39,9 +38,9 @@ def _leaks(result) -> list[tuple[str, str, str]]:
         outcome = next(
             (o for o in result.policy_outcomes if o.span == (d.start, d.end)), None
         )
-        if outcome and outcome.action in _REMOVING and d.text:
-            if d.text in result.redacted_text:
-                out.append((d.category, outcome.action, d.text))
+        if (outcome and outcome.action in _REMOVING and d.text
+                and d.text in result.redacted_text):
+            out.append((d.category, outcome.action, d.text))
     return out
 
 

@@ -186,7 +186,8 @@ def verify_attestation(envelope: dict[str, Any], *, inputs: Any = None, response
     return AttestationCheck(valid=not any(p.startswith("schema") or p.startswith("envelope")
                                           for p in problems),
                             trusted=result.trusted, signer=body.get("signer") or result.kid,
-                            tool=body.get("tool"), decision_ids=list(body.get("decision_ids") or []),
+                            tool=body.get("tool"),
+                            decision_ids=list(body.get("decision_ids") or []),
                             inputs_match=inputs_match, response_match=response_match,
                             problems=problems)
 

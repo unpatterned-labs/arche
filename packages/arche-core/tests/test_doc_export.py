@@ -14,7 +14,6 @@ import csv
 import io
 
 import pytest
-
 from arche.doc._documents import DocumentReport
 from arche.doc._progress import Timing
 
@@ -59,7 +58,7 @@ class TestToRows:
 
     def test_it_carries_the_context_a_reviewer_needs(self, report):
         header, rows = report.to_rows()
-        by_doc = dict(zip([r[0] for r in rows], rows))
+        by_doc = dict(zip([r[0] for r in rows], rows, strict=True))
         assert by_doc["a.pdf"][header.index("jurisdiction")] == "NG"
         assert by_doc["a.pdf"][header.index("producer_family")] == "browser-print"
         assert "PII-3-EMAIL=1" in by_doc["a.pdf"][header.index("detections")]
@@ -67,7 +66,7 @@ class TestToRows:
 
     def test_an_abstained_jurisdiction_is_empty_not_the_word_none(self, report):
         header, rows = report.to_rows()
-        by_doc = dict(zip([r[0] for r in rows], rows))
+        by_doc = dict(zip([r[0] for r in rows], rows, strict=True))
         assert by_doc["b.pdf"][header.index("jurisdiction")] == ""
 
     def test_an_empty_report_still_returns_a_header(self):
@@ -90,7 +89,7 @@ class TestMasking:
     def test_structural_columns_are_never_masked(self, report):
         """Jurisdiction and producer are not personal data and are useful."""
         header, rows = report.to_rows()
-        by_doc = dict(zip([r[0] for r in rows], rows))
+        by_doc = dict(zip([r[0] for r in rows], rows, strict=True))
         assert by_doc["a.pdf"][header.index("jurisdiction")] == "NG"
 
 

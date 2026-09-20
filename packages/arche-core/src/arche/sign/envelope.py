@@ -52,7 +52,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field, is_dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 ENVELOPE_SCHEMA_VERSION = "arche+envelope/v1"
@@ -92,13 +92,13 @@ class ArcheSignedDocument:
         purpose: str = "",
         expires_at: datetime | None = None,
         issued_at: datetime | None = None,
-    ) -> "ArcheSignedDocument":
+    ) -> ArcheSignedDocument:
         """Build an envelope from a :class:`arche.workflow.Result`.
 
         Only the fields that cross trust boundaries are copied — audit
         log entries stay local to the issuer.
         """
-        when = issued_at or datetime.now(timezone.utc)
+        when = issued_at or datetime.now(UTC)
         metadata = getattr(result, "metadata", {}) or {}
         jurisdiction = metadata.get("jurisdiction")
         statute_id = metadata.get("statute_id")
@@ -127,7 +127,7 @@ class ArcheSignedDocument:
         )
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ArcheSignedDocument":
+    def from_dict(cls, data: dict[str, Any]) -> ArcheSignedDocument:
         """Re-hydrate an envelope from a verified JWS payload."""
         return cls(
             doc_hash=data.get("doc_hash", ""),
@@ -175,13 +175,13 @@ class ArcheSignedDocument:
         the current UTC time)."""
         if not self.expires_at:
             return False
-        when = now or datetime.now(timezone.utc)
+        when = now or datetime.now(UTC)
         try:
             expiry = datetime.fromisoformat(self.expires_at)
         except ValueError:
             return False
         if expiry.tzinfo is None:
-            expiry = expiry.replace(tzinfo=timezone.utc)
+            expiry = expiry.replace(tzinfo=UTC)
         return expiry < when
 
 

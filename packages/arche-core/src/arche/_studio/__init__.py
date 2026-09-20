@@ -106,7 +106,7 @@ KEY_PATH = STUDIO_STATE / "key.pem"
 # The hash key for `guarded_scan`, persisted for the same reason as the signing
 # key above and read at exactly the same point in startup.
 #
-# `arche_mcp.server` reads `ARCHE_HASH_KEY` once, at import. Studio dispatches
+# `arche.mcp.server` reads `ARCHE_HASH_KEY` once, at import. Studio dispatches
 # MCP tools in-process, so the server inherits *this* process's environment --
 # and nobody exports a hash key before running a local demo. The result was that
 # `guarded_scan`, the flagship tool, could never succeed through the Chat tab.
@@ -120,7 +120,7 @@ KEY_PATH = STUDIO_STATE / "key.pem"
 # was leaving a machine with durable storage keyless. Written once, reused
 # forever after, so tokens correlate across restarts.
 #
-# Must be assigned before anything imports `arche_mcp.server`.
+# Must be assigned before anything imports `arche.mcp.server`.
 HASH_KEY_PATH = STUDIO_STATE / "hash.key"
 
 #: The ledger the Explain pane reads. ``ARCHE_LEDGER`` names it the way the
@@ -723,7 +723,7 @@ def _documents(payload: dict) -> dict:
     pipeline = Pipeline(jurisdiction=jurisdiction)
 
     out_docs = []
-    for index, doc in enumerate(documents):
+    for index, _doc in enumerate(documents):
         text, name = read[index]
 
         result = pipeline.process(text)
@@ -1071,9 +1071,9 @@ def _chat_ready() -> dict:
     """
     missing = []
     try:
-        import arche_mcp.server  # noqa: F401
+        import arche.mcp.server  # noqa: F401
     except ImportError:
-        missing.append("arche-mcp is not importable (`uv sync --all-packages`)")
+        missing.append("the MCP SDK is not importable (`pip install \"arche-core[mcp]\"`)")
     try:
         import openai  # noqa: F401
     except ImportError:
@@ -1114,7 +1114,7 @@ def _chat(payload: dict) -> dict:
     """One turn of an agent conversation, over arche's own MCP tool surface.
 
     **This is the MCP layer, not the MCP transport, and the difference is worth
-    stating.** Tool schemas come from `arche_mcp.server.mcp.list_tools()` and
+    stating.** Tool schemas come from `arche.mcp.server.mcp.list_tools()` and
     calls are dispatched through `mcp.call_tool()`, which is the server's own
     dispatcher. So the descriptions, the enums and the results are identical to
     what a real client sees over stdio. What is skipped is the JSON-RPC framing
@@ -1123,7 +1123,7 @@ def _chat(payload: dict) -> dict:
     That trade is deliberate: a `ThreadingHTTPServer` managing an async stdio
     subprocess per request is a lot of machinery for a difference no viewer can
     observe, and the failure modes it adds are worse than the one it removes.
-    `packages/arche-mcp/chat.py` speaks the real protocol for when the
+    `examples/mcp_chat.py` speaks the real protocol for when the
     transport is what you want to prove.
 
     Returns the whole turn — every tool call, its arguments, its result, and the
@@ -1137,8 +1137,9 @@ def _chat(payload: dict) -> dict:
     if not ready["ready"]:
         raise ValueError("chat is not available: " + "; ".join(ready["missing"]))
 
-    from arche_mcp.server import mcp as _mcp
     from openai import OpenAI
+
+    from arche.mcp.server import mcp as _mcp
 
     history = payload.get("messages") or []
     if not history:
@@ -1345,9 +1346,10 @@ def _sign_demo(_payload: dict) -> dict:
     who has not gets `valid=True, trusted=False`, which proves integrity and
     not authorship. Both are honest, and they are not the same claim.
     """
-    from . import keyring
     from arche.resolve import reconcile
     from arche.resolve.reconcile import sign_edges
+
+    from . import keyring
 
     k = keyring.load_or_create(KEY_PATH)
     res = reconcile([{"id": "a", "name": "Karfi Health Post", "lat": "12.0421", "lon": "8.5231"}],
@@ -1607,7 +1609,8 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
 
     ap = argparse.ArgumentParser(prog="arche studio", description=__doc__.split("\n\n")[0])
-    ap.add_argument("--port", type=int, default=PORT, help=f"listen on 127.0.0.1:PORT (default {PORT})")
+    ap.add_argument("--port", type=int, default=PORT,
+                    help=f"listen on 127.0.0.1:PORT (default {PORT})")
     ap.add_argument("--packs", default=None, help=f"review pack directory (default {PACKS})")
     ap.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
     ap.add_argument("--ledger", default=None,

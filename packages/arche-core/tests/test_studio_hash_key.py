@@ -3,7 +3,7 @@
 
 """The studio has a hash key, so `guarded_scan` can actually run there.
 
-`arche_mcp.server` reads `ARCHE_HASH_KEY` once, at import. The studio dispatches
+`arche.mcp.server` reads `ARCHE_HASH_KEY` once, at import. The studio dispatches
 MCP tools in-process, so the server inherits the studio's own environment -- and
 nobody exports a hash key before running a local demo. `guarded_scan`, the
 flagship tool, therefore refused every call made through the Chat tab:
@@ -30,7 +30,6 @@ see it.
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import json
 import os
 import subprocess
@@ -86,20 +85,36 @@ class TestTheKeyItself:
         assert studio.PACKS not in studio.HASH_KEY_PATH.parents
 
 
+@pytest.fixture()
+def server(studio):
+    """The MCP server imported *after* the studio set the key.
+
+    The server reads `ARCHE_HASH_KEY` once, at import. Since it moved into
+    arche-core its tests collect before these (`test_mcp_*` sorts before
+    `test_studio_*`) and import it keyless, so the module is dropped and
+    imported again here: what this class asserts is the studio's ordering
+    at startup, not pytest's.
+    """
+    import importlib
+
+    sys.modules.pop("arche.mcp.server", None)
+    module = importlib.import_module("arche.mcp.server")
+    yield module
+    sys.modules.pop("arche.mcp.server", None)
+
+
 class TestWhatTheServerSees:
 
     def test_importing_the_studio_configures_the_key(self, studio):
         assert os.environ.get("ARCHE_HASH_KEY")
 
-    def test_the_mcp_server_picked_it_up(self, studio):
+    def test_the_mcp_server_picked_it_up(self, server):
         """Module-level, read once at import, which is why ordering matters."""
-        from arche_mcp import server
-
         assert server._HASH_KEY
 
-    def test_guarded_scan_no_longer_refuses(self, studio):
+    def test_guarded_scan_no_longer_refuses(self, server):
         """The regression, end to end, through the real dispatcher."""
-        from arche_mcp.server import mcp
+        mcp = server.mcp
 
         result = asyncio.run(mcp.call_tool("guarded_scan", {
             "text": "Ada called from 0803 555 0111.",
@@ -127,7 +142,7 @@ class TestWhatTheServerSees:
     def test_no_key_still_refuses(self):
         """The behaviour that was never wrong. Asserted so that a later "fix"
         inventing a key on the fly fails here instead of shipping."""
-        from arche_mcp.handlers import guarded_scan
+        from arche.mcp.handlers import guarded_scan
 
         out = guarded_scan("Ada called from 0803 555 0111.", key="",
                            jurisdiction="NG")

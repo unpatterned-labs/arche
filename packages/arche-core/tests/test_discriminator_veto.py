@@ -24,7 +24,6 @@ rules it keeps are the rules the geographic veto already followed — demote to
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import reconcile
 
 _NAME = "Zephyrine Quillfeather"

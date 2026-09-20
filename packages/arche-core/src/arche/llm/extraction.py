@@ -282,9 +282,8 @@ def _repair_offsets(
     ):
         cs = int(claimed_start)
         ce = int(claimed_end)
-        if 0 <= cs < ce <= len(text):
-            if text[cs:ce] == entity_text:
-                return cs, ce
+        if 0 <= cs < ce <= len(text) and text[cs:ce] == entity_text:
+            return cs, ce
 
     # Fallback: find the entity text in the input (exact match)
     idx = text.find(entity_text)

@@ -18,10 +18,9 @@ import pytest
 
 pytest.importorskip("shapely")  # geo extra
 
-from shapely.geometry import box  # noqa: E402
-
 from arche.resolve._geo import AdminIndex, annotate_admin  # noqa: E402
 from arche.resolve._matcher import compare_containment  # noqa: E402
+from shapely.geometry import box  # noqa: E402
 
 
 def _index():

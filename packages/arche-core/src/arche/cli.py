@@ -43,7 +43,7 @@ _COMMANDS = (
     ("review", "validate, apply, share, or verify review-pack outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
     ("serve", "a local HTTP service: detect, deidentify, compare, and the ledger by id"),
-    ("mcp", "the MCP server on stdio, for an agent runtime (needs arche-mcp)"),
+    ("mcp", "the MCP server, for an agent runtime (needs arche-core[mcp])"),
     ("attest", "make a signing key, or verify an attested answer"),
     ("studio", "the local reading tool: compare two records, work a review queue"),
     ("version", "show the single-sourced arche-core version"),
@@ -588,16 +588,17 @@ def _cmd_studio(args: argparse.Namespace) -> int:
 
 
 def _cmd_mcp(args: argparse.Namespace) -> int:
-    """`arche mcp`: the MCP server on stdio. The server is its own package
-    (`arche-mcp`); this is the one place the core knows its name, so that a
-    container with both installed can be started as `arche mcp`."""
+    """`arche mcp`: the MCP server, stdio by default; `--transport
+    streamable-http` for a client over the network (no auth of its own --
+    put a proxy in front, as for `arche serve`)."""
     try:
-        from arche_mcp.server import main as mcp_main
+        from arche.mcp.server import main as mcp_main
     except ImportError:
         raise SystemExit(
-            "arche mcp needs the arche-mcp package: pip install arche-mcp "
+            'arche mcp needs the MCP SDK: pip install "arche-core[mcp]" '
             "(or run the container, which ships it)") from None
-    mcp_main()
+    mcp_main(["--transport", args.transport, "--host", args.host,
+              "--port", str(args.port), "--path", args.path])
     return 0
 
 
@@ -948,7 +949,7 @@ def _cmd_attest_keygen(args: argparse.Namespace) -> int:
     save_private_key(keypair, path)
     print(f"key       {path}")
     print(f"did:key   {keypair.did_key}")
-    print("publish the did:key; set ARCHE_SIGNING_KEY to the path for arche serve and arche-mcp")
+    print("publish the did:key; set ARCHE_SIGNING_KEY to the path for arche serve and arche mcp")
     return 0
 
 
@@ -1141,7 +1142,8 @@ def main(argv: list[str] | None = None) -> int:
     studio_p = sub.add_parser(
         "studio", help="the local reading tool: compare two records, work a review queue",
     )
-    studio_p.add_argument("--port", type=int, default=None, help="listen on 127.0.0.1:PORT (default 8765)")
+    studio_p.add_argument("--port", type=int, default=None,
+                          help="listen on 127.0.0.1:PORT (default 8765)")
     studio_p.add_argument("--packs", default=None, help="review pack directory")
     studio_p.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
     studio_p.add_argument("--ledger", default=None,
@@ -1163,7 +1165,16 @@ def main(argv: list[str] | None = None) -> int:
                               "(also ARCHE_WARM=1)")
     serve_p.set_defaults(func=_cmd_serve)
 
-    mcp_p = sub.add_parser("mcp", help="the MCP server on stdio (needs arche-mcp)")
+    mcp_p = sub.add_parser("mcp", help="the MCP server: stdio, or --transport streamable-http "
+                                        "(needs arche-core[mcp])")
+    mcp_p.add_argument("--transport", choices=("stdio", "streamable-http"), default="stdio",
+                       help="stdio for a local agent runtime (default); streamable-http for "
+                            "a client over the network")
+    mcp_p.add_argument("--host", default="127.0.0.1",
+                       help="bind address for streamable-http (default 127.0.0.1)")
+    mcp_p.add_argument("--port", type=int, default=8765,
+                       help="port for streamable-http (default 8765)")
+    mcp_p.add_argument("--path", default="/mcp", help="URL path for streamable-http")
     mcp_p.set_defaults(func=_cmd_mcp)
 
     att_p = sub.add_parser("attest", help="make a signing key, or verify an attested answer")
@@ -1175,9 +1186,11 @@ def main(argv: list[str] | None = None) -> int:
     avf = att_sub.add_parser("verify", help="re-check an attestation envelope")
     avf.add_argument("envelope", help="the envelope JSON, or a whole service response carrying one")
     avf.add_argument("--inputs", default=None, help="JSON file of the inputs, to check their hash")
-    avf.add_argument("--response", default=None, help="JSON file of the response, to check its hash")
+    avf.add_argument("--response", default=None,
+                     help="JSON file of the response, to check its hash")
     avf.add_argument("--public-key", default=None,
-                     help="the signer's did:key or public PEM; without it the result is valid, not trusted")
+                     help="the signer's did:key or public PEM; without it the result is "
+                          "valid, not trusted")
     avf.add_argument("--json", action="store_true", help="machine-readable report")
     avf.set_defaults(func=_cmd_attest_verify)
 

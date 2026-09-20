@@ -33,7 +33,6 @@ the *key names*.
 from __future__ import annotations
 
 import pytest
-
 from arche.resolve import compare, reconcile
 from arche.resolve.coreference import RECEIPT_SCHEMA
 

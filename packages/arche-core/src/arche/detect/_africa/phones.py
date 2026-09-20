@@ -732,7 +732,8 @@ def validate_phone(number: str, default_country: str = "NG") -> dict[str, Any]:
     {'valid': True, 'country': 'NG', 'e164': '+2348035557890', ...}
     """
     import phonenumbers
-    from phonenumbers import carrier as _carrier, geocoder as _geocoder
+    from phonenumbers import carrier as _carrier
+    from phonenumbers import geocoder as _geocoder
 
     try:
         parsed = phonenumbers.parse(number, default_country)
@@ -761,7 +762,8 @@ def validate_phone(number: str, default_country: str = "NG") -> dict[str, Any]:
         "country": phonenumbers.region_code_for_number(parsed),
         "e164": phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164),
         "national": phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL),
-        "international": phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL),
+        "international": phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL),
         "country_calling_code": parsed.country_code,
         "line_type": line_type,
         "carrier_hint": _carrier.name_for_number(parsed, "en") or None,

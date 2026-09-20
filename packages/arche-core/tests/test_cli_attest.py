@@ -21,11 +21,13 @@ def test_keygen_then_verify_roundtrip(tmp_path, capsys):
     inputs = {"a": {"name": "x"}, "b": {"name": "x"}}
     response = {"identity": "same_entity", "decision_id": "dec:sha256:" + "ab" * 32}
     env = attest("compare", inputs, response, keypair=signing_key(key))
-    (tmp_path / "env.json").write_text(json.dumps({**response, "attestation": env}), encoding="utf-8")
+    (tmp_path / "env.json").write_text(json.dumps({**response, "attestation": env}),
+                                       encoding="utf-8")
     (tmp_path / "in.json").write_text(json.dumps(inputs), encoding="utf-8")
     (tmp_path / "resp.json").write_text(json.dumps(response), encoding="utf-8")
 
-    rc = main(["attest", "verify", str(tmp_path / "env.json"), "--inputs", str(tmp_path / "in.json"),
+    rc = main(["attest", "verify", str(tmp_path / "env.json"),
+               "--inputs", str(tmp_path / "in.json"),
                "--response", str(tmp_path / "resp.json"), "--public-key", did, "--json"])
     report = json.loads(capsys.readouterr().out)
     assert rc == 0 and report["ok"] and report["trusted"]

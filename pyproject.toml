@@ -11,7 +11,6 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "packages/arche-core",
-    "packages/arche-mcp",
     # arche-graph / arche-live / api / demo were listed here but have never
     # existed on disk. A workspace member that is not a directory is a claim
     # about what ships; uv tolerates it silently.
@@ -19,7 +18,6 @@ members = [
 
 [tool.uv.sources]
 arche-core = { workspace = true }
-arche-mcp = { workspace = true }
 # arche runs on CPU by design. On Linux, PyPI's `torch` is the CUDA build --
 # 2.7 GB of driver libraries plus a 640 MB triton -- and it is what
 # `gliner2[local]` and docling pull unless told otherwise. Windows and macOS
@@ -52,16 +50,15 @@ dev = [
     # the synthetic ones did.
     "arche-core[service]",
     "httpx>=0.27",
-    # The studio's hash-key tests import the MCP server. It is a workspace
-    # member, not a dependency of the root, so a plain `uv sync` dropped it
-    # and three tests failed on a clean checkout.
-    "arche-mcp",
+    # The studio's hash-key tests and the MCP tests import `arche.mcp.server`,
+    # which needs the SDK.
+    "arche-core[mcp]",
 ]
 # Everything, for the dev image and anyone who wants the document parsers and
 # OCR locally. Opt-in (`uv sync --group full`): docling and the OCR runtime
 # are large, and a laptop `uv sync` should stay the light default.
 full = [
-    "arche-core[all,doc,doc-ocr,service,ledger,detect2]",
+    "arche-core[all,doc,doc-ocr,service,ledger,detect2,mcp]",
     # Named here so the CPU-index source below applies: a uv source only
     # attaches to a *direct* dependency, and torch is otherwise reached
     # transitively through gliner2 and docling, where the source is ignored
@@ -83,6 +80,10 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM"]
 # markdown is read once it reaches the notebook. Wrapping it to satisfy a code
 # line-length rule would put hard breaks back into text nobody reads as code.
 "examples/notebooks/build_*.py" = ["E501"]
+# Tests name the two records of a pair `A` and `B`, and a test called
+# `..._is_None_not_zero` says what it checks better than a lowercase one
+# would. pep8-naming is for the package, not for the sentences about it.
+"packages/arche-core/tests/*" = ["N802", "N803", "N806", "N811", "N812"]
 
 [tool.pytest.ini_options]
 testpaths = ["packages/arche-core/tests", "packages/arche-graph/tests", "packages/arche-live/tests", "demo/tests", "benchmarks/tests"]

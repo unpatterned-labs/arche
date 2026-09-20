@@ -15,7 +15,6 @@
 """Tests for the strong keyed tokeniser (``arche._tokens``)."""
 
 import pytest
-
 from arche._tokens import canonicalize, strong_token, token
 
 
