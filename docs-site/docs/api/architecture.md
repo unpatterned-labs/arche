@@ -273,12 +273,12 @@ Every category in every pack carries a statute-section citation. The two labels 
 
 ```python
 from arche import Pipeline
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 
 # No statute means no policy means no permission.
 try:
     EgressGuard(Pipeline(), key="k" * 32).guarded("NIN 12345678901")
-except GuardDenied as exc:
+except GuardDeniedError as exc:
     print("no statute   :", exc.reason)
 
 guard = EgressGuard(
@@ -293,7 +293,7 @@ print("fields       :", [(f.category, f.action, f.tier) for f in projection.fiel
 
 try:
     guard.guarded("NIN 12345678901", provider="openai", crosses_border=True)
-except GuardDenied as exc:
+except GuardDeniedError as exc:
     print("cross-border :", exc.reason)
     print("citation     :", exc.citation)
 ```

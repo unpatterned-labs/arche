@@ -27,7 +27,7 @@ import warnings
 
 import pytest
 from arche import Pipeline
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 from arche.jurisdictions.infer import _SIGNALS, infer_jurisdiction
 from arche.policy import STATUTE_FOR_JURISDICTION, statute_for
 
@@ -105,13 +105,13 @@ class TestTheFactAboutTheWorld:
 
     def test_the_guard_refusal_carries_the_reason(self):
         guard = EgressGuard(Pipeline(jurisdiction="US"), key="k")
-        with pytest.raises(GuardDenied, match="no omnibus federal privacy"):
+        with pytest.raises(GuardDeniedError, match="no omnibus federal privacy"):
             guard.guarded("SSN 123-45-6789")
 
     def test_and_points_at_the_escape_hatch(self):
         try:
             EgressGuard(Pipeline(jurisdiction="US"), key="k").guarded("x")
-        except GuardDenied as exc:
+        except GuardDeniedError as exc:
             assert "HIPAA-SAFE-HARBOR" in str(exc)
 
     def test_passing_a_statute_explicitly_works(self):

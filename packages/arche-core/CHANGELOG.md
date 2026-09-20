@@ -47,6 +47,7 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ### Changed
 
+- **`GuardDenied` is `GuardDeniedError`.** The old name is an alias of the same class and stays through 1.x, so `except GuardDenied` still catches it; new code should use the new one.
 - **`backend="regex"` is now `backend="basic"`** everywhere -- `extract`, `compare`, `resolve_documents(extraction_backend=)`, `Pipeline`, the CLI. The old name said how the extractor worked; the new one says what it is: the lexicon, the validators and the patterns, no model. `regex` is accepted as an alias for one minor version.
 - `extract(backend="auto")` is now GLiNER 2.5 plus `basic`, and the warning when the model is absent names `arche-core[detect2]`.
 - `_extract_gliner2` and `get_gliner2` were each defined three times (a bad merge); once now, and both read one GLiNER 2 response reader, `arche.detect._gliner2.propose`.

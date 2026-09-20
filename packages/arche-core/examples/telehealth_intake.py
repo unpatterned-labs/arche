@@ -25,7 +25,7 @@ It is deliberately HONEST about coverage: the guard's guarantee is fail-closed
   uv run python packages/arche-core/examples/telehealth_intake.py
 """
 
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 from arche.policy import load_statute
 from arche.policy.overlay import apply_overlay, load_overlay
 from arche.workflow._primitive import Pipeline
@@ -46,7 +46,7 @@ def main() -> None:
     guard = EgressGuard(Pipeline(statute="NDPA-2023"), key="clinic-key")
     try:
         guard.guarded(TEXT, provider="us-llm", crosses_border=True)
-    except GuardDenied as denied:
+    except GuardDeniedError as denied:
         print("[1] Cross-border call to the US LLM, no declared basis  ->  REFUSED")
         print("    reason:", denied.reason)
         print("    cites :", denied.citation)

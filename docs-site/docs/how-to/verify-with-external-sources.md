@@ -175,7 +175,7 @@ Sending a place name to a third-party service is a cross-border transfer. A faci
 ```python
 from arche import Pipeline
 from arche.adapters import verify_place
-from arche.guard import EgressGuard, GuardDenied
+from arche.guard import EgressGuard, GuardDeniedError
 
 
 class StatuteEgress:
@@ -189,7 +189,7 @@ class StatuteEgress:
             value, provider=provider, crosses_border=True
         )
         if projection.fields:            # the query carried personal data
-            raise GuardDenied(
+            raise GuardDeniedError(
                 f"{len(projection.fields)} personal field(s) in a query bound "
                 f"for {provider}: {[f.category for f in projection.fields]}"
             )
@@ -217,8 +217,8 @@ print(ev.verdict, "| sent:", sent)
 try:
     verify_place("Adesola Okonkwo, 08031234567", 11.6, 8.5,
                  retrieved_at=WHEN, user_agent=UA, guard=guard, fetch=spy)
-except GuardDenied as exc:
-    print("GuardDenied:", exc)
+except GuardDeniedError as exc:
+    print("GuardDeniedError:", exc)
 print("sent:", sent)
 ```
 
@@ -227,11 +227,11 @@ print("sent:", sent)
 corroborates | sent: ['Karfi Health Post']
 
 == a patient's details are not ==
-GuardDenied: 1 personal field(s) in a query bound for nominatim: ['PII-3-PHONE']
+GuardDeniedError: 1 personal field(s) in a query bound for nominatim: ['PII-3-PHONE']
 sent: ['Karfi Health Post']
 
 == a provider outside the allow-list ==
-GuardDenied: provider 'nominatim' is not in the allow-list ['my-own-nominatim']
+GuardDeniedError: provider 'nominatim' is not in the allow-list ['my-own-nominatim']
 sent: ['Karfi Health Post']
 ```
 
@@ -240,7 +240,7 @@ sent: ['Karfi Health Post']
 The transfer basis has to be one the statute actually permits. Under the NDPA pack, `"consent"` is refused and names the alternatives:
 
 ```text
-GuardDenied: cross-border transfer without a permitted basis
+GuardDeniedError: cross-border transfer without a permitted basis
 (declared='consent', permitted=['binding_corporate_rules', 'explicit_consent',
  'ndpc_adequacy_assessment', 'standard_contractual_clauses'])
 ```

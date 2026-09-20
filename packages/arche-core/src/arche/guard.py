@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from arche.workflow._primitive import Detection, Pipeline
 
 
-class GuardDenied(Exception):  # noqa: N818 -- public API; the name is the contract
+class GuardDeniedError(Exception):
     """Raised when the egress guard refuses to emit a projection.
 
     Carries a human-readable ``reason`` and, where a statute drove the refusal,
@@ -63,6 +63,12 @@ class GuardDenied(Exception):  # noqa: N818 -- public API; the name is the contr
         super().__init__(reason)
         self.reason = reason
         self.citation = citation
+
+
+#: The name this exception had until 0.9.0. The same class, so ``except
+#: GuardDenied`` written against an earlier release still catches it; kept
+#: through 1.x.
+GuardDenied = GuardDeniedError
 
 
 @dataclass
@@ -157,7 +163,7 @@ class EgressGuard:
     ) -> GuardedProjection:
         """Run the pipeline and return a projection safe to send onward.
 
-        Raises :class:`GuardDenied` when any of the four teeth fire. The caller
+        Raises :class:`GuardDeniedError` when any of the four teeth fire. The caller
         (e.g. an MCP tool handler) declares ``provider`` and whether the call
         ``crosses_border``; region auto-detection is a follow-up (C2-T3).
         """
@@ -178,12 +184,12 @@ class EgressGuard:
                 choice = statute_for(getattr(self._pipeline, "jurisdiction", None))
                 hint = (f" Pass statute= explicitly, e.g. "
                         f"{choice.alternatives[0]!r}." if choice.alternatives else "")
-                raise GuardDenied(
+                raise GuardDeniedError(
                     f"no policy, so no permission to emit: {choice.reason}.{hint}",
                 )
             # Tooth 3: provider allow-list.
             if self._allowed_providers is not None and provider not in self._allowed_providers:
-                raise GuardDenied(
+                raise GuardDeniedError(
                     f"provider {provider!r} is not in the allow-list "
                     f"{sorted(self._allowed_providers)}",
                 )
@@ -193,7 +199,7 @@ class EgressGuard:
                     statute.cross_border_transfer.get("permitted_basis", [])
                 )
                 if not self._transfer_basis or self._transfer_basis not in permitted:
-                    raise GuardDenied(
+                    raise GuardDeniedError(
                         "cross-border transfer without a permitted basis "
                         f"(declared={self._transfer_basis!r}, "
                         f"permitted={sorted(permitted)})",
@@ -216,7 +222,7 @@ class EgressGuard:
             # needs a stricter rule reads `projection.coverage` and decides.
             cover = coverage_report(self._pipeline)
             if cover["verdict"] == "none":
-                raise GuardDenied(
+                raise GuardDeniedError(
                     f"no detector installed can find anything "
                     f"{statute.statute_id} governs, so a clean result would "
                     f"mean nothing was looked for "
@@ -241,12 +247,12 @@ class EgressGuard:
                 },
                 coverage=cover,
             )
-        except GuardDenied:
+        except GuardDeniedError:
             raise
         except Exception as exc:  # noqa: BLE001 — intentional: deny on any error
             # Tooth 4: never let an error become a raw-text fallthrough.
             if self._fail_closed:
-                raise GuardDenied(f"guard error (fail-closed): {exc}") from exc
+                raise GuardDeniedError(f"guard error (fail-closed): {exc}") from exc
             raise
 
     def _project(
