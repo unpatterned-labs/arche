@@ -16,8 +16,8 @@
     "totals": {
       "verified_right": 755,
       "verified_wrong": 0,
-      "asked_right": 905,
-      "asked_wrong": 140,
+      "asked_right": 1033,
+      "asked_wrong": 12,
       "refused_known": 0,
       "refused_right": 200,
       "asked_unknown": 0,
@@ -70,8 +70,8 @@
       "partial": {
         "verified_right": 0,
         "verified_wrong": 0,
-        "asked_right": 10,
-        "asked_wrong": 128,
+        "asked_right": 138,
+        "asked_wrong": 0,
         "refused_known": 0,
         "refused_right": 0,
         "asked_unknown": 0,
@@ -97,6 +97,15 @@
         "asked_unknown": 0,
         "missed": 0
       }
+    },
+    "asked_top_right": {
+      "ambiguous": 87,
+      "exact": 68,
+      "landmark": 113,
+      "landmark_only": 137,
+      "partial": 138,
+      "typo": 213,
+      "unknown": 0
     }
   },
   "sweep": [

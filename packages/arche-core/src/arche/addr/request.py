@@ -82,7 +82,8 @@ _RELATIONS = (
 _RELATION_RE = re.compile(
     r"\b(?P<relation>" + "|".join(re.escape(r) for r in
                                   sorted(_RELATIONS, key=len, reverse=True)) + r")\s+"
-    r"(?:the\s+)?(?P<reference>[A-Z][\w'’\-]*(?:\s+[A-Z][\w'’\-]*){0,4})",
+    r"(?:the\s+)?(?P<reference>[A-Z][\w'’\-]*(?:\s+(?:[A-Z][\w'’\-]*|\d+(?=\s+[A-Z]))){0,4})"
+    r"(?:,\s+(?P<qualifier>[A-Z][\w'’\-]*(?:\s+(?:[A-Z][\w'’\-]*|\d+)){0,2}))?",
 )
 _ACCESS_WORDS = ("gate", "door", "entrance", "kiosk", "stall", "shop", "counter",
                  "reception", "lobby", "bay", "dock", "window")
@@ -105,6 +106,9 @@ _CLAUSE_END_RE = re.compile(
 _BARE_STREET_RE = re.compile(
     r"(?P<street>[A-Z][\w'’\-]*(?:\s+[A-Z][\w'’\-]*){0,3}\s+(?:"
     + "|".join(re.escape(x) for x in _STREET_SUFFIXES) + r"))\b")
+# The same with the suffix misspelt: "Elim Streat" -- capitalised words whose
+# last is nearly a suffix. Decided in code, since a regex cannot say "nearly".
+_BARE_LOOSE_RE = re.compile(r"(?P<street>[A-Z][\w'’\-]*(?:\s+[A-Z][\w'’\-]*){1,3})\b")
 _ROLE_CUE_RE = re.compile(r"\b(?P<cue>from|to|via)\s+(?=\S)", re.IGNORECASE)
 _CUE_ROLE = {"from": "origin", "to": "destination", "via": "via"}
 _SUFFIXES_LOWER = {s.casefold() for s in _STREET_SUFFIXES}
@@ -120,6 +124,7 @@ class SpatialMention:
     confidence: float
     relation_kind: str | None = None     # behind | opposite | after ...
     reference_text: str | None = None    # Elim Pharmacy
+    reference_qualifier: str | None = None   # the `Ikeja` in `Elim Pharmacy, Ikeja`
     access_hint: str | None = None       # blue gate
     street_number: str | None = None
     street: str | None = None            # as written, typo and all
@@ -151,10 +156,17 @@ def _from_clause(text: str, role: str, start: int, confidence: float,
     clause_start = start + (len(text[start:end]) - len(text[start:end].lstrip(" ,")))
     m_cue = cue
 
-    relation = reference = access = None
+    relation = reference = qualifier = access = None
     rel = _RELATION_RE.search(clause)
     if rel:
         relation, reference = rel.group("relation").casefold(), rel.group("reference")
+        qualifier = rel.group("qualifier")
+        # `behind Elim Pharmacy 124 Elim Street` without the comma: the address
+        # is not part of the landmark's name.
+        addr = _LOOSE_ADDRESS_RE.search(reference)
+        if (addr and addr.start() > 0 and addr.end() == len(reference)
+                and reference.split()[-1].casefold() in _SUFFIXES_LOWER):
+            reference = reference[:addr.start()].strip()
         evidence.append("relation:" + relation.replace(" ", "_"))
         before = clause[:rel.start()]
         acc = _ACCESS_RE.search(before)
@@ -184,11 +196,24 @@ def _from_clause(text: str, role: str, start: int, confidence: float,
             if bare and not (reference and bare.group("street") in reference):
                 street = bare.group("street")
                 evidence.append("address:street_only")
+            else:
+                for cand in _BARE_LOOSE_RE.finditer(tail):
+                    words = cand.group("street")
+                    if reference and words in reference:
+                        continue
+                    last = words.split()[-1].casefold()
+                    if last not in _SUFFIXES_LOWER and any(
+                            abs(len(last) - len(suf)) <= 1 and _jw(last, suf) >= 0.9
+                            for suf in _SUFFIXES_LOWER):
+                        street, suffix_known = words, False
+                        evidence.append("address:street_only_suffix")
+                        break
 
     return SpatialMention(
         action_role=role, target_text=clause,
         span=(clause_start, clause_start + len(clause)),
         confidence=confidence, relation_kind=relation, reference_text=reference,
+        reference_qualifier=qualifier,
         access_hint=access, street_number=number, street=street,
         street_suffix_known=suffix_known, cue=m_cue, evidence=tuple(evidence),
     )
@@ -341,6 +366,70 @@ def _haversine_m(lat1, lon1, lat2, lon2) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
+def _bearing_deg(lat1, lon1, lat2, lon2) -> float:
+    """Compass bearing from the first point to the second, degrees clockwise from north."""
+    import math
+
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dl = math.radians(lon2 - lon1)
+    x = math.sin(dl) * math.cos(p2)
+    y = math.cos(p1) * math.sin(p2) - math.sin(p1) * math.cos(p2) * math.cos(dl)
+    return math.degrees(math.atan2(x, y)) % 360
+
+
+# Which side of a landmark a relation names, relative to the side it faces.
+# `near`, `by`, `off`, `after`, `before` and `inside` say nothing about a side
+# and stay proximity-only.
+_FRONT_RELATIONS = frozenset({"in front of", "opposite", "across from",
+                              "across the street from"})
+_BACK_RELATIONS = frozenset({"behind", "at the back of"})
+_SIDE_RELATIONS = frozenset({"beside", "next to", "next door to", "adjacent to"})
+
+
+def _relation_fit(relation: str | None, landmark: Mapping[str, Any],
+                  row: Mapping[str, Any]) -> int | None:
+    """Does the candidate sit where the relation says, relative to the landmark?
+
+    ``1`` when it does, ``-1`` when it sits on the opposite side (the sentence
+    says *behind* and the candidate is in front), ``0`` when the geometry is
+    neither (sideways of a *behind*), ``None`` when there is no geometry to
+    ask: the landmark carries no ``front_bearing``, the relation names no
+    side, or a coordinate is missing.
+    """
+    facing = landmark.get("front_bearing")
+    if facing is None or relation is None or row.get("lat") is None:
+        return None
+    if relation in _FRONT_RELATIONS:
+        want = "front"
+    elif relation in _BACK_RELATIONS:
+        want = "back"
+    elif relation in _SIDE_RELATIONS:
+        want = "side"
+    else:
+        return None
+    rel = (_bearing_deg(float(landmark["lat"]), float(landmark["lon"]),
+                        float(row["lat"]), float(row["lon"])) - float(facing)) % 360
+    sector = "front" if (rel <= 45 or rel >= 315) else "back" if 135 <= rel <= 225 else "side"
+    if sector == want:
+        return 1
+    if {sector, want} == {"front", "back"}:
+        return -1
+    return 0
+
+
+_GEOMETRY_WEIGHT = 0.15
+
+
+def _with_geometry(score: float, evidence: list[str], fit: int | None) -> float:
+    if fit == 1:
+        evidence.append("relation geometry agrees")
+        return score + _GEOMETRY_WEIGHT
+    if fit == -1:
+        evidence.append("relation geometry disagrees")
+        return score - _GEOMETRY_WEIGHT
+    return score
+
+
 @dataclass
 class MasterSheet:
     """The caller's own places: a list of records with an id, a name and an address.
@@ -350,6 +439,15 @@ class MasterSheet:
     landmark is a record too -- `Elim Pharmacy` with coordinates -- which is
     what lets `behind Elim Pharmacy` count as evidence for a candidate 60 m
     away.
+
+    A landmark row may also carry ``front_bearing``: the compass bearing its
+    front faces, degrees clockwise from north -- for a shop, the street side.
+    With it the relation is *used*, not only read: `behind Elim Pharmacy`
+    favours the addresses on the far side and counts against the ones in
+    front; `opposite` the reverse; `next to` the sides. Without it the
+    relation proves proximity only, as before. A source with building
+    footprints reduces to this number: the front is the edge that faces the
+    street.
     """
 
     records: Sequence[Mapping[str, Any]]
@@ -381,6 +479,17 @@ class MasterSheet:
         return display, (str(number) if number else None), street
 
     @staticmethod
+    def _qualifier_fits(r: Mapping[str, Any], qualifier: str | None) -> bool:
+        """`Elim Pharmacy, Ikeja` names the one in Ikeja: a row that says where
+        it is must agree; a row that says nothing is not ruled out."""
+        if not qualifier:
+            return True
+        where = " ".join(str(r.get(k) or "") for k in ("area", "city", "address", "name"))
+        if not where.strip():
+            return True
+        return _norm(qualifier) in _norm(where)
+
+    @staticmethod
     def _is_landmark(r: Mapping[str, Any]) -> bool:
         """A row that names a place rather than a door: a bank, a market, a church.
 
@@ -397,10 +506,15 @@ class MasterSheet:
 
     def candidates(self, mention: SpatialMention, *, limit: int = 5) -> list[PlaceCandidate]:
         out: list[PlaceCandidate] = []
+        # A landmark's name is compared before its own comma: the sheet's
+        # `Redeemed Church, GRA` is the sentence's `Redeemed Church`, and the
+        # `GRA` is the qualifier's business.
         landmarks = [r for r in self.records
                      if mention.reference_text
-                     and _jw(str(r.get("name") or ""), mention.reference_text) >= 0.9
-                     and r.get("lat") is not None]
+                     and _jw(str(r.get("name") or "").split(",")[0],
+                             mention.reference_text) >= 0.9
+                     and r.get("lat") is not None
+                     and self._qualifier_fits(r, mention.reference_qualifier)]
         if landmarks and not mention.street and not mention.street_number:
             # `behind Elim Pharmacy` and nothing else: the addresses near the
             # landmark are the candidates, at a confidence that asks rather
@@ -413,11 +527,13 @@ class MasterSheet:
                                      float(lm["lat"]), float(lm["lon"]))
                     if d <= self.landmark_radius_m:
                         display, _n, _s = self._fields(r)
+                        evidence = ["nearby landmark match"]
+                        score = _with_geometry(0.6 - d / (self.landmark_radius_m * 4), evidence,
+                                               _relation_fit(mention.relation_kind, lm, r))
                         out.append(PlaceCandidate(
                             place_id=str(r.get(self.id_field, display)), display_name=display,
-                            confidence=max(0.0, 0.6 - d / (self.landmark_radius_m * 4)),
-                            evidence=("nearby landmark match",), source=self.name,
-                            lat=r.get("lat"), lon=r.get("lon"), record=r))
+                            confidence=max(0.0, min(1.0, score)), evidence=tuple(evidence),
+                            source=self.name, lat=r.get("lat"), lon=r.get("lon"), record=r))
             out.sort(key=lambda c: -c.confidence)
             return out[:limit]
         for r in self.records:
@@ -454,7 +570,8 @@ class MasterSheet:
                                      float(lm["lat"]), float(lm["lon"]))
                     if d <= self.landmark_radius_m:
                         evidence.append("nearby landmark match")
-                        score += 0.2
+                        score = _with_geometry(score + 0.2, evidence,
+                                               _relation_fit(mention.relation_kind, lm, r))
                         break
             if mention.street_number and number and mention.street_number != number:
                 score -= 0.15
@@ -571,6 +688,10 @@ class Endpoint:
     mention: SpatialMention | None
     candidates: tuple[PlaceCandidate, ...] = ()
     question: str | None = None
+    #: ``confirm`` -- *is it this one?* -- or ``number`` -- *which number on
+    #: this street?* -- when there is a question; the shape an application
+    #: renders, so a number question gets a number field, not a yes/no.
+    question_kind: str | None = None
     decision_id: str | None = None
     pins: dict[str, Any] = field(default_factory=dict)
 
@@ -592,6 +713,7 @@ class Endpoint:
             d["evidence"] = sorted({e for c in self.candidates for e in c.evidence})
             if self.question:
                 d["question"] = self.question
+                d["question_kind"] = self.question_kind
         if self.mention:
             d["mention"] = {k: v for k, v in self.mention.to_dict().items()
                             if k in ("target_text", "relation_kind", "reference_text",
@@ -640,11 +762,28 @@ def _question(role: str, mention: SpatialMention, top: PlaceCandidate) -> str:
     return f"Is the {role} {where}?"
 
 
-PLACE_ENGINE = "place_request.v1"
+def _street_of(c: PlaceCandidate) -> str:
+    street = c.record.get("street") if c.record else None
+    if street:
+        return str(street)
+    return re.sub(r"^\d{1,4}[A-Za-z]?\s+", "", c.display_name).split(",")[0].strip()
+
+
+def _number_question(role: str, shown: Sequence[PlaceCandidate]) -> tuple[str, list[str]]:
+    """*Which number on Awolowo Way?* -- a street with no number is not a
+    contest between three doors out of a dozen, it is a missing field."""
+    streets = list(dict.fromkeys(_street_of(c) for c in shown))
+    if len(streets) == 1:
+        return f"Which number on {streets[0]} is the {role}?", streets
+    return f"Which number is the {role}, and is it {' or '.join(streets)}?", streets
+
+
+PLACE_ENGINE = "place_request.v2"
 
 
 def _decide(role: str, mention: SpatialMention | None, cands: list[PlaceCandidate],
             policy: Policy, pins: dict[str, Any]) -> Endpoint:
+    kind: str | None = None
     if mention is None:
         status: Status = "missing"
         shown: tuple[PlaceCandidate, ...] = ()
@@ -658,18 +797,27 @@ def _decide(role: str, mention: SpatialMention | None, cands: list[PlaceCandidat
             contested = (len(cands) > 1
                          and cands[0].confidence - cands[1].confidence < policy.clarify_margin)
             typo = policy.confirm_typo_matches and "typo-tolerant street match" in top.evidence
+            street_only = (mention.street and not mention.street_number
+                           and len(cands) > 1
+                           and all(any(e.endswith("street match") for e in c.evidence)
+                                   for c in shown))
             if top.confidence >= policy.verified_at and not contested and not typo:
                 status, question = "verified", None
+            elif street_only:
+                status, kind = "clarification_required", "number"
+                question, _streets = _number_question(role, shown)
             else:
-                status, question = "clarification_required", _question(role, mention, top)
-    return Endpoint(role, status, mention, shown, question=question,
-                    decision_id=_place_decision_id(role, mention, shown, policy, status, pins),
+                status, kind = "clarification_required", "confirm"
+                question = _question(role, mention, top)
+    return Endpoint(role, status, mention, shown, question=question, question_kind=kind,
+                    decision_id=_place_decision_id(role, mention, shown, policy, status, kind,
+                                                   pins),
                     pins=pins)
 
 
 def _place_decision_id(role: str, mention: SpatialMention | None,
                        shown: tuple[PlaceCandidate, ...], policy: Policy, status: str,
-                       pins: dict[str, Any]) -> str:
+                       question_kind: str | None, pins: dict[str, Any]) -> str:
     """The receipt's address: everything the status was decided on, hashed.
 
     The mention is included as read (text, role, relation, reference, access
@@ -691,6 +839,7 @@ def _place_decision_id(role: str, mention: SpatialMention | None,
                         "evidence": list(c.evidence), "source": c.source} for c in shown],
         "policy": dict(vars(policy)),
         "status": status,
+        "question_kind": question_kind,
         "pins": pins,
     }, prefix="plc")
 

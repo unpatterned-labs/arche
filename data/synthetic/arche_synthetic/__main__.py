@@ -32,11 +32,12 @@ def main(argv: list[str] | None = None) -> int:
                  "people": max(2, int(SCALE["people"] * ratio)),
                  "places": max(2, int(SCALE["places"] * ratio))}
 
-    if args.world_pack == places.WORLD_PACK:
+    if args.world_pack in places.WORLD_PACKS:
         # A different kind again: `--scale` is requests; the sheet is half that.
         n = args.scale or 1000
         _, manifest = places.build(seed=args.seed, sheet=max(20, n // 2), requests=n,
-                                   out=Path(args.out))
+                                   out=Path(args.out),
+                                   version=places.WORLD_PACKS.index(args.world_pack))
         print(f"  {manifest['world_id']}  seed {manifest['seed']}")
         print(f"  sheet        {manifest['counts']['sheet_addresses']} addresses, "
               f"{manifest['counts']['landmarks']} landmarks")

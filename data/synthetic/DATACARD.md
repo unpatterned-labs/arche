@@ -247,7 +247,37 @@ unknown              0.00       0.00         0.00         0.00       1.00
 
 The 23% of exact addresses that become questions are twins: the same number on the same street in another area or another city, and a sentence that carries neither. That is the sheet's ambiguity, not the resolver's, and the question is the right answer.
 
-`partial` is the honest gap: a street with no number produces a question whose candidate list cannot hold the answer (there are a dozen numbers on that street). The right question is *which number on Awolowo Way?* -- a question shape the request module does not have yet.
+`partial` was the honest gap: a street with no number produced a question whose candidate list could not hold the answer (there are a dozen numbers on that street). The right question is *which number on Awolowo Way?* -- `places_v1` scores it, and the request module now asks it (`question_kind: number`; partial went 0.07 -> 1.00 asked-right).
+
+### `places_v1`: what v0 could not measure (2026-09-19)
+
+Three additions, each there to make one claim testable:
+
+- **Confusable streets.** Some streets get a near-twin spelling in the same area (`Herbert Macaulay Street` / `Herbrt Macaulay Street`) with the same number on both. `confusable` is the exact address (right answer: verified; the 0.2 margin between an exact and a typo-tolerant street match is what keeps it so); `confusable_typo` a slip on it (right answer: a question naming both); `unknown_confusable` a number the sheet holds *only* under the twin spelling, written against the original -- a door that is not in the sheet, one slip from one that is.
+- **Landmarks that face somewhere.** Every landmark row carries `front_bearing`; its anchor address sits on one declared side (back, front or beside) and a decoy address at the same distance on the other, so *behind Elim Pharmacy* is undecidable by proximity and decidable by the relation. The sentence's relation is chosen from where the anchor actually is, so it is true by construction.
+- **A dedicated sheet.** No accidental duplicate doors (v0's random sheet had `7 Ahmadu Bello Way, Wuse` twice, which read as a resolver tie and was a generator artefact), and a typo that lands on another real street is not used as a typo.
+
+Seed 42: 611 addresses, 54 landmarks, 10 confusable pairs, 1,000 requests, 2,000 endpoints.
+
+```
+rendering            ver_right  ver_wrong  asked_right  asked_wrong   top-right of asked
+exact                     0.77       0.00         0.23         0.00      0.38 (twins)
+typo                      0.09       0.00         0.90         0.00      0.87
+confusable                1.00       0.00         0.00         0.00
+confusable_typo           0.03       0.00         0.97         0.00      0.82
+landmark                  0.83       0.00         0.17         0.00      1.00
+landmark_only             0.00       0.00         0.97         0.03      0.75
+partial                   0.00       0.00         1.00         0.00      1.00
+ambiguous                 0.00       0.00         1.00         0.00      0.43 (twins)
+unknown                   refused   1.00
+unknown_confusable        asked     1.00   (verified_wrong 0.00)
+```
+
+**What the typo rule is worth, measured.** Defaults: `verified_wrong` 0.000. `verified_at=0.7` with the rule on: 0.000, 40% auto-verified. `verified_at=0.7` with the rule **off**: 48% auto-verified and **`verified_wrong` 0.034** -- every `unknown_confusable` endpoint verified at the wrong door. Eight points of automatic verification buy 34 wrong doors per 1,000 endpoints. That is the number the rule was declared on faith to protect, and it is now a measurement. At 0.8 and above the rule is inert on this world because a typo-tolerant match cannot reach 0.8 alone.
+
+**What the relation's geometry is worth, measured.** Same world, `front_bearing` stripped from the sheet: `landmark_only` asks with the right door first 42% of the time and puts it outside the shown three 17% of the time. With the bearings: 75% first, 3% outside. The remaining quarter is the *beside* third of landmarks, where both sides agree with the sentence by construction -- a tie the relation cannot break, and the question is the right answer. The address-plus-landmark rendering went 62% -> 83% verified, because agreement with the relation is evidence the cross-area twin does not get.
+
+**What it found in the request module on first contact**, all fixed: a landmark name with an area after the comma (`Redeemed Church, GRA`) failed the 0.9 name match against the bare reference, so the sentence was refused; the area after the comma is now read as a `reference_qualifier` and used to pick the landmark, and names are compared before their own comma. `Section 58 Primary School` lost its number and became `Section`, and `Primary School` was then read as a street because *School* resembles *Close* -- the reference now admits a number in the middle, and the misspelt-suffix fallback requires a same-length near-miss. The parquet writer inferred columns from the first row, so `front_bearing` never reached the resolver; every v1 row carries the column.
 
 ## Found while building it
 
@@ -262,5 +292,7 @@ python data/synthetic/build_ng_supplier_v0.py                 # the full world, 
 python data/synthetic/build_ng_supplier_v0.py --scale 100     # a small one to read
 python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0
 python -m arche_synthetic --world-pack places_v0 --scale 1000 --out worlds/places_v0
-python data/synthetic/bench_place_request.py                  # the policy against the twin
+python -m arche_synthetic --world-pack places_v1 --scale 1000 --out worlds/places_v1
+python data/synthetic/bench_place_request.py                  # the policy against places_v1
+python data/synthetic/bench_place_request.py --world places_v0
 ```
