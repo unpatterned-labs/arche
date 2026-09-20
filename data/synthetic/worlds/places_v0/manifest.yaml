@@ -1,0 +1,48 @@
+world_id: places_v0
+world_pack: places_v0
+seed: 42
+generator_version: 0.0.1
+schema_version: 0
+counts:
+  sheet_addresses: 530
+  landmarks: 59
+  requests: 1000
+  endpoints: 2000
+  twins: 37
+  renderings:
+    ambiguous: 189
+    exact: 694
+    landmark: 297
+    landmark_only: 188
+    partial: 138
+    typo: 294
+    unknown: 200
+content_fingerprints:
+  sheet: 01a12d41f6bc1d044076d0148d6364ffd2729a7bcd977a6cfcd74654a029fd68
+  requests: 5c31c3147c631371ee6b7a7da2621c024e190120de35ee994bc7333c7e3386d5
+  truth: 511bd45d1308548a7b5e760eb7844b630b16cdc7618589216ece21b87900c470
+provenance:
+- asset: the master sheet
+  source: 'generated: streets, areas and cities from the supplier world''s country
+    profiles (NG, KE); landmark names from the same banks, trades and name pools'
+  class: synthetic-assumption (which places exist); public-data-derived (the vocabulary
+    they are made of)
+  note: no real address is in this sheet; coordinates are city-centred jitter, landmarks
+    sit within ~60 m of one address row
+- asset: requests and their endpoints
+  source: generated from templates; every endpoint is a sheet row rendered one declared
+    way, or deliberately none
+  class: synthetic-assumption
+  renderings:
+    exact: 0.35
+    typo: 0.15
+    landmark: 0.15
+    landmark_only: 0.08
+    partial: 0.07
+    ambiguous: 0.1
+    unknown: 0.1
+invariants:
+- requests.parquet carries no place id; the endpoint text is all a resolver sees
+- every non-unknown endpoint names a row of sheet.parquet by construction
+- unknown endpoints use street numbers above the sheet's range, so no accidental collision
+  is possible

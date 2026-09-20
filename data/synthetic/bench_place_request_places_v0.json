@@ -1,0 +1,183 @@
+{
+  "world": "places_v0",
+  "default": {
+    "policy": {
+      "verified_at": 0.85,
+      "clarify_margin": 0.15,
+      "minimum": 0.4,
+      "require": [
+        "origin",
+        "destination"
+      ],
+      "candidates_shown": 3,
+      "confirm_typo_matches": true
+    },
+    "endpoints": 2000,
+    "totals": {
+      "verified_right": 755,
+      "verified_wrong": 0,
+      "asked_right": 1033,
+      "asked_wrong": 12,
+      "refused_known": 0,
+      "refused_right": 200,
+      "asked_unknown": 0,
+      "missed": 0
+    },
+    "verified_wrong_rate": 0.0,
+    "verified_right_rate": 0.3775,
+    "question_rate": 0.5225,
+    "by_rendering": {
+      "ambiguous": {
+        "verified_right": 0,
+        "verified_wrong": 0,
+        "asked_right": 187,
+        "asked_wrong": 2,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "exact": {
+        "verified_right": 535,
+        "verified_wrong": 0,
+        "asked_right": 159,
+        "asked_wrong": 0,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "landmark": {
+        "verified_right": 184,
+        "verified_wrong": 0,
+        "asked_right": 113,
+        "asked_wrong": 0,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "landmark_only": {
+        "verified_right": 0,
+        "verified_wrong": 0,
+        "asked_right": 180,
+        "asked_wrong": 8,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "partial": {
+        "verified_right": 0,
+        "verified_wrong": 0,
+        "asked_right": 138,
+        "asked_wrong": 0,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "typo": {
+        "verified_right": 36,
+        "verified_wrong": 0,
+        "asked_right": 256,
+        "asked_wrong": 2,
+        "refused_known": 0,
+        "refused_right": 0,
+        "asked_unknown": 0,
+        "missed": 0
+      },
+      "unknown": {
+        "verified_right": 0,
+        "verified_wrong": 0,
+        "asked_right": 0,
+        "asked_wrong": 0,
+        "refused_known": 0,
+        "refused_right": 200,
+        "asked_unknown": 0,
+        "missed": 0
+      }
+    },
+    "asked_top_right": {
+      "ambiguous": 87,
+      "exact": 68,
+      "landmark": 113,
+      "landmark_only": 137,
+      "partial": 138,
+      "typo": 213,
+      "unknown": 0
+    }
+  },
+  "sweep": [
+    {
+      "verified_at": 0.7,
+      "confirm_typo_matches": true,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.7,
+      "confirm_typo_matches": false,
+      "verified_right": 0.468,
+      "verified_wrong": 0.0,
+      "questions": 0.432
+    },
+    {
+      "verified_at": 0.8,
+      "confirm_typo_matches": true,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.8,
+      "confirm_typo_matches": false,
+      "verified_right": 0.433,
+      "verified_wrong": 0.0,
+      "questions": 0.467
+    },
+    {
+      "verified_at": 0.85,
+      "confirm_typo_matches": true,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.85,
+      "confirm_typo_matches": false,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.9,
+      "confirm_typo_matches": true,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.9,
+      "confirm_typo_matches": false,
+      "verified_right": 0.3775,
+      "verified_wrong": 0.0,
+      "questions": 0.5225
+    },
+    {
+      "verified_at": 0.95,
+      "confirm_typo_matches": true,
+      "verified_right": 0.0895,
+      "verified_wrong": 0.0,
+      "questions": 0.8105
+    },
+    {
+      "verified_at": 0.95,
+      "confirm_typo_matches": false,
+      "verified_right": 0.0895,
+      "verified_wrong": 0.0,
+      "questions": 0.8105
+    }
+  ]
+}

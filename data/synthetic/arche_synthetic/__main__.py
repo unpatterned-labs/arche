@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from . import SCALE, artists, build
+from . import SCALE, artists, build, places
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -32,6 +32,19 @@ def main(argv: list[str] | None = None) -> int:
                  "people": max(2, int(SCALE["people"] * ratio)),
                  "places": max(2, int(SCALE["places"] * ratio))}
 
+    if args.world_pack in places.WORLD_PACKS:
+        # A different kind again: `--scale` is requests; the sheet is half that.
+        n = args.scale or 1000
+        _, manifest = places.build(seed=args.seed, sheet=max(20, n // 2), requests=n,
+                                   out=Path(args.out),
+                                   version=places.WORLD_PACKS.index(args.world_pack))
+        print(f"  {manifest['world_id']}  seed {manifest['seed']}")
+        print(f"  sheet        {manifest['counts']['sheet_addresses']} addresses, "
+              f"{manifest['counts']['landmarks']} landmarks")
+        print(f"  requests     {manifest['counts']['requests']}  "
+              f"{manifest['counts']['renderings']}")
+        print(f"  written to   {args.out}")
+        return 0
     if args.world_pack == artists.WORLD_PACK:
         # A different kind of world: `--scale` is records, not organisations.
         _, manifest = artists.build(seed=args.seed, records=args.scale or 10_000,
