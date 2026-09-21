@@ -61,7 +61,7 @@ def _jaccard(a: str, b: str) -> float:
 
 
 def run(csv_path: Path, out_path: Path | None) -> int:
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
     from rapidfuzz import fuzz
 
     rows = [r for r in csv.DictReader(csv_path.open(encoding="utf-8-sig"))
@@ -153,7 +153,7 @@ def run(csv_path: Path, out_path: Path | None) -> int:
     left = [rec(a) for a, _, _ in candidates]
     right = [rec(b) for _, b, _ in candidates]
     pos = {(a["uniq_id"], b["uniq_id"]): i for i, (a, b, _) in enumerate(candidates)}
-    res = crosswalk(left, right, entity="place", id_field="id")
+    res = reconcile(left, right, entity="place", id_field="id")
     arche_merged, arche_review = set(), set()
     for e in res["matches"]:
         i = pos.get((e["a_id"], e["b_id"]))

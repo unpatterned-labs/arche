@@ -60,7 +60,7 @@ os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")   # Windows without MSVC
 
 from arche import resolve_documents
 
-report = resolve_documents("../../data/docs/*.pdf", jurisdiction="NG")
+report = resolve_documents("../../data/doc_bench/*.pdf", jurisdiction="NG")
 print(report.table())
 """)
 

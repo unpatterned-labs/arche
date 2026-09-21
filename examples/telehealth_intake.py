@@ -28,7 +28,7 @@ It is deliberately HONEST about coverage: the guard's guarantee is fail-closed
 from arche.guard import EgressGuard, GuardDeniedError
 from arche.policy import load_statute
 from arche.policy.overlay import apply_overlay, load_overlay
-from arche.workflow._primitive import Pipeline
+from arche import Pipeline
 
 TEXT = ("Patient Chinedu Okafor, NIN 12345678901, HIV positive, "
         "phone 08031234567, Lekki.")

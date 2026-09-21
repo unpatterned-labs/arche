@@ -687,7 +687,7 @@ COMPARATOR_NOTES = {
     "id": "an exact identifier. Strong when it agrees",
     "code": "a product or model code",
     "spec": "a specification drawn out of the name, such as a capacity or size",
-    "premises": "whether two addresses name the same door — the unit, plot or street "
+    "premises": "whether two addresses name the same door: the unit, plot or street "
                 "number, compared on its own. Two different units on one estate share "
                 "nearly all their address text, so this is the only part that separates "
                 "them",
@@ -737,20 +737,20 @@ def compare_names(name_a, name_b, priors=None):
 # whose vocabulary happens to flatter the answer, which is the failure this
 # project exists to prevent, arriving one level above where it was defended.
 ENTITY_PACK_PURPOSE: dict[str, str] = {
-    "person": "people — names, dates of birth, national IDs, phone, email, address",
-    "place": "physical locations — facilities, buildings, sites, addresses and "
+    "person": "people: names, dates of birth, national IDs, phone, email, address",
+    "place": "physical locations: facilities, buildings, sites, addresses and "
              "coordinates. Use this for anything you would visit or deliver to, "
              "including hospitals, schools and clinics",
-    "organisation": "legal and institutional bodies — companies, agencies, "
+    "organisation": "legal and institutional bodies: companies, agencies, "
                     "registered entities, by name and registration id",
     "organization": "alias of `organisation`",
     "artist": "performing artists and recording names, including aliases and "
               "stage names",
     "product_electronics": "electronic products, by model code and specification",
-    "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes — size, "
+    "product_home_goods": "furniture, bedding, rugs and decor, by variant attributes: size, "
                           "colour, material, shape and length. Use this rather than "
                           "`product_electronics` for anything without a model code",
-    "product_grocery": "supermarket groceries, by brand and net contents — a 200g pack and "
+    "product_grocery": "supermarket groceries, by brand and net contents: a 200g pack and "
                        "a 500g pack of one item are two products",
 }
 
@@ -848,7 +848,8 @@ def describe_packs() -> dict[str, dict]:
 #: turns. It is a precision floor, not a runtime one: the engine's runtime
 #: used to be the other reason (nine hours at 6,144 records) until the
 #: per-pair recomputation was memoised on 2026-09-19 -- the same sweep now
-#: runs in 70 s, within 3x of Splink everywhere.
+#: runs in 70 s at 6,144 records (52 s at 3,081 against Splink's 9 s; the
+#: numbers are in data/synthetic/bench_size_floor_result.json).
 AUTO_SPLINK_FLOOR = 1_000
 
 

@@ -3,6 +3,7 @@ site_description: Are these the same thing? arche decides whether messy records 
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
+copyright: unpatterned.org. Apache-2.0.
 
 # The look is DESIGN.md at the repository root: paper, ink, one accent used
 # only as a mark, Source Serif 4 and JetBrains Mono, no dark mode. Material

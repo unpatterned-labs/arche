@@ -31,9 +31,6 @@ torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
-arche-adapters = { workspace = true }
-arche-graph = { workspace = true }
-arche-live = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -86,14 +83,12 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM"]
 "packages/arche-core/tests/*" = ["N802", "N803", "N806", "N811", "N812"]
 
 [tool.pytest.ini_options]
-testpaths = ["packages/arche-core/tests", "packages/arche-graph/tests", "packages/arche-live/tests", "demo/tests", "benchmarks/tests"]
+testpaths = ["packages/arche-core/tests"]
 asyncio_mode = "auto"
 # Silence internal v0.1 → v0.2 migration warnings during tests. The shims still
 # fire for external callers (that's their point); these filters keep test output
 # focused on real issues. Each filter targets a specific shim by message prefix.
 filterwarnings = [
-    # The v0.1 callable arche.resolve() — many tests exercise it as the back-compat contract.
-    "ignore:Calling arche.resolve\\(\\) as a function:DeprecationWarning",
     # External library deprecations we can't fix without upgrading dependencies.
     "ignore:builtin type Swig.* has no __module__ attribute:DeprecationWarning",
     "ignore:builtin type swigvarlink:DeprecationWarning",

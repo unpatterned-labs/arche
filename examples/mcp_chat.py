@@ -32,7 +32,7 @@ import pathlib
 import sys
 
 MODEL = os.environ.get("ARCHE_CHAT_MODEL", "gpt-4o-mini")
-REPO = pathlib.Path(__file__).resolve().parents[2]
+REPO = pathlib.Path(__file__).resolve().parents[1]
 
 SYSTEM = """You are connected to arche, which resolves entity references and \
 protects personal data.

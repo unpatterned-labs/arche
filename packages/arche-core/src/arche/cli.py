@@ -299,7 +299,7 @@ def _cmd_replay(args: argparse.Namespace) -> int:
     }
     lines = [f"reproduced: {replay.reproduced}"]
     if replay.reproduced:
-        lines.append(f"  {replay.then.identity} {replay.then.action} — "
+        lines.append(f"  {replay.then.identity} {replay.then.action}: "
                      "same decision_id, byte for byte")
     else:
         lines.append(f"  then {replay.then.identity} {replay.then.action}  ->  now "
@@ -679,7 +679,7 @@ def _cmd_compare(args: argparse.Namespace) -> int:
 
     if args.demo:
         records_a, records_b, entity = _demo_records()
-        title = "arche compare — demo (artist royalty statement vs catalog)"
+        title = "arche compare: demo (artist royalty statement vs catalog)"
     else:
         if not (args.a and args.b):
             raise SystemExit("arche compare: provide two input files, or --demo")
@@ -690,7 +690,7 @@ def _cmd_compare(args: argparse.Namespace) -> int:
         # Filenames often contain names/identifiers; they only appear in the
         # title of an explicitly revealed working copy.
         title = (
-            f"arche compare — {Path(args.a).name} vs {Path(args.b).name}"
+            f"arche compare: {Path(args.a).name} vs {Path(args.b).name}"
             if args.reveal
             else "arche compare"
         )
@@ -740,7 +740,7 @@ def _cmd_compare(args: argparse.Namespace) -> int:
 
     print(f"compared {len(records_a):,} x {len(records_b):,} records (entity pack: {entity})")
     print(f"  matched: {len(matches):,}   review: {len(review):,}")
-    print(f"  report:    {out_path}   [{'REVEALED' if args.reveal else 'masked — safe to share'}]")
+    print(f"  report:    {out_path}   [{'REVEALED' if args.reveal else 'masked: safe to share'}]")
     print(f"  decisions: {json_path}")
     if not args.reveal:
         print("  (values masked by default; add --reveal for a working copy)")
@@ -991,7 +991,7 @@ def _cmd_attest_verify(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="arche",
-        description="arche — know the real-world entity, prove the decision.",
+        description="arche: know the real-world entity, prove the decision.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1088,7 +1088,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     documents_p.add_argument(
         "--extraction-backend",
+        # `regex` is the 0.8 name for `basic`; still accepted, no longer offered.
         choices=["auto", "basic", "regex"],
+        metavar="{auto,basic}",
         default="basic",
         help="field extraction backend (default basic; auto may load local models)",
     )

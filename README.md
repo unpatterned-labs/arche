@@ -102,7 +102,7 @@ Published whichever way it falls, with the caveats attached rather than in a foo
 | **Name frequency** *(ablation)* | the same engine with the frequency signal off: precision 0.162, 7,705 false merges | precision **0.946**, 41 false merges | 1,114 real same-surname pairs from a public voter register. Recall is the cost: **48%** on same-person pairs differing by a dropped middle name |
 | **Multilingual detection** | Presidio 37/48 | **47/48** | **Not re-runnable.** The 48-case set is not in this repo and nothing here computes the number. Unverified until rebuilt |
 
-The honest ledger, in full, is in [the whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
+The honest ledger, in full, is on [Benchmarks](https://unpatterned-labs.github.io/arche/reference/benchmarks/), including the benchmarks that are too small, the abstention policy that is not yet precommitted, and the head-to-head against frontier models that has not been run.
 
 ## Why the calibration comes from where it does
 
@@ -165,12 +165,12 @@ It is alpha, says so on the page, binds to `127.0.0.1`, and has no authenticatio
 
 | | |
 |---|---|
-| [The whole picture](https://unpatterned-labs.github.io/arche/about/the-whole-picture/) | what is built, what is measured, what is not proven |
-| [Quickstart](https://unpatterned-labs.github.io/arche/getting-started/quickstart/) | install, then a first result |
-| [How it works](https://unpatterned-labs.github.io/arche/tutorials/how-it-works/) | the pipeline, the comparators, and how a decision is reached |
-| [What matching looks like](https://unpatterned-labs.github.io/arche/tutorials/what-matching-looks-like/) | the failure modes side by side, with real verdicts |
-| [Re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/) | check a signed decision you did not issue |
-| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | 14, from first call to crosswalking a national register |
+| [Five minutes](https://unpatterned-labs.github.io/arche/get-started/five-minutes/) | three commands, no data of your own |
+| [From Python](https://unpatterned-labs.github.io/arche/get-started/python/) | the five verbs, one example each |
+| [How it works](https://unpatterned-labs.github.io/arche/how-it-works/) | the decision, the evidence, the backends, the statutes |
+| [Compare two records](https://unpatterned-labs.github.io/arche/guides/compare-two-records/) | the verdict, its two fields, and why an identical pair can be review |
+| [Attested answers](https://unpatterned-labs.github.io/arche/how-it-works/attestation/) | a signed answer someone who does not trust you can verify |
+| [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks) | 19, from a first call to reconciling a national register |
 
 ## Contributing
 

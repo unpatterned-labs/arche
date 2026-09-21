@@ -13,7 +13,9 @@
  *   3. the rule above a verdict (.pair-verdict)
  *   4. the left rule beside a note (.arche-note, admonitions)
  *   5. the underline on a hovered link in running text
- * Five uses, all marks. If it is carrying meaning in a sentence, the
+ *   6. on the landing page only: the kicker label, the primary button's
+ *      fill, and the decision id in the terminal
+ * Six uses, all marks. If it is carrying meaning in a sentence, the
  * sentence is wrong.
  */
 
@@ -616,6 +618,15 @@ body,
   color: var(--muted);
 }
 
+/* Material sets this link to translucent white for its dark footer. */
+.md-footer-meta .md-copyright a,
+.md-footer-meta .md-copyright a:hover,
+.md-footer-meta .md-copyright a:focus {
+  color: var(--muted) !important;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+}
+
 .md-social__link {
   color: var(--muted);
 }
@@ -794,7 +805,7 @@ body,
 
 .arche-home .cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -806,7 +817,7 @@ body,
 }
 
 .arche-home .md-typeset .card h3 {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   margin: 0 0 0.5rem;
 }
 
@@ -947,7 +958,7 @@ body,
     font-size: 2.6rem;
   }
   .arche-home .cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .arche-home .for,
   .arche-home .map {
@@ -962,6 +973,7 @@ body,
   .arche-home .md-typeset .hero h1 {
     font-size: 2rem;
   }
+  .arche-home .cards,
   .arche-home .for,
   .arche-home .map {
     grid-template-columns: 1fr;

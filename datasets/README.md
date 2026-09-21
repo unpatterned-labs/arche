@@ -44,7 +44,6 @@ datasets/
 ├── compliance/                # Jurisdiction-specific compliance metadata
 ├── DATACARD.md                # HuggingFace dataset card
 ├── DATASET_LICENSE.md         # CC-BY-4.0 license
-├── STATISTICS.md              # Detailed dataset statistics
 ├── export_hf.py               # Export to CSV / JSONL / Parquet for HuggingFace
 └── README.md                  # This file
 ```

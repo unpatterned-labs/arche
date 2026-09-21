@@ -220,6 +220,10 @@ _DEPRECATED: dict[str, str] = {
 }
 
 
+#: The subpackages `__all__` recommends by name.
+_SUBPACKAGES = frozenset({"detect", "resolve"})
+
+
 def __getattr__(name: str):
     """PEP 562 lazy attribute access.
 
@@ -228,6 +232,16 @@ def __getattr__(name: str):
     """
     target = _LAZY.get(name)
     if target is None:
+        if name in _SUBPACKAGES:
+            # `arche.detect` and `arche.resolve` are in `__all__` as the two
+            # subpackages a caller reaches into. A bare `import arche` does not
+            # import them, and before this branch `arche.detect` raised
+            # AttributeError until something else had imported the subpackage.
+            from importlib import import_module
+
+            module = import_module(f"{__name__}.{name}")
+            globals()[name] = module
+            return module
         raise AttributeError(f"module 'arche' has no attribute {name!r}")
     if name in _DEPRECATED:
         import warnings

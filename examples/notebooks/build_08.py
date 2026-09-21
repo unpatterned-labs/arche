@@ -60,7 +60,7 @@ logging.disable(logging.INFO); warnings.filterwarnings("ignore")
 
 from arche.doc import parse
 
-DOCS = sorted(glob.glob("../../data/docs/*.pdf"))
+DOCS = sorted(glob.glob("../../data/doc_bench/*.pdf"))
 doc = parse(DOCS[0])
 print(len(DOCS), "documents")
 print()
@@ -187,7 +187,7 @@ proof that two people are one person.
 code("""
 from arche import resolve_documents
 
-report = resolve_documents("../../data/docs/*.pdf", jurisdiction="NG")
+report = resolve_documents("../../data/doc_bench/*.pdf", jurisdiction="NG")
 for doc_name, rec in report.records.items():
     print(f"{doc_name[:40]:42}")
     for k, v in sorted(rec.items()):

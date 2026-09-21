@@ -8,9 +8,9 @@ hide:
 <div class="hero-copy">
 <p class="kicker">Open-source Python library</p>
 <h1>Are these the same thing?</h1>
-<p class="lede">Two records, spelled differently, sharing an id. arche says whether they are one thing, shows the evidence, says <em>review</em> when it should, and keeps a receipt you can replay next year.</p>
+<p class="lede">Two records, or two documents, spelled differently, sharing an id. arche reads the fields out of the text, says whether they are one thing, shows the evidence, says <em>review</em> when it should, and keeps a receipt you can replay next year.</p>
 <p class="actions"><a class="btn" href="get-started/five-minutes/">Get started</a><a class="btn secondary" href="how-it-works/">Read how it works</a></p>
-<p class="position">Splink computes the probability. <strong>arche keeps the receipt.</strong></p>
+<p class="position">Fellegi-Sunter computes the probability. <strong>arche reads the documents, gates the merge and keeps the receipt.</strong></p>
 </div>
 <div class="term"><div class="term-bar"><i></i><i></i><i></i><span>terminal</span></div>
 <pre><span class="dim">$</span> pip install arche-core
@@ -30,6 +30,10 @@ hide:
 </section>
 
 <section class="cards">
+<div class="card">
+<h3>It reads the documents</h3>
+<p>A bank statement, an invoice and a payslip in; one record per document out, with the fields arche read and where it read them; each resolved against the others. Plain text, PDF, DOCX and scans, on your machine.</p>
+</div>
 <div class="card">
 <h3>It refuses to guess</h3>
 <p><code>review</code> is a real answer. Two identical strings that are ordinary words are held apart, and the page says why. No jurisdiction it can infer, no statute that covers the country, no distinctive agreement: each comes back as its own answer, never as a verdict dressed up.</p>

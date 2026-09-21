@@ -23,7 +23,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 try:
     from rapidfuzz import fuzz
@@ -163,7 +163,7 @@ def _evaluate_source(
     block: str,
 ) -> tuple[dict[str, Any], list[dict[str, str]]]:
     """Run one source against the inventory and return counts plus review rows."""
-    result = crosswalk(
+    result = reconcile(
         _as_arche_records(reference, "reference", "school_id"),
         _as_arche_records(source, source_name, source_id),
         entity="place",

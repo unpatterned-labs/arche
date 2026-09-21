@@ -61,7 +61,7 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_ID": {
         "country": "KE",
         "id_type": "NATIONAL_ID",
-        "description": "Kenya National ID — 7 or 8 digits, cue-anchored",
+        "description": "Kenya National ID: 7 or 8 digits, cue-anchored",
         # Cue-anchored like KE_HUDUMA. Seven or eight bare digits are an
         # order number, an invoice, a receipt as often as an id -- the
         # detection benchmark read 25 of them as Kenyan ids in 240 texts --
@@ -79,7 +79,7 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_HUDUMA": {
         "country": "KE",
         "id_type": "HUDUMA",
-        "description": "Kenya Huduma Namba (NIIMS) — cue-anchored",
+        "description": "Kenya Huduma Namba (NIIMS): cue-anchored",
         # DELIBERATELY cue-anchored. A Huduma Namba is an 8-12 character
         # string with no check digit and no distinguishing shape, so a bare
         # number cannot be told apart from an NHIF number or a National ID —
@@ -102,7 +102,7 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_KRA_PIN": {
         "country": "KE",
         "id_type": "KRA_PIN",
-        "description": "Kenya KRA PIN — A/P + 9 digits + letter (KRA tax ID)",
+        "description": "Kenya KRA PIN: A/P + 9 digits + letter (KRA tax ID)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])([AP]\d{9}[A-Z])(?![A-Za-z0-9])",
             re.IGNORECASE,
@@ -113,7 +113,7 @@ KE_PATTERNS: dict[str, dict] = {
     "KE_NHIF": {
         "country": "KE",
         "id_type": "NHIF",
-        "description": "Kenya NHIF number — 8 or 9 digits, cue-anchored",
+        "description": "Kenya NHIF number: 8 or 9 digits, cue-anchored",
         "pattern": re.compile(
             r"\bnhif(?:\s*(?:card|no\.?|number|#|member(?:ship)?))?(?![a-z])"
             r"[^0-9\n]{0,20}?"

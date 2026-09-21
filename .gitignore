@@ -166,3 +166,6 @@ examples/notebooks/build_21.py
 
 # Written by examples/identity_knowledge_graph.py on every run.
 examples/identity_graph.html
+
+# Fetched by datasets/english_dataops/build_english_frequencies.py on first run.
+datasets/english_dataops/gutenberg_cache/

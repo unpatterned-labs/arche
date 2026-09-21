@@ -6,8 +6,7 @@
     arche studio
 
 Then open http://127.0.0.1:8765 (it opens itself). Ships inside the wheel as
-``arche._studio``; ``tools/arche-studio/serve.py`` in the repository is a
-pointer to it. Review packs and the reviewer's own state live under
+``arche._studio``. Review packs and the reviewer's own state live under
 ``./data`` when run from a checkout that has ``data/review_packs``, and under
 ``~/.arche/studio`` otherwise (``ARCHE_STUDIO_HOME`` overrides both).
 

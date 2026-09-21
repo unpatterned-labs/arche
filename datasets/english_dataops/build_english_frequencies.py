@@ -77,7 +77,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 DEST = (REPO / "packages" / "arche-core" / "src" / "arche" / "resolve"
         / "_data" / "english_frequencies.json.gz")
-CACHE = HERE / "gutenberg_cache"
+CACHE = HERE / "gutenberg_cache"          # fetched on first run; not tracked
 
 #: Gutenberg ebook ids. Chosen for breadth of register rather than literary
 #: merit: fiction, science, reference, travel, cookery and technical manuals, so

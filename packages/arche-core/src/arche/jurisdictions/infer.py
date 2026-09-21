@@ -112,9 +112,9 @@ class JurisdictionInference:
 
     def explain(self, reveal: bool = False) -> str:
         """Why this came out the way it did, in words a reviewer can check."""
-        head = (f"abstained — {self.reason}" if self.abstained
+        head = (f"abstained: {self.reason}" if self.abstained
                 else f"{self.country} (confidence {self.confidence:.2f}, "
-                     f"margin {self.margin:.2f}) — {self.reason}")
+                     f"margin {self.margin:.2f}): {self.reason}")
         lines = [head]
         if self.evidence:
             lines.append("evidence:")
@@ -290,7 +290,7 @@ def infer_jurisdiction(
         return JurisdictionInference(
             country=None, confidence=confidence, margin=margin, runner_up=runner_up,
             abstained=True, evidence=tuple(evidence),
-            reason=(f"evidence is split — {top} at {confidence:.0%} is below the "
+            reason=(f"evidence is split: {top} at {confidence:.0%} is below the "
                     f"{min_confidence:.0%} floor"),
         )
     if margin < min_margin:

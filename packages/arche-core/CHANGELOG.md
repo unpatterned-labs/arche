@@ -4,6 +4,18 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Fixed
+
+- `arche.detect` and `arche.resolve` are in `__all__` and now resolve from a bare `import arche`; before, they raised `AttributeError` until something else had imported the subpackage.
+- `extract(backend="auto")` repeats what actually failed when GLiNER 2 is installed but cannot import (a missing protobuf, a torch build that does not load) instead of saying it is not installed.
+- `arche resolve-documents --extraction-backend` offers `auto` and `basic`; `regex`, the 0.8 name, is still accepted and no longer advertised.
+- User-facing strings no longer carry em-dashes: the `compare --demo` summary, the report titles, `replay` output, the argparse description, the jurisdiction inference reasons, the BASELINE statute citation, the entity-pack purposes and the detector descriptions.
+- The `AUTO_SPLINK_FLOOR` comment claimed the engine runs within 3x of Splink everywhere; the result file says 52 s against 9 s at 3,081 records, and the comment now says that.
+
+### Removed
+
+- Repository material that no longer described the package or was not reproducible from it: the `tools/arche-studio` shim (the studio is `arche studio`), four notebooks that needed private corpora or personal documents, the 0.4.0a3 notebook run log, generated crosswalk CSVs, five one-off scripts, the 15 MB Gutenberg cache (the builder fetches it), a duplicate review pack, and the Copilot agent prompts and instructions that named modules removed in 0.8.0.
+
 ### Docs
 
 - **The documentation site was rebuilt.** One landing page with the real command and its real output, then four sections: Get started, Guides (one job per page), How it works, Reference, and the essays under Writing. Every Python example on a published page is executed against the installed package before it is published, and two more rules are tests now: no em-dashes, and a task page shows its first example on the first screen. The look is the project's own (paper, ink, one accent used as a mark, Source Serif 4 and JetBrains Mono, no dark mode). Every URL that was published before still answers; sixty-odd older pages stay in the repository as working material and are not built.

@@ -4,7 +4,7 @@
 
 Run from the repository root:
 
-    uv run python examples/notebooks/build_14_jws_attestation.py
+    uv run python examples/notebooks/build_25_jws_attestation.py
 """
 from __future__ import annotations
 
@@ -224,6 +224,6 @@ notebook = {
     "nbformat_minor": 5,
 }
 
-output = Path(__file__).resolve().parent / "14_jws_attestation.ipynb"
+output = Path(__file__).resolve().parent / "25_jws_attestation.ipynb"
 output.write_text(json.dumps(notebook, indent=1, ensure_ascii=False), encoding="utf-8")
 print(f"wrote {output} ({len(cells)} cells)")
