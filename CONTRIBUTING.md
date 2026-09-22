@@ -1,8 +1,6 @@
 # Contributing to arche
 
-Thanks for considering it. This document covers how to get the project
-running, what we look for in a change, and the few rules that are specific to
-a project that handles identity data.
+Thanks for considering it. This document covers how to get the project running, what we look for in a change, and the few rules that are specific to a project that handles identity data.
 
 By participating you agree to the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
@@ -22,9 +20,7 @@ Run the tests:
 uv run pytest packages/arche-core/tests -q
 ```
 
-You should see roughly 1,458 passing and 3 skipped. The three skips are
-optional heavy dependencies (`shapely`, `docling`) that the base install
-deliberately does not pull in — they are not failures.
+You should see roughly 1,458 passing and 3 skipped. The three skips are optional heavy dependencies (`shapely`, `docling`) that the base install deliberately does not pull in — they are not failures.
 
 Lint:
 
