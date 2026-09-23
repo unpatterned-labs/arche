@@ -1,6 +1,6 @@
 # Kano health-facility data — sources & attribution
 
-Two **independent** public sources, fetched by `notebooks/fetch_facility_data.py`
+Two **independent** public sources, fetched by `data/scripts/fetch_facility_data.py`
 for the arche facility-resolution spike. Independence matters: the HFR is
 compiled by eHealth Africa partly from GRID-3, so GRID-3 is *not* independent of
 it — OpenStreetMap is (crowd-mapped, separate from the registry).
@@ -23,4 +23,4 @@ it — OpenStreetMap is (crowd-mapped, separate from the registry).
   attribution required.
 - **Fields:** id, name, amenity, healthcare, lga, lat, lon.
 
-Re-fetch: `uv run python notebooks/fetch_facility_data.py`
+Re-fetch: `uv run python data/scripts/fetch_facility_data.py`

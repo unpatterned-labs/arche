@@ -1,3 +1,4 @@
+<!-- superseded by reference/python-api.md and how-it-works/backends.md on 2026-09-20; kept as working material, not built -->
 # Record resolution API
 
 ## `reconcile(list_a, list_b, *, entity=None, comparators=None, tf=None, decl=None, store=None, **kwargs)`
@@ -70,7 +71,7 @@ print(decision.identity)
 
 ## `store=`
 
-Every verb accepts `store=`, a `Ledger` from `arche.attach("duckdb:///...")`. The return value is unchanged; the receipt is additionally recorded with the inputs it was made from, so it can be looked up by `decision_id`, replayed, and joined with other receipts into entities. See [Keep and replay a decision](../guides/keep-and-replay.md).
+Every verb accepts `store=`, a `Ledger` from `arche.attach("duckdb:///...")`. The return value is unchanged; the receipt is additionally recorded with the inputs it was made from, so it can be looked up by `decision_id`, replayed, and joined with other receipts into entities. See [Keep, explain, replay](../guides/keep-and-replay.md).
 
 ## Signing crosswalk edges
 

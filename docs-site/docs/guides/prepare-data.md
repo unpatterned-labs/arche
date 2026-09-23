@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-a-batch.md on 2026-09-20; kept as working material -->
 # Prepare your data
 
 Start with two explicit lists. Give every row a stable `id`; use the same field name in both lists where possible.

@@ -4,7 +4,7 @@
 
 ---
 
-Three pages on this site describe how work moves through arche, and they answer different questions. [How arche works](../tutorials/how-it-works.md) is the walkthrough. One record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
+Three pages on this site describe how work moves through arche, and they answer different questions. [Evidence, gates and distinctiveness](../how-it-works/evidence.md) is the walkthrough. One record, all four verbs, for a reader meeting entity resolution for the first time. [Architecture](architecture.md) is the internal structure, layered by what each component is permitted to conclude. **This page is the inventory.** It exists to answer "can arche do X today", including the cases where the answer is no, and it is deliberately unflattering where the code deserves it.
 
 The four verbs are **detect · resolve · protect · attest**. An earlier version of this page used Detect → Resolve → Verify → Govern with Link as a fifth, unshipped step. Two of those words were never the shipped vocabulary, and the ordering implied a pipeline that the code does not have. `resolve` and `protect` are independent surfaces, not consecutive stages, and most callers use one without the other.
 
@@ -184,7 +184,7 @@ One **overlay** ships alongside the packs: `EU-AI-ACT`, applied with `Pipeline(o
 
 `arche.sign` produces Ed25519 / JWS envelopes over a `Pipeline.Result`; `arche.attest` produces an `Attestation` over one co-reference decision; `arche.credentials.sd_jwt` re-frames either as an IETF SD-JWT-VC with selective disclosure and optional holder key binding. Compact serialization only. `resolve.reconcile.sign_edges` does the same job for crosswalk edges at list scale.
 
-Three properties are worth knowing before you write verification code, and all three are covered in depth on [the attest page](../how-to/attest.md).
+Three properties are worth knowing before you write verification code, and all three are covered in depth on [the attest page](../how-it-works/attestation.md).
 
 - **`valid` is not `trusted`.** `valid` says the signature matches the key that was resolved; only `trusted` says that key came from somewhere the caller controls. `sign.jws.verify()` now fails closed. `allow_did_key_from_kid` defaults to `False`, where it defaulted to `True` through v0.3.0a1. The higher-level `verify_attestation()` and `verify_sd_jwt()` deliberately still fall back to the self-asserted key and report `trusted=False` rather than refusing, which keeps offline inspection working and moves the burden to you.
 - **`reproducible` is derived from the decision's pins**: not from the signing format. A decision built from a hosted model's extraction attests `reproducible: False`, and so does anything depending on a live provider response.

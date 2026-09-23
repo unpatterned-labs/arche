@@ -22,7 +22,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from arche.resolve import crosswalk
+from arche.resolve import reconcile
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 DATA = REPOSITORY / "data"
@@ -200,7 +200,7 @@ def main() -> None:
             f"No usable records for {args.state!r}: GRID3={len(left)}, HFR={len(right)}"
         )
 
-    result = crosswalk(left, right, entity="place")
+    result = reconcile(left, right, entity="place")
     rows = _edge_rows(result, left, right)
     counts = Counter(row["decision"] for row in rows)
     surfaced_left = {row["grid3_id"] for row in rows}

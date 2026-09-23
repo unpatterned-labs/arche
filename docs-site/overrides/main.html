@@ -1,0 +1,13 @@
+{#
+  The one thing Material's config cannot express: our own font line.
+  Source Serif 4 (variable, optical sizing) for prose and headings, JetBrains
+  Mono for code and every number. `display=swap` and the fallback stack in
+  extra.css keep the page readable offline with only the typeface changing.
+#}
+{% extends "base.html" %}
+
+{% block extrahead %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+{% endblock %}

@@ -3,7 +3,7 @@
 Known entity worlds, imperfect observations, exact ground truth — and every disagreement labelled with **why it happened**.
 
 ```bash
-pip install arche-synthetic          # pyarrow and pyyaml. Nothing else.
+pip install pyarrow pyyaml           # what the generator needs. Nothing else.
 python -m arche_synthetic --scale 400 --out ./worlds/ng
 ```
 
@@ -17,7 +17,7 @@ report = bench.score(Predictions(arm="mine", pairs=my_predicted_pairs))
 report["recall_by_stratum"]["change/ORG_RELOCATED"]   # the column nobody else has
 ```
 
-From a checkout of this repository, run the scripts **from the repo root**. `data/synthetic` has its own `pyproject.toml`, so `uv run` with the working directory inside it resolves to the standalone project and will not find arche:
+From a checkout of this repository, run the scripts **from the repo root**, so that `uv run` resolves the workspace and finds arche:
 
 ```bash
 python data/synthetic/build_ng_supplier_v0.py          # ~7s, writes worlds/ng_supplier_v0/

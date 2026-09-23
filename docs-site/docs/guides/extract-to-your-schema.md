@@ -1,6 +1,6 @@
 # Extract to your schema
 
-A declaration says what *your* fields mean. It already drives matching: a field declared `kind: id` lands in the identifier slot and inherits the exact-match gate, a field declared `restricted` never leaves. This page is the other half: the same declaration is the schema a model is asked to extract into, so a document becomes a record in your own field names, with the evidence behind every value and the fields it could not fill named.
+At the end of this page a document becomes a record in your own field names, with the evidence behind every value, and the same declaration that extracted it is the one that matches it. A declaration says what *your* fields mean. It already drives matching: a field declared `kind: id` lands in the identifier slot and inherits the exact-match gate, a field declared `restricted` never leaves. This page is the other half: the same declaration is the schema a model is asked to extract into, so a document becomes a record in your own field names, with the evidence behind every value and the fields it could not fill named.
 
 ## Declare once
 
@@ -121,10 +121,10 @@ catch_lot@0:sha256:14cb209a5c8872b4 | reproducible: False
 |---|---|---|
 | **person**, a KYC note | all six: id, phone, email, address from the validators; name from the lexicon; date from the basic extractor | the same six; the model's name and date replace the basic ones |
 | **place**, a facility survey | `address` from the address parser (the landmark anchor, *opposite the central mosque*); `name` and `admin_path` unresolved | `name` from the model (*Karfi Primary Health Centre*); `admin_path` from the generic extractor's nearest LOCATION, which is the wrong span (*Karfi village road*, not *Kumbotso LGA, Kano State*) |
-| **artist**, a royalty line | `name` from the lexicon (*Ayodeji Balogun*, the legal name); `mbid` and `isni` unresolved — arche has no validator for either | all three from the model, `name` as *WIZKID* |
+| **artist**, a royalty line | `name` from the lexicon (*Ayodeji Balogun*, the legal name); `mbid` and `isni` unresolved, because arche has no validator for either | all three from the model, `name` as *WIZKID* |
 | **organisation**, an onboarding email | `rc_number`, `contact_email`, `contact_phone` from the validators; `supplier_name` unresolved | `supplier_name` from the model (*Kijani Tea Exporters Ltd*); the rest unchanged |
 
-Two of those rows are the point. The organisation's `supplier_name` on `basic` was *Amina Wanjiru* in the first draft — the finance contact, from the lexicon, at a confident 0.70 — because a `name` field fell back to any PERSON the basic extractor found. The declaration says `entity: organisation`; a supplier's name is not the person who signed the email, so a `name` field now falls back to PERSON only when the declared entity is one (`person`, `customer`, `patient`, `artist`, …) and to ORGANIZATION otherwise, which the basic extractor does not find. Unresolved is the right answer. And the place's `admin_path` on `auto` shows the same fallback failing in the other direction: the model was asked for *a place this sits inside* and offered nothing, the generic LOCATION stood in, and it is wrong. A containment field wants the administrative path, which is a place lane concern (the plan's M4), not something a nearest-entity fallback can guess.
+Two of those rows are the point. The organisation's `supplier_name` on `basic` was *Amina Wanjiru* in the first draft (the finance contact, from the lexicon, at a confident 0.70), because a `name` field fell back to any PERSON the basic extractor found. The declaration says `entity: organisation`; a supplier's name is not the person who signed the email, so a `name` field now falls back to PERSON only when the declared entity is one (`person`, `customer`, `patient`, `artist`, …) and to ORGANIZATION otherwise, which the basic extractor does not find. Unresolved is the right answer. And the place's `admin_path` on `auto` shows the same fallback failing in the other direction: the model was asked for *a place this sits inside* and offered nothing, the generic LOCATION stood in, and it is wrong. A containment field wants the administrative path, which is a place lane concern (the plan's M4), not something a nearest-entity fallback can guess.
 
 ## What can go into a declaration
 
@@ -143,7 +143,7 @@ Every key, with what it does at extraction and at matching. Unknown keys are err
 | `jurisdiction` | no, `default` | the priors for matching and the detector set for extraction (`NG`, `ZA`, `KE`, `GH`, …) |
 | `on_unknown` | no, `warn` | what a record field the declaration does not name does at matching: `allow`, `warn`, or `error` |
 | `tf` | no | the token-frequency table for `tftoken` fields: a shipped pack's (`organisation`, `place`, `artist`, …) or your own |
-| `geo` | no | `{lat: <field>, lon: <field>, weight, decay_km}` — two of your fields are coordinates, scored by distance |
+| `geo` | no | `{lat: <field>, lon: <field>, weight, decay_km}`: two of your fields are coordinates, scored by distance |
 | `fields` | yes | the mapping below |
 
 **Each field**
@@ -151,11 +151,11 @@ Every key, with what it does at extraction and at matching. Unknown keys are err
 | key | meaning |
 |---|---|
 | `role` | `identifies` (scored, can mint an entity id; needs a `kind`), `describes` (scored if it has a `kind`, never binds identity), or `ignore` (not extracted, not scored, not disclosed) |
-| `kind` | one or a list of: `name`, `placename`, `id`, `phone`, `email`, `address`, `date`, `tftoken`, `containment`, `postcode`, `type`. At matching it picks the comparator; at extraction it picks the source order — `phone`, `email`, `address` and an `id` of a family arche validates come from the validated detection first; everything else is the model's to propose, then the generic extractor's nearest entity type as a last resort |
+| `kind` | one or a list of: `name`, `placename`, `id`, `phone`, `email`, `address`, `date`, `tftoken`, `containment`, `postcode`, `type`. At matching it picks the comparator; at extraction it picks the source order: `phone`, `email`, `address` and an `id` of a family arche validates come from the validated detection first; everything else is the model's to propose, then the generic extractor's nearest entity type as a last resort |
 | `weight` | comparator weight, default `1.0` |
 | `id_family` | `kind: id` only. Names the identifier family so two declarations mint the same entity id for the same number, and tells extraction whether arche has a validator for it (`nin`, `bvn`, `passport`, `national_id`, `tin`, `rc`, `drivers_licence`, …). Reserved spellings (`nin`, `phone_number`, `passport_number`) are refused in favour of the canonical family, so a value cannot alias into the wrong one |
 | `statute_class` | a category of the declared `statute` (`PII-3-PHONE`, `PII-2-NIN`, …). Must exist in the pack; gives the field its citation and action |
-| `restricted` | never disclosed — not in reports, not in `as_record()`, not in a masked copy — but still usable for matching. A statute `drop` action sets it and cannot be overridden downward |
+| `restricted` | never disclosed (not in reports, not in `as_record()`, not in a masked copy) but still usable for matching. A statute `drop` action sets it and cannot be overridden downward |
 | `pii` | default `true`; `false` says the field is not personal data (a port, a product code) |
 | `description` | the label the model sees, verbatim. *IMO vessel number, e.g. IMO-9074729* is the difference between the right identifier and the nearest one |
 | `type_domain` | required with `kind: type`: the vocabulary of type words to score against (`health_facility`, …) |

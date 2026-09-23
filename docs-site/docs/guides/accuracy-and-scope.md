@@ -1,3 +1,4 @@
+<!-- superseded by reference/benchmarks.md on 2026-09-20; kept as working material, not built -->
 # Accuracy and scope
 
 arche is alpha software. A successful example is not evidence that a matching rule is safe for a new population, domain, or decision.

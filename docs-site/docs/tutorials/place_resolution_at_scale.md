@@ -32,7 +32,7 @@ Run the smallest possible example and read it carefully, because it teaches the 
 HFR-001 <-> OSM-77  review  score=0.578  {'name': 0.837, 'name_tftoken': 0.15, 'geo': 0.949}
 ```
 
-Same facility, ~60 m apart, and the engine says **`review`**. The evidence explains why: the fuzzy name comparator *does* see "Karfi Primary Health Centre" ≈ "Karfi PHC" (`name: 0.837`), the coordinates agree (`geo: 0.949`), but `name_tftoken`, the **distinctiveness** comparator, is weak. It asks *how rare are the tokens these names share?*, and rarity is measured against a corpus. With no `tf=` supplied it self-calibrates over the records you passed, and **a two-record corpus cannot tell the engine that "Karfi" is rare**. Weak distinctive proof → the safe verdict is `review`, never a silent merge. ([Every field decoded here](../how-to/read-crosswalk-output.md).)
+Same facility, ~60 m apart, and the engine says **`review`**. The evidence explains why: the fuzzy name comparator *does* see "Karfi Primary Health Centre" ≈ "Karfi PHC" (`name: 0.837`), the coordinates agree (`geo: 0.949`), but `name_tftoken`, the **distinctiveness** comparator, is weak. It asks *how rare are the tokens these names share?*, and rarity is measured against a corpus. With no `tf=` supplied it self-calibrates over the records you passed, and **a two-record corpus cannot tell the engine that "Karfi" is rare**. Weak distinctive proof → the safe verdict is `review`, never a silent merge. ([Every field decoded here](../guides/resolve-a-batch.md).)
 
 Hold that thought and add data.
 

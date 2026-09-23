@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/the-decision.md on 2026-09-20; kept as working material, not built -->
 # Decision contract
 
 Use the outcome label, evidence, and provenance together. A score alone is not an instruction to merge records.
@@ -102,6 +103,6 @@ The result is two engines with two provenance vocabularies, and no single field 
 4. Do not cluster pairwise links into entities unless the workflow defines transitivity, conflict handling, and review rules.
 5. Do not interpret `score` as a calibrated probability.
 
-See [review and evaluate a crosswalk](../guides/review-and-evaluate.md) for a portable review-outcome shape and the conditions required to make accuracy claims.
+See [review and evaluate a crosswalk](../guides/review-a-queue.md) for a portable review-outcome shape and the conditions required to make accuracy claims.
 
 This is the alpha consumer contract for `arche-core` 0.4.0a3. Any incompatible change should be called out in the release notes before a downstream system is expected to adopt it.

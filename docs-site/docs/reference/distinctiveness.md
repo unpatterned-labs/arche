@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/evidence.md on 2026-09-20; kept as working material, not built -->
 # Distinctiveness, and why identical records can still be `review`
 
 Two records can agree perfectly and still not be a match. This page explains the gate that does that, because it is the part of arche most likely to surprise you, and the surprise is usually arche being right.

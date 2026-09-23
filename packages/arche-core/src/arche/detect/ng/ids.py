@@ -110,7 +110,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_NIN": {
         "country": "NG",
         "id_type": "NIN",
-        "description": "Nigeria National Identification Number — 11 digits, NIMC-issued",
+        "description": "Nigeria National Identification Number: 11 digits, NIMC-issued",
         "pattern": re.compile(
             r"(?<![0-9])(\d{11})(?![0-9])"
         ),
@@ -120,7 +120,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_BVN": {
         "country": "NG",
         "id_type": "BVN",
-        "description": ("Nigeria Bank Verification Number — 11 digits starting with 22, "
+        "description": ("Nigeria Bank Verification Number: 11 digits starting with 22, "
                         "NIBSS-issued"),
         "pattern": re.compile(
             r"(?<![0-9])(22\d{9})(?![0-9])"
@@ -131,7 +131,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_PVC": {
         "country": "NG",
         "id_type": "PVC",
-        "description": "Nigeria Permanent Voter Card — 19-char alphanumeric (INEC)",
+        "description": "Nigeria Permanent Voter Card: 19-char alphanumeric (INEC)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])"
             r"(\d{2}\s?[A-Z0-9]{2}\s?[A-Z0-9]{2}\s?[A-Z0-9]{2}\s?\d{4}\s?\d{3}\s?\d{4})"
@@ -144,7 +144,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_TIN": {
         "country": "NG",
         "id_type": "TIN",
-        "description": "Nigeria Tax Identification Number — 10 digits (FIRS), cue-anchored",
+        "description": "Nigeria Tax Identification Number: 10 digits (FIRS), cue-anchored",
         # Cue-anchored like ZA_TAX_REF and KE_HUDUMA: ten bare digits with no
         # check digit are an order number as often as a tax number, and the
         # only evidence a reader has is the word "TIN", "tax" or "FIRS" before
@@ -163,7 +163,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_RC": {
         "country": "NG",
         "id_type": "RC",
-        "description": "Nigeria Company Registration Number — RC/BN + 5-8 digits (CAC)",
+        "description": "Nigeria Company Registration Number: RC/BN + 5-8 digits (CAC)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])((?:RC|BN)\s?\d{5,8})(?![A-Za-z0-9])",
             re.IGNORECASE,
@@ -174,7 +174,7 @@ NG_PATTERNS: dict[str, dict] = {
     "NG_DRIVERS": {
         "country": "NG",
         "id_type": "DRIVERS_LICENCE",
-        "description": ("Nigeria Driver's Licence — 3-letter state code + dash + 10-12 digits "
+        "description": ("Nigeria Driver's Licence: 3-letter state code + dash + 10-12 digits "
                         "(FRSC)"),
         # Mandatory dash separator avoids false positives from any
         # 3-letter context word ("BVN 22100987654", "NIN 12345678901", etc.).

@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/attestation.md on 2026-09-20; kept as working material, not built -->
 # Attest: the signature on the decision
 
 *What an arche attestation actually guarantees, the difference between a valid signature and a trusted one, and why the format choices were made the way they were.*

@@ -4,7 +4,7 @@ Anyone can produce a match. The question that decides whether a match is usable 
 
 This page is the operational answer. It covers the three kinds of decision arche produces, crosswalk edges, person decisions, and document-derived decisions, and ends with the checklist for the person on the other side, who has been handed a signed artifact and has to decide what it is worth.
 
-For the *semantics* of the signature, read [Attest](attest.md); for the wider question of what "verify a document" even means, read [Who made this document?](../tutorials/who-made-this-document.md). This page is the how.
+For the *semantics* of the signature, read [Attest](../how-it-works/attestation.md); for the wider question of what "verify a document" even means, read [Who made this document?](../tutorials/who-made-this-document.md). This page is the how.
 
 ---
 

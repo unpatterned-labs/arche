@@ -62,7 +62,7 @@ GH_PATTERNS: dict[str, dict] = {
     "GH_CARD": {
         "country": "GH",
         "id_type": "GHANA_CARD",
-        "description": "Ghana Card — GHA-NNNNNNNNN-N (NIA-issued)",
+        "description": "Ghana Card: GHA-NNNNNNNNN-N (NIA-issued)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(GHA-\d{9}-\d)(?![A-Za-z0-9])",
             re.IGNORECASE,
@@ -73,7 +73,7 @@ GH_PATTERNS: dict[str, dict] = {
     "GH_SSNIT": {
         "country": "GH",
         "id_type": "SSNIT",
-        "description": "Ghana SSNIT — 1 letter + 12 alphanumeric (Social Security)",
+        "description": "Ghana SSNIT: 1 letter + 12 alphanumeric (Social Security)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])([A-Z][A-Z0-9]{12})(?![A-Za-z0-9])"
         ),
@@ -83,7 +83,7 @@ GH_PATTERNS: dict[str, dict] = {
     "GH_TIN": {
         "country": "GH",
         "id_type": "TIN",
-        "description": "Ghana Tax Identification Number — P/C/G + 10 digits or 11 digits (GRA)",
+        "description": "Ghana Tax Identification Number: P/C/G + 10 digits or 11 digits (GRA)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])([PCG]\d{10})(?![A-Za-z0-9])",
             re.IGNORECASE,

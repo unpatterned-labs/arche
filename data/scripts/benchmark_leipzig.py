@@ -117,7 +117,7 @@ def main() -> int:
                     help="show that reweighting cannot substitute for a veto")
     args = ap.parse_args()
 
-    from arche.resolve import crosswalk
+    from arche.resolve import reconcile
 
     dblp, acm = _read("DBLP2.csv"), _read("ACM.csv")
     truth = {(r["idDBLP"], r["idACM"])
@@ -129,7 +129,7 @@ def main() -> int:
           f"(mapping is complete, so non-matches are known)\n")
 
     def report(label: str, comps: list[dict]) -> dict:
-        m = _score(crosswalk(A, B, comparators=comps, id_field="id"), truth)
+        m = _score(reconcile(A, B, comparators=comps, id_field="id"), truth)
         print(f"  {label:30} P={m['precision']:.4f}  R={m['recall']:.4f}  "
               f"surfaced={m['surfaced']:.4f}  blocking={m['blocking']:.4f}  "
               f"(TP {m['tp']}, FP {m['fp']}, review {m['review']})", flush=True)

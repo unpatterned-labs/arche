@@ -210,7 +210,7 @@ class Pipeline:
                 f"no statute pack covers jurisdiction {self.jurisdiction!r}. "
                 + (
                     "Applying arche's baseline floor, which is a conservative "
-                    "default and NOT the law of any country — every citation it "
+                    "default and NOT the law of any country: every citation it "
                     "emits says so."
                     if on_uncovered == "baseline"
                     else "No statute is applied, so `redacted_text` will be "

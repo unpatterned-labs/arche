@@ -314,7 +314,7 @@ The projection guarantee is precise, and worth stating precisely: **no raw *dete
 
 The top layer takes a verdict, the evidence that produced it, and the pinned versions of everything involved, and makes the whole thing checkable by someone who was not there. `ids` gives it a reproducible address, `sign` gives it an Ed25519 signature over canonical JSON, `attest` gives it a PII-free claim set, `credentials` gives it a selectively disclosable wallet form.
 
-The one thing to carry over from this page: `valid` answers "does this signature match this key", and only `trusted` answers "did that key come from somewhere I control". → [Attest: the signature on the decision](../how-to/attest.md).
+The one thing to carry over from this page: `valid` answers "does this signature match this key", and only `trusted` answers "did that key come from somewhere I control". → [Attest: the signature on the decision](../how-it-works/attestation.md).
 
 ---
 
@@ -386,7 +386,7 @@ Stated so adopters can hold us to scope.
 
 ## What's next
 
-- [How arche works](../tutorials/how-it-works.md). The walkthrough of a single `Pipeline` call
+- [Evidence, gates and distinctiveness](../how-it-works/evidence.md). The walkthrough of a single `Pipeline` call
 - Attest: the signature on the decision. What a signature does and does not prove
 - [A representation engine, not an inference engine](../about/representation-engine.md). Why the spine is shaped this way
 - The place benchmark. What the veto threshold was tuned against, and what that measurement cannot tell you

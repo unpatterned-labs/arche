@@ -1,3 +1,4 @@
+<!-- superseded by reference/extras.md on 2026-09-20; kept as working material, not built -->
 # Optional dependencies
 
 `pip install arche-core` gives you **20 packages** and no machine-learning stack. Everything heavier is an extra you ask for, and this page says what each one costs and what it buys.

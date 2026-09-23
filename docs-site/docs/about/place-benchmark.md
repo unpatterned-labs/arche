@@ -430,5 +430,5 @@ Overture         {'fraction_exact': 0.081, 'median_km': 0.05, 'verdict': 'consis
 ## Next
 
 - [Verify a merge against an external source](../how-to/verify-with-external-sources.md) for what an actually independent gazetteer can and cannot tell you
-- [Read the crosswalk output](../how-to/read-crosswalk-output.md) for the shape of the evidence the sweep above reads
+- [Read the crosswalk output](../guides/resolve-a-batch.md) for the shape of the evidence the sweep above reads
 - [The same clinic, three spellings](../tutorials/reconciling-nigerias-health-facilities.md) for the reconciliation this benchmark measures

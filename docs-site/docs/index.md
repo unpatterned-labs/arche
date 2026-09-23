@@ -1,14 +1,68 @@
-<div class="arche-hero" markdown>
+---
+template: home.html
+hide:
+  - footer
+---
 
-# Are these the same thing?
-
-<p class="arche-hero__sub">arche decides whether messy records of people, organisations, places and products describe one real-world thing — shows the evidence, says <em>I don't know</em> when it should, and keeps a receipt you can replay later.</p>
-
-<span class="arche-hero__status">0.9.0 · Apache-2.0 · runs offline on CPU</span>
-
+<section class="hero">
+<div class="hero-copy">
+<p class="kicker">Open-source Python library</p>
+<h1>Are these the same thing?</h1>
+<p class="lede">Two records, or two documents, spelled differently, sharing an id. arche reads the fields out of the text, says whether they are one thing, shows the evidence, says <em>review</em> when it should, and keeps a receipt you can replay next year.</p>
+<p class="actions"><a class="btn" href="get-started/five-minutes/">Get started</a><a class="btn secondary" href="how-it-works/">Read how it works</a></p>
+<p class="position">Fellegi-Sunter computes the probability. <strong>arche reads the documents, gates the merge and keeps the receipt.</strong></p>
 </div>
+<div class="term"><div class="term-bar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre><span class="dim">$</span> pip install arche-core
+<span class="dim">$</span> arche compare --text --json - \
+    "Adesola Okonkwo, NIN 12345678901, adesola@example.com" \
+    "Adesola E. Okonkwo, NIN 12345678901, 124 Maple Street"
 
-Three fragments of text mention someone. They share a national id and a name — once with a middle initial — disagree on an email, and none of the addresses match. Same person?
+<span class="dim">{</span>
+<span class="dim">  "identity":</span> "same_entity",
+<span class="dim">  "action":</span> "merge",
+<span class="dim">  "basis":</span> "corroborated",
+<span class="dim">  "explanation":</span> "national ID match; name similarity 80%",
+<span class="dim">  "factors":</span> {"name": 0.8, "national_id": 1.0, "name_tf": 0.7233},
+<span class="ok">  "decision_id": "dec:sha256:8912e7da95835995ea26b78045221e…"</span>
+<span class="dim">}</span></pre>
+</div>
+</section>
+
+<section class="cards">
+<div class="card">
+<h3>It reads the documents</h3>
+<p>A bank statement, an invoice and a payslip in; one record per document out, with the fields arche read and where it read them; each resolved against the others. Plain text, PDF, DOCX and scans, on your machine.</p>
+</div>
+<div class="card">
+<h3>It refuses to guess</h3>
+<p><code>review</code> is a real answer. Two identical strings that are ordinary words are held apart, and the page says why. No jurisdiction it can infer, no statute that covers the country, no distinctive agreement: each comes back as its own answer, never as a verdict dressed up.</p>
+</div>
+<div class="card">
+<h3>Every decision has an id</h3>
+<p><code>decision_id</code> is a content hash over the evidence and the pinned versions. Same inputs, same id, byte for byte. Look it up, explain it, replay it, sign it, hand it to someone who does not trust you.</p>
+</div>
+<div class="card">
+<h3>The law is attached</h3>
+<p><code>detect_pii</code> returns every span with the statute section it falls under. <code>deidentify</code> returns the copy the statute permits. A redaction under the wrong law looks finished and is not, so arche refuses when the evidence for the jurisdiction is thin.</p>
+</div>
+</section>
+
+<section class="for-section">
+<p class="section-title">Built for</p>
+<div class="for">
+<div><h3>Supplier onboarding</h3><p>A vendor form, a bank statement and a registry extract that spell one company three ways. Resolve them to one record with the evidence, and keep the receipt for the audit.</p></div>
+<div><h3>Delivery addresses</h3><p><em>The blue gate behind Elim Pharmacy, 124 Elim Streat.</em> A verified endpoint when the evidence is strong, one short question when it is close, an honest refusal when it is weak.</p></div>
+<div><h3>Public registers</h3><p>Schools, clinics and companies across two lists that disagree on spelling, coordinates and ids. Batch resolution with Splink underneath when the batch is large enough to train it.</p></div>
+<div><h3>Data handed to a model</h3><p>What is in this text, under which law, and what may leave the machine. A fail-closed guard in front of any provider, and an MCP server so an agent asks before it sends.</p></div>
+</div>
+</section>
+
+<section class="example">
+<div class="example-head">
+<h2>The same, from Python</h2>
+<span>Three fragments of text mention someone. They share a national id and a name, once with a middle initial, disagree on an email, and none of the addresses match. Same person?</span>
+</div>
 
 ```python
 import arche
@@ -28,71 +82,62 @@ print(r12.identity, r12.action, "|", r23.identity, r23.action)
 (entity,) = ledger.entities()                          # three texts, one person
 print(entity.shared, entity.conflicts)
 print(ledger.replay(r12.decision_id).reproduced)       # the same decision, again
+
+safe = arche.deidentify(text1, jurisdiction="NG", backend="basic")
+print(safe.text)                                       # the statute chose each rendering
 ```
 
 ```text
 same_entity merge | same_entity merge
 {'national_id': '12345678901'} {'email': ['adesola@example.com', 'adesola@gmail.com'], 'full_name': ['Adesola Okonkwo', 'Adesola E. Okonkwo']}
 True
-```
-
-Two axes, on purpose. `identity` is what arche believes: all three pairs are the same person, because a shared national id is distinctive. `action` is what it recommends: `merge`, because the name corroborates the id — on a national id alone, with nothing else agreeing, it would say `hold`. The ledger notices that three pairwise answers describe one entity, keeps the receipts, and can make any of them again. The email the records disagree on is not averaged away: it sits in `conflicts`, beside the name spelled two ways, for whoever acts on the entity to see.
-
-The same detectors answer the question before that one: what personal data is in this text, and can I hand on a copy?
-
-```python
-safe = arche.deidentify(text1, jurisdiction="NG", backend="basic")
-print(safe.text)                                       # the statute chose each rendering
-print(safe.count, "spans under", safe.statute, "|", safe.decision_id[:28])
-```
-
-```text
 NAME_f71c6342 NAME_925a28e1, NIN [NIN], address: [ADDRESS], EMAIL_3f6caee6
-5 spans under NDPA-2023 | red:sha256:2f39ce00381bd80d7
 ```
 
-## What you get
+<p class="example-note"><code>identity</code> is what arche believes: the same person, because a shared national id is distinctive. <code>action</code> is what it recommends: <code>merge</code>, because the name corroborates the id; on a national id alone it would say <code>hold</code>. The email the records disagree on is not averaged away, it sits in <code>conflicts</code> for whoever acts on the entity. The ledger noticed that three pairwise answers describe one person, kept the receipts, and can make any of them again. The last line is the copy the statute permits, from the same detectors.</p>
+</section>
 
-| | |
-|---|---|
-| **The personal data, with the law attached** | `detect_pii` returns every span with its category, confidence and the statute section it falls under; `deidentify` returns the copy the statute permits, and the copy is a decision with an id. |
-| **A verdict with a third option** | `same_entity`, `review`, `different` for a pair; `match`, `review` for a batch. `review` is a real answer, not a failure. |
-| **The evidence** | per-field agreement, the gate that cleared or refused, what was missing. |
-| **A receipt** | `decision_id` is a content hash over the evidence and the pinned versions. Same inputs, same id, byte for byte. Sign it; hand it to someone who does not trust you. |
-| **A ledger, if you want one** | `store=` records every verdict -- and every redaction -- with the inputs it was made from. Look one up by id, explain it, replay it, see which records it linked into an entity, add evidence, decide again. |
-| **A refusal when it should refuse** | no jurisdiction it can infer, a statute that does not cover the country, a pair whose only agreement is a common name: each comes back as its own answer, never as a guess dressed as a verdict. |
-| **Nothing leaving the process** | the base install runs on CPU with no model and no network; models are optional extras that propose, never decide. |
+<section class="docs-section">
+<div class="docs-head">
+<h2>Documentation</h2>
+<span>Every example on these pages is run against the installed package before it is published.</span>
+</div>
+<div class="map">
+<div>
+<a class="map-kicker" href="get-started/">Get started</a>
+<a href="get-started/install/">Install</a>
+<a href="get-started/five-minutes/">Five minutes</a>
+<a href="get-started/python/">From Python</a>
+<a href="get-started/docker/">Docker and deploy</a>
+</div>
+<div>
+<a class="map-kicker" href="guides/">Guides</a>
+<a href="guides/find-and-mask/">Find and mask</a>
+<a href="guides/keep-and-replay/">Keep and replay a decision</a>
+<a href="guides/documents-to-decision/">Resolve documents</a>
+<a href="guides/mcp-server/">Let an agent call arche</a>
+<a href="guides/serve-over-http/">Serve over HTTP</a>
+</div>
+<div>
+<a class="map-kicker" href="how-it-works/">How it works</a>
+<a href="how-it-works/the-decision/">The decision</a>
+<a href="how-it-works/evidence/">Evidence, gates and distinctiveness</a>
+<a href="how-it-works/backends/">Backends: arche, Splink, auto</a>
+<a href="how-it-works/jurisdictions/">Jurisdictions and statutes</a>
+<a href="how-it-works/attestation/">Attested answers</a>
+</div>
+<div>
+<a class="map-kicker" href="reference/">Reference</a>
+<a href="reference/python-api/">Python API</a>
+<a href="reference/cli/">Command line</a>
+<a href="reference/http-api/">HTTP API</a>
+<a href="reference/mcp-tools/">MCP tools</a>
+<a href="reference/benchmarks/">Benchmarks</a>
+<a class="map-kicker map-kicker--second" href="writing/">Writing</a>
+<a href="writing/what-a-name-list-is-worth/">What a name list is worth</a>
+<a href="writing/similar-is-not-the-same/">Similar is not the same</a>
+</div>
+</div>
+</section>
 
-## Start here
-
-```bash
-pip install "arche-core[ledger]"
-```
-
-- [Quickstart](getting-started/quickstart.md) — find and mask, then the example above, then two lists.
-- [Keep and replay a decision](guides/keep-and-replay.md) — the ledger.
-- [Association analysis](guides/association-analysis.md) — Mary Smith became Mary Jones; why the first record and the last are one person.
-- [Resolve documents](guides/documents-to-decision.md) — five PDFs in, linked entities out.
-- [Interpret a decision](guides/interpret-decisions.md) — what `review` means and what to do with it.
-
-## What it resolves
-
-One engine, five calibrated packs. A pack is configuration and data, never a fork.
-
-| Pack | For | The hard case it handles |
-|---|---|---|
-| `person` | people | *Diallo* and *Jallow* are one name; two *Ibrahim Musa* are two men |
-| `place` | facilities, addresses, settlements | identical names 282 km apart are two hospitals |
-| `organisation` | companies, cooperatives, unions | a site and the company operating it share a name **and** a coordinate |
-| `product_electronics` | catalogue items | a rare model code identifies; `Black T-Shirt` does not |
-| `artist` | creative works and performers | one act, many stage names and transliterations |
-
-## How it relates to Splink
-
-**Splink is the better matcher, and arche can use it.** Measured, not a courtesy: on Febrl 4, on Splink's `historical_50k`, and on a Nigerian school register, Splink wins every time. `reconcile(backend="splink")` hands the scoring to Splink and keeps what arche puts around a score: per-field evidence, a gate that can refuse a merge and say why, reproducible decision ids, signing, a review pack a person can work, and now a ledger. Use Splink directly when you want the best probability that two rows are the same person. Use arche when you need to show why a decision was made, and prove later that it has not changed. See [the benchmarks](reference/benchmarks.md), including the runs where arche loses.
-
-## Scope
-
-arche is pre-1.0: 0.9.0 is the second release out of alpha, and its APIs and calibration can still change between minor versions. Do not use it to make production decisions about personal data without independent privacy, security, legal and accuracy review.
-
-The `basic` extractor used above is deterministic and offline; it reads identifiers, emails, and names from a shipped lexicon of 13,342 African given and family names, not streets. `backend="auto"` adds GLiNER2-PII when the `[detect2]` extra is installed, as a proposer the validators and the statute still decide over. The document parser is an optional extra too. `arche-mcp` is a separate, optional package that exposes the same functions to an agent, including the ledger.
+<p class="meta">Splink is the better matcher and arche uses it: on Febrl 4, on Splink's own 50k historical set and on a Nigerian school register, Splink wins, and <code>backend="auto"</code> hands it the scoring above a thousand records. arche is what sits around the score: the evidence, the gate, the id, the receipt. The <a href="reference/benchmarks/">benchmarks</a> include the runs where arche loses. arche is pre-1.0; do not make production decisions about personal data with it without your own privacy, security, legal and accuracy review.</p>

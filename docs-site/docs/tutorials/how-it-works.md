@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/evidence.md on 2026-09-20; kept as working material, not built -->
 # How arche works
 
 *One record, all four verbs, start to finish. Written for a reader who has never done entity resolution.*

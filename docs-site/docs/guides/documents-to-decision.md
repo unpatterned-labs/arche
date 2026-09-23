@@ -1,3 +1,4 @@
+<!-- superseded by guides/resolve-documents.md on 2026-09-20; kept as working material -->
 # Resolve people across documents
 
 Documents often contain partial and inconsistent references to the same person: a bank statement, invoice, and payslip may use different formats, different name forms, and no shared customer identifier.
@@ -38,7 +39,7 @@ The same from the command line, with a value-free entity summary in the JSON out
 arche resolve-documents "shipments/*.pdf" --entity organisation --store suppliers.duckdb --out review.json
 ```
 
-See [Keep and replay a decision](keep-and-replay.md).
+See [Keep, explain, replay](keep-and-replay.md).
 
 ## Run it locally
 

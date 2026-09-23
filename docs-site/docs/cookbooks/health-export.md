@@ -122,5 +122,5 @@ _Verified against `arche-core` v0.2.0a3 on 2026-05-29 in a clean Python 3.11 ven
 
 - [Cookbook - Nigerian fintech KYC](fintech-kyc.md) - same pattern, NDPA instead of POPIA
 - [Power-user cookbook: Civil-society audit](civil-society-audit.md) - when the auditor is *outside* the organisation
-- [Quick Start example 5 - SQLite audit log](../getting-started/quickstart.md#5-sqlite-audit-log-signed-regulator-export)
+- [Quick Start example 5 - SQLite audit log](../get-started/five-minutes.md#5-sqlite-audit-log-signed-regulator-export)
 - [Power-user: Sign, share, extract](../tutorials/sign_share_extract.md) - signing exports across organisational boundaries

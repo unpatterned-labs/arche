@@ -112,7 +112,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "RW_NID": {
         "country": "RW",
         "id_type": "NID",
-        "description": "Rwanda National ID — 16 digits starting with 1",
+        "description": "Rwanda National ID: 16 digits starting with 1",
         "pattern": re.compile(
             r"(?<![0-9])(1\d{15})(?![0-9])"
         ),
@@ -122,7 +122,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "TZ_NIDA": {
         "country": "TZ",
         "id_type": "NIDA",
-        "description": "Tanzania National ID (NIDA) — 20 digits",
+        "description": "Tanzania National ID (NIDA): 20 digits",
         "pattern": re.compile(
             r"(?<![0-9])(\d{20})(?![0-9])"
         ),
@@ -132,7 +132,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "UG_NIN": {
         "country": "UG",
         "id_type": "NIN",
-        "description": "Uganda National ID — CM/CF + alphanumeric (14 characters total)",
+        "description": "Uganda National ID: CM/CF + alphanumeric (14 characters total)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(C[MF][A-Z0-9]{12})(?![A-Za-z0-9])"
         ),
@@ -142,7 +142,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "ET_KEBELE": {
         "country": "ET",
         "id_type": "KEBELE_ID",
-        "description": "Ethiopia Kebele ID — varies by region, loose alphanumeric pattern",
+        "description": "Ethiopia Kebele ID: varies by region, loose alphanumeric pattern",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(ET[-/]?[A-Z]{2,4}[-/]?\d{4,10})(?![A-Za-z0-9])",
             re.IGNORECASE,
@@ -153,7 +153,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "CI_CNI": {
         "country": "CI",
         "id_type": "CNI",
-        "description": "Cote d'Ivoire Carte Nationale d'Identite — C + digits",
+        "description": "Cote d'Ivoire Carte Nationale d'Identite: C + digits",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(C\d{9,14})(?![A-Za-z0-9])"
         ),
@@ -163,7 +163,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "SN_CNI": {
         "country": "SN",
         "id_type": "CNI",
-        "description": "Senegal Carte Nationale d'Identite — 13 digits",
+        "description": "Senegal Carte Nationale d'Identite: 13 digits",
         "pattern": re.compile(
             r"(?<![0-9])([12]\d{12})(?![0-9])"
         ),
@@ -173,7 +173,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "CM_CNI": {
         "country": "CM",
         "id_type": "CNI",
-        "description": "Cameroon Carte Nationale d'Identite — 9 digits",
+        "description": "Cameroon Carte Nationale d'Identite: 9 digits",
         "pattern": re.compile(
             r"(?<![0-9])(\d{9})(?![0-9])"
         ),
@@ -183,7 +183,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "EG_NID": {
         "country": "EG",
         "id_type": "NATIONAL_ID",
-        "description": "Egypt National ID — 14 digits with embedded DOB",
+        "description": "Egypt National ID: 14 digits with embedded DOB",
         "pattern": re.compile(
             r"(?<![0-9])([23]\d{13})(?![0-9])"
         ),
@@ -193,7 +193,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "MA_CNIE": {
         "country": "MA",
         "id_type": "CNIE",
-        "description": "Morocco CNIE — 2 letters + 6 digits",
+        "description": "Morocco CNIE: 2 letters + 6 digits",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])([A-Z]{1,2}\d{5,7})(?![A-Za-z0-9])"
         ),
@@ -203,7 +203,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "AO_BI": {
         "country": "AO",
         "id_type": "BI",
-        "description": "Angola Bilhete de Identidade — 9 digits + 2 letters",
+        "description": "Angola Bilhete de Identidade: 9 digits + 2 letters",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(\d{9}[A-Z]{2}\d)(?![A-Za-z0-9])"
         ),
@@ -213,7 +213,7 @@ OTHER_PATTERNS: dict[str, dict] = {
     "MZ_BI": {
         "country": "MZ",
         "id_type": "BI",
-        "description": "Mozambique Bilhete de Identidade — 12 digits + letter",
+        "description": "Mozambique Bilhete de Identidade: 12 digits + letter",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])(\d{12}[A-Z])(?![A-Za-z0-9])"
         ),

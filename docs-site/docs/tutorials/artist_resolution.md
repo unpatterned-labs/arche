@@ -118,4 +118,4 @@ On a *resolved* catalog these edges are where royalty attribution actually lives
 - **Equivalence buys recall, population frequency buys precision**: the toy-corpus measurement in §3 is the difference, made visible.
 - **Names describe; identifiers distinguish**: the wrong-Tyla failure (which the pack honestly *amplifies*) is the cautionary tale; the MBID-anchored signed decision is the remedy.
 
-**Siblings:** [places at scale](place_resolution_at_scale.md) · [persons at scale, scored](person_resolution_at_scale.md) · [read crosswalk output](../how-to/read-crosswalk-output.md)
+**Siblings:** [places at scale](place_resolution_at_scale.md) · [persons at scale, scored](person_resolution_at_scale.md) · [read crosswalk output](../guides/resolve-a-batch.md)

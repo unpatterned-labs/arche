@@ -167,12 +167,16 @@ def extract(
             # The validators fill in what the model has no checksum for.
             regex_entities = _extract_regex(text, entity_types)
             entities = _merge_entities(entities, regex_entities)
-        except ImportError:
+        except ImportError as exc:
+            # `_models.get_gliner2` already tells apart "not installed" from
+            # "installed but failed to import" (a missing protobuf, a torch
+            # build that does not load). Repeat its sentence rather than
+            # replace it with a fixed one: a machine with gliner2 on it was
+            # being told to install gliner2.
             warnings.warn(
-                "GLiNER 2.5 is not installed, so only the basic extractor ran: "
+                f"{str(exc).splitlines()[0]} Only the basic extractor ran: "
                 "identifiers, phones, emails and lexicon names, but no model-"
-                "proposed people, organisations or places. Install it with: "
-                "pip install 'arche-core[detect2]'",
+                "proposed people, organisations or places.",
                 stacklevel=2,
             )
             entities = list(_extract_regex(text, entity_types))

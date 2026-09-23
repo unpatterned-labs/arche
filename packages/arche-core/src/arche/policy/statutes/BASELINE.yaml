@@ -79,7 +79,7 @@ policy_mappings:
   PII-1-NAME:
     action: tokenize
     tier: moderate
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "A name is personal data under every regime arche ships a pack for."
 
   # Direct contact identifiers. Every shipped pack treats these as personal
@@ -88,12 +88,12 @@ policy_mappings:
   PII-3-EMAIL:
     action: tokenize
     tier: moderate
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "An email address identifies a person under every regime arche ships a pack for. Protected by default rather than left in the clear."
   PII-3-PHONE:
     action: tokenize
     tier: moderate
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "A phone number is a direct contact identifier under every shipped pack."
 
   # Government identifiers. Masked rather than tokenised: a national identifier
@@ -102,12 +102,12 @@ policy_mappings:
   PII-2-NATIONAL-ID:
     action: mask
     tier: high
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "A government identifier is the strongest re-identification key in ordinary documents."
   PII-2-PASSPORT:
     action: mask
     tier: high
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "A passport number identifies a person across borders and systems."
 
   # Location. Generalised, not masked: a street address is identifying, a city
@@ -116,13 +116,13 @@ policy_mappings:
   PII-4-ADDRESS:
     action: generalize
     tier: moderate
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "Street-level addresses re-identify; city-level rarely does. Generalise rather than destroy."
 
   PII-4-LOCATION:
     action: retain
     tier: low
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "A coarse location is rarely identifying on its own; destroying it costs analytics without buying protection."
 
   # Financial instruments. PCI-DSS is not a data-protection statute and applies
@@ -136,12 +136,12 @@ policy_mappings:
   PII-5-BANK_ACCOUNT:
     action: mask
     tier: high
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
     rationale: "Account details enable direct financial access."
   PII-5-CRYPTO_WALLET:
     action: mask
     tier: high
-    statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
 
 # Anything detected and not named above. `mask` is the safe direction for a
 # floor: over-masking costs a reader some context, under-masking discloses a
@@ -149,7 +149,7 @@ policy_mappings:
 # country-specific identifiers, and masking an identifier we cannot place is
 # the conservative default.
 default_action: mask
-default_statute_reference: "no statute pack for this jurisdiction — arche baseline floor, not law"
+default_statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
 
 # Absent on purpose: retention limits, cross-border transfer rules and penalties
 # are all statute-specific. A floor that invented numbers for them would be

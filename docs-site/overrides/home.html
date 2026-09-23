@@ -1,0 +1,16 @@
+{#
+  The landing page: no sidebars, no page outline, one measured column that
+  index.md fills. The example on that page is a real ```python fence so the
+  docs test runs it like any other.
+#}
+{% extends "main.html" %}
+
+{% block site_nav %}{% endblock %}
+
+{% block container %}
+  <div class="md-content arche-home" data-md-component="content">
+    <article class="md-content__inner md-typeset">
+      {{ page.content }}
+    </article>
+  </div>
+{% endblock %}

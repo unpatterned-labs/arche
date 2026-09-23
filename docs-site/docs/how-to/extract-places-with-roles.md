@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/places.md on 2026-09-20; kept as working material, not built -->
 # Extract places from free text with their role, and grade any extractor
 
 "Pick up from X and send it to Y" contains two addresses and one catastrophic failure mode: swapping them. An agent that books a courier with the roles flipped sends the rider to the pickup with the package. `extract_places` labels each place span with its **spatial role** and returns the **linguistic cue** that decided it, so the assignment is inspectable, and when cues are absent or conflicting it answers `unknown` rather than guessing.

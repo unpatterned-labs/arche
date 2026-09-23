@@ -1,3 +1,4 @@
+<!-- superseded by get-started/install.md on 2026-09-20; kept as working material, not built -->
 # Installation
 
 arche supports Python 3.11 or later on Linux, macOS, and Windows.

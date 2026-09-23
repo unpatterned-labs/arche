@@ -3,76 +3,122 @@ site_description: Are these the same thing? arche decides whether messy records 
 site_url: https://unpatterned-labs.github.io/arche/
 repo_url: https://github.com/unpatterned-labs/arche
 repo_name: unpatterned-labs/arche
+copyright: unpatterned.org. Apache-2.0.
 
+# The look is DESIGN.md at the repository root: paper, ink, one accent used
+# only as a mark, Source Serif 4 and JetBrains Mono, no dark mode. Material
+# supplies the structure (sidebar tree, page outline, prev/next, search) and
+# docs/stylesheets/extra.css restyles it; overrides/ holds the two templates
+# the theme cannot express in CSS (the fonts, and the full-width home page).
 theme:
   name: material
+  custom_dir: overrides
+  # One palette, no toggle: a mapping here rather than a list is what tells
+  # Material not to render the scheme switch or load its palette script.
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
-  font:
-    text: Instrument Sans
-    code: JetBrains Mono
+    scheme: default
+    primary: custom
+    accent: custom
+  # Fonts are loaded in overrides/main.html so the fallback stack and the
+  # optical-size axis are ours, not Material's Google Fonts line.
+  font: false
   features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
     - navigation.instant
     - navigation.tracking
-    - navigation.tabs
-    - navigation.top
-    - navigation.footer
+    - toc.follow
     - content.code.copy
     - search.suggest
     - search.highlight
-    - toc.follow
   icon:
     repo: fontawesome/brands/github
 
-# Alpha documentation is intentionally small. The excluded pages remain in the
-# repository as working material, but do not form part of the public product
-# promise until their examples and claims have been revalidated.
+# Documentation is the published tree below. The excluded directories are
+# working material that stays in the repository but is not built: their
+# examples and claims have not been revalidated against the current package.
 # Gitignore syntax, so a `!` line publishes one page back out of an excluded
-# directory. The bar for adding a `!` line is that every Python example on the
-# page executes: `test_docs_examples.py` parses this list and runs the examples
-# on whatever is published, so publishing a page puts it under test in the same
-# commit.
+# directory. The bar for a `!` line is that every Python example on the page
+# executes: `test_docs_examples.py` parses this block (keep it a `|` literal)
+# and runs the examples on whatever is published.
 exclude_docs: |
   about/
   api/
-  blog/
   concepts/
   cookbooks/
+  getting-started/
   how-to/
   tutorials/
-  !api/addr.md
-  !how-to/match-african-names.md
-  !how-to/read-crosswalk-output.md
-  !tutorials/how-it-works.md
+  guides/accuracy-and-scope.md
+  guides/association-analysis.md
+  guides/documents-to-decision.md
+  guides/facility-reconciliation.md
+  guides/interpret-decisions.md
+  guides/places-and-products.md
+  guides/prepare-data.md
+  guides/review-and-evaluate.md
+  guides/review-log.md
+  guides/run-the-mcp-server.md
+  guides/school-reconciliation.md
+  guides/uk-health-and-care.md
+  reference/architecture.md
+  reference/attestation.md
+  reference/decision-contract.md
+  reference/distinctiveness.md
+  reference/how-arche-works.md
+  reference/optional-dependencies.md
+  reference/record-resolution.md
 
 extra_css:
   - stylesheets/extra.css
 
+plugins:
+  - search
+  # Pages move as the tree is reorganised; a URL that was published keeps
+  # answering. Old path -> new path, both relative to docs/.
+  - redirects:
+      redirect_maps:
+        getting-started/installation.md: get-started/install.md
+        getting-started/quickstart.md: get-started/five-minutes.md
+        guides/association-analysis.md: guides/keep-and-replay.md
+        guides/documents-to-decision.md: guides/resolve-documents.md
+        guides/interpret-decisions.md: guides/compare-two-records.md
+        guides/prepare-data.md: guides/resolve-a-batch.md
+        guides/review-and-evaluate.md: guides/review-a-queue.md
+        guides/review-log.md: guides/review-a-queue.md
+        guides/run-the-mcp-server.md: guides/mcp-server.md
+        guides/school-reconciliation.md: guides/resolve-a-batch.md
+        guides/facility-reconciliation.md: guides/resolve-a-batch.md
+        guides/places-and-products.md: guides/compare-two-records.md
+        guides/accuracy-and-scope.md: reference/benchmarks.md
+        guides/uk-health-and-care.md: guides/resolve-a-batch.md
+        how-to/read-crosswalk-output.md: guides/resolve-a-batch.md
+        how-to/match-african-names.md: guides/compare-two-records.md
+        reference/decision-contract.md: how-it-works/the-decision.md
+        reference/how-arche-works.md: how-it-works/evidence.md
+        reference/distinctiveness.md: how-it-works/evidence.md
+        reference/architecture.md: how-it-works/evidence.md
+        reference/record-resolution.md: how-it-works/backends.md
+        reference/attestation.md: how-it-works/attestation.md
+        reference/optional-dependencies.md: reference/extras.md
+        api/addr.md: how-it-works/places.md
+        how-to/extract-places-with-roles.md: how-it-works/places.md
+        how-to/attest.md: how-it-works/attestation.md
+        tutorials/how-it-works.md: how-it-works/evidence.md
+        blog/index.md: writing/index.md
+        blog/what-a-name-list-is-worth.md: writing/what-a-name-list-is-worth.md
+        blog/the-number-we-could-not-reproduce.md: writing/the-number-we-could-not-reproduce.md
+        blog/similar-is-not-the-same.md: writing/similar-is-not-the-same.md
+        blog/the-join-nobody-sells.md: writing/the-join-nobody-sells.md
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  # The custom fence is what makes ```mermaid a diagram rather than a code
-  # block. Without it the diagrams ship as source, which is what was happening
-  # to the one in about/the-whole-picture.md.
-  #
-  # Note what this costs: Material loads mermaid from `unpkg.com/mermaid@11` at
-  # runtime rather than bundling it, so a page with a diagram makes a
-  # third-party request and shows nothing useful offline. That is the site's
-  # second external dependency after the fonts. To remove it, vendor
-  # mermaid.min.js under docs/javascripts/ and add it to `extra_javascript`.
+  # The custom fence makes ```mermaid a diagram rather than a code block.
+  # Material loads mermaid from unpkg at runtime, so a page with a diagram
+  # makes a third-party request; no page in the published tree has one.
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -89,28 +135,47 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - Overview: index.md
+  - Home: index.md
   - Get started:
-    - Installation: getting-started/installation.md
-    - Quickstart: getting-started/quickstart.md
+    - get-started/index.md
+    - Install: get-started/install.md
+    - Five minutes: get-started/five-minutes.md
+    - From Python: get-started/python.md
+    - Docker and deploy: get-started/docker.md
   - Guides:
-    - Find and mask: guides/find-and-mask.md
+    - guides/index.md
+    - Find and mask personal data: guides/find-and-mask.md
+    - Compare two records: guides/compare-two-records.md
+    - Resolve a batch: guides/resolve-a-batch.md
+    - Resolve documents: guides/resolve-documents.md
+    - Resolve a delivery address: guides/resolve-a-delivery-address.md
     - Extract to your schema: guides/extract-to-your-schema.md
-    - Keep and replay a decision: guides/keep-and-replay.md
-    - Association analysis: guides/association-analysis.md
-    - Resolve documents: guides/documents-to-decision.md
-    - Interpret a decision: guides/interpret-decisions.md
-    - Prepare your data: guides/prepare-data.md
-    - Review and evaluate: guides/review-and-evaluate.md
+    - Keep, explain, replay: guides/keep-and-replay.md
+    - Review a queue: guides/review-a-queue.md
     - Let an agent call arche: guides/mcp-server.md
     - Serve over HTTP: guides/serve-over-http.md
+  - How it works:
+    - how-it-works/index.md
+    - The decision: how-it-works/the-decision.md
+    - Evidence, gates and distinctiveness: how-it-works/evidence.md
+    - "Backends: arche, Splink, auto": how-it-works/backends.md
+    - Jurisdictions and statutes: how-it-works/jurisdictions.md
+    - Places and roles: how-it-works/places.md
+    - Attested answers: how-it-works/attestation.md
   - Reference:
-    - Record resolution API: reference/record-resolution.md
-    - Decision contract: reference/decision-contract.md
-    - Attested answers: reference/attestation.md
-    - How arche works: reference/how-arche-works.md
-    - Optional dependencies: reference/optional-dependencies.md
+    - reference/index.md
+    - Python API: reference/python-api.md
+    - Command line: reference/cli.md
+    - HTTP API: reference/http-api.md
+    - MCP tools: reference/mcp-tools.md
+    - Extras: reference/extras.md
     - Benchmarks: reference/benchmarks.md
+  - Writing:
+    - writing/index.md
+    - What a name list is worth: writing/what-a-name-list-is-worth.md
+    - The number we could not reproduce: writing/the-number-we-could-not-reproduce.md
+    - Similar is not the same: writing/similar-is-not-the-same.md
+    - The join nobody sells: writing/the-join-nobody-sells.md
   - Contribute: contributing.md
 
 extra:

@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/places.md on 2026-09-20; kept as working material, not built -->
 # Addresses & spatial roles: `arche.addr`
 
 Address parsing, landmark anchors, spatial role labeling, and the shipped evaluation set. Everything here is offline and CPU-only.

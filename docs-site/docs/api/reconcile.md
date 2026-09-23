@@ -82,7 +82,7 @@ Returns:
 }
 ```
 
-Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75, supporting signals (geo, containment, address) amplify but never manufacture a merge, and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../how-to/read-crosswalk-output.md).
+Safety semantics: a `match` requires a *distinctive* comparator (name/placename/id/tftoken) at ≥ 0.75, supporting signals (geo, containment, address) amplify but never manufacture a merge, and any containment conflict demotes a would-be match to `review`. Output decoding: [read crosswalk output](../guides/resolve-a-batch.md).
 
 ## `reconcile.sign_edges(result, *, private_key, kid, decisions=("match", "review"))`
 

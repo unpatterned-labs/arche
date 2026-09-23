@@ -1,3 +1,4 @@
+<!-- superseded by guides/review-a-queue.md on 2026-09-20; kept as working material -->
 # Review and evaluate a crosswalk
 
 Use this workflow to turn a crosswalk into evidence for a decision policy. It does not make a score a probability, and it does not allow a reviewer or agent to silently change a result.

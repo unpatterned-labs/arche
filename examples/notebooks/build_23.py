@@ -44,7 +44,7 @@ text3 = "Adesola E. Okonkwo, NIN 12345678901, adesola@gmail.com, address: 231 El
 LEDGER = pathlib.Path(tempfile.mkdtemp()) / "okonkwo.duckdb"
 ledger = arche.attach(f"duckdb:///{LEDGER}")
 
-person = dict(entity="person", jurisdiction="NG", backend="regex", store=ledger)
+person = dict(entity="person", jurisdiction="NG", backend="basic", store=ledger)
 r12 = arche.compare(text1, text2, **person)
 r13 = arche.compare(text1, text3, **person)
 r23 = arche.compare(text2, text3, **person)

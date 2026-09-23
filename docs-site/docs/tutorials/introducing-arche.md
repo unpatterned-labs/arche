@@ -201,8 +201,8 @@ There is **no MCP server**. Agent-facing work today means the masked `to_dict(re
 pip install arche-core
 ```
 
-- [Quick start](../getting-started/quickstart.md). First result in five minutes
-- [How arche works](how-it-works.md). The pipeline end to end, for newcomers
+- [Quick start](../get-started/five-minutes.md). First result in five minutes
+- [Evidence, gates and distinctiveness](../how-it-works/evidence.md). The pipeline end to end, for newcomers
 - [Runnable notebooks](https://github.com/unpatterned-labs/arche/tree/main/examples/notebooks). The facility reconciliation, resolving a person across documents, and a head-to-head against a frontier model
 - [The place benchmark](../about/place-benchmark.md). How we measure, and how to check whether two datasets you were told are independent actually are
 

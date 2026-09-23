@@ -1,3 +1,4 @@
+<!-- superseded by guides/mcp-server.md on 2026-09-20; kept as working material -->
 # Run the arche MCP server
 
 Three ways to see arche through MCP, in increasing order of what they prove and what they need.

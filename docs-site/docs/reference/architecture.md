@@ -1,3 +1,4 @@
+<!-- superseded by how-it-works/evidence.md on 2026-09-20; kept as working material, not built -->
 # Architecture
 
 How arche is put together, what runs when you call it, and which component is allowed to decide anything.

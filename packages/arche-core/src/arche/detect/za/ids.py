@@ -82,7 +82,7 @@ ZA_PATTERNS: dict[str, dict] = {
     "ZA_ID": {
         "country": "ZA",
         "id_type": "NATIONAL_ID",
-        "description": "South Africa ID Number — 13 digits (YYMMDD SSSS C A Z) with Luhn check",
+        "description": "South Africa ID Number: 13 digits (YYMMDD SSSS C A Z) with Luhn check",
         "pattern": re.compile(
             r"(?<![0-9])(\d{13})(?![0-9])"
         ),
@@ -93,7 +93,7 @@ ZA_PATTERNS: dict[str, dict] = {
     "ZA_TAX_REF": {
         "country": "ZA",
         "id_type": "TAX_REFERENCE",
-        "description": "South Africa Tax Reference Number — 10 digits (SARS), cue-anchored",
+        "description": "South Africa Tax Reference Number: 10 digits (SARS), cue-anchored",
         # DELIBERATELY cue-anchored, the way KE_HUDUMA is. A SARS tax reference
         # is ten digits starting 0/1/2/3/9 with no published check digit, which
         # is also the shape of an order number, an account number, a UK mobile
@@ -118,7 +118,7 @@ ZA_PATTERNS: dict[str, dict] = {
     "ZA_PASSPORT": {
         "country": "ZA",
         "id_type": "PASSPORT",
-        "description": "South Africa Passport — 1 letter + 8 digits (DHA)",
+        "description": "South Africa Passport: 1 letter + 8 digits (DHA)",
         "pattern": re.compile(
             r"(?<![A-Za-z0-9])([A-Z]\d{8})(?![A-Za-z0-9])"
         ),
