@@ -202,3 +202,126 @@ def test_resolve_from_the_shell(store, capsys):
 
     with pytest.raises(SystemExit, match="exactly one"):
         main(["resolve", "--store", store])
+
+
+class TestExplainAnswersForEveryVerb:
+    """`arche explain ID` used to assume a pairwise decision.
+
+    Three kinds of decision are recorded and they do not answer the same
+    question, so `explain` returns three shapes. The CLI read `why["shared"]`
+    unconditionally and died with `KeyError: 'shared'` on a `red:` id, which
+    is the id `arche redact --store` had just printed: the one command that
+    hands you an id led straight to a traceback.
+    """
+
+    NOTE = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+
+    def test_a_redaction_explains_as_spans_and_statute(self, store, capsys):
+        assert main(["redact", "--text", self.NOTE, "--jurisdiction", "NG",
+                     "--backend", "basic", "--store", store]) == 0
+        captured = capsys.readouterr()
+        # The masked copy goes to stdout so it can be piped; the summary that
+        # carries the id goes to stderr for the same reason.
+        assert captured.out.startswith("Patient Casey Example (NIN [NIN])")
+        decision_id = captured.err.split("decision_id ")[1].split()[0]
+        assert decision_id.startswith("red:sha256:")
+
+        assert main(["explain", decision_id, "--store", store, "--json"]) == 0
+        why = _json(capsys)
+        assert why["verb"] == "deidentify"
+        assert why["statute"] == "NDPA-2023" and why["jurisdiction"] == "NG"
+        assert {s["category"] for s in why["spans"]} == {"PII-2-NIN", "PII-3-PHONE"}
+        assert "12345678901" not in json.dumps(why), "a redaction receipt holds no value"
+
+        assert main(["explain", decision_id, "--store", store]) == 0
+        text = capsys.readouterr().out
+        assert "NDPA-2023 s.30, NIMC Act s.27" in text
+        assert "PII-2-NIN" in text and "mask" in text
+
+    def test_a_place_endpoint_explains_as_a_question_and_its_candidates(self, store, capsys):
+        import datetime as dt
+
+        import arche
+        from arche.addr.request import MasterSheet
+
+        ledger = arche.attach(f"duckdb:///{store}")
+        sheet = MasterSheet([
+            {"id": "loc-001", "name": "123 Maple Street", "lat": 6.6000, "lon": 3.3500},
+            {"id": "loc-124", "name": "124 Elim Street", "lat": 6.6010, "lon": 3.3510},
+            {"id": "loc-124m", "name": "124 Elm Street", "lat": 6.6300, "lon": 3.3800},
+            {"id": "poi", "name": "Elim Pharmacy", "kind": "landmark",
+             "lat": 6.6011, "lon": 3.3511},
+        ])
+        request = arche.resolve_place_request(
+            "Send it from 123 Maple Street to the blue gate behind Elim Pharmacy, "
+            "124 Elim Streat.",
+            action="create_delivery", sources=[sheet], store=ledger,
+            now=dt.date(2026, 9, 23))
+        capsys.readouterr()
+
+        assert main(["explain", request.destination.decision_id, "--store", store,
+                     "--json"]) == 0
+        why = _json(capsys)
+        assert why["verb"] == "place" and why["role"] == "destination"
+        assert why["why"] == "Is the destination 124 Elim Street, next to Elim Pharmacy?"
+        assert [c["place_id"] for c in why["candidates"]] == ["loc-124", "loc-124m"]
+
+        assert main(["explain", request.destination.decision_id, "--store", store]) == 0
+        text = capsys.readouterr().out
+        assert "Is the destination 124 Elim Street" in text
+        assert "loc-124" in text
+
+    def test_replaying_a_redaction_hands_back_the_masked_copy(self, store, capsys):
+        """The artefact, not only a verdict on it.
+
+        Replay re-derives the redaction from the stored original; it used to
+        compute the masked copy and throw it away, so a caller who wanted the
+        copy had to run `deidentify` again themselves. The copy is safe to
+        carry: it is the one the statute permits, which is why it exists.
+        """
+        import arche
+
+        ledger = arche.attach(f"duckdb:///{store}")
+        safe = arche.deidentify(self.NOTE, jurisdiction="NG", backend="basic",
+                                store=ledger)
+        replay = ledger.replay(safe.decision_id)
+        assert replay.reproduced is True
+        assert replay.now["text"] == safe.text
+        assert "12345678901" not in replay.now["text"]
+
+        capsys.readouterr()
+        assert main(["replay", safe.decision_id, "--store", store]) == 0
+        assert safe.text in capsys.readouterr().out
+
+    def test_replaying_an_endpoint_hands_back_its_question(self, store, capsys):
+        import datetime as dt
+
+        import arche
+        from arche.addr.request import MasterSheet
+
+        ledger = arche.attach(f"duckdb:///{store}")
+        sheet = MasterSheet([
+            {"id": "loc-001", "name": "123 Maple Street", "lat": 6.6000, "lon": 3.3500},
+            {"id": "loc-124", "name": "124 Elim Street", "lat": 6.6010, "lon": 3.3510},
+            {"id": "loc-124m", "name": "124 Elm Street", "lat": 6.6300, "lon": 3.3800},
+            {"id": "poi", "name": "Elim Pharmacy", "kind": "landmark",
+             "lat": 6.6011, "lon": 3.3511},
+        ])
+        request = arche.resolve_place_request(
+            "Send it from 123 Maple Street to the blue gate behind Elim Pharmacy, "
+            "124 Elim Streat.",
+            action="create_delivery", sources=[sheet], store=ledger,
+            now=dt.date(2026, 9, 23))
+        replay = ledger.replay(request.destination.decision_id)
+        assert replay.reproduced is True
+        assert replay.now["question"] == request.destination.question
+
+        capsys.readouterr()
+        assert main(["replay", request.destination.decision_id, "--store", store]) == 0
+        assert request.destination.question in capsys.readouterr().out
+
+    def test_a_pairwise_decision_still_explains_as_fields(self, three, store, capsys):
+        assert main(["explain", three, "--store", store, "--json"]) == 0
+        why = _json(capsys)
+        assert why["supporting"] and "shared" in why
+

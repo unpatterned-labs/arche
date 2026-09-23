@@ -2,6 +2,8 @@
 
 Every public name in `arche`, grouped by what you do with it: the signature as it is in the source, one sentence, what comes back, and the guide that shows it in use. At the end of this page you know which name answers which question and where its full walkthrough is.
 
+This page and `arche.__all__` are the same list, and a test holds them together. That is the 1.x promise: these names keep working, with these meanings, through every 1.x release.
+
 ```python
 import arche
 
@@ -23,6 +25,7 @@ print(sorted(arche.describe()["verbs"]))
 | your own field names, once, for extraction and matching | `schema`, `Declaration`, `extract` | [Extract to your schema](../guides/extract-to-your-schema.md) |
 | keep a decision, explain it, make it again | `attach`, `Ledger` | [Keep, explain, replay](../guides/keep-and-replay.md) |
 | sign an answer, verify one | `arche.sign`, `arche.attest` | [Attestation](../how-it-works/attestation.md) |
+| build your own comparator | `arche.resolve.compare_geo` and the helpers beside it | [Evidence, gates and distinctiveness](../how-it-works/evidence.md) |
 
 Every verb that makes a decision takes `store=`, a `Ledger` from `attach`. The return value is the same with or without it; the receipt is additionally recorded with the inputs it was made from. Every name below is importable as `arche.<name>` unless its module is given.
 
@@ -415,6 +418,37 @@ def decision_ids_in(response: Any) -> list[str]
 ```
 
 An attestation is a JWS over one answer: the tool called, a hash of the inputs, a hash of the response, who asked, and every decision id the response carried. `AttestationCheck` carries `valid`, `trusted`, `signer`, `tool`, `decision_ids`, `inputs_match`, `response_match` and `problems`. `trusted` is true only when the verifier supplied the key. `arche serve` and `arche mcp` attach one to every answer when `ARCHE_SIGNING_KEY` is set; `arche attest verify` checks it from the shell.
+
+## Comparator helpers
+
+The pieces a comparator is made of, on `arche.resolve`. They are not in `arche.__all__`: you reach for them when writing your own comparator or reading why one scored what it did, and they are not part of the vocabulary. They are importable from `arche` too, for code written before 1.0.
+
+<!-- docs-test: fragment -->
+```python
+from arche.resolve import (compare_geo, compare_place_qualifiers, load_type_vocab,
+                           normalize_type_token, split_place_name, to_match_record)
+
+def compare_geo(lat_a: float, lon_a: float, lat_b: float, lon_b: float, *,
+                decay_km: float = 1.5) -> float
+def split_place_name(name: str) -> tuple[str, str]                  # (core, qualifier)
+def compare_place_qualifiers(name_a: str, name_b: str) -> float | None
+def normalize_type_token(text: str, vocab: dict[str, str]) -> tuple[str | None, str]
+def load_type_vocab(domain: str) -> dict[str, str]
+def to_match_record(detections: Any) -> dict[str, Any]
+```
+
+`compare_geo` turns a distance into a similarity that decays with `decay_km`. `split_place_name` separates *Kano Central* from *(Annex)*; `compare_place_qualifiers` scores the second half and answers `None` rather than `0.0` when one side has no qualifier, which is how an absent field stays absent. `normalize_type_token` reads *PHC* and *Primary Health Centre* as one type and hands back `(type, residual name)`, with `None` for the type when it recognises none; `load_type_vocab(domain)` is the table you pass it. `to_match_record` turns `Pipeline` detections into a record the matcher can take.
+
+## Not part of the 1.x promise
+
+These import and are unchanged. They are out of `__all__` because a recommended verb should do its job on a plain install, and these ship fixtures only: without them the report comes back empty.
+
+<!-- docs-test: fragment -->
+```python
+from arche import resolve_places, list_places          # the v0.1 directory lane
+```
+
+For places you hold yourself, [resolve a delivery address](../guides/resolve-a-delivery-address.md) is the lane that is promised.
 
 ## Where to read next
 

@@ -306,9 +306,6 @@ geo = [
     { name = "duckdb" },
     { name = "shapely" },
 ]
-gliner = [
-    { name = "gliner2", extra = ["local"] },
-]
 ledger = [
     { name = "duckdb" },
 ]
@@ -331,10 +328,6 @@ pdf = [
 pdf-mupdf = [
     { name = "pymupdf" },
 ]
-pii = [
-    { name = "presidio-analyzer" },
-    { name = "presidio-anonymizer" },
-]
 presidio = [
     { name = "presidio-analyzer" },
     { name = "presidio-anonymizer" },
@@ -351,10 +344,6 @@ service = [
     { name = "python-multipart" },
     { name = "uvicorn" },
 ]
-splink = [
-    { name = "duckdb" },
-    { name = "splink" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -368,12 +357,10 @@ requires-dist = [
     { name = "duckdb", marker = "extra == 'ledger'", specifier = ">=1.0" },
     { name = "duckdb", marker = "extra == 'resolve'", specifier = ">=1.0" },
     { name = "duckdb", marker = "extra == 'runtime'", specifier = ">=1.0" },
-    { name = "duckdb", marker = "extra == 'splink'", specifier = ">=1.0" },
     { name = "fastapi", marker = "extra == 'service'", specifier = ">=0.110" },
     { name = "gliner2", extras = ["local"], marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "gliner2", extras = ["local"], marker = "extra == 'detect'", specifier = ">=2.0" },
     { name = "gliner2", extras = ["local"], marker = "extra == 'detect2'", specifier = ">=2.0" },
-    { name = "gliner2", extras = ["local"], marker = "extra == 'gliner'", specifier = ">=2.0" },
     { name = "h3", specifier = ">=4.0" },
     { name = "jellyfish", specifier = ">=1.0" },
     { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.40" },
@@ -385,10 +372,8 @@ requires-dist = [
     { name = "openai", marker = "extra == 'llm'", specifier = ">=1.0" },
     { name = "phonenumbers", specifier = ">=8.13" },
     { name = "presidio-analyzer", marker = "extra == 'all'", specifier = ">=2.2" },
-    { name = "presidio-analyzer", marker = "extra == 'pii'", specifier = ">=2.2" },
     { name = "presidio-analyzer", marker = "extra == 'presidio'", specifier = ">=2.2" },
     { name = "presidio-anonymizer", marker = "extra == 'all'", specifier = ">=2.2" },
-    { name = "presidio-anonymizer", marker = "extra == 'pii'", specifier = ">=2.2" },
     { name = "presidio-anonymizer", marker = "extra == 'presidio'", specifier = ">=2.2" },
     { name = "pyarrow", marker = "extra == 'parquet'", specifier = ">=14" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -407,10 +392,9 @@ requires-dist = [
     { name = "shapely", marker = "extra == 'geo'", specifier = ">=2.0" },
     { name = "splink", marker = "extra == 'all'", specifier = ">=4.0" },
     { name = "splink", marker = "extra == 'resolve'", specifier = ">=4.0" },
-    { name = "splink", marker = "extra == 'splink'", specifier = ">=4.0" },
     { name = "uvicorn", marker = "extra == 'service'", specifier = ">=0.29" },
 ]
-provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "gliner", "ke", "ledger", "litellm", "llm", "mcp", "ng", "parquet", "pdf", "pdf-mupdf", "pii", "presidio", "resolve", "runtime", "service", "splink", "za"]
+provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "ke", "ledger", "litellm", "llm", "mcp", "ng", "parquet", "pdf", "pdf-mupdf", "presidio", "resolve", "runtime", "service", "za"]
 
 [[package]]
 name = "arche-workspace"

@@ -4,8 +4,26 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### The surface, frozen
+
+**`arche.__all__` is 23 names, and every one of them is on the site's Python API page.** A test holds the two lists together in both directions. That correspondence is what 1.0 promises: these names keep working, with these meanings, through every 1.x release. A name that is importable but not in `__all__` is not promised, and this release moved eight names into that category rather than freezing a surface nobody could read.
+
+- **Six comparator helpers moved to `arche.resolve`**: `compare_geo`, `compare_place_qualifiers`, `load_type_vocab`, `normalize_type_token`, `split_place_name`, `to_match_record`. They are the pieces a comparator is made of, useful when you write your own and meaningless otherwise, and they sat in the package's front door beside the four verbs. `from arche import compare_geo` still works and is unchanged; `from arche.resolve import compare_geo` is the documented path, and the API page's *Comparator helpers* section is where they are written down.
+- **`resolve_places` and `list_places` left the recommended surface.** They are the v0.1 directory lane: fixtures only, so on a plain install they answer with an empty report and a hardcoded `uk_gdpr_v0_hardcoded` policy. Recommending a verb that cannot do its job on a plain install is a promise the package does not keep. Both still import and behave exactly as before. For places you hold yourself, `resolve_place_request` is the lane that is promised.
+
+### Removed
+
+- **`arche.CoReferenceDecision`**, an alias of `arche.resolve.coreference.Receipt` that has warned since 0.7. `_DEPRECATED` is now empty, and a test fails if a name lands in it without a removal version in this changelog.
+- **The v0.1 extra names `gliner`, `pii` and `splink`.** They had been aliases of `[detect]`, `[presidio]` and `[resolve]` since v0.3 and nothing in the documentation used them. An install command that names one now fails at resolution rather than quietly installing something else.
+
+### Kept through 1.x, ending at 2.0
+
+`arche.resolve.crosswalk` and `arche.resolve.pairwise` (each warns and forwards to `reconcile` and `compare`), `backend="regex"` as a spelling of `"basic"`, the `detect` and `runtime` extras, and the `arche-mcp` console script. Each has a replacement that does the same job, each is quiet enough to leave alone for a major version, and each will be removed at 2.0 rather than in a 1.x release.
+
 ### Fixed
 
+- **`replay` hands back what the decision produced**, not only a verdict on it. `replay(id).now["text"]` is the masked copy a redaction makes, `now["question"]` the question a place endpoint asks; both were recomputed and discarded, so a caller who wanted the copy had to run `deidentify` again themselves. `arche replay` prints it too. The direction is worth stating: the ledger keeps the original and the copy is re-derived from it, because `[NIN]` does not contain a national id.
+- **`arche explain ID` answers for every verb.** It assumed a pairwise decision and read `why["shared"]` unconditionally, so a `red:` id died with `KeyError: 'shared'` and a `plc:` id with `KeyError: 'explanation'`. Both are ids `arche redact --store` and `resolve_place_request(store=)` hand you, so the one command that gives you an id led to a traceback. A redaction now prints its spans with the section each fell under, a place endpoint prints its question and the candidates it weighed, and a pairwise decision prints what it always did.
 - `arche.detect` and `arche.resolve` are in `__all__` and now resolve from a bare `import arche`; before, they raised `AttributeError` until something else had imported the subpackage.
 - `extract(backend="auto")` repeats what actually failed when GLiNER 2 is installed but cannot import (a missing protobuf, a torch build that does not load) instead of saying it is not installed.
 - `arche resolve-documents --extraction-backend` offers `auto` and `basic`; `regex`, the 0.8 name, is still accepted and no longer advertised.
