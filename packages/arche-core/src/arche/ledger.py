@@ -722,6 +722,13 @@ class Ledger:
         ``decision_id`` byte for byte. When it does not, ``changed`` names every
         factor, pin and outcome that moved, which is the difference between
         "something changed" and knowing what.
+
+        ``now`` also carries what the decision produced this time, so a replay
+        gives back the artefact and not only a verdict on it: ``now["text"]``
+        is the masked copy for a redaction, ``now["question"]`` the question
+        for a place endpoint. Both are re-derived from the stored input, which
+        is why a redaction can be replayed at all: the masked copy is not an
+        input to anything, and the original is what the ledger keeps.
         """
         then = self.decision(decision_id)
         if then.call.get("_unreplayable"):
@@ -1297,6 +1304,11 @@ class Ledger:
                 "action": deid.method, "score": float(deid.count),
                 "factors": {k: float(v) for k, v in deid.by_category().items()},
                 "pins": dict(deid.pins),
+                # The answer a redaction gives is the copy it produced, so
+                # replay hands that back rather than recomputing it and
+                # throwing it away. Safe to carry: it is the copy the statute
+                # permits, which is the whole reason it exists.
+                "text": deid.text,
             }
         if then.verb == "place":
             from datetime import date as _date
@@ -1325,6 +1337,7 @@ class Ledger:
                 "score": float(ep.candidates[0].confidence) if ep.candidates else 0.0,
                 "factors": {c.place_id: float(c.confidence) for c in ep.candidates},
                 "pins": dict(ep.pins),
+                "question": ep.question,
             }
         if then.verb == "compare":
             record_a, record_b = self.record(then.record_a), self.record(then.record_b)

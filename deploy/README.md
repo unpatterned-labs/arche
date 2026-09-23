@@ -62,7 +62,7 @@ The build fails if any model does not load. That is deliberate: a container that
 
 ## Auth, and who the caller is
 
-Neither the service nor the MCP server authenticates. Inside the compose network they bind every interface; only the proxy is published. The proxy authenticates and sets `X-Arche-Caller`, which the HTTP service records as the caller on every attested answer -- so the receipt names a person, not a container. The MCP transport does not read that header yet; attested MCP answers carry `caller: null`, as they do over stdio.
+Neither the service nor the MCP server authenticates. Inside the compose network they bind every interface; only the proxy is published. The proxy authenticates and sets `X-Arche-Caller`, which both the HTTP service and the MCP server over streamable HTTP record as the caller on every attested answer, so the receipt names a person rather than a container. Over stdio there is no caller to name and the field stays null.
 
 The shipped Caddyfile uses a single basic-auth user. Replace it with `forward_auth` to your identity provider when there is a second person; nothing in the service changes.
 

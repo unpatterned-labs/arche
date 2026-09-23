@@ -57,7 +57,7 @@ for d in detect_pii(note, jurisdiction="NG", backend="basic"):
 
 safe = deidentify(note, jurisdiction="NG", backend="basic")
 print(safe.text)          # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
-print(safe.decision_id)   # red:sha256:... -- explain it, replay it, same as a match
+print(safe.decision_id)   # red:sha256:... -- deterministic; give it a ledger and it replays
 ```
 
 The statute decides what counts and what happens to it -- NDPA masks a national id and tokenises a phone -- and every span carries the section it fell under. `method="mask"`, `"token"` or `"drop"` overrides the rendering; the citations stay. Leave `jurisdiction` out and it is inferred from the text, or refused when the evidence is thin. `backend="auto"` adds GLiNER2-PII as a proposer once `arche-core[detect2]` is installed: the names the lexicon does not hold, addresses written as prose, with the validators and the statute still deciding. A `method="token"` copy is still comparable: `safe.record()` is the tokens as a record, and two masked notes about one person `compare` to `same_entity` without either side holding the value.
@@ -84,7 +84,7 @@ print(receipt.identity, receipt.action, receipt.explanation)
 same_entity merge national ID match; name similarity 100%
 ```
 
-Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone — say the name had not been read — the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `basic` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. `backend="auto"` adds GLiNER 2.5 as a proposer once `arche-core[detect2]` is installed.
+Two axes. `identity` is the belief: one person, because the national id is shared and distinctive. `action` is the recommendation: `merge`, because the name corroborates the id. On the id alone, say the name had not been read, the action would be `hold`: same belief, no licence to act on it yet. The email disagreement is kept, not averaged; the ledger below shows it as a conflict on the entity. The `basic` extractor reads identifiers, emails and names from a shipped lexicon of 13,342 African names; it does not read streets. `backend="auto"` adds GLiNER 2.5 as a proposer once `arche-core[detect2]` is installed.
 
 The runnable form is [examples/quick_text_resolution.py](../../examples/quick_text_resolution.py), which goes one step further: three texts, a ledger, and the entity they turn out to describe. The notebook [23_three_texts_one_person.ipynb](../../examples/notebooks/23_three_texts_one_person.ipynb) walks the same path with replay and `observe`.
 
@@ -115,6 +115,30 @@ ledger.observe(record_id, {...})     # add evidence, re-decide, supersede
 ```
 
 The receipt is identical with or without `store=`. The ledger is a DuckDB file on your disk holding the inputs as given, the receipts, and an append-only event log; it records, and leaves what to *do* about a verdict to you.
+
+A replay hands back what the decision produces today, not only a verdict on it: the masked copy for a redaction, the question for a place endpoint, the verdict for a match.
+
+```python
+safe = deidentify(note, jurisdiction="NG", backend="basic", store=ledger)
+print(safe.decision_id)
+# red:sha256:31d8e1ac9880676a152f8884902489200dfabd6c5c0950cdfe7eb6a75dacf89f
+
+again = ledger.replay(safe.decision_id)
+print(again.reproduced)      # True: this installation still makes that decision, byte for byte
+print(again.now["text"])     # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+print(again.changed)         # {} -- nothing that fed it has moved
+```
+
+Note which direction that runs in. **The ledger keeps the original and the masked copy is re-derived from it**, because `[NIN]` does not contain a national id and `PHONE_d3100c11` is a hash. That is what makes the copy safe to hand on, and the ledger the file you keep on your own disk. Without `store=`, nothing is kept: the id still prints and is still deterministic, so you can re-derive it from the same input and compare, but there is nothing to replay.
+
+The same three verbs from the shell, for any id the package hands you:
+
+```bash
+arche redact --text "Patient Casey Example (NIN 12345678901) called from 0803 555 7890." \
+    --jurisdiction NG --backend basic --store notes.duckdb
+arche explain red:sha256:31d8e1ac... --store notes.duckdb   # the spans, and the section each fell under
+arche replay  red:sha256:31d8e1ac... --store notes.duckdb   # reproduced: True, and the copy again
+```
 
 ## Bring your own candidate retrieval
 

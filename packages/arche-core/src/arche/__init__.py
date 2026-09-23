@@ -73,8 +73,12 @@ def resolve_places(
     country names, etc.). Raises :class:`JurisdictionInferenceError` if no
     jurisdiction can be inferred — never silently defaults.
 
-    v0.1 ships with FIXTURES only by default. Set ``DEMO_LIVE_API=true`` env
-    to enable live OSM/NHS/openchargemap calls (stub in v0.1 — see spec §4.4).
+    Fixtures only by default: without them the report comes back empty. Set
+    ``DEMO_LIVE_API=true`` to enable live OSM/NHS/openchargemap calls.
+
+    Not part of the 1.x promise. It is importable and unchanged, and it is out
+    of ``__all__`` because a recommended verb should do its job on a plain
+    install. For places you hold yourself, see :func:`resolve_place_request`.
     """
     from .resolve.places import _run_anchored
     return _run_anchored(text=text, jurisdiction=jurisdiction, resolver=resolver)
@@ -104,7 +108,9 @@ def list_places(
         if report.next_cursor:
             more = list_places("physiotherapy", cursor=report.next_cursor)
 
-    Supported categories in v0.1: physiotherapy, dentist, ev_charger.
+    Supported categories: physiotherapy, dentist, ev_charger.
+
+    Not part of the 1.x promise, for the same reason as :func:`resolve_places`.
     """
     from .resolve.places import _run_directory
     return _run_directory(
@@ -198,7 +204,6 @@ _LAZY: dict[str, tuple[str, str]] = {
     "compare_place_qualifiers": (".resolve._matcher", "compare_place_qualifiers"),
     # --- the tightened vocabulary -------------------------------------
     "Receipt": (".resolve.coreference", "Receipt"),
-    "CoReferenceDecision": (".resolve.coreference", "Receipt"),
     "compare": (".resolve", "compare"),
     "reconcile": (".resolve", "reconcile"),
     "dedupe": (".resolve", "dedupe"),
@@ -210,14 +215,15 @@ _LAZY: dict[str, tuple[str, str]] = {
 #: Superseded names, each pointing at what replaced it.
 #:
 #: Deliberately small. A name earns a line here only when a replacement exists
-#: and has been checked to do the same job — `arche.match` is NOT listed, for
+#: and has been checked to do the same job: `arche.match` is NOT listed, for
 #: example, because it resolves to ``arche.resolve._matcher.match``, a
 #: different engine from ``arche.resolve.compare``, and telling people to swap
 #: one for the other before that is verified would be worse than saying
 #: nothing. An empty line here is honest; a guessed one is not.
-_DEPRECATED: dict[str, str] = {
-    "CoReferenceDecision": "arche.resolve.coreference.Receipt",
-}
+#:
+#: Empty since 1.0: ``CoReferenceDecision`` was the last entry and was removed
+#: with the freeze, having warned since 0.7.
+_DEPRECATED: dict[str, str] = {}
 
 
 #: The subpackages `__all__` recommends by name.
@@ -269,13 +275,20 @@ def __dir__() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# __all__: the recommended public API 
+# __all__: the recommended public API, and the 1.x promise
 # ---------------------------------------------------------------------------
-# The v0.1 names listed in ``_LAZY`` above remain importable for backward
-# compatibility but are intentionally absent from ``__all__`` so
-# ``from arche import *`` and IDE auto-complete favour the v0.2 framework
-# primitive. Removal of the remaining v0.1 names is targeted for v0.4; the
-# only v0.3 removal is the ``arche.resolve()`` callable shim (2026-08-07).
+# Every name here is documented on the site's Python API page, and every name
+# on that page is here. That correspondence is the promise: these names keep
+# working, with these meanings, for all of 1.x.
+#
+# Names in ``_LAZY`` but not here are importable and unpromised. They are of
+# two kinds. Comparator helpers (`compare_geo`, `normalize_type_token`,
+# `load_type_vocab`, `split_place_name`, `compare_place_qualifiers`,
+# `to_match_record`) are the parts you reach for when building your own
+# comparator; `arche.resolve` re-exports them, which is where they are
+# documented. The v0.1 directory lane (`resolve_places`, `list_places`) ships
+# fixtures only and returns an empty report without them, so recommending it
+# would promise something the package does not do.
 __all__ = [
     "attach",
     # Your fields, once: extraction, matching and masking read the same declaration.
@@ -295,18 +308,10 @@ __all__ = [
     "Detection",
     "detect",
     "match",
-    "to_match_record",
-    "compare_geo",
-    "normalize_type_token",
-    "load_type_vocab",
-    "split_place_name",
-    "compare_place_qualifiers",
     "resolve_documents",
     "DocumentReport",
     "read_metadata",
     "resolve",
-    "resolve_places",
-    "list_places",
     # v0.3.0a1 — spatial role labeling (place-lane-v0.1)
     "extract_places",
     # place requests: mention -> sources -> policy -> verified / question / refusal

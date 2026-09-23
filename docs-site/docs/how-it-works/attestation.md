@@ -44,7 +44,7 @@ The envelope is a JWS, Ed25519 in compact form with `typ: arche+jws`, over a sma
 | `tool` | the verb that answered: an endpoint name over HTTP, a tool name over MCP |
 | `inputs_sha256` | sha256 of the canonical JSON of the arguments as arche received them: the whole request model over HTTP, defaults included; the bound arguments over MCP |
 | `response_sha256` | sha256 of the canonical JSON of the answer, without the `attestation` field itself |
-| `caller` | what the transport knew: the `X-Arche-Caller` header an auth proxy sets, else the client address; `null` over MCP |
+| `caller` | what the transport knew: the `X-Arche-Caller` header an auth proxy sets, else the client address over HTTP; `null` on stdio |
 | `decision_ids` | every arche id in the answer (`dec:`, `xwd:`, `red:`, `rec:`, `ent:`), sorted and unique, wherever in the answer they sat |
 | `issued_at` | when, to the second, UTC |
 | `engine` | `arche-core@<version>` |
@@ -90,7 +90,9 @@ attestation   tool=compare  caller=svc:billing  decision_ids=[xwd:sha256:c41d...
 
 ## Who asked: the `caller` field
 
-`caller` is a claim the signer makes from what the transport told it. Over HTTP it is the `X-Arche-Caller` header when an auth proxy in front of `arche serve` sets one, and the client address otherwise. Over MCP it is `null`, on stdio and on `--transport streamable-http` alike: the MCP layer has no caller identity of its own, and rather than sign a guess arche signs nothing. The signature proves arche made this answer to this question. It does not prove who asked, and behind a proxy it is exactly as good as the proxy.
+`caller` is a claim the signer makes from what the transport told it. Over HTTP it is the `X-Arche-Caller` header when an auth proxy sets one, and the client address otherwise; `arche mcp --transport streamable-http` reads the same header, so one proxy answers for both surfaces. Over stdio it is `null`, because there is no such thing as a caller there: the client is the process that started the server. Rather than sign a guess, arche signs nothing. The signature proves arche made this answer to this question. It does not prove who asked, and behind a proxy it is exactly as good as the proxy.
+
+The header is transport, not argument. It is not part of `inputs_sha256`, so an auditor recomputing that hash from the agent's transcript, which never saw the header, still gets a match.
 
 ## Checking one
 
