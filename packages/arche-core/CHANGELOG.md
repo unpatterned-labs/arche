@@ -11,8 +11,13 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 - **Six comparator helpers moved to `arche.resolve`**: `compare_geo`, `compare_place_qualifiers`, `load_type_vocab`, `normalize_type_token`, `split_place_name`, `to_match_record`. They are the pieces a comparator is made of, useful when you write your own and meaningless otherwise, and they sat in the package's front door beside the four verbs. `from arche import compare_geo` still works and is unchanged; `from arche.resolve import compare_geo` is the documented path, and the API page's *Comparator helpers* section is where they are written down.
 - **`resolve_places` and `list_places` left the recommended surface.** They are the v0.1 directory lane: fixtures only, so on a plain install they answer with an empty report and a hardcoded `uk_gdpr_v0_hardcoded` policy. Recommending a verb that cannot do its job on a plain install is a promise the package does not keep. Both still import and behave exactly as before. For places you hold yourself, `resolve_place_request` is the lane that is promised.
 
+### Added
+
+- **An attested MCP answer names who asked, over HTTP.** `arche mcp --transport streamable-http` reads `X-Arche-Caller` from the request and puts it in the attestation's `caller`, the same header and the same meaning as `arche serve`, so one authenticating proxy answers for both surfaces. Over stdio there is no such thing as a caller: the client is the process that started the server, and `caller` stays null rather than inventing a name. The header is transport, not argument: it is not hashed into `inputs_sha256`, so an auditor recomputing that hash from the agent's transcript still gets a match.
+
 ### Removed
 
+- **65 documentation pages left the repository.** They were excluded from the site and tracked anyway, which is the worst of both: nobody could read them on the site and everybody got them in a clone. Several described `arche.graph`, `arche.credentials` and `arche.adapters`, modules removed in 0.8.0. Every URL still answers, through the redirect map; the pages moved to the repository's own gitignored working directory. `exclude_docs` is down to one entry.
 - **`arche.CoReferenceDecision`**, an alias of `arche.resolve.coreference.Receipt` that has warned since 0.7. `_DEPRECATED` is now empty, and a test fails if a name lands in it without a removal version in this changelog.
 - **The v0.1 extra names `gliner`, `pii` and `splink`.** They had been aliases of `[detect]`, `[presidio]` and `[resolve]` since v0.3 and nothing in the documentation used them. An install command that names one now fails at resolution rather than quietly installing something else.
 

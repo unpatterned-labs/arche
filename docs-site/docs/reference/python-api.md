@@ -450,6 +450,18 @@ from arche import resolve_places, list_places          # the v0.1 directory lane
 
 For places you hold yourself, [resolve a delivery address](../guides/resolve-a-delivery-address.md) is the lane that is promised.
 
+## What a promise about names does not cover
+
+The list above promises names and their meanings. It does not promise numbers, and three kinds of number move on their own schedule.
+
+**Scores and confidences are calibration, not contract.** `Receipt.score`, a candidate's `confidence`, `distinctive_max`: each is produced by weights that are measured and re-measured against the benchmarks. A release that improves a lane changes them, and that is the point of having benchmarks. What is promised is the shape (`[0, 1]`, higher is more agreement) and the meaning of the verdict they feed.
+
+**Evidence strings are a growing vocabulary.** `'street-number match'`, `'typo-tolerant street match'`, `'relation geometry agrees'`: a new comparator adds a new one. Read `evidence` as a list to show a person, not as an enum to branch on; the fields in `factors` and the verdict are what a program should decide by.
+
+**A `decision_id` is only stable against the engine that made it.** Every id hashes the pinned versions, so a release that changes a comparator, a frequency table or a statute pack moves the ids that depended on it, by design. That is what `replay` reports: `reproduced` false with `changed` naming the pin. An id is an address for one decision under one engine, not a permanent name for a pair.
+
+This is why `arche.addr.request` puts only two names in `__all__`, `resolve_place_request` and `SpatialMention`. Its `Policy` numbers, its evidence strings and its `PLACE_ENGINE` pin are all in the moving category above, and the module is four days younger than the freeze; `Policy`, `MasterSheet`, `Endpoint`, `PlaceCandidate` and `PlaceSource` are importable and documented in [Resolve a delivery address](../guides/resolve-a-delivery-address.md), and they are not frozen for 1.x.
+
 ## Where to read next
 
 | You want to | Read |
