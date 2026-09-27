@@ -25,7 +25,7 @@
     "generator": "arche-synthetic 0.0.5",
     "purpose": "regression fixture, not a benchmark",
     "refresh": "python export_fixture.py --into fixtures",
-    "source_commit": "1ed410b-dirty"
+    "source_commit": "0049d06-dirty"
   },
   "generator_version": "0.0.5",
   "horizon": [

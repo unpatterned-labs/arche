@@ -10,7 +10,7 @@ a number measured on them as a benchmark result.
 | scale | 60 canonical organisations |
 | tables | differences 792, events 60, observations 168, truth 168 |
 | generator | arche-synthetic 0.0.5 |
-| source commit | `1ed410b-dirty` |
+| source commit | `0049d06-dirty` |
 | exported | 2026-09-27 |
 
 ## What it is for
