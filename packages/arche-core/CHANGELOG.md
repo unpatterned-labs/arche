@@ -4,9 +4,38 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-09-27
+
+**This was cut as 1.0.0 and deliberately is not.** The code is what a 1.0 would
+have shipped: the surface is reviewed and held to the documentation by a test,
+the deprecations are gone, the benchmark gate passes. What is missing is the only
+thing that makes a 1.0 mean anything, which is somebody depending on it. A major
+version is a promise to users, and this package does not yet know who its users
+are or which parts of the surface they lean on. Freezing now would freeze
+guesses.
+
+**1.0.0 when two things are true**: somebody outside this project confirms they
+are running arche on their own data, and the parts they lean on have been through
+at least one release without moving. Until then the surface is *stable in
+practice and not promised in writing*, which is an honest position and a
+different one.
+
+**What that means if you are using 0.10.0.** The 23 names in `arche.__all__` are
+the recommended surface and the ones under test; treat anything else as internal.
+A breaking change to those names would be a minor-version event with a changelog
+entry naming what moved and why, and there is no plan for one. `arche.addr.request`
+is the exception worth knowing about: the verb `resolve_place_request` is settled,
+but the dataclass fields around it moved twice on 2026-09-19 and the lane is one
+world old, so read `decision_id`, `status` and the question and expect the rest
+to change.
+
+**Numbers are not an interface** either. The benchmarks page is a measurement;
+rows move when the data or the engine does, and the gate exists so they move
+deliberately rather than quietly.
+
 ### The surface, frozen
 
-**`arche.__all__` is 23 names, and every one of them is on the site's Python API page.** A test holds the two lists together in both directions. That correspondence is what 1.0 promises: these names keep working, with these meanings, through every 1.x release. A name that is importable but not in `__all__` is not promised, and this release moved eight names into that category rather than freezing a surface nobody could read.
+**`arche.__all__` is 23 names, and every one of them is on the site's Python API page.** A test holds the two lists together in both directions, so the recommended surface and the documented surface cannot drift apart. That correspondence is what a future 1.0 will promise; today it is what makes the surface *reviewable*, which is the step before promising it. A name that is importable but not in `__all__` is not recommended, and this release moved eight names into that category rather than holding up a surface nobody could read.
 
 - **Six comparator helpers moved to `arche.resolve`**: `compare_geo`, `compare_place_qualifiers`, `load_type_vocab`, `normalize_type_token`, `split_place_name`, `to_match_record`. They are the pieces a comparator is made of, useful when you write your own and meaningless otherwise, and they sat in the package's front door beside the four verbs. `from arche import compare_geo` still works and is unchanged; `from arche.resolve import compare_geo` is the documented path, and the API page's *Comparator helpers* section is where they are written down.
 - **`resolve_places` and `list_places` left the recommended surface.** They are the v0.1 directory lane: fixtures only, so on a plain install they answer with an empty report and a hardcoded `uk_gdpr_v0_hardcoded` policy. Recommending a verb that cannot do its job on a plain install is a promise the package does not keep. Both still import and behave exactly as before. For places you hold yourself, `resolve_place_request` is the lane that is promised.
@@ -29,9 +58,9 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 - **`arche.CoReferenceDecision`**, an alias of `arche.resolve.coreference.Receipt` that has warned since 0.7. `_DEPRECATED` is now empty, and a test fails if a name lands in it without a removal version in this changelog.
 - **The v0.1 extra names `gliner`, `pii` and `splink`.** They had been aliases of `[detect]`, `[presidio]` and `[resolve]` since v0.3 and nothing in the documentation used them. An install command that names one now fails at resolution rather than quietly installing something else.
 
-### Kept through 1.x, ending at 2.0
+### Kept, and removed no earlier than 1.0
 
-`arche.resolve.crosswalk` and `arche.resolve.pairwise` (each warns and forwards to `reconcile` and `compare`), `backend="regex"` as a spelling of `"basic"`, the `detect` and `runtime` extras, and the `arche-mcp` console script. Each has a replacement that does the same job, each is quiet enough to leave alone for a major version, and each will be removed at 2.0 rather than in a 1.x release.
+`arche.resolve.crosswalk` and `arche.resolve.pairwise` (each warns and forwards to `reconcile` and `compare`), `backend="regex"` as a spelling of `"basic"`, the `detect` and `runtime` extras, and the `arche-mcp` console script. Each has a replacement that does the same job and each is quiet enough to leave alone. The horizon used to read "removed at 2.0", which presumed a 1.0 that has been held: they stay until 1.0 at the earliest, and the release that removes them will say so in this file first.
 
 ### Fixed
 

@@ -11,12 +11,12 @@ curl http://localhost:8766/livez
 ```
 
 ```json
-{"ok": true, "version": "0.9.0", "warm": true}
+{"ok": true, "version": "0.10.0", "warm": true}
 ```
 
 `warm: true` means GLiNER 2, GLiNER2-PII and docling's converter loaded at startup, so the first document does not pay for them. `/capabilities` lists the parsers and endpoints this build has. The image runs as a non-root user, on CPU, with `HF_HUB_OFFLINE=1`: it cannot download a model even if asked, because the build already failed if one did not load.
 
-`:latest` is the last release, `:0.9.0` pins one, `:edge` is the tip of `main`.
+`:latest` is the last release, `:0.10.0` pins one, `:edge` is the tip of `main`.
 
 ## The same image, any command
 
@@ -56,14 +56,14 @@ curl -u arche:change-me -F files=@invoice.pdf -F entity=organisation -F jurisdic
      http://localhost:8080/documents
 ```
 
-The password is `change-me` until you change it; the Caddyfile says how, and how to replace basic auth with your identity provider when there is a second person. `ARCHE_VERSION=0.9.0` pins the image; `--build` builds it from the checkout instead.
+The password is `change-me` until you change it; the Caddyfile says how, and how to replace basic auth with your identity provider when there is a second person. `ARCHE_VERSION=0.10.0` pins the image; `--build` builds it from the checkout instead.
 
 ## Air-gapped
 
 The image needs no network to run. To move it into a network with no egress at all:
 
 ```sh
-docker save ghcr.io/unpatterned-labs/arche-core:0.9.0 | gzip > arche.tar.gz
+docker save ghcr.io/unpatterned-labs/arche-core:0.10.0 | gzip > arche.tar.gz
 # carry it across
 docker load < arche.tar.gz
 ```
