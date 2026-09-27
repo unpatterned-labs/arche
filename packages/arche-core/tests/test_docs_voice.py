@@ -107,3 +107,66 @@ def test_first_example_on_the_first_screen(page: Path):
     assert _FENCE.search(head), (
         f"{rel}: no code fence in the first {_FIRST_SCREEN_LINES} lines; a task page shows "
         f"its first example before the first heading")
+
+
+# ---------------------------------------------------------------------------
+# The configuration itself
+# ---------------------------------------------------------------------------
+#
+# Every block below was deleted from `mkdocs.yml` in one commit and nothing
+# noticed. A `re.S` regex rewriting the `exclude_docs` comment matched to end
+# of file and took the rest with it: the stylesheet, the redirects, the
+# markdown extensions, the nav and the social links. `mkdocs build --strict`
+# passed, because MkDocs requires none of them: it falls back to a default
+# theme, an alphabetical sidebar and no redirects, and calls that a clean
+# build. The site was plain Material with every old URL broken, and the only
+# signal was that it looked wrong to a human who happened to open it.
+
+#: block -> what the site loses without it, for the failure message.
+_REQUIRED_BLOCKS = {
+    "theme": "everything",
+    "extra_css": "the design system",
+    "plugins": "search and every redirect",
+    "markdown_extensions": "code copy, admonitions and tables",
+    "nav": "the curated sidebar",
+    "extra": "the social links",
+}
+
+
+def _mkdocs_text() -> str:
+    from tests.test_docs_examples import MKDOCS
+
+    if not MKDOCS.is_file():
+        pytest.skip("mkdocs.yml is not in this checkout")
+    return MKDOCS.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("block", sorted(_REQUIRED_BLOCKS))
+def test_the_site_config_still_has_its_blocks(block: str):
+    text = _mkdocs_text()
+    assert re.search(rf"^{block}:", text, re.M), (
+        f"mkdocs.yml has no `{block}:` block. A strict build passes without "
+        f"it and the site quietly loses {_REQUIRED_BLOCKS[block]}.")
+
+
+def test_every_retired_page_still_has_a_redirect():
+    """A URL that was published keeps answering.
+
+    The pages retired for the 1.0 site are gone from the tree; `redirect_maps`
+    is the only thing standing between an old link and a 404, and it is a hand
+    written list. This checks the list still names what it named.
+    """
+    text = _mkdocs_text()
+    block = re.search(r"redirect_maps:\s*\n((?:\s{8,}\S.*\n)+)", text)
+    assert block, "mkdocs.yml has no redirect_maps; every pre-1.0 URL 404s"
+    targets = []
+    sources = []
+    for line in block.group(1).splitlines():
+        source, _, target = line.strip().partition(": ")
+        sources.append(source)
+        targets.append(target)
+    for expected in ("getting-started/quickstart.md", "reference/decision-contract.md",
+                     "guides/review-log.md", "blog/what-a-name-list-is-worth.md"):
+        assert expected in sources, f"{expected} lost its redirect"
+    for target in targets:
+        assert (DOCS / target).is_file(), f"redirect points at a page that does not exist: {target}"

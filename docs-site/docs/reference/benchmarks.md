@@ -301,7 +301,7 @@ At 444 and 1,215 records the two are level on false merges (2 against 5, 39 agai
 
 Splink at 0.9 makes almost no false merges at any size and finds less than half the true pairs; that is the same threshold trade the Nigerian register showed, and the reason the shipped recipes name the threshold they were benchmarked at rather than leaving it to the caller.
 
-Script: `data/synthetic/bench_size_floor.py`, result in `data/synthetic/bench_size_floor_result.json`. The same numbers are recorded in the 0.9.0 entry of `packages/arche-core/CHANGELOG.md`.
+Measured with the supplier world's size-floor script, which lives with the generator in the `arche-synthetic` repository. The numbers above are arche's own measurement and are also recorded in the 0.9.0 entry of `packages/arche-core/CHANGELOG.md`.
 
 ### arche using Splink, rather than against it
 
@@ -500,7 +500,7 @@ unknown_confusable        asked     1.00   (verified_wrong 0.00)
 
 **What this does not measure.** The sheet is a declared assumption; no real address is in it, and which place a request means is by construction. Whether a sentence written by a real customer renders the way the generator renders it is the question the twin cannot answer.
 
-Script: `data/synthetic/bench_place_request.py`, result in `data/synthetic/bench_place_request_places_v1.json`; the world and its labels are described in `data/synthetic/DATACARD.md`.
+Measured against a generated world whose every endpoint carries the rendering that produced it. The generator, the world and its datacard live in the `arche-synthetic` repository; the numbers above are arche's own measurement.
 
 ## Against string baselines
 
@@ -649,13 +649,11 @@ uv run python datasets/names_dataops/bench_sweep_historical.py            # the 
 uv run python data/scripts/fetch_england_schools.py --la Leeds            # stage the England sources first
 uv run python datasets/names_dataops/bench_splink_england_schools.py      # Splink, the England schools link
 uv run python datasets/products_dataops/bench_splink_abt_buy.py           # Splink, Abt-Buy
-uv run python data/synthetic/bench_size_floor.py                          # the size floor, four sizes of the supplier world
 uv run python datasets/names_dataops/bench_backend_compare.py             # the adapter against the recipe run directly
 uv run python examples/notebooks/build_15.py                              # Parrish, R RecordLinkage
 uv run python datasets/names_dataops/bench_febrl.py                       # Python recordlinkage, Febrl 4
 uv run python data/scripts/benchmark_pii.py --backend basic,gliner2-pii   # detection
 uv run python data/scripts/benchmark_entity_formation.py                  # entity formation
-uv run python data/synthetic/bench_place_request.py                       # the place request against places_v1
 uv run python datasets/names_dataops/bench_name_frequency.py              # name frequency ablation, NCVR
 uv run python data/scripts/nigeria_school_false_merges.py                 # string baselines, Nigeria
 uv run python datasets/names_dataops/bench_date_refutation.py             # refutation, NCVR

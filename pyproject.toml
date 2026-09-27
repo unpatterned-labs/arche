@@ -37,9 +37,9 @@ dev = [
     "ruff>=0.4",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
-    # `data/synthetic` writes Parquet. It is an arche extra rather than a base
-    # dependency, so without it here the synthetic tests skip in CI and read as
-    # coverage they are not providing.
+    # The ledger, the studio and the review pack read and write Parquet. It is
+    # an arche extra rather than a base dependency, so without it here those
+    # tests skip in CI and read as coverage they are not providing.
     "pyarrow>=14",
     # `arche serve` is behind the `service` extra, which `arche-core[all]`
     # deliberately leaves out so the library wheel stays a library. Without
