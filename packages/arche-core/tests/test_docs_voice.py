@@ -75,6 +75,27 @@ def test_one_h1_first(page: Path):
     assert first.startswith("# "), f"{_rel(page)}: the H1 is not the first line of content"
 
 
+def test_every_public_name_is_on_the_python_api_page():
+    """The 1.x promise, from the documentation side.
+
+    `__all__` is what the package recommends and `reference/python-api.md` is
+    what the site documents; at the 1.0 freeze they were made the same list.
+    A name added to one and not the other is the drift this catches: an
+    undocumented public name is a promise nobody can read, and a documented
+    name that is not public is a promise nobody can use.
+    """
+    import arche
+
+    page = DOCS / "reference" / "python-api.md"
+    if not page.is_file():
+        pytest.skip("the API page is not in this checkout")
+    text = page.read_text(encoding="utf-8")
+    missing = [n for n in sorted(arche.__all__) if n not in text]
+    assert not missing, (
+        f"public but undocumented: {missing}. Add each to "
+        "docs-site/docs/reference/python-api.md, or take it out of __all__.")
+
+
 @pytest.mark.parametrize("page", _published(), ids=_rel)
 def test_first_example_on_the_first_screen(page: Path):
     rel = _rel(page)

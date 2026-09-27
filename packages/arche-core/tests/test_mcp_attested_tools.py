@@ -66,10 +66,65 @@ class TestWithAKey:
         assert a == b
 
     def test_the_tool_signature_survives_for_schema_generation(self, keyed, server):
+        """The tool's own parameters, plus the one the SDK injects.
+
+        `ctx` is keyword-only and annotated `Context`, which is how the SDK
+        knows to pass the request and to leave it out of the tool's schema.
+        Everything before it is the tool's own signature, unchanged, which is
+        what the schema is built from.
+        """
         import inspect
+
         wrapped = server._attesting(_tool_body)
-        assert str(inspect.signature(wrapped)) == str(inspect.signature(_tool_body))
+        params = inspect.signature(wrapped).parameters
+        assert list(params)[:-1] == list(inspect.signature(_tool_body).parameters)
+        assert params["ctx"].kind is inspect.Parameter.KEYWORD_ONLY
         assert wrapped.__name__ == "_tool_body"
+
+    def test_the_caller_comes_from_the_proxy_header(self, keyed, server):
+        """Who asked, when the transport can say.
+
+        Over streamable HTTP the request headers reach the tool, so a proxy
+        that authenticates names the person and the envelope carries it. The
+        header is the same one `arche serve` reads, so one auth front answers
+        for both surfaces.
+        """
+        class _Ctx:
+            headers = {"X-Arche-Caller": "ada@clinic.example", "accept": "text/event-stream"}
+
+        wrapped = server._attesting(_tool_body)
+        answer = wrapped("t", ctx=_Ctx())
+        assert answer["attestation"]["caller"] == "ada@clinic.example"
+
+    def test_stdio_has_no_caller_and_does_not_invent_one(self, keyed, server):
+        class _Stdio:
+            headers = None
+
+        wrapped = server._attesting(_tool_body)
+        assert wrapped("t", ctx=_Stdio())["attestation"]["caller"] is None
+        assert wrapped("t")["attestation"]["caller"] is None
+
+    def test_an_empty_header_is_not_a_caller(self, keyed, server):
+        class _Ctx:
+            headers = {"x-arche-caller": "   "}
+
+        wrapped = server._attesting(_tool_body)
+        assert wrapped("t", ctx=_Ctx())["attestation"]["caller"] is None
+
+    def test_the_caller_is_not_hashed_into_the_inputs(self, keyed, server):
+        """`ctx` is transport, not argument.
+
+        The inputs hash is what an auditor recomputes from the arguments the
+        agent says it sent; a header the agent never saw must not be in it.
+        """
+        class _Ctx:
+            headers = {"x-arche-caller": "ada@clinic.example"}
+
+        wrapped = server._attesting(_tool_body)
+        with_header = wrapped("t", ctx=_Ctx())["attestation"]
+        without = wrapped("t")["attestation"]
+        assert with_header["inputs_sha256"] == without["inputs_sha256"]
+        assert with_header["caller"] != without["caller"]
 
     def test_a_non_dict_answer_is_left_alone(self, keyed, server):
         wrapped = server._attesting(lambda: "plain")

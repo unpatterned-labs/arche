@@ -1514,6 +1514,23 @@ def _renamed(old: str, new: str, target):
     return wrapper
 
 
+# The comparator helpers, on a public path.
+#
+# They were in `arche.__all__` until 1.0, which recommended six matcher
+# internals beside the four verbs. They are useful when you are building your
+# own comparator and meaningless otherwise, so they live here, documented,
+# rather than in the package's front door.
+from arche.resolve._matcher import compare_geo as compare_geo  # noqa: E402
+from arche.resolve._matcher import (  # noqa: E402
+    compare_place_qualifiers as compare_place_qualifiers,
+)
+from arche.resolve._matcher import load_type_vocab as load_type_vocab  # noqa: E402
+from arche.resolve._matcher import (  # noqa: E402
+    normalize_type_token as normalize_type_token,
+)
+from arche.resolve._matcher import split_place_name as split_place_name  # noqa: E402
+from arche.resolve._matcher import to_match_record as to_match_record  # noqa: E402
+
 crosswalk = _renamed("crosswalk", "reconcile", reconcile)
 pairwise = _renamed("pairwise", "compare", compare)
 

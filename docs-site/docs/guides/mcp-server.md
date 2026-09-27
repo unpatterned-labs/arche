@@ -346,7 +346,7 @@ The jurisdiction and statute settings are a ceiling, not a default. Set, they ar
 
 ## Attested answers
 
-With `ARCHE_SIGNING_KEY` set to a PEM from `arche attest keygen`, every tool's answer carries an `attestation`: a JWS by this installation over the tool name, a hash of the arguments, a hash of the answer and the decision ids in it. `capabilities` names the signer. stdio has no caller identity, so `caller` is `null`; the point is the binding of question to answer, which lets an auditor check an agent's transcript against what arche signed. See [Attested answers](../how-it-works/attestation.md).
+With `ARCHE_SIGNING_KEY` set to a PEM from `arche attest keygen`, every tool's answer carries an `attestation`: a JWS by this installation over the tool name, a hash of the arguments, a hash of the answer and the decision ids in it. `capabilities` names the signer. Over `--transport streamable-http` the `X-Arche-Caller` header an auth proxy sets becomes the envelope's `caller`, the same header `arche serve` reads; over stdio there is no caller to name and the field is `null`. The point either way is the binding of question to answer, which lets an auditor check an agent's transcript against what arche signed. See [Attested answers](../how-it-works/attestation.md).
 
 ## When it does not work
 

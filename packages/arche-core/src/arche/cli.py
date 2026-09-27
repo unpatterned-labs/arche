@@ -265,14 +265,45 @@ def _cmd_decision(args: argparse.Namespace) -> int:
 
 
 def _cmd_explain(args: argparse.Namespace) -> int:
+    """`arche explain ID`, for any verb the ledger records.
+
+    Three shapes come back, because three kinds of decision are recorded and
+    they do not answer the same question. A pairwise or batch decision has
+    fields that supported and refuted it; a redaction has spans and the
+    statute that governs each; a place request has a reading, the candidates
+    and the question. This used to assume the first shape and died on a
+    `red:` id with `KeyError: 'shared'`.
+    """
     ledger = _ledger(args.store)
     try:
         why = ledger.explain(args.decision_id)
     except KeyError as exc:
         raise SystemExit(f"arche explain: {exc.args[0]}") from exc
-    payload = {**why, "shared": _shown(why["shared"], args.reveal), "decision_id": args.decision_id}
+    payload = {**why, "decision_id": args.decision_id}
+    # A place explanation has no `explanation`: its sentence is `why`, because
+    # the useful line for an endpoint is the question it asked.
+    head = f"{why['identity']}  {why['action']}  - {why.get('explanation') or why.get('why', '')}"
+
+    if why.get("verb") == "deidentify":
+        lines = [head, f"  statute     {why['statute']} ({why['jurisdiction']})"]
+        for span in why.get("spans", ()):
+            lines.append(f"  {span['category']:<22} {span['action']:<10} {span['citation']}")
+        lines.append("  (offsets and categories only; a redaction receipt never holds a value)")
+        return _emit(payload, lines, args)
+
+    if why.get("verb") == "place":
+        lines = [head, f"  role        {why['role']}"]
+        read = why.get("read") or {}
+        if read.get("target_text"):
+            lines.append(f"  read        {read['target_text']}")
+        for cand in why.get("candidates", ()):
+            lines.append(f"  {cand['confidence']:>5}  {cand['place_id']:<24} "
+                         f"{', '.join(cand.get('evidence', ()))}")
+        return _emit(payload, lines, args)
+
+    payload["shared"] = _shown(why["shared"], args.reveal)
     lines = [
-        f"{why['identity']}  {why['action']}  - {why['explanation']}",
+        head,
         f"  supporting  {why['supporting']}",
         f"  refuting    {why['refuting']}",
         f"  missing     {why['missing']}",
@@ -294,13 +325,19 @@ def _cmd_replay(args: argparse.Namespace) -> int:
                  "score": replay.then.score, "engine": replay.then.pins.get("engine")},
         "now": {"identity": replay.now["identity"], "action": replay.now["action"],
                 "score": replay.now["score"], "engine": replay.now["pins"].get("engine"),
-                "decision_id": replay.now["decision_id"]},
+                "decision_id": replay.now["decision_id"],
+                **{k: replay.now[k] for k in ("text", "question") if replay.now.get(k)}},
         "changed": replay.changed,
     }
     lines = [f"reproduced: {replay.reproduced}"]
     if replay.reproduced:
         lines.append(f"  {replay.then.identity} {replay.then.action}: "
                      "same decision_id, byte for byte")
+    # What it produced this time, not only whether it agrees with itself.
+    if replay.now.get("text"):
+        lines.append(f"  {replay.now['text']}")
+    elif replay.now.get("question"):
+        lines.append(f"  {replay.now['question']}")
     else:
         lines.append(f"  then {replay.then.identity} {replay.then.action}  ->  now "
                      f"{replay.now['identity']} {replay.now['action']}")

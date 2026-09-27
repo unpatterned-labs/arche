@@ -72,4 +72,4 @@ Both models, the parsers, OCR, Splink and the ledger work without a connection.
 
 ## What the compose file is not
 
-One ledger per process, one key, one set of users; a twenty-page scan holds its request open while it parses (the proxy allows ten minutes); the MCP transport does not read the caller header yet, so attested MCP answers carry `caller: null`. Helm charts, autoscaling and multi-tenant workspaces are somebody's product, not this repository's.
+One ledger per process, one key, one set of users; a twenty-page scan holds its request open while it parses (the proxy allows ten minutes). Helm charts, autoscaling and multi-tenant workspaces are somebody's product, not this repository's.

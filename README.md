@@ -30,12 +30,12 @@ from arche import detect_pii, deidentify
 
 note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
 
-for d in detect_pii(note, jurisdiction="NG"):
+for d in detect_pii(note, jurisdiction="NG", backend="basic"):
     print(d.category, (d.start, d.end), d.regulatory_citation)   # PII-2-NIN (27, 38) NDPA-2023 s.30, NIMC Act s.27
 
-safe = deidentify(note, jurisdiction="NG")
+safe = deidentify(note, jurisdiction="NG", backend="basic")
 print(safe.text)          # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
-print(safe.decision_id)   # red:sha256:... -- explain it, replay it, same as a match
+print(safe.decision_id)   # red:sha256:... -- deterministic; give it a ledger and it replays
 ```
 
 The statute decides what counts and what happens to it, and every span carries the section it fell under. Nothing leaves the process; the base install runs on CPU with no model, and `arche-core[detect2]` adds GLiNER2-PII as a proposer the validators and the statute still decide over. A tokenised copy is still comparable -- two masked notes about one person link on their tokens, without either side holding the value.
@@ -76,6 +76,39 @@ print(report.table())
 ```
 
 That parses each file, detects the identifying data with the governing statute attached, builds a record per document, and resolves them against each other. Every decision carries the extraction that produced it: the hash of the input bytes, the parser and its version, the digest of the rendering its spans point into. Upgrade the parser next year, re-run, and you can tell whether the answer changed or only the machinery did.
+
+## Keep it, and make it again next year
+
+A `decision_id` is an address, not a record. Hand a verb a ledger and the receipt is kept with the input it was made from, so the id becomes something you can look up, explain and run again.
+
+```python
+import arche
+from arche import deidentify
+
+ledger = arche.attach("duckdb:///notes.duckdb")        # a DuckDB file you own
+note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+
+safe = deidentify(note, jurisdiction="NG", backend="basic", store=ledger)
+print(safe.decision_id)
+# red:sha256:31d8e1ac9880676a152f8884902489200dfabd6c5c0950cdfe7eb6a75dacf89f
+
+again = ledger.replay(safe.decision_id)
+print(again.reproduced)      # True: this installation still makes that decision, byte for byte
+print(again.now["text"])     # Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+print(again.changed)         # {} -- nothing that fed it has moved
+```
+
+`reproduced` is stronger than "the same answer": it means no detector, statute pack or engine version behind the decision has moved, and when one has, `changed` names it. `now` carries what the decision produces today, so a replay gives back the artefact and not only a verdict on it: the masked copy for a redaction, the question for a place endpoint, the verdict for a match.
+
+Note which direction that runs in. **The ledger keeps the original and the masked copy is re-derived from it**, because `[NIN]` does not contain a national id and `PHONE_d3100c11` is a hash. That is what makes the copy safe to hand on, and the ledger the file you keep on your own disk. Without `store=`, nothing is kept: the id still prints and is still deterministic, so you can re-derive it from the same input and compare, but there is nothing to replay.
+
+The same from the shell, and the same three verbs for a match, a batch edge or a delivery address:
+
+```bash
+arche redact --text "Patient Casey Example (NIN 12345678901) called from 0803 555 7890." \n    --jurisdiction NG --store notes.duckdb
+arche explain red:sha256:31d8e1ac... --store notes.duckdb   # the spans, and the section each fell under
+arche replay  red:sha256:31d8e1ac... --store notes.duckdb   # reproduced: True, and the copy again
+```
 
 ## Decisions you can hand to someone who does not trust you
 

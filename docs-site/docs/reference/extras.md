@@ -125,12 +125,13 @@ The proof-of-address check sits on the light one on purpose: a KYC check that ne
 
 | name | installs | since |
 |---|---|---|
-| `gliner` | `[detect]`, itself `[detect2]` | v0.1 name, deprecated |
-| `pii` | `[presidio]` | v0.1 name, deprecated |
-| `splink` | `[resolve]` | v0.1 name, deprecated |
 | `detect` | `[detect2]` | GLiNER v1 removed in 0.9.0 |
 | `runtime` | `[ledger]` | earlier name |
 | `ng`, `ke`, `za`, `gh`, `africa` | nothing | forward-compatible namespaces, empty |
+
+Both aliases keep working through 1.x.
+
+The v0.1 names `gliner`, `pii` and `splink` were removed at 1.0. They had been aliases since v0.3, no page here used them, and an install command that names one now fails at resolution instead of quietly installing something else. Use `[detect2]`, `[presidio]` and `[resolve]`.
 
 The country extras are empty on purpose. Nigerian, Kenyan, South African and Ghanaian identifier detection needs no dependency, so `pip install "arche-core[ng]"` installs exactly what `pip install arche-core` does. They exist so a `requirements.txt` written against an earlier expectation still resolves, and so a caller can pin to one country's changes if those bundles ever carry something.
 

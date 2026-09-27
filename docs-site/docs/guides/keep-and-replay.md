@@ -98,6 +98,24 @@ same_entity -> same_entity
 
 `reproduced` is true when the engine installed now produces the same `decision_id`, byte for byte. That is stronger than "the same verdict": nothing that fed the decision has moved. When something has, `changed` names it. In the second run the verdict held and the id moved because the engine pin did. That is the intended behaviour: a decision is reproducible only against the code that made it, and the id refuses to pretend otherwise.
 
+`replay` hands back what the decision produced this time, not only a verdict on it. A redaction gives you the masked copy again, and a place endpoint its question:
+
+```python
+note = "Patient Casey Example (NIN 12345678901) called from 0803 555 7890."
+safe = arche.deidentify(note, jurisdiction="NG", backend="basic", store=ledger)
+
+again = ledger.replay(safe.decision_id)
+print(again.reproduced)
+print(again.now["text"])
+```
+
+```text
+True
+Patient Casey Example (NIN [NIN]) called from PHONE_d3100c11.
+```
+
+Note which direction that runs in. The ledger keeps the **original**, and the masked copy is re-derived from it; you cannot go the other way, because `[NIN]` does not contain a national id. That is what makes the copy safe to hand on and the ledger the thing to keep on your own disk.
+
 A decision made with an argument the ledger cannot store (a `Declaration` object, an `issuer_key`, a frequency table) records the argument's name, and `replay` declines with a message naming it. Such a receipt can still be re-verified from its signature; see [Compare two records](compare-two-records.md).
 
 ## What the ledger knows

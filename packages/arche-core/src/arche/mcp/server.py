@@ -30,7 +30,10 @@ the agent, and an agent that can pick its own statute can pick a weaker one.
   ARCHE_TRANSFER_BASIS    declared cross-border transfer basis
   ARCHE_LEDGER            duckdb:///FILE (or a path): remember decisions there
   ARCHE_SIGNING_KEY       PEM from `arche attest keygen`: every answer then
-                          carries a signed `attestation` (see arche.attest)
+                          carries a signed `attestation` (see arche.attest).
+                          Over streamable HTTP the `X-Arche-Caller` header
+                          names who asked; over stdio there is no such thing
+                          and `caller` is null.
 
 With ``ARCHE_LEDGER`` set, ``compare_records`` records what it decides and
 eight more tools appear -- ``decision``, ``explain``, ``replay``, ``entities``,
@@ -119,24 +122,51 @@ def _signing_key():
 _SIGNING_KEY = _signing_key()
 
 
+#: The header a proxy sets to say who is asking. The same one `arche serve`
+#: reads, so one deployment answers for both surfaces with one auth front.
+CALLER_HEADER = "x-arche-caller"
+
+
+def _caller(ctx) -> str | None:
+    """Who asked, when the transport can say.
+
+    Over streamable HTTP the request headers reach the tool, so a proxy that
+    authenticates can name the person in ``X-Arche-Caller`` and the
+    attestation carries it. Over stdio there are no headers and no identity to
+    have: the client is the process that started the server, and saying so is
+    more honest than inventing a name.
+    """
+    headers = getattr(ctx, "headers", None) or {}
+    for key, value in headers.items():
+        if key.lower() == CALLER_HEADER and str(value).strip():
+            return str(value).strip()
+    return None
+
+
 def _attesting(fn):
     """Wrap a tool so its answer carries an attestation when a key is set.
 
     The envelope is a JWS over the tool name, a hash of the arguments, a hash
     of the answer and the decision ids in it, signed by this installation. It
     lets an auditor check that what the agent *says* arche said is what arche
-    said. stdio has no caller identity, so ``caller`` is None here; the HTTP
-    service fills it from the proxy's header.
+    said.
+
+    The wrapper, not the tool, declares the ``ctx`` parameter: the SDK injects
+    a `Context` into any parameter annotated with one and leaves it out of the
+    tool's schema, so nineteen handlers stay plain functions and the caller is
+    read in one place.
     """
     import functools
     import inspect
+
+    from mcp.server.mcpserver.context import Context
 
     if _SIGNING_KEY is None:
         return fn
     sig = inspect.signature(fn)
 
     @functools.wraps(fn)
-    def wrapped(*args, **kwargs):
+    def wrapped(*args, ctx=None, **kwargs):
         from arche.attest import attest
 
         result = fn(*args, **kwargs)
@@ -144,8 +174,14 @@ def _attesting(fn):
             return result
         inputs = sig.bind(*args, **kwargs).arguments
         return {**result, "attestation": attest(fn.__name__, inputs, result,
-                                                keypair=_SIGNING_KEY)}
+                                                keypair=_SIGNING_KEY,
+                                                caller=_caller(ctx))}
 
+    wrapped.__signature__ = sig.replace(parameters=[
+        *sig.parameters.values(),
+        inspect.Parameter("ctx", inspect.Parameter.KEYWORD_ONLY, annotation=Context),
+    ])
+    wrapped.__annotations__ = {**getattr(fn, "__annotations__", {}), "ctx": Context}
     return wrapped
 
 

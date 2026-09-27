@@ -91,14 +91,36 @@ def test_the_named_replacements_actually_resolve():
 # ---------------------------------------------------------------------------
 
 
-def test_a_deprecated_name_warns_and_names_the_replacement():
+def test_a_deprecated_name_warns_and_names_the_replacement(monkeypatch):
+    """The mechanism, not a particular name.
+
+    `_DEPRECATED` is empty at 1.0: `CoReferenceDecision`, its last entry, was
+    removed with the surface freeze after warning since 0.7. The machinery
+    still has to work for the next name that earns a line there, so the test
+    installs one rather than waiting for one.
+    """
+    monkeypatch.setitem(arche._LAZY, "OldName", (".resolve.coreference", "Receipt"))
+    monkeypatch.setitem(arche._DEPRECATED, "OldName", "arche.resolve.coreference.Receipt")
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        _uncached("CoReferenceDecision")
+        value = _uncached("OldName")
     messages = [str(w.message) for w in caught
                 if issubclass(w.category, DeprecationWarning)]
     assert messages, "no DeprecationWarning raised"
     assert "arche.resolve.coreference.Receipt" in messages[0]
+    assert value.__name__ == "Receipt"
+
+
+def test_the_deprecated_map_is_empty_at_the_freeze():
+    """Every name arche recommends is a name it intends to keep.
+
+    Not a rule against deprecating things later: a name added to `_DEPRECATED`
+    fails this test, which is the moment to decide when it goes, say so in the
+    changelog, and update the line below.
+    """
+    assert arche._DEPRECATED == {}, (
+        f"{sorted(arche._DEPRECATED)} are deprecated. Give each one a removal "
+        "version in the changelog, then update this test.")
 
 
 def test_a_current_lazy_name_stays_silent():
@@ -202,11 +224,13 @@ _FROZEN_SURFACE = {
     "detect_pii", "deidentify",
     "Receipt", "Pipeline", "Result", "Detection", "DocumentReport",
     "__version__",
-    # The place lane. Domain helpers rather than vocabulary -- they read as
-    # what they are and none of them competes with the four verbs.
-    "compare_geo", "compare_place_qualifiers", "extract_places", "list_places",
-    "load_type_vocab", "normalize_type_token", "resolve_places",
-    "split_place_name",
+    # The place lane. `extract_places` reads a sentence; the comparator
+    # helpers that used to sit here (compare_geo, compare_place_qualifiers,
+    # load_type_vocab, normalize_type_token, split_place_name) moved to
+    # `arche.resolve` at the 1.0 freeze, and the v0.1 directory verbs
+    # (resolve_places, list_places) left the recommended surface because they
+    # ship fixtures only and answer empty without them. All still import.
+    "extract_places",
     # The place request (2026-09-18): a sentence -> endpoints with roles,
     # relations and access hints -> verified / one question / refused. One
     # verb and the noun it reads; the sources and the policy live in
@@ -216,7 +240,7 @@ _FROZEN_SURFACE = {
     # from `compare`, not an older spelling of it; it stays until someone runs
     # the comparison. `detect` and `resolve` are the subpackages.
     "detect", "match", "read_metadata", "resolve",
-    "resolve_documents", "to_match_record",
+    "resolve_documents",
 }
 
 
