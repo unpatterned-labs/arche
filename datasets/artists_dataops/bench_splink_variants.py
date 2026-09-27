@@ -249,8 +249,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     ap.add_argument("--world", default=str(WORLD))
     ap.add_argument("--arche", action="store_true", help="also run the arche artist pack")
+    ap.add_argument("--out", default=None,
+                    help=f"where to write the result JSON. Defaults to {OUT.name} "
+                         "beside this script, which is the file RESULTS.md quotes "
+                         "-- pass a path elsewhere to re-run without dirtying the "
+                         "tree.")
     args = ap.parse_args()
     out = Path(args.world)
+    destination = Path(args.out) if args.out else OUT
 
     bench = Benchmark.load(out)
     collisions = collision_pairs(bench, out)
@@ -372,9 +378,12 @@ def main() -> int:
         print(f"    {arm:<14} " + "  ".join(f"{k[:22]}={v:+.1f}"
                                           for k, v in r["notes"]["learned_bits"].items()))
 
-    OUT.write_text(json.dumps(report, indent=2, default=str) + "\n",
-                   encoding="utf-8", newline="\n")
-    print(f"\n  wrote {OUT.relative_to(_REPO)}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(report, indent=2, default=str) + "\n",
+                           encoding="utf-8", newline="\n")
+    shown = (destination.relative_to(_REPO)
+             if destination.is_relative_to(_REPO) else destination)
+    print(f"\n  wrote {shown}")
     return 0
 
 

@@ -37,42 +37,58 @@ Three sources observe it, and they disagree for different reasons by design:
 
 | source | records | what it is | why it differs |
 |---|---:|---|---|
-| `erp` | 1,687 | the vendor master somebody typed once | **stale** — 30 to 900 days behind. This is what produces `change` |
+| `erp` | 1,685 | the vendor master somebody typed once | **stale** — 30 to 900 days behind. This is what produces `change` |
 | `registry` | 2,000 | CAC. Authoritative, fresh, full legal name and RC | barely — it is the source a matcher would most like to have |
-| `invoice` | 2,443 | OCR'd, 1–3 per supplier over the horizon | heavy representation variation and OCR error, rarely an identifier |
+| `invoice` | 2,459 | OCR'd, 1–3 per supplier over the horizon | heavy representation variation and OCR error, rarely an identifier |
 
-1,859 of 2,000 suppliers have more than one record. 141 have exactly one — singletons a matcher should not merge into anything.
+1,878 of 2,000 suppliers have more than one record. 122 have exactly one — singletons a matcher should not merge into anything.
 
-Events generated: 1,435 in total — 445 relocations, 406 director changes, 302 renames, 282 account changes. `events.parquet` has 1,717 rows because an account change moves two attributes (the bank and the number) and is flattened to one row each.
+Events: 445 relocations, 406 director changes, 302 renames, 282 account changes. `events.parquet` has 1,717 rows because an account change moves two attributes (the bank and the number) and is flattened to one row each, so the account rows count twice there.
+
+**Every count on this page is derived, not typed.** `python data/synthetic/datacard_counts.py` reads the shipped Parquet files and prints them; run it after regenerating a world and paste the result, because an earlier version of this page was hand-edited and every number in these two tables had drifted 1 to 8 per cent from the files it described.
 
 ## Every cause, with its count
 
-```
-change          ORG_RELOCATED                985      error   ocr_confusion            4555
-change          ORG_RENAMED                  407      error   typo                     4115
-change          ACCOUNT_CHANGED              262      error   truncation               3127
-change          DIRECTOR_CHANGED             109      error   digit_mutation            975
+Seed 42, 2,000 suppliers, 6,144 observations, 32,596 difference rows.
 
-representation  case_upper                 10462      representation  legal_suffix_abbreviated  3093
-representation  address_abbreviated         3469      representation  legal_suffix_dropped       956
-representation  ampersand                    424      representation  diacritic_loss              33
+```
+change          (1,676 rows)              error           (12,713 rows)
+  ORG_RELOCATED               917           ocr_confusion            4,347
+  ORG_RENAMED                 400           typo                     4,171
+  ACCOUNT_CHANGED             240           truncation               3,180
+  DIRECTOR_CHANGED            119           digit_mutation           1,015
+
+representation  (18,207 rows)
+  case_upper               10,069           legal_suffix_abbreviated 3,172
+  address_abbreviated       3,415           legal_suffix_dropped     1,094
+  ampersand                   425           diacritic_loss              32
 ```
 
-**Read `representation` by cause, never in aggregate.** `case_upper` is 57% of that kind, and every matcher normalises case before comparing, so those rows measure nothing. The informative ones are `legal_suffix_dropped` (956) and `legal_suffix_abbreviated` (3,093). `diacritic_loss` at 33 rows is too thin to score — it is reported, not a stratum.
+**Read `representation` by cause, never in aggregate.** `case_upper` is 55% of that kind, and every matcher normalises case before comparing, so those rows measure nothing. The informative ones are `legal_suffix_dropped` (1,094) and `legal_suffix_abbreviated` (3,172). `diacritic_loss` at 32 rows is too thin to score — it is reported, not a stratum.
 
 ## What this set is not
 
 **It is not records from the wild.** Recall measured here says a matcher handles the variation this generator was told to produce. It does not say what happens on an actual vendor master, which is a set that still has to be acquired or adjudicated by hand.
 
-**The name frequencies are not Nigeria's.** Surnames are drawn Zipf so that names *collide* — 30% of suppliers share a first-token surname with another, which is most of what makes matching hard, and a benchmark without it is easy in a way real data never is. But arche's shipped lexicon carries no frequency data at all (two fields, `name` and `name_type`), so the *shape* of the distribution is modelled and the *ranking inside it is arbitrary and seeded*. `manifest.yaml` classes this as `synthetic-assumption`, not `public-data-derived`. Replacing the ranking with a real frequency table is a drop-in change and the first thing a curator should do.
+**The name frequencies are not Nigeria's.** Surnames are drawn Zipf so that names *collide* — **68% of suppliers share a first-token surname with another**, which is most of what makes matching hard, and a benchmark without it is easy in a way real data never is. That concentration is severe and worth seeing before trusting a collision number: the commonest surname heads 205 of 2,000 suppliers, the next 107, the next 66. Real registers are concentrated, but not with a single family name on one company in ten. But arche's shipped lexicon carries no frequency data at all (two fields, `name` and `name_type`), so the *shape* of the distribution is modelled and the *ranking inside it is arbitrary and seeded*. `manifest.yaml` classes this as `synthetic-assumption`, not `public-data-derived`. Replacing the ranking with a real frequency table is a drop-in change and the first thing a curator should do.
 
 **The event rates are declared, not measured.** 22% of suppliers relocate over seven years because that is what the parameter says, not because anybody measured Nigerian supplier churn. They were raised once already, from a first pass where a rename produced exactly one labelled difference in a 100-supplier world — a stratum with one pair in it is not a stratum.
 
-**A null has two meanings.** Either the source does not store that field at all (the invoice has no TIN column) or the value was dropped by the `missing` rule. That ambiguity is true of real data too, so it is kept; the generator knows which is which and `differences.parquet` only ever compares fields both records carry. Null rates as published: `tin` 68%, `rc_number` 43%, `director_name` 43%, `phone` 41%, `account_number` 41%, `address` 9%, `name` 0%.
+**A null has two meanings.** Either the source does not store that field at all (the invoice has no TIN column) or the value was dropped by the `missing` rule. That ambiguity is true of real data too, so it is kept; the generator knows which is which and `differences.parquet` only ever compares fields both records carry. Null rates as published: `tin` 68%, `rc_number` 43%, `director_name` 44%, `phone` 41%, `account_number` 41%, `address` 9%, `name` 0%.
 
 **Only organisations are observed.** People and places exist as truth and appear *inside* supplier records — a director's name, an address — which is how they appear in a real vendor master. Observing them as independent records is a v0.2 extension.
 
-**No adversarial records.** Bank-account substitution and lookalike suppliers are deliberately absent. Legitimate account change has to be representable before the fraudulent version means anything, and it now is: 262 labelled `ACCOUNT_CHANGED` differences.
+**About 3% of company names carry Wikidata label residue.** 32 of the 6,366 entries in the surname pool are disambiguation labels with the parentheses already stripped, so they survive the generator's filter as a second token: `Mackie surname`, `Young surname`, `Given name`. The pool is shuffled and then drawn Zipf, so one polluted entry can land near the head of the distribution and be drawn often. It did: **202 of 6,144 observations (3.3%) name a company something like `HARDING SURNAME PRINTING LIMITED`**, and 11 of 444 in the 150-supplier cut.
+
+This is a defect, not a design choice. It is recorded rather than fixed because fixing the filter means the shipped worlds no longer regenerate from their seeds, which moves every number in `RESULTS.md`, in `datasets/artists_dataops/RESULTS.md`, in the committed `benchmark_result.json` files and in the published essay. What it costs in the meantime: those pairs are slightly *easier* than they should be, because a rare token repeated across a supplier's records is strong evidence, so every arm's recall on them flatters it a little. It does not touch the relocation finding, which is about addresses.
+
+Reproduce with:
+
+```sh
+python -c "import sys; sys.path.insert(0,'data/synthetic'); from arche_synthetic.world import Names; import random; print([x for x in Names(random.Random(1)).family if 'surname' in x.lower()][:8])"
+```
+
+**No adversarial records.** Bank-account substitution and lookalike suppliers are deliberately absent. Legitimate account change has to be representable before the fraudulent version means anything, and it now is: 240 labelled `ACCOUNT_CHANGED` differences.
 
 ## The invariants, enforced rather than promised
 
@@ -193,14 +209,19 @@ The supplier worlds ask *is this the same company after it moved, renamed and ch
 ### Seed 42, 10,000 records
 
 ```
-artists        2,941   (1,468 with 2+ names, 1,473 filler)
-records        9,944
+artists        2,941 drawn, 2,905 with at least one record
+records        9,944   (catalogue 3,965, press 3,526, lineup 1,436, registry 1,017)
+               2,649 artists seen more than once, 256 seen exactly once
 differences    7,656
-  alias        3,002       spelling      832
-  case_upper   2,847       diacritics    157
-  typo           677       truncation    141
+  representation (6,838)          error (818)
+    alias        3,002              typo           677
+    case_upper   2,847              truncation     141
+    spelling       832
+    diacritic_loss 157
 collisions        28
 ```
+
+**Two artist counts, and they mean different things.** The generator draws 2,941 alias groups; 36 of them are never written to a catalogue, so `truth.parquet` holds 2,905 artists. The second number is the one a matcher can find, and it is the one quoted elsewhere on the site.
 
 `--scale` sets the record target; the alias groups are always all present and filler makes up the rest, so a bigger world has a thinner alias share, not more aliases.
 

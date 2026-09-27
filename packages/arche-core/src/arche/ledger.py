@@ -251,6 +251,10 @@ class Ledger:
                 "arche.attach needs DuckDB. Install with: pip install 'arche-core[ledger]'"
             ) from exc
         self._db = duckdb.connect(database=database)
+        #: entity_type -> (row count when built, records in pack vocabulary).
+        #: See `_within`; `arche_records` is append-only, so the count is a
+        #: sufficient validity test.
+        self._within_cache: dict[str, tuple[int, list[dict[str, Any]]]] = {}
         self.ensure_schema()
 
     # ------------------------------------------------------------ lifecycle
@@ -870,6 +874,36 @@ class Ledger:
         hops = zip(nodes, nodes[1:], strict=False)
         return [self.decision(graph.edges[a, b]["decision_id"]) for a, b in hops]
 
+    def _within(self, entity_type: str) -> list[dict[str, Any]]:
+        """Every stored record of a type, in the vocabulary the pack reads.
+
+        Stored records keep the vocabulary they arrived in (``full_name`` from a
+        text extraction, ``name`` from a spreadsheet); a pack reads one. Map, and
+        hand each row back under its own record id so nothing is re-stored.
+
+        Cached, because ``resolve()`` needs the whole world on every call and an
+        incremental loop therefore re-parsed every stored blob once per arriving
+        record -- O(n^2) JSON for what is O(n) of data. ``arche_records`` is
+        append-only: nothing in the SDK deletes a row or edits an attribute
+        blob, and ``observe()`` writes a new record rather than rewriting one. So
+        an unchanged row count means an unchanged set, and one scalar query
+        replaces the re-parse. A ledger opened on a file another process is
+        writing to sees the new rows as soon as they change that count.
+        """
+        count = self._db.execute(
+            "SELECT count(*) FROM arche_records WHERE entity_type = ?", [entity_type]
+        ).fetchone()[0]
+        cached = self._within_cache.get(entity_type)
+        if cached is not None and cached[0] == count:
+            return cached[1]
+        rows = self._db.execute(
+            "SELECT record_id, attributes FROM arche_records WHERE entity_type = ?",
+            [entity_type],
+        ).fetchall()
+        within = [{**_pack_fields(_load(row[1])), "id": row[0]} for row in rows]
+        self._within_cache[entity_type] = (count, within)
+        return within
+
     def resolve(
         self,
         record: Mapping[str, Any] | str,
@@ -915,14 +949,7 @@ class Ledger:
         attrs.pop("id", None)
         newcomer = _pack_fields(attrs)
 
-        rows = self._db.execute(
-            "SELECT record_id, attributes FROM arche_records WHERE entity_type = ?",
-            [entity_type],
-        ).fetchall()
-        # Stored records keep the vocabulary they arrived in (`full_name` from a
-        # text extraction, `name` from a spreadsheet); the pack reads one. Map,
-        # and hand each row back under its own record id so nothing is re-stored.
-        within = [{**_pack_fields(_load(row[1])), "id": row[0]} for row in rows]
+        within = self._within(entity_type)
         call = {"entity": entity_type, "id_field": "id"}
         if not within:
             stored = self._record(entity_type, attrs, None, "resolve", None)
