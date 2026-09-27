@@ -5,7 +5,9 @@
 
 import math
 
+import pytest
 from arche.resolve._block import (
+    _norm_tokens,
     blocking_recall,
     candidate_pairs,
     h3_index,
@@ -114,3 +116,31 @@ def test_blocking_recall_on_scale_set_is_perfect_for_true_matches():
             truth.append((ai, bi))
     pairs = list(candidate_pairs(list_a, list_b, res=7))
     assert math.isclose(blocking_recall(truth, pairs), 1.0)
+
+# ── the token memo ───────────────────────────────────────────────────────────
+# `_norm_tokens` is memoised because blocking asks for the same record's name
+# once per channel per call. A memo that hands out a mutable value, or that
+# cannot take the values a pack field actually holds, breaks quietly.
+
+
+class TestTheTokenMemo:
+    def test_the_same_value_gives_the_same_tokens_every_time(self):
+        for _ in range(3):
+            assert _norm_tokens("Établissements Koné & Fils SARL") == {
+                "etablissements", "kone", "fils", "sarl"
+            }
+
+    def test_a_cached_value_cannot_be_mutated_by_a_caller(self):
+        first = _norm_tokens("Zenith Bank Plc")
+        with pytest.raises(AttributeError):
+            first.add("poisoned")                     # frozen on the way out
+        assert _norm_tokens("Zenith Bank Plc") == {"zenith", "bank", "plc"}
+
+    def test_it_takes_the_values_a_pack_field_holds(self):
+        """Unhashable values must be stringified, not raise from the cache."""
+        assert _norm_tokens(["Wizkid", "Ayo Balogun"]) >= {"wizkid", "ayo", "balogun"}
+        assert _norm_tokens(None) == {"none"}
+        assert _norm_tokens(12345) == {"12345"}
+
+    def test_case_and_diacritics_fold_the_same_way_cached_or_not(self):
+        assert _norm_tokens("SÃO TOMÉ") == _norm_tokens("são tomé")

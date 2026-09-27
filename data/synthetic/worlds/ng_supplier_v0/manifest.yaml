@@ -25,6 +25,9 @@ provenance:
   source: arche african_names_v1 lexicon (Wikidata/ParaNames, CC-BY-4.0)
   method: seeded rank shuffle, Zipf weighting alpha=1.0
   class: synthetic-assumption
+  pool: 6,003 given, 6,366 family
+  limitation: given and family names are drawn independently, so the two halves of
+    a name need not belong together
   filtered: 973 lexicon entries excluded as not-names (Wikidata blank-node URLs, property
     labels, titles); see world._NOT_A_NAME
   note: the lexicon carries no frequency data; the distribution SHAPE is modelled

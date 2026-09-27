@@ -3,9 +3,10 @@
 
 """arche-synthetic — known entity worlds, imperfect observations, exact truth.
 
-    from arche_synthetic import build
+    from arche_synthetic import build, load
 
     world, manifest = build("ng_supplier_v0", seed=42, out=Path("worlds/ng"))
+    w = load("worlds/ng")          # open one for reading: w.describe()
 
 The object is a **benchmark, not a platform**: a world with known entities and
 known state changes, observed through source systems that are stale, that
@@ -32,8 +33,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from . import artists, evaluate, export, ids, lifecycle, observe, places, world
+from . import artists, evaluate, export, ids, lifecycle, observe, places, read, world
 from .evaluate import Benchmark, Predictions
+from .read import World, available, load, worlds_dir
 
 __version__ = "0.0.1"
 
@@ -75,5 +77,6 @@ def build(world_pack: str = "ng_supplier_v0", *, seed: int = 42,
     return built, manifest
 
 
-__all__ = ["HORIZON", "SCALE", "Benchmark", "Predictions", "__version__", "artists",
-           "build", "evaluate", "export", "ids", "lifecycle", "observe", "places", "world"]
+__all__ = ["HORIZON", "SCALE", "Benchmark", "Predictions", "World", "__version__",
+           "artists", "available", "build", "evaluate", "export", "ids", "lifecycle",
+           "load", "observe", "places", "read", "world", "worlds_dir"]

@@ -379,7 +379,8 @@ class ArtistGenerator:
         })
         self.world.provenance.append({
             "asset": "the variant list a matcher may be given",
-            "source": "MusicBrainz alias sets (CC0), via datasets/artists_dataops/pull_musicbrainz.py",
+            "source": ("MusicBrainz alias sets (CC0), via "
+                       "datasets/artists_dataops/pull_musicbrainz.py"),
             "method": ("joined to the truth by Wikidata P434, never by name; a "
                        "different editorial community from the one that supplied "
                        "the truth, so the two can disagree"),

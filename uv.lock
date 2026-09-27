@@ -397,6 +397,33 @@ requires-dist = [
 provides-extras = ["africa", "all", "detect", "detect2", "dev", "doc", "doc-ocr", "docx", "geo", "gh", "ke", "ledger", "litellm", "llm", "mcp", "ng", "parquet", "pdf", "pdf-mupdf", "presidio", "resolve", "runtime", "service", "za"]
 
 [[package]]
+name = "arche-synthetic"
+version = "0.0.1"
+source = { editable = "data/synthetic" }
+dependencies = [
+    { name = "pyarrow" },
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "arche-core", marker = "extra == 'arche'", specifier = ">=0.8.0" },
+    { name = "arche-synthetic", extras = ["bench"], marker = "extra == 'arche'" },
+    { name = "arche-synthetic", extras = ["bench"], marker = "extra == 'splink'" },
+    { name = "arche-synthetic", extras = ["bench", "splink", "arche"], marker = "extra == 'all'" },
+    { name = "duckdb", marker = "extra == 'arche'", specifier = ">=1.0" },
+    { name = "duckdb", marker = "extra == 'splink'", specifier = ">=1.0" },
+    { name = "jellyfish", marker = "extra == 'bench'", specifier = ">=1.0" },
+    { name = "pandas", marker = "extra == 'bench'", specifier = ">=2.0" },
+    { name = "pyarrow", specifier = ">=14" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
+    { name = "splink", marker = "extra == 'splink'", specifier = ">=4.0" },
+]
+provides-extras = ["bench", "splink", "arche", "all", "dev"]
+
+[[package]]
 name = "arche-workspace"
 version = "0.1.0a2"
 source = { virtual = "." }
@@ -408,6 +435,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "arche-core", extra = ["mcp", "service"] },
+    { name = "arche-synthetic" },
     { name = "httpx" },
     { name = "pyarrow" },
     { name = "pytest" },
@@ -432,6 +460,7 @@ requires-dist = [
 dev = [
     { name = "arche-core", extras = ["mcp"], editable = "packages/arche-core" },
     { name = "arche-core", extras = ["service"], editable = "packages/arche-core" },
+    { name = "arche-synthetic", editable = "data/synthetic" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "pyarrow", specifier = ">=14" },
     { name = "pytest", specifier = ">=8.0" },

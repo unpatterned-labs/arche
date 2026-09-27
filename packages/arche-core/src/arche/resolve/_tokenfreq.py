@@ -194,6 +194,8 @@ class TokenFrequencyTable:
         (legacy; no raw counts). Keys are normalised on the way in.
         """
         self._floor = unknown_floor
+        #: token -> distinctiveness, filled on demand. See `distinctiveness`.
+        self._distinct_memo: dict[str, float] = {}
         # Whether this table can support a RARITY claim. `distinctiveness` is
         # -log10(rel_freq)/5, which is calibrated against population
         # frequencies. Over a 2,000-name corpus the rarest possible token sits
@@ -334,9 +336,20 @@ class TokenFrequencyTable:
         ``-log10(rel_freq)`` normalised over a 5-decade span, so ``rel_freq``
         1e-5 or rarer scores ~1.0 and a token that is ~all of the corpus scores
         ~0.0.
+
+        Memoised per table. The gate asks this of every token of every candidate
+        pair, so the call count grows with pairs while the vocabulary does not:
+        1.6M calls over a few thousand tokens on a 444-record incremental run.
+        The counts behind it are fixed once the table is built, so a cached
+        answer cannot go stale; ``merged_with`` and the other combinators return
+        a *new* table rather than mutating this one.
         """
-        f = max(self.rel_freq(token), 1e-12)
-        return min(1.0, max(0.0, -math.log10(f) / 5.0))
+        cached = self._distinct_memo.get(token)
+        if cached is None:
+            f = max(self.rel_freq(token), 1e-12)
+            cached = min(1.0, max(0.0, -math.log10(f) / 5.0))
+            self._distinct_memo[token] = cached
+        return cached
 
     def u_for(self, token: str) -> float:
         """Fellegi-Sunter u proxy: P(agree | non-match) ≈ rel_freq.

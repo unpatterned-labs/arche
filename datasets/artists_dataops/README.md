@@ -6,7 +6,7 @@ Robin Linacre asked one question: *run Splink over the same records with the var
 
 | file | what it is |
 |---|---|
-| `data/synthetic/worlds/artists_v0/` | **the world.** 9,944 records of 2,941 real African artists, every disagreement labelled by cause. Parquet + JSON schema + manifest. No truth column in the file a matcher is given |
+| `data/synthetic/worlds/artists_v0/` | **the world.** 9,944 records of 2,905 real African artists, every disagreement labelled by cause. Parquet + JSON schema + manifest. No truth column in the file a matcher is given |
 | `datasets/data/artist_variants.jsonl` | **the list.** 449 groups: MusicBrainz alias sets (joined to the truth by Wikidata P434, never by name) plus 38 curated groups |
 | `example_splink_with_variants.py` | the experiment in one file, ~90 lines, imports nothing from arche |
 | `bench_splink_variants.py` | the full version: six arms, strata, collisions, threshold sweeps, an oracle arm |

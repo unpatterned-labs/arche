@@ -486,6 +486,63 @@ def test_resolve_on_an_empty_ledger_and_an_unknown_pack(ledger):
         ledger.resolve({"name": "x"}, entity_type="spaceship")
 
 
+# ── the parsed-world cache behind resolve() ──────────────────────────────────
+# `resolve` needs every stored record of the type on every call, so it caches
+# the parse and validates it against the row count. These are the ways a cache
+# like that goes wrong.
+
+
+def test_resolve_sees_a_record_stored_since_the_last_call(ledger):
+    """The cache must not hide a record written between two resolve calls."""
+    first = ledger.resolve(SUPPLIERS[0], entity_type="organisation")
+    assert first.verdict == "not_found", "nothing to match on an empty ledger"
+
+    again = ledger.resolve(REGISTRY[0], entity_type="organisation")
+    assert again.verdict == "found", (
+        "the registry spelling of supplier s1 did not reach the record stored "
+        "one call earlier; the cached world is stale"
+    )
+    assert ledger.entity_of(again.record_id) == ledger.entity_of(first.record_id)
+
+
+def test_the_cached_world_is_per_entity_type(ledger):
+    """One type's cache must not answer for another's."""
+    ledger.resolve(SUPPLIERS[0], entity_type="organisation")
+    res = ledger.resolve({"name": "Kijani Tea Exporters Ltd"}, entity_type="person")
+    assert res.verdict == "not_found", (
+        "a person was resolved against the organisations; the cache key is not "
+        "the entity type"
+    )
+
+
+def test_records_stored_by_another_verb_reach_resolve(ledger):
+    """`record_compare` writes records too, and resolve must see those.
+
+    The cache is invalidated by a row count rather than by hooking one write
+    path, which is what makes this hold for every verb that stores a record.
+    """
+    call = {"entity": "organisation"}
+    receipt = arche.compare(SUPPLIERS[0], REGISTRY[1], **call)
+    ledger.record_compare(receipt, SUPPLIERS[0], REGISTRY[1], call=call)
+
+    ledger.resolve(SUPPLIERS[1], entity_type="organisation")   # warms the cache
+    res = ledger.resolve(REGISTRY[0], entity_type="organisation")
+    assert res.verdict == "found", (
+        "the record `record_compare` stored was invisible to resolve; the cache "
+        "is invalidated on one write path rather than on the row count"
+    )
+
+
+def test_a_second_ledger_on_the_same_file_sees_the_first_ones_writes(tmp_path):
+    """Two connections, one file: the count query is what makes this work."""
+    db = f"duckdb:///{tmp_path / 'shared.duckdb'}"
+    with arche.attach(db) as one:
+        one.resolve(SUPPLIERS[0], entity_type="organisation")
+    with arche.attach(db) as two:
+        res = two.resolve(REGISTRY[0], entity_type="organisation")
+    assert res.verdict == "found", "a fresh ledger on the same file saw no records"
+
+
 def test_resolved_decisions_replay_and_explain_like_any_other(mary):
     res = mary.resolve("M. Jones, NIN 12345678901, phone 08035557890", entity_type="person")
     best = res.decisions[0]

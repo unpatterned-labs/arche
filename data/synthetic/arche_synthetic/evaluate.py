@@ -226,7 +226,12 @@ class Benchmark:
                 "false_split_entities": len(split),
                 "false_split_rate": round(len(split) / len(self.by_entity), 4),
             },
-            "false_merges_by_what_was_shared": dict(taxonomy.most_common()),
+            # Sorted by count, then by name. `most_common()` alone leaves ties in
+            # insertion order, which follows a set iteration, so two runs over
+            # identical data wrote byte-different result files whenever two
+            # shared-key counts were equal.
+            "false_merges_by_what_was_shared": dict(
+                sorted(taxonomy.items(), key=lambda kv: (-kv[1], kv[0]))),
             "blocking": self._blocking(predictions),
             "notes": predictions.notes,
         }

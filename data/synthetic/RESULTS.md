@@ -41,12 +41,14 @@ This is a property of the benchmark at 150 suppliers, not of the engines. The fi
 arm                        P      R     F1  cover     change  represent    error  falseMrg  blockR    secs
 exact                  1.000  0.466  0.636  0.466      0.261      0.440    0.329     0.000   0.466     0.0
 jaro_winkler           0.882  0.861  0.871  0.861      0.837      0.854    0.805     0.042   0.947     0.0
-splink                 0.988  0.783  0.874  0.783      0.533      0.792    0.761     0.024   0.974     7.5
-arche/pack             0.995  0.745  0.852  0.969      0.391      0.725    0.663     0.005   0.980   343.4
-arche/custom           1.000  0.694  0.819  0.921      0.370      0.669    0.591     0.000   0.985   260.4
-arche/ledger           1.000  0.778  0.875  0.778      0.522      0.773    0.717     0.000     n/a   547.1
-arche/ledger+observe   0.944  0.796  0.864  0.796      0.576      0.792    0.738     0.000     n/a   436.7
+splink                 0.988  0.783  0.874  0.783      0.533      0.792    0.761     0.024   0.974     5.7
+arche/pack             0.995  0.745  0.852  0.969      0.391      0.725    0.663     0.005   0.980     4.7
+arche/custom           1.000  0.694  0.819  0.921      0.370      0.669    0.591     0.000   0.985     5.8
+arche/ledger           1.000  0.778  0.875  0.778      0.522      0.773    0.717     0.000     n/a    97.3
+arche/ledger+observe   0.944  0.796  0.864  0.796      0.576      0.792    0.738     0.000     n/a    99.5
 ```
+
+**The `secs` column was re-measured on 2026-09-27; every other column is the 2026-09-08 measurement unchanged.** The engine has been memoised twice since, and the re-run was verified byte-identical to the recorded result on every field except `seconds`, which is the only honest way to update a timing without re-dating a result. What moved: `arche/pack` 343.4 to 4.7, `arche/custom` 260.4 to 5.8, `arche/ledger` 547.1 to 97.3, `arche/ledger+observe` 436.7 to 99.5. These are the numbers in the committed `benchmark_result.json`, taken from one uncontended run; an earlier run with a test suite beside it read 10 to 20% higher, which is the honest precision of a wall-clock column. The two ledger arms are now 92% of the 213 s total, which is what `--fast` exists to skip.
 
 `cover` counts pairs an engine *surfaced for review* as well as merged — without it an engine with three answers is scored as though it had two. The stratum columns are **recall only**: a false merge joins two different entities, has no difference row, and belongs to no stratum. `blockR` is `n/a` for the ledger arms because they do not enumerate a candidate set, and filling it in with their own recall would be a lie in the flattering direction.
 
@@ -100,12 +102,12 @@ seed  arm             recall    prec   reloc  change
 
 ```
 splink       P 0.988   R 0.783   F1 0.874     7.5 s
-arche/pack   P 0.995   R 0.745   F1 0.852   343.4 s
+arche/pack   P 0.995   R 0.745   F1 0.852     4.7 s
 ```
 
 Two independently written engines, one of them not ours, landing within 0.04 recall and 0.007 precision. **The gap is inside the noise band, so the correct statement is that they are indistinguishable at this scale — not that either leads.** An earlier draft of this file claimed they agreed "to three decimal places," which was one draw dressed up as a measurement.
 
-What the row does support is the thing that matters: an engine we did not write, on our data, lands in the same region as ours. That is evidence the benchmark measures the problem rather than a quirk of our implementation, and it **completes the trigger for cutting the separate repository**. Splink was also ~46× faster when this was measured; on 2026-09-19 the engine's per-pair recomputation was memoised (`ARCHE_SYNTHETIC_PLAN.md` §7k) and the same 150-supplier run takes 5 s to Splink's 5 s, with every number on this page unchanged.
+What the row does support is the thing that matters: an engine we did not write, on our data, lands in the same region as ours. That is evidence the benchmark measures the problem rather than a quirk of our implementation, and it **completes the trigger for cutting the separate repository**. Splink was also ~46× faster when this was measured. Two rounds of memoisation later the same 150-supplier run takes 4.7 s to Splink's 5.7 s, with every number on this page unchanged: the per-pair recomputation on 2026-09-19 (`ARCHE_SYNTHETIC_PLAN.md` §7k), then on 2026-09-27 the token folder, the distinctiveness lookup and the ledger's re-parse of its own stored records. **A 73× speedup that moved no number is the only kind worth reporting**, and it was checked by diffing the result JSON rather than by reading the table.
 
 Getting this arm to be fair took two corrections, both recorded because both would have flattered arche:
 
@@ -128,5 +130,5 @@ The reason is structural. Those fields are disproportionately the ones that *leg
 - **The names have no correlation.** Given name and surname are drawn independently, so this world contains `Zübeyde Saliou` and `Fabiano Anaehobi`. That corrupts the `common_names` stratum specifically — real collisions are structured by region and these are random. See `DATACARD.md` and plan §7b (N1).
 - **`ORG_RENAMED` is easier here than it should be.** The rename mostly swaps the legal form, which every arm normalises away. Until N2 lands, the rename numbers flatter every arm.
 - **`DIRECTOR_CHANGED` has n=7** at this scale, `ACCOUNT_CHANGED` n=9. Reported, not scoreable. `diacritic_loss` did not populate at all.
-- **arche's runtime was the binding constraint** when this was written: ~160 pairs/second, measured as *not* the frequency table. It was the type-vocabulary normalisation per pair; memoised 2026-09-19, the engine now runs the 400-supplier world in 18 s. The noise band is a property of 150 suppliers, not of the runtime any more; a bigger world is now cheap to run.
+- **arche's runtime is no longer the binding constraint.** It was, at ~160 pairs/second, and that was the type-vocabulary normalisation per pair rather than the frequency table everyone assumed. Memoised 2026-09-19 and again 2026-09-27, the batch arms now run the 150-supplier world in under 6 s each. The noise band is a property of 150 suppliers, not of the runtime, and **a bigger world or more seeds is now cheap for the five batch arms**. The two incremental arms still cost about 100 s each, because resolving n arriving records against everything stored is n² comparisons by design; widening the noise band properly means more seeds of the batch arms, and paired tests for the ledger.
 - **Company names are `<Surname> <Trade> <Form>` over 18 trades and 10 forms**, which makes token blocking collapse harder than on a real register.

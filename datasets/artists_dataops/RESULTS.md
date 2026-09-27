@@ -1,6 +1,6 @@
 # What a name-variant list is worth to Splink
 
-*Measured 2026-09-13 on `artists_v0` (seed 42): 9,944 records of 2,941 real African artists, 15,171 true pairs, every disagreement labelled by cause. Every arm is Splink 4.0.16. Script: `bench_splink_variants.py`. Reproducible: u-sampling is seeded and two consecutive runs agree to the last digit.*
+*Measured 2026-09-13 on `artists_v0` (seed 42): 9,944 records of 2,905 real African artists, 15,171 true pairs, every disagreement labelled by cause. Every arm is Splink 4.0.16. Script: `bench_splink_variants.py`. Reproducible: u-sampling is seeded and two consecutive runs agree to the last digit.*
 
 ---
 

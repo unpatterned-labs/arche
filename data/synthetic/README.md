@@ -2,35 +2,79 @@
 
 Known entity worlds, imperfect observations, exact ground truth — and every disagreement labelled with **why it happened**.
 
-```bash
-pip install pyarrow pyyaml           # what the generator needs. Nothing else.
-python -m arche_synthetic --scale 400 --out ./worlds/ng
-```
+## Reading a world
+
+One call, any of the three families, from any directory. A shipped world can be named rather than pathed.
 
 ```python
-from arche_synthetic import Benchmark, Predictions, build
+from arche_synthetic import available, load
 
-world, manifest = build("ng_supplier_v0", seed=42, out=Path("worlds/ng"))
+print(available())
+# ['artists_v0', 'ng_supplier_v0', 'ng_supplier_v0_s1000', 'ng_supplier_v0_s150', ...]
 
-bench = Benchmark.load(Path("worlds/ng"))
+w = load("ng_supplier_v0")
+w.describe()                 # pack, seed, counts, strata, what a matcher may see
+
+w.observations               # what a matcher sees            list[dict]
+w.truth                      # record_id -> entity_id
+w.differences                # every disagreement, labelled with why
+w.events                     # what actually happened to the entity
+w.frame("differences")       # the same as a pandas DataFrame
+
+w.difference_counts("cause")          # {'case_upper': 10069, 'ocr_confusion': 4347, ...}
+w.records_of("syn:organisation:000002")   # every observation of one entity, oldest first
+w.why(record_a, record_b)                 # the labelled reasons those two disagree
+```
+
+For a place world the tables are `.sheet`, `.requests` and `.truth` instead; `w.kind` says which family you have.
+
+## Scoring a matcher against one
+
+```python
+from arche_synthetic import Benchmark, Predictions, load
+
+bench = Benchmark.load(load("ng_supplier_v0_s150").path)
 report = bench.score(Predictions(arm="mine", pairs=my_predicted_pairs))
 report["recall_by_stratum"]["change/ORG_RELOCATED"]   # the column nobody else has
 ```
 
-From a checkout of this repository, run the scripts **from the repo root**, so that `uv run` resolves the workspace and finds arche:
+## Writing a world
 
 ```bash
-python data/synthetic/build_ng_supplier_v0.py          # ~7s, writes worlds/ng_supplier_v0/
-python data/synthetic/run_benchmark.py --world data/synthetic/worlds/ng_supplier_v0_s150
+pip install pyarrow pyyaml           # what the generator needs. Nothing else.
 ```
+
+**Which directory.** The generator is a module and runs from `data/synthetic`, where `./worlds` means something. The benchmark and the notebooks take repo-relative paths and run **from the repository root**, so that `uv run` resolves the workspace and finds arche. Both are true and it is worth being told which is which.
+
+```bash
+cd data/synthetic                                      # the generator
+python -m arche_synthetic --scale 400 --out ./worlds/ng
+python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out ./worlds/artists_v0
+python -m arche_synthetic --world-pack places_v1 --scale 1000 --out ./worlds/places_v1
+```
+
+```bash
+cd -                                                   # back to the repository root
+uv run python data/synthetic/build_ng_supplier_v0.py   # ~7s, writes worlds/ng_supplier_v0/
+uv run python data/synthetic/run_benchmark.py --world data/synthetic/worlds/ng_supplier_v0_s150
+uv run python data/synthetic/run_benchmark.py --world ... --fast   # five arms, ~20s
+uv run python data/synthetic/datacard_counts.py        # the counts DATACARD.md states
+```
+
+## Three notebooks, with outputs committed
+
+They read without being run, from `examples/notebooks/`:
+
+| notebook | the question |
+|---|---|
+| `26_what_is_in_a_world.ipynb` | what are these three worlds, and how do I read them |
+| `27_what_a_variant_list_is_worth.ipynb` | what is a name-variant list worth to Splink, measured end to end |
+| `28_does_the_ledger_beat_batch.ipynb` | the seven arms, and the refusal behind the relocation finding |
 
 ## A second world: artists, for the variant-list question
 
-`artists_v0` is 9,944 records of 2,941 real African musicians under their real Wikidata aliases, built to answer one question put to us by Splink's author: what is a name-variant list worth to a matcher? The world, the independent MusicBrainz-derived list, a ninety-line Splink example and the full six-arm result are in [`datasets/artists_dataops/`](../../datasets/artists_dataops/README.md).
+`artists_v0` is 9,944 records of 2,905 real African musicians under their real Wikidata aliases, built to answer one question put to us by Splink's author: what is a name-variant list worth to a matcher? The world, the independent MusicBrainz-derived list, a ninety-line Splink example and the full six-arm result are in [`datasets/artists_dataops/`](../../datasets/artists_dataops/README.md).
 
-```bash
-python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out data/synthetic/worlds/artists_v0
-```
 
 ## Why this exists
 

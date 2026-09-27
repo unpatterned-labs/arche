@@ -232,3 +232,40 @@ def test_reconcile_rejects_unknown_tf_string():
             [{"field": "name", "kind": "tftoken", "weight": 1.0}],
             tf="bogus", block=None,
         )
+
+
+# ── the distinctiveness memo ─────────────────────────────────────────────────
+# Memoised per table because the gate asks it of every token of every candidate
+# pair: 1.6M calls over a few thousand tokens on a 444-record incremental run.
+
+
+class TestTheDistinctivenessMemo:
+    def test_a_repeated_token_keeps_its_value(self):
+        tf = TokenFrequencyTable.from_corpus(["ade bola", "ade chidi", "ade efe"])
+        assert tf.distinctiveness("ade") == tf.distinctiveness("ade")
+
+    def test_the_memo_agrees_with_an_unwarmed_table(self):
+        corpus = ["kijani tea", "kijani coffee", "zenith bank", "zenith bank"]
+        warm = TokenFrequencyTable.from_corpus(corpus)
+        for token in ("kijani", "zenith", "tea", "unseen-token"):
+            warm.distinctiveness(token)
+        cold = TokenFrequencyTable.from_corpus(corpus)
+        for token in ("kijani", "zenith", "tea", "unseen-token"):
+            assert warm.distinctiveness(token) == cold.distinctiveness(token)
+
+    def test_two_tables_do_not_share_a_memo(self):
+        rare = TokenFrequencyTable.from_corpus(["ade"] + [f"n{i}" for i in range(400)])
+        common = TokenFrequencyTable.from_corpus(["ade"] * 400)
+        assert rare.distinctiveness("ade") > common.distinctiveness("ade"), (
+            "one table answered with the other's counts"
+        )
+
+    def test_every_construction_path_can_answer(self):
+        """A table built by any route must have its memo; `load` and the
+        combinators do not go through the same branch of `__init__`."""
+        built = TokenFrequencyTable.from_corpus(["ade bola", "ade chidi"])
+        for table in (built,
+                      TokenFrequencyTable(rel_freq={"ade": 0.5, "bola": 0.5}),
+                      TokenFrequencyTable(),
+                      TokenFrequencyTable.from_dict(built.to_dict())):
+            assert 0.0 <= table.distinctiveness("ade") <= 1.0

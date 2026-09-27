@@ -221,7 +221,7 @@
     },
     {
       "arm": "splink",
-      "seconds": 7.54,
+      "seconds": 5.73,
       "overall": {
         "claimed_pairs": 432,
         "true_pairs": 545,
@@ -339,7 +339,7 @@
     },
     {
       "arm": "arche/pack",
-      "seconds": 343.39,
+      "seconds": 4.69,
       "overall": {
         "claimed_pairs": 408,
         "true_pairs": 545,
@@ -447,7 +447,7 @@
     },
     {
       "arm": "arche/custom",
-      "seconds": 260.36,
+      "seconds": 5.79,
       "overall": {
         "claimed_pairs": 378,
         "true_pairs": 545,
@@ -552,7 +552,7 @@
     },
     {
       "arm": "arche/ledger",
-      "seconds": 547.12,
+      "seconds": 97.28,
       "overall": {
         "claimed_pairs": 424,
         "true_pairs": 545,
@@ -656,7 +656,7 @@
     },
     {
       "arm": "arche/ledger+observe",
-      "seconds": 436.72,
+      "seconds": 99.5,
       "overall": {
         "claimed_pairs": 460,
         "true_pairs": 545,
@@ -746,9 +746,9 @@
         "false_split_rate": 0.0067
       },
       "false_merges_by_what_was_shared": {
+        "rc_number": 26,
         "surname_head": 26,
         "whole_name": 26,
-        "rc_number": 26,
         "bank": 25,
         "city": 24,
         "phone": 24,
