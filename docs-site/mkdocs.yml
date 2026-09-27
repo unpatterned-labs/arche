@@ -150,7 +150,6 @@ nav:
     - MCP tools: reference/mcp-tools.md
     - Extras: reference/extras.md
     - Benchmarks: reference/benchmarks.md
-    - The synthetic benchmark: reference/synthetic-benchmark.md
   - Writing:
     - writing/index.md
     - What a name list is worth: writing/what-a-name-list-is-worth.md

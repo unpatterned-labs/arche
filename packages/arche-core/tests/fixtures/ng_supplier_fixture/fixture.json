@@ -1,0 +1,97 @@
+{
+  "content_fingerprints": {
+    "differences": "326a67db61b58bdba83872599d8cbc4d897310b7824e472b28f065ff1525bbd8",
+    "events": "27a00c132cb7eab99ce11969ed750434caa621634ab427362960c98c67c1c675",
+    "observations": "c8e3534c6d1ecdb0f7d1b01bea31f4fa9f064e14afcc7ed592a4b35ff971f401",
+    "truth": "06da0f37e81fff2c32d7a945ffa44622e39d608796ffcce15ef1748e106091d4"
+  },
+  "counts": {
+    "difference_kinds": {
+      "change": 70,
+      "error": 272,
+      "representation": 450
+    },
+    "differences": 792,
+    "entities": {
+      "organisation": 60,
+      "person": 90,
+      "place": 45
+    },
+    "events": 51,
+    "observations": 168
+  },
+  "fixture": {
+    "exported_on": "2026-09-27",
+    "generator": "arche-synthetic 0.0.5",
+    "purpose": "regression fixture, not a benchmark",
+    "refresh": "python export_fixture.py --into fixtures",
+    "source_commit": "1ed410b-dirty"
+  },
+  "generator_version": "0.0.5",
+  "horizon": [
+    "2019-01-01",
+    "2026-01-01"
+  ],
+  "invariants": [
+    "observations.parquet carries no truth column (enforced at write time)",
+    "no observed value is an entity id (enforced at write time)",
+    "record_id is a hash of (world_id, source, sequence) and holds no entity information"
+  ],
+  "profile": {
+    "countries": [
+      "NG"
+    ],
+    "domain": "SME supplier onboarding and procurement",
+    "exclusions": [
+      "not a population register or demographic estimate",
+      "no real people, accounts, or company identifiers",
+      "Ghana corridor profile is a subsequent release"
+    ],
+    "name_contexts": [
+      "Yoruba",
+      "Igbo",
+      "Hausa",
+      "English"
+    ],
+    "pack": "nigeria_supplier_v1",
+    "source_systems": [
+      "registry",
+      "erp",
+      "invoice"
+    ]
+  },
+  "provenance": [
+    {
+      "asset": "given and family names",
+      "class": "public-data-derived",
+      "filtered": "7864 entries not tagged NG, and 477 NG-tagged entries that are not names (Wikidata blank-node URLs, property labels, administrative areas, and labels carrying a qualifier such as 'surname'); see arche_synthetic.lexicon",
+      "method": "occurrence_count weighting among NG-tagged, filtered name tokens",
+      "note": "occurrence_count is source evidence, not a Nigerian population frequency estimate; it is a reproducible collision prior, not a demographic claim.",
+      "rejection_reasons": {
+        "carries a lexicographic qualifier such as 'surname'": 49,
+        "contains a URL, a digit, a bracket or non-name punctuation": 258,
+        "more tokens than a name": 49,
+        "no uppercase letter, so a concept label rather than a name": 108,
+        "outside the length bounds": 13
+      },
+      "source": "arche african_names_lexicon_v1 (Wikidata/ParaNames, CC-BY-4.0)"
+    },
+    {
+      "asset": "Nigerian person naming contexts",
+      "class": "synthetic-assumption",
+      "method": "context-weighted family and cohort-conditioned given-name draw",
+      "note": "contexts and cohort weights are not demographic estimates; the asset exists to make name-part correlation explicit and reviewable.",
+      "source": "ng_naming_contexts_v0.json (curated prototype)"
+    },
+    {
+      "asset": "RC numbers and TINs",
+      "class": "public-data-derived",
+      "method": "generate-and-validate; every identifier passes at build time",
+      "source": "arche.detect.ng.ids validators"
+    }
+  ],
+  "schema_version": 0,
+  "seed": 42,
+  "world_id": "nigeria_supplier_v1",
+  "world_pack": "nigeria_supplier_v1"
+}

@@ -840,7 +840,8 @@ def describe_packs() -> dict[str, dict]:
 
 #: Records at and above this count are scored by a shipped Splink recipe when
 #: ``backend="auto"`` and one exists for the entity; below it, by arche's own
-#: engine. Measured on the supplier world (`data/synthetic/bench_size_floor.py`):
+#: engine. Measured on the generated supplier world (the size-floor script
+#: ships with the `arche-synthetic` generator):
 #: at 444 and 1,215 records the two are level on false merges (2 vs 5, 39 vs
 #: 47) and the engine is the one with no threshold to choose; at 3,081 the
 #: engine's false merges go to 456 against Splink's 49, and at 6,144 to 917
@@ -849,7 +850,7 @@ def describe_packs() -> dict[str, dict]:
 #: used to be the other reason (nine hours at 6,144 records) until the
 #: per-pair recomputation was memoised on 2026-09-19 -- the same sweep now
 #: runs in 70 s at 6,144 records (52 s at 3,081 against Splink's 9 s; the
-#: numbers are in data/synthetic/bench_size_floor_result.json).
+#: numbers are recorded in the 0.9.0 changelog entry).
 AUTO_SPLINK_FLOOR = 1_000
 
 

@@ -9,7 +9,6 @@
 **/*.pyc
 data/_cache/
 datasets/data/_cache/
-data/synthetic/worlds/
 docs-site/site/
 node_modules/
 # Local-only material that git already ignores. It must never reach an image

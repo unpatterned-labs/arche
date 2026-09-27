@@ -169,7 +169,7 @@ And the value of a list is bounded by its coverage and paid for in collisions, b
 The world that produced these numbers is a file contract, not a Python class: Parquet, a schema beside each table, a manifest with content fingerprints and provenance, no truth column in the file a matcher is given. Anyone with Splink, or Zingg, or a SQL prompt, can regenerate it and run their own recipe over it. That is what it is for.
 
 ```sh
-python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0
+python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0   # from the arche-synthetic repository
 uv run python datasets/artists_dataops/pull_musicbrainz.py      # ~15 min, cached
 uv run python datasets/artists_dataops/coverage.py               # the 10.5%
 uv run python datasets/artists_dataops/bench_splink_variants.py  # ~2 min

@@ -18,7 +18,6 @@ members = [
 
 [tool.uv.sources]
 arche-core = { workspace = true }
-arche-synthetic = { path = "data/synthetic", editable = true }
 # arche runs on CPU by design. On Linux, PyPI's `torch` is the CUDA build --
 # 2.7 GB of driver libraries plus a 640 MB triton -- and it is what
 # `gliner2[local]` and docling pull unless told otherwise. Windows and macOS
@@ -38,9 +37,9 @@ dev = [
     "ruff>=0.4",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
-    # `data/synthetic` writes Parquet. It is an arche extra rather than a base
-    # dependency, so without it here the synthetic tests skip in CI and read as
-    # coverage they are not providing.
+    # The ledger, the studio and the review pack read and write Parquet. It is
+    # an arche extra rather than a base dependency, so without it here those
+    # tests skip in CI and read as coverage they are not providing.
     "pyarrow>=14",
     # `arche serve` is behind the `service` extra, which `arche-core[all]`
     # deliberately leaves out so the library wheel stays a library. Without
@@ -51,13 +50,6 @@ dev = [
     # The studio's hash-key tests and the MCP tests import `arche.mcp.server`,
     # which needs the SDK.
     "arche-core[mcp]",
-    # `import arche_synthetic` must mean the source in `data/synthetic`. It was
-    # resolving to a non-editable copy in the venv that nothing tracked: absent
-    # from the lock, so a clean `uv sync` removed it, and frozen at whatever
-    # the last `pip install` copied, so an edit to the generator did not reach
-    # the notebook reading its output. Editable, from here, so there is one
-    # copy and it is the one in the tree.
-    "arche-synthetic",
 ]
 # Everything, for the dev image and anyone who wants the document parsers and
 # OCR locally. Opt-in (`uv sync --group full`): docling and the OCR runtime
