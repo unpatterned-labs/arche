@@ -47,6 +47,66 @@ Train, tune and test are entity-disjoint: each artist id hashes to exactly one s
 | Removing lexicographic label residue: Jaro-Winkler precision 0.6669 to 0.9467 | supplier world, generator 0.0.2 against 0.0.5 | `docs/benchmarks/ng-supplier-v002-400-report.md` |
 | Diacritic-loss recall 0.72 against 0.30, paired in 5 of 5 seeds | supplier world, five seeds | `results/nigeria_supplier_v1_s400_sweep.json` |
 
+## Part two: the bundle, and the one command that checks it
+
+Everything part two rests on is nine tracked files totalling **1.8 MB**. It lives in the generator's repository, `arche-synthetic`, at these paths:
+
+| bytes | path | what it is |
+|---:|---|---|
+| 47,007 | `results/artist_ablation_A_truth_wikidata_list_musicbrainz.json` | direction A, every condition and interval |
+| 46,544 | `results/artist_ablation_B_truth_musicbrainz_list_wikidata.json` | direction B |
+| 427,728 | `worlds/wikidata_artist_africa_v1_s1197/` | the A cohort, 5 Parquet tables plus manifest and schemas |
+| 1,008,603 | `worlds/musicbrainz_artist_africa_domain_v1_s2858/` | the B cohort |
+| 144,912 | `arche_synthetic/data/artist_variants_musicbrainz_africa_v1.yaml` | the list A is given |
+| 193,104 | `arche_synthetic/data/artist_variants_wikidata_africa_v1.yaml` | the list B is given |
+
+Plus three scripts: `build_artist_ablation_cohorts.py` rebuilds the cohorts from the pinned dump, `run_artist_variant_frequency_ablation.py` runs one direction, and `arche_synthetic/bootstrap.py` is the paired entity-level bootstrap.
+
+Each world's `manifest.yaml` carries a content fingerprint per table, so a reviewer can check what they received rather than trusting the filename. Both are generator 0.0.6, seed 0, pack `musicbrainz_artist_alias_v0`:
+
+| world | `observations` | `truth` |
+|---|---|---|
+| A, 1,197 artists | `c2cef152998e50da3318` | `7241e17006e4e1e51838` |
+| B, 2,858 artists | `56128ed90372bb5b6f1a` | `94696daad594db3cc710` |
+
+Compare fingerprints, never files: Parquet embeds a writer version, so byte-identical data produces byte-different files and a checksum of the file would fail on a `pyarrow` upgrade while telling you nothing.
+
+### Reproducing both directions
+
+```sh
+python verify_artist_ablation.py
+```
+
+That re-runs both directions, compares **every measured field** with the committed artifact, and exits non-zero on any disagreement. `seconds`, `fit_seconds` and `notes` are ignored because they are wall clocks; thresholds chosen on tune, per-stratum recall, bootstrap intervals and the variant coverage counts are all compared exactly.
+
+Verified on 2026-09-28: **both directions reproduce with only the timing fields moving.** The F1 values it prints are the ones in the tables above, to four decimals.
+
+To run one direction by hand:
+
+```sh
+python run_artist_variant_frequency_ablation.py \
+  --world worlds/wikidata_artist_africa_v1_s1197 \
+  --variant-map arche_synthetic/data/artist_variants_musicbrainz_africa_v1.yaml \
+  --out /tmp/A.json
+```
+
+Pass the variant map as a **relative** path. The report records it verbatim, so an absolute path is the one field that will appear not to reproduce.
+
+### Rebuilding the cohorts from source
+
+Only needed to check the cohort construction itself, and it wants the 1.7 GB MusicBrainz dump:
+
+```sh
+python download_musicbrainz_artist_archive.py     # ~1.7 GB, resumable, sha256-checked
+python build_artist_ablation_cohorts.py
+```
+
+The dump is pinned: `musicbrainz-artist-20260923-001002`, sha256 `ce3be9e9...`. Both cohorts derive from that one file and one frozen CC0 Wikidata snapshot, so the cohort boundaries are reproducible without a network round trip to a moving database.
+
+### There is no notebook for this one
+
+The other worlds have analysis notebooks (`notebooks/nigeria_supplier_v1_analysis.ipynb`, `person_name_v1_analysis.ipynb`, `read_worlds.ipynb`). The artist ablation does not have one: its output is two JSON reports and a table, and `verify_artist_ablation.py` is the thing a reviewer actually wants. Worth adding if someone needs to explore the per-stratum breakdown interactively rather than read it.
+
 ## Two gaps, stated rather than left to be discovered
 
 **The frequency half of the claim is not tested.** "The frequency table buys precision" needs a world where two *different* artists share a name. The part-two cohorts contain 0 and 5 such collisions among test pairs, so the measurement could not happen. The world that had 327 collision pairs is the earlier `artists_v0`, whose generator now lives only in this repository's history: `git show c92c3f7^:data/synthetic/arche_synthetic/artists.py`. Until that is rebuilt, the sentence at the top of `afrobeats.yaml` is half measured.

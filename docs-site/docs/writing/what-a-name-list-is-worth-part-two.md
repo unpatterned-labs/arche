@@ -124,4 +124,12 @@ Every number above comes from committed artifacts and pinned sources: one MusicB
 
 Licences are the reason this programme exists at all: MusicBrainz core data is CC0 and Wikidata is CC0, so unlike the academic-only and purchase-only sets in this field, nobody's permission is needed to publish either the data or the result.
 
-See [the reviewer's guide](../reference/artist-ablation-data.md) for exactly which files carry which claim, and which claims are not yet in a public artifact.
+One command re-derives both directions and diffs them against the committed results:
+
+```sh
+python verify_artist_ablation.py
+```
+
+Run on 2026-09-28, both directions reproduced with only the wall-clock fields moving. The bundle is nine files and 1.8 MB.
+
+See [the reviewer's guide](../reference/artist-ablation-data.md) for every path, size and content fingerprint, the command that rebuilds the cohorts from the pinned dump, and an honest account of which claims are not yet in a publicly fetchable artifact.
