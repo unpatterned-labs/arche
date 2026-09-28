@@ -154,9 +154,11 @@ nav:
     - MCP tools: reference/mcp-tools.md
     - Extras: reference/extras.md
     - Benchmarks: reference/benchmarks.md
+    - The artist ablation data: reference/artist-ablation-data.md
   - Writing:
     - writing/index.md
     - What a name list is worth: writing/what-a-name-list-is-worth.md
+    - What a name list is worth, part two: writing/what-a-name-list-is-worth-part-two.md
     - The number we could not reproduce: writing/the-number-we-could-not-reproduce.md
     - Similar is not the same: writing/similar-is-not-the-same.md
     - The join nobody sells: writing/the-join-nobody-sells.md
