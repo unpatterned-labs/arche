@@ -2,7 +2,7 @@
 
 Every public name in `arche`, grouped by what you do with it: the signature as it is in the source, one sentence, what comes back, and the guide that shows it in use. At the end of this page you know which name answers which question and where its full walkthrough is.
 
-This page and `arche.__all__` are the same list, and a test holds them together. That is the 1.x promise: these names keep working, with these meanings, through every 1.x release.
+This page and `arche.__all__` are the same list, and a test holds them together, so the recommended surface and the documented surface cannot drift apart. **arche is pre-1.0, so that is not yet a written compatibility guarantee.** These names are the ones under test and the ones to build on; a change to any of them would be a minor-version event with a changelog entry naming what moved and why, and there is no plan for one. Anything importable but absent from this page is internal. The guarantee arrives with 1.0, which waits on people actually depending on this rather than on a date.
 
 ```python
 import arche
@@ -439,7 +439,7 @@ def to_match_record(detections: Any) -> dict[str, Any]
 
 `compare_geo` turns a distance into a similarity that decays with `decay_km`. `split_place_name` separates *Kano Central* from *(Annex)*; `compare_place_qualifiers` scores the second half and answers `None` rather than `0.0` when one side has no qualifier, which is how an absent field stays absent. `normalize_type_token` reads *PHC* and *Primary Health Centre* as one type and hands back `(type, residual name)`, with `None` for the type when it recognises none; `load_type_vocab(domain)` is the table you pass it. `to_match_record` turns `Pipeline` detections into a record the matcher can take.
 
-## Not part of the 1.x promise
+## Importable, but not recommended
 
 These import and are unchanged. They are out of `__all__` because a recommended verb should do its job on a plain install, and these ship fixtures only: without them the report comes back empty.
 

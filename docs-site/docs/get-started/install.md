@@ -10,7 +10,7 @@ arche --version
 ```
 
 ```text
-arche 0.9.0
+arche 0.10.0
 ```
 
 That is enough for `compare`, `reconcile`, `detect_pii`, `deidentify`, `resolve_place_request` and `arche studio`. Everything else is an extra you add when you need it.

@@ -76,7 +76,7 @@ def test_one_h1_first(page: Path):
 
 
 def test_every_public_name_is_on_the_python_api_page():
-    """The 1.x promise, from the documentation side.
+    """The recommended surface, from the documentation side.
 
     `__all__` is what the package recommends and `reference/python-api.md` is
     what the site documents; at the 1.0 freeze they were made the same list.

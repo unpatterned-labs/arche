@@ -11,11 +11,11 @@ export ARCHE_HASH_KEY="$(openssl rand -hex 32)"      # keep it; tokens depend on
 docker compose -f deploy/compose.yaml up
 ```
 
-That pulls `ghcr.io/unpatterned-labs/arche-core` (`ARCHE_VERSION=0.9.0` pins one; `--build` builds it from this checkout instead, a few GB of models once). Then:
+That pulls `ghcr.io/unpatterned-labs/arche-core` (`ARCHE_VERSION=0.10.0` pins one; `--build` builds it from this checkout instead, a few GB of models once). Then:
 
 ```sh
 curl -u arche:change-me http://localhost:8080/livez
-# {"ok": true, "version": "0.9.0", "warm": true}
+# {"ok": true, "version": "0.10.0", "warm": true}
 
 curl -u arche:change-me -F files=@invoice.pdf -F files=@po.pdf \
      -F entity=organisation -F jurisdiction=NG \
@@ -76,7 +76,7 @@ prints the `did:key` to publish. Uncomment `ARCHE_SIGNING_KEY` in `compose.yaml`
 
 ## On-premise, air-gapped
 
-The image runs without network access to fetch models (`HF_HUB_OFFLINE=1`). To move it into a network with no egress at all: `docker save ghcr.io/unpatterned-labs/arche-core:0.9.0 | gzip > arche.tar.gz`, carry it across, `docker load`. Everything in the table above works without a connection.
+The image runs without network access to fetch models (`HF_HUB_OFFLINE=1`). To move it into a network with no egress at all: `docker save ghcr.io/unpatterned-labs/arche-core:0.10.0 | gzip > arche.tar.gz`, carry it across, `docker load`. Everything in the table above works without a connection.
 
 ## What this is not, yet
 

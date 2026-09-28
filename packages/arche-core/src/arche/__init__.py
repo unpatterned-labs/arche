@@ -76,7 +76,7 @@ def resolve_places(
     Fixtures only by default: without them the report comes back empty. Set
     ``DEMO_LIVE_API=true`` to enable live OSM/NHS/openchargemap calls.
 
-    Not part of the 1.x promise. It is importable and unchanged, and it is out
+    Not part of the recommended surface. It is importable and unchanged, and out
     of ``__all__`` because a recommended verb should do its job on a plain
     install. For places you hold yourself, see :func:`resolve_place_request`.
     """
@@ -110,7 +110,7 @@ def list_places(
 
     Supported categories: physiotherapy, dentist, ev_charger.
 
-    Not part of the 1.x promise, for the same reason as :func:`resolve_places`.
+    Not part of the recommended surface, for the same reason as :func:`resolve_places`.
     """
     from .resolve.places import _run_directory
     return _run_directory(
@@ -275,7 +275,7 @@ def __dir__() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# __all__: the recommended public API, and the 1.x promise
+# __all__: the recommended public API, and what 1.0 will promise
 # ---------------------------------------------------------------------------
 # Every name here is documented on the site's Python API page, and every name
 # on that page is here. That correspondence is the promise: these names keep

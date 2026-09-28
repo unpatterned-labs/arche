@@ -42,9 +42,13 @@ theme:
 # in a clone is the worst of both, and several of them described modules
 # removed in 0.8.0. Their URLs still answer, through `redirect_maps` below.
 #
-# `concepts/` is the one exclusion left. It is gitignored working material
-# (roadmaps, plans, positioning) that exists only in a local checkout, and
-# naming it here keeps a local build and `test_docs_examples.py` away from it.
+# `concepts/` is the one exclusion left, and it stays at 1.0. It is gitignored
+# working material (roadmaps, plans, positioning) that exists only in a local
+# checkout, so naming it here keeps a local build and `test_docs_examples.py`
+# away from it. The 1.0 goal was "exclude nothing a reader could otherwise
+# read", and that is met: `git ls-files docs-site/docs/concepts/` is empty, so a
+# clone has no such directory and this line excludes nothing from anybody's
+# build but the author's.
 #
 # Keep this a `|` literal block: `test_docs_examples.py` parses it, and every
 # published page's Python examples run in that test.

@@ -66,8 +66,9 @@ class GuardDeniedError(Exception):
 
 
 #: The name this exception had until 0.9.0. The same class, so ``except
-#: GuardDenied`` written against an earlier release still catches it; kept
-#: through 1.x.
+#: GuardDenied`` written against an earlier release still catches it. Kept
+#: until 1.0 at the earliest; the release that removes it will say so in the
+#: changelog first.
 GuardDenied = GuardDeniedError
 
 
