@@ -168,11 +168,16 @@ And the value of a list is bounded by its coverage and paid for in collisions, b
 
 The world that produced these numbers is a file contract, not a Python class: Parquet, a schema beside each table, a manifest with content fingerprints and provenance, no truth column in the file a matcher is given. Anyone with Splink, or Zingg, or a SQL prompt, can regenerate it and run their own recipe over it. That is what it is for.
 
+These four commands produced every number above. They ran in this repository until 0.10.0, which moved the generator out; the tree that still has them is the commit before it:
+
 ```sh
-python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0   # from the arche-synthetic repository
+git checkout c92c3f7^ -- datasets/artists_dataops data/synthetic
+python -m arche_synthetic --world-pack artists_v0 --scale 10000 --out worlds/artists_v0
 uv run python datasets/artists_dataops/pull_musicbrainz.py      # ~15 min, cached
 uv run python datasets/artists_dataops/coverage.py               # the 10.5%
 uv run python datasets/artists_dataops/bench_splink_variants.py  # ~2 min
 ```
 
-Every number above comes out of those four commands. If one of them does not, that is the bug report we want.
+[The reviewer's guide](../reference/artist-ablation-data.md) maps each claim on this page to the artifact that carries it, and says which ones are not yet in a public file.
+
+**This study has a sequel, and it narrows the conclusion.** Run with two independent sources each taking a turn as the answer key, the list turns out to buy almost nothing when it is only allowed to score pairs, and 35 to 41 points of recall when it is allowed to choose which pairs get scored. See [part two](what-a-name-list-is-worth-part-two.md).
