@@ -570,7 +570,21 @@ class Ledger:
                 for d in fresh
             ]
             if link:
-                events += self._link_many([d for d in fresh if d.linked], entity_type, now)
+                # `built`, not `fresh`. A decision id is a content hash of the
+                # *comparison*, while a record id is a content hash of the whole
+                # record, so two records that differ only in a field the pack
+                # does not read -- the same supplier seen by two sources on two
+                # dates -- produce two records and **one** decision id. Linking
+                # only `fresh` therefore dropped the second record's membership
+                # on the floor: the receipt already existed, so the link was
+                # treated as already made, and it had been made for the *other*
+                # record. `resolve()` then read a verdict of `found` on a record
+                # that belonged to no entity and died asking for entity `None`.
+                #
+                # Safe to re-link: `_link_many` is union-find over the records
+                # named by *these* decisions, so re-uniting a pair that is
+                # already together writes nothing.
+                events += self._link_many([d for d in built if d.linked], entity_type, now)
             self._insert_rows("arche_events", events)
         except Exception:
             self._db.execute("ROLLBACK")
@@ -1038,7 +1052,25 @@ class Ledger:
                                           "entities": matched, "conflicts": sorted(conflicts)},
                         note)
 
-        entity = self.entity(self.entity_of(record_id)) if verdict == "found" else target
+        if verdict == "found":
+            # `found` means the batch linked this record, so it has an entity. The
+            # invariant used to be assumed here and it broke: `record_batch` keyed
+            # linking on the decision id, which addresses *evidence* rather than
+            # records, so a record whose comparison matched an already-recorded
+            # edge was never linked and this read died as `KeyError: no entity
+            # None`. Stated rather than assumed, because the message a reader gets
+            # should name the record and the verdict, not a null id.
+            entity_id = self.entity_of(record_id)
+            if entity_id is None:
+                raise RuntimeError(
+                    f"resolve() decided {verdict!r} for {record_id} and nothing linked "
+                    "it to an entity. That is a defect in this ledger rather than in "
+                    "the record: a verdict of 'found' is what instructs the batch to "
+                    "link. Please report it with the record and the pack."
+                )
+            entity = self.entity(entity_id)
+        else:
+            entity = target
         ordered = sorted(decisions, key=lambda d: (d.linked, d.score), reverse=True)
         would: list[str] = []
         if verdict in ("review", "ambiguous") and ordered:
