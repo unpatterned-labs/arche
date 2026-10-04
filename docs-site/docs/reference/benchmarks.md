@@ -301,7 +301,7 @@ At 444 and 1,215 records the two are level on false merges (2 against 5, 39 agai
 
 Splink at 0.9 makes almost no false merges at any size and finds less than half the true pairs; that is the same threshold trade the Nigerian register showed, and the reason the shipped recipes name the threshold they were benchmarked at rather than leaving it to the caller.
 
-Measured with the supplier world's size-floor script, which lives with the generator in the `arche-synthetic` repository. The numbers above are arche's own measurement and are also recorded in the 0.9.0 entry of `packages/arche-core/CHANGELOG.md`.
+Measured with the supplier world's size-floor script, which lives with the generator, developed in its own project rather than here. The numbers above are arche's own measurement and are also recorded in the 0.9.0 entry of `packages/arche-core/CHANGELOG.md`.
 
 ### arche using Splink, rather than against it
 
@@ -500,7 +500,7 @@ unknown_confusable        asked     1.00   (verified_wrong 0.00)
 
 **What this does not measure.** The sheet is a declared assumption; no real address is in it, and which place a request means is by construction. Whether a sentence written by a real customer renders the way the generator renders it is the question the twin cannot answer.
 
-Measured against a generated world whose every endpoint carries the rendering that produced it. The generator, the world and its datacard live in the `arche-synthetic` repository; the numbers above are arche's own measurement.
+Measured against a generated world whose every endpoint carries the rendering that produced it. The generator, the world and its datacard live with the generator project rather than here; the numbers above are arche's own measurement.
 
 ## Against string baselines
 

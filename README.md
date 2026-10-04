@@ -121,7 +121,7 @@ from arche.sign import generate_keypair
 signed = sign_edges(result, private_key=key.private_key, kid=key.did_key)
 ```
 
-A recipient checks two independent things: the signature, which establishes who issued it and that nothing changed since, and the recomputed id, which establishes that the id is the honest address of *this* evidence rather than one lifted from a more favourable decision. They fail differently, which is what makes the pair useful. See [re-verify a decision](https://unpatterned-labs.github.io/arche/how-to/re-verify-a-decision/).
+A recipient checks two independent things: the signature, which establishes who issued it and that nothing changed since, and the recomputed id, which establishes that the id is the honest address of *this* evidence rather than one lifted from a more favourable decision. They fail differently, which is what makes the pair useful. See [checking an attested answer](https://unpatterned-labs.github.io/arche/how-it-works/attestation/#checking-one).
 
 ## What is measured
 

@@ -4,6 +4,16 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Fixed
+
+- **`resolve()` dropped a record's membership when another comparison had produced the same evidence, then died reading the entity it had not created.** A decision id is deliberately a pure function of the rounded evidence and the pins, which is what makes an edge citable: hold the same inputs and you recompute the same address. It is therefore *not* unique per record pair, and `record_batch` was using it as the idempotency key for **linking**. So when a record's only matching comparison scored the same rounded evidence as an edge already on file, the link was treated as already made, and it had been made for the other record. `resolve()` then reported `found` for a record in no entity and raised `KeyError: no entity None`.
+
+  Linking now follows the records named by *this* batch rather than whether the receipt is new. Re-linking is safe: the union-find writes nothing when a pair is already together. The receipt is still shared, because the comparison genuinely is the same one.
+
+  Found by the synthetic supplier benchmark at 150 suppliers, where two suppliers one digit apart in their address, `29 Zaria Road, Ogui, Enugu` and `23 Zaria Road, Ogui, Enugu`, scored identical rounded evidence against a third record. It had blocked the incremental arms there since generator 0.0.6, which is why that benchmark's paired ledger-versus-batch result is unpublished. `arche/ledger` now completes: precision 0.991, recall 0.775, one false-merge cluster on 445 records.
+
+  `resolve()` also states the invariant it relies on instead of assuming it. A verdict of `found` is what instructs the batch to link, so a `found` record with no entity is a defect in the ledger, and the error now says that and names the record rather than failing on a null id.
+
 ## [0.10.0] — 2026-09-27
 
 **This was cut as 1.0.0 and deliberately is not.** The code is what a 1.0 would

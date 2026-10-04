@@ -543,6 +543,97 @@ def test_a_second_ledger_on_the_same_file_sees_the_first_ones_writes(tmp_path):
     assert res.verdict == "found", "a fresh ledger on the same file saw no records"
 
 
+# ── a decision id addresses evidence, not records ────────────────────────────
+# `decision_id` is deliberately "a pure function of the (rounded) evidence and
+# the pins" (`reconcile.py`), so two comparisons that produce identical evidence
+# share one id. That is what makes an edge citable. It also means a decision id
+# is NOT unique per record pair, and `record_batch` used it as the idempotency
+# key for *linking*: the second record's membership was dropped because the
+# receipt already existed, and the link it pointed at had been made for the other
+# record. `resolve()` then reported `found` for a record in no entity and died in
+# `entity(None)`.
+#
+# Found on a 150-supplier world where two suppliers one digit apart in their
+# address scored identical rounded evidence against a third record:
+#   '29 Zaria Road, Ogui, Enugu' and '23 Zaria Road, Ogui, Enugu'.
+
+
+def _one_match(a: dict, b: dict) -> tuple[dict, dict]:
+    """A reconcile result holding a single `match` edge, and the edge."""
+    result = arche.reconcile([a], [b], entity="organisation", id_field="id")
+    match = next(e for e in result["matches"] if e["decision"] == "match")
+    return result, match
+
+
+def test_a_second_record_is_linked_even_when_the_decision_id_is_not_new(ledger):
+    """The defect, at the level it lives: `record_batch`, not `resolve`."""
+    target = {"id": "t", "name": "Oyono Chemicals Global Ltd",
+              "address": "23 Zaria Road, Ogui, Enugu", "city": "Enugu"}
+    first = {"id": "a", "name": "Oyono Chemicals Global",
+             "address": "23 Zaria Road, Ogui, Enugu", "city": "Enugu"}
+    result, edge = _one_match(first, target)
+    call = {"entity": "organisation", "id_field": "id"}
+
+    decisions = ledger.record_batch(result, [first], [target], call=call, verb="reconcile")
+    linked = [d for d in decisions if d.linked]
+    assert linked, "the engine said match, so something should have been linked"
+    entity = ledger.entity_of(linked[0].record_a)
+    assert entity is not None
+
+    # A different record under the same caller id, replayed against the same
+    # evidence: same decision id, so the receipt is not new. The membership still
+    # has to be written. The caller id is reused on purpose: `resolve()` pops
+    # `id` before comparing, so every record it resolves arrives as position `0`,
+    # which is exactly how the real failure presented.
+    second = {"id": "a", "name": "Oyono Chemicals Global",
+              "address": "29 Zaria Road, Ogui, Enugu", "city": "Enugu"}
+    again = ledger.record_batch(result, [second], [target], call=call, verb="reconcile")
+    assert [d.decision_id for d in again] == [d.decision_id for d in decisions], (
+        "this test is only meaningful while the decision id is reused"
+    )
+
+    # The record id is the content hash of the record, so it can be computed
+    # here rather than fished out of the ledger.
+    from arche.ids import content_hash
+    second_id = content_hash(
+        {"entity_type": "organisation",
+         "attributes": {k: v for k, v in second.items()}},
+        prefix="rec",
+    )
+    assert ledger.entity_of(second_id) is not None, (
+        "the second record was never linked: its decision id already existed, so "
+        "the link was treated as already made, and it had been made for the first "
+        "record. This is the bug that made `resolve()` die in `entity(None)`."
+    )
+    assert ledger.entity_of(second_id) == entity, "both belong to the same entity"
+
+
+def test_resolve_never_reports_found_for_a_record_in_no_entity(ledger):
+    """The invariant `resolve()` relies on, asserted directly.
+
+    It reads `entity(entity_of(record_id))` unguarded when the verdict is
+    `found`, so a verdict of `found` on an unlinked record is a crash rather than
+    a wrong answer. Cheap to state, and it is the shape of the only ledger defect
+    this benchmark has produced.
+    """
+    rows = [
+        {"id": "r1", "name": "Oyono Chemicals Global Ltd",
+         "address": "23 Zaria Road, Ogui, Enugu", "city": "Enugu"},
+        {"id": "r2", "name": "Oyono Chemicals Global",
+         "address": "23 Zaria Road, Ogui, Enugu", "city": "Enugu"},
+        {"id": "r3", "name": "OYONO CHEMICALS GLOBAL",
+         "address": "29 Zaria Road, Ogui, Enugu", "city": "Enugu"},
+        {"id": "r4", "name": "Oyono Chemicals Global Limited",
+         "address": "29 Zaria Rd, Ogui", "city": "Enugu"},
+    ]
+    for row in rows:
+        resolution = ledger.resolve(row, entity_type="organisation")
+        if resolution.verdict == "found":
+            assert ledger.entity_of(resolution.record_id) is not None, (
+                f"{row['id']} resolved as 'found' and belongs to no entity"
+            )
+
+
 def test_resolved_decisions_replay_and_explain_like_any_other(mary):
     res = mary.resolve("M. Jones, NIN 12345678901, phone 08035557890", entity_type="person")
     best = res.decisions[0]
