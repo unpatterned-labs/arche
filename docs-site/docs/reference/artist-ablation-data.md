@@ -49,7 +49,7 @@ Train, tune and test are entity-disjoint: each artist id hashes to exactly one s
 
 ## Part two: the bundle, and the one command that checks it
 
-Everything part two rests on is nine tracked files totalling **1.8 MB**. It lives in the generator's repository, `arche-synthetic`, at these paths:
+Everything part two rests on is nine tracked files totalling **1.8 MB**. It lives with the generator, which is developed in its own project rather than here, at these paths:
 
 | bytes | path | what it is |
 |---:|---|---|
