@@ -193,7 +193,9 @@ That is the whole agentic loop, with the caller holding the wheel: `cases()` say
 
 code('''
 later.close()
-print("ledger file:", LEDGER, f"({LEDGER.stat().st_size // 1024} KB)")
+# The name, not the path. This printed a machine-specific tempdir into
+# committed notebook output, which ships in the repository.
+print("ledger file:", LEDGER.name, f"({LEDGER.stat().st_size // 1024} KB)")
 ''')
 
 

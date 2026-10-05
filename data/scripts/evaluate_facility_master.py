@@ -214,8 +214,12 @@ def main() -> None:
         "scope": "candidate generation and adjudication only; no accuracy claim without labels",
         "state": args.state,
         "inputs": {
-            "grid3": {"path": str(args.grid3), "sha256": _sha256(args.grid3)},
-            "hfr": {"path": str(hfr_path), "sha256": _sha256(hfr_path)},
+            # The basename, not the path. A summary is provenance that gets
+            # copied into packs and manifests, and an absolute path there
+            # discloses a filesystem while the digest beside it already
+            # says which bytes were read.
+            "grid3": {"path": args.grid3.name, "sha256": _sha256(args.grid3)},
+            "hfr": {"path": hfr_path.name, "sha256": _sha256(hfr_path)},
         },
         "records": {"grid3": len(left), "hfr": len(right)},
         "crosswalk": {

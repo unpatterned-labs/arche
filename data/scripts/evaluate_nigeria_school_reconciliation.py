@@ -236,7 +236,8 @@ def main() -> None:
             "so this file reports no accuracy metrics."
         ),
         "inputs": {
-            name: {"path": str(path), "sha256": _sha256(path)}
+            # Basename only; see evaluate_facility_master.py for why.
+            name: {"path": path.name, "sha256": _sha256(path)}
             for name, path in files.items()
         },
         "reference_records": len(reference),

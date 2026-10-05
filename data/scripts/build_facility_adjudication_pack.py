@@ -88,7 +88,7 @@ def main() -> None:
         rows.extend(state_rows)
         sources.append({
             "state": state,
-            "path": str(path),
+            "path": path.name,
             "sha256": _sha256(path),
             "rows": len(state_rows),
             "decisions": dict(sorted(Counter(row["decision"] for row in state_rows).items())),
