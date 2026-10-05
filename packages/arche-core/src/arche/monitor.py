@@ -50,8 +50,10 @@ proposals and ``confidence`` says whether the engine committed.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from hashlib import sha256
 from typing import Any, Literal, Protocol, runtime_checkable
 
 QuestionKind = Literal["yes_no", "choice", "score"]
@@ -198,6 +200,134 @@ class EngineMonitor:
                        decision_id=receipt.decision_id)
 
 
+@dataclass(frozen=True)
+class Calibration:
+    """A monotone map from a score to a probability, fitted on labelled pairs.
+
+    Isotonic regression by pool-adjacent-violators: the fit is the non-decreasing
+    step function that minimises squared error against the labels. Chosen over a
+    sigmoid because it assumes nothing about the shape of the miscalibration, and
+    arche's score is a weighted mean through a gate rather than a log-odds, so a
+    sigmoid's assumption is not met.
+
+    No dependency. Twenty lines of PAV against a scikit-learn import that would
+    make a monitor heavier than the engine it monitors.
+
+    ``thresholds`` and ``values`` are parallel and ascending: a score at or above
+    ``thresholds[i]`` and below ``thresholds[i+1]`` maps to ``values[i]``.
+    """
+
+    thresholds: tuple[float, ...]
+    values: tuple[float, ...]
+    fitted_on: int = 0
+
+    @classmethod
+    def fit(cls, scores: Sequence[float], labels: Sequence[bool]) -> Calibration:
+        """Fit on (score, was-it-really-a-match) pairs.
+
+        Fit on a split the monitor will not be scored on. Fitting and scoring on
+        the same pairs measures how well isotonic regression can memorise, which
+        is perfectly, and says nothing.
+        """
+        if len(scores) != len(labels):
+            raise ValueError("scores and labels must be the same length")
+        points = sorted(zip(scores, labels, strict=True), key=lambda sl: sl[0])
+        if not points:
+            raise ValueError("a calibration needs at least one labelled pair")
+
+        # Blocks of (weight, mean), merged while the sequence decreases.
+        blocks: list[list[float]] = []
+        for score, label in points:
+            blocks.append([1.0, float(label), score])
+            while len(blocks) > 1 and blocks[-2][1] > blocks[-1][1]:
+                weight_b, mean_b, _ = blocks.pop()
+                weight_a, mean_a, low_a = blocks.pop()
+                weight = weight_a + weight_b
+                blocks.append([weight,
+                               (weight_a * mean_a + weight_b * mean_b) / weight,
+                               low_a])
+        return cls(thresholds=tuple(b[2] for b in blocks),
+                  values=tuple(min(1.0, max(0.0, b[1])) for b in blocks),
+                  fitted_on=len(points))
+
+    def __call__(self, score: float) -> float:
+        """The calibrated probability for one score."""
+        if not self.thresholds:
+            return 0.0
+        index = bisect_right(self.thresholds, score) - 1
+        return self.values[max(0, index)]
+
+    def digest(self) -> str:
+        """A content address for this exact map, for the pin.
+
+        A calibrated answer is only replayable if the decision names the map that
+        produced it. Two monitors fitted on different splits are different
+        monitors and must not share a pin.
+        """
+        body = ";".join(f"{a:.6f}:{b:.6f}"
+                        for a, b in zip(self.thresholds, self.values, strict=True))
+        return sha256(body.encode()).hexdigest()[:16]
+
+
+@dataclass
+class CalibratedMonitor:
+    """Another monitor's score, mapped to a probability that means what it says.
+
+    **What this buys, and what it costs.** Calibration cannot *improve* the best
+    achievable queue cut, because a threshold swept against truth on the raw
+    score finds the same pairs. What it changes is whether you can find that cut
+    **without labels**.
+
+    And it is not free, which an earlier version of this docstring got wrong.
+    Isotonic regression is monotone but not *strictly* monotone: it maps ranges
+    of scores to a single value, and those ties lose ranking information.
+    Measured on DBLP-ACM's review band, calibrating the engine's score moved
+    AUROC 0.8856 to 0.8605 and the best achievable cut 86.4% to 71.6%, while
+    expected calibration error went 0.5993 to 0.0001. Trading a little ranking
+    for a number that means what it says is usually the right trade, but it is a
+    trade.
+
+    Uncalibrated, "merge where p >= 0.98" is a sentence about a similarity and
+    promises nothing; the operating point has to be swept against truth, which is
+    what you do not have in production. Calibrated, the same sentence is a claim
+    about an error rate, and the harness measures whether the claim holds. That
+    is the difference between a score and a probability, and it is the whole
+    reason the monitor lane exists.
+
+    Wraps any :class:`Monitor`. ``base`` answers, this rewrites the probability
+    on the questions a probability applies to and leaves the rest alone, so a
+    ``choice`` distribution passes through untouched rather than being mangled by
+    a map fitted on a binary outcome.
+    """
+
+    base: Monitor
+    calibration: Calibration
+    name: str = "calibrated"
+
+    def pin(self) -> str:
+        return (f"monitor:{self.name}@{self.base.pin()}"
+                f"+cal/{self.calibration.digest()}"
+                f"/n={self.calibration.fitted_on}")
+
+    def ask(self, state: Mapping[str, Any], questions: Sequence[Question]) -> Verdict:
+        inner = self.base.ask(state, questions)
+        answers: dict[str, Answer] = {}
+        for key, answer in inner.answers.items():
+            if not answer.answered:
+                answers[key] = answer
+                continue
+            if answer.kind == "yes_no" and answer.p is not None:
+                answers[key] = replace(answer, p=self.calibration(answer.p))
+            elif answer.kind == "score" and answer.value is not None:
+                answers[key] = replace(answer, value=self.calibration(answer.value))
+            else:
+                # A choice distribution is not a single probability and a map
+                # fitted on one outcome has nothing to say about it.
+                answers[key] = answer
+        return Verdict(monitor=self.name, pin=self.pin(), answers=answers,
+                       decision_id=inner.decision_id)
+
+
 def _one_hot(options: Sequence[str], chosen: str) -> dict[str, float]:
     """The engine decides, it does not distribute: all mass on its answer.
 
@@ -214,5 +344,6 @@ def ask(state: Mapping[str, Any], questions: Sequence[Question], *,
     return (monitor or EngineMonitor()).ask(state, questions)
 
 
-__all__ = ["ENGINE_QUESTIONS", "Answer", "EngineMonitor", "Monitor", "Question",
-           "QuestionKind", "Verdict", "ask"]
+__all__ = ["ENGINE_QUESTIONS", "Answer", "Calibration", "CalibratedMonitor",
+           "EngineMonitor", "Monitor", "Question", "QuestionKind", "Verdict",
+           "ask"]
