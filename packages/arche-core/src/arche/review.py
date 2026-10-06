@@ -540,6 +540,149 @@ def _ledger_digest(ledger: list[dict]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+# The schema reconcile hashes a crosswalk edge under (reconcile.py:975). Kept
+# here as a constant rather than imported because `review` must not depend on
+# `resolve`; `test_a_decision_id_recomputes_from_the_shared_artifact_alone`
+# runs a real resolution through this function, so the two cannot drift
+# silently.
+_EDGE_SCHEMA = "arche.crosswalk_edge.v1"
+
+# Everything a decision id is computed over, besides the pins. `candidate` is
+# deliberately absent: reconcile includes it when retrieval produced one, and
+# `review_pack` does not write it to the pack, so a pack cannot reproduce the
+# id of such an edge. That is reported as unreproducible rather than as a
+# mismatch, because the two mean different things.
+_EDGE_NUMERIC = ("score", "distinctive_max")
+
+
+def verify_decision_ids(pack: str | Path) -> dict[str, Any]:
+    """Recompute every decision id in a pack from the pack and its pins.
+
+    This is the check a second party runs. It needs the pack and nothing else:
+    no source records, no access to whoever produced it, no network. A
+    ``decision_id`` is a content hash over the edge and the pins, so if the
+    recomputation agrees, the producer cannot have reached that decision from
+    different evidence or under different software than it declares.
+
+    What this does and does not establish. It establishes that **the stated
+    evidence, under the stated pins, yields the stated verdict and address** --
+    the producer cannot have swapped the evidence, moved a threshold, or edited
+    a verdict after the fact. It does **not** establish that the evidence was
+    computed correctly from the source records, because checking that requires
+    the records. The claim is integrity of the judgement, not of its inputs.
+
+    A masked pack whose evidence was redacted cannot be verified at all, and
+    says so: the id was computed over what the evidence said before redaction.
+    :func:`share_artifact` records this in ``decision_ids_verifiable``.
+    """
+    from arche.ids import content_hash
+
+    read = read_pack(pack)
+    manifest = read.manifest or {}
+    pins = manifest.get("pins") or {}
+    report: dict[str, Any] = {
+        "pack": str(read.path),
+        "rows": len(read.rows),
+        "pins_present": bool(pins),
+        "checked": 0,
+        "matched": 0,
+        "mismatched": [],
+        "unreproducible": [],
+        "problems": [],
+    }
+
+    if not pins:
+        report["ok"] = False
+        report["problems"].append(Problem(
+            "no-pins",
+            "this pack carries no pins, so no decision id in it can be "
+            "recomputed. A decision id is a hash over the edge AND the pins. "
+            "Ask the producer for a pack whose manifest includes them.").as_dict())
+        return report
+
+    if manifest.get("decision_ids_verifiable") is False:
+        report["ok"] = False
+        report["problems"].append(Problem(
+            "evidence-redacted",
+            manifest.get("decision_ids_verifiable_note")
+            or "the manifest declares these decision ids unverifiable").as_dict())
+        return report
+
+    sides = _infer_sides(read.fields)
+    if len(sides) != 2:
+        report["ok"] = False
+        report["problems"].append(Problem(
+            "sides-unclear",
+            f"expected two record sides in the columns, inferred {sides!r}; "
+            "an edge needs exactly two ids").as_dict())
+        return report
+
+    id_cols = [c for c in (f"{s}_id" for s in sides) if c in read.fields]
+    if len(id_cols) != 2:
+        report["ok"] = False
+        report["problems"].append(Problem(
+            "id-columns-missing",
+            f"could not find both id columns; looked for "
+            f"{[f'{s}_id' for s in sides]!r}").as_dict())
+        return report
+
+    for index, row in enumerate(read.rows):
+        stated = str(row.get("decision_id") or "")
+        raw_evidence = row.get("evidence", "")
+        if not stated:
+            report["unreproducible"].append(
+                {"row": index, "why": "the row states no decision id"})
+            continue
+        try:
+            evidence = json.loads(raw_evidence) if raw_evidence not in ("", None) else {}
+        except (TypeError, ValueError):
+            report["unreproducible"].append(
+                {"row": index, "decision_id": stated,
+                 "why": "the evidence column is not readable as JSON"})
+            continue
+
+        edge: dict[str, Any] = {
+            "a_id": row.get(id_cols[0]),
+            "b_id": row.get(id_cols[1]),
+            "decision": row.get("decision", ""),
+            "evidence": evidence,
+        }
+        try:
+            for name in _EDGE_NUMERIC:
+                edge[name] = float(row[name])
+        except (KeyError, TypeError, ValueError):
+            report["unreproducible"].append(
+                {"row": index, "decision_id": stated,
+                 "why": f"{_EDGE_NUMERIC} must all be present and numeric"})
+            continue
+
+        recomputed = content_hash({"schema": _EDGE_SCHEMA, **edge, "pins": pins},
+                                  prefix="xwd")
+        report["checked"] += 1
+        if recomputed == stated:
+            report["matched"] += 1
+        else:
+            report["mismatched"].append(
+                {"row": index, "stated": stated, "recomputed": recomputed})
+
+    report["ok"] = (report["checked"] > 0
+                    and not report["mismatched"]
+                    and not report["unreproducible"])
+    if report["mismatched"]:
+        report["problems"].append(Problem(
+            "decision-id-mismatch",
+            f"{len(report['mismatched'])} decision id(s) do not match a "
+            "recomputation. Either the pack was edited after it was written, "
+            "or the edge carried a retrieval `candidate` block, which a pack "
+            "does not preserve.").as_dict())
+    if report["checked"] == 0 and not report["problems"]:
+        report["problems"].append(Problem(
+            "nothing-checkable",
+            "no row in this pack could be recomputed", severity="warning",
+        ).as_dict())
+    return report
+
+
 def verify_adjudication(adjudication: str | Path | dict,
                         pack: str | Path | None = None) -> dict:
     """Re-check an adjudication: its own binding, and the pack it claims.
@@ -694,6 +837,78 @@ def write_reviewed_csv(pack: str | Path, adjudication: dict,
 _DECISION_COLUMNS = ("decision_id", "decision", "score", "distinctive_max",
                      "distance_km", "evidence")
 
+# Evidence values that are text rather than measurement. A score is not
+# somebody's data and a reader needs it; a *string* inside the evidence is the
+# data, and it travelled verbatim into every masked pack until 2026-10-05.
+#
+# `reconcile` writes `evidence["name_phrase"] = phrase` whenever the shared
+# phrase is rarer than any shared token (reconcile.py:539). So the plaintext
+# name appeared in the evidence precisely when the name was the decisive
+# signal: the leak was correlated with how identifying the value was, which is
+# the worst correlation such a leak can have. `a_name` and `b_name` showed
+# `[NAME]` in the same row.
+#
+# The rule is by TYPE, not by key name, so a string-valued evidence key added
+# later is masked without anyone remembering to come back here.
+_EVIDENCE_TEXT_PLACEHOLDER = "[VALUE]"
+
+
+def _mask_evidence_values(node: Any) -> Any:
+    """Recurse a parsed evidence structure: numbers survive, text does not.
+
+    Keyed on type rather than on key name, so a string-valued evidence key
+    added later is masked without anyone remembering to come back here.
+
+    The key is kept and only its value replaced, because *that a phrase drove
+    this match* is information a reader of a masked pack legitimately needs,
+    and it is not personal data. What the phrase said is.
+    """
+    if isinstance(node, dict):
+        return {k: _mask_evidence_values(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_mask_evidence_values(v) for v in node]
+    # bool is an int subclass; it is a measurement here, not text.
+    if node is None or isinstance(node, (bool, int, float)):
+        return node
+    return _EVIDENCE_TEXT_PLACEHOLDER
+
+
+def _mask_evidence_detail(cell: Any) -> tuple[Any, bool]:
+    """Mask one ``evidence`` cell; say whether a value was actually replaced.
+
+    The flag matters because ``decision_id`` is a hash over the evidence. If
+    masking changed a value, the masked artifact addresses something the
+    original decision did not, and re-deriving the id from it is impossible.
+    The caller records that in the manifest rather than leaving a recipient to
+    discover it by failing.
+
+    Compared on the *parsed* structures, not the text: this function re-dumps
+    with sorted keys, so comparing strings would report a redaction whenever
+    the source happened to order its keys differently.
+
+    A cell this function cannot parse is replaced wholesale rather than passed
+    through: a value it cannot read is a value it cannot promise anything
+    about, and the promise on this artifact is that nothing raw survives in it.
+    """
+    if cell in ("", None):
+        return cell, False
+    if not isinstance(cell, str):
+        masked = _mask_evidence_values(cell)
+        return masked, masked != cell
+    try:
+        parsed = json.loads(cell)
+    except (TypeError, ValueError):
+        return _EVIDENCE_TEXT_PLACEHOLDER, True
+    # A cell holding a bare JSON scalar string ("\"Ada\"") parses to a str and
+    # is text, which _mask_evidence_values handles correctly.
+    masked = _mask_evidence_values(parsed)
+    return json.dumps(masked, sort_keys=True), masked != parsed
+
+
+def _mask_evidence(cell: Any) -> Any:
+    """:func:`_mask_evidence_detail` when only the masked value is wanted."""
+    return _mask_evidence_detail(cell)[0]
+
 
 def share_artifact(pack: str | Path, out_dir: str | Path, *,
                    adjudication: dict | None = None,
@@ -734,6 +949,24 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
 
     Sign the result rather than the source: the digest worth attesting is the one
     over the thing you are actually sending.
+
+    **It carries the pins, so the thing you send can be checked.** A
+    ``decision_id`` is a content hash over the edge *and* the pins, so a
+    recipient without them holds every decision address and can recompute
+    none. Until 2026-10-05 this manifest omitted them, which made the only
+    artifact safe to share the only one that could not be verified. They are
+    copied verbatim, because a hash does not survive editing, and they are
+    screened for sensitive-looking values first, because ``extra_pins`` lets a
+    caller put anything there and this file says "safe to share".
+
+    **And it says whether verification is actually possible.**
+    ``decision_ids_verifiable`` is false when masking changed an evidence value,
+    because the id was computed over what the evidence said before redaction.
+    Numeric evidence -- the common case -- is untouched and verifies; a row
+    carrying a name phrase does not. A recipient should not have to discover
+    that by failing, and the honest fix for the remaining case is to commit to a
+    digest of each text-valued component rather than the value, which is a
+    change to how ids are computed and is not done here.
     """
     from arche.render import render
     from arche.report import _SENSITIVE_ID
@@ -757,6 +990,24 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
             "so this would leak them. Re-export the pack with a surrogate id "
             "column, or pass id_columns= naming the columns that are safe.")
 
+    # Pins travel verbatim, so they get the same scrutiny the row ids get.
+    # `reconcile` takes `extra_pins`, which means a caller can put anything in
+    # here, and this file is stamped "safe to share". A pin is configuration --
+    # digests, thresholds, an engine name -- and a 9+ digit run in one is not
+    # configuration. Refuse rather than publish it under that stamp.
+    pins = dict((read.manifest or {}).get("pins") or {})
+    hot_pins = sorted(
+        key for key, value in pins.items()
+        if _SENSITIVE_ID.match(str(value or ""))
+    )
+    if hot_pins:
+        raise PackError(
+            f"pin(s) {hot_pins} hold a value shaped like a sensitive "
+            "identifier (9+ digit runs, the shape of a national ID). Pins are "
+            "published verbatim in the shared manifest so the decisions stay "
+            "verifiable, so this would leak. Re-run the resolution without "
+            "that value in extra_pins.")
+
     marks = {e["decision_id"]: e for e in (adjudication or {}).get("ledger", [])}
     keep_review = ["review_outcome", "reviewer"] + (
         ["reason"] if include_reasons else [])
@@ -764,6 +1015,7 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
               if f not in REVIEW_FIELDS or f in keep_review]
 
     rows: list[dict] = []
+    evidence_redacted = False
     for row in read.rows:
         out: dict[str, Any] = {}
         for side in sides:
@@ -776,7 +1028,12 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
                 out[f"{prefix}{key}"] = value
         for column in read.fields:
             if column in _DECISION_COLUMNS:
-                out[column] = row.get(column, "")
+                value = row.get(column, "")
+                # `evidence` is the one decision column that can carry text.
+                if column == "evidence":
+                    value, redacted = _mask_evidence_detail(value)
+                    evidence_redacted = evidence_redacted or redacted
+                out[column] = value
         entry = marks.get(row.get("decision_id", ""))
         if entry:
             out["review_outcome"] = entry["outcome"]
@@ -806,6 +1063,28 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
         # artifact carrying the other's contents.
         "source_pack": read.path.name,
         "source_pack_content_sha256": read.content_digest,
+        # The pins, so the artifact you SEND can verify the decisions it
+        # carries. `decision_id` is a content hash over the edge *and* the
+        # pins, so without them a recipient holds every decision address and
+        # cannot recompute one: the only artifact safe to share was the one
+        # that could not be checked, which defeats the point of addressing a
+        # decision at all. Verbatim, because a hash does not survive editing.
+        "pins": pins,
+        # And whether re-derivation is actually possible from this file, said
+        # out loud rather than left to fail. Masking the evidence changes what
+        # the id was computed over, so a redacted row addresses a decision this
+        # file no longer describes. Numeric evidence is the common case and is
+        # untouched; a row carrying a name phrase is not.
+        "decision_ids_verifiable": bool(pins) and not evidence_redacted,
+        "decision_ids_verifiable_note": (
+            "recompute arche.ids.content_hash over the edge plus these pins"
+            if pins and not evidence_redacted else
+            "evidence was redacted in at least one row, so decision ids cannot "
+            "be recomputed from this file; verify against the source pack"
+            if pins else
+            "the source pack carried no pins, so decision ids cannot be "
+            "recomputed from this file"
+        ),
     }
     if adjudication:
         manifest["adjudication_outcomes_sha256"] = adjudication.get(
@@ -813,7 +1092,70 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
         manifest["marked"] = len(marks)
     (out_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (out_dir / "HOW_TO_VERIFY.txt").write_text(
+        _how_to_verify(manifest), encoding="utf-8")
     return manifest
+
+
+def _how_to_verify(manifest: dict) -> str:
+    """What a recipient needs, written for somebody who has never seen arche.
+
+    It states the limit as plainly as the capability. A recipient who
+    believes this file proves the evidence was computed correctly from the
+    source records has been misled, and a verification note that oversells
+    itself is worse than none.
+    """
+    verifiable = manifest.get("decision_ids_verifiable")
+    lines = [
+        "How to check the decisions in this folder",
+        "=" * 41,
+        "",
+        "This folder holds linkage decisions with the record values masked.",
+        "You do not need the source records to check them, and you do not",
+        "need to trust whoever sent it.",
+        "",
+    ]
+    if verifiable:
+        lines += [
+            "    pip install arche-core",
+            "    arche review verify-decisions pack.csv",
+            "",
+            "It exits 0 if every decision id recomputes, 1 otherwise.",
+            "",
+            "WHAT THAT PROVES. Each decision carries an address that is a",
+            "content hash over its evidence and over the pinned software,",
+            "model and data versions in manifest.json. If the addresses",
+            "recompute, the sender cannot have reached these verdicts from",
+            "different evidence, under a different threshold, or with a",
+            "different model than this manifest declares, and cannot have",
+            "edited a verdict after the fact.",
+            "",
+            "WHAT IT DOES NOT PROVE. That the evidence was computed",
+            "correctly from the source records. Checking that needs the",
+            "records, which is exactly what this folder does not contain.",
+            "This is integrity of the judgement, not of its inputs.",
+        ]
+    else:
+        lines += [
+            "THESE DECISION IDS CANNOT BE RECOMPUTED FROM THIS FOLDER.",
+            "",
+            f"Reason: {manifest.get('decision_ids_verifiable_note', 'unknown')}",
+            "",
+            "The decisions and their evidence are still readable, and the",
+            "digests below still tie this file to the pack it came from.",
+            "What you cannot do is independently confirm that these",
+            "addresses belong to these decisions. Ask the sender for a",
+            "pack whose manifest carries its pins.",
+        ]
+    lines += [
+        "",
+        f"this file          {manifest.get('content_sha256', '')}",
+        f"derived from       {manifest.get('source_pack', '')}",
+        f"  whose digest is  {manifest.get('source_pack_content_sha256', '')}",
+        f"rows               {manifest.get('rows', 0)}",
+        "",
+    ]
+    return "\n".join(lines)
 
 
 def _infer_sides(fields: list[str]) -> list[str]:
@@ -854,5 +1196,6 @@ __all__ = [
     "share_artifact",
     "validate_pack",
     "verify_adjudication",
+    "verify_decision_ids",
     "write_reviewed_csv",
 ]
