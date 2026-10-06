@@ -1,0 +1,257 @@
+{
+  "dataset": {
+    "dataset": "dblp-acm",
+    "labels": "Leipzig DBLP-ACM perfect mapping",
+    "records": {
+      "a": 2616,
+      "b": 2294
+    },
+    "true_pairs_in_truth": 2224,
+    "comparators": [
+      {
+        "field": "title",
+        "kind": "name",
+        "weight": 3.0
+      },
+      {
+        "field": "title",
+        "kind": "tftoken",
+        "weight": 2.0
+      },
+      {
+        "field": "authors",
+        "kind": "name",
+        "weight": 2.0
+      },
+      {
+        "field": "year",
+        "kind": "date",
+        "weight": 0.5,
+        "refutes_below": 0.99
+      }
+    ],
+    "entity": null,
+    "candidate_pairs": 6090,
+    "engine_monitor_applicable": false,
+    "engine_monitor_note": "publications have no entity pack, so the engine monitor cannot speak to this dataset; it is the baseline column that matters here"
+  },
+  "calibration": {
+    "fitted_on": 1882,
+    "steps": 1343,
+    "digest": "3d2c243e92ad1f77",
+    "split": "disjoint by left-hand record id"
+  },
+  "band": "review",
+  "band_pairs": 1878,
+  "band_true_pairs": 4,
+  "false_merge_budget": 0.02,
+  "scorers": [
+    {
+      "scorer": "engine (baseline)",
+      "n": 1878,
+      "degenerate": false,
+      "auroc": 0.8856056563500534,
+      "bins": [
+        {
+          "from": 0.0,
+          "to": 0.1,
+          "n": 0
+        },
+        {
+          "from": 0.1,
+          "to": 0.2,
+          "n": 0
+        },
+        {
+          "from": 0.2,
+          "to": 0.3,
+          "n": 0
+        },
+        {
+          "from": 0.3,
+          "to": 0.4,
+          "n": 0
+        },
+        {
+          "from": 0.4,
+          "to": 0.5,
+          "n": 0
+        },
+        {
+          "from": 0.5,
+          "to": 0.6,
+          "n": 1380,
+          "mean_score": 0.5677,
+          "observed_rate": 0.0
+        },
+        {
+          "from": 0.6,
+          "to": 0.7,
+          "n": 357,
+          "mean_score": 0.6354,
+          "observed_rate": 0.0112
+        },
+        {
+          "from": 0.7,
+          "to": 0.8,
+          "n": 24,
+          "mean_score": 0.7533,
+          "observed_rate": 0.0
+        },
+        {
+          "from": 0.8,
+          "to": 0.9,
+          "n": 86,
+          "mean_score": 0.8392,
+          "observed_rate": 0.0
+        },
+        {
+          "from": 0.9,
+          "to": 1.0,
+          "n": 31,
+          "mean_score": 0.931,
+          "observed_rate": 0.0
+        }
+      ],
+      "expected_calibration_error": 0.5993,
+      "queue_reduction": {
+        "measurable": true,
+        "queue": 1878,
+        "true_pairs_in_band": 4,
+        "budget": 0.02,
+        "false_merges_allowed": 37,
+        "false_rejects_allowed": 0,
+        "cleared": 1623,
+        "cleared_fraction": 0.8642,
+        "merge_at": 0.897,
+        "reject_at": 0.633,
+        "false_merges": 37,
+        "true_merges": 0,
+        "false_rejects": 0
+      },
+      "promise": {
+        "measurable": true,
+        "max_probability": 0.9333,
+        "reachable_rates": [
+          0.1,
+          0.25,
+          0.5
+        ],
+        "at": [
+          {
+            "measurable": true,
+            "promised_error": 0.1,
+            "threshold": 0.9,
+            "merged": 31,
+            "false_merges": 31,
+            "actual_error": 1.0,
+            "overshoot": 10.0
+          },
+          {
+            "measurable": true,
+            "promised_error": 0.25,
+            "threshold": 0.75,
+            "merged": 129,
+            "false_merges": 129,
+            "actual_error": 1.0,
+            "overshoot": 4.0
+          },
+          {
+            "measurable": true,
+            "promised_error": 0.5,
+            "threshold": 0.5,
+            "merged": 1878,
+            "false_merges": 1874,
+            "actual_error": 0.9979,
+            "overshoot": 2.0
+          }
+        ],
+        "why": null
+      }
+    },
+    {
+      "scorer": "engine, calibrated",
+      "n": 1878,
+      "degenerate": false,
+      "auroc": 0.8604589114194237,
+      "bins": [
+        {
+          "from": 0.0,
+          "to": 0.1,
+          "n": 1878,
+          "mean_score": 0.0023,
+          "observed_rate": 0.0021
+        },
+        {
+          "from": 0.1,
+          "to": 0.2,
+          "n": 0
+        },
+        {
+          "from": 0.2,
+          "to": 0.3,
+          "n": 0
+        },
+        {
+          "from": 0.3,
+          "to": 0.4,
+          "n": 0
+        },
+        {
+          "from": 0.4,
+          "to": 0.5,
+          "n": 0
+        },
+        {
+          "from": 0.5,
+          "to": 0.6,
+          "n": 0
+        },
+        {
+          "from": 0.6,
+          "to": 0.7,
+          "n": 0
+        },
+        {
+          "from": 0.7,
+          "to": 0.8,
+          "n": 0
+        },
+        {
+          "from": 0.8,
+          "to": 0.9,
+          "n": 0
+        },
+        {
+          "from": 0.9,
+          "to": 1.0,
+          "n": 0
+        }
+      ],
+      "expected_calibration_error": 0.0001,
+      "queue_reduction": {
+        "measurable": true,
+        "queue": 1878,
+        "true_pairs_in_band": 4,
+        "budget": 0.02,
+        "false_merges_allowed": 37,
+        "false_rejects_allowed": 0,
+        "cleared": 1344,
+        "cleared_fraction": 0.7157,
+        "merge_at": 0.013,
+        "reject_at": 0.003,
+        "false_merges": 0,
+        "true_merges": 0,
+        "false_rejects": 0
+      },
+      "promise": {
+        "measurable": false,
+        "max_probability": 0.0129,
+        "reachable_rates": [],
+        "at": [],
+        "why": "the highest probability in this band is 0.0129, so no promised error rate at or below 50% selects anything: the band does not contain enough true pairs to merge out of"
+      }
+    }
+  ],
+  "seconds": 235.5
+}

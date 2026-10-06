@@ -130,11 +130,26 @@ data/confidential/
 
 # A local revealed review pack may be opened by arche studio, but it must never
 # be staged with the example packs that live under data/review_packs/.
+#
+# It must also never be *shown* beside them. `data/review_packs/` is the
+# directory the studio reads by default and the one the guide tells a reader to
+# pass, so a revealed pack sitting there is rendered to whoever is watching the
+# screen -- which is how a customer pilot carrying live addresses ends up in a
+# demo. Ignoring it keeps it out of git and does nothing about that. So revealed
+# packs live in their own directory, opened explicitly with
+# `arche studio --packs data/private_packs`, and the default directory holds
+# only packs that are safe to project.
+data/private_packs/
 data/review_packs/confidential/
 data/review_packs/confidential_*/
 
 # arche studio writes a labelled copy beside the pack it reviewed.
 data/review_packs/**/*_reviewed.csv
+
+# And a masked copy, in its own directory, which this rule used to miss: saving
+# a review produced two artefacts and only one of them was ignored. Masked is
+# not the same as publishable, and both are generated output in any case.
+data/review_packs/**/*_shared/
 
 # arche studio's private state directory: adjudication database, signing key and
 # hash key. None of it is ever committed.

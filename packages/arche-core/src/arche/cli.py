@@ -972,6 +972,34 @@ def _cmd_review_verify(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def _cmd_review_verify_decisions(args: argparse.Namespace) -> int:
+    """Can a stranger check these decisions with only this file?"""
+    from arche.review import verify_decision_ids
+
+    report = verify_decision_ids(args.pack)
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print(f"rows              {report['rows']}")
+        print(f"pins_present      {report['pins_present']}")
+        print(f"checked           {report['checked']}")
+        print(f"matched           {report['matched']}")
+        if report["mismatched"]:
+            print(f"mismatched        {len(report['mismatched'])}")
+            for bad in report["mismatched"][:5]:
+                print(f"  row {bad['row']}: states {bad['stated'][:28]}... "
+                      f"recomputes {bad['recomputed'][:28]}...")
+        if report["unreproducible"]:
+            print(f"unreproducible    {len(report['unreproducible'])}")
+            for bad in report["unreproducible"][:5]:
+                print(f"  row {bad['row']}: {bad['why']}")
+        for problem in report["problems"]:
+            print(f"  [{problem['severity']}] {problem['code']}: "
+                  f"{problem['detail']}")
+        print("OK" if report["ok"] else "NOT OK")
+    return 0 if report["ok"] else 1
+
+
 def _cmd_attest_keygen(args: argparse.Namespace) -> int:
     """One key for this installation, kept. Prints the did:key to publish."""
     from arche.sign import generate_keypair, save_private_key
@@ -1358,6 +1386,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     rvf.add_argument("--json", action="store_true", help="machine-readable report")
     rvf.set_defaults(func=_cmd_review_verify)
+
+    rvd = rev_sub.add_parser(
+        "verify-decisions",
+        help="recompute every decision id in a pack from the pack alone",
+        description=(
+            "Recompute each decision id from the pack and the pins in its "
+            "manifest. Needs no source records, no network and no access to "
+            "whoever produced the pack: if the ids agree, the producer "
+            "cannot have reached those verdicts from different evidence or "
+            "under different software than the manifest declares. It does "
+            "not check that the evidence was computed correctly from the "
+            "source records, because that needs the records."
+        ),
+    )
+    rvd.add_argument("pack", help="the pack, or the directory holding it")
+    rvd.add_argument("--json", action="store_true",
+                     help="machine-readable report")
+    rvd.set_defaults(func=_cmd_review_verify_decisions)
 
     sch_p = sub.add_parser(
         "schema",

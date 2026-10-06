@@ -2,7 +2,7 @@
 """False merges on Nigerian school names, measured without pair labels.
 
     python data/scripts/evaluate_nigeria_school_reconciliation.py --false-merges \
-        --csv "C:/Users/Dee/Downloads/Schools_in_Nigeria_524370204688734996.csv"
+        --csv path/to/Schools_in_Nigeria.csv
 
 Why this can be measured at all
 --------------------------------
