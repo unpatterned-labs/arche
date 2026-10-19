@@ -1,0 +1,75 @@
+# legal_form_compat.yaml — how two legal forms relate, for the `legal_form`
+# comparator.
+#
+# What it is: the forms themselves live in type_tokens.yaml (`organization`
+# entries flagged `legal_form: true`). This file says what it means when two
+# records carry different ones. Data, not code: adding a relation is an edit
+# here.
+#
+# Values are comparator similarities in [0.0, 1.0]. The organisation pack
+# declares the comparator with `refutes_below: 0.6`, so anything below that
+# demotes a pair to `review` (never to `no_match`) unless an identifier agrees
+# exactly — a Ltd re-registered as a PLC keeps its company number.
+#
+# A form missing on either side is NOT listed: it is neutral (the comparator
+# returns None and is dropped from the mean). UK s60 lets many companies omit
+# "Limited", so an absent form is missing evidence, never disagreement.
+
+# Both sides carry the same form ("Ltd" and "Limited" are one form). Agreement is
+# NOT evidence of identity: nearly every UK company is a Ltd, so a shared form says
+# nothing about *which* one. `null` makes the comparator neutral (dropped from the
+# mean) on agreement; it only ever refutes. Measured: scoring agreement as 1.0
+# lifted distinct pairs such as WEAVER TRUST LIMITED / WEAVER TRANSPORT LIMITED
+# from 0.672 (review) to 0.708 (match) on the GIAS→Companies House benchmark.
+same: null
+
+# Two different recognised forms with no relation listed below. Different
+# forms are different legal persons unless a relation says otherwise.
+default: 0.0
+
+relations:
+  # One company can move between these by re-registration and keep its
+  # registered number (GB Companies Act 2006 ss90-111; CIC conversion), so a
+  # disagreement is plausible history rather than two entities. Soft: still
+  # below refutes_below, so a human looks unless an id agrees.
+  convertible:
+    value: 0.5
+    pairs:
+      - [LTD, PLC]
+      - [LTD, CIC]
+      - [LTD, UNLIMITED]
+  # "Limited" is the suffix a company limited by guarantee also uses, so a
+  # record saying only "Ltd" is consistent with one saying "Ltd/Gte".
+  compatible:
+    value: null  # consistent forms: neutral, like `same`
+    pairs:
+      - [LTD, LTD_GTE]
+  # Different kinds of legal person: a partnership is never a company. Listed
+  # explicitly even where `default` would give the same answer, so the
+  # relation is a stated fact rather than an accident of the default.
+  incompatible:
+    value: 0.0
+    pairs:
+      - [LTD, LLP]
+      - [LTD, LP]
+      - [PLC, LLP]
+      - [PLC, LP]
+      - [LLP, LP]
+
+# Business-name markers. Not legal forms: a registered business name (NG "BN")
+# is not a company (NG "RC"), so a marker against any legal form scores
+# `business_name_vs_form`. Read only when a name carries no legal form —
+# "Acme Enterprises Ltd" is a company. Matched case-insensitively on word
+# boundaries, like type_tokens.yaml synonyms. These are NOT stripped before
+# name comparison by this list; only the existing ENTERPRISE vocabulary entry
+# strips (enterprises / enterprise / ventures), as it always has.
+business_name_markers:
+  - enterprises
+  - enterprise
+  - ventures
+  - stores
+  - global concepts
+  - global concept
+  - and sons
+  - "& sons"
+business_name_vs_form: 0.0

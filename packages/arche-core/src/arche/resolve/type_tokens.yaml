@@ -67,14 +67,75 @@ health_facility:
       - patent medicine
 
 organization:
+  # --- Legal forms ---------------------------------------------------------
+  # `legal_form: true` marks an entry the `legal_form` comparator reads (see
+  # legal_form_compat.yaml for how two forms relate). Each form is its own
+  # entry because a form is a discriminator: `plc` was once a synonym of
+  # `LTD`, so "Zenith Bank Plc" and "Zenith Bank Limited" were one name.
+  # Stripping is unchanged — every entry is still removed before the name is
+  # compared; the form is then compared on its own.
+  #
+  # `elf_code` (ISO 20275) is added only where the code is known for certain;
+  # none is yet, so none is given. Do not guess one.
   LTD:
-    description: Limited liability company (Anglophone).
+    description: Private company limited by shares (Anglophone).
+    legal_form: true
     synonyms:
       - limited
       - ltd
+  PLC:
+    description: Public limited company (GB, NG and other Anglophone registries).
+    legal_form: true
+    synonyms:
+      - public limited company
       - plc
+  LLP:
+    description: Limited liability partnership — a partnership, never a company.
+    legal_form: true
+    synonyms:
+      - limited liability partnership
+      - llp
+  LP:
+    description: Limited partnership.
+    legal_form: true
+    synonyms:
+      - limited partnership
+      - lp
+  CIC:
+    description: Community interest company (GB).
+    legal_form: true
+    synonyms:
+      - community interest company
+      - cic
+  CIO:
+    description: Charitable incorporated organisation (GB).
+    legal_form: true
+    synonyms:
+      - charitable incorporated organisation
+      - charitable incorporated organization
+      - cio
+  UNLIMITED:
+    description: Unlimited company (GB).
+    legal_form: true
+    synonyms:
+      - unlimited company
+      - unlimited
+  LTD_GTE:
+    description: Company limited by guarantee (NG writes "Ltd/Gte").
+    legal_form: true
+    synonyms:
+      - limited by guarantee
+      - ltd by guarantee
+      - ltd/gte
+      - ltd gte
+  INC_TRUSTEES:
+    description: Incorporated trustees (NG, CAMA Part F) — a body of trustees, not a company.
+    legal_form: true
+    synonyms:
+      - incorporated trustees
   SARL:
     description: Société à responsabilité limitée (Francophone West/Central Africa).
+    legal_form: true
     synonyms:
       - sarl
   COOPERATIVE:
@@ -157,6 +218,10 @@ organization:
       - producers association
       - farmers association
       - association
+  # Not a legal form: a business-name marker. Stripped for name comparison as
+  # it always has been; the `legal_form` comparator reads its own marker list
+  # (legal_form_compat.yaml `business_name_markers`) to tell a business name
+  # from a company, so this entry carries no `legal_form` flag.
   ENTERPRISE:
     description: Enterprise / ventures / trading — the most common informal African business suffix, and frequently a sole trader (see the personal-data boundary).
     synonyms:
@@ -168,22 +233,26 @@ organization:
   # on the same footing as the African ones they are being joined to.
   BV:
     description: Besloten vennootschap (Netherlands) — common for EU cocoa and coffee importers.
+    legal_form: true
     synonyms:
       - besloten vennootschap
       - b.v.
       - bv
   GMBH:
     description: Gesellschaft mit beschränkter Haftung (Germany/Austria).
+    legal_form: true
     synonyms:
       - gmbh
   PTY:
     description: Proprietary limited (South Africa, Australia).
+    legal_form: true
     synonyms:
       - proprietary limited
       - pty ltd
       - pty
   SA_CORP:
     description: Société anonyme / sociedade anónima — Francophone and Lusophone public company.
+    legal_form: true
     synonyms:
       - societe anonyme
       - société anonyme

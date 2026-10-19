@@ -101,3 +101,33 @@ class TestWhereItFeeds:
             cwd=tmp_path, check=False, capture_output=True, text=True,
         )
         assert result.returncode == 0, result.stderr
+
+    def test_a_datasets_dir_under_the_cwd_does_not_change_what_loads(self, tmp_path):
+        """G-A7: a `datasets/` under the working directory was searched before
+        the checkout's own, so a stray copy there changed every name decision.
+        The decoy below declares Adaeze == Zzyzx; it must not be loaded."""
+        import os
+
+        decoy = tmp_path / "datasets" / "name_equivalences"
+        decoy.mkdir(parents=True)
+        (decoy / "decoy.yaml").write_text(
+            "groups:\n  - canonical: Adaeze\n    variants: [Zzyzx]\n",
+            encoding="utf-8",
+        )
+        code = (
+            "from arche.detect._names import lexicon as L; "
+            "print(L._find_dataset_dir(), L._find_lexicon_path(), "
+            "len(L.NAME_EQUIVALENCES), 'zzyzx' in L.NAME_EQUIVALENCES)"
+        )
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("ARCHE_DATASET_DIR", "ARCHE_LEXICON_PATH")}
+        outputs = [
+            subprocess.run(
+                [sys.executable, "-c", code], cwd=cwd, env=env,
+                check=True, capture_output=True, text=True,
+            ).stdout
+            for cwd in (tmp_path, tmp_path / "datasets")
+        ]
+        assert outputs[0] == outputs[1]
+        assert "False" in outputs[0]
+        assert str(tmp_path) not in outputs[0]

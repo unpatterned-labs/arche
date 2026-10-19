@@ -70,8 +70,30 @@ FROZEN_PAYLOAD = {
 
 #: One organisation pair carrying name + address + registration id, so the
 #: frozen edge covers a receipt with several evidence keys rather than one.
+#: Re-frozen when the organisation pack gained its `legal_form` comparator
+#: (G-A1): this pair's evidence is unchanged (only one side states a form), but
+#: the pack is hashed into `comparators_sha256`, so the edge id moves with it.
+#: Old id: xwd:sha256:b68efe9b29445d67056dbcc7222694f41a4c318447824866ab27806e065ee878
+#: Re-frozen again on 2026-10-18, when the pins stopped under-reporting what
+#: a decision was scored with. Two changes, both of which move every edge id:
+#:
+#:   * the shipped assets that reach a comparator gained pins of their own
+#:     (`data_assets`: the type-token vocabulary and the legal-form relation
+#:     table). Measured before the fix -- editing the relation table moved a
+#:     pair from `review` (0.9444) to `match` (0.9989) while the pins stayed
+#:     BYTE-IDENTICAL, so two runs that disagreed on a verdict could not be
+#:     told apart by their configuration;
+#:   * the shipped frequency tables that declared no `version` now derive one
+#:     from their content, so `shipped:organisation` became
+#:     `shipped:organisation@sha256:...`. A token table is a blocking key as
+#:     well as a comparator input, so a rebuild changes which pairs are even
+#:     proposed; the bare label could not see that.
+#:
+#: Moving the id is the correct outcome of pinning more of the truth, and
+#: noticing it is this fixture's job.
+#: Old id: xwd:sha256:bed6b710fe5707907d8f5dcab596a838237ec714228adbff2ea54a8f738485ec
 FROZEN_CROSSWALK_ID = (
-    "xwd:sha256:b68efe9b29445d67056dbcc7222694f41a4c318447824866ab27806e065ee878"
+    "xwd:sha256:afc88c8aa2e0fd492292cace4c8054f02493f696a2e8785b93eecb9a6af3da73"
 )
 
 _ORG_A = {

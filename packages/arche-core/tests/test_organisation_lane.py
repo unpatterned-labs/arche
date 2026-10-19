@@ -333,3 +333,120 @@ class TestWhatShouldStillMatch:
         a = {"id": "a", "name": "Asunafo Cooperative", "entity_class": "COOPERATIVE"}
         b = {"id": "b", "name": "Gicherori Cooperative", "entity_class": "COOPERATIVE"}
         assert _verdict(a, b) != "match"
+
+
+class TestLegalFormDiscriminates:
+    """G-A1: the form is stripped from the name and then compared on its own.
+
+    `plc` used to be a synonym of `LTD` and `llp` was not in the vocabulary, so
+    a public company merged with a private one at 1.0 and a company with a
+    partnership at 0.816.
+    """
+
+    @staticmethod
+    def _compare(a: str, b: str, **extra):
+        from arche import compare
+
+        return compare(dict(name=a, **extra), dict(name=b, **extra),
+                       entity="organisation")
+
+    def test_plc_and_limited_go_to_review(self):
+        r = self._compare("Zenith Bank Plc", "Zenith Bank Limited")
+        assert r.identity == "review"
+        assert r.factors["name_legal_form"] == 0.5
+
+    def test_a_company_is_not_a_partnership(self):
+        r = self._compare("Northgate Trading Ltd", "Northgate Trading LLP")
+        assert r.identity == "review"
+        assert r.factors["name_legal_form"] == 0.0
+
+    def test_a_missing_form_is_neutral(self):
+        r = self._compare("ST BENEDICT CATHOLIC ACADEMY TRUST",
+                          "St Benedict Catholic Academy Trust Limited")
+        assert r.identity == "same_entity"
+        assert "name_legal_form" not in r.factors
+
+    def test_the_same_form_written_two_ways_still_merges(self):
+        r = self._compare("Dangote Cement Plc", "DANGOTE CEMENT PLC.")
+        assert r.identity == "same_entity"
+        # Agreement is neutral: a shared form is shared by most of the register.
+        assert "name_legal_form" not in r.factors
+
+    def test_agreeing_forms_do_not_lift_distinct_names(self):
+        # GIAS→Companies House regression: agreement once scored 1.0 and pushed
+        # this distinct pair from review (0.672) over the match threshold (0.708).
+        r = self._compare("WEAVER TRUST LIMITED", "WEAVER TRANSPORT LIMITED")
+        assert r.identity != "same_entity"
+        assert "name_legal_form" not in r.factors
+
+    def test_a_business_name_is_not_a_company(self):
+        r = self._compare("Mama Ngozi Enterprises", "Mama Ngozi Ltd")
+        assert r.identity == "review"
+
+    def test_an_agreeing_registration_number_outranks_the_form(self):
+        """A Ltd re-registered as a PLC keeps its company number."""
+        res = _link(
+            [{"id": "a", "name": "Zenith Bank Plc", "registration_id": "RC6990"}],
+            [{"id": "b", "name": "Zenith Bank Limited", "registration_id": "RC6990"}],
+        )
+        edge = res["matches"][0]
+        assert edge["decision"] == "match"
+        assert edge["evidence"]["name_legal_form_conflict"] == 0.5
+        # The marker is numeric, not the field name. Evidence is hashed
+        # into `decision_id` and `share_artifact` masks every string
+        # inside it, so a field name here would cost an organisation pack
+        # its verifiability the moment it was shared. Which identifier
+        # agreed is recoverable: it is the `id` comparator scoring 1.0.
+        assert edge["evidence"]["legal_form_conflict_yielded"] == 1.0
+        assert edge["evidence"]["registration_id"] == 1.0
+
+    def test_a_differing_registration_number_does_not_rescue_it(self):
+        res = _link(
+            [{"id": "a", "name": "Zenith Bank Plc", "registration_id": "RC6990"}],
+            [{"id": "b", "name": "Zenith Bank Limited", "registration_id": "RC1234"}],
+        )
+        assert all(m["decision"] != "match" for m in res["matches"])
+
+    def test_the_forms_are_not_named_in_the_evidence(self):
+        """`form_a` / `form_b` were removed on 2026-10-18.
+
+        They carried the forms verbatim so a reviewer could see that one
+        side said Plc and the other Limited. But evidence is hashed into
+        `decision_id`, and `share_artifact` replaces every string value
+        inside it, so any organisation pack carrying a legal form became
+        unverifiable the moment it was shared. The forms are recoverable
+        from the two names, which a working pack shows in full, and a
+        masked pack is not adjudicated.
+        """
+        edge = _link([{"id": "a", "name": "Zenith Bank Plc"}],
+                     [{"id": "b", "name": "Zenith Bank Limited"}])["matches"][0]
+        evidence = edge["evidence"]
+        assert "form_a" not in evidence and "form_b" not in evidence
+        assert not [k for k, v in evidence.items() if isinstance(v, str)], (
+            "no evidence value may be a string; see test_pin_completeness.py")
+        # The signal survives the labels going away.
+        assert evidence["name_legal_form"] < 1.0
+
+    @pytest.mark.parametrize("name,form", [
+        ("Acme Limited", "LTD"),
+        ("Acme Ltd", "LTD"),
+        ("Acme Public Limited Company", "PLC"),
+        ("Acme Limited Liability Partnership", "LLP"),
+        ("Acme Limited Partnership", "LP"),
+        ("Acme CIC", "CIC"),
+        ("Acme Ltd/Gte", "LTD_GTE"),
+        ("The Incorporated Trustees of Grace Chapel", "INC_TRUSTEES"),
+        ("Acme Unlimited", "UNLIMITED"),
+        ("Okafor Global Concepts", "BUSINESS_NAME"),
+        ("Okafor & Sons", "BUSINESS_NAME"),
+        ("Okafor Enterprises Ltd", "LTD"),
+        ("Kuapa Kokoo Farmers Union", None),
+    ])
+    def test_extraction(self, name, form):
+        from arche.resolve._legal_form import extract_legal_form
+
+        assert extract_legal_form(name) == form
+
+    def test_the_kind_is_registered_and_not_distinctive(self):
+        assert "legal_form" in _FIELD_COMPARATORS
+        assert "legal_form" not in _DISTINCTIVE_KINDS

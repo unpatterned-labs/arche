@@ -184,3 +184,7 @@ examples/identity_graph.html
 
 # Fetched by datasets/english_dataops/build_english_frequencies.py on first run.
 datasets/english_dataops/gutenberg_cache/
+
+
+data/2022-Basic-Education-School-List.xlsx
+data/extract.zip

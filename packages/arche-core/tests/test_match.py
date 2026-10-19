@@ -425,7 +425,8 @@ class TestLoadTypeVocab:
     def test_second_domain_organization(self):
         v = load_type_vocab("organization")
         assert normalize_type_token("Kaduna Cocoa Cooperative Society", v)[0] == "COOPERATIVE"
-        assert normalize_type_token("Dangote Cement PLC", v)[0] == "LTD"
+        # PLC is its own form, no longer a synonym of LTD (G-A1).
+        assert normalize_type_token("Dangote Cement PLC", v)[0] == "PLC"
 
     def test_unknown_domain_returns_empty(self):
         assert load_type_vocab("does_not_exist") == {}

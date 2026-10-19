@@ -1,0 +1,107 @@
+# Copyright 2026 unpatterned.org
+# SPDX-License-Identifier: Apache-2.0
+#
+# document_address_roles.yaml — cues that assign a BUSINESS ROLE to an address
+# printed on a document (invoice, credit note, remittance advice, purchase
+# order, supplier onboarding form, letterhead).
+#
+# The document analogue of place_roles.yaml. A spatial role says what a place
+# does in a journey; a document role says what an address is FOR on a
+# document: where the company is registered, who issued the invoice, where
+# the money goes, who is billed, where the goods go, where the business trades.
+#
+# Why roles matter for resolution: a registered office is not a trading site
+# (Renyi V04/V07), and a remit-to address is often a bank, a factor or a
+# shared-services centre. Merging a supplier on the wrong address role is a
+# false merge; paying to an address that only APPEARS on an invoice is fraud
+# exposure. So the extractor abstains (`unknown`) unless a cue decides.
+#
+# Data, not code. Every extraction names the rule id and this pack's pin.
+#
+# Rule fields
+#   id         unique rule id, cited on every mention it decides
+#   role       one of: registered_office, invoice_from, remit_to, bill_to,
+#              ship_to, trading_address
+#   cues       lowercase phrases, matched case-insensitively on word boundaries
+#   label_only true: the cue counts only as a FIELD LABEL — at the start of a
+#              line (after optional bullets) and followed by ":" or a line
+#              end. For words that are ordinary prose elsewhere ("from",
+#              "to", "supplier", "customer").
+#   priority   higher wins when two cues bind one address; a tie between two
+#              different roles is a conflict, and a conflict abstains.
+
+pack: arche.document_address_roles
+version: v1
+description: >
+  Cue vocabulary for labelling the role an address plays on a business
+  document: registered_office / invoice_from / remit_to / bill_to / ship_to /
+  trading_address, with structural abstention (no cue, or conflicting cues,
+  means role=unknown, never a guess).
+
+# How far a cue may sit before the address it labels: characters, and line
+# breaks (a label line, then a party-name line, then the address).
+max_gap: 120
+max_gap_lines: 3
+
+rules:
+  # ── registered office (the statutory address on the register) ──────────
+  - id: registered_office
+    role: registered_office
+    cues: ["registered office", "registered office address", "registered address",
+           "reg. office", "regd. office", "regd office", "registered in england and wales at",
+           "registered in scotland at", "registered office is at",
+           "registered office situated at", "registered with companies house at"]
+    priority: 50
+
+  # ── invoice from (issuer / seller / supplier address) ───────────────────
+  - id: invoice_from_label
+    role: invoice_from
+    cues: ["from", "seller", "supplier", "vendor", "issued by", "invoice from",
+           "supplier address", "vendor address", "seller address", "sold by",
+           "billed by", "issuer"]
+    label_only: true
+    priority: 50
+  - id: invoice_from_prose
+    role: invoice_from
+    cues: ["invoice from", "issued by", "supplied by", "sold by"]
+    priority: 50
+
+  # ── remit to (payment / remittance address) ─────────────────────────────
+  - id: remit_to
+    role: remit_to
+    cues: ["remit to", "remittance address", "remit payment to", "remit payments to",
+           "please remit to", "please remit payment to", "send payment to",
+           "send payments to", "make cheques payable to", "cheques payable to",
+           "payment address", "pay to", "remittance to", "mail payment to",
+           "post cheques to", "send remittance advice to"]
+    priority: 50
+
+  # ── bill to (the invoiced party) ────────────────────────────────────────
+  - id: bill_to_label
+    role: bill_to
+    cues: ["bill to", "billed to", "invoice to", "invoiced to", "billing address",
+           "customer", "customer address", "sold to", "to", "buyer", "invoice address",
+           "charge to"]
+    label_only: true
+    priority: 50
+  - id: bill_to_prose
+    role: bill_to
+    cues: ["bill to", "billed to", "invoice to", "invoiced to", "billing address"]
+    priority: 50
+
+  # ── ship to / deliver to ────────────────────────────────────────────────
+  - id: ship_to
+    role: ship_to
+    cues: ["ship to", "shipped to", "shipping address", "deliver to", "delivered to",
+           "delivery address", "delivery to", "deliver goods to", "consignee",
+           "goods to be delivered to", "delivery point", "dispatch to", "despatch to",
+           "delivery location"]
+    priority: 50
+
+  # ── trading address (where the business operates) ───────────────────────
+  - id: trading_address
+    role: trading_address
+    cues: ["trading address", "principal place of business", "place of business",
+           "business address", "operating address", "trading from", "trades from",
+           "premises address", "site address", "branch address"]
+    priority: 50

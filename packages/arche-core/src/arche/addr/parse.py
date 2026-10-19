@@ -238,6 +238,28 @@ _POSTAL_PARTIAL_PATTERNS = {
     "GB": re.compile(r"\b([A-Z]{1,2}\d[A-Z\d]?)\b(?!\s*\d[A-Z]{2})"),
 }
 
+# A full GB postcode as it appears inside an address tail: the Royal Mail
+# shape plus the one non-geographic code (GIR 0AA), with or without the space,
+# in either case. Case-insensitivity is scoped to the postcode itself so the
+# tail's [A-Z] classes stay case-sensitive. Normalised by
+# :func:`normalise_gb_postcode`.
+_GB_POSTCODE = r"(?i:GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})"
+_GB_POSTCODE_FULL_RE = re.compile(r"^" + _GB_POSTCODE + r"$")
+_GB_POSTCODE_SUFFIX_RE = re.compile(r"^(?P<head>.*?)\s+(?P<pc>" + _GB_POSTCODE + r")$")
+
+
+def normalise_gb_postcode(s: str) -> str | None:
+    """``"nw16xe"`` -> ``"NW1 6XE"``; ``None`` when ``s`` is not a full GB postcode.
+
+    The inward code is always the last three characters, so the canonical
+    form is the compacted, upper-cased string with one space before them.
+    """
+    compact = re.sub(r"\s+", "", s or "").upper()
+    if not _GB_POSTCODE_FULL_RE.match(compact):
+        return None
+    return compact[:-3] + " " + compact[-3:]
+
+
 # The headline address-span regex.  Greedy across the typical
 # "[plot,] [number] street_name, ..." structure.  Both ``plot`` and
 # ``number`` are independently optional so the regex doesn't define
@@ -254,6 +276,17 @@ _POSTAL_PARTIAL_PATTERNS = {
 # neighborhood, city, region, country (postal can replace any slot).
 _TAIL_SEGMENT = (
     r"(?:"
+    # A town with its GB postcode and no comma between ("London NW1 6XE").
+    # Tried FIRST and with lazy follow-on words, because the plain phrase
+    # branch below would otherwise take "London NW1" (an outward code reads as
+    # a capitalised word) and leave "6XE" behind, so the postcode was lost and
+    # the city came back as "London NW1".
+    r"[A-Z][\w'\-]{1,25}"
+    r"(?:\s+(?:[A-Z][\w'\-]{1,25}|es|of|the)){0,3}?"
+    r"\s+" + _GB_POSTCODE + r"\b"
+    r"|"
+    + _GB_POSTCODE + r"\b"                             # a GB postcode on its own
+    r"|"
     r"[A-Z][\w'\-]{1,25}"                           # 1st capitalized word
     r"(?:\s+(?:[A-Z][\w'\-]{1,25}|es|of|the)){0,3}" # 0-3 follow-on words
     r"|"
@@ -511,8 +544,26 @@ def _parse_tail(tail: str, components: AddressComponents) -> None:
         components.country = _country_to_iso(parts[-1]) or parts[-1]
         parts = parts[:-1]
 
+    # A GB postcode, alone in its part or trailing a town ("London NW1 6XE").
+    # Checked before the generic digit shapes, and normalised ("nw16xe" ->
+    # "NW1 6XE"). A town in front of it stays a part of its own, so the city
+    # reads "London" rather than "London NW1".
+    for i, part in enumerate(parts):
+        whole = normalise_gb_postcode(part)
+        if whole is not None:
+            components.postal_code = whole
+            parts.pop(i)
+            break
+        m = _GB_POSTCODE_SUFFIX_RE.match(part)
+        if m is not None:
+            components.postal_code = normalise_gb_postcode(m.group("pc"))
+            parts[i] = m.group("head").strip()
+            break
+
     # Detect postal code in the tail
     for i, part in enumerate(parts):
+        if components.postal_code is not None:
+            break
         if _looks_like_postal_code(part):
             components.postal_code = part
             parts.pop(i)
@@ -643,7 +694,7 @@ def _infer_country(components: AddressComponents, full_text: str) -> tuple[str |
             return "ZA", 0.65
         if re.fullmatch(r"[A-Z]{2}-\d{3}-\d{4}", components.postal_code):
             return "GH", 0.95  # Ghana GhanaPost GPS has very specific format
-        if re.fullmatch(r"[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}", components.postal_code):
+        if normalise_gb_postcode(components.postal_code) is not None:
             return "GB", 0.95  # UK postcode is very specific
 
     return None, 0.0
@@ -806,6 +857,7 @@ def _clean(s: str | None) -> str | None:
 __all__ = [
     "Address",
     "AddressComponents",
+    "normalise_gb_postcode",
     "parse_address",
     "parse_addresses",
 ]

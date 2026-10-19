@@ -55,6 +55,7 @@ from arche.resolve._gate import (
     name_tokens,
     shared_name_distinctiveness,
 )
+from arche.resolve._legal_form import compare_legal_form_names
 from arche.resolve._matcher import (
     BOUNDARY_UNCERTAINTY_KM,
     POSTCODE_BOUNDARY_UNCERTAINTY_KM,
@@ -105,7 +106,26 @@ _FIELD_COMPARATORS = {
     # both a SITE is not evidence they are the same site. Intended as a
     # weight-0 `refutes_below` discriminator.
     "category": compare_categories,
+    # Legal form read from a name ("Plc" vs "Limited" vs "LLP"), related by
+    # `legal_form_compat.yaml`. None when either side declares no form. Not
+    # distinctive: sharing "Ltd" is not evidence of being the same company.
+    # Declare it WITHOUT `strip_type` -- the form is what it reads.
+    "legal_form": compare_legal_form_names,
 }
+
+# Kinds `_field_sim` handles in its own branches rather than through
+# `_FIELD_COMPARATORS`. Together they are every kind that means something; any
+# other kind is a typo and raises rather than being skipped as "inapplicable".
+_STRUCTURAL_KINDS = frozenset({
+    "geo", "containment", "postcode", "date", "type", "code", "spec",
+    "premises", "tokenset", "rival", "tftoken",
+})
+
+
+def _unknown_kind_message(kind: Any) -> str:
+    known = sorted(_STRUCTURAL_KINDS | set(_FIELD_COMPARATORS))
+    return (f"unknown comparator kind {kind!r}; known kinds: "
+            f"{', '.join(known)}")
 
 # Comparator kinds whose fields carry free text worth reranking on (also the
 # fields rare-token union blocking keys on).
@@ -164,6 +184,36 @@ def _text_values(
         a_val = _strip_type_cached(a_val, str(domain))
         b_val = _strip_type_cached(b_val, str(domain))
     return a_val, b_val
+
+
+def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
+    """Digest the shipped data assets these comparators actually read.
+
+    The same discipline `code_tf` follows below, applied to the two assets that
+    did not have it. Scoped to what is used rather than digesting whole files,
+    so that editing the health-facility vocabulary does not change the pin of
+    an organisation run that never read it -- a pin that moves for unrelated
+    reasons teaches people to ignore it.
+    """
+    from arche.ids import content_hash
+
+    out: dict[str, str] = {}
+    domains = sorted({
+        str(spec[key])
+        for spec in comparators
+        for key in ("strip_type", "domain")
+        if spec.get(key)
+    })
+    for domain in domains:
+        vocab = load_type_vocab(domain)
+        if vocab:
+            digest = content_hash(sorted(vocab.items()), prefix="tt")
+            out[f"type_tokens:{domain}"] = digest.split(":")[-1][:16]
+    if any(spec.get("kind") == "legal_form" for spec in comparators):
+        from arche.resolve._legal_form import pin as _legal_form_pin
+
+        out["legal_form"] = _legal_form_pin()
+    return out
 
 
 @lru_cache(maxsize=65536)
@@ -376,11 +426,14 @@ def _field_sim(
         # and therefore every number a pack has published.
         return tf.weighted_token_sim(
             a_val, b_val, orthography=spec.get("orthography"))
-    field = spec["field"]
-    if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
-        return None
     fn = _FIELD_COMPARATORS.get(kind)
     if fn is None:
+        # An unknown kind used to return None here, which reads as "nothing to
+        # say about this pair" -- so a misspelt comparator silently contributed
+        # nothing to every pair and the run merely looked less confident.
+        raise ValueError(_unknown_kind_message(kind))
+    field = spec["field"]
+    if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
         return None
     if kind == "qualifier":
         # Reads the qualifier itself; stripping it would leave nothing.
@@ -411,6 +464,8 @@ def _score_pair(
     num = den = 0.0
     distinctive_max = 0.0
     conflict = False
+    form_conflict = False
+    id_agrees: str | bool = False
     evidence: dict[str, float] = {}
     for spec in comparators:
         sim = _field_sim(spec, ra, rb, tf, code_tf)
@@ -449,7 +504,24 @@ def _score_pair(
         # absent evidence cannot fire this, exactly as absent coordinates
         # cannot fire `veto_km`.
         refutes_below = spec.get("refutes_below")
-        if refutes_below is not None and sim < float(refutes_below):
+        if spec["kind"] == "id" and sim >= 1.0:
+            id_agrees = id_agrees or spec.get("field", "id")
+        if spec["kind"] == "legal_form":
+            # The forms themselves are NOT recorded here. They used to be, as
+            # `form_a` / `form_b`, so a reviewer could see that one side said
+            # Plc and the other Limited -- but evidence is hashed into
+            # `decision_id`, and a masked pack replaces every string value in
+            # it, which makes an organisation pack carrying a legal form
+            # unverifiable the moment it is shared. The forms are recoverable
+            # from the two names, which the working pack shows in full, and a
+            # masked pack is not adjudicated.
+            if refutes_below is not None and sim < float(refutes_below):
+                # Held until every comparator has run: an exactly agreeing
+                # identifier outranks it (a Ltd re-registered as a PLC keeps
+                # its company number), and `id` may be declared after it.
+                form_conflict = True
+                evidence[f"{key}_conflict"] = round(sim, 3)
+        elif refutes_below is not None and sim < float(refutes_below):
             conflict = True
             evidence[f"{key}_conflict"] = round(sim, 3)
         if spec["kind"] == "geo":
@@ -549,6 +621,16 @@ def _score_pair(
             # positive value is capped below the weakest agreement score, so
             # this branch is the only thing being withheld. No agreement is
             # manufactured, and the distinctive gate still governs.
+            conflict = True
+    if form_conflict:
+        if id_agrees:
+            # Reported, not acted on: the edge still says the forms differ.
+            # Numeric, not the field name, for the reason above -- a string
+            # here costs the pack its verifiability. Which identifier agreed is
+            # recoverable: it is the `id` comparator scoring 1.0 in the same
+            # evidence.
+            evidence["legal_form_conflict_yielded"] = 1.0
+        else:
             conflict = True
     if den == 0:
         return None
@@ -770,6 +852,11 @@ def reconcile(
     # never fire and the run looks merely permissive. Both read as a tuning
     # problem rather than a typo, so they fail loudly instead.
     for spec in comparators:
+        # Unknown kinds fail here, before any pair is scored (and again in
+        # `_field_sim` for callers that reach it directly).
+        kind = spec.get("kind")
+        if kind not in _STRUCTURAL_KINDS and kind not in _FIELD_COMPARATORS:
+            raise ValueError(_unknown_kind_message(kind))
         below = spec.get("refutes_below")
         if below is None:
             continue
@@ -923,6 +1010,11 @@ def reconcile(
             ).hexdigest()[:16]
             for category, table in code_tf.items()
         }
+    # The other shipped scoring inputs, by the same rule as `code_tf` above.
+    # Without these, two runs that disagree on a verdict because a shipped
+    # vocabulary changed are indistinguishable by their pins.
+    if (asset_pins := _shipped_asset_pins(comparators)):
+        pins["data_assets"] = asset_pins
     if extra_pins:
         pins.update(extra_pins)
     if candidate_pairs is not None:

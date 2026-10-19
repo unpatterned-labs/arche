@@ -206,3 +206,42 @@ Editing is a data change, not a code change:
 # edit organisation_tokens.yaml, then — seconds, no network
 python datasets/organisations_dataops/build_organisation_frequencies.py
 ```
+
+## GB table — Companies House (`organisation_gb`, opt-in)
+
+Built by `build_organisation_gb_frequencies.py` into
+`packages/arche-core/src/arche/resolve/_data/organisation_gb_frequencies.json.gz`
+and selected with `tf="organisation_gb"`. It is **not** the `organisation`
+pack's default.
+
+- **Source:** Companies House, Free Company Data Product
+  (BasicCompanyDataAsOneFile), release 2026-10-01,
+  <https://download.companieshouse.gov.uk/en_output.html>.
+- **Input:** the normalised name list `names.parquet` (5,704,711 current +
+  648,459 previous names); its sha256 is in the table's `provenance` block.
+- **Licence:** **Open Government Licence v3.0** (OGL-UK-3.0). Attribution, no
+  share-alike, so the derived aggregate ships inside the Apache-2.0 wheel with
+  this statement, which is also embedded in the table:
+  *Contains public sector information licensed under the Open Government
+  Licence v3.0 (Companies House).*
+- **What ships:** token counts only (6,164 tokens, 38 KB gzipped). No company
+  name or number is in the artefact.
+- **Vocabulary cap:** tokens with relative frequency below 1e-5 are dropped and
+  the table's `unknown_floor` is set to 1e-5. Distinctiveness saturates at 1.0
+  below that frequency, so the cap does not change any distinctiveness value
+  and therefore no comparator or gate.
+
+```sh
+python datasets/organisations_dataops/build_organisation_gb_frequencies.py \
+    --names <snapshot>/names.parquet --release 2026-10-01     # ~7 min
+```
+
+**Measured, not adopted as default (2026-10-18, Exp 000, GIAS academy trusts →
+Companies House, LA-hash holdout).** Against the GLEIF table it lowered
+auto-accept by about 1.5 points on both halves with no change in wrong
+auto-accepts (0 in every arm). It fixes over-matches on phrases rare in GLEIF
+but common on the register ("catholic academy", "learning trust", "primary
+academy trust") and introduces new ones where GLEIF is the commoner source
+("trust", "multi academy trust"): GLEIF counts investment trusts, the register
+counts companies. A whole-register table does not know the sub-population a
+query comes from. Run detail: Renyi `docs/engineering/stage1_results.md`.
