@@ -137,7 +137,15 @@ def _repo_datasets_dirs() -> list[Path]:
 
 
 def _find_dataset_dir() -> Path | None:
-    """Search for the naming dataset directory."""
+    """Search for the naming dataset directory.
+
+    ``ARCHE_DATASET_DIR`` first, then the ``datasets/`` of the checkout this
+    file sits in, located from the file rather than the working directory.
+    A ``datasets/`` under the current directory used to be searched first, so
+    the equivalences a process loaded -- and every name decision built on them
+    -- depended on where it was started. ``None`` falls back to the bundled
+    starter set; the full YAML set is not shipped in the package.
+    """
     import os
 
     env_dir = os.environ.get("ARCHE_DATASET_DIR")
@@ -148,14 +156,6 @@ def _find_dataset_dir() -> Path | None:
         p = Path(env_dir)
         if p.is_dir() and list(p.glob("*.yaml")):
             return p
-
-    cwd = Path.cwd()
-    for candidate in [
-        cwd / "datasets" / "name_equivalences",
-        cwd.parent / "datasets" / "name_equivalences",
-    ]:
-        if candidate.is_dir() and list(candidate.glob("*.yaml")):
-            return candidate
 
     for datasets in _repo_datasets_dirs():
         candidate = datasets / "name_equivalences"
@@ -537,16 +537,7 @@ def _find_lexicon_path() -> Path | None:
             if candidate.is_file():
                 return candidate
 
-    cwd = Path.cwd()
-    for candidate in [
-        cwd / "datasets" / "data" / "african_names_unique_v1.jsonl",
-        cwd / "datasets" / "data" / "african_names_lexicon_v1.jsonl",
-        cwd.parent / "datasets" / "data" / "african_names_unique_v1.jsonl",
-        cwd.parent / "datasets" / "data" / "african_names_lexicon_v1.jsonl",
-    ]:
-        if candidate.is_file():
-            return candidate
-
+    # No working-directory search, for the reason `_find_dataset_dir` gives.
     for datasets in _repo_datasets_dirs():
         for candidate in [
             datasets / "data" / "african_names_unique_v1.jsonl",

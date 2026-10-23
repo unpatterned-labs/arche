@@ -992,8 +992,12 @@ def _pred_fields(pred: Any) -> tuple[tuple[int, int], str, tuple[int, int] | Non
     """(span, role, cue_span) from a PlaceMention or a plain mapping — plain
     dicts are accepted so a non-Python extractor's JSON grades against the
     same set."""
-    if isinstance(pred, PlaceMention):
-        return pred.span, pred.role, pred.cue_span
+    if isinstance(pred, PlaceMention) or (
+            not isinstance(pred, Mapping) and hasattr(pred, "span")
+            and hasattr(pred, "role")):
+        # Any mention-shaped object (a PlaceMention, or the document
+        # extractor's DocumentAddressMention) grades the same way.
+        return pred.span, pred.role, getattr(pred, "cue_span", None)
     span = pred.get("span") or (pred.get("start"), pred.get("end"))
     cue_span = pred.get("cue_span")
     if cue_span is None and pred.get("cue_start") is not None:
@@ -1015,6 +1019,7 @@ def grade_places(
     *,
     match: Literal["overlap", "exact"] = "overlap",
     pack: str | None = None,
+    roles: Sequence[str] | None = None,
 ) -> PlaceGrade:
     """Score any extractor's output against a gold set.
 
@@ -1027,8 +1032,12 @@ def grade_places(
     ``missed_by_abstention`` — a non-answer, never a wrong answer. Predicting
     a committed role where gold is ``unknown`` counts as ``over_guess`` AND a
     false positive — that is the failure mode this feature exists to prevent.
+
+    ``roles`` names the committed (non-``unknown``) role set; it defaults to
+    the spatial roles. The document-address grader passes its own.
     """
-    per_role = {r: {"tp": 0, "fp": 0, "fn": 0} for r in _COMMITTED_ROLES}
+    committed = tuple(roles) if roles is not None else _COMMITTED_ROLES
+    per_role = {r: {"tp": 0, "fp": 0, "fn": 0} for r in committed}
     span_tp = span_fp = span_fn = 0
     cue_correct = cue_total = 0
     abst = {"correct_unknown": 0, "over_guess": 0, "missed_by_abstention": 0}

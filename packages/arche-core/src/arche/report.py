@@ -79,7 +79,11 @@ def _evidence_bars(evidence: dict[str, float] | None) -> str:
     if not evidence:
         return ""
     rows = []
-    for name, score in sorted(evidence.items(), key=lambda kv: -kv[1]):
+    # Bars are for scores. Evidence also carries labels (`form_a`, `name_phrase`),
+    # which have no length to draw and cannot be sorted against numbers.
+    scores = {k: v for k, v in evidence.items()
+              if isinstance(v, (int, float)) and not isinstance(v, bool)}
+    for name, score in sorted(scores.items(), key=lambda kv: -kv[1]):
         pct = max(0.0, min(1.0, float(score))) * 100
         rows.append(
             f'<div class="ev"><span class="evname">{_esc(name)}</span>'

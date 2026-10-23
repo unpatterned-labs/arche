@@ -26,11 +26,22 @@ Ghana addresses parse best-effort via the shared gazetteer.
 """
 
 from arche.addr import request
+from arche.addr.document_roles import (
+    DOCUMENT_ROLES,
+    DocumentAddressMention,
+    DocumentAddressRole,
+    DocumentRolePack,
+    extract_document_address_roles,
+    grade_document_addresses,
+    load_document_gold,
+    load_document_role_pack,
+)
 from arche.addr.parse import (
     Address,
     AddressComponents,
     extract_anchor,
     infer_jurisdiction,
+    normalise_gb_postcode,
     normalize_landmark,
     parse_address,
     parse_addresses,
@@ -48,20 +59,29 @@ from arche.addr.roles import (
 )
 
 __all__ = [
+    "DOCUMENT_ROLES",
     "Address",
     "AddressComponents",
+    "DocumentAddressMention",
+    "DocumentAddressRole",
+    "DocumentRolePack",
     "GoldSentence",
     "PlaceGrade",
     "PlaceMention",
     "PlaceRole",
     "RolePack",
     "extract_anchor",
+    "extract_document_address_roles",
     "extract_places",
     "request",
+    "grade_document_addresses",
     "grade_places",
     "infer_jurisdiction",
+    "load_document_gold",
+    "load_document_role_pack",
     "load_gold",
     "load_role_pack",
+    "normalise_gb_postcode",
     "normalize_landmark",
     "parse_address",
     "parse_addresses",

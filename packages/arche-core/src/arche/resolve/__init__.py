@@ -291,6 +291,16 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         # shared form so `tftoken` compares "Kuapa Kokoo" rather than letting
         # "Cooperative Union Ltd" carry the score.
         {"field": "name", "kind": "type", "domain": "organization", "weight": 0.0},
+        # Legal form as a discriminator. `strip_type` above removes the form so
+        # "Acme Ltd" and "Acme Limited" are one name; this compares the form
+        # itself, so "Zenith Bank Plc" against "Zenith Bank Limited" (one can
+        # become the other: 0.5) and a Ltd against an LLP (a company is never a
+        # partnership: 0.0) go to `review` instead of merging at 1.0. A form
+        # absent on either side says nothing — UK s60 lets many companies omit
+        # "Limited". An exactly agreeing `registration_id` outranks the
+        # conflict. Relations: `resolve/legal_form_compat.yaml`.
+        {"field": "name", "kind": "legal_form", "weight": 0.5,
+         "refutes_below": 0.6},
         # A company registration number is the national-ID analogue and the
         # only exact identity signal most supplier files carry.
         {"field": "registration_id", "kind": "id", "weight": 3.0},
@@ -393,6 +403,35 @@ def _provided_tf_pin(tf: TokenFrequencyTable) -> str:
         return f"provided@{version}"
     digest = _tf_digest(tf)
     return f"provided@sha256:{digest}" if digest else "provided"
+
+
+def _shipped_tf_pin(name: str) -> str:
+    """Name a shipped table chosen BY STRING (``tf="organisation_gb"``) by its bytes.
+
+    The entity-default path below already pins ``shipped:place@sha256:...``,
+    but a caller who named the table as a string got the bare domain, so a
+    rebuilt table -- which changes rarities, blocking keys and verdicts --
+    pinned identically to the one it replaced. Tables that carry a content
+    ``version`` (``place``, ``organisation_gb``) now say which one; tables that
+    do not (``organisation``, ``person``, ``artist``) pin exactly as before, so
+    no existing decision id scored against them moves.
+
+    Falls back to the bare label when the table cannot be loaded; scoring then
+    raises on the same name, so a label without a digest never reaches an edge
+    that was actually scored.
+    """
+    domain = "person" if name == "default" else name
+    label = f"shipped:{domain}"
+    try:
+        table = TokenFrequencyTable.default(domain=domain)
+    except (ValueError, FileNotFoundError):
+        return label
+    if getattr(table, "version", None):
+        label += f"@{table.version}"
+    phrases = getattr(table, "phrases", None)
+    if phrases is not None and getattr(phrases, "version", None):
+        label += f"+phrases@{phrases.version}"
+    return label
 
 
 def _tf_digest(tf: TokenFrequencyTable) -> str | None:
@@ -701,7 +740,11 @@ COMPARATOR_NOTES = {
     "email": "an email address",
     "address": "a postal address, compared by its parts",
     "category": "a declared class, compared exactly",
-    "geo": "distance between two coordinates",
+    "legal_form": "the legal form a name declares (Ltd, Plc, LLP, a business "
+                  "name), compared on its own. A Ltd and an LLP are different "
+                  "legal persons. It can hold a pair back, and says nothing "
+                  "when either side states no form",
+    "geo":"distance between two coordinates",
     "containment": "whether one administrative path contains the other",
 }
 
@@ -990,7 +1033,7 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
         )
     tf_provenance: str | None = None
     if isinstance(tf, str):
-        tf_provenance = f"shipped:{'person' if tf == 'default' else tf}"
+        tf_provenance = _shipped_tf_pin(tf)
     elif tf is not None:
         tf_provenance = _provided_tf_pin(tf)
     if decl is not None:
@@ -1004,8 +1047,8 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
         extra_pins.setdefault("declaration", decl.pin())
         if tf is None and decl.tf is not None:
             tf = decl.tf
-            tf_provenance = f"shipped:{'person' if tf == 'default' else tf}" \
-                if isinstance(tf, str) else "provided"
+            tf_provenance = (_shipped_tf_pin(tf) if isinstance(tf, str)
+                             else "provided")
     if comparators is None:
         if entity is None:
             # One exception: `backend="splink"` with the caller's own

@@ -322,3 +322,24 @@ def test_uk_rerank_pushes_wrong_house_below_right_house():
     right = by_pair[("d10", "d10b")]["score"]
     wrong = by_pair.get(("d10", "d11"), {"score": 0.0})["score"]
     assert right > wrong
+
+
+# ── unknown comparator kinds fail loudly (G-A6) ─────────────────────────────
+
+def test_an_unknown_comparator_kind_raises_naming_the_kind():
+    """A misspelt kind used to return None -- "inapplicable" -- on every pair,
+    so it silently contributed nothing and the run merely looked less sure."""
+    a = [{"id": "1", "name": "Karfi"}]
+    b = [{"id": "2", "name": "Karfi"}]
+    comps = [{"field": "name", "kind": "name", "weight": 1.0},
+             {"field": "name", "kind": "nmae", "weight": 1.0}]
+    with pytest.raises(ValueError, match="'nmae'"):
+        reconcile(a, b, comps, block=None)
+
+
+def test_field_sim_itself_rejects_an_unknown_kind():
+    from arche.resolve.reconcile import _field_sim
+
+    with pytest.raises(ValueError, match="unknown comparator kind 'nmae'"):
+        _field_sim({"field": "name", "kind": "nmae"},
+                   {"name": "Karfi"}, {"name": "Karfi"}, None)

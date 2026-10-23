@@ -80,6 +80,13 @@ _DEFAULT_RESOURCES = {
     "artist": "artist_frequencies.json.gz",
     "place": "place_frequencies.json.gz",
     "organisation": "organisation_frequencies.json.gz",
+    # The UK register's own vocabulary: token counts over every current and
+    # previous Companies House company name (6.35M names, OGL v3). Opt-in as
+    # `tf="organisation_gb"`; the `organisation` pack's default stays the
+    # GLEIF table above. Vocabulary capped losslessly at rel_freq 1e-5 (where
+    # distinctiveness saturates at 1.0) with the floor set to match; see
+    # `datasets/organisations_dataops/build_organisation_gb_frequencies.py`.
+    "organisation_gb": "organisation_gb_frequencies.json.gz",
     # NOT an entity population. The other four answer "how common is this token
     # among places / person names / companies / artists"; this one answers "is
     # this token a word in English at all". It exists so a comparator can tell a
@@ -102,6 +109,8 @@ _DEFAULT_BUILDERS = {
     "artist": "datasets/artists_dataops/build_artist_frequencies.py",
     "place": "datasets/places_dataops/build_place_frequencies.py",
     "organisation": "datasets/organisations_dataops/build_organisation_frequencies.py",
+    "organisation_gb": "datasets/organisations_dataops/build_organisation_gb_frequencies.py"
+                       " --names <companies_house>/names.parquet --release <date>",
 }
 # Process-wide cache for the packaged default tables (they are immutable).
 _DEFAULT_CACHE: dict[str, TokenFrequencyTable] = {}
@@ -163,6 +172,31 @@ def _bigrams(text: str, rule: str = DEFAULT_TOKEN_RULE) -> set[str]:
     """Adjacent token pairs of ``text`` under the phrase reading."""
     toks = _phrase_tokens(text, rule)
     return {" ".join(toks[i:i + 2]) for i in range(len(toks) - 1)}
+
+
+def _content_version(d: Mapping) -> str:
+    """A content address for a serialised table, for tables that declare none.
+
+    Over the fields that change scoring: the counts (or relative frequencies),
+    the total, the unknown floor and the token rule. Not over the whole dict,
+    so that a cosmetic key added to the format later does not present itself as
+    a new table.
+
+    Sixteen hex characters, matching the declared versions already shipped
+    (`sha256:c94f20a1c2dfba18`). This is an identifier for telling two tables
+    apart in a pin, not a security boundary.
+    """
+    import hashlib
+
+    body = {
+        "counts": d.get("counts"),
+        "rel_freq": d.get("rel_freq"),
+        "total": d.get("total"),
+        "unknown_floor": d.get("unknown_floor"),
+        "token_rule": d.get("token_rule"),
+    }
+    payload = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    return "sha256:" + hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
 class TokenFrequencyTable:
@@ -282,8 +316,10 @@ class TokenFrequencyTable:
         """A population-scale frequency table shipped in the wheel.
 
         ``domain`` selects the entity population: ``"person"`` (US Census
-        surnames + African names lexicon) or ``"artist"`` (MusicBrainz artist
-        catalog sample). Cached process-wide. Raises :class:`ValueError` for an
+        surnames + African names lexicon), ``"artist"`` (MusicBrainz artist
+        catalog sample), ``"place"``, ``"organisation"`` (GLEIF LEI names),
+        ``"organisation_gb"`` (Companies House names, OGL v3) or
+        ``"english"``. Cached process-wide. Raises :class:`ValueError` for an
         unknown domain, and :class:`FileNotFoundError` with build guidance if
         the data asset is absent (e.g. an editable checkout that has not run
         the builder).
@@ -612,7 +648,14 @@ class TokenFrequencyTable:
         else:
             tbl = cls(d.get("rel_freq", {}), unknown_floor=floor,
                       population_scale=True, token_rule=rule)
-        tbl.version = d.get("version")
+        # A declared version wins: it is the build's own identifier, and
+        # overwriting it would move every decision already scored against a
+        # table that had one. Where the file declares none, derive it from the
+        # content, because a pin that names a domain without naming the bytes
+        # cannot tell a rebuilt table from the one it replaced -- and a token
+        # table is both a comparator input and a blocking key, so a rebuild
+        # changes which pairs are even proposed.
+        tbl.version = d.get("version") or _content_version(d)
         return tbl
 
     def save(self, path: str | Path) -> None:

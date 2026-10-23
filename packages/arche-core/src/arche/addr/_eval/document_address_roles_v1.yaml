@@ -1,0 +1,255 @@
+# Copyright 2026 unpatterned.org
+# SPDX-License-Identifier: CC-BY-4.0
+#
+# document_address_roles_v1 — gold set for document address roles.
+#
+# EVERY DOCUMENT HERE IS SYNTHETIC. Company names carry "(synthetic)" or are
+# invented; company numbers, VAT numbers and bank details are placeholders.
+# Street and town names are real so the address parser meets real shapes, but
+# no address is asserted to belong to any real business.
+#
+# Fragments are substrings of `text`; the loader resolves them to spans and
+# rejects absent or ambiguous fragments. Items whose gold role is `unknown`
+# are adversarial: no cue, a negated cue, or two cues that disagree. A system
+# that commits a role there is over-guessing.
+#
+# Grade any extractor with arche.addr.grade_document_addresses.
+#
+# v1 is a PROBE (20 documents), not a benchmark.
+
+pack: arche.document_address_roles.gold
+version: v1
+license: CC-BY-4.0
+documents:
+  - id: inv-gb-001
+    register: invoice
+    jurisdiction: GB
+    text: |
+      INVOICE
+      From:
+      Northwind Widgets Ltd (synthetic)
+      4 Mill Lane
+      Leeds LS1 4DL
+
+      Bill To:
+      Example Buyer Ltd (synthetic)
+      12 High Street
+      London EC1A 1BB
+
+      Invoice No: SYN-1001
+      Date: 01/10/2026
+    addresses:
+      - {role: invoice_from, text: "4 Mill Lane\nLeeds LS1 4DL", cue: "From"}
+      - {role: bill_to, text: "12 High Street\nLondon EC1A 1BB", cue: "Bill To"}
+
+  - id: inv-gb-002
+    register: invoice
+    jurisdiction: GB
+    text: |
+      Tax Invoice SYN-2002
+      Supplier: Fenwick Fixings Ltd (synthetic), 22 Station Road, Bootle, L20 3DH
+      Ship to: Unit 4, Trafford Park, Manchester M17 1AB
+      Invoice to: Ashdown Builders Ltd (synthetic), 9 Church Road, Crystal Palace, London, SE19 2ET
+    addresses:
+      - {role: invoice_from, text: "22 Station Road, Bootle, L20 3DH", cue: "Supplier"}
+      - {role: ship_to, text: "Unit 4, Trafford Park, Manchester M17 1AB", cue: "Ship to"}
+      - {role: bill_to, text: "9 Church Road, Crystal Palace, London, SE19 2ET", cue: "Invoice to"}
+
+  - id: inv-gb-003
+    register: invoice
+    jurisdiction: GB
+    text: |
+      Please remit payment to 9 Bank Street, Bristol, BS1 2AA.
+      Registered office: 1 Castle Road, Cardiff CF10 3AA. Company No. 00000000 (synthetic)
+    addresses:
+      - {role: remit_to, text: "9 Bank Street, Bristol, BS1 2AA", cue: "remit payment to"}
+      - {role: registered_office, text: "1 Castle Road, Cardiff CF10 3AA", cue: "Registered office"}
+
+  - id: inv-gb-004
+    register: invoice
+    jurisdiction: GB
+    note: letterhead address with no cue — abstain
+    text: |
+      Example Holdings Ltd (synthetic), 5 Market Street, Leeds LS1 6DT
+      Invoice No: SYN-4004
+    addresses:
+      - {role: unknown, text: "5 Market Street, Leeds LS1 6DT"}
+
+  - id: inv-gb-005
+    register: invoice
+    jurisdiction: GB
+    note: one address under two different role labels — conflict, abstain
+    text: |
+      Bill to / Ship to: 14 Princess Road, Moss Side, Manchester, M15 5UJ
+    addresses:
+      - {role: unknown, text: "14 Princess Road, Moss Side, Manchester, M15 5UJ", cue: "Ship to"}
+
+  - id: rem-gb-006
+    register: remittance
+    jurisdiction: GB
+    note: the negated address must abstain, the new one is remit_to
+    text: |
+      Change of bank details (synthetic notice). Do not send payment to 3 Old Road, York YO1 7HH; our new remittance address is 8 New Road, York YO1 8AA.
+    addresses:
+      - {role: unknown, text: "3 Old Road, York YO1 7HH", cue: "send payment to"}
+      - {role: remit_to, text: "8 New Road, York YO1 8AA", cue: "remittance address"}
+
+  - id: sup-gb-007
+    register: supplier_form
+    jurisdiction: GB
+    text: |
+      SUPPLIER SET-UP FORM (synthetic)
+      Company name: Holloway Catering Ltd (synthetic)
+      Registered office address:
+      27 Hollins Lane, Marple Bridge, Stockport, SK6 5BB
+      Trading address:
+      3 Mill Lane, Wingerworth, Chesterfield, S42 6NG
+      Remittance address:
+      PO Box 412, Chesterfield, S40 1XX
+    addresses:
+      - {role: registered_office, text: "27 Hollins Lane, Marple Bridge, Stockport, SK6 5BB", cue: "Registered office address"}
+      - {role: trading_address, text: "3 Mill Lane, Wingerworth, Chesterfield, S42 6NG", cue: "Trading address"}
+      - {role: remit_to, text: "PO Box 412, Chesterfield, S40 1XX", cue: "Remittance address"}
+
+  - id: po-gb-008
+    register: purchase_order
+    jurisdiction: GB
+    text: |
+      PURCHASE ORDER SYN-8008
+      Vendor:
+      Greenway Paper Co (synthetic)
+      17 Green Lane
+      Coventry CV3 6EA
+
+      Deliver to:
+      Goods In, 40 Hall Green Road, West Bromwich, B71 3LB
+    addresses:
+      - {role: invoice_from, text: "17 Green Lane\nCoventry CV3 6EA", cue: "Vendor"}
+      - {role: ship_to, text: "40 Hall Green Road, West Bromwich, B71 3LB", cue: "Deliver to"}
+
+  - id: inv-gb-009
+    register: invoice
+    jurisdiction: GB
+    note: a prose registered-office footer
+    text: |
+      Thank you for your business.
+      Kestrel Analytics Ltd (synthetic) is registered in England and Wales. Our registered office is at 1 Long Lane, London EC1A 9HL.
+    addresses:
+      - {role: registered_office, text: "1 Long Lane, London EC1A 9HL", cue: "registered office is at"}
+
+  - id: inv-gb-010
+    register: invoice
+    jurisdiction: GB
+    note: 'a prose "to" is not a bill-to label'
+    text: |
+      Goods were returned to 6 Cranbrook Avenue, Hull HU6 7TT last week.
+    addresses:
+      - {role: unknown, text: "6 Cranbrook Avenue, Hull HU6 7TT"}
+
+  - id: inv-gb-011
+    register: invoice
+    jurisdiction: GB
+    text: |
+      Customer:
+      Brightside Nursery (synthetic)
+      2 St Mary's Road, Huyton, Liverpool, L36 5SR
+      Shipping address: 8 Dock Road, Liverpool, L3 4AF
+    addresses:
+      - {role: bill_to, text: "2 St Mary's Road, Huyton, Liverpool, L36 5SR", cue: "Customer"}
+      - {role: ship_to, text: "8 Dock Road, Liverpool, L3 4AF", cue: "Shipping address"}
+
+  - id: inv-ng-012
+    register: invoice
+    jurisdiction: NG
+    text: |
+      INVOICE (synthetic)
+      Seller: Adeola Foods Ltd, 7B Allen Avenue, Ikeja, Lagos
+      Bill to: Kano Grains Ltd, 25 Zik Avenue, Enugu
+      Delivery address: Plot 14, Awolowo Road, Ikoyi, Lagos
+    addresses:
+      - {role: invoice_from, text: "7B Allen Avenue, Ikeja, Lagos", cue: "Seller"}
+      - {role: bill_to, text: "25 Zik Avenue, Enugu", cue: "Bill to"}
+      - {role: ship_to, text: "Plot 14, Awolowo Road, Ikoyi, Lagos", cue: "Delivery address"}
+
+  - id: inv-ng-013
+    register: invoice
+    jurisdiction: NG
+    text: |
+      Registered office: 12 Adeola Odeku Street, Victoria Island, Lagos
+      Remit to: 3 Marina Road, Lagos, 101001
+    addresses:
+      - {role: registered_office, text: "12 Adeola Odeku Street, Victoria Island, Lagos", cue: "Registered office"}
+      - {role: remit_to, text: "3 Marina Road, Lagos, 101001", cue: "Remit to"}
+
+  - id: inv-za-014
+    register: invoice
+    jurisdiction: ZA
+    text: |
+      Tax invoice (synthetic)
+      From: Riebeek Supplies (Pty) Ltd, Unit 5B, 22 Riebeek Street, Cape Town, 8001
+      To: Sandton Retail (Pty) Ltd, 14 Rivonia Road, Sandton, 2196
+    addresses:
+      - {role: invoice_from, text: "Unit 5B, 22 Riebeek Street, Cape Town, 8001", cue: "From"}
+      - {role: bill_to, text: "14 Rivonia Road, Sandton, 2196", cue: "To:"}
+
+  - id: sup-gb-015
+    register: supplier_form
+    jurisdiction: GB
+    note: principal place of business phrased as a sentence
+    text: |
+      The supplier's principal place of business is 30 Wellington Street, Leeds LS1 4DL and invoices should be sent there.
+    addresses:
+      - {role: trading_address, text: "30 Wellington Street, Leeds LS1 4DL", cue: "principal place of business"}
+
+  - id: inv-gb-016
+    register: invoice
+    jurisdiction: GB
+    note: a blank line separates the label from an unrelated address — abstain
+    text: |
+      Ship to:
+
+      Notes: see attached.
+
+      Oakwood Tools Ltd (synthetic), 11 Oak Road, Derby DE1 1AA
+    addresses:
+      - {role: unknown, text: "11 Oak Road, Derby DE1 1AA"}
+
+  - id: inv-gb-017
+    register: invoice
+    jurisdiction: GB
+    text: |
+      Sold to: Harbour Fish Co (synthetic), 2 Quay Street, Whitby, YO22 4DE
+      Cheques payable to: Coastal Ice Ltd (synthetic), PO Box 77, Whitby, YO21 9ZZ
+    addresses:
+      - {role: bill_to, text: "2 Quay Street, Whitby, YO22 4DE", cue: "Sold to"}
+      - {role: remit_to, text: "PO Box 77, Whitby, YO21 9ZZ", cue: "Cheques payable to"}
+
+  - id: inv-gb-018
+    register: invoice
+    jurisdiction: GB
+    note: the non-geographic GIR postcode, spaceless
+    text: |
+      Billing address: 1 Girobank Road, Bootle GIR0AA
+    addresses:
+      - {role: bill_to, text: "1 Girobank Road, Bootle GIR0AA", cue: "Billing address"}
+
+  - id: inv-gb-019
+    register: letterhead
+    jurisdiction: GB
+    note: two addresses, neither cued
+    text: |
+      Head office 4 Queen Street, Glasgow G1 3DX | Depot 9 Canal Street, Glasgow G4 0AD
+    addresses:
+      - {role: unknown, text: "4 Queen Street, Glasgow G1 3DX"}
+      - {role: unknown, text: "9 Canal Street, Glasgow G4 0AD"}
+
+  - id: inv-gb-020
+    register: invoice
+    jurisdiction: GB
+    note: prose bill-to and a trading-address label on one invoice
+    text: |
+      This invoice is billed to 5 Park Road, Bath BA1 2BB.
+      Business address: 18 Milsom Street, Bath BA1 1DN
+    addresses:
+      - {role: bill_to, text: "5 Park Road, Bath BA1 2BB", cue: "billed to"}
+      - {role: trading_address, text: "18 Milsom Street, Bath BA1 1DN", cue: "Business address"}
