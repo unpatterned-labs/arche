@@ -1,95 +1,151 @@
 [project]
 name = "arche-workspace"
-version = "0.1.0a2"
+version = "0.0.0"
 requires-python = ">=3.11"
-description = "arche monorepo — the open-source identity resolution SDK by unpatterned.org"
+description = "Arche monorepo — the open-source identity resolution SDK by unpatterned.org"
 dependencies = [
     "arche-core[all]",
     "ipykernel>=7.2.0",
 ]
 
+# ---------------------------------------------------------------------------
+# uv workspace configuration
+# ---------------------------------------------------------------------------
+
+# The repository root is an orchestration/development workspace, not a Python
+# distribution itself. The actual distributable package lives in
+# packages/arche-core.
+[tool.uv]
+package = false
+
 [tool.uv.workspace]
 members = [
     "packages/arche-core",
-    # arche-graph / arche-live / api / demo were listed here but have never
-    # existed on disk. A workspace member that is not a directory is a claim
-    # about what ships; uv tolerates it silently.
 ]
 
+# Workspace members and package-specific indexes.
+#
+# These entries MUST remain under [tool.uv.sources].
+# Moving torch/torchvision beneath [tool.uv] causes uv to interpret them as
+# invalid uv settings rather than dependency sources.
 [tool.uv.sources]
 arche-core = { workspace = true }
-# arche runs on CPU by design. On Linux, PyPI's `torch` is the CUDA build --
-# 2.7 GB of driver libraries plus a 640 MB triton -- and it is what
-# `gliner2[local]` and docling pull unless told otherwise. Windows and macOS
-# wheels on PyPI are already CPU. Measured on the first dev-image build:
-# 12.8 GB in one layer, with the CPU torch that `uv pip install` had put in
-# replaced by the lock's CUDA one on the next `uv sync`.
-torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
-torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+# Arche runs on CPU by design.
+#
+# On Linux, explicitly use PyTorch's CPU index. This avoids pulling the
+# considerably larger CUDA-enabled PyTorch distribution through transitive
+# dependencies such as GLiNER/docling.
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+torchvision = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
+
+# ---------------------------------------------------------------------------
+# Development dependency groups
+# ---------------------------------------------------------------------------
+
 [dependency-groups]
+
 dev = [
     "ruff>=0.4",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
-    # The ledger, the studio and the review pack read and write Parquet. It is
-    # an arche extra rather than a base dependency, so without it here those
-    # tests skip in CI and read as coverage they are not providing.
+
+    # The ledger, studio and review pack read and write Parquet.
+    # pyarrow is an Arche extra rather than a base dependency, so keep it
+    # available explicitly in the development environment.
     "pyarrow>=14",
-    # `arche serve` is behind the `service` extra, which `arche-core[all]`
-    # deliberately leaves out so the library wheel stays a library. Without
-    # these here the two service test modules skip in CI for the same reason
-    # the synthetic ones did.
+
+    # `arche serve` is behind the `service` extra. It is deliberately not
+    # included in arche-core[all] so the normal library wheel remains a
+    # library rather than carrying the service stack.
     "arche-core[service]",
+
     "httpx>=0.27",
-    # The studio's hash-key tests and the MCP tests import `arche.mcp.server`,
-    # which needs the SDK.
+
+    # Studio hash-key tests and MCP tests import arche.mcp.server.
     "arche-core[mcp]",
 ]
-# Everything, for the dev image and anyone who wants the document parsers and
-# OCR locally. Opt-in (`uv sync --group full`): docling and the OCR runtime
-# are large, and a laptop `uv sync` should stay the light default.
+
+# Everything required for the full development image and document/OCR work.
+#
+# Opt-in with:
+#
+#     uv sync --group full
+#
+# These dependencies are intentionally excluded from the light/default
+# development environment because document/OCR dependencies can be large.
 full = [
     "arche-core[all,doc,doc-ocr,service,ledger,detect2,mcp]",
-    # Named here so the CPU-index source below applies: a uv source only
-    # attaches to a *direct* dependency, and torch is otherwise reached
-    # transitively through gliner2 and docling, where the source is ignored
-    # and the CUDA build wins.
+
+    # These are declared directly so the [tool.uv.sources] CPU index mapping
+    # above applies on Linux. Otherwise torch may only be reached transitively.
     "torch",
     "torchvision",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+select = [
+    "E",
+    "F",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "SIM",
+]
 
 [tool.ruff.lint.per-file-ignores]
-# The notebook builders are prose containers: their markdown cells are written
-# as long triple-quoted strings, one line per paragraph, because that is how the
-# markdown is read once it reaches the notebook. Wrapping it to satisfy a code
-# line-length rule would put hard breaks back into text nobody reads as code.
+
+# Notebook builders contain prose in long triple-quoted Markdown strings.
+# Applying E501 to those files would introduce artificial line breaks into
+# prose that is ultimately rendered as notebook Markdown.
 "examples/notebooks/build_*.py" = ["E501"]
-# Tests name the two records of a pair `A` and `B`, and a test called
-# `..._is_None_not_zero` says what it checks better than a lowercase one
-# would. pep8-naming is for the package, not for the sentences about it.
-"packages/arche-core/tests/*" = ["N802", "N803", "N806", "N811", "N812"]
+
+# Tests intentionally use A/B terminology for record pairs and descriptive
+# test names that do not always conform to pep8-naming.
+"packages/arche-core/tests/*" = [
+    "N802",
+    "N803",
+    "N806",
+    "N811",
+    "N812",
+]
+
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-testpaths = ["packages/arche-core/tests"]
+testpaths = [
+    "packages/arche-core/tests",
+]
+
 asyncio_mode = "auto"
-# Silence internal v0.1 → v0.2 migration warnings during tests. The shims still
-# fire for external callers (that's their point); these filters keep test output
-# focused on real issues. Each filter targets a specific shim by message prefix.
+
+# Silence known dependency deprecations and Arche's internal compatibility
+# warnings so test output remains focused on actionable failures.
 filterwarnings = [
-    # External library deprecations we can't fix without upgrading dependencies.
     "ignore:builtin type Swig.* has no __module__ attribute:DeprecationWarning",
     "ignore:builtin type swigvarlink:DeprecationWarning",
     "ignore:`torch.jit.script` is deprecated:DeprecationWarning",
