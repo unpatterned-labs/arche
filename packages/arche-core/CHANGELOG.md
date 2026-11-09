@@ -4,15 +4,59 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+## [0.11.0] — 2026-11-09
+
+### Changed
+
+- **Every decision id issued before this version will not re-derive.** Read this first if you have stored any.
+
+  A `decision_id` is a content hash over a decision's rounded evidence *and the pins that name what produced it*. Two shipped data assets reached a comparator and appeared in no pin: the type-token vocabulary (`type_tokens.yaml`) and the legal-form relation table (`legal_form_compat.yaml`). Measured: flipping every relation in the compat table moved `Zenith Bank Plc` against `Zenith Bank Limited` from `review` (0.9444) to `match` (0.9989) **with byte-identical pins**. The address moved, because the evidence is hashed, so nothing could be altered silently and keep its address — but the provenance record could not tell two runs apart, and neither could be reproduced from its pins.
+
+  Four shipped frequency tables had the same gap in a different form. `_shipped_tf_pin` already appended a content version when a table carried one, but `artist`, `english`, `name` and `organisation` declared none, so a rebuilt table pinned identically to the one it replaced — and a token table is a **blocking key** as well as a comparator input, so a rebuild changes which pairs are proposed before any of them is scored.
+
+  Both are fixed. Pins now carry `data_assets`, scoped to the assets the declared comparators actually read, so an unrelated edit cannot move an unrelated run's pin. Tables that declare no version derive one from their content at load time; a declared version still wins, so `place` (`sha256:c94f20a1c2dfba18`) and `organisation_gb` (`sha256:505fce72d9fa6d5f`) are untouched and nothing scored against them moves. `shipped:organisation` became `shipped:organisation@sha256:9237285651c88bcf`.
+
+  **An address cannot start covering an input without changing**, so this was unavoidable, and the frozen receipt fixture is what caught it. Both superseded ids are recorded in its comment. The engine pin stays `crosswalk.v1`: the wire names did not change, only what the hash covers.
+
+- **No evidence value is a string any more.** `share_artifact` masks every string inside the evidence, and the evidence is hashed into the decision id, so a string there cost a shared pack its verifiability the moment it was sent. The legal-form lane had briefly recorded `form_a` and `form_b` verbatim, and the identifier that overrode a form conflict by name. The forms are recoverable from the two names a working pack shows in full, and a masked pack is not adjudicated, so they are gone; the override marker is numeric. A test now fails if any evidence value is a string.
+
+- **`backend="auto"` can route a register with no postal address.** Previously it could not, and fell back to arche's own engine without the caller having asked. See *Fixed*.
+
+### Added
+
+- **`PERSON_REGISTER` (`person/identity-register-v1`)** — a `person` recipe for identity registers with no postal address: the name pair, an ISO date of birth, sex and one administrative unit. `input_columns` requires only the name pair and the date of birth, so a register missing sex or an admin unit still gets the handoff. Every blocking rule carries a second key, because a patronymic surname block alone reached 24,149 records — roughly 2 billion pairs — and ran DuckDB out of memory at 1M in the Sanov scale run.
+
+  **Its settings and blocking rules have been measured once, on one synthetic world.** They have not been through the benchmark gate `person/febrl-v1` passed, and its `benchmark=` field points at a script in another repository rather than a committed one. Treat it as the better of two options for this data, not as a tuned configuration.
+
+- **`RECIPE_CHAIN`** — the recipes to try for an entity, in order, taking the first whose columns the records carry. One entity had exactly one recipe until now, which is why a register that did not match Febrl's schema got no handoff at all rather than one built for its own shape. The chosen recipe's name goes in the pins, and the explicit `backend="splink"` path now uses the recipe `auto` fitted rather than the entity's first one.
+
+- **`Recipe.operating_point(false_merge_cost)`** and **`reconcile(..., false_merge_cost=...)`** — a threshold derived from a declared cost instead of swept against labels. With one wrong merge costing `c` missed duplicates and a calibrated posterior `p`, merging is the cheaper action when `p > c/(1+c)`: 1 gives 0.5, 10 gives 0.9091, 100 gives 0.9901. This is the Bayes decision rule for asymmetric costs — Tepping (1968), and Verykios, Moustakides & Elfeky (2003) — cited, not claimed. A declared cost changes verdicts, so it is pinned as `cost_policy`.
+
+  **It is only as good as the calibration of `p`.** On the identity world a declared cost of 10 reached 1,205 where a threshold swept against truth reached 845; that 360 is the price of not having labels, and it says the posterior is not well calibrated there. Measured on DBLP-ACM's review band, the same shape: AUROC 0.8856 with an expected calibration error of 0.5993, where merging at 0.90 promised a 10% error rate and delivered 100%. Sweep against labels when you have them.
+
+- **A calibrated monitor.** `Calibration` fits a monotone map by pool-adjacent-violators with no new dependency, and `CalibratedMonitor` wraps any monitor, rewriting the probability on the questions a probability applies to and leaving a `choice` distribution alone. The pin carries the map's digest, so two monitors fitted on different splits cannot share one. Calibration is not free: isotonic regression is monotone but not strictly so, and on DBLP-ACM's review band the ties moved AUROC 0.8856 to 0.8605 and the best achievable queue cut 86.4% to 71.6%, while the calibration error went 0.5993 to 0.0001.
+
+- **The legal-form lane.** `legal_form_compat.yaml` says what it means when two records declare different legal forms, and the `organisation` pack reads it as a discriminator: `Zenith Bank Plc` against `Zenith Bank Limited` goes to `review` rather than merging at 1.0, and an exactly agreeing registration number outranks the conflict. Agreement on a form is neutral, not evidence — nearly every UK company is a Ltd, so a shared form says nothing about *which* one.
+
+- **`arche review verify-decisions`** and `review.verify_decision_ids` — recompute every decision id in a pack from the pack and the pins in its manifest, with no source records, no network and no contact with whoever produced it. Shared packs now carry the pins (they did not, which made the only artifact safe to send the only one that could not be checked) and a `HOW_TO_VERIFY.txt` naming the command. `decision_ids_verifiable` says when recomputation is impossible — masking an evidence value changes what the id was computed over — so a recipient does not discover it by failing.
+
 ### Fixed
 
-- **`resolve()` dropped a record's membership when another comparison had produced the same evidence, then died reading the entity it had not created.** A decision id is deliberately a pure function of the rounded evidence and the pins, which is what makes an edge citable: hold the same inputs and you recompute the same address. It is therefore *not* unique per record pair, and `record_batch` was using it as the idempotency key for **linking**. So when a record's only matching comparison scored the same rounded evidence as an edge already on file, the link was treated as already made, and it had been made for the other record. `resolve()` then reported `found` for a record in no entity and raised `KeyError: no entity None`.
+- **A register with no postcode could not reach Splink.** `Recipe.check` requires every column a recipe reads, and the only shipped `person` recipe was Splink's published **Febrl** configuration, which reads `postcode` and `street_number`. Febrl is a synthetic Australian dataset; a Nigerian national identity register has neither field, so the handoff was structurally unreachable and arche's own engine ran instead — at a cost of 3,730 against Splink's 840 on the same world, under a 10:1 false-merge policy.
+
+  Relaxing the check would have been the wrong fix: Splink would then compare NULL against NULL on the missing columns and score that as agreement, which is the exact failure the check exists to stop. With `PERSON_REGISTER` and `RECIPE_CHAIN` the cost falls to 1,273 with zero false merges, and to 1,205 with a declared cost of 10.
+
+- - **`resolve()` dropped a record's membership when another comparison had produced the same evidence, then died reading the entity it had not created.** A decision id is deliberately a pure function of the rounded evidence and the pins, which is what makes an edge citable: hold the same inputs and you recompute the same address. It is therefore *not* unique per record pair, and `record_batch` was using it as the idempotency key for **linking**. So when a record's only matching comparison scored the same rounded evidence as an edge already on file, the link was treated as already made, and it had been made for the other record. `resolve()` then reported `found` for a record in no entity and raised `KeyError: no entity None`.
 
   Linking now follows the records named by *this* batch rather than whether the receipt is new. Re-linking is safe: the union-find writes nothing when a pair is already together. The receipt is still shared, because the comparison genuinely is the same one.
 
   Found by the synthetic supplier benchmark at 150 suppliers, where two suppliers one digit apart in their address, `29 Zaria Road, Ogui, Enugu` and `23 Zaria Road, Ogui, Enugu`, scored identical rounded evidence against a third record. It had blocked the incremental arms there since generator 0.0.6, which is why that benchmark's paired ledger-versus-batch result is unpublished. `arche/ledger` now completes: precision 0.991, recall 0.775, one false-merge cluster on 445 records.
 
   `resolve()` also states the invariant it relies on instead of assuming it. A verdict of `found` is what instructs the batch to link, so a `found` record with no entity is a defect in the ledger, and the error now says that and names the record rather than failing on a null id.
+
+### Note on the version
+
+A minor bump rather than a patch, for one reason above the others: **stored decision ids will not re-derive.** A patch says nothing you depend on changed, and the address of every decision changed. The package is still pre-1.0 and still makes no compatibility promise — 1.0 waits for somebody outside this project to depend on it — but that is the version where this discipline starts to matter, not where it starts to apply.
 
 ## [0.10.0] — 2026-09-27
 
