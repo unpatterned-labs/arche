@@ -1,0 +1,30 @@
+{
+ "grid3_rows": 51022,
+ "usable": 51022,
+ "groups": 410,
+ "records_in_groups": 827,
+ "positives": 10,
+ "negatives": 28,
+ "hard": 386,
+ "negatives_inside_veto": 0,
+ "true_merges": 10,
+ "missed": 0,
+ "false_merges": 0,
+ "cost": {
+  "1": 0.0,
+  "10": 0.0,
+  "100": 0.0
+ },
+ "tally": {
+  "positives": {
+   "match": 10
+  },
+  "negatives": {
+   "review": 28
+  },
+  "hard": {
+   "review": 114,
+   "match": 272
+  }
+ }
+}
