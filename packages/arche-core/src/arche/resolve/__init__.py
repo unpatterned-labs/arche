@@ -909,7 +909,7 @@ def _choose_backend(list_a, list_b, entity, kwargs) -> tuple[str, dict]:
     """
     import importlib.util
 
-    from arche.resolve.recipes import RECIPES
+    from arche.resolve.recipes import RECIPE_CHAIN, RECIPES
 
     size = len(list_a) if list_a is list_b else len(list_a) + len(list_b)
     why = {"floor": AUTO_SPLINK_FLOOR, "records": size}
@@ -921,9 +921,13 @@ def _choose_backend(list_a, list_b, entity, kwargs) -> tuple[str, dict]:
         return arche("external candidates supplied; the arche engine consumes them")
     if size < AUTO_SPLINK_FLOOR:
         return arche(f"{size} records is below the floor of {AUTO_SPLINK_FLOOR}")
-    recipe = RECIPES.get(entity or "")
-    if recipe is None:
+    chain = RECIPE_CHAIN.get(entity or "")
+    if not chain:
+        single = RECIPES.get(entity or "")
+        chain = (single,) if single is not None else ()
+    if not chain:
         return arche(f"no shipped Splink recipe for entity {entity!r}")
+    recipe = chain[0]
     if not recipe.auto:
         return arche(f"recipe {recipe.name} exists but the engine won its benchmark; "
                      f"pass splink_settings=recipes.PRODUCT to use it deliberately"
@@ -931,9 +935,24 @@ def _choose_backend(list_a, list_b, entity, kwargs) -> tuple[str, dict]:
                      f"recipe {recipe.name} is not enabled for auto")
     if importlib.util.find_spec("splink") is None:
         return arche("splink is not installed (arche-core[resolve])")
+    # Try each recipe for this entity and take the first the records fit. The
+    # last failure is the one reported, because it is the most specific.
+    fitted, last = None, None
+    for candidate in chain:
+        if not candidate.auto:
+            continue
+        try:
+            candidate.check(list_a, side="list_a")
+            candidate.check(list_b, side="list_b")
+        except ValueError as exc:
+            last = exc
+            continue
+        fitted = candidate
+        break
+    recipe = fitted or recipe
     try:
-        recipe.check(list_a, side="list_a")
-        recipe.check(list_b, side="list_b")
+        if fitted is None:
+            raise last or ValueError("no recipe fits")
     except ValueError as exc:
         # The records are not in the recipe's schema -- a `name` blob where
         # the recipe reads given_name and surname. The engine reads blobs.
@@ -1018,6 +1037,7 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
                entity: str | None = None, tf=None, decl=None, **kwargs):
     """The engine dispatch behind :func:`reconcile`; see there."""
     extra_pins = dict(kwargs.pop("extra_pins", None) or {})
+    false_merge_cost = kwargs.pop("false_merge_cost", None)
     # Read early: the token-frequency work below is arche's own scoring input,
     # and a backend that does not consume it must not pin one. Splink applies
     # term frequency inside its own name comparisons, so building a table here
@@ -1081,7 +1101,28 @@ def _reconcile(list_a, list_b, comparators: list[dict] | None = None, *,
         if backend == "splink":
             from arche.resolve.recipes import RECIPES
 
-            kwargs.setdefault("splink_settings", RECIPES[entity])
+            # The recipe `auto` fitted, not the entity's first one. With a
+            # chain these differ, and handing Splink a configuration whose
+            # columns the records lack is the bug this chain exists to fix.
+            # `chosen` is the reason dict `auto` returned; it names the
+            # recipe that actually fitted, which with a chain is not
+            # necessarily the entity's first one.
+            fitted_name = (chosen or {}).get("recipe")
+            fitted = RECIPES.get(fitted_name) or RECIPES[entity]
+            kwargs.setdefault("splink_settings", fitted)
+            if false_merge_cost is not None and "threshold" not in kwargs:
+                # A declared cost moves the operating point, so it is an input
+                # to the decision and belongs in the pins beside the threshold
+                # it produced -- two runs under different cost policies are not
+                # the same decision.
+                point, margin = fitted.operating_point(float(false_merge_cost))
+                kwargs["threshold"] = point
+                kwargs.setdefault("review_margin", margin)
+                extra_pins["cost_policy"] = {
+                    "false_merge_cost": float(false_merge_cost),
+                    "threshold": round(point, 6),
+                    "rule": "bayes: p > c/(1+c)",
+                }
     if (backend == "arche"
             and tf is None
             and any(c.get("kind") == "tftoken" for c in comparators)):

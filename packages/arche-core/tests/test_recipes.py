@@ -154,3 +154,116 @@ class TestTheOtherTwo:
 
         assert RECIPES["place"] is PLACE and RECIPES["product_electronics"] is PRODUCT
         assert RECIPES[PLACE.name] is PLACE
+
+
+class TestARegisterWithNoPostcodeGetsAHandoff:
+    r"""`auto` must not refuse a register because it lacks a postal address.
+
+    Measured 2026-11-09: `backend="auto"` would not hand a Nigerian national
+    identity register to Splink, because the only shipped `person` recipe was
+    Splink's published **Febrl** configuration and `Recipe.check` requires every
+    column it reads -- including `postcode` and `street_number`. Febrl is a
+    synthetic Australian dataset; a Nigerian identity register has neither
+    field, so the handoff was structurally unreachable and arche's own engine
+    ran instead, at cost 3,730 against Splink's 840 on the same world
+    (identity_ng_v0_s20000, 10:1 false-merge cost).
+
+    Relaxing `check` would be the wrong fix: Splink would then compare NULL
+    against NULL on the missing columns and score that as agreement, which is
+    the exact failure `check` exists to stop. So there is a second recipe whose
+    required columns are what a register actually carries, and `auto` tries an
+    entity's recipes in order and takes the first that fits.
+    """
+
+    _N = 1200  # above AUTO_SPLINK_FLOOR
+
+    def _register(self):
+        return [{"id": f"r{i}", "given_name": "Amara", "surname": "Patel",
+                 "date_of_birth": "1990-01-01", "sex": "F",
+                 "admin_unit": "Dala"} for i in range(self._N)]
+
+    def _febrl(self):
+        return [{"id": f"r{i}", "given_name": "Amara", "surname": "Patel",
+                 "date_of_birth": "19900101", "street_number": "12",
+                 "address_1": "Zaria Road", "postcode": "700001",
+                 "state": "Kano"} for i in range(self._N)]
+
+    def test_a_register_reaches_splink(self):
+        from arche.resolve import _choose_backend
+
+        backend, why = _choose_backend(self._register(), self._register(),
+                                       "person", {})
+        assert backend == "splink", why.get("reason")
+        assert why["recipe"] == "person/identity-register-v1"
+
+    def test_febrl_shaped_records_still_get_febrl(self):
+        """The chain must not shadow the recipe that already fitted."""
+        from arche.resolve import _choose_backend
+
+        backend, why = _choose_backend(self._febrl(), self._febrl(),
+                                       "person", {})
+        assert backend == "splink"
+        assert why["recipe"] == "person/febrl-v1"
+
+    def test_the_register_recipe_requires_no_address(self):
+        from arche.resolve.recipes import PERSON_REGISTER
+
+        assert "postcode" not in PERSON_REGISTER.requires
+        assert "street_number" not in PERSON_REGISTER.requires
+        # Name pair plus date of birth is the contract; sex and the admin unit
+        # are read when present so a sparse register still gets the handoff.
+        assert set(PERSON_REGISTER.requires) == {
+            "given_name", "surname", "date_of_birth"}
+
+    def test_a_record_with_neither_schema_still_falls_back(self):
+        """A single joined `name` fits no recipe, and that must stay honest."""
+        from arche.resolve import _choose_backend
+
+        records = [{"id": f"r{i}", "name": "Amara Patel",
+                    "birth_date": "1990-01-01"} for i in range(self._N)]
+        backend, why = _choose_backend(records, records, "person", {})
+        assert backend == "arche"
+        assert "do not carry the recipe's columns" in why["reason"]
+
+
+class TestACostPolicyMovesTheOperatingPoint:
+    """A declared false-merge cost picks the threshold, and gets pinned.
+
+    The register recipe inherited Febrl's fixed 0.99 and measured cost 1,273
+    with zero false merges, against Splink-at-lowest-cost's 845 -- but those
+    arms sweep the threshold on a tune split, which needs labels a shipped
+    library does not have. The Bayes rule needs none: with one wrong merge
+    costing c missed duplicates and a calibrated posterior p, merging is
+    cheaper when p > c/(1+c). Tepping (1968); Verykios, Moustakides & Elfeky
+    (2003). Cited, not claimed.
+    """
+
+    @pytest.mark.parametrize("cost,expected", [
+        (1, 0.5), (2, 2 / 3), (10, 10 / 11), (100, 100 / 101),
+    ])
+    def test_the_threshold_is_the_bayes_boundary(self, cost, expected):
+        from arche.resolve.recipes import PERSON_REGISTER
+
+        threshold, _margin = PERSON_REGISTER.operating_point(cost)
+        assert threshold == pytest.approx(expected)
+
+    def test_a_dearer_false_merge_raises_the_bar(self):
+        from arche.resolve.recipes import PERSON_REGISTER
+
+        cheap, _ = PERSON_REGISTER.operating_point(1)
+        dear, _ = PERSON_REGISTER.operating_point(50)
+        assert dear > cheap
+
+    def test_the_review_band_never_reaches_below_zero(self):
+        """Otherwise `review` would swallow every pair the blocker proposed."""
+        from arche.resolve.recipes import PERSON_REGISTER
+
+        for cost in (0.5, 1, 2, 10):
+            threshold, margin = PERSON_REGISTER.operating_point(cost)
+            assert threshold - margin >= 0.0
+
+    def test_a_free_false_merge_is_refused(self):
+        from arche.resolve.recipes import PERSON_REGISTER
+
+        with pytest.raises(ValueError, match="must be positive"):
+            PERSON_REGISTER.operating_point(0)
