@@ -105,6 +105,39 @@ class Recipe:
     #: lost stays available by name and is never picked silently.
     auto: bool = True
 
+    def operating_point(self, false_merge_cost: float) -> tuple[float, float]:
+        """The threshold and review margin for a declared false-merge cost.
+
+        Returns ``(threshold, review_margin)``. The threshold is the Bayes
+        decision boundary for asymmetric costs: with one wrong merge costing
+        ``false_merge_cost`` missed duplicates and a calibrated posterior ``p``,
+        merging is the cheaper action when ``p > c / (1 + c)``. So 1 gives 0.5,
+        10 gives about 0.909 and 100 gives about 0.990. The rule is Tepping
+        (1968) and Verykios, Moustakides & Elfeky (2003); it is cited, not ours.
+
+        **It is only as good as the calibration of ``p``.** Measured on
+        DBLP-ACM's review band, arche's own score ranked well (AUROC 0.8856)
+        and was calibrated badly (expected calibration error 0.5993): merging
+        at 0.90 promised a 10% error rate and delivered 100%. A caller who
+        declares a cost is taking the score at its word, which is the thing
+        `data/scripts/benchmark_monitor.py` exists to test. Sweeping a
+        threshold against truth beats this whenever labels exist -- this is for
+        when they do not.
+
+        The review band keeps the recipe's own width, so declaring a cost moves
+        where the decision sits without changing how much is held for a human.
+        """
+        if false_merge_cost <= 0:
+            raise ValueError(
+                "false_merge_cost must be positive: it is how many missed "
+                "duplicates one wrong merge costs, so 0 would mean a wrong "
+                "merge is free and every pair should merge")
+        threshold = false_merge_cost / (1.0 + false_merge_cost)
+        # Never widen past the threshold itself, or the band would reach below
+        # zero and `review` would swallow every scored pair.
+        margin = min(self.review_margin, threshold)
+        return threshold, margin
+
     @property
     def requires(self) -> tuple[str, ...]:
         """What a caller's records must carry."""
@@ -191,6 +224,88 @@ def _person_train(linker, seed: int) -> None:
     linker.training.estimate_u_using_random_sampling(max_pairs=2e6, seed=seed)
     for rule in (block_on("date_of_birth"), block_on("postcode")):
         linker.training.estimate_parameters_using_expectation_maximisation(rule)
+
+
+REGISTER_COLUMNS = ("given_name", "surname", "date_of_birth", "sex",
+                    "admin_unit")
+
+#: What a caller must actually supply. `sex` and `admin_unit` are read when
+#: present and are not required: a register that lacks them still gets the
+#: handoff, where demanding them would send it back to the fallback -- the
+#: failure this recipe exists to fix.
+REGISTER_INPUT = ("given_name", "surname", "date_of_birth")
+
+
+def _register_settings(link_type: str = "link_only"):
+    """Febrl's comparisons minus the address, which this data does not have.
+
+    No postcode and no street number, so the discriminating power has to come
+    from the name pair, the date of birth and one administrative unit. That is
+    a weaker model than Febrl's by construction, and it is the model the data
+    supports.
+    """
+    import splink.comparison_library as cl
+    from splink import SettingsCreator, block_on
+
+    return SettingsCreator(
+        link_type=link_type,
+        comparisons=[
+            cl.NameComparison("given_name").configure(term_frequency_adjustments=True),
+            cl.NameComparison("surname").configure(term_frequency_adjustments=True),
+            # `input_is_string` with an ISO date: a register writes 1990-01-01,
+            # not Febrl's 19900101.
+            cl.DateOfBirthComparison("date_of_birth", input_is_string=True,
+                                     datetime_format="%Y-%m-%d"),
+            cl.ExactMatch("sex"),
+            cl.ExactMatch("admin_unit").configure(term_frequency_adjustments=True),
+        ],
+        blocking_rules_to_generate_predictions=[
+            block_on("given_name", "surname"),
+            # The swap: registers transpose given and family name often enough
+            # that Febrl's rule earns its place here too.
+            "l.given_name = r.surname and l.surname = r.given_name",
+            block_on("date_of_birth"),
+            # Every rule needs a second key. A patronymic surname block alone
+            # reached 24,149 records -- about 2 billion pairs -- and ran DuckDB
+            # out of memory at 1M in the Sanov D4 run.
+            block_on("surname", "date_of_birth"),
+            block_on("admin_unit", "surname"),
+        ],
+        retain_intermediate_calculation_columns=False,
+    )
+
+
+def _register_train(linker, seed: int) -> None:
+    from splink import block_on
+
+    linker.training.estimate_probability_two_random_records_match(
+        [block_on("given_name", "surname", "date_of_birth")], recall=0.8)
+    linker.training.estimate_u_using_random_sampling(max_pairs=2e6, seed=seed)
+    # EM has to be blocked on something each comparison still VARIES within,
+    # and there is no postcode to use as the second rule, so the admin unit
+    # takes that job.
+    for rule in (block_on("date_of_birth"), block_on("admin_unit")):
+        linker.training.estimate_parameters_using_expectation_maximisation(rule)
+
+
+PERSON_REGISTER = Recipe(
+    name="person/identity-register-v1",
+    entity="person",
+    columns=REGISTER_COLUMNS,
+    input_columns=REGISTER_INPUT,
+    settings=_register_settings,
+    train=_register_train,
+    threshold=0.99,
+    review_margin=0.79,
+    benchmark="sanov identity_benchmark.py (identity_ng_v0_s20000)",
+    notes=(
+        "For identity registers with no postal address. Febrl's configuration "
+        "requires a postcode and a street number; a national identity register "
+        "in Nigeria has neither, so `auto` could not hand off and arche's own "
+        "engine ran at 3,730 against Splink's 840 on the same world. Tried "
+        "after person/febrl-v1 and used only when that one does not fit."
+    ),
+)
 
 
 PERSON = Recipe(
@@ -379,9 +494,25 @@ PRODUCT = Recipe(
 
 RECIPES: dict[str, Recipe] = {
     PERSON.name: PERSON, "person": PERSON,
+    PERSON_REGISTER.name: PERSON_REGISTER,
     PLACE.name: PLACE, "place": PLACE,
     PRODUCT.name: PRODUCT, "product_electronics": PRODUCT,
 }
 
-__all__ = ["PERSON", "PERSON_COLUMNS", "PLACE", "PLACE_COLUMNS", "PRODUCT",
-           "PRODUCT_COLUMNS", "PRODUCT_INPUT", "RECIPES", "Recipe"]
+#: The recipes to try for an entity, in order, taking the first whose columns
+#: the records carry. One entity had exactly one recipe until 2026-11-09, which
+#: meant a register that did not match Febrl's schema got no handoff at all
+#: rather than a handoff to a configuration built for its own shape. The chosen
+#: recipe's name goes in the pins, so a reader can always tell which ran.
+RECIPE_CHAIN: dict[str, tuple[Recipe, ...]] = {
+    "person": (PERSON, PERSON_REGISTER),
+    PERSON.name: (PERSON, PERSON_REGISTER),
+    PERSON_REGISTER.name: (PERSON_REGISTER,),
+    "place": (PLACE,), PLACE.name: (PLACE,),
+    "product_electronics": (PRODUCT,), PRODUCT.name: (PRODUCT,),
+}
+
+__all__ = ["PERSON", "PERSON_COLUMNS", "PERSON_REGISTER", "PLACE",
+           "PLACE_COLUMNS", "PRODUCT", "PRODUCT_COLUMNS", "PRODUCT_INPUT",
+           "RECIPE_CHAIN", "REGISTER_COLUMNS", "REGISTER_INPUT", "RECIPES",
+           "Recipe"]

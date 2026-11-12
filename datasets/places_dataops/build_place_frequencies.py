@@ -46,7 +46,7 @@ registries and GeoNames rather than the easier OSM extract.
 Usage
 -----
     python datasets/places_dataops/build_place_frequencies.py
-    python datasets/places_dataops/build_place_frequencies.py --prune-min 3
+    python datasets/places_dataops/build_place_frequencies.py --prune-min 4
     python datasets/places_dataops/build_place_frequencies.py --countries GB,NG
     python datasets/places_dataops/build_place_frequencies.py --offline   # cache only
 """
@@ -611,7 +611,20 @@ def main() -> int:
     ap.add_argument("--merge", default="equal-mass",
                     choices=["equal-mass", "peak-rate"],
                     help="how strata are combined; see `_merge_strata`")
-    ap.add_argument("--prune-min", type=int, default=2,
+    # 3, not 2, because that is what the committed artefact was built with.
+    # Measured 2026-11-09: from the same source cache and the same strata, this
+    # builder at 2 produces 374,089 tokens and a 2.3 MB table, where the
+    # committed `place_frequencies.json.gz` holds 160,373 and 1.2 MB. At 3 it
+    # reproduces that file exactly -- stamp sha256:c94f20a1c2dfba18, counts and
+    # curated block identical.
+    #
+    # The default and the artefact disagreeing is not cosmetic. The rebuild
+    # command in SOURCES.md takes no flags, so running it as documented
+    # silently produced a *different* table under a different `version`, and
+    # that stamp travels into `pins` and therefore into `decision_id`. Anyone
+    # who rebuilt from the documented command got decision ids that did not
+    # correspond to the shipped table, with nothing to indicate it.
+    ap.add_argument("--prune-min", type=int, default=3,
                     help="drop tokens seen fewer than N times (wheel size)")
     ap.add_argument("--offline", action="store_true",
                     help="use only what is already cached")

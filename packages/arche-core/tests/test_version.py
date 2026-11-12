@@ -6,7 +6,7 @@ import pytest
 from arche import __version__
 
 #: Bump deliberately, in the same commit as the changelog section it names.
-VERSION = "0.10.0"
+VERSION = "0.11.0"
 
 
 def test_version():

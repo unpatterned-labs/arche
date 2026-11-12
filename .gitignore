@@ -115,6 +115,7 @@ DESIGN.md
 /overture_*.csv
 /review_queue.csv
 /headtohead.json
+/5a_result.json
 datasets/data/_cache/
 
 # Every fetched-not-vendored source lands here: NCVR voter records, Febrl,
@@ -122,6 +123,13 @@ datasets/data/_cache/
 # addresses, all of it is large, and none of it belongs in the repo. The
 # scripts that fetch it re-fetch on a cold cache.
 data/_cache/
+
+# GRID3 NGA Health Facilities v4.0 — the same rule, for a file that does not
+# live in a cache directory. 21.6 MB, superseding the v2.0 release the place
+# tables are built from, and read by nothing until v4.0 is adopted: fetched,
+# not vendored. The attribution and a fetch recipe that reproduces it exactly
+# are in data/GRID3_NGA_health_facilities_SOURCES.md.
+/data/GRID3_NGA_health_facilities_v4.csv
 
 # Local production extracts and any derived resolution artefacts. These files
 # may contain personal or commercially sensitive data and must never be added
