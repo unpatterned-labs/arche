@@ -124,7 +124,29 @@ jobs:
           # and tried to re-upload an existing version, which PyPI answers with
           # a 400 that reads like a credentials failure. Only two answers are
           # trustworthy here: 200 with a parsed body, or a definite 404.
-          CODE=$(curl -sS -o /tmp/idx.json -w "%{http_code}" --retry 3 --retry-delay 2 "$URL" || echo "000")
+          # `--retry` on its own does not cover the failure that actually
+          # happened here. curl retries only what it calls transient -- a
+          # timeout, an FTP 4xx, an HTTP 408/429/5xx -- and a dropped TLS
+          # handshake is not in that set. The 0.11.0 release attempt died on
+          # `curl: (35) TLS connect error: ... unexpected eof while reading`
+          # with all three retries skipped, because there was nothing curl
+          # considered retryable. `--retry-all-errors` is the flag that makes
+          # the retry apply to a broken handshake; the timeouts keep a hung
+          # connection from eating the job instead.
+          set +e
+          CODE=$(curl -sS -o /tmp/idx.json -w "%{http_code}" \
+                   --retry 5 --retry-delay 2 --retry-all-errors \
+                   --connect-timeout 10 --max-time 60 "$URL")
+          RC=$?
+          set -e
+          if [ "$RC" -ne 0 ]; then
+            # Distinguished from a surprising HTTP code below, because the
+            # operator's next move is different: a transport failure here
+            # means the run stopped before anything was built, uploaded or
+            # tagged, so re-running the same inputs is safe and sufficient.
+            echo "::error::Could not reach $URL (curl exit $RC). Nothing was built, uploaded or tagged, so this run is safe to repeat with the same inputs."
+            exit 1
+          fi
           case "$CODE" in
             200)
               PUBLISHED=$(WANT="$V" python -c "
