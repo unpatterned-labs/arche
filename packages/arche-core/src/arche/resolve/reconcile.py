@@ -207,13 +207,74 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
     for domain in domains:
         vocab = load_type_vocab(domain)
         if vocab:
+            # Sorted, so the digest names the vocabulary as a set. That is only
+            # honest because matching is order-independent too: see the
+            # tie-break in `_matcher._compiled_vocab`. Full length, for the
+            # reason `comparators_sha256` gives.
             digest = content_hash(sorted(vocab.items()), prefix="tt")
-            out[f"type_tokens:{domain}"] = digest.split(":")[-1][:16]
+            out[f"type_tokens:{domain}"] = digest.split(":")[-1]
     if any(spec.get("kind") == "legal_form" for spec in comparators):
         from arche.resolve._legal_form import pin as _legal_form_pin
 
         out["legal_form"] = _legal_form_pin()
     return out
+
+
+def runtime_record() -> dict[str, str]:
+    """The environment a run executed in: recorded, deliberately NOT hashed.
+
+    Python, the Unicode database (it drives NFKD normalisation) and the
+    string-similarity libraries can all move a score. They are not pinned into
+    ``decision_id`` because every upgrade would then change every id, and
+    review marks are keyed by ``decision_id``: each release would orphan every
+    human judgement, and no two languages could ever produce the same id. So
+    behaviour-affecting configuration is hashed, and the environment is
+    written beside the receipt, where a verifier can see that two runs
+    differed without the ids churning.
+    """
+    import platform
+    import unicodedata
+    from importlib.metadata import PackageNotFoundError, version
+
+    import arche
+
+    # The running code's own version, not the installed metadata: a stale
+    # editable install reports the metadata of whatever was installed last.
+    out = {
+        "python": platform.python_version(),
+        "unicodedata": unicodedata.unidata_version,
+        "arche-core": arche.__version__,
+    }
+    for dist in ("jellyfish", "rapidfuzz"):
+        try:
+            out[dist] = version(dist)
+        except PackageNotFoundError:
+            out[dist] = "absent"
+    return out
+
+
+def _check_extra_pins(extra_pins: dict[str, Any], pins: dict[str, Any]) -> None:
+    """Refuse ``extra_pins`` that would overwrite a pin the engine set itself.
+
+    ``extra_pins`` exists to ADD provenance (a declaration, a cost policy, a
+    case name). Before this check it was a plain ``dict.update``, so a caller
+    could replace ``engine``, ``comparators_sha256`` or ``threshold`` and the
+    receipt would name a configuration that never ran -- the one thing a pin is
+    for is to be believed.
+
+    One refinement is allowed: ``tf``. The engine only knows a table was
+    ``provided``; the caller that built it knows which one, and naming it
+    (``shipped:organisation@sha256:...``) says strictly more.
+    """
+    clashes = sorted(
+        key for key in extra_pins
+        if key in pins and not (key == "tf" and pins[key] == "provided")
+    )
+    if clashes:
+        raise ValueError(
+            f"extra_pins may not overwrite pins the engine sets: {clashes}. "
+            "Use a new key to add provenance."
+        )
 
 
 @lru_cache(maxsize=65536)
@@ -969,7 +1030,7 @@ def reconcile(
     # Imported here, not at module level: arche.ids itself imports from
     # arche.resolve, so a module-level import is a circular-import landmine
     # whenever arche.ids is the first entry point.
-    from arche.ids import content_hash
+    from arche.ids import content_hash, edge_decision_id
 
     pins: dict[str, Any] = {
         # WIRE FORMAT — do not rename. This string and the
@@ -995,6 +1056,15 @@ def reconcile(
         "distinctive_floor": distinctive_floor,
         "tf": "provided" if tf is not None else None,
     }
+    # Two switches that change verdicts, pinned only when they depart from the
+    # default so that runs which never touched them keep the ids they had.
+    # `rerank` moves scores by the other candidates in a record's block, and
+    # `distinctive_kinds` decides which comparators can clear the gate; leaving
+    # either out let two runs disagree on a verdict with identical pins.
+    if rerank:
+        pins["rerank"] = True
+    if tuple(distinctive_kinds) != _DISTINCTIVE_KINDS:
+        pins["distinctive_kinds"] = sorted(distinctive_kinds)
     if code_tf:
         # The code table is a scoring input: it decides whether a shared code is
         # identifying, so two runs with different tables can reach different
@@ -1007,7 +1077,7 @@ def reconcile(
         pins["code_tf"] = {
             str(category or "default"): "codes@sha256:" + _hashlib.sha256(
                 repr(sorted(table._as_counts().items())).encode()
-            ).hexdigest()[:16]
+            ).hexdigest()
             for category, table in code_tf.items()
         }
     # The other shipped scoring inputs, by the same rule as `code_tf` above.
@@ -1016,6 +1086,7 @@ def reconcile(
     if (asset_pins := _shipped_asset_pins(comparators)):
         pins["data_assets"] = asset_pins
     if extra_pins:
+        _check_extra_pins(extra_pins, pins)
         pins.update(extra_pins)
     if candidate_pairs is not None:
         pins["candidate_provider"] = candidate_pins
@@ -1040,6 +1111,13 @@ def reconcile(
             ]
             score = rerank_score(score, a_text, b_text, other_texts, tf)
 
+        # Decide on the values the receipt records, not on the unrounded ones.
+        # Otherwise a score within 5e-5 of a threshold can be decided one way
+        # here and the other way on a machine whose last float bits differ,
+        # while both write the same rounded number into the receipt -- and a
+        # reader of the receipt cannot tell which side of the line it fell.
+        score = round(score, 4)
+        distinctive_max = round(distinctive_max, 3)
         if score < floor:
             continue
         decision = "match" if score >= threshold else "review"
@@ -1053,10 +1131,10 @@ def reconcile(
         edge = {
             "a_id": ra.get(id_field, i),
             "b_id": rb.get(id_field, j),
-            "score": round(score, 4),
+            "score": score,
             "decision": decision,
             "evidence": evidence,
-            "distinctive_max": round(distinctive_max, 3),
+            "distinctive_max": distinctive_max,
         }
         if (candidate := retrieval.get((i, j))) is not None:
             edge["candidate"] = candidate
@@ -1064,10 +1142,7 @@ def reconcile(
         # (rounded) evidence and the pins — no timestamp, recomputable by
         # anyone holding the same inputs. This is what makes a crosswalk
         # edge citable and signable, exactly like a pairwise decision.
-        edge["decision_id"] = content_hash(
-            {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins},
-            prefix="xwd",
-        )
+        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
@@ -1087,6 +1162,7 @@ def reconcile(
         "matches": matches,
         "count": len(matches),
         "pins": pins,
+        "runtime": runtime_record(),
         "blocking": blocking,
     }
 
@@ -1112,6 +1188,7 @@ def sign_edges(
     Keys come from ``arche.sign.generate_keypair()`` or your own Ed25519 key;
     verify with ``arche.sign.verify``.
     """
+    from arche.ids import EDGE_SCHEMA
     from arche.sign import sign as _jws_sign
 
     pins = result.get("pins", {})
@@ -1119,7 +1196,7 @@ def sign_edges(
     for edge in result.get("matches", ()):
         if edge.get("decision") not in decisions:
             continue
-        payload = {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins}
+        payload = {"schema": EDGE_SCHEMA, **edge, "pins": pins}
         signed.append({
             "decision_id": edge.get("decision_id", ""),
             "jws": _jws_sign(

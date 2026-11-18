@@ -219,6 +219,29 @@ def decision_id(
     return content_hash(payload, prefix="dec", key=key)
 
 
+#: The wire schema a reconcile edge is hashed under. Hashed into every edge
+#: ever issued, so it does not follow the Python rename of `crosswalk` to
+#: `reconcile`; bump to `.v2` only for a deliberate format change.
+EDGE_SCHEMA = "arche.crosswalk_edge.v1"
+
+
+def edge_decision_id(edge: dict[str, Any], pins: dict[str, Any]) -> str:
+    """The reproducible address of a reconcile edge -- the second id contract.
+
+    :func:`decision_id` addresses a pairwise decision (``dec:``) over named
+    factors, gate, vetoes and jurisdiction. A reconcile edge has a different
+    shape -- ids, rounded score, evidence, ``distinctive_max`` -- and is hashed
+    as the edge itself plus the run's pins, under :data:`EDGE_SCHEMA`
+    (``xwd:``). One function, so the engine that issues the id and every
+    verifier that recomputes it cannot disagree about what it covers.
+
+    A ``decision_id`` key already in ``edge`` is ignored, so a signed payload
+    (which carries its claimed id) can be passed as it is.
+    """
+    body = {k: v for k, v in edge.items() if k not in ("decision_id", "schema", "pins")}
+    return content_hash({"schema": EDGE_SCHEMA, **body, "pins": pins}, prefix="xwd")
+
+
 __all__ = [
     "canonical_json",
     "content_hash",
@@ -227,4 +250,6 @@ __all__ = [
     "identity_binding_key",
     "entity_id",
     "decision_id",
+    "EDGE_SCHEMA",
+    "edge_decision_id",
 ]

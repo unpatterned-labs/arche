@@ -463,6 +463,9 @@ def review_pack(
             "\n".join(sorted(ids)).encode()).hexdigest(),
         # Enough to say which engine produced this.
         "pins": result.get("pins") or {},
+        # Where it ran. Recorded beside the pins, never inside them: see
+        # `arche.resolve.reconcile.runtime_record`.
+        "runtime": result.get("runtime") or {},
         "blocking": result.get("blocking") or {},
     }
     if meta:

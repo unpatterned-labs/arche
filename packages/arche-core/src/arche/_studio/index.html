@@ -624,10 +624,11 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
     <p><b>The recomputed id</b> establishes that the id is the honest address of
       <i>this</i> evidence, rather than one lifted from a more favourable
       decision.</p>
-    <p><b>A known gap.</b> Only a <i>pairwise</i> decision can be recomputed. A
-      crosswalk edge carries its evidence but not the gate and veto structure the
-      id is hashed over, so its id cannot be re-derived from the artifact alone.
-      The tool says so rather than passing it.</p>
+    <p><b>Two kinds of id.</b> A <i>pairwise</i> decision is recomputed from its
+      factors, gate and vetoes; a <i>reconcile</i> edge from the edge and the
+      pins of the run that issued it, which is what gets signed. Anything else
+      cannot be re-derived from the artifact alone, and the tool says so rather
+      than passing it.</p>
   </aside>
  </div>
 </section>

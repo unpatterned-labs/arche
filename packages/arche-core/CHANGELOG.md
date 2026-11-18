@@ -4,6 +4,28 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Changed
+
+- **Crosswalk decision ids that pin shipped data assets move again.** The `data_assets` digests (type-token vocabulary, legal-form tables) and the `code_tf` digests were truncated to 16 hex characters — 64 bits, fine against accident and not against anyone who wants two vocabularies to pin identically, which is why `comparators_sha256` was already full length. They are now full SHA-256. Checked on the frozen receipt fixture: the edge itself (score, decision, evidence) is byte-identical; only the pin strings grew. The superseded id is recorded in the fixture's comment. The engine pin stays `crosswalk.v1`.
+
+- **The gate decides on the values the receipt records.** `reconcile` compared unrounded scores against `threshold` and `distinctive_floor`, then wrote rounded ones into the edge. A score within half a rounding step of a threshold could therefore be decided differently on two machines while both receipts showed the same number, and a reader could not confirm the verdict from the receipt. Scores are rounded first (4 places; `distinctive_max` 3) and the gate reads those.
+
+- **Equal-length synonyms resolve by text, not by file order.** The vocabulary digest is taken over the sorted entries, but matching took the first of two equal-length synonyms in file order, so reordering `type_tokens.yaml` could change a verdict without changing the pin. Ties now break on the synonym text, so the vocabulary behaves as the set its digest names.
+
+- **`extra_pins` can add provenance but no longer overwrite it.** Passing `engine`, `threshold`, `comparators_sha256` or any other key the engine sets now raises `ValueError`, in both the arche and Splink backends. Previously a caller could make a receipt cite a configuration that never ran. Naming a provided frequency table under `tf` is still allowed, because it says more than the engine's `provided`.
+
+### Fixed
+
+- **Studio's Verify recomputes reconcile edge ids.** It applied only the pairwise contract (`dec:`), so every signed reconcile edge (`xwd:`) — including the one its own "Sign one to try" makes — was reported as "cannot be recomputed", although the signed payload carries exactly what the id is hashed over. The check that catches an id lifted from a more favourable decision never ran on the decisions people sign. It now runs, and says which contract it applied.
+
+### Added
+
+- **`arche.ids.edge_decision_id` and `EDGE_SCHEMA`** — the reconcile edge id contract as one function. The engine (both backends), `sign_edges`, `verify-decisions` and Studio's Verify each carried their own copy of the hash; they now share this one, so an issuer and a verifier cannot disagree about what an id covers. Ids are unchanged.
+
+- **`rerank` and a non-default `distinctive_kinds` are pinned.** Both change verdicts and neither appeared in the pins. Each is pinned only when it departs from the default, so runs that never touched them keep their ids.
+
+- **A `runtime` block beside the pins** — Python, the Unicode database, `arche-core`, `jellyfish` and `rapidfuzz` versions — on `reconcile` results and in pack manifests. Recorded, deliberately **not** hashed: hashing it would move every id on every upgrade and orphan every review mark keyed by `decision_id`. A verifier can see that two runs ran in different environments without the ids churning.
+
 ## [0.11.0] — 2026-11-09
 
 ### Changed

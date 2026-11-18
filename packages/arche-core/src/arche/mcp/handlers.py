@@ -353,19 +353,22 @@ def compare_records(list_a: list[dict], list_b: list[dict], *,
             raise ValueError(
                 f"unknown entity pack {entity!r}; "
                 f"available: {', '.join(sorted(ENTITY_PACKS))}")
-        # `crosswalk`, not `reconcile`, and the difference is load-bearing.
+        # The public `reconcile(entity=...)`, not the low-level engine in
+        # `arche.resolve.reconcile`, and the difference is load-bearing.
         # Entity packs contain `tftoken` comparators, which price how ordinary
-        # a shared word is and therefore need a frequency table. `reconcile`
-        # does not build one and raises; `crosswalk` self-calibrates it over
-        # the two lists being linked. Handing the pack straight to `reconcile`
-        # looked right and failed on every pack that weighs rarity, which is
-        # all of them.
+        # a shared word is and therefore need a frequency table. The engine
+        # does not build one and raises; the public verb self-calibrates it
+        # over the two lists being linked. Handing the pack straight to the
+        # engine looked right and failed on every pack that weighs rarity,
+        # which is all of them.
         #
         # It also means an `entity=` call and a `comparators=` call differ in
-        # more than convenience: `crosswalk` applies blocking defaults and a
-        # self-calibrated `tf`, so the same pair can score differently in
-        # different batches. That is a property of the engine, not of this
-        # wrapper, and the pins in the result record which table was used.
+        # more than convenience: `entity=` keeps the default blocking, where
+        # the `comparators=` branch below compares every pair (`block=None`).
+        # Either way a self-calibrated `tf` is built from the batch, so the
+        # same pair can score differently in different batches. That is a
+        # property of the engine, not of this wrapper, and the pins in the
+        # result record which table was used.
         extra = {}
         if backend:
             # Splink refuses to run without a configuration, deliberately: a
