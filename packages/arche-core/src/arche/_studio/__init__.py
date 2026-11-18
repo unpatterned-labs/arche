@@ -902,7 +902,7 @@ def _link_documents(documents: list[dict], *, reveal: bool) -> list[dict]:
     whether it is the *same* person, which is the question anybody comparing a
     register against a survey actually has.
 
-    Runs the real `crosswalk` over the extracted mentions, so the decision, the
+    Runs the real `reconcile` over the extracted mentions, so the decision, the
     score and the refusals are the engine's own. Pairs it declines to merge come
     back too — a held pair is the interesting output here, not a failure.
     """

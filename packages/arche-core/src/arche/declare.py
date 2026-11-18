@@ -46,8 +46,8 @@ _FIELD_KEYS = frozenset(
 _GEO_KEYS = frozenset({"lat", "lon", "weight", "decay_km"})
 _ON_UNKNOWN = frozenset({"allow", "warn", "error"})
 # Kind -> the person-shaped pairwise matcher slot (coreference._FIELD_MAP targets).
-# "type" has no slot (crosswalk-only, supporting); "placename" rides the name
-# slot — pairwise place decisions remain roadmap, crosswalk is the place path.
+# "type" has no slot (reconcile-only, supporting); "placename" rides the name
+# slot — pairwise place decisions remain roadmap, reconcile is the place path.
 KIND_TO_SLOT = {
     "name": "name", "placename": "name", "id": "national_id", "phone": "phone",
     "email": "email", "address": "address", "date": "dob",
@@ -232,7 +232,7 @@ class Declaration:
             warns.append(
                 f"fields {id_kind_fields} all map to the single pairwise "
                 f"identifier slot; only {id_kind_fields[0]!r} is used on the "
-                "pairwise path (crosswalk uses all of them)."
+                "pairwise path (reconcile uses all of them)."
             )
         from arche.canonical import IDENTITY_ATTRIBUTE_NAMES
 
@@ -303,7 +303,7 @@ class Declaration:
 
     # ── consumers ────────────────────────────────────────────────────────────
     def comparators(self) -> list[dict]:
-        """The generated entity pack (``ENTITY_PACKS`` shape) for crosswalk."""
+        """The generated entity pack (``ENTITY_PACKS`` shape) for reconcile."""
         specs: list[dict] = []
         for f in self.fields.values():
             if f.role != "identifies" and not (f.role == "describes" and f.kinds):

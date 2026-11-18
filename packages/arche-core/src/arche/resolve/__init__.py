@@ -451,7 +451,7 @@ def _tf_digest(tf: TokenFrequencyTable) -> str | None:
 def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
     """One pair, decided by the pack engine, returned as a decision.
 
-    Two records and an entity pack is the same question `crosswalk` answers for
+    Two records and an entity pack is the same question `reconcile` answers for
     two lists, so this asks it that way rather than growing a second scorer.
     `_score_pair` is right there and calling it directly would be shorter, but
     it would mean re-deriving the pack, the frequency table, the code tables and
@@ -462,7 +462,7 @@ def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
 
     **Blocking is off.** `block=None`. Blocking exists to avoid comparing every
     pair in two lists; a caller naming one pair has already done that job. Left
-    on, `crosswalk` answers "no shared rare token" — which surfaces as *no
+    on, `reconcile` answers "no shared rare token" — which surfaces as *no
     result* and reads exactly like "not the same". Measured on
     `Karfi Agro Cooperative Ltd` against `Zenith Bank Plc`: `block="union"`
     yields `candidate_pairs=0` (never compared), `block=None` yields
@@ -470,7 +470,7 @@ def _compare_via_pack(a: dict, b: dict, entity: str, **kwargs):
     an answer to the question that was asked.
 
     **A pair below the surfacing floor is `different`, and says so honestly.**
-    `crosswalk` emits edges only at or above `threshold - review_margin`; below
+    `reconcile` emits edges only at or above `threshold - review_margin`; below
     that it emits nothing, which for two lists means "not worth a reviewer's
     time" and for one named pair means "different". The thresholds are NOT bent
     to force an edge out: doing so would make the edge's own `decision` field
@@ -617,7 +617,7 @@ def compare(a, b, *, entity: str = "person", store=None, **kwargs):
     engine in :mod:`arche.resolve.coreference`, which carries a fixed person
     schema (name / phone / national_id / email / address / dob / geo) and the
     jurisdiction priors that go with it. Every other entity runs the pack
-    engine — the same one :func:`crosswalk` uses — on a single pair.
+    engine — the same one :func:`reconcile` uses — on a single pair.
 
     **The two engines do not share a score.** One is a log-odds sum, the other
     a weighted mean over a comparator pack, and a 0.8 from each does not mean
@@ -678,7 +678,7 @@ def _compare(a, b, *, entity: str = "person", **kwargs):
     # Plain records reach the deterministic core the same way a structured
     # source does anywhere else in arche — through `Reference.from_record`,
     # which is already declaration-aware. Rejecting dicts here while
-    # `crosswalk` required them was the seam that made one question look like
+    # `reconcile` required them was the seam that made one question look like
     # two different libraries.
     if isinstance(a, dict) and isinstance(b, dict):
         from arche.canonical import Reference as _Reference
@@ -801,7 +801,7 @@ ENTITY_PACK_PURPOSE: dict[str, str] = {
 def describe_pack(entity: str) -> dict:
     """What an entity pack reads, and what it does with each field.
 
-    Written for somebody about to hand records to `crosswalk` and wondering
+    Written for somebody about to hand records to `reconcile` and wondering
     which columns will be used. The answer is derivable from the pack itself, so
     it is derived rather than maintained as prose that goes stale the first time
     a comparator is added — the `person` pack gained a date comparator in
@@ -861,7 +861,7 @@ def describe_pack(entity: str) -> dict:
         # score, different population -- and nothing else in this dict says so.
         #
         # `None` is not "no rarity check". It means the table is built from the
-        # two lists handed to `crosswalk`, so a small pair cannot know that any
+        # two lists handed to `reconcile`, so a small pair cannot know that any
         # of its own tokens are ordinary and everything reads as rare.
         "frequency_table": _PACK_TF_DOMAIN.get(entity),
         "fields": fields,
