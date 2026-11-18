@@ -1237,11 +1237,14 @@ def _verify(payload: dict) -> dict:
     * The **recomputed id** says the id is the honest address of *this*
       evidence rather than one lifted from a more favourable decision.
 
-    They fail differently, which is what makes the pair worth having. The
-    second check only works on a `pairwise` decision: a `crosswalk` edge
-    carries `evidence` but not the `factors`/`gate`/`vetoes`/`jurisdiction`
-    that `decision_id` hashes, so its id cannot be recomputed from the
-    artifact alone. That is reported rather than glossed.
+    They fail differently, which is what makes the pair worth having. There
+    are two id contracts and both recompute: a pairwise decision (`dec:`)
+    from its factors, gate, vetoes and jurisdiction; a reconcile edge
+    (`xwd:`) from the edge itself plus the run's pins, which is exactly what
+    `sign_edges` signs. This used to apply only the first contract, so every
+    signed edge -- including the one "Sign one to try" makes -- was reported
+    as unrecomputable when it was not. A payload that carries neither shape
+    is still reported, not glossed.
     """
     from arche.sign import verify as verify_jws
 
@@ -1279,15 +1282,32 @@ def _verify(payload: dict) -> dict:
     body = dict(getattr(v, "payload", {}) or {})
     out["payload"] = body
 
+    from arche.ids import EDGE_SCHEMA, edge_decision_id
+
+    if body.get("schema") == EDGE_SCHEMA:
+        if not isinstance(body.get("pins"), dict):
+            out["recompute"] = {
+                "possible": False, "missing": ["pins"],
+                "note": ("A reconcile edge is hashed over the edge and the "
+                         "run's pins, and this payload carries no pins."),
+            }
+            return out
+        claimed = body.get("decision_id")
+        got = edge_decision_id(body, body["pins"])
+        out["recompute"] = {"possible": True, "contract": "reconcile edge",
+                            "claimed": claimed, "recomputed": got,
+                            "agrees": got == claimed}
+        return out
+
     need = ("reference_id_a", "reference_id_b", "factors", "gate",
             "vetoes", "jurisdiction", "pins")
     missing = [k for k in need if k not in body]
     if missing:
         out["recompute"] = {
             "possible": False, "missing": missing,
-            "note": ("This artifact does not carry the inputs the id is hashed "
-                     "over, so the id cannot be recomputed from it. Crosswalk "
-                     "edges have this shape; pairwise decisions do not."),
+            "note": ("This artifact is neither a pairwise decision nor a "
+                     "reconcile edge, and does not carry the inputs the id is "
+                     "hashed over, so the id cannot be recomputed from it."),
         }
         return out
 
@@ -1298,8 +1318,9 @@ def _verify(payload: dict) -> dict:
         decision=body.get("identity") or body.get("decision"),
         factors=body["factors"], gate=body["gate"], vetoes=body["vetoes"],
         jurisdiction=body["jurisdiction"], pins=body["pins"])
-    out["recompute"] = {"possible": True, "claimed": claimed,
-                        "recomputed": got, "agrees": got == claimed}
+    out["recompute"] = {"possible": True, "contract": "pairwise decision",
+                        "claimed": claimed, "recomputed": got,
+                        "agrees": got == claimed}
     return out
 
 

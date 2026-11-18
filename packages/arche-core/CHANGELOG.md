@@ -14,7 +14,13 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 - **`extra_pins` can add provenance but no longer overwrite it.** Passing `engine`, `threshold`, `comparators_sha256` or any other key the engine sets now raises `ValueError`, in both the arche and Splink backends. Previously a caller could make a receipt cite a configuration that never ran. Naming a provided frequency table under `tf` is still allowed, because it says more than the engine's `provided`.
 
+### Fixed
+
+- **Studio's Verify recomputes reconcile edge ids.** It applied only the pairwise contract (`dec:`), so every signed reconcile edge (`xwd:`) — including the one its own "Sign one to try" makes — was reported as "cannot be recomputed", although the signed payload carries exactly what the id is hashed over. The check that catches an id lifted from a more favourable decision never ran on the decisions people sign. It now runs, and says which contract it applied.
+
 ### Added
+
+- **`arche.ids.edge_decision_id` and `EDGE_SCHEMA`** — the reconcile edge id contract as one function. The engine (both backends), `sign_edges`, `verify-decisions` and Studio's Verify each carried their own copy of the hash; they now share this one, so an issuer and a verifier cannot disagree about what an id covers. Ids are unchanged.
 
 - **`rerank` and a non-default `distinctive_kinds` are pinned.** Both change verdicts and neither appeared in the pins. Each is pinned only when it departs from the default, so runs that never touched them keep their ids.
 

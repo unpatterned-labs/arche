@@ -1030,7 +1030,7 @@ def reconcile(
     # Imported here, not at module level: arche.ids itself imports from
     # arche.resolve, so a module-level import is a circular-import landmine
     # whenever arche.ids is the first entry point.
-    from arche.ids import content_hash
+    from arche.ids import content_hash, edge_decision_id
 
     pins: dict[str, Any] = {
         # WIRE FORMAT — do not rename. This string and the
@@ -1142,10 +1142,7 @@ def reconcile(
         # (rounded) evidence and the pins — no timestamp, recomputable by
         # anyone holding the same inputs. This is what makes a crosswalk
         # edge citable and signable, exactly like a pairwise decision.
-        edge["decision_id"] = content_hash(
-            {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins},
-            prefix="xwd",
-        )
+        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
@@ -1191,6 +1188,7 @@ def sign_edges(
     Keys come from ``arche.sign.generate_keypair()`` or your own Ed25519 key;
     verify with ``arche.sign.verify``.
     """
+    from arche.ids import EDGE_SCHEMA
     from arche.sign import sign as _jws_sign
 
     pins = result.get("pins", {})
@@ -1198,7 +1196,7 @@ def sign_edges(
     for edge in result.get("matches", ()):
         if edge.get("decision") not in decisions:
             continue
-        payload = {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins}
+        payload = {"schema": EDGE_SCHEMA, **edge, "pins": pins}
         signed.append({
             "decision_id": edge.get("decision_id", ""),
             "jws": _jws_sign(

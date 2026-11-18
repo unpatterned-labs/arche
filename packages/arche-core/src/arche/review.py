@@ -540,12 +540,9 @@ def _ledger_digest(ledger: list[dict]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-# The schema reconcile hashes a crosswalk edge under (reconcile.py:975). Kept
-# here as a constant rather than imported because `review` must not depend on
-# `resolve`; `test_a_decision_id_recomputes_from_the_shared_artifact_alone`
-# runs a real resolution through this function, so the two cannot drift
-# silently.
-_EDGE_SCHEMA = "arche.crosswalk_edge.v1"
+# The edge id contract lives in `arche.ids.edge_decision_id`, shared with the
+# engine that issues it, so `review` recomputes ids without depending on
+# `resolve` and the two cannot drift.
 
 # Everything a decision id is computed over, besides the pins. `candidate` is
 # deliberately absent: reconcile includes it when retrieval produced one, and
@@ -575,7 +572,7 @@ def verify_decision_ids(pack: str | Path) -> dict[str, Any]:
     says so: the id was computed over what the evidence said before redaction.
     :func:`share_artifact` records this in ``decision_ids_verifiable``.
     """
-    from arche.ids import content_hash
+    from arche.ids import edge_decision_id
 
     read = read_pack(pack)
     manifest = read.manifest or {}
@@ -656,8 +653,7 @@ def verify_decision_ids(pack: str | Path) -> dict[str, Any]:
                  "why": f"{_EDGE_NUMERIC} must all be present and numeric"})
             continue
 
-        recomputed = content_hash({"schema": _EDGE_SCHEMA, **edge, "pins": pins},
-                                  prefix="xwd")
+        recomputed = edge_decision_id(edge, pins)
         report["checked"] += 1
         if recomputed == stated:
             report["matched"] += 1
@@ -1078,7 +1074,7 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
         # untouched; a row carrying a name phrase is not.
         "decision_ids_verifiable": bool(pins) and not evidence_redacted,
         "decision_ids_verifiable_note": (
-            "recompute arche.ids.content_hash over the edge plus these pins"
+            "recompute arche.ids.edge_decision_id over the edge plus these pins"
             if pins and not evidence_redacted else
             "evidence was redacted in at least one row, so decision ids cannot "
             "be recomputed from this file; verify against the source pack"

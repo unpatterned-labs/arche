@@ -679,7 +679,7 @@ def splink_crosswalk(
     import splink.comparison_library as cl
     from splink import DuckDBAPI, Linker, SettingsCreator, block_on
 
-    from arche.ids import content_hash
+    from arche.ids import content_hash, edge_decision_id
 
     if splink_settings is None:
         raise SplinkBackendError(_NO_SETTINGS)
@@ -900,10 +900,7 @@ def splink_crosswalk(
             "evidence": evidence,
             "distinctive_max": round(distinctive_max, 3),
         }
-        edge["decision_id"] = content_hash(
-            {"schema": "arche.crosswalk_edge.v1", **edge, "pins": pins},
-            prefix="xwd",
-        )
+        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
