@@ -4,6 +4,12 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Security
+
+- **Masking tokens are keyed and 128-bit; every token changes.** `tokenize` (the action NDPA applies to phone numbers, and `method="token"`) wrote `blake2b(salt + value)` at **32 bits**, with `salt` defaulting to empty. With no salt a tokenised phone number or NIN was reversible by hashing the value space, and at 32 bits two different values collide by the birthday bound at tens of thousands of distinct values — while `Deidentified.record()` links redacted copies **on token equality**, so a collision could link two people. Tokens are now keyed BLAKE2b (a MAC, not a prefix) at 128 bits. With no `salt`, a random per-process key is used: tokens agree within a run and are unlinkable outside it, rather than reversible. **Treat `salt` as a secret key.** Tokens minted before this release will not match tokens minted after it; re-tokenise both sides of any join.
+
+- **The salt is no longer stored in the ledger.** `deidentify(..., store=)` wrote it into the decision's stored call in plaintext. It is now left out. Replay is unaffected: the decision id never depended on the key (which spans, which actions), so a replay reproduces the decision with an ephemeral key.
+
 ### Changed
 
 - **Crosswalk decision ids that pin shipped data assets move again.** The `data_assets` digests (type-token vocabulary, legal-form tables) and the `code_tf` digests were truncated to 16 hex characters — 64 bits, fine against accident and not against anyone who wants two vocabularies to pin identically, which is why `comparators_sha256` was already full length. They are now full SHA-256. Checked on the frozen receipt fixture: the edge itself (score, decision, evidence) is byte-identical; only the pin strings grew. The superseded id is recorded in the fixture's comment. The engine pin stays `crosswalk.v1`.

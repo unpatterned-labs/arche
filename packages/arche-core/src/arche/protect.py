@@ -263,8 +263,12 @@ def deidentify(text: str, jurisdiction: str | None = None, *, backend: str = "au
     if store is not None:
         store.record_deidentify(
             deid, text,
+            # The salt is the token key, so it is never stored. Replay does not
+            # need it: the decision (which spans, which action) is the same
+            # under any key -- only the token text differs -- so a replay
+            # reproduces the decision with an ephemeral key.
             call={"jurisdiction": jurisdiction, "backend": backend, "method": method,
-                  "statute": statute, "salt": salt},
+                  "statute": statute},
         )
     return deid
 
