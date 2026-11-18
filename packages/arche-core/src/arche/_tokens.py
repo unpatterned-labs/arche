@@ -19,12 +19,14 @@ span is replaced by a deterministic hashed ID so an agent keeps join/reference
 utility without seeing the raw value, and (b) the Entity Data Contract, where
 two parties intersect token sets without exchanging raw identifiers.
 
-It is deliberately SEPARATE from ``arche.policy.engine._tokenize``. That one is
-a 32-bit blake2b (``digest_size=4``) used only for in-place *masking* — fine
-there, unusable here: at 4 bytes, birthday collisions appear around ~65k
-distinct values, which would turn a "deterministic ID" into a re-identification
-vector and silently corrupt a cross-org join. This module uses a KEYED
-blake2b-256 (``digest_size=32``).
+It is deliberately SEPARATE from ``arche.policy.engine._tokenize``, the token
+written in place into redacted text. That one was once a 32-bit unkeyed
+``blake2b(salt + value)`` described here as "fine" for masking; it was not,
+because ``Deidentified.record()`` links redacted copies on token equality. It
+is now a keyed 128-bit BLAKE2b with a per-process ephemeral key when none is
+given. This module differs in purpose, not strength: it canonicalises by
+identifier type so two systems' formatting variants yield one token, and it
+uses a 256-bit digest (``digest_size=32``) for cross-org exchange.
 
 Security boundary (full threat model: ``docs/entity-data-contract.md``): the
 ``key`` is a SHARED SECRET, not a public deployment salt. Two parties who both

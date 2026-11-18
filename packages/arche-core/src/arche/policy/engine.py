@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import secrets
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -292,18 +293,44 @@ def _mask(category: str, original: str) -> str:
     return f"[{label}]"
 
 
-def _tokenize(category: str, original: str, salt: str = "") -> str:
-    """Return a deterministic-but-non-reversible token for this span.
+#: The key used when the caller passes none. Random per process, never stored.
+#: An unkeyed token of a low-entropy value (an 11-digit NIN, a phone number) is
+#: reversed by hashing the whole value space, so arche does not mint one: with
+#: no key, tokens are consistent within this process and unlinkable outside it.
+#: Pass a key (``salt=``) to get tokens that join across runs and documents.
+_EPHEMERAL_KEY = secrets.token_bytes(32)
 
-    Same input plus same salt -> same token. Different deployments use
-    different salts so tokens don't leak across organizations. PRD §6.3:
-    "same input always produces same token within a deployment for join
-    consistency."
+#: 128-bit tokens. The old 32-bit width collided by the birthday bound at
+#: tens of thousands of values, so two different people could share a token at
+#: register scale -- and `Deidentified.record()` links records on token
+#: equality. 128 bits is collision-safe at any register size while keeping the
+#: token short enough to read in redacted text.
+_TOKEN_BYTES = 16
+
+
+def token_key(salt: str = "") -> bytes:
+    """The MAC key for ``salt``; the per-process ephemeral key when empty."""
+    if not salt:
+        return _EPHEMERAL_KEY
+    return hashlib.sha256(salt.encode("utf-8")).digest()
+
+
+def _tokenize(category: str, original: str, salt: str = "") -> str:
+    """A keyed, non-reversible token for this span.
+
+    Same input plus same key -> same token, so tokens still join within a
+    deployment (PRD §6.3). Different keys never collide by design.
+
+    Keyed BLAKE2b (a MAC), not ``hash(salt + value)``: before this the default
+    salt was empty, which made a tokenised phone number reversible by anyone
+    who enumerated the number space, and the digest was 32 bits wide. ``salt``
+    is now a secret key in all but name; treat it like one.
     """
     parts = category.split("-")
     label = parts[-1] if parts else "PII"
     digest = hashlib.blake2b(
-        (salt + original).encode("utf-8"), digest_size=4
+        original.encode("utf-8"), key=token_key(salt),
+        digest_size=_TOKEN_BYTES, person=b"arche.mask.v2",
     ).hexdigest()
     return f"{label}_{digest}"
 
