@@ -859,7 +859,11 @@ def splink_crosswalk(
         from arche.resolve._gate import DISTINCTIVE_FLOOR
         pins["distinctive_floor"] = (DISTINCTIVE_FLOOR if distinctive_floor is None
                                      else float(distinctive_floor))
-    pins.update(extra_pins or {})
+    from arche.resolve.reconcile import _check_extra_pins
+    from arche.resolve.reconcile import runtime_record as _runtime_record
+    if extra_pins:
+        _check_extra_pins(extra_pins, pins)
+        pins.update(extra_pins)
 
     by_a = {str(r.get(id_field, i)): r for i, r in enumerate(list_a)}
     by_b = {str(r.get(id_field, i)): r for i, r in enumerate(list_b)}
@@ -907,6 +911,7 @@ def splink_crosswalk(
         "matches": matches,
         "count": len(matches),
         "pins": pins,
+        "runtime": _runtime_record(),
         "blocking": {"candidate_pairs": None, "reduction_ratio": None,
                      "strategies": {"splink_rules": len(blocking_rules),
                                     **({"derived": derived_labels}

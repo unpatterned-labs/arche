@@ -902,7 +902,12 @@ def _compiled_vocab(items: tuple[tuple[str, str], ...]) -> tuple[tuple[Any, str,
     2026-09-19). The vocabulary does not change between pairs.
     """
     out = []
-    for syn, canonical in sorted(items, key=lambda kv: len(kv[0]), reverse=True):
+    # Longest first, then by synonym text: equal-length synonyms used to keep
+    # file order, and the first match wins, so reordering a YAML file could
+    # change a verdict while the vocabulary digest (taken over the SORTED
+    # items) stayed the same. With the text tie-break the vocabulary behaves
+    # as a set, which is what its digest claims.
+    for syn, canonical in sorted(items, key=lambda kv: (-len(kv[0]), kv[0])):
         syn_norm = _normalise_text(syn)
         if not syn_norm:
             continue

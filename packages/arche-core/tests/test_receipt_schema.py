@@ -92,8 +92,15 @@ FROZEN_PAYLOAD = {
 #: Moving the id is the correct outcome of pinning more of the truth, and
 #: noticing it is this fixture's job.
 #: Old id: xwd:sha256:bed6b710fe5707907d8f5dcab596a838237ec714228adbff2ea54a8f738485ec
+#: Re-frozen on 2026-11-17, when the `data_assets` digests (type-token
+#: vocabulary, legal-form tables) stopped being truncated to 16 hex characters.
+#: 64 bits is fine against accident and not against anyone who wants two
+#: vocabularies to pin identically -- the reason `comparators_sha256` was
+#: already full length. Checked before re-freezing: the edge itself (score,
+#: decision, evidence) is byte-identical; only the two pin strings grew.
+#: Old id: xwd:sha256:afc88c8aa2e0fd492292cace4c8054f02493f696a2e8785b93eecb9a6af3da73
 FROZEN_CROSSWALK_ID = (
-    "xwd:sha256:afc88c8aa2e0fd492292cace4c8054f02493f696a2e8785b93eecb9a6af3da73"
+    "xwd:sha256:aba36986206265f46240fc67b36329e67c57f849c5d973794b1a6b10048da610"
 )
 
 _ORG_A = {

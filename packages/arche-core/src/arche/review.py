@@ -1070,6 +1070,7 @@ def share_artifact(pack: str | Path, out_dir: str | Path, *,
         # that could not be checked, which defeats the point of addressing a
         # decision at all. Verbatim, because a hash does not survive editing.
         "pins": pins,
+        "runtime": dict((read.manifest or {}).get("runtime") or {}),
         # And whether re-derivation is actually possible from this file, said
         # out loud rather than left to fail. Masking the evidence changes what
         # the id was computed over, so a redacted row addresses a decision this

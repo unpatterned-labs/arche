@@ -70,7 +70,7 @@ def pin() -> str:
 
     forms, _patterns, compat = _load()
     body = {"forms": [list(pair) for pair in forms], "compat": compat}
-    return "legal_form@" + content_hash(body, prefix="lf").split(":")[-1][:16]
+    return "legal_form@" + content_hash(body, prefix="lf").split(":")[-1]
 
 
 @lru_cache(maxsize=65536)
