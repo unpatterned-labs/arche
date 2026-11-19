@@ -503,6 +503,11 @@ class Ledger:
 
         # Build every decision first; nothing below touches the database until
         # the shape of the whole batch is known.
+        # A run declared `relation="operated_by"` links sites to the operators
+        # that run them. Its matches are relations, not identity: recorded as
+        # `operated_by`, never in LINKED, so no membership is ever unioned and a
+        # factory never becomes the same entity as the company that owns it.
+        relation = str(pins.get("relation") or "same_as")
         built: list[Decision] = []
         for edge in result.get("matches", ()):
             a_id, b_id = str(edge["a_id"]), str(edge["b_id"])
@@ -510,13 +515,16 @@ class Ledger:
             if record_a == record_b:
                 continue  # a record against itself says nothing about identity
             identity = str(edge["decision"])
+            if relation != "same_as" and identity == "match":
+                identity = relation
             built.append(Decision(
                 decision_id=str(edge["decision_id"]),
                 verb=verb,
                 record_a=record_a,
                 record_b=record_b,
                 identity=identity,
-                action="merge" if identity == "match" else "hold",
+                action=("merge" if identity == "match"
+                        else "relate" if identity == relation != "same_as" else "hold"),
                 score=float(edge.get("score", 0.0)),
                 factors={k: float(v) for k, v in dict(edge.get("evidence", {})).items()
                          if isinstance(v, (int, float))},

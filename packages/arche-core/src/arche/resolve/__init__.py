@@ -352,6 +352,12 @@ ENTITY_PACKS: dict[str, list[dict]] = {
         # reviewer and barely scores.
         {"kind": "geo", "lat": "lat", "lon": "lon", "weight": 0.5,
          "decay_km": 5.0},
+        # Refute-only, added 18 Nov 2026: unit labels (`Cody Park A102` vs
+        # `A103`, `Geregu I` vs `II`) and country words (`Birds Eye UK` vs
+        # `Birds Eye Ireland`). None unless both names state one, so an
+        # unlabelled name is never held for lacking a label.
+        {"field": "name", "kind": "designator", "weight": 0.0, "refutes_below": 0.5},
+        {"field": "name", "kind": "country", "weight": 0.0, "refutes_below": 0.5},
     ],
 }
 
@@ -360,6 +366,29 @@ ENTITY_PACKS: dict[str, list[dict]] = {
 # codebase writes `organisation` in prose. Guessing wrong should not be an
 # error a caller has to debug; both names are the same list object.
 ENTITY_PACKS["organization"] = ENTITY_PACKS["organisation"]
+
+# Health facilities: the `place` pack plus two refute-only discriminators,
+# shipped together on this pack's first release (18 Nov 2026) so that no earlier
+# published number moves. `place` itself is unchanged: its benchmark figures
+# predate these, and adopting them there is a separate, separately-measured
+# decision (see `test_discriminator_veto`).
+#
+# * `rival`, reading the name with facility-type words stripped. The shipped
+#   place table is built mostly from primary-care names, so specialty words look
+#   rare there (`eye` 0.61, `vision` 0.93) when they are what every eye clinic is
+#   called; `Impro Vision Eye Clinic` matched `Dupsnl Vision Eye Clinic` at
+#   0.741. Stripped of its type, each side carries its own rare name, and the
+#   pair is held. `near` 0.85 keeps transliterated spellings of ONE name
+#   (`Okparavero`/`Akparavero`, `Kadija`/`Khadija`) from counting as rivals.
+# * `designator`: `Ward 12` against `Ward 13`, `Geregu I` against `Geregu II`.
+#
+# Both have weight 0: they demote a match to review and do nothing else.
+ENTITY_PACKS["health_facility"] = [
+    *ENTITY_PACKS["place"],
+    {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5,
+     "strip_type": "health_facility", "near": 0.85},
+    {"field": "name", "kind": "designator", "weight": 0.0, "refutes_below": 0.5},
+]
 
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather
 # than self-calibration (small artist catalogs mislead a self-calibrated table
@@ -372,7 +401,7 @@ ENTITY_PACKS["organization"] = ENTITY_PACKS["organisation"]
 # "General Hospital" records 4.4 km apart cleared the distinctiveness gate
 # with the same evidence as two sharing a genuinely distinctive name.
 _PACK_TF_DOMAIN: dict[str, str] = {
-    "artist": "artist", "place": "place",
+    "artist": "artist", "place": "place", "health_facility": "place",
     # Both spellings, because both are keys of ENTITY_PACKS. Without a
     # shipped table the pack self-calibrated over the two lists being
     # linked, which is not a population: fourteen records cannot know
@@ -736,6 +765,12 @@ COMPARATOR_NOTES = {
              "not. Two listings that each carry their own rare identifier "
              "are identifying different things. It can only hold a pair "
              "back, never push one up",
+    "designator": "whether two names state different unit labels -- A102 "
+                  "against A103, Geregu I against Geregu II. Silent when "
+                  "either name states none. It can only hold a pair back",
+    "country": "whether two names name different countries -- Birds Eye UK "
+               "against Birds Eye Ireland. Silent when either names none. It "
+               "can only hold a pair back",
     "phone": "a phone number, normalised before comparison",
     "email": "an email address",
     "address": "a postal address, compared by its parts",

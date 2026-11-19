@@ -233,6 +233,10 @@ class TestGeneralisation:
         measured with `spec` and `rival` refutation already in them. Nothing
         earlier to move.
 
+        `health_facility` — the `place` pack plus refute-only `rival` (type
+        words stripped) and `designator`, shipped together on its first
+        release (18 Nov 2026) so that `place`'s published numbers do not move.
+
         `organisation` — the party as named on a document, where sameness of
         *site* is not sameness of party. `Nyeri Hill Factory` and `Nyeri Hill
         Tea Factory Co Ltd` share a name and a coordinate, so every string and
@@ -249,7 +253,8 @@ class TestGeneralisation:
         exempt = [ENTITY_PACKS["product_electronics"],
                   ENTITY_PACKS["product_home_goods"],
                   ENTITY_PACKS["product_grocery"],
-                  ENTITY_PACKS["organisation"]]
+                  ENTITY_PACKS["organisation"],
+                  ENTITY_PACKS["health_facility"]]
         established = {
             name for name, specs in ENTITY_PACKS.items()
             if not any(specs is e for e in exempt)

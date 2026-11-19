@@ -188,6 +188,11 @@ class TestThePackWiring:
         products with the same net contents. The retailer name is the only
         separator and it is exactly a rival token.
 
+        `health_facility` (18 Nov 2026) declares it on its first release, with
+        type words stripped: two clinics that share only `Vision Eye Clinic`
+        and each carry their own rare name are two clinics. `place` is not
+        changed, so nothing published moves.
+
         `place`, `person`, `organisation` and `artist` have published numbers
         this would move.
         """
@@ -195,7 +200,7 @@ class TestThePackWiring:
 
         adopted = {name for name, specs in ENTITY_PACKS.items()
                    if any(s.get("kind") == "rival" for s in specs)}
-        assert adopted == {"product_home_goods", "product_grocery"}
+        assert adopted == {"product_home_goods", "product_grocery", "health_facility"}
 
     def test_it_needs_a_table_and_says_so(self):
         """`tftoken` raises the same way. A comparator whose whole job is

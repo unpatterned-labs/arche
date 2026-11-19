@@ -4,6 +4,17 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Added
+
+- **`designator` and `country` comparators** — refute-only discriminators for names. `designator` reads unit labels (`A102`, `P4`, `LON01`, roman numerals as digits, `D 2` = `D2`) and refutes only when each name states a unit the other does not, after shared ones are set aside: `Cody Park A102` against `A103`, `Building 1` against `Building 2`, but not `Factory 1 & 2` against `Factory 2`. `country` reads country names, demonyms and common abbreviations (from the shipped restcountries snapshot, minus names that are ordinary words or brands — `Iceland`, `Malta`, `Jersey`, `Turkey` …) and refutes `Birds Eye UK` against `Birds Eye Ireland`. Both are `None` unless both names state one, carry weight 0, and can only demote a match to review. The country lexicon is pinned as `data_assets["country_markers"]`.
+- **The `organisation` pack declares both.** Its frozen receipt fixture moved (pins only; the edge is byte-identical), recorded in the fixture.
+- **A `health_facility` pack**: `place` plus refute-only `rival` (names compared with facility-type words stripped, and transliterated spellings tolerated via `near`) and `designator`, shipped together on its first release so that `place`'s published numbers do not move. `place` itself is unchanged.
+- **Specialty facility types** in the `health_facility` vocabulary: eye, dental, laboratory, orthopaedic, psychiatric. In the shipped place table built mostly from primary-care names, `eye` and `vision` looked distinctive; `Impro Vision Eye Clinic` matched `Dupsnl Vision Eye Clinic` at 0.741.
+- **`rival(..., near=)`** — opt-in Jaro-Winkler floor under which an unshared token that is a near spelling of one on the other side is not a rival. Off by default; product packs unchanged.
+- **`reconcile(..., relation="operated_by")`** — a run that links sites to the organisations that run them. Pinned as `relation`; the ledger records its matches as `operated_by` with action `relate` and never unions the two records. Honoured by the Splink backend too, which previously would have swallowed it in `**_ignored`.
+
+Measured effect on the 18 Nov UK and Nigeria runs: 45 decisions moved match → review, none created or dropped; read pair by pair, ~40 correct holds, 1 ambiguous, 3 held for a spurious reason in a lane that should declare `operated_by`. Not an accuracy figure.
+
 ### Security
 
 - **Masking tokens are keyed and 128-bit; every token changes.** `tokenize` (the action NDPA applies to phone numbers, and `method="token"`) wrote `blake2b(salt + value)` at **32 bits**, with `salt` defaulting to empty. With no salt a tokenised phone number or NIN was reversible by hashing the value space, and at 32 bits two different values collide by the birthday bound at tens of thousands of distinct values — while `Deidentified.record()` links redacted copies **on token equality**, so a collision could link two people. Tokens are now keyed BLAKE2b (a MAC, not a prefix) at 128 bits. With no `salt`, a random per-process key is used: tokens agree within a run and are unlinkable outside it, rather than reversible. **Treat `salt` as a secret key.** Tokens minted before this release will not match tokens minted after it; re-tokenise both sides of any join.

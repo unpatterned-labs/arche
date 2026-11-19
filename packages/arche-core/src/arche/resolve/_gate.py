@@ -273,6 +273,7 @@ def rival_distinctive_tokens(
     tf: TokenFrequencyTable,
     *,
     floor: float = DISTINCTIVE_FLOOR,
+    near: float | None = None,
 ) -> float | None:
     """Do both names carry a distinctive token the other lacks?
 
@@ -326,6 +327,21 @@ def rival_distinctive_tokens(
     only_b = {t for t in only_b if not any(t in u or u in t for u in tokens_a)}
     if not only_a or not only_b:
         return None
+
+    # Opt-in (`near`, a Jaro-Winkler floor): an unshared token that is a near
+    # spelling of one on the other side is the same name written two ways, not
+    # a rival. Off by default because the product packs' numbers were measured
+    # without it. Needed where names are transliterated: on the 18 Nov 2026
+    # GRID3 run, `Okparavero`/`Akparavero`, `Mount Harmon`/`Hermon`,
+    # `Abdulaziz`/`Abdulazeez` and `Kadija`/`Khadija` were each held as two
+    # facilities -- nine wrong holds against five right ones without it.
+    if near is not None:
+        from arche.resolve._matcher import _jaro_winkler
+
+        only_a = {t for t in only_a if not any(_jaro_winkler(t, u) >= near for u in only_b)}
+        only_b = {t for t in only_b if not any(_jaro_winkler(t, u) >= near for u in tokens_a)}
+        if not only_a or not only_b:
+            return None
 
     threshold = floor * _distinctiveness_ceiling(tf)
 

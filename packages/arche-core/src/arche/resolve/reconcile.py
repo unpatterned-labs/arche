@@ -118,7 +118,7 @@ _FIELD_COMPARATORS = {
 # other kind is a typo and raises rather than being skipped as "inapplicable".
 _STRUCTURAL_KINDS = frozenset({
     "geo", "containment", "postcode", "date", "type", "code", "spec",
-    "premises", "tokenset", "rival", "tftoken",
+    "premises", "tokenset", "rival", "tftoken", "designator", "country",
 })
 
 
@@ -137,6 +137,9 @@ _TEXT_KINDS = ("tftoken", "name", "placename", "address")
 # pair, so the gate demoted all of them and the run returned zero matches from
 # 93% of true pairs surfaced. That reads exactly like a comparator that does not
 # work, and it was a comparator the gate could not see.
+#: What a reconcile `match` can assert between a left and a right record.
+RELATIONS = frozenset({"same_as", "operated_by"})
+
 _DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken", "code", "tokenset")
 # Kinds whose similarity is a claim about STRINGS, so it must be priced by the
 # rarity of what the two strings share before it may clear a gate. `id` is
@@ -217,6 +220,10 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
         from arche.resolve._legal_form import pin as _legal_form_pin
 
         out["legal_form"] = _legal_form_pin()
+    if any(spec.get("kind") == "country" for spec in comparators):
+        from arche.resolve._name_markers import country_markers_pin
+
+        out["country_markers"] = country_markers_pin()
     return out
 
 
@@ -419,6 +426,16 @@ def _field_sim(
             return compare_specs(str(ra[field]), str(rb[field]), category)
         table = (code_tf or {}).get(category) if isinstance(code_tf, dict) else code_tf
         return compare_codes(str(ra[field]), str(rb[field]), table, category)
+    if kind in ("designator", "country"):
+        # Unit labels and country words in a name: refute-only, and None unless
+        # both names state one. See `arche.resolve._name_markers`.
+        from arche.resolve._name_markers import compare_countries, compare_designators
+
+        field = spec.get("field", "name")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        fn = compare_designators if kind == "designator" else compare_countries
+        return fn(str(ra[field]), str(rb[field]))
     if kind == "premises":
         # The premises number in an address, compared on its own. A similarity
         # over the whole address cannot carry it: `Unit 4` against `Unit 9`
@@ -467,6 +484,7 @@ def _field_sim(
         return rival_distinctive_tokens(
             a_val, b_val, tf,
             floor=float(spec.get("floor", DISTINCTIVE_FLOOR)),
+            near=float(spec["near"]) if spec.get("near") is not None else None,
         )
     if kind == "tftoken":
         if tf is None:
@@ -804,6 +822,7 @@ def reconcile(
     extra_pins: dict[str, Any] | None = None,
     candidate_pairs: list[dict[str, Any]] | None = None,
     candidate_pins: dict[str, Any] | None = None,
+    relation: str = "same_as",
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -881,6 +900,12 @@ def reconcile(
         Required with ``candidate_pairs``. JSON-safe provenance for the
         retriever, such as its provider, index or model version, filters and
         top-k. It is pinned into every resulting ``decision_id``.
+    relation:
+        What a ``match`` asserts. ``"same_as"`` (default): the two records are
+        one entity. ``"operated_by"``: each left record is a site run by the
+        right record (a factory and the company that owns it), so a match links
+        them without merging them; the ledger records it and never unions the
+        two. Pinned as ``relation`` when not the default.
 
     Returns
     -------
@@ -1063,6 +1088,16 @@ def reconcile(
     # either out let two runs disagree on a verdict with identical pins.
     if rerank:
         pins["rerank"] = True
+    # What a `match` asserts. `same_as` (the default) says the two records are
+    # one entity. `operated_by` says each record on the left is a SITE run by
+    # the record on the right -- a factory and the company that owns it -- so a
+    # match links them without making them one thing. Declared for the whole
+    # run, because it is a statement about what the two lists ARE, not a
+    # property any one pair could reveal. Pinned, so every receipt says which.
+    if relation not in RELATIONS:
+        raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
+    if relation != "same_as":
+        pins["relation"] = relation
     if tuple(distinctive_kinds) != _DISTINCTIVE_KINDS:
         pins["distinctive_kinds"] = sorted(distinctive_kinds)
     if code_tf:

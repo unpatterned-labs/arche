@@ -99,8 +99,13 @@ FROZEN_PAYLOAD = {
 #: already full length. Checked before re-freezing: the edge itself (score,
 #: decision, evidence) is byte-identical; only the two pin strings grew.
 #: Old id: xwd:sha256:afc88c8aa2e0fd492292cace4c8054f02493f696a2e8785b93eecb9a6af3da73
+#: Re-frozen on 2026-11-18, when the organisation pack gained refute-only
+#: `designator` and `country` comparators (so `comparators_sha256` moved) and
+#: the country lexicon gained a `data_assets` pin. Checked before re-freezing:
+#: this pair states no unit and no country, and its edge is byte-identical.
+#: Old id: xwd:sha256:aba36986206265f46240fc67b36329e67c57f849c5d973794b1a6b10048da610
 FROZEN_CROSSWALK_ID = (
-    "xwd:sha256:aba36986206265f46240fc67b36329e67c57f849c5d973794b1a6b10048da610"
+    "xwd:sha256:bdfd1287cacf00543192c0d296e1b630255f3552e11ce45fdb9962591bf8ef69"
 )
 
 _ORG_A = {
