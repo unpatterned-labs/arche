@@ -390,6 +390,31 @@ ENTITY_PACKS["health_facility"] = [
     {"field": "name", "kind": "designator", "weight": 0.0, "refutes_below": 0.5},
 ]
 
+# Sites: a production site or establishment named after the business that runs
+# it -- an Open Supply Hub facility, a retailer's supplier-site list. The
+# `organisation` pack plus one refute-only discriminator, the postcode.
+#
+# A name says WHO; a postcode says WHERE. Supplier lists repeat names: one
+# company runs many sites, and some lists name a site only by its town
+# (`Andover`, `Head Office`). On the Co-op Food Tier 1 list against Open Supply
+# Hub (20 Nov 2026) a postcode check changed 19 matches to review and created
+# none; read pair by pair, 17 were one company's different sites (David Wood
+# Baking Bolton vs Spalding; two `Head Office` records in two counties), 2 the
+# same site behind a mistyped postcode.
+#
+# Refute-only, at 0.3: a different postcode DISTRICT refutes; the same district
+# with another unit (0.5) does not, and a missing postcode on either side says
+# nothing. With coordinates on both sides the disagreement is discounted near a
+# boundary (`compare_postcodes`). Supply `postcode` as its own field.
+#
+# Not in `organisation`: a company's registered office is legitimately
+# somewhere other than its sites, and companies move, so a postcode does not
+# separate two records of one legal entity.
+ENTITY_PACKS["site"] = [
+    *ENTITY_PACKS["organisation"],
+    {"field": "postcode", "kind": "postcode", "weight": 0.0, "refutes_below": 0.3},
+]
+
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather
 # than self-calibration (small artist catalogs mislead a self-calibrated table
 # — the toy-corpus trap the place tutorials document).
@@ -408,6 +433,7 @@ _PACK_TF_DOMAIN: dict[str, str] = {
     # that "Central" is ordinary, so `Central Cooperative Society` in
     # two districts merged on a shared generic token.
     "organisation": "organisation", "organization": "organisation",
+    "site": "organisation",
 }
 
 
@@ -771,6 +797,9 @@ COMPARATOR_NOTES = {
     "country": "whether two names name different countries -- Birds Eye UK "
                "against Birds Eye Ireland. Silent when either names none. It "
                "can only hold a pair back",
+    "postcode": "whether two postal codes agree -- same code, same district, "
+                "or different districts. Silent when either side has none. "
+                "In the site pack it can only hold a pair back",
     "phone": "a phone number, normalised before comparison",
     "email": "an email address",
     "address": "a postal address, compared by its parts",
