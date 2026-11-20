@@ -46,9 +46,13 @@ from arche.workflow._primitive import Detection
 _PHONE_CONFIDENCE = 0.9
 
 
-#: UK numbers: a mobile (07…), a geographic or non-geographic number (01…, 02…, 03…), or +44 forms.
-#: libphonenumber's African tables don't hold them, so a British text returned them in the clear.
-_UK_PHONE = re.compile(r"(?<![\d+])((?:\+44\s?\(?0?\)?\s?|\b0)(?:7\d{3}\s?\d{3}\s?\d{3}|[123]\d{1,4}(?:\s?\d{2,4}){2,3}))(?!\d)")
+#: UK numbers: a mobile (07…), a geographic or non-geographic number (01…,
+#: 02…, 03…), or +44 forms. libphonenumber's African tables don't hold them, so
+#: a British text returned them in the clear.
+_UK_PHONE = re.compile(
+    r"(?<![\d+])((?:\+44\s?\(?0?\)?\s?|\b0)"
+    r"(?:7\d{3}\s?\d{3}\s?\d{3}|[123]\d{1,4}(?:\s?\d{2,4}){2,3}))(?!\d)"
+)
 
 
 def _uk_phones(text: str) -> list[dict]:
@@ -87,10 +91,13 @@ def detect_phones(text: str, *, default_country: str = "NG") -> list[Detection]:
     hits = parse_african_phone(text, default_country=default_country)
     if default_country == "GB" or "+44" in text:
         seen = [(h["start"], h["end"]) for h in hits]
-        hits += [h for h in _uk_phones(text) if not any(s < h["end"] and h["start"] < e for s, e in seen)]
-    # a number straight after "Account number:", "NUBAN" or "BVN" is that, not a phone: leave it to the
-    # financial and ID detectors (an NG account 0123456789 has a Lagos landline's shape)
-    hits = [h for h in hits if not ACCOUNT_CONTEXT.search(text[max(0, h["start"] - 40):h["start"]])]
+        hits += [h for h in _uk_phones(text)
+                 if not any(s < h["end"] and h["start"] < e for s, e in seen)]
+    # a number straight after "Account number:", "NUBAN" or "BVN" is that, not a
+    # phone: leave it to the financial and ID detectors (an NG account
+    # 0123456789 has a Lagos landline's shape)
+    hits = [h for h in hits
+            if not ACCOUNT_CONTEXT.search(text[max(0, h["start"] - 40):h["start"]])]
 
     detections = [
         Detection(

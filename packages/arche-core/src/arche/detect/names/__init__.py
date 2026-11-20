@@ -189,12 +189,15 @@ def person_spans(text: str) -> list[tuple[int, int, str]]:
     return spans
 
 
-#: A courtesy or honorific title, then one to three capitalised words: those words are a name whether or
-#: not the lexicon knows them ("Mrs Ada Okwuosa", "Chief Bamidele Adeyemi-Lawal"). Without it a surname
-#: the lexicon lacks stayed in clear beside a masked first name.
+#: A courtesy or honorific title, then one to three capitalised words: those
+#: words are a name whether or not the lexicon knows them ("Mrs Ada Okwuosa",
+#: "Chief Bamidele Adeyemi-Lawal"). Without it a surname the lexicon lacks
+#: stayed in clear beside a masked first name.
 _TITLED = re.compile(
-    r"\b(?:Mr|Mrs|Ms|Miss|Mx|Dr|Prof|Sir|Madam|Dame|Rev|Hon|Chief|Alhaji|Alhaja|Engr|Barr|Pastor)\.?[ \t]+"
-    r"((?:[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*)(?:[ \t]+(?:[A-Z]\.?[ \t]+)?[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*){0,2})"
+    r"\b(?:Mr|Mrs|Ms|Miss|Mx|Dr|Prof|Sir|Madam|Dame|Rev|Hon|Chief|Alhaji|Alhaja|Engr|Barr"
+    r"|Pastor)\.?[ \t]+"
+    r"((?:[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*)"
+    r"(?:[ \t]+(?:[A-Z]\.?[ \t]+)?[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*){0,2})"
 )
 
 
