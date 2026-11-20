@@ -35,6 +35,7 @@ from __future__ import annotations  # noqa: I001
 
 import re
 from dataclasses import dataclass
+from typing import Any
 
 from ._profile import JurisdictionProfileModel
 
@@ -558,3 +559,64 @@ def detect_ids(text: str) -> list[ValidationResult]:
                 results.append(tin_result)
 
     return results
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADMIN PATH (state → LGA → ward), the shape `compare_containment` reads
+# ═══════════════════════════════════════════════════════════════════════════════
+
+#: Spellings of one state that registers write differently. Keys and values
+#: are already folded by `_fold`.
+STATE_ALIASES = {
+    "federal capital territory": "fct", "abuja": "fct", "abuja fct": "fct", "fct abuja": "fct",
+    "nassarawa": "nasarawa", "akwa ibom state": "akwa ibom", "akwaibom": "akwa ibom",
+    "cross rivers": "cross river", "crossriver": "cross river",
+}
+_STATES = {s.lower() for s in ADDRESS_NORMS["states"]}
+_SUFFIXES = (" local government area", " local govt area", " local government", " l g a",
+             " lga", " state", " ward")
+
+
+def _fold(text: Any) -> str:
+    """arche's text normaliser (case, diacritics, invisible characters), then
+    punctuation to spaces: ``Akwa-Ibom`` and ``Akwa Ibom`` are one key."""
+    from arche.resolve._matcher import _normalise_text
+
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", _normalise_text(str(text or "")))).strip()
+
+
+def _strip_suffix(text: str) -> str:
+    for suffix in _SUFFIXES:
+        if text.endswith(suffix) and len(text) > len(suffix):
+            return text[: -len(suffix)].strip()
+    return text
+
+
+def admin_path(state: Any = None, lga: Any = None, ward: Any = None) -> dict[str, str]:
+    """``{"admin1": state, "admin2": lga, "admin3": ward}``, folded for comparison.
+
+    Case, accents, punctuation and spacing are folded; "State", "LGA",
+    "Local Government Area" and "Ward" suffixes are dropped; known state
+    spellings are unified (``FCT`` / ``Abuja`` / ``Federal Capital
+    Territory``; ``Nassarawa``). Levels with no value are left out, so a
+    missing ward is missing evidence, never a disagreement. LGA and ward
+    names are not checked against a list: they repeat across states
+    (``Bassa``, ``Obi``, ``Surulere``), which is why containment walks from
+    the state down.
+    """
+    out: dict[str, str] = {}
+    s = _strip_suffix(_fold(state))
+    s = STATE_ALIASES.get(s, s)
+    if s:
+        out["admin1"] = s
+    if (g := _strip_suffix(_fold(lga))):
+        out["admin2"] = g
+    if (w := _strip_suffix(_fold(ward))):
+        out["admin3"] = w
+    return out
+
+
+def is_state(name: Any) -> bool:
+    """Whether a name is one of the 36 states or the FCT, after folding."""
+    s = _strip_suffix(_fold(name))
+    return STATE_ALIASES.get(s, s) in _STATES

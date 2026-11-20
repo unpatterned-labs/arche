@@ -200,3 +200,25 @@ class TestWrongHoldsFromTheFirstRerun:
     ])
     def test_different_names_still_held(self, a, b):
         assert _decide(a, b, entity="health_facility") != "match"
+
+
+class TestCompassWords:
+    def test_different_directions_refute(self):
+        from arche.resolve._name_markers import compare_designators
+
+        assert compare_designators("Sarkin Yamma Health Post", "Sarkin Kudu Health Post") == 0.0
+        assert compare_designators("Dala North Clinic", "Dala South Clinic") == 0.0
+        assert compare_designators("Ikeja Ariwa PHC", "Ikeja North PHC") == 1.0
+
+    def test_one_side_without_a_direction_is_silent(self):
+        from arche.resolve._name_markers import compare_designators
+
+        assert compare_designators("Sarkin Yamma Health Post", "Sarkin Health Post") is None
+
+    def test_the_vocabulary_is_pinned(self):
+        from arche.resolve import reconcile
+
+        out = reconcile([{"id": "a", "name": "Sarkin Yamma Health Post"}],
+                        [{"id": "b", "name": "Sarkin Kudu Health Post"}],
+                        entity="health_facility", id_field="id")
+        assert out["pins"]["data_assets"]["designator_markers"].startswith("designator_markers@")

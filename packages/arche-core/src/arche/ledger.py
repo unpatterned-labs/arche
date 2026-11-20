@@ -611,7 +611,7 @@ class Ledger(LifecycleMixin):
                     "a_id": a_id, "b_id": b_id,
                     "distinctive_max": edge.get("distinctive_max"),
                     **{k: v for k, v in edge.items()
-                       if k in ("route", "retrieval_score", "refuted_by", "capped_by")},
+                       if k in ("route", "retrieval_score", "refuted_by", "capped_by", "ambiguous")},
                 },
                 pins=pins,
                 call=call_record,

@@ -384,7 +384,12 @@ ENTITY_PACKS["organization"] = ENTITY_PACKS["organisation"]
 #
 # Both have weight 0: they demote a match to review and do nothing else.
 ENTITY_PACKS["health_facility"] = [
-    *ENTITY_PACKS["place"],
+    # `place`, with its containment walk extended by one level: `admin3`, a
+    # ward in Nigeria. A ward disagreement stops the walk at the LGA (it never
+    # refutes -- only the coarsest level can), which matters because GRID3's
+    # own ward label disagrees with its coordinates' ward on 23.6% of records.
+    *[{**spec, "levels": ["admin1", "admin2", "admin3", "settlement"]}
+      if spec.get("kind") == "containment" else spec for spec in ENTITY_PACKS["place"]],
     {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5,
      "strip_type": "health_facility", "near": 0.85},
     {"field": "name", "kind": "designator", "weight": 0.0, "refutes_below": 0.5},

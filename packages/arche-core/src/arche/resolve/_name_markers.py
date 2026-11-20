@@ -44,6 +44,18 @@ _ROMAN = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii":
 # `2nd`. Longer digit runs are identifiers or phone numbers, not unit labels.
 _CODE = re.compile(r"^(?=[a-z]*[0-9])[a-z0-9]{1,6}$")
 _ORDINAL = re.compile(r"^([0-9]+)(st|nd|rd|th)$")
+#: Compass words name a part of a place the way a unit number does:
+#: `Sarkin Yamma Health Post` (west) and `Sarkin Kudu Health Post` (south) are
+#: two facilities that a token table reads as one, because both words are
+#: common. English, Hausa (arewa, kudu, gabas, yamma) and Yoruba (ariwa,
+#: guusu). Added 20 Nov 2026 from the GRID3 coordless dedupe. Words that are
+#: also ordinary in names elsewhere (Igbo `ugwu`, "hill") are left out.
+_DIRECTIONS = {
+    "north": "N", "northern": "N", "arewa": "N", "ariwa": "N",
+    "south": "S", "southern": "S", "kudu": "S", "guusu": "S",
+    "east": "E", "eastern": "E", "gabas": "E",
+    "west": "W", "western": "W", "yamma": "W",
+}
 
 
 def name_designators(name: str) -> frozenset[str]:
@@ -72,6 +84,9 @@ def name_designators(name: str) -> frozenset[str]:
     for position, token in enumerate(tokens):
         if not token:
             continue
+        if token in _DIRECTIONS:
+            out.add("dir:" + _DIRECTIONS[token])
+            continue
         if token in _ROMAN and (token != "i" or position > 0):
             out.add(str(_ROMAN[token]))
             continue
@@ -81,6 +96,15 @@ def name_designators(name: str) -> frozenset[str]:
         elif _CODE.match(token):
             out.add(str(int(token)) if token.isdigit() else token)
     return frozenset(out)
+
+
+def designator_markers_pin() -> str:
+    """Content address of the designator vocabulary, so a receipt names it."""
+    from arche.ids import content_hash
+
+    body = {"roman": sorted(_ROMAN.items()), "directions": sorted(_DIRECTIONS.items()),
+            "code": _CODE.pattern, "ordinal": _ORDINAL.pattern}
+    return "designator_markers@" + content_hash(body, prefix="dm").split(":")[-1]
 
 
 def compare_designators(name_a: str, name_b: str) -> float | None:

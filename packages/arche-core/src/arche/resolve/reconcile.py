@@ -220,6 +220,10 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
         from arche.resolve._legal_form import pin as _legal_form_pin
 
         out["legal_form"] = _legal_form_pin()
+    if any(spec.get("kind") == "designator" for spec in comparators):
+        from arche.resolve._name_markers import designator_markers_pin
+
+        out["designator_markers"] = designator_markers_pin()
     if any(spec.get("kind") == "country" for spec in comparators):
         from arche.resolve._name_markers import country_markers_pin
 
@@ -368,8 +372,10 @@ def _field_sim(
         return None
     if kind == "containment":
         field = spec.get("field", "admin_path")
+        levels = spec.get("levels")
         return compare_containment(
             ra.get(field), rb.get(field),
+            **({"levels": tuple(levels)} if levels else {}),
             distance_km=_pair_distance_km(spec, ra, rb),
             boundary_km=float(spec.get("boundary_km", BOUNDARY_UNCERTAINTY_KM)),
         )
@@ -823,6 +829,7 @@ def reconcile(
     candidate_pairs: list[dict[str, Any]] | None = None,
     candidate_pins: dict[str, Any] | None = None,
     relation: str = "same_as",
+    unique_match: bool = False,
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -906,6 +913,15 @@ def reconcile(
         right record (a factory and the company that owns it), so a match links
         them without merging them; the ledger records it and never unions the
         two. Pinned as ``relation`` when not the default.
+    unique_match:
+        Hold any ``match`` that is not the only plausible candidate on both
+        sides. With ``True``, a ``match`` stands only when its left record has
+        no other candidate scoring ``match`` or ``review``, and neither does
+        its right record; otherwise it becomes ``review`` and the edge records
+        ``ambiguous``: how many plausible candidates competed. For lists
+        without a location that could tell siblings apart -- a facility list
+        matched within its LGA by name, where `Makera PHC` meets both `Makera
+        I` and `Makera II`. Demotes only; pinned when on.
 
     Returns
     -------
@@ -1098,6 +1114,8 @@ def reconcile(
         raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
     if relation != "same_as":
         pins["relation"] = relation
+    if unique_match:
+        pins["unique_match"] = True
     if tuple(distinctive_kinds) != _DISTINCTIVE_KINDS:
         pins["distinctive_kinds"] = sorted(distinctive_kinds)
     if code_tf:
@@ -1173,12 +1191,16 @@ def reconcile(
         }
         if (candidate := retrieval.get((i, j))) is not None:
             edge["candidate"] = candidate
-        # The reproducible address of this edge: a pure function of the
-        # (rounded) evidence and the pins — no timestamp, recomputable by
-        # anyone holding the same inputs. This is what makes a crosswalk
-        # edge citable and signable, exactly like a pairwise decision.
-        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
+
+    if unique_match:
+        hold_ambiguous(matches)
+    # The reproducible address of each edge: a pure function of the (rounded)
+    # evidence and the pins — no timestamp, recomputable by anyone holding the
+    # same inputs. Computed after every pass that can change a decision, so
+    # the id covers the decision the edge finally carries.
+    for edge in matches:
+        edge["decision_id"] = edge_decision_id(edge, pins)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
     blocking: dict[str, Any] = {
@@ -1200,6 +1222,25 @@ def reconcile(
         "runtime": runtime_record(),
         "blocking": blocking,
     }
+
+
+def hold_ambiguous(matches: list[dict[str, Any]]) -> None:
+    """Demote every ``match`` that is not the only plausible candidate, both ways.
+
+    Plausible means scored ``match`` or ``review`` (every edge the engine
+    keeps). Writes ``ambiguous`` -- the larger of the two competitor counts --
+    onto each demoted edge. Mutates in place; call before decision ids are
+    computed.
+    """
+    from collections import Counter
+
+    per_a = Counter(str(m["a_id"]) for m in matches)
+    per_b = Counter(str(m["b_id"]) for m in matches)
+    for m in matches:
+        n = max(per_a[str(m["a_id"])], per_b[str(m["b_id"])])
+        if m["decision"] == "match" and n > 1:
+            m["decision"] = "review"
+            m["ambiguous"] = n
 
 
 def sign_edges(

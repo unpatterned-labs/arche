@@ -96,7 +96,7 @@ def _label_payload(label_jws: str) -> dict:
 
 def _check_edge_is_shareable(edge: Mapping[str, Any]) -> None:
     allowed = {"a_id", "b_id", "score", "decision", "evidence", "distinctive_max",
-               "candidate", "decision_id", "vetoes", "refuted_by"}
+               "candidate", "decision_id", "vetoes", "refuted_by", "ambiguous"}
     extra = set(edge) - allowed
     if extra:
         raise CredentialError(f"edge carries fields a credential must not: {sorted(extra)}")
