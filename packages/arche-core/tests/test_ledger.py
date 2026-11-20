@@ -592,14 +592,11 @@ def test_a_second_record_is_linked_even_when_the_decision_id_is_not_new(ledger):
         "this test is only meaningful while the decision id is reused"
     )
 
-    # The record id is the content hash of the record, so it can be computed
-    # here rather than fished out of the ledger.
-    from arche.ids import content_hash
-    second_id = content_hash(
+    # The record id is the ledger's keyed content address of the record, so it
+    # can be computed here rather than fished out of the ledger.
+    second_id = ledger._record_id(
         {"entity_type": "organisation",
-         "attributes": {k: v for k, v in second.items()}},
-        prefix="rec",
-    )
+         "attributes": {k: v for k, v in second.items()}})
     assert ledger.entity_of(second_id) is not None, (
         "the second record was never linked: its decision id already existed, so "
         "the link was treated as already made, and it had been made for the first "

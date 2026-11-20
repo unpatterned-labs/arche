@@ -257,7 +257,7 @@ class Pipeline:
         # compatible behaviour worth preserving. Narrow with
         # `Pipeline(detectors=[...])` if you need the old output.
         cross_cutting = [
-            "names", "locations", "emails", "ip", "digital_id", "addr", "core",
+            "names", "locations", "emails", "ip", "digital_id", "addr", "core", "financial",
         ]
         if self.jurisdiction in {"NG", "KE", "ZA", "GH"}:
             return [self.jurisdiction.lower(), *cross_cutting]
@@ -584,6 +584,12 @@ class Pipeline:
                 except ImportError:
                     # arche.addr not installed; skip gracefully
                     pass
+            elif pkg == "financial":
+                # IBANs (mod-97), cards (Luhn), sort codes and labelled account numbers: every
+                # statute pack governs PII-5-BANK_ACCOUNT and PII-5-CARD, and only a model
+                # proposed them before.
+                from arche.detect.financial import detect_financial
+                results.extend(detect_financial(text))
             elif pkg == "core":
                 # Phone numbers via the multi-country, prefix-validated
                 # detector (PRD FR-DETECT-9). Emits PII-3-PHONE; local-format

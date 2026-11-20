@@ -58,7 +58,10 @@ from arche.guard import EgressGuard, GuardDeniedError
 class TestTheReportedBug:
     """British text, a British statute, and nothing removed."""
 
-    TEXT = "Björn Svensson lives in Manchester, SW1A 1AA, tel 07700 900123."
+    # The phone that was here ("tel 07700 900123") is detected since 20 Nov 2026 (UK numbers in
+    # arche.detect.phones); the point of this class, that a British text with nothing the installed
+    # detectors find still reports the categories they can't, holds without it.
+    TEXT = "Björn Svensson lives in Manchester, SW1A 1AA."
 
     @pytest.fixture
     def projection(self):
