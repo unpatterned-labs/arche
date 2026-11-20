@@ -39,28 +39,52 @@ links two records into one entity here because the engine said so, and the
 decides what to do about that. Authority over side effects stays with the
 caller, human or agent.
 
-**Five tables**, all local, in the user's own DuckDB file:
+**Tables**, all local, in the user's own DuckDB file:
 
-``records``      the inputs as given, content-addressed. Replay needs them.
-``decisions``    one row per receipt, with its pins and the call that made it.
-``runs``         the two lists behind a batch verb, so an edge can be replayed.
-``memberships``  record -> entity. Derived from linked decisions; rebuildable.
-``events``       append-only: what was recorded, linked, merged, superseded.
+``records``       the inputs as given, content-addressed. Replay needs them.
+                  Written once; the only change ever made to a row is
+                  :meth:`Ledger.forget` erasing its content.
+``decisions``     one row per receipt, with its pins and the call that made it.
+                  Never updated: a receipt is what was decided.
+``supersessions`` append-only: which receipt replaced which, and when. Read
+                  through the ``arche_decisions_v`` view, which supplies
+                  ``superseded_by``.
+``runs``          the two lists behind a batch verb, so an edge can be replayed.
+``memberships``   record -> entity: a projection of the linking decisions,
+                  updated in place when entities merge. History is not kept
+                  here; it is in ``events`` and ``decisions``.
+``events``        append-only: what was recorded, linked, merged, superseded,
+                  forgotten.
+``meta``          the ledger's own settings: how record ids are computed.
 
-Storing the inputs is a deliberate choice. The file is the caller's, on the
-caller's disk, like ``decisions.json`` beside their PDFs. A hashed mode that
-keeps only ids can follow when someone needs it.
+**Record ids are keyed.** A record id is an HMAC of the record under a key the
+ledger generates on creation (or the caller supplies). A bare hash of a record
+is publicly recomputable, so an id shared in a receipt or a credential could be
+brute-forced back to a low-entropy input such as a national id; a keyed one
+cannot without the key. Ledgers created before keyed ids keep their unkeyed
+``rec:sha256:`` ids, because re-keying would orphan every decision that names
+them.
+
+Storing the inputs is a deliberate choice: replay needs them, and the file is
+the caller's, on the caller's disk. :meth:`Ledger.forget` is the erasure path.
+It removes a record's content and keeps its id, its decisions and its history,
+so what was decided stays auditable while what was said about a person does
+not stay stored.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import secrets
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
+from arche._ledger_lifecycle import LIFECYCLE_SCHEMA, PAIRS, LifecycleMixin
 from arche.ids import content_hash
 
 #: Identity outcomes that link two records into one entity. ``compare`` says
@@ -240,10 +264,15 @@ class Event:
 # ---------------------------------------------------------------------------
 
 
-class Ledger:
-    """A local, content-addressed store of decisions and the records behind them."""
+class Ledger(LifecycleMixin):
+    """A local, content-addressed store of decisions and the records behind them.
 
-    def __init__(self, database: str) -> None:
+    Membership is recomputed from the evidence whenever it changes, so a merge
+    can be undone: see :mod:`arche._ledger_lifecycle` for assertions,
+    re-partitioning, lineage and entity ids.
+    """
+
+    def __init__(self, database: str, *, record_key: bytes | None = None) -> None:
         try:
             import duckdb
         except ImportError as exc:  # pragma: no cover - depends on installation
@@ -252,20 +281,69 @@ class Ledger:
             ) from exc
         self._db = duckdb.connect(database=database)
         #: entity_type -> (row count when built, records in pack vocabulary).
-        #: See `_within`; `arche_records` is append-only, so the count is a
-        #: sufficient validity test.
+        #: See `_within`; `arche_records` only grows, so the count is a
+        #: sufficient validity test -- except after `forget`, which clears it.
         self._within_cache: dict[str, tuple[int, list[dict[str, Any]]]] = {}
         self.ensure_schema()
+        self._record_key = self._init_record_key(record_key)
+        self._migrate_lifecycle()
 
     # ------------------------------------------------------------ lifecycle
 
     def ensure_schema(self) -> None:
         """Create the five tables if absent. Safe to call any number of times."""
-        for statement in _SCHEMA:
+        for statement in (*_SCHEMA, *LIFECYCLE_SCHEMA):
             self._db.execute(statement)
 
     def close(self) -> None:
         self._db.close()
+
+    def _init_record_key(self, given: bytes | None) -> bytes | None:
+        """The key record ids are computed under; ``None`` for a legacy ledger.
+
+        A new ledger generates a key and keeps it in ``arche_meta`` unless the
+        caller supplies one, in which case only its fingerprint is stored, so a
+        copy of the file alone does not carry the key. Reopening checks the
+        fingerprint: a different key would silently mint second copies of every
+        record. A ledger that already holds records but no setting predates
+        keyed ids and keeps unkeyed ones.
+        """
+        meta = dict(self._db.execute("SELECT key, value FROM arche_meta").fetchall())
+        mode = meta.get("record_ids")
+        if mode is None:
+            if self._db.execute("SELECT count(*) FROM arche_records").fetchone()[0]:
+                mode = "sha256"
+                self._db.execute("INSERT INTO arche_meta VALUES ('record_ids', 'sha256')")
+                if given is not None:
+                    raise ValueError("this ledger predates keyed record ids; it cannot "
+                                     "take a record_key without re-keying every record")
+                return None
+            if given is None:
+                key = secrets.token_bytes(32)
+                self._db.execute("INSERT INTO arche_meta VALUES ('record_ids', 'hmac'), "
+                                 "('record_key', ?)", [key.hex()])
+                return key
+            self._db.execute("INSERT INTO arche_meta VALUES ('record_ids', 'hmac'), "
+                             "('record_key_fingerprint', ?)", [_fingerprint(given)])
+            return given
+        if mode == "sha256":
+            if given is not None:
+                raise ValueError("this ledger predates keyed record ids; it cannot "
+                                 "take a record_key without re-keying every record")
+            return None
+        if "record_key" in meta:
+            if given is not None and given.hex() != meta["record_key"]:
+                raise ValueError("this ledger keeps its own record key; the one given differs")
+            return bytes.fromhex(meta["record_key"])
+        if given is None:
+            raise ValueError("this ledger's record ids are keyed by a key it does not store; "
+                             "pass record_key= to attach()")
+        if _fingerprint(given) != meta.get("record_key_fingerprint"):
+            raise ValueError("record_key does not match the key this ledger was created with")
+        return given
+
+    def _record_id(self, payload: Mapping[str, Any]) -> str:
+        return content_hash(dict(payload), prefix="rec", key=self._record_key)
 
     def __enter__(self) -> Ledger:
         return self
@@ -451,6 +529,7 @@ class Ledger:
         call: Mapping[str, Any],
         verb: str = "reconcile",
         link: bool = True,
+        texts: Mapping[str, str] | None = None,
     ) -> list[Decision]:
         """Record every edge of a ``reconcile`` / ``dedupe`` / ``find`` result.
 
@@ -479,7 +558,7 @@ class Ledger:
             out: dict[str, Record] = {}
             for position, row in enumerate(records):
                 caller_id = str(row.get(id_field, position))
-                if caller_id.startswith("rec:sha256:"):
+                if caller_id.startswith("rec:"):
                     # A row carrying a ledger record id as its id is that stored
                     # record, handed back to a verb: re-hashing it with the id
                     # inside would mint a second copy outside its entity.
@@ -488,11 +567,10 @@ class Ledger:
                         out[caller_id] = existing
                         continue
                 attributes = _json_clean(dict(row))
-                record_id = content_hash(
-                    {"entity_type": entity_type, "attributes": attributes}, prefix="rec"
-                )
+                record_id = self._record_id(
+                    {"entity_type": entity_type, "attributes": attributes})
                 out[caller_id] = Record(record_id, entity_type, f"{verb}:{label}", caller_id,
-                                        attributes, None, now)
+                                        attributes, (texts or {}).get(caller_id), now)
             return out
 
         by_a = rows_for(list_a, "a")
@@ -503,6 +581,11 @@ class Ledger:
 
         # Build every decision first; nothing below touches the database until
         # the shape of the whole batch is known.
+        # A run declared `relation="operated_by"` links sites to the operators
+        # that run them. Its matches are relations, not identity: recorded as
+        # `operated_by`, never in LINKED, so no membership is ever unioned and a
+        # factory never becomes the same entity as the company that owns it.
+        relation = str(pins.get("relation") or "same_as")
         built: list[Decision] = []
         for edge in result.get("matches", ()):
             a_id, b_id = str(edge["a_id"]), str(edge["b_id"])
@@ -510,13 +593,16 @@ class Ledger:
             if record_a == record_b:
                 continue  # a record against itself says nothing about identity
             identity = str(edge["decision"])
+            if relation != "same_as" and identity == "match":
+                identity = relation
             built.append(Decision(
                 decision_id=str(edge["decision_id"]),
                 verb=verb,
                 record_a=record_a,
                 record_b=record_b,
                 identity=identity,
-                action="merge" if identity == "match" else "hold",
+                action=("merge" if identity == "match"
+                        else "relate" if identity == relation != "same_as" else "hold"),
                 score=float(edge.get("score", 0.0)),
                 factors={k: float(v) for k, v in dict(edge.get("evidence", {})).items()
                          if isinstance(v, (int, float))},
@@ -525,7 +611,8 @@ class Ledger:
                     "a_id": a_id, "b_id": b_id,
                     "distinctive_max": edge.get("distinctive_max"),
                     **{k: v for k, v in edge.items()
-                       if k in ("route", "retrieval_score", "refuted_by", "capped_by")},
+                       if k in ("route", "retrieval_score", "refuted_by", "capped_by",
+                                "ambiguous")},
                 },
                 pins=pins,
                 call=call_record,
@@ -569,22 +656,44 @@ class Ledger:
                 })
                 for d in fresh
             ]
+            # A decision that already existed, now applied to another pair of
+            # records: say so, or that pair is never an edge.
+            known_pairs = {(r[0], r[1], r[2]) for r in self._fetch_in(
+                "arche_decision_pairs", "decision_id", list(existing),
+                columns="decision_id, record_a, record_b")}
+            extra = {(d.decision_id, d.record_a, d.record_b) for d in built
+                     if d.decision_id in existing
+                     and (existing[d.decision_id].record_a, existing[d.decision_id].record_b)
+                     != (d.record_a, d.record_b)} - known_pairs
+            self._insert_rows("arche_decision_pairs",
+                              [[*t, now.isoformat()] for t in sorted(extra)])
+            self._insert_rows("arche_events", events)
+            events = []
+            linking = [d for d in built if d.linked]
             if link:
                 # `built`, not `fresh`. A decision id is a content hash of the
                 # *comparison*, while a record id is a content hash of the whole
                 # record, so two records that differ only in a field the pack
-                # does not read -- the same supplier seen by two sources on two
-                # dates -- produce two records and **one** decision id. Linking
-                # only `fresh` therefore dropped the second record's membership
-                # on the floor: the receipt already existed, so the link was
-                # treated as already made, and it had been made for the *other*
-                # record. `resolve()` then read a verdict of `found` on a record
-                # that belonged to no entity and died asking for entity `None`.
-                #
-                # Safe to re-link: `_link_many` is union-find over the records
-                # named by *these* decisions, so re-uniting a pair that is
-                # already together writes nothing.
-                events += self._link_many([d for d in built if d.linked], entity_type, now)
+                # does not read produce two records and **one** decision id.
+                # Linking only `fresh` once dropped the second record's
+                # membership; re-partitioning over every record named by these
+                # decisions cannot.
+                held = self._withheld_now([d.decision_id for d in linking])
+                released = sorted({d.decision_id for d in linking if d.decision_id in held})
+                self._insert_rows("arche_withheld", [[d, False, now.isoformat()]
+                                                     for d in released])
+                if linking:
+                    triggers: dict[str, str] = {}
+                    for d in sorted(linking, key=lambda d: d.decision_id):
+                        triggers.setdefault(d.record_a, d.decision_id)
+                        triggers.setdefault(d.record_b, d.decision_id)
+                    self._repartition(set(triggers), cause=f"run:{run_id}", run_id=run_id,
+                                      triggers=triggers)
+            else:
+                # Withheld: recorded as the engine issued it, never an edge.
+                self._insert_rows("arche_withheld", [
+                    [d.decision_id, True, now.isoformat()] for d in linking
+                    if d.decision_id not in existing])
             self._insert_rows("arche_events", events)
         except Exception:
             self._db.execute("ROLLBACK")
@@ -592,74 +701,20 @@ class Ledger:
         self._db.execute("COMMIT")
         return [existing.get(d.decision_id, d) for d in built]
 
-    def _link_many(self, linked: list[Decision], entity_type: str, now: datetime) -> list[list]:
-        """Union the records of many linking decisions at once; return the events.
+    def _withheld_now(self, decision_ids: list[str]) -> set[str]:
+        """Which of these decisions are currently withheld.
 
-        Same rules as :meth:`_link`, one query in and one write out: an entity
-        that already exists in the store survives a merge with one created in
-        this batch, and among two existing ones the first seen survives.
+        Reads the whole (small: only what `resolve` withheld) table once. A
+        500-parameter IN query against it cost ~18 ms a chunk -- 54 s on a
+        3,000-edge batch.
         """
-        if not linked:
-            return []
-        involved = sorted({rid for d in linked for rid in (d.record_a, d.record_b)})
-        member: dict[str, str] = {
-            row[0]: row[1]
-            for row in self._fetch_in("arche_memberships", "record_id", involved,
-                                      columns="record_id, entity_id")
-        }
-        stored_entities = set(member.values())
-        parent: dict[str, str] = {}
-
-        def find(entity: str) -> str:
-            while parent.get(entity, entity) != entity:
-                entity = parent[entity]
-            return entity
-
-        new_members: dict[str, tuple[str, str]] = {}   # record -> (entity, decision_id)
-        events: list[list] = []
-
-        def current(record_id: str) -> str | None:
-            entity = member.get(record_id) or (new_members.get(record_id) or (None,))[0]
-            return find(entity) if entity else None
-
-        for d in linked:
-            a, b = current(d.record_a), current(d.record_b)
-            if a is None and b is None:
-                entity_id = f"ent_{uuid4().hex}"
-                new_members[d.record_a] = (entity_id, d.decision_id)
-                new_members[d.record_b] = (entity_id, d.decision_id)
-                events.append(_event_row("entity_created", {
-                    "entity_id": entity_id, "decision_id": d.decision_id,
-                    "records": [d.record_a, d.record_b],
-                }))
-            elif a is None or b is None:
-                entity_id = a or b
-                newcomer = d.record_a if a is None else d.record_b
-                new_members[newcomer] = (entity_id, d.decision_id)
-                events.append(_event_row("record_linked", {
-                    "entity_id": entity_id, "record_id": newcomer,
-                    "decision_id": d.decision_id,
-                }))
-            elif a != b:
-                kept, absorbed = (b, a) if (b in stored_entities and a not in stored_entities) \
-                    else (a, b)
-                parent[absorbed] = kept
-                events.append(_event_row("entities_merged", {
-                    "kept": kept, "absorbed": absorbed, "decision_id": d.decision_id,
-                }, "two entities turned out to be one"))
-
-        self._insert_rows("arche_memberships", [
-            [record_id, find(entity), entity_type, decision_id, now.isoformat()]
-            for record_id, (entity, decision_id) in new_members.items()
-        ])
-        for absorbed in stored_entities:
-            kept = find(absorbed)
-            if kept != absorbed:
-                self._db.execute(
-                    "UPDATE arche_memberships SET entity_id = ? WHERE entity_id = ?",
-                    [kept, absorbed],
-                )
-        return events
+        if not decision_ids:
+            return set()
+        withheld = {r[0] for r in self._db.execute(
+            "SELECT decision_id FROM (SELECT decision_id, withheld, row_number() OVER ("
+            "PARTITION BY decision_id ORDER BY marked_at DESC) AS n FROM arche_withheld) "
+            "WHERE n = 1 AND withheld").fetchall()}
+        return withheld & set(decision_ids)
 
     # -- bulk helpers ---------------------------------------------------------
 
@@ -711,7 +766,7 @@ class Ledger:
     def history(self, record_id: str) -> tuple[Decision, ...]:
         """Every decision that touched a record, newest first."""
         rows = self._db.execute(
-            "SELECT * FROM arche_decisions WHERE record_a = ? OR record_b = ? "
+            "SELECT * FROM arche_decisions_v WHERE record_a = ? OR record_b = ? "
             "ORDER BY recorded_at DESC",
             [record_id, record_id],
         ).fetchall()
@@ -765,24 +820,61 @@ class Ledger:
             changed=changed,
         )
 
-    def entity(self, entity_id: str) -> EntityView:
-        rows = self._db.execute(
-            "SELECT record_id, entity_type, decision_id FROM arche_memberships "
-            "WHERE entity_id = ? ORDER BY linked_at",
-            [entity_id],
-        ).fetchall()
+    def entity(self, entity_id: str, *, at: datetime | str | None = None) -> EntityView:
+        """An entity's members, what they agree on, and the decisions holding it.
+
+        Only *active* linking decisions count -- not superseded, not withheld --
+        so this and :meth:`graph` describe the same entity. ``at`` gives the
+        membership as it stood at that time, from the append-only history;
+        the decisions are those recorded by then and not yet superseded.
+        """
+        if at is None:
+            rows = self._db.execute(
+                "SELECT m.record_id, m.entity_type, m.decision_id FROM arche_memberships m "
+                "JOIN arche_records r ON r.record_id = m.record_id "
+                "WHERE m.entity_id = ? ORDER BY r.recorded_at, m.record_id",
+                [entity_id],
+            ).fetchall()
+            when = None
+        else:
+            when = at.isoformat() if isinstance(at, datetime) else str(at)
+            rows = self._db.execute(
+                "SELECT h.record_id, h.entity_type, h.event_id FROM ("
+                " SELECT *, row_number() OVER (PARTITION BY record_id "
+                "  ORDER BY recorded_at DESC) AS n FROM arche_membership_history "
+                " WHERE recorded_at <= ?) h JOIN arche_records r ON r.record_id = h.record_id "
+                "WHERE h.n = 1 AND h.entity_id = ? ORDER BY r.recorded_at, h.record_id",
+                [when, entity_id],
+            ).fetchall()
         if not rows:
-            raise KeyError(f"no entity {entity_id!r} in this ledger")
+            raise KeyError(f"no entity {entity_id!r} in this ledger"
+                           + (f" at {when}" if when else ""))
         records = tuple(self.record(row[0]) for row in rows)
         shared, conflicts = _agreement(records)
         member_ids = [record.record_id for record in records]
         marks = ", ".join("?" for _ in member_ids)
-        linked = self._db.execute(
-            f"SELECT decision_id, record_a, record_b FROM arche_decisions "
-            f"WHERE identity IN ('same_entity', 'match') "
-            f"AND record_a IN ({marks}) AND record_b IN ({marks}) ORDER BY recorded_at",
-            [*member_ids, *member_ids],
-        ).fetchall()
+        if when is None:
+            linked = [(d, a, b) for d, a, b in self._db.execute(
+                f"SELECT p.decision_id, p.record_a, p.record_b FROM {PAIRS} p "
+                f"JOIN arche_decisions_v d ON d.decision_id = p.decision_id "
+                f"WHERE d.identity IN ('same_entity', 'match') AND d.superseded_by IS NULL "
+                f"AND p.record_a IN ({marks}) AND p.record_b IN ({marks}) "
+                f"ORDER BY d.recorded_at, p.decision_id, p.record_a",
+                [*member_ids, *member_ids],
+            ).fetchall()]
+        else:
+            linked = self._db.execute(
+                f"SELECT p.decision_id, p.record_a, p.record_b FROM {PAIRS} p "
+                f"JOIN arche_decisions d ON d.decision_id = p.decision_id "
+                f"LEFT JOIN arche_supersessions s ON s.decision_id = p.decision_id "
+                f"WHERE d.identity IN ('same_entity', 'match') AND d.recorded_at <= ? "
+                f"AND (s.superseded_at IS NULL OR s.superseded_at > ?) "
+                f"AND p.record_a IN ({marks}) AND p.record_b IN ({marks}) "
+                f"ORDER BY d.recorded_at, p.decision_id, p.record_a",
+                [when, when, *member_ids, *member_ids],
+            ).fetchall()
+        withheld = self._withheld_now([row[0] for row in linked])
+        linked = [row for row in linked if row[0] not in withheld]
         decided_pairs = {frozenset((row[1], row[2])) for row in linked}
         n = len(member_ids)
         weak_links: tuple[str, ...] = ()
@@ -854,12 +946,20 @@ class Ledger:
             return graph
         marks = ", ".join("?" for _ in record_ids)
         edges = self._db.execute(
-            f"SELECT decision_id, record_a, record_b, score, identity FROM arche_decisions "
-            f"WHERE identity IN ('same_entity', 'match') AND superseded_by IS NULL "
-            f"AND record_a IN ({marks}) AND record_b IN ({marks})",
+            f"SELECT p.decision_id, p.record_a, p.record_b, d.score, d.identity FROM {PAIRS} p "
+            f"JOIN arche_decisions_v d ON d.decision_id = p.decision_id "
+            f"WHERE d.identity IN ('same_entity', 'match') AND d.superseded_by IS NULL "
+            f"AND p.record_a IN ({marks}) AND p.record_b IN ({marks})",
             [*record_ids, *record_ids],
         ).fetchall()
+        # An edge is drawn only inside one entity: a decision that a person's
+        # `different_from` overrode, or that a split cut, joins two entities
+        # and holds neither together. Withheld decisions never linked.
+        entity_of = dict(member_rows)
+        withheld = self._withheld_now([e[0] for e in edges])
         for decision_id, a, b, score, identity in edges:
+            if entity_of.get(a) != entity_of.get(b) or decision_id in withheld:
+                continue
             graph.add_edge(a, b, decision_id=decision_id, score=float(score), identity=identity)
         return graph
 
@@ -966,8 +1066,7 @@ class Ledger:
         within = self._within(entity_type)
         call = {"entity": entity_type, "id_field": "id"}
         if not within:
-            stored = self._record(entity_type, attrs, None, "resolve", None)
-            self._set_text(stored.record_id, text)
+            stored = self._record(entity_type, attrs, None, "resolve", None, text)
             return Resolution("not_found", stored.record_id, None, (), {}, None, {}, [],
                               "no records of this type in the ledger yet")
 
@@ -1038,15 +1137,16 @@ class Ledger:
             verdict, note = "not_found", "no stored record came close"
 
         decisions = self.record_batch(result, [attrs], within, call=call, verb="resolve",
-                                      link=(verdict == "found"))
+                                      link=(verdict == "found"),
+                                      texts={"0": text} if text is not None else None)
         record_id = self._db.execute(
             "SELECT side_a FROM arche_runs WHERE run_id = ?", [decisions[0].run_id]
         ).fetchone()[0] if decisions else None
         if record_id is not None:
             record_id = _load(record_id)[0]
         else:
-            record_id = self._record(entity_type, attrs, None, "resolve", None).record_id
-        self._set_text(record_id, text)
+            record_id = self._record(entity_type, attrs, None, "resolve", None,
+                                     text).record_id
         if verdict in ("ambiguous", "conflict"):
             self._event("link_withheld", {"record_id": record_id, "verdict": verdict,
                                           "entities": matched, "conflicts": sorted(conflicts)},
@@ -1080,11 +1180,6 @@ class Ledger:
                                    self.record(first.record_b), why)
         return Resolution(verdict, record_id, entity, tuple(ordered), candidates,
                           entity_evidence, conflicts, would, note)
-
-    def _set_text(self, record_id: str, text: str | None) -> None:
-        if text is not None:
-            self._db.execute("UPDATE arche_records SET text = ? WHERE record_id = ?",
-                             [text, record_id])
 
     def read(self, source: str, *, limit: int | None = None) -> list[dict[str, Any]]:
         """Rows from a table, a file, or a query the same DuckDB can see.
@@ -1126,7 +1221,7 @@ class Ledger:
     def cases(self, entity_type: str | None = None) -> list[Case]:
         """Pairs still at ``review``: the uncertain tail, with what would settle each."""
         rows = self._db.execute(
-            "SELECT * FROM arche_decisions WHERE identity = 'review' "
+            "SELECT * FROM arche_decisions_v WHERE identity = 'review' "
             "AND superseded_by IS NULL ORDER BY recorded_at"
         ).fetchall()
         cases: list[Case] = []
@@ -1211,9 +1306,11 @@ class Ledger:
                 record_ids=keep,
             )
             self._db.execute(
-                "UPDATE arche_decisions SET superseded_by = ? WHERE decision_id = ?",
-                [fresh.decision_id, prior.decision_id],
+                "INSERT INTO arche_supersessions VALUES (?, ?, ?)",
+                [prior.decision_id, fresh.decision_id, _now().isoformat()],
             )
+            # The superseded decision may have been holding an entity together.
+            self._repartition({prior.record_a, prior.record_b}, cause=fresh.decision_id)
             self._event(
                 "decision_superseded",
                 {
@@ -1224,6 +1321,32 @@ class Ledger:
             superseded.append(fresh)
         return superseded
 
+    def forget(self, record_id: str, *, reason: str = "") -> None:
+        """Erase a record's content; keep its id, its decisions and its history.
+
+        The erasure path (a GDPR request, a source that withdrew consent). The
+        record's attributes, text and caller id are removed; its keyed id, the
+        receipts that name it and the events stay, so what was decided remains
+        auditable while what was said about the record does not remain stored.
+        Afterwards the record's decisions can still be listed and verified by
+        id, but not replayed or explained field by field: the inputs are gone.
+
+        The one change ever made to an ``arche_records`` row. Logged as
+        ``record_forgotten`` with the reason, never with the content.
+        """
+        self.record(record_id)  # KeyError if unknown
+        self._db.execute("BEGIN TRANSACTION")
+        try:
+            self._db.execute(
+                "UPDATE arche_records SET attributes = '{}', text = NULL, caller_id = NULL "
+                "WHERE record_id = ?", [record_id])
+            self._event("record_forgotten", {"record_id": record_id}, reason)
+        except Exception:
+            self._db.execute("ROLLBACK")
+            raise
+        self._db.execute("COMMIT")
+        self._within_cache.clear()
+
     # ------------------------------------------------------------ internals
 
     def _record(
@@ -1233,6 +1356,7 @@ class Ledger:
         reference: Any,
         source: str,
         caller_id: str | None,
+        source_text: str | None = None,
     ) -> Record:
         text: str | None = None
         if isinstance(given, str):
@@ -1251,12 +1375,15 @@ class Ledger:
             raise TypeError(f"cannot store an input of type {type(given).__name__}")
         payload = {"entity_type": entity_type, "text": text} if text is not None \
             else {"entity_type": entity_type, "attributes": attributes}
-        record_id = content_hash(payload, prefix="rec")
+        record_id = self._record_id(payload)
         existing = self._db.execute(
             "SELECT * FROM arche_records WHERE record_id = ?", [record_id]
         ).fetchone()
         if existing is not None:
             return _record_from_row(existing)
+        # `source_text`: the text a structured record was read from. Stored with
+        # the record, not part of its id, and written once.
+        text = text if text is not None else source_text
         record = Record(record_id, entity_type, source, caller_id, attributes, text, _now())
         self._db.execute(
             "INSERT INTO arche_records VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -1273,7 +1400,7 @@ class Ledger:
 
     def _decision_or_none(self, decision_id: str) -> Decision | None:
         row = self._db.execute(
-            "SELECT * FROM arche_decisions WHERE decision_id = ?", [decision_id]
+            "SELECT * FROM arche_decisions_v WHERE decision_id = ?", [decision_id]
         ).fetchone()
         return _decision_from_row(row) if row else None
 
@@ -1297,53 +1424,14 @@ class Ledger:
                  "action": decision.action, "verb": decision.verb},
             )
             if decision.linked:
-                self._link(decision, entity_type)
+                self._repartition({decision.record_a, decision.record_b},
+                                  cause=decision.decision_id)
         except Exception:
             if transaction:
                 self._db.execute("ROLLBACK")
             raise
         if transaction:
             self._db.execute("COMMIT")
-
-    def _link(self, decision: Decision, entity_type: str | None = None) -> None:
-        """Union the two records' entities. Merges keep the older id and log it."""
-        if entity_type is None:
-            entity_type = self.record(decision.record_a).entity_type
-        a = self.entity_of(decision.record_a)
-        b = self.entity_of(decision.record_b)
-        if a is None and b is None:
-            entity_id = f"ent_{uuid4().hex}"
-            for record_id in (decision.record_a, decision.record_b):
-                self._member(record_id, entity_id, entity_type, decision.decision_id)
-            self._event("entity_created", {
-                "entity_id": entity_id, "decision_id": decision.decision_id,
-                "records": [decision.record_a, decision.record_b],
-            })
-        elif a is None or b is None:
-            entity_id = a or b
-            newcomer = decision.record_a if a is None else decision.record_b
-            self._member(newcomer, entity_id, entity_type, decision.decision_id)
-            self._event("record_linked", {"entity_id": entity_id, "record_id": newcomer,
-                                          "decision_id": decision.decision_id})
-        elif a != b:
-            oldest = self._db.execute(
-                "SELECT entity_id FROM arche_memberships WHERE entity_id IN (?, ?) "
-                "ORDER BY linked_at LIMIT 1", [a, b],
-            ).fetchone()[0]
-            absorbed = b if oldest == a else a
-            self._db.execute(
-                "UPDATE arche_memberships SET entity_id = ? WHERE entity_id = ?",
-                [oldest, absorbed],
-            )
-            self._event("entities_merged", {"kept": oldest, "absorbed": absorbed,
-                                            "decision_id": decision.decision_id},
-                        "two entities turned out to be one")
-
-    def _member(self, record_id: str, entity_id: str, entity_type: str, decision_id: str) -> None:
-        self._db.execute(
-            "INSERT INTO arche_memberships VALUES (?, ?, ?, ?, ?)",
-            [record_id, entity_id, entity_type, decision_id, _now().isoformat()],
-        )
 
     def _event(self, kind: str, refs: Mapping[str, Any], note: str = "") -> None:
         self._db.execute("INSERT INTO arche_events VALUES (?, ?, ?, ?, ?)",
@@ -1444,8 +1532,14 @@ class Ledger:
         }
 
 
-def attach(uri: str) -> Ledger:
-    """Open a ledger. ``duckdb:///:memory:`` for scratch, ``duckdb:///file.duckdb`` to keep."""
+def attach(uri: str, *, record_key: bytes | None = None) -> Ledger:
+    """Open a ledger. ``duckdb:///:memory:`` for scratch, ``duckdb:///file.duckdb`` to keep.
+
+    ``record_key``: the key record ids are computed under. Omit it and a new
+    ledger generates one and keeps it in the file; supply it (e.g. one key per
+    tenant) and only its fingerprint is stored, so it must be supplied again
+    on every attach.
+    """
     if not uri.startswith("duckdb:///"):
         raise ValueError(
             f"unsupported ledger URI {uri!r}; use duckdb:///:memory: or duckdb:///arche.duckdb"
@@ -1455,7 +1549,7 @@ def attach(uri: str) -> Ledger:
         raise ValueError(
             "the ledger URI needs a database path; use duckdb:///:memory: or duckdb:///arche.duckdb"
         )
-    return Ledger(database)
+    return Ledger(database, record_key=record_key)
 
 
 # ---------------------------------------------------------------------------
@@ -1488,7 +1582,23 @@ _SCHEMA = (
         event_id VARCHAR PRIMARY KEY, kind VARCHAR NOT NULL, occurred_at VARCHAR NOT NULL,
         refs VARCHAR NOT NULL, note VARCHAR NOT NULL
     )""",
+    """CREATE TABLE IF NOT EXISTS arche_supersessions (
+        decision_id VARCHAR PRIMARY KEY, superseded_by VARCHAR NOT NULL,
+        superseded_at VARCHAR NOT NULL
+    )""",
+    """CREATE TABLE IF NOT EXISTS arche_meta (key VARCHAR PRIMARY KEY, value VARCHAR NOT NULL)""",
+    # `superseded_by` stays a column of arche_decisions so ledgers written
+    # before supersessions had a table keep their answers; nothing writes it.
+    """CREATE OR REPLACE VIEW arche_decisions_v AS
+       SELECT d.* EXCLUDE (superseded_by),
+              COALESCE(s.superseded_by, d.superseded_by) AS superseded_by
+       FROM arche_decisions d LEFT JOIN arche_supersessions s USING (decision_id)""",
 )
+
+
+def _fingerprint(key: bytes) -> str:
+    """Identifies a key without revealing it."""
+    return hmac.new(key, b"arche.record_key.fingerprint", hashlib.sha256).hexdigest()
 
 
 def _now() -> datetime:

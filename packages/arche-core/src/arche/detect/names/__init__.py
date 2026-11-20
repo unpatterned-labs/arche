@@ -189,6 +189,28 @@ def person_spans(text: str) -> list[tuple[int, int, str]]:
     return spans
 
 
+#: A courtesy or honorific title, then one to three capitalised words: those
+#: words are a name whether or not the lexicon knows them ("Mrs Ada Okwuosa",
+#: "Chief Bamidele Adeyemi-Lawal"). Without it a surname the lexicon lacks
+#: stayed in clear beside a masked first name.
+_TITLED = re.compile(
+    r"\b(?:Mr|Mrs|Ms|Miss|Mx|Dr|Prof|Sir|Madam|Dame|Rev|Hon|Chief|Alhaji|Alhaja|Engr|Barr"
+    r"|Pastor)\.?[ \t]+"
+    r"((?:[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*)"
+    r"(?:[ \t]+(?:[A-Z]\.?[ \t]+)?[A-Z][^\W\d_]+(?:['’\-][^\W\d_]+)*){0,2})"
+)
+
+
+def _titled_tokens(text: str) -> list[tuple[int, int, str]]:
+    out = []
+    for m in _TITLED.finditer(text):
+        for t in _TOKEN.finditer(m.group(1)):
+            token = t.group(0)
+            if len(token) >= 2 and token[0].isupper() and _normalise(token) not in _STOP:
+                out.append((m.start(1) + t.start(), m.start(1) + t.end(), token))
+    return out
+
+
 def detect_names(text: str, *, confidence: float = 0.7) -> list[Detection]:
     """Find African names in ``text``: one ``PII-1-NAME`` detection per name token.
 
@@ -216,6 +238,21 @@ def detect_names(text: str, *, confidence: float = 0.7) -> list[Detection]:
             end=end,
             confidence=confidence,
             detector="rule:names_lexicon",
+            identity_class="inferred",
+            metadata={},
+        ))
+    taken = [(d.start, d.end) for d in detections]
+    for start, end, token in _titled_tokens(text):
+        if any(s < end and start < e for s, e in taken):
+            continue
+        detections.append(Detection(
+            id=f"det:name:{start}:{end}",
+            category="PII-1-NAME",
+            text=token,
+            start=start,
+            end=end,
+            confidence=max(confidence, 0.8),
+            detector="rule:names_title",
             identity_class="inferred",
             metadata={},
         ))

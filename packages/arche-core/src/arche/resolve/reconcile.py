@@ -118,7 +118,7 @@ _FIELD_COMPARATORS = {
 # other kind is a typo and raises rather than being skipped as "inapplicable".
 _STRUCTURAL_KINDS = frozenset({
     "geo", "containment", "postcode", "date", "type", "code", "spec",
-    "premises", "tokenset", "rival", "tftoken",
+    "premises", "tokenset", "rival", "tftoken", "designator", "country",
 })
 
 
@@ -137,6 +137,9 @@ _TEXT_KINDS = ("tftoken", "name", "placename", "address")
 # pair, so the gate demoted all of them and the run returned zero matches from
 # 93% of true pairs surfaced. That reads exactly like a comparator that does not
 # work, and it was a comparator the gate could not see.
+#: What a reconcile `match` can assert between a left and a right record.
+RELATIONS = frozenset({"same_as", "operated_by"})
+
 _DISTINCTIVE_KINDS = ("name", "placename", "id", "tftoken", "code", "tokenset")
 # Kinds whose similarity is a claim about STRINGS, so it must be priced by the
 # rarity of what the two strings share before it may clear a gate. `id` is
@@ -217,6 +220,14 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
         from arche.resolve._legal_form import pin as _legal_form_pin
 
         out["legal_form"] = _legal_form_pin()
+    if any(spec.get("kind") == "designator" for spec in comparators):
+        from arche.resolve._name_markers import designator_markers_pin
+
+        out["designator_markers"] = designator_markers_pin()
+    if any(spec.get("kind") == "country" for spec in comparators):
+        from arche.resolve._name_markers import country_markers_pin
+
+        out["country_markers"] = country_markers_pin()
     return out
 
 
@@ -361,8 +372,10 @@ def _field_sim(
         return None
     if kind == "containment":
         field = spec.get("field", "admin_path")
+        levels = spec.get("levels")
         return compare_containment(
             ra.get(field), rb.get(field),
+            **({"levels": tuple(levels)} if levels else {}),
             distance_km=_pair_distance_km(spec, ra, rb),
             boundary_km=float(spec.get("boundary_km", BOUNDARY_UNCERTAINTY_KM)),
         )
@@ -419,6 +432,16 @@ def _field_sim(
             return compare_specs(str(ra[field]), str(rb[field]), category)
         table = (code_tf or {}).get(category) if isinstance(code_tf, dict) else code_tf
         return compare_codes(str(ra[field]), str(rb[field]), table, category)
+    if kind in ("designator", "country"):
+        # Unit labels and country words in a name: refute-only, and None unless
+        # both names state one. See `arche.resolve._name_markers`.
+        from arche.resolve._name_markers import compare_countries, compare_designators
+
+        field = spec.get("field", "name")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        fn = compare_designators if kind == "designator" else compare_countries
+        return fn(str(ra[field]), str(rb[field]))
     if kind == "premises":
         # The premises number in an address, compared on its own. A similarity
         # over the whole address cannot carry it: `Unit 4` against `Unit 9`
@@ -467,6 +490,7 @@ def _field_sim(
         return rival_distinctive_tokens(
             a_val, b_val, tf,
             floor=float(spec.get("floor", DISTINCTIVE_FLOOR)),
+            near=float(spec["near"]) if spec.get("near") is not None else None,
         )
     if kind == "tftoken":
         if tf is None:
@@ -804,6 +828,8 @@ def reconcile(
     extra_pins: dict[str, Any] | None = None,
     candidate_pairs: list[dict[str, Any]] | None = None,
     candidate_pins: dict[str, Any] | None = None,
+    relation: str = "same_as",
+    unique_match: bool = False,
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -881,6 +907,21 @@ def reconcile(
         Required with ``candidate_pairs``. JSON-safe provenance for the
         retriever, such as its provider, index or model version, filters and
         top-k. It is pinned into every resulting ``decision_id``.
+    relation:
+        What a ``match`` asserts. ``"same_as"`` (default): the two records are
+        one entity. ``"operated_by"``: each left record is a site run by the
+        right record (a factory and the company that owns it), so a match links
+        them without merging them; the ledger records it and never unions the
+        two. Pinned as ``relation`` when not the default.
+    unique_match:
+        Hold any ``match`` that is not the only plausible candidate on both
+        sides. With ``True``, a ``match`` stands only when its left record has
+        no other candidate scoring ``match`` or ``review``, and neither does
+        its right record; otherwise it becomes ``review`` and the edge records
+        ``ambiguous``: how many plausible candidates competed. For lists
+        without a location that could tell siblings apart -- a facility list
+        matched within its LGA by name, where `Makera PHC` meets both `Makera
+        I` and `Makera II`. Demotes only; pinned when on.
 
     Returns
     -------
@@ -1063,6 +1104,18 @@ def reconcile(
     # either out let two runs disagree on a verdict with identical pins.
     if rerank:
         pins["rerank"] = True
+    # What a `match` asserts. `same_as` (the default) says the two records are
+    # one entity. `operated_by` says each record on the left is a SITE run by
+    # the record on the right -- a factory and the company that owns it -- so a
+    # match links them without making them one thing. Declared for the whole
+    # run, because it is a statement about what the two lists ARE, not a
+    # property any one pair could reveal. Pinned, so every receipt says which.
+    if relation not in RELATIONS:
+        raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
+    if relation != "same_as":
+        pins["relation"] = relation
+    if unique_match:
+        pins["unique_match"] = True
     if tuple(distinctive_kinds) != _DISTINCTIVE_KINDS:
         pins["distinctive_kinds"] = sorted(distinctive_kinds)
     if code_tf:
@@ -1138,12 +1191,16 @@ def reconcile(
         }
         if (candidate := retrieval.get((i, j))) is not None:
             edge["candidate"] = candidate
-        # The reproducible address of this edge: a pure function of the
-        # (rounded) evidence and the pins — no timestamp, recomputable by
-        # anyone holding the same inputs. This is what makes a crosswalk
-        # edge citable and signable, exactly like a pairwise decision.
-        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
+
+    if unique_match:
+        hold_ambiguous(matches)
+    # The reproducible address of each edge: a pure function of the (rounded)
+    # evidence and the pins — no timestamp, recomputable by anyone holding the
+    # same inputs. Computed after every pass that can change a decision, so
+    # the id covers the decision the edge finally carries.
+    for edge in matches:
+        edge["decision_id"] = edge_decision_id(edge, pins)
 
     matches.sort(key=lambda m: m["score"], reverse=True)
     blocking: dict[str, Any] = {
@@ -1165,6 +1222,25 @@ def reconcile(
         "runtime": runtime_record(),
         "blocking": blocking,
     }
+
+
+def hold_ambiguous(matches: list[dict[str, Any]]) -> None:
+    """Demote every ``match`` that is not the only plausible candidate, both ways.
+
+    Plausible means scored ``match`` or ``review`` (every edge the engine
+    keeps). Writes ``ambiguous`` -- the larger of the two competitor counts --
+    onto each demoted edge. Mutates in place; call before decision ids are
+    computed.
+    """
+    from collections import Counter
+
+    per_a = Counter(str(m["a_id"]) for m in matches)
+    per_b = Counter(str(m["b_id"]) for m in matches)
+    for m in matches:
+        n = max(per_a[str(m["a_id"])], per_b[str(m["b_id"])])
+        if m["decision"] == "match" and n > 1:
+            m["decision"] = "review"
+            m["ambiguous"] = n
 
 
 def sign_edges(

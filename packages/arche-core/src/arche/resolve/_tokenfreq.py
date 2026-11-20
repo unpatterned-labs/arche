@@ -556,7 +556,11 @@ class TokenFrequencyTable:
             return None
         rule = phrases.token_rule
         counts = phrases._counts or {}
-        seen = [g for g in (_bigrams(a, rule) & _bigrams(b, rule)) if g in counts]
+        # Sorted: `seen` comes from a set, and when two phrases are equally
+        # rare `max` kept whichever the set yielded first -- an order that
+        # changes with PYTHONHASHSEED, so the same pair got a different phrase
+        # and a different decision_id in different processes.
+        seen = sorted(g for g in (_bigrams(a, rule) & _bigrams(b, rule)) if g in counts)
         if not seen:
             return None
         best = max(seen, key=phrases.distinctiveness)

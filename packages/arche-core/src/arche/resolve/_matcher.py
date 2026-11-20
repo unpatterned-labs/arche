@@ -787,7 +787,9 @@ def compare_containment(
     """
     if not path_a or not path_b:
         return None
-    finest_score = {"settlement": 1.0, "admin2": 0.6, "admin1": 0.3}
+    # `admin3` (a ward) is read only by packs that declare it in `levels`; the
+    # default walk has no admin3, so adding it here moves no existing score.
+    finest_score = {"settlement": 1.0, "admin3": 0.8, "admin2": 0.6, "admin1": 0.3}
     best: float | None = None
     for level in levels:  # coarse -> fine
         na, nb = path_a.get(level), path_b.get(level)
@@ -801,7 +803,10 @@ def compare_containment(
                 return _CATEGORICAL_NEUTRAL * boundary_doubt(distance_km, boundary_km)
             # Mid-hierarchy disagreement: stop; award only what agreed above.
             return best if best is not None else _CATEGORICAL_NEUTRAL
-        best = finest_score.get(level, 0.3)
+        # Never lower than the agreement already reached above: a level this
+        # table does not name (a ZA ward declared as `admin4`) once scored 0.3,
+        # so agreeing one level deeper scored worse than agreeing on the LGA.
+        best = max(finest_score.get(level, 0.3), best or 0.0)
     if best is not None:
         return best
     # No level comparable on both sides but no conflict -> weak.

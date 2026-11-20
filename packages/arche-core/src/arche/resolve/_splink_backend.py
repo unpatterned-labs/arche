@@ -659,6 +659,8 @@ def splink_crosswalk(
     pair_cap: int = SPLINK_PAIR_CAP,
     seed: int = SPLINK_SEED,
     extra_pins: dict | None = None,
+    relation: str = "same_as",
+    unique_match: bool = False,
     **_ignored: Any,
 ) -> dict:
     """Link two lists with Splink, returning arche's crosswalk result shape.
@@ -859,8 +861,16 @@ def splink_crosswalk(
         from arche.resolve._gate import DISTINCTIVE_FLOOR
         pins["distinctive_floor"] = (DISTINCTIVE_FLOOR if distinctive_floor is None
                                      else float(distinctive_floor))
-    from arche.resolve.reconcile import _check_extra_pins
+    from arche.resolve.reconcile import RELATIONS, _check_extra_pins
     from arche.resolve.reconcile import runtime_record as _runtime_record
+    # Not swallowed by `**_ignored`: a dropped `operated_by` would make the
+    # ledger merge a site with the company that runs it.
+    if relation not in RELATIONS:
+        raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
+    if relation != "same_as":
+        pins["relation"] = relation
+    if unique_match:
+        pins["unique_match"] = True
     if extra_pins:
         _check_extra_pins(extra_pins, pins)
         pins.update(extra_pins)
@@ -900,9 +910,14 @@ def splink_crosswalk(
             "evidence": evidence,
             "distinctive_max": round(distinctive_max, 3),
         }
-        edge["decision_id"] = edge_decision_id(edge, pins)
         matches.append(edge)
 
+    if unique_match:
+        from arche.resolve.reconcile import hold_ambiguous
+
+        hold_ambiguous(matches)
+    for edge in matches:
+        edge["decision_id"] = edge_decision_id(edge, pins)
     matches.sort(key=lambda m: m["score"], reverse=True)
     return {
         "matches": matches,

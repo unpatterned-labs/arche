@@ -59,6 +59,49 @@ health_facility:
     description: Health post — the smallest outreach facility.
     synonyms:
       - health post
+  # Specialty facilities. Added 18 Nov 2026 after `Impro Vision Eye Clinic`
+  # matched `Dupsnl Vision Eye Clinic` (0.741): the shipped place table is built
+  # mostly from primary-care names, so `eye` (0.61) and `vision` (0.93) look
+  # distinctive there when they are what every eye clinic is called. They are
+  # type words; the identifying name is what is left. `vision eye clinic` is in
+  # because that is how such clinics are commonly written in the Nigerian lists
+  # read so far, not because `vision` is a type on its own.
+  EYE_CLINIC:
+    description: Eye clinic / eye hospital / optical clinic.
+    synonyms:
+      - vision eye clinic
+      - eye clinic
+      - eye hospital
+      - eye centre
+      - eye center
+      - eye care centre
+      - eye care center
+      - optical clinic
+  DENTAL_CLINIC:
+    description: Dental clinic / dental hospital.
+    synonyms:
+      - dental clinic
+      - dental hospital
+      - dental centre
+      - dental center
+  LABORATORY:
+    description: Medical or diagnostic laboratory / diagnostic centre.
+    synonyms:
+      - medical laboratory
+      - diagnostic laboratory
+      - diagnostic centre
+      - diagnostic center
+      - laboratory
+  ORTHOPAEDIC_HOSPITAL:
+    description: Orthopaedic hospital.
+    synonyms:
+      - orthopaedic hospital
+      - orthopedic hospital
+  PSYCHIATRIC_HOSPITAL:
+    description: Psychiatric / neuropsychiatric hospital.
+    synonyms:
+      - neuropsychiatric hospital
+      - psychiatric hospital
   PHARMACY:
     description: Pharmacy / chemist / patent-medicine vendor.
     synonyms:
