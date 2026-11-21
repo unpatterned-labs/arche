@@ -190,3 +190,32 @@ def test_entity_survives_records_disagreeing_on_a_dict_field():
     assert shared == {"name": "Zango"} and len(conflicts["admin_path"]) == 2
     same_order_swapped = rec("c", {"admin_path": {"admin2": "dala", "admin1": "kano"}})
     assert "admin_path" in _agreement([a, same_order_swapped])[0]
+
+
+def test_entities_survive_reconcile_with_disagreeing_dict_and_list_fields():
+    # The same defect end to end: `reconcile(..., store=ledger)` writes the
+    # records, then `entities()` builds the view over them.
+    from arche.jurisdictions.nigeria import admin_path
+    from arche.resolve import reconcile
+
+    ledger = attach("duckdb:///:memory:")
+    mention = {"id": "m", "name": "Aminu Kano Teaching Hospital",
+               "admin_path": admin_path("Kano", "Tarauni"), "tags": ["tertiary"]}
+    grid3 = {"id": "g", "name": "Aminu Kano Teaching Hospital",
+             "admin_path": admin_path("Kano", "Tarauni", "Darmanawa"),
+             "tags": ["tertiary", "teaching"]}
+    reconcile([mention], [grid3], entity="health_facility", store=ledger)
+
+    (view,) = ledger.entities("health_facility")
+    assert view.shared == {"name": "Aminu Kano Teaching Hospital"}
+    # The original values, one each, not their normalised keys. Member order
+    # follows the keyed record ids, so compare without order.
+    from arche.ids import canonical_json
+
+    def as_set(values):
+        return sorted(map(canonical_json, values))
+
+    assert as_set(view.conflicts["admin_path"]) == as_set(
+        [mention["admin_path"], grid3["admin_path"]])
+    assert as_set(view.conflicts["tags"]) == as_set([["tertiary"], ["tertiary", "teaching"]])
+    assert ledger.entity(view.entity_id).conflicts == view.conflicts

@@ -492,10 +492,12 @@ md("""
 ## 7. A ledger: record, correct, un-merge
 
 `arche.attach("duckdb:///:memory:")` opens a ledger in memory (give it a file
-path to keep one). It stores the decisions, builds entities from the `match`
-edges and keeps `review` edges open as cases. The records go in exactly as
-`reconcile` saw them, `admin_path` and all, so every stored edge can be
-replayed against the inputs that produced it.
+path to keep one). Pass it to `reconcile` as `store=` and the run is recorded
+as it is scored: the decisions, entities built from the `match` edges, and
+`review` edges kept open as cases. The records go in exactly as `reconcile`
+saw them, `admin_path` and all, so every stored edge can be replayed against
+the inputs that produced it. The same call as section 6 gives the same
+receipts.
 """)
 
 code('''
@@ -504,8 +506,14 @@ STEP = "ledger"
 # every run of this notebook. Omit it and the ledger generates its own.
 ledger = arche.attach("duckdb:///:memory:", record_key=b"notebook-26-demo-key")
 
-ledger.record_batch(result, mentions, grid3,
-                    call={"entity": "health_facility", "unique_match": True})
+stored = reconcile(mentions, grid3, entity="health_facility", unique_match=True,
+                   candidate_pairs=pairs,
+                   candidate_pins={"retriever": "state_lga_shared_token",
+                                   "stop_words": sorted(STOP)},
+                   store=ledger)
+print("same receipts as section 6:",
+      [e["decision_id"] for e in stored["matches"]]
+      == [e["decision_id"] for e in result["matches"]])
 
 for ent in ledger.entities("health_facility"):
     print(ent.entity_id, ent.held_together_by)
