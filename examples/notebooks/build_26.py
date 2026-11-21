@@ -382,49 +382,42 @@ both in Zango ward and about 4 km apart. The letter names neither number.
 
 ## 6. Link the mentions to GRID3
 
-Candidates first: a mention is compared only with GRID3 records in the same
-state and LGA that share at least one distinctive name token. Facility-type
-words (`health`, `post`, `hospital`, ...) and the names of the state and LGA
-themselves do not count, because inside Rimin Gado LGA, sharing `Rimin` says
-nothing. This is the retriever the GRID3 linking runs use, inlined.
+GRID3 becomes a **reference**: something mentions are linked to, that can say
+which of its records might be a given mention and exactly which data it
+searched. `FileReference` holds the Kano records in memory; its `release` is
+the digest of their content, so two different extracts can never claim the
+same release.
 
-Then `reconcile(..., entity="health_facility", unique_match=True)` scores each
-candidate with the health-facility pack and **holds any match that is not the
-only plausible candidate on both sides.**
+`link(mentions, reference, ...)` then does three things:
+
+1. asks the reference for candidates for each mention: records in the same
+   state and LGA sharing a distinctive name token (facility-type words such as
+   `health` and `hospital`, and the state's and LGA's own names, do not count:
+   inside Rimin Gado LGA, sharing `Rimin` says nothing);
+2. scores them with the health-facility pack and, with `unique_match=True`,
+   **holds any match that is not the only plausible candidate on both sides**;
+3. pins the reference's release into every decision id.
+
+A reference only ever sees a projection of each mention (name, admin path,
+coordinates, country), never the letter. A hosted register can serve as the
+reference instead of a file: any object with the same three members
+(`name`, `candidates`, `pins`) works, and its release goes into the receipts
+the same way.
 """)
 
 code('''
-import re
-from arche.resolve import reconcile
-
-STOP = {"health", "healthcare", "centre", "center", "clinic", "hospital", "primary", "phc",
-        "post", "general", "comprehensive", "maternity", "medical", "model", "basic",
-        "dispensary", "care", "home", "specialist", "mission", "cottage", "state", "federal",
-        "the", "and", "for", "ltd", "limited", "nig", "nigeria"}
-
-def tokens(s):
-    return {t for t in re.split(r"[^a-z0-9]+", (s or "").lower()) if len(t) >= 3}
-
-def distinctive(r):
-    place = tokens(r["admin_path"].get("admin1")) | tokens(r["admin_path"].get("admin2"))
-    return tokens(r["name"]) - STOP - place
-
-def lga(r):
-    return (r["admin_path"].get("admin1"), r["admin_path"].get("admin2"))
-
-pairs = [{"a_id": m["id"], "b_id": g["id"], "route": "state_lga_shared_token"}
-         for m in mentions for g in grid3
-         if None not in lga(m) and lga(m) == lga(g) and distinctive(m) & distinctive(g)]
+from arche.references import FileReference, link
 
 STEP = "reconcile"
-result = reconcile(mentions, grid3, entity="health_facility", unique_match=True,
-                   candidate_pairs=pairs,
-                   candidate_pins={"retriever": "state_lga_shared_token",
-                                   "stop_words": sorted(STOP)})
+grid3_kano = FileReference(grid3, name="grid3-nga-health-facilities-kano",
+                           licence="CC BY 4.0 (GRID3)")
+print(grid3_kano.pins())
+
+result = link(mentions, grid3_kano, entity="health_facility", unique_match=True)
 
 by_id = {r["id"]: r for r in [*mentions, *grid3]}
 for m in mentions:
-    n = sum(p["a_id"] == m["id"] for p in pairs)
+    n = len(grid3_kano.candidates({k: m[k] for k in ("name", "admin_path") if k in m}))
     edges = [e for e in result["matches"] if e["a_id"] == m["id"]]
     print(f"{m['name']:<38} {n} candidate(s)")
     for e in edges:
@@ -468,7 +461,7 @@ md("""
 
 A `decision_id` is not a random key. It is a hash over the edge and the run's
 pins (comparator pack digest, thresholds, frequency table digest, the
-retriever and its stop words, `unique_match`). Anyone holding the edge and the
+reference and its release, `unique_match`). Anyone holding the edge and the
 pins can recompute it with `arche.ids.edge_decision_id`, and any change to the
 evidence or the configuration gives a different id.
 """)
@@ -486,6 +479,17 @@ print("doctored score recomputes to the same id:",
 
 print("\\npinned:", {k: pins[k] for k in ("engine", "comparators_sha256", "threshold",
                                           "review_margin", "unique_match")})
+print("reference:", pins["candidate_provider"]["reference"])
+
+# The same pair against a different release of the reference is a different
+# decision, even with the same score: the receipt names the data it was matched
+# against.
+relabelled = FileReference(grid3, name="grid3-nga-health-facilities-kano",
+                           release="a-later-extract")
+again = link(mentions, relabelled, entity="health_facility", unique_match=True)
+twin = next(e for e in again["matches"] if (e["a_id"], e["b_id"]) == (murtala["a_id"], murtala["b_id"]))
+print("same score, different release, different id:",
+      twin["score"] == murtala["score"], twin["decision_id"] != murtala["decision_id"])
 ''')
 
 md("""
@@ -494,10 +498,10 @@ md("""
 `arche.attach("duckdb:///:memory:")` opens a ledger in memory (give it a file
 path to keep one). Pass it to `reconcile` as `store=` and the run is recorded
 as it is scored: the decisions, entities built from the `match` edges, and
-`review` edges kept open as cases. The records go in exactly as `reconcile`
-saw them, `admin_path` and all, so every stored edge can be replayed against
-the inputs that produced it. The same call as section 6 gives the same
-receipts.
+`review` edges kept open as cases. `link` passes `store=` through, and the
+records go in exactly as they were scored, `admin_path` and all, so every
+stored edge can be replayed against the inputs that produced it. The same call
+as section 6 gives the same receipts.
 """)
 
 code('''
@@ -506,11 +510,8 @@ STEP = "ledger"
 # every run of this notebook. Omit it and the ledger generates its own.
 ledger = arche.attach("duckdb:///:memory:", record_key=b"notebook-26-demo-key")
 
-stored = reconcile(mentions, grid3, entity="health_facility", unique_match=True,
-                   candidate_pairs=pairs,
-                   candidate_pins={"retriever": "state_lga_shared_token",
-                                   "stop_words": sorted(STOP)},
-                   store=ledger)
+stored = link(mentions, grid3_kano, entity="health_facility", unique_match=True,
+              store=ledger)
 print("same receipts as section 6:",
       [e["decision_id"] for e in stored["matches"]]
       == [e["decision_id"] for e in result["matches"]])
