@@ -91,3 +91,13 @@ class TestLedger:
         pair = arche.compare({"name": NAME, "email": "j.vale@mail.example"}, {"name": NAME},
                              entity="person")
         assert held.verdict == "review" and pair.identity == "review"
+
+    def test_the_held_decision_says_why(self):
+        from arche.ledger import Ledger
+
+        ledger = Ledger(":memory:")
+        ledger.resolve({"name": NAME, "email": "j.vale@mail.example"}, entity_type="person")
+        held = ledger.resolve({"name": NAME}, entity_type="person")
+        (decision,) = held.decisions
+        assert "no other field" in decision.explanation
+        assert decision.evidence["uncorroborated"] == 1

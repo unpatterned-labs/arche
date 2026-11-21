@@ -612,7 +612,7 @@ class Ledger(LifecycleMixin):
                     "distinctive_max": edge.get("distinctive_max"),
                     **{k: v for k, v in edge.items()
                        if k in ("route", "retrieval_score", "refuted_by", "capped_by",
-                                "ambiguous")},
+                                "ambiguous", "uncorroborated")},
                 },
                 pins=pins,
                 call=call_record,
@@ -1669,8 +1669,13 @@ def _explain_edge(edge: Mapping[str, Any]) -> str:
                       if isinstance(v, (int, float)) and v >= 0.85)
     if edge.get("decision") == "match":
         return "agrees on " + ", ".join(agreeing) if agreeing else "matched"
-    return ("review: agrees on " + ", ".join(agreeing)) if agreeing \
+    held = ("review: agrees on " + ", ".join(agreeing)) if agreeing \
         else "review: no field agreed strongly"
+    if edge.get("uncorroborated"):
+        held += "; held: the name agrees, and no other field does"
+    elif edge.get("ambiguous"):
+        held += f"; held: one of {edge['ambiguous']} plausible candidates"
+    return held
 
 
 def _norm(value: Any) -> str:
