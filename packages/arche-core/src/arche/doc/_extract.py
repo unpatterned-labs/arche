@@ -420,12 +420,13 @@ def _gather(
 
     if labels and entity_backend != "basic":
         from arche.config import get_config
-        from arche.detect._gliner2 import propose
+        from arche.detect._gliner2 import propose, runtime_label
 
         try:
             cfg = get_config()
             spans = propose(text, labels, threshold=cfg.gliner2_threshold)
-            model_name = cfg.gliner2_model
+            # Carries `@mlx` when MLX ran it: the receipt names the runtime.
+            model_name = runtime_label(cfg.gliner2_model)
         except ImportError:
             if entity_backend != "auto":
                 raise

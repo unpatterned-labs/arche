@@ -381,14 +381,17 @@ Scored against the truth the tutorial sets aside:
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Parrish deterministic | 205 | 205 | 0 | 1.0000 | 0.6973 | 0.8216 |
 | arche, person pack *before* 0.4.0a4 | 233 | 219 | **14** | 0.9399 | 0.7449 | 0.8311 |
-| arche, shipped person pack | 266 | 265 | 1 | 0.9962 | 0.9014 | 0.9464 |
+| arche, person pack 0.4.0a4 to 21 Nov 2026 | 266 | 265 | 1 | 0.9962 | 0.9014 | 0.9464 |
+| arche, shipped person pack (name needs support) | 258 | 258 | 0 | 1.0000 | 0.8776 | 0.9348 |
 | arche, plus date refutation | 259 | 259 | 0 | 1.0000 | 0.8810 | 0.9367 |
 
 Given a date of birth, arche finds 60 more true pairs than the exact key. They are dropped middle names and keying errors: `SARI` for `SORRY`, `HANA` for `HANNA`, `LEE` for `LEELEA`.
 
 **Read the second row.** Until 0.4.0a4 the shipped pack was *less precise than the R tutorial*, because it declared no date comparator and never looked at the birthday it was handed. All 14 of its false positives were two different children with the same name. That benchmark is what put a date in the pack, and the row is kept here because a page that quietly drops its own bad results is not worth reading.
 
-The fourth row adds `refutes_below`, which the shipped pack deliberately does not declare. See [refutation is not on by default](#refutation-is-not-on-by-default).
+**Read the third and fourth rows together.** On 21 Nov 2026 the person pack gained `needs_support: 0.5` on its name comparators: a name no longer carries a match unless another field agrees at 0.5 or better ([corroboration](../how-it-works/evidence.md#corroboration-a-name-alone-is-not-enough)). It was added because a pair of person records that shared nothing but a name scored 1.0 and auto-linked. On this set it removed the last false merge (`JORGE TORRES`, two children whose birthdays are eight months apart). It also moved 7 true pairs from `match` to `review`; their names agree, but no other field agrees at 0.5 or better (on this set that means the date comparator scored the two birthdays below 0.5). Those pairs are not lost, they are held for a person, and the review pack counts went from 267 match / 66 review to 258 / 75. We judged that the right trade for a default: a held true pair costs a reviewer a minute, while a false merge of two people costs far more.
+
+The last row adds `refutes_below`, which the shipped pack deliberately does not declare. See [refutation is not on by default](#refutation-is-not-on-by-default).
 
 One trap for anyone reproducing this: the tutorial's prose names five comparison fields, but its own uniqueness table uses four, without middle name. The five-field key gives 174, not 205.
 
@@ -559,7 +562,7 @@ The counts above come from an ad-hoc sample rather than the committed benchmark,
 
 ### Refutation is not on by default
 
-A date is the clearest case of a signal that refutes better than it confirms: two people with the same name and different birthdays are two people, however alike the names. `refutes_below` exists for exactly that shape, and on the Parrish set it takes precision from 0.9962 to 1.0000.
+A date is the clearest case of a signal that refutes better than it confirms: two people with the same name and different birthdays are two people, however alike the names. `refutes_below` exists for exactly that shape, and on the Parrish set it took precision from 0.9962 to 1.0000 before the corroboration rule did the same.
 
 The shipped pack still does not declare it. `test_discriminator_veto.py` guards `place`, `person` and `artist` against acquiring refutation as a side effect of an unrelated change, on the grounds that each has published numbers a refutation would move. Adding a comparator was that unrelated change. Turning refutation on is a separate decision with its own measurement, and it is one line for a caller who wants it:
 
@@ -586,7 +589,7 @@ print([e["decision"] for e in res["matches"]])
 ['review']
 ```
 
-Refutation demotes the pair: same name, a birthday a year apart, and the answer is `review` rather than `match`. It also cost recall on the Parrish set (0.8810 against 0.9014), which is not an argument either way at one data point.
+Refutation demotes the pair: same name, a birthday a year apart, and the answer is `review` rather than `match`. On the Parrish set it now *gains* a little recall over the shipped pack (0.8810 against 0.8776), which is not an argument either way at one data point.
 
 **A second opinion, on NCVR.** The North Carolina voter register was the obvious second dataset, and the result is that refutation does nothing there:
 

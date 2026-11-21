@@ -37,6 +37,8 @@ Or compose with the v0.2 Pipeline::
 from arche.doc._documents import DocumentReport, resolve_documents  # noqa: E402
 from arche.doc._extract import Extraction, FieldEvidence, From, extract  # noqa: E402
 from arche.doc._metadata import DocumentMetadata, read_metadata  # noqa: E402
+from arche.doc._parties import Party, parties  # noqa: E402
+from arche.doc._party_pack import review_parties  # noqa: E402
 from arche.doc._residence import (  # noqa: E402
     ResidenceCheck,
     assess_residence,
@@ -56,6 +58,9 @@ __all__ = [
     "From",
     "extract",
     "read_metadata",
+    "Party",
+    "parties",
+    "review_parties",
     "resolve_documents",
     "ResidenceCheck",
     "assess_residence",

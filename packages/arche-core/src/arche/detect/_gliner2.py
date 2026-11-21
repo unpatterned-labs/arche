@@ -36,8 +36,18 @@ class Span:
     confidence: float
 
 
+def runtime_label(model: str, runtime: str | None = None) -> str:
+    """The model name a receipt should carry: ``name`` on torch, ``name@mlx``
+    on MLX, because the two runtimes agree to about the fourth decimal and a
+    receipt has to say which one produced its numbers."""
+    from arche.config import get_config
+
+    runtime = runtime or get_config().gliner2_runtime
+    return model if runtime == "torch" else f"{model}@{runtime}"
+
+
 def propose(text: str, labels: list[str] | dict[str, str], *, model: str | None = None,
-            threshold: float = 0.5) -> list[Span]:
+            threshold: float = 0.5, runtime: str | None = None) -> list[Span]:
     """Ask a GLiNER 2 model for ``labels`` in ``text``.
 
     ``labels`` is a list of label names, or a ``{label: description}`` mapping
@@ -48,13 +58,32 @@ def propose(text: str, labels: list[str] | dict[str, str], *, model: str | None 
     ``model`` is a Hugging Face name or local path; ``None`` means the
     configured general model. Raises ``ImportError`` -- naming the extra --
     when ``gliner2[local]`` is not installed.
-    """
-    from arche._models import get_gliner2
 
-    extractor = get_gliner2(model)
-    result = extractor.extract_entities(
-        text, labels, threshold=threshold, include_confidence=True, include_spans=True,
-    )
+    ``runtime`` is ``"torch"`` or ``"mlx"``; ``None`` means the configured
+    ``gliner2_runtime``. Only the general (boundary) checkpoints run on MLX;
+    the PII model is pinned to torch by its callers. MLX confidences are
+    rounded to 3 decimals, the precision at which the two runtimes agree.
+    """
+    from arche.config import get_config
+
+    runtime = runtime or get_config().gliner2_runtime
+    if runtime not in ("torch", "mlx"):
+        raise ValueError(f"gliner2_runtime must be 'torch' or 'mlx', got {runtime!r}")
+    if runtime == "mlx":
+        from arche._models import get_gliner2_mlx
+
+        mlx_model, processor = get_gliner2_mlx(model)
+        result = mlx_model.extract_entities(
+            processor, text, labels, threshold=threshold,
+            include_confidence=True, include_spans=True,
+        )
+    else:
+        from arche._models import get_gliner2
+
+        extractor = get_gliner2(model)
+        result = extractor.extract_entities(
+            text, labels, threshold=threshold, include_confidence=True, include_spans=True,
+        )
     out: list[Span] = []
     for label, spans in (result or {}).get("entities", {}).items():
         for span in spans or []:
@@ -68,7 +97,8 @@ def propose(text: str, labels: list[str] | dict[str, str], *, model: str | None 
                 text=str(span.get("text", text[int(start):int(end)])),
                 start=int(start),
                 end=int(end),
-                confidence=float(span.get("confidence", 0.0)),
+                confidence=(round(float(span.get("confidence", 0.0)), 3)
+                            if runtime == "mlx" else float(span.get("confidence", 0.0))),
             ))
     out.sort(key=lambda s: (s.start, s.end))
     return out

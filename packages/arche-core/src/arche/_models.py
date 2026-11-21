@@ -143,6 +143,88 @@ def get_gliner2(name_or_path: str | None = None) -> Any:
     return model
 
 
+#: The architecture name mlx-vlm's GLiNER 2.5 port recognises, and the one the
+#: upstream checkpoints were renamed to after the port was written.
+_MLX_GLINER_ARCH = "BoundaryExtractor"
+_UPSTREAM_GLINER_ARCH = "Gliner2ForSchemaExtraction"
+
+
+def _mlx_ready_gliner(path: Path) -> Path:
+    """A directory mlx-vlm can load for this checkpoint; ``path`` itself if it can.
+
+    The upstream GLiNER 2.5 checkpoints now declare ``Gliner2ForSchemaExtraction``;
+    mlx-vlm dispatches on ``BoundaryExtractor``. The weights are the same (checked
+    20 Nov 2026: they load and give the torch model's spans). So when needed this
+    writes a copy under ``~/.cache/arche/models/mlx--<name>/`` whose files link to
+    the originals and whose config names the architecture mlx-vlm expects. The
+    Hugging Face cache is never modified.
+
+    Only boundary checkpoints are supported: mlx-vlm's port does not cover the
+    span architecture, which is what GLiNER2-PII uses.
+    """
+    import json
+
+    config = json.loads((path / "config.json").read_text(encoding="utf-8"))
+    archs = config.get("architectures") or []
+    if _MLX_GLINER_ARCH in archs:
+        return path
+    if config.get("architecture") != "boundary" and _UPSTREAM_GLINER_ARCH not in archs:
+        raise ValueError(
+            f"{path.name}: gliner2_runtime='mlx' runs GLiNER 2.5 boundary checkpoints "
+            "only (mlx-vlm's port); this one is not (GLiNER2-PII is span-architecture). "
+            "Use gliner2_runtime='torch' for it."
+        )
+    target = Path.home() / ".cache" / "arche" / "models" / f"mlx--{path.name}"
+    target.mkdir(parents=True, exist_ok=True)
+    for item in path.iterdir():
+        link = target / item.name
+        if item.name != "config.json" and not link.exists():
+            link.symlink_to(item.resolve())
+    config["architectures"] = [_MLX_GLINER_ARCH]
+    (target / "config.json").write_text(json.dumps(config, indent=1), encoding="utf-8")
+    return target
+
+
+def get_gliner2_mlx(name_or_path: str | None = None) -> tuple[Any, Any]:
+    """Load a GLiNER 2.5 boundary checkpoint through mlx-vlm, cached.
+
+    Returns ``(model, processor)``. Needs ``mlx-vlm`` (and, on Linux, MLX's
+    CUDA or CPU backend: ``pip install "mlx[cuda]" mlx-vlm``). On Linux/WSL2
+    MLX compiles kernels at first use and needs CUDA headers: ``pip install
+    nvidia-cuda-runtime-cu12 nvidia-cuda-cccl-cu12`` and point ``CUDA_HOME``
+    at ``site-packages/nvidia/cuda_runtime``.
+    """
+    from .config import get_config
+
+    if name_or_path is None:
+        name_or_path = get_config().gliner2_model
+    cache_key = f"gliner2-mlx:{name_or_path}"
+    if cache_key in _cache:
+        return _cache[cache_key]
+    try:
+        from mlx_vlm import load
+    except ImportError as exc:
+        raise ImportError(
+            "gliner2_runtime='mlx' needs mlx-vlm: pip install mlx-vlm "
+            "(on Linux also \"mlx[cuda]\" or \"mlx[cpu]\")."
+        ) from exc
+    resolved = _resolve_model_path(name_or_path)
+    if resolved == name_or_path and not Path(resolved).is_dir():
+        from huggingface_hub import snapshot_download
+
+        # Only what the model needs: a repo's banner images are not weights, and
+        # asking for the whole repo fails offline on a cache that holds the model.
+        resolved = snapshot_download(
+            name_or_path,
+            allow_patterns=["*.json", "*.safetensors", "encoder_config/*", "tokenizer*"],
+        )
+    t0 = time.perf_counter()
+    model, processor = load(str(_mlx_ready_gliner(Path(resolved))))
+    _log.info("GLiNER 2.5 (mlx) loaded in %.1fs.", time.perf_counter() - t0)
+    _cache[cache_key] = (model, processor)
+    return model, processor
+
+
 def clear_cache() -> None:
     """Clear all cached models (useful for testing)."""
     _cache.clear()

@@ -2,7 +2,8 @@
 arche_declaration: 1
 name: person
 fields:
-  name:        {role: identifies, kind: [name, tftoken], weight: 2.0}
+  # A name alone never links two people: another field must agree at 0.5+.
+  name:        {role: identifies, kind: [name, tftoken], weight: 2.0, needs_support: 0.5}
   birth_date:  {role: identifies, kind: date, weight: 2.0}
   national_id: {role: identifies, kind: id, weight: 3.0}
   phone:       {role: identifies, kind: phone, weight: 1.5}

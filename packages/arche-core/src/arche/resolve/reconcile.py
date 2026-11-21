@@ -565,6 +565,15 @@ def _score_pair(
     num = den = 0.0
     distinctive_max = 0.0
     conflict = False
+    # Corroboration. A comparator declared `needs_support: <floor>` cannot
+    # carry a match on its own: some other positively weighted comparator must
+    # agree at `floor` or better. A weighted mean over only the fields both
+    # records carry otherwise turns a name-only pair into a perfect score --
+    # measured 21 Nov 2026, two person records sharing nothing but "Andrea
+    # Kropp" scored 1.0 and auto-linked here, while the coreference engine
+    # (`arche.compare`) held the same pair for review.
+    support_floor: float | None = None
+    best_support = 0.0
     form_conflict = False
     id_agrees: str | bool = False
     evidence: dict[str, float] = {}
@@ -575,6 +584,11 @@ def _score_pair(
         weight = float(spec.get("weight", 1.0))
         num += weight * sim
         den += weight
+        if spec.get("needs_support") is not None:
+            floor = float(spec["needs_support"])
+            support_floor = floor if support_floor is None else max(support_floor, floor)
+        elif weight > 0:
+            best_support = max(best_support, sim)
         # Unique evidence keys: two comparators on one field (e.g. name +
         # tftoken) must not overwrite each other — that hid the fuzzy name
         # similarity behind the tftoken value in place-pack output.
@@ -735,7 +749,8 @@ def _score_pair(
             conflict = True
     if den == 0:
         return None
-    return num / den, distinctive_max, conflict, evidence
+    uncorroborated = support_floor is not None and best_support < support_floor
+    return num / den, distinctive_max, conflict, evidence, uncorroborated
 
 
 def _geo_fields(comparators: list[dict]) -> tuple[str, str]:
@@ -1168,7 +1183,7 @@ def reconcile(
         scored = _score_pair(ra, rb, comparators, tf, distinctive_kinds, code_tf)
         if scored is None:
             continue
-        score, distinctive_max, conflict, evidence = scored
+        score, distinctive_max, conflict, evidence, uncorroborated = scored
 
         if rerank:
             a_text = _rerank_text(ra, text_fields)
@@ -1205,6 +1220,11 @@ def reconcile(
             "evidence": evidence,
             "distinctive_max": distinctive_max,
         }
+        if decision == "match" and uncorroborated:
+            # Numeric, like `ambiguous`: the edge is hashed, and a flag a
+            # masked pack could rewrite would cost it its verifiability.
+            edge["decision"] = "review"
+            edge["uncorroborated"] = 1
         if (candidate := retrieval.get((i, j))) is not None:
             edge["candidate"] = candidate
         matches.append(edge)
