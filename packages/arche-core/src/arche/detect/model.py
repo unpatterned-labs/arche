@@ -128,8 +128,10 @@ def propose_pii(text: str, *, backend: str = "auto") -> tuple[list[Detection], s
         from arche.detect._gliner2 import propose
 
         cfg = get_config()
+        # Pinned to torch: GLiNER2-PII is span-architecture, which mlx-vlm's
+        # port does not run, whatever `gliner2_runtime` says.
         spans = propose(text, _LABELS, model=cfg.gliner2_pii_model,
-                        threshold=cfg.gliner2_pii_threshold)
+                        threshold=cfg.gliner2_pii_threshold, runtime="torch")
         model = cfg.gliner2_pii_model
     except ImportError:
         if backend == "gliner2-pii":

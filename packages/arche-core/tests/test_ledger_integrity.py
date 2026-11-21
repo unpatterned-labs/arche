@@ -171,3 +171,22 @@ def test_fingerprint_is_not_the_key():
 
 def test_duckdb_is_what_we_think():
     assert duckdb.__version__
+
+
+def test_entity_survives_records_disagreeing_on_a_dict_field():
+    # Found by the end-to-end demo (21 Nov 2026): a mention's admin_path has no
+    # ward and the reference's has one; `entity()` raised TypeError.
+    from datetime import UTC, datetime
+
+    from arche.ledger import Record, _agreement
+
+    def rec(rid, attrs):
+        return Record(rid, "place", "s", None, attrs, None, datetime.now(UTC))
+
+    a = rec("a", {"name": "Zango", "admin_path": {"admin1": "kano", "admin2": "dala"}})
+    b = rec("b", {"name": "Zango", "admin_path": {"admin2": "dala", "admin1": "kano",
+                                                   "admin3": "zango"}})
+    shared, conflicts = _agreement([a, b])
+    assert shared == {"name": "Zango"} and len(conflicts["admin_path"]) == 2
+    same_order_swapped = rec("c", {"admin_path": {"admin2": "dala", "admin1": "kano"}})
+    assert "admin_path" in _agreement([a, same_order_swapped])[0]

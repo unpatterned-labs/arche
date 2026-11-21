@@ -269,9 +269,12 @@ def _extract_gliner2(text: str, entity_types: list[str] | None = None) -> list[E
     from .detect._gliner2 import propose
 
     labels = [label.lower() for label in entity_types] if entity_types else _IDENTITY_LABELS
+    # `gliner2` on torch, `gliner2@mlx` on MLX: the source says which produced it.
+    source = "gliner2" if get_config().gliner2_runtime == "torch" \
+        else f"gliner2@{get_config().gliner2_runtime}"
     return [
         Entity(text=s.text, entity_type=_GLINER_LABEL_MAP.get(s.label, s.label.upper()),
-               confidence=s.confidence, start=s.start, end=s.end, source="gliner2")
+               confidence=s.confidence, start=s.start, end=s.end, source=source)
         for s in propose(text, labels, threshold=get_config().gliner2_threshold)
     ]
 
@@ -293,7 +296,7 @@ def _extract_gliner2_pii(text: str, entity_types: list[str] | None = None) -> li
         Entity(text=s.text, entity_type=_PII_LABEL_MAP.get(s.label, s.label.upper()),
                confidence=s.confidence, start=s.start, end=s.end, source="gliner2-pii")
         for s in propose(text, labels, model=cfg.gliner2_pii_model,
-                         threshold=cfg.gliner2_pii_threshold)
+                         threshold=cfg.gliner2_pii_threshold, runtime="torch")
     ]
 
 

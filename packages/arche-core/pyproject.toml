@@ -114,7 +114,10 @@ parquet = ["pyarrow>=14"]
 # load-bearing: bare `gliner2` installs an API client that posts text to a
 # hosted service, so declaring it without `[local]` would ship a code path
 # that sends customer text off the machine. `[local]` is the on-device stack.
-detect2 = ["gliner2[local]>=2.0"]
+# protobuf: transformers 4.x (what this repository's lockfile pins) needs it to
+# convert GLiNER's DeBERTa-v3 tokenizer and does not declare it; 5.x does not
+# need it. Declared so a repository checkout and a fresh install both load.
+detect2 = ["gliner2[local]>=2.0", "protobuf>=4"]
 # `detect` used to be GLiNER v1 (`gliner`, ONNX). Removed in 0.9.0; kept as a
 # name so an existing `pip install "arche-core[detect]"` keeps working and
 # gets the current models.

@@ -50,6 +50,13 @@ class ArcheConfig:
     gliner2_threshold: float = 0.5
     gliner2_pii_model: str = "fastino/gliner2-privacy-filter-PII-multi"
     gliner2_pii_threshold: float = 0.5
+    # Which runtime runs the general GLiNER 2.5 extractor: "torch" (the
+    # `gliner2[local]` package; the default, so nothing changes unless asked)
+    # or "mlx" (mlx-vlm: Apple Silicon, or Linux/WSL2 on an NVIDIA GPU via
+    # MLX's CUDA backend). The runtime is part of the model's name in every
+    # receipt, because the two agree to about the fourth decimal, not exactly.
+    # The PII model is span-architecture and stays on torch.
+    gliner2_runtime: str = "torch"
 
     # Entity resolution
     similarity_threshold: float = 0.80

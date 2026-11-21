@@ -1674,6 +1674,10 @@ def _explain_edge(edge: Mapping[str, Any]) -> str:
 
 
 def _norm(value: Any) -> str:
+    # Dicts and lists by content, not by key order: `{"admin1": .., "admin2": ..}`
+    # written in either order is one value.
+    if isinstance(value, (dict, list)):
+        value = json.dumps(value, sort_keys=True, default=str)
     return " ".join(str(value).split()).casefold()
 
 
@@ -1694,11 +1698,16 @@ def _agreement(records: Iterable[Record]) -> tuple[dict[str, Any], dict[str, lis
     for key, seen in values.items():
         if len(seen) < 2:
             continue
-        distinct = list(dict.fromkeys(_norm(v) for v in seen))
-        if len(distinct) == 1:
+        # Keyed by the normalised form, which is always hashable: a value can
+        # be a dict (an `admin_path`), and `dict.fromkeys(seen)` over two
+        # records disagreeing on one raised TypeError inside `entity()`.
+        first: dict[str, Any] = {}
+        for value in seen:
+            first.setdefault(_norm(value), value)
+        if len(first) == 1:
             shared[key] = seen[0]
         else:
-            conflicts[key] = list(dict.fromkeys(seen))
+            conflicts[key] = list(first.values())
     return shared, conflicts
 
 
