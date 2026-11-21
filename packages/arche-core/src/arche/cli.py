@@ -40,7 +40,7 @@ _COMMANDS = (
     ("replay", "make a recorded decision again and report what moved"),
     ("resolve", "a new record against the entities a ledger holds: found, review, conflict..."),
     ("resolve-documents", "extract document fields, compare explicit candidates, and open cases"),
-    ("review", "validate, apply, share, or verify review-pack outcomes"),
+    ("review", "build a pack from documents, or validate, apply, share, or verify outcomes"),
     ("schema", "validate declarations or generate extraction/tool schemas"),
     ("serve", "a local HTTP service: detect, deidentify, compare, and the ledger by id"),
     ("mcp", "the MCP server, for an agent runtime (needs arche-core[mcp])"),
@@ -954,6 +954,38 @@ def _cmd_review_share(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_review_parties(args: argparse.Namespace) -> int:
+    """Documents -> the parties they name, paired up in a review pack."""
+    from arche.doc import review_parties
+
+    out = Path(args.out)
+    if args.reveal and out.parent.name == "review_packs":
+        raise SystemExit(
+            "arche review parties: a revealed pack does not go in review_packs/, which "
+            "`arche studio` shows by default. Write it to data/private_packs/ (git-ignored) "
+            "and open it with --packs.")
+    try:
+        report = review_parties(args.source, out, role=args.role, entity=args.entity,
+                                reveal=args.reveal, ledger=args.ledger, backend=args.backend)
+    except (TypeError, ValueError) as exc:
+        raise SystemExit(f"arche review parties: {exc}") from exc
+    for rec in report["records"]:
+        print(f"  {rec['document']}")
+    for s in report["skipped"]:
+        print(f"  {s['document']}: skipped, {s['reason']}")
+    decisions = ", ".join(f"{v} {k}" for k, v in sorted(report["decisions"].items()))
+    print(f"{report['rows']} pairs ({decisions}), "
+          f"{'revealed' if args.reveal else 'masked'} -> {out / 'pack.csv'}")
+    if report["ledger"]:
+        print(f"decisions recorded in {report['ledger']}")
+    print("open it with:  arche studio"
+          + (f" --ledger {report['ledger']}" if report["ledger"] else "")
+          + (f" --packs {out.parent}" if out.parent.name != "review_packs" else ""))
+    if args.reveal:
+        print("this pack holds values in clear: keep it on this machine")
+    return 0
+
+
 def _cmd_review_verify(args: argparse.Namespace) -> int:
     """Does this adjudication still hash to what it claims, and match its pack?"""
     from arche.review import verify_adjudication
@@ -1378,6 +1410,30 @@ def main(argv: list[str] | None = None) -> int:
         "Default is each side's `_id`.",
     )
     rs.set_defaults(func=_cmd_review_share)
+
+    rp = rev_sub.add_parser(
+        "parties",
+        help="documents -> the parties they name, paired up in a pack for arche studio",
+        description=(
+            "Parse each document, read who it is for (arche.doc.parties), and pair "
+            "every document's party with every other's in a review pack. Masked "
+            "unless --reveal; a reviewer needs --reveal to judge, so keep that "
+            "copy local."
+        ),
+    )
+    rp.add_argument("source", help="a glob ('docs/*.pdf'), a directory, or one file")
+    rp.add_argument("--out", required=True, help="directory to write pack.csv into")
+    rp.add_argument("--role", default="customer", choices=("customer", "issuer", "ship_to"),
+                    help="which party on each document (default customer)")
+    rp.add_argument("--entity", default="person", choices=("person", "organisation"),
+                    help="compare people or organisations (default person)")
+    rp.add_argument("--ledger", default=None, metavar="FILE",
+                    help="also record the decisions in this DuckDB ledger, for Explain")
+    rp.add_argument("--reveal", action="store_true",
+                    help="write values in clear: a working copy for this machine only")
+    rp.add_argument("--backend", default="auto", choices=("auto", "basic"),
+                    help="name extraction: GLiNER (auto) or rules only (basic)")
+    rp.set_defaults(func=_cmd_review_parties)
 
     rvf = rev_sub.add_parser("verify", help="re-check an adjudication against its pack")
     rvf.add_argument("adjudication", help="the adjudication.json")

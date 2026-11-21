@@ -147,3 +147,90 @@ def test_doc_bench_customers(bench):
         assert customers[k][0].address.upper().startswith("227 N 5TH")
     # The second traveller on the booking is not the customer.
     assert "KARL" not in customers["invoice_12_ak"][0].name.upper()
+
+
+# ── review_parties / `arche review parties` ──────────────────────────────────
+
+INVOICES = {
+    "folio.txt": ("Lakeside Inn & Suites 300 Shore Drive Lakeview, MI 49001 United States\n"
+                  "Tel: 555-010-0000\nJORDAN VALE\nTax ID :\n00-0000000\n| Date | Charge |\n"),
+    "shop.txt": ("41 Quarry Road, Millbrook NY, 12545\nBill To.:\nJordan Vale 12 Orchard Way\n"
+                 "Millbrook, NY, 12545\nCredit Card\n"),
+    "booking.txt": ("MRS JORDAN VALE 12 ORCHARD WAY, MILLBROOK, NY US-12545\n"
+                    "Booking - Confirmation / Invoice\nSkyline Charter GmbH Hafenstrasse 12\n"
+                    "60311 Frankfurt\n"),
+    "ads.txt": "From\nNorthwind Supplies LLC\nPO Box 4410\nSpringfield IL 62701\n"
+               "To\nHarbor Lane Studio LLC\n88 Elm Street\nSpringfield IL 62704\n",
+}
+
+
+@pytest.fixture
+def invoices(tmp_path):
+    for name, text in INVOICES.items():
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    return tmp_path
+
+
+def test_review_parties_writes_a_pack_studio_opens(invoices, tmp_path):
+    import csv
+
+    from arche.doc import review_parties
+
+    out = tmp_path / "pack"
+    report = review_parties(str(invoices / "*.txt"), out, backend="basic")
+    assert [s["document"] for s in report["skipped"]] == ["ads.txt"]
+    assert "organisation" in report["skipped"][0]["reason"]
+    with open(out / "pack.csv", encoding="utf-8") as fh:
+        rows = list(csv.DictReader(fh))
+    by_pair = {frozenset((r["a_id"], r["b_id"])): r["decision"] for r in rows}
+    # The folio names only the guest: held against both, never matched.
+    assert by_pair[frozenset(("folio", "shop"))] == "review"
+    assert by_pair[frozenset(("booking", "folio"))] == "review"
+    assert by_pair[frozenset(("booking", "shop"))] == "match"
+    # Masked by default: names and addresses never reach the file.
+    text = (out / "pack.csv").read_text(encoding="utf-8")
+    assert "Jordan" not in text and "JORDAN" not in text and "Orchard" not in text
+    assert report["records"][0].keys() == {"id", "document", "fields"}
+
+
+def test_review_parties_records_in_a_ledger(invoices, tmp_path):
+    from arche.doc import review_parties
+    from arche.ledger import Ledger
+
+    path = tmp_path / "book.duckdb"
+    revealed = review_parties(str(invoices), tmp_path / "pack", backend="basic",
+                              reveal=True, ledger=path)
+    assert revealed["ledger"] == str(path)
+    with Ledger(str(path)) as book:
+        (entity,) = book.entities("person")
+        assert len(entity.records) == 2           # booking + shop; the folio is held
+        assert len(book.cases("person")) == 2
+
+
+def test_review_parties_needs_two(tmp_path):
+    from arche.doc import review_parties
+
+    (tmp_path / "one.txt").write_text(INVOICES["shop.txt"], encoding="utf-8")
+    with pytest.raises(ValueError, match="needs two"):
+        review_parties(str(tmp_path), tmp_path / "pack", backend="basic")
+
+
+def test_cli_review_parties(invoices, tmp_path, capsys):
+    from arche.cli import main
+
+    out = tmp_path / "private_packs" / "invoices"
+    assert main(["review", "parties", str(invoices / "*.txt"), "--out", str(out),
+                 "--backend", "basic", "--reveal"]) == 0
+    printed = capsys.readouterr()
+    assert "3 pairs (1 match, 2 review), revealed" in printed.out
+    assert "ads.txt: skipped" in printed.out
+    assert f"--packs {out.parent}" in printed.out
+    assert (out / "pack.csv").exists()
+
+
+def test_cli_refuses_a_revealed_pack_where_studio_shows_everything(invoices, tmp_path):
+    from arche.cli import main
+
+    with pytest.raises(SystemExit, match="private_packs"):
+        main(["review", "parties", str(invoices), "--backend", "basic", "--reveal",
+              "--out", str(tmp_path / "review_packs" / "invoices")])
