@@ -27,7 +27,7 @@ expected to agree.
 from __future__ import annotations
 
 import pytest
-from arche.resolve import reconcile
+from arche.resolve import ENTITY_PACKS, reconcile
 from arche.resolve._tokenfreq import TokenFrequencyTable
 
 # Partial overlap, so the shared token's rarity decides the score. Two identical
@@ -38,8 +38,16 @@ _RARE = [{"id": f"r{i}", "name": f"Fatima Bakare {i}"} for i in range(12)]
 _COMMON = [{"id": f"c{i}", "name": f"Tunde Adeyemi {i}"} for i in range(12)]
 
 
+# The person pack without its corroboration rule. These records carry only
+# names, and the shipped pack holds every name-only pair for review whatever
+# the corpus (`needs_support`), which would hide the effect under test: how
+# the token table moves a score across the threshold.
+_NAMES_ONLY = [{k: v for k, v in spec.items() if k != "needs_support"}
+               for spec in ENTITY_PACKS["person"]]
+
+
 def _run(extra):
-    res = reconcile([_A] + extra, [_B] + extra, entity="person", id_field="id")
+    res = reconcile([_A] + extra, [_B] + extra, comparators=_NAMES_ONLY, id_field="id")
     edge = next(e for e in res["matches"]
                 if e["a_id"] == "a" and e["b_id"] == "b")
     return res["pins"]["tf"], edge

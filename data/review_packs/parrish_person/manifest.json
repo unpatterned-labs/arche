@@ -1,5 +1,5 @@
 {
-  "arche_version": "0.4.0a3",
+  "arche_version": "0.11.0",
   "blocking": {
     "candidate_pairs": 7361,
     "reduction_ratio": 0.9753,
@@ -11,22 +11,22 @@
       "token": 7361
     }
   },
-  "content_sha256": "516ef319c5febb42425c9fad7de47c13cba8dc21f5960d85f080d1579fa1064a",
-  "decision_ids_sha256": "f61c267d0b0451f36a1582073c737f79d614ad4fb321eca328acd5a31f1edead",
+  "content_sha256": "b875646b6e79dd517db9a1f12af4d9205ef496895f90c4c1e0d00c70d7f5289c",
+  "decision_ids_sha256": "e269ce3904da060c0eccd59972d1d97cdc3cf6c073e58ada62c0de65574e5f45",
   "decisions": {
-    "match": 267,
-    "review": 66
+    "match": 258,
+    "review": 75
   },
   "disclosure": "revealed (working copy)",
   "entity": "person",
-  "generated": "2026-08-21T16:45:10Z",
+  "generated": "2026-11-21T03:26:26Z",
   "meta": {
     "benchmark": "Parrish R RecordLinkage",
     "true_pairs": 294
   },
   "pins": {
     "block": "union",
-    "comparators_sha256": "8d1e03d23fa6b8a649dca0eac9e0ce6909683f7a89ecf7dadb9de89f44e1f334",
+    "comparators_sha256": "4e4dce3c5cd4598c6f54f4923b2223850da64beb92b0b897493cdd4cc58e4220",
     "distinctive_floor": 0.75,
     "engine": "crosswalk.v1",
     "review_margin": 0.15,
@@ -45,5 +45,12 @@
     "unresolved"
   ],
   "rows": 333,
+  "runtime": {
+    "arche-core": "0.11.0",
+    "jellyfish": "1.2.1",
+    "python": "3.12.15",
+    "rapidfuzz": "3.14.3",
+    "unicodedata": "15.0.0"
+  },
   "schema": "arche.review_pack.v1"
 }

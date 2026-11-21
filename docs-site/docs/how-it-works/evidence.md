@@ -184,6 +184,14 @@ shipped:organisation
 
 Two runs that pin different `tf` values were scored against different vocabularies and are not expected to agree; comparing their decisions is a category error, not a discrepancy to investigate. The pin is hashed into `decision_id`, so a table change shows up as a changed id even when the verdict did not move.
 
+## Corroboration: a name alone is not enough
+
+A weighted mean is taken over the fields both records carry. Two people with nothing in common but a name therefore score `1.0`, because the name is the only field there is to agree on. That is a fact about two strings, not evidence that they are one person.
+
+The `person` pack declares `needs_support: 0.5` on its name comparators. A match needs another weighted field, such as a date of birth, an id, a phone, an email or an address, to agree at `0.5` or better. Otherwise the pair is held at `review`, and the edge carries `uncorroborated: 1`. The score is left as it is, since the names do agree; only the decision moves. `Ledger.resolve()` decides through this pack, so a name-only newcomer is held there too, as it already was by `arche.compare()`. The rule is part of the pack, so it is in `comparators_sha256` and in every decision id. Declarations take the same key on a field (`needs_support: 0.5`).
+
+Organisation and place packs do not declare it. A company or a facility is usually identified by its name, and their packs refute on the fields that tell namesakes apart instead.
+
 ## Refutation: a conflict is not outvoted
 
 Agreement is weighed. Disagreement on a field declared to refute is not weighed against it; it pulls the pair to `review` on its own, however much else agrees. In the pack engine that is `refutes_below` on a comparator, and it shows in `factors` as a `_conflict` key.

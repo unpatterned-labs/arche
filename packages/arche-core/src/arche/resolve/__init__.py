@@ -64,8 +64,13 @@ from arche.resolve.reconcile import reconcile as _reconcile_engine  # noqa: E402
 # bring your own comparators= for a different schema.
 ENTITY_PACKS: dict[str, list[dict]] = {
     "person": [
-        {"field": "name", "kind": "name", "weight": 2.0},
-        {"field": "name", "kind": "tftoken", "weight": 2.0},
+        # A name never links two people on its own: another weighted field
+        # (date of birth, an id, phone, email, address) must agree at 0.5 or
+        # better, or the pair is held for review. Many people share a name;
+        # the coreference engine behind `compare()` holds the same pair for
+        # the same reason, and `Ledger.resolve()` decides through this pack.
+        {"field": "name", "kind": "name", "weight": 2.0, "needs_support": 0.5},
+        {"field": "name", "kind": "tftoken", "weight": 2.0, "needs_support": 0.5},
         # Date of birth. Weighted like a name rather than like `national_id`,
         # because a birthday is strongly identifying without being unique: in
         # any large population thousands share one.

@@ -41,7 +41,7 @@ _TOP_KEYS = frozenset(
 )
 _FIELD_KEYS = frozenset(
     {"role", "kind", "weight", "id_family", "statute_class", "restricted",
-     "pii", "description", "type_domain"}
+     "pii", "description", "type_domain", "needs_support"}
 )
 _GEO_KEYS = frozenset({"lat", "lon", "weight", "decay_km"})
 _ON_UNKNOWN = frozenset({"allow", "warn", "error"})
@@ -73,6 +73,9 @@ class FieldDecl:
     description: str = ""
     # Domain for the `type` kind's token vocabulary (e.g. "health_facility").
     type_domain: str | None = None
+    # This field cannot carry a match alone: another weighted field must agree
+    # at this similarity or better (a person's name, for one).
+    needs_support: float | None = None
     # Whether `restricted:` was written explicitly (an explicit `false` may
     # conflict with a statute `drop`; a defaulted False silently unions up).
     restricted_set: bool = False
@@ -142,8 +145,16 @@ def _parse_field(name: str, spec: dict) -> FieldDecl:
             'type-token vocabulary to score against, e.g. "health_facility"). '
             "A defaulted domain would silently score nothing."
         )
+    needs_support = spec.get("needs_support")
+    if needs_support is not None:
+        if isinstance(needs_support, bool) or not isinstance(needs_support, (int, float)) \
+                or not 0.0 < float(needs_support) <= 1.0:
+            raise _err(f"fields.{name}: needs_support must be a number in (0, 1], "
+                       f"got {needs_support!r}")
+        needs_support = float(needs_support)
     return FieldDecl(
         name=name,
+        needs_support=needs_support,
         role=role,
         kinds=kinds,
         weight=float(spec.get("weight", 1.0)),
@@ -292,6 +303,8 @@ class Declaration:
                     # Included only when set, so declarations that predate the
                     # `type` kind keep their published pins byte-stable.
                     **({"type_domain": f.type_domain} if f.type_domain else {}),
+                    **({"needs_support": f.needs_support}
+                       if f.needs_support is not None else {}),
                 }
                 for f in self.fields.values()
             },
@@ -316,8 +329,10 @@ class Declaration:
                     specs.append({"field": f.name, "kind": "type",
                                   "domain": f.type_domain, "weight": f.weight})
                 else:
-                    specs.append({"field": f.name, "kind": kind,
-                                  "weight": f.weight})
+                    spec = {"field": f.name, "kind": kind, "weight": f.weight}
+                    if f.needs_support is not None:
+                        spec["needs_support"] = f.needs_support
+                    specs.append(spec)
         if self.geo:
             spec = {"kind": "geo", "lat": self.geo["lat"], "lon": self.geo["lon"],
                     "weight": float(self.geo.get("weight", 1.0))}

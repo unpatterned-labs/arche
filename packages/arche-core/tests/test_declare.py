@@ -102,7 +102,7 @@ def test_person_pack_round_trips_from_yaml_shape():
         "arche_declaration": 1, "name": "person",
         "fields": {
             "name": {"role": "identifies", "kind": ["name", "tftoken"],
-                     "weight": 2.0},
+                     "weight": 2.0, "needs_support": 0.5},
             "birth_date": {"role": "identifies", "kind": "date", "weight": 2.0},
             "national_id": {"role": "identifies", "kind": "id", "weight": 3.0},
             "phone": {"role": "identifies", "kind": "phone", "weight": 1.5},
@@ -323,3 +323,10 @@ def test_shipped_example_declarations_load_and_round_trip():
     assert person.comparators() == ENTITY_PACKS["person"]
     assert artist.comparators() == ENTITY_PACKS["artist"]
     assert fisheries.fields["skipper_phone"].citation   # statute resolved
+
+
+def test_needs_support_must_be_a_similarity():
+    for bad in (0, 1.5, "yes", True):
+        with pytest.raises(DeclarationError, match="needs_support"):
+            _decl(fields={"name": {"role": "identifies", "kind": "name",
+                                   "needs_support": bad}})
