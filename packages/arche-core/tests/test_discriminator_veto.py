@@ -258,7 +258,8 @@ class TestGeneralisation:
                   ENTITY_PACKS["product_grocery"],
                   ENTITY_PACKS["organisation"],
                   ENTITY_PACKS["health_facility"],
-                  ENTITY_PACKS["site"]]
+                  ENTITY_PACKS["site"],
+                  ENTITY_PACKS["health_facility_za"]]
         established = {
             name for name, specs in ENTITY_PACKS.items()
             if not any(specs is e for e in exempt)

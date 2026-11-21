@@ -222,7 +222,9 @@ class TestExplainAnswersForEveryVerb:
         captured = capsys.readouterr()
         # The masked copy goes to stdout so it can be piped; the summary that
         # carries the id goes to stderr for the same reason.
-        assert captured.out.startswith("Patient Casey Example (NIN [NIN])")
+        # The name is masked too since 20 Nov 2026 (it used to be missed).
+        assert captured.out.startswith("Patient NAME_") and "(NIN [NIN])" in captured.out
+        assert "Casey" not in captured.out
         decision_id = captured.err.split("decision_id ")[1].split()[0]
         assert decision_id.startswith("red:sha256:")
 
@@ -230,7 +232,8 @@ class TestExplainAnswersForEveryVerb:
         why = _json(capsys)
         assert why["verb"] == "deidentify"
         assert why["statute"] == "NDPA-2023" and why["jurisdiction"] == "NG"
-        assert {s["category"] for s in why["spans"]} == {"PII-2-NIN", "PII-3-PHONE"}
+        assert {s["category"] for s in why["spans"]} == {"PII-1-NAME", "PII-2-NIN",
+                                                         "PII-3-PHONE"}
         assert "12345678901" not in json.dumps(why), "a redaction receipt holds no value"
 
         assert main(["explain", decision_id, "--store", store]) == 0

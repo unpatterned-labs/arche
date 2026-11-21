@@ -37,7 +37,20 @@ def _validate_sa_id(text: str) -> tuple[bool, dict]:
     gender_code = int(digits[6:10])
     citizenship = int(digits[10])
 
-    if mm < 1 or mm > 12 or dd < 1 or dd > 31:
+    # A real calendar date in either century (30 February is not one), and a
+    # citizenship digit SA issues: 0 citizen, 1 permanent resident, 2 refugee.
+    # Both were unchecked: `9002305123082` (30 Feb) and `8804125123783`
+    # (citizenship 7) passed (20 Nov 2026).
+    import datetime as _dt
+
+    def _real(y: int) -> bool:
+        try:
+            _dt.date(y, mm, dd)
+            return True
+        except ValueError:
+            return False
+
+    if not (_real(1900 + yy) or _real(2000 + yy)) or citizenship not in (0, 1, 2):
         return False, {}
 
     if not _luhn_check(digits):
@@ -49,7 +62,7 @@ def _validate_sa_id(text: str) -> tuple[bool, dict]:
     return True, {
         "date_of_birth": f"{year:04d}-{mm:02d}-{dd:02d}",
         "gender": "female" if gender_code < 5000 else "male",
-        "citizenship": "citizen" if citizenship == 0 else "permanent_resident",
+        "citizenship": {0: "citizen", 1: "permanent_resident", 2: "refugee"}[citizenship],
     }
 
 
@@ -83,8 +96,10 @@ ZA_PATTERNS: dict[str, dict] = {
         "country": "ZA",
         "id_type": "NATIONAL_ID",
         "description": "South Africa ID Number: 13 digits (YYMMDD SSSS C A Z) with Luhn check",
+        # Bare, or written in its printed 6-4-3 groups (`900215 5123 083`
+        # leaked, 20 Nov 2026 audit); the validator strips the spaces.
         "pattern": re.compile(
-            r"(?<![0-9])(\d{13})(?![0-9])"
+            r"(?<![0-9])(\d{13}|\d{6} \d{4} \d{3})(?![0-9])"
         ),
         "validator": _validate_sa_id,
         "checksum": "luhn",  # SA ID carries a Luhn check digit → checksum_valid
@@ -108,7 +123,9 @@ ZA_PATTERNS: dict[str, dict] = {
         "pattern": re.compile(
             r"\b(?:sars|income\s+tax|tax(?:\s*(?:ref(?:erence)?|reg(?:istration)?|number|no|#))?)"
             r"(?![a-z])"
-            r"[^0-9\n]{0,40}?"
+            # The gap may not cross an invoice or order word: `TAX INVOICE
+            # INV-0012345678` read the invoice number as a tax reference.
+            r"(?:(?!\b(?:invoice|inv|order|po)\b)[^0-9\n]){0,40}?"
             r"(?<![0-9])([01239]\d{9})(?![0-9])",
             re.IGNORECASE,
         ),
@@ -118,8 +135,12 @@ ZA_PATTERNS: dict[str, dict] = {
     "ZA_PASSPORT": {
         "country": "ZA",
         "id_type": "PASSPORT",
-        "description": "South Africa Passport: 1 letter + 8 digits (DHA)",
+        "description": "South Africa Passport: 1 letter + 8 digits (DHA), cue-anchored",
+        # Cue-anchored (20 Nov 2026): one letter and eight digits is also a
+        # model number or a SKU (`Model A12345678`, `SKU B87654321` were masked
+        # as passports). The word "passport" before it is the evidence.
         "pattern": re.compile(
+            r"(?i:\bpassport\b)(?:\s*(?i:no|number|num|#))?\.?\s*[:#-]?\s*"
             r"(?<![A-Za-z0-9])([A-Z]\d{8})(?![A-Za-z0-9])"
         ),
         "validator": _validate_za_passport,

@@ -789,7 +789,8 @@ def compare_containment(
         return None
     # `admin3` (a ward) is read only by packs that declare it in `levels`; the
     # default walk has no admin3, so adding it here moves no existing score.
-    finest_score = {"settlement": 1.0, "admin3": 0.8, "admin2": 0.6, "admin1": 0.3}
+    finest_score = {"settlement": 1.0, "admin4": 0.9, "admin3": 0.8, "admin2": 0.6,
+                    "admin1": 0.3}
     best: float | None = None
     for level in levels:  # coarse -> fine
         na, nb = path_a.get(level), path_b.get(level)
@@ -978,6 +979,26 @@ def load_type_vocab(domain: str) -> dict[str, str]:
             vocab[str(syn)] = str(canonical)
         vocab.setdefault(str(canonical).lower(), str(canonical))
     return vocab
+
+
+def load_type_groups(domain: str) -> dict[str, str]:
+    """``{canonical: group}`` for a domain's types that declare a ``group``.
+
+    Groups say which types are tiers of one kind of facility (a clinic and a
+    health post are both primary care; a hospital is not). Empty when the
+    domain declares none.
+    """
+    path = Path(__file__).resolve().parent / "type_tokens.yaml"
+    try:
+        import yaml
+
+        with open(path, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+    except Exception:
+        return {}
+    return {str(canonical): str(spec["group"])
+            for canonical, spec in (data.get(domain) or {}).items()
+            if isinstance(spec, dict) and spec.get("group")}
 
 
 def compare_categories(cat_a: str, cat_b: str) -> float:

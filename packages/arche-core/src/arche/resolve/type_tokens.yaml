@@ -18,7 +18,14 @@
 #     over a bare "centre").
 
 health_facility:
+  # `group` (20 Nov 2026): which types are tiers of one kind of facility. The
+  # `health_facility` pack refutes only ACROSS groups -- a clinic is never the
+  # hospital of the same town -- because Nigerian lists call one facility a
+  # PHC, a health clinic or a health centre interchangeably. The
+  # `health_facility_za` pack refutes any difference: South Africa names its
+  # tiers officially (clinic, CHC, satellite clinic, district hospital).
   PHC:
+    group: primary_care
     description: Primary health centre / primary health care facility (the base tier of Nigerian PHC).
     synonyms:
       - primary health centre
@@ -30,32 +37,62 @@ health_facility:
       - health centre
       - health center
   DISPENSARY:
+    group: primary_care
     description: Dispensary — small drug-dispensing / basic-care facility.
     synonyms:
       - dispensary
   HOSPITAL:
-    description: Hospital — general, teaching, specialist, cottage, or referral.
+    group: hospital
+    description: Hospital — general, teaching, specialist, cottage, or referral; and South Africa's tiers (district, regional, provincial tertiary, national central).
     synonyms:
       - general hospital
       - teaching hospital
       - specialist hospital
       - cottage hospital
       - referral hospital
+      - district hospital
+      - regional hospital
+      - provincial tertiary hospital
+      - tertiary hospital
+      - national central hospital
+      - central hospital
+      - academic hospital
       - hospital
   MATERNITY:
+    group: primary_care
     description: Maternity home / maternity centre.
     synonyms:
       - maternity home
       - maternity centre
       - maternity
   CLINIC:
+    group: primary_care
     description: Clinic / medical centre (often private).
     synonyms:
       - health clinic
       - medical centre
       - medical center
       - clinic
+  # South Africa (20 Nov 2026, from the WHO/KEMRI ZA list's own type column):
+  # a community health centre is a tier of its own; a satellite clinic is a
+  # clinic's outpost and is not the clinic it hangs off.
+  CHC:
+    group: primary_care
+    description: Community health centre / community day centre (South Africa's tier above the clinic).
+    synonyms:
+      - community health centre
+      - community health center
+      - community day centre
+      - community day center
+      - chc
+  SATELLITE_CLINIC:
+    group: primary_care
+    description: Satellite clinic — an outpost of a parent clinic, a facility of its own.
+    synonyms:
+      - satellite clinic
+      - satelite clinic
   HEALTH_POST:
+    group: primary_care
     description: Health post — the smallest outreach facility.
     synonyms:
       - health post
@@ -67,6 +104,7 @@ health_facility:
   # because that is how such clinics are commonly written in the Nigerian lists
   # read so far, not because `vision` is a type on its own.
   EYE_CLINIC:
+    group: specialty
     description: Eye clinic / eye hospital / optical clinic.
     synonyms:
       - vision eye clinic
@@ -78,6 +116,7 @@ health_facility:
       - eye care center
       - optical clinic
   DENTAL_CLINIC:
+    group: specialty
     description: Dental clinic / dental hospital.
     synonyms:
       - dental clinic
@@ -85,6 +124,7 @@ health_facility:
       - dental centre
       - dental center
   LABORATORY:
+    group: specialty
     description: Medical or diagnostic laboratory / diagnostic centre.
     synonyms:
       - medical laboratory
@@ -93,16 +133,19 @@ health_facility:
       - diagnostic center
       - laboratory
   ORTHOPAEDIC_HOSPITAL:
+    group: specialist_hospital
     description: Orthopaedic hospital.
     synonyms:
       - orthopaedic hospital
       - orthopedic hospital
   PSYCHIATRIC_HOSPITAL:
+    group: specialist_hospital
     description: Psychiatric / neuropsychiatric hospital.
     synonyms:
       - neuropsychiatric hospital
       - psychiatric hospital
   PHARMACY:
+    group: pharmacy
     description: Pharmacy / chemist / patent-medicine vendor.
     synonyms:
       - pharmacy

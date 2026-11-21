@@ -178,7 +178,7 @@ PERSON_ID_CATEGORIES: frozenset[str] = frozenset({
     "PII-2-GHANA_CARD", "PII-2-NATIONAL_ID", "PII-2-PASSPORT",
     "PII-2-SA_ID", "PII-2-KENYA_ID",
     "PII-2-NID", "PII-2-NIDA", "PII-2-CNI", "PII-2-CNIE", "PII-2-BI",
-    "PII-2-KEBELE_ID", "PII-2-SSNIT", "PII-2-NHIF",
+    "PII-2-KEBELE_ID", "PII-2-SSNIT", "PII-2-NHIF", "PII-2-NHS",
 })
 
 # NON-person PII-2 subtypes (companies, ambiguous tax ids, unverified digital

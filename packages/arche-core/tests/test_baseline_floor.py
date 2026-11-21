@@ -155,7 +155,7 @@ class TestConservativeScope:
         assert category not in mappings
 
     @pytest.mark.parametrize("category", [
-        "PII-3-EMAIL", "PII-3-PHONE", "PII-2-NATIONAL-ID", "PII-4-ADDRESS",
+        "PII-3-EMAIL", "PII-3-PHONE", "PII-2-NATIONAL_ID", "PII-4-ADDRESS",
     ])
     def test_universally_agreed_categories_are_present(self, mappings, category):
         assert category in mappings

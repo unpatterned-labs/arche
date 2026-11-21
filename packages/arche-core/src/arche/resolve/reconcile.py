@@ -72,6 +72,7 @@ from arche.resolve._matcher import (
     compare_place_qualifiers,
     compare_postcodes,
     haversine_km,
+    load_type_groups,
     load_type_vocab,
     normalize_type_token,
     parse_date_value,
@@ -214,7 +215,13 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
             # honest because matching is order-independent too: see the
             # tie-break in `_matcher._compiled_vocab`. Full length, for the
             # reason `comparators_sha256` gives.
-            digest = content_hash(sorted(vocab.items()), prefix="tt")
+            # Groups change verdicts too (a type comparator may compare them),
+            # so they are in the digest -- only for a domain that declares
+            # them, so the organisation vocabulary's pin does not move.
+            groups = load_type_groups(domain)
+            body = [sorted(vocab.items()), sorted(groups.items())] if groups \
+                else sorted(vocab.items())
+            digest = content_hash(body, prefix="tt")
             out[f"type_tokens:{domain}"] = digest.split(":")[-1]
     if any(spec.get("kind") == "legal_form" for spec in comparators):
         from arche.resolve._legal_form import pin as _legal_form_pin
@@ -419,7 +426,16 @@ def _field_sim(
         type_b, _ = normalize_type_token(str(rb[field]), vocab)
         if type_a is None or type_b is None:
             return None
-        return 1.0 if type_a == type_b else 0.0
+        if type_a == type_b:
+            return 1.0
+        if spec.get("compare") == "group":
+            # Two tiers of one kind (PHC and health clinic): not the same type,
+            # not a contradiction either -- 0.5, which `refutes_below` 0.5
+            # does not fire on. Different kinds (a clinic, a hospital): 0.0.
+            groups = load_type_groups(spec.get("domain", ""))
+            ga, gb = groups.get(type_a, type_a), groups.get(type_b, type_b)
+            return 0.5 if ga == gb else 0.0
+        return 0.0
     if kind in ("code", "spec"):
         # Product evidence. Both read a title field and are inapplicable when
         # the category's rules find nothing to compare, never scored as a

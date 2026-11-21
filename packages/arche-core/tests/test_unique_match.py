@@ -112,3 +112,40 @@ def test_a_deeper_unnamed_level_never_scores_below_the_one_above():
     a = {"admin1": "gauteng", "admin2": "city of johannesburg", "admin4": "ward 12"}
     levels = ("admin1", "admin2", "admin4")
     assert compare_containment(a, dict(a), levels=levels) >= 0.6
+
+
+class TestFacilityTypeRefutation:
+    """A clinic is never the hospital of its town; how strict to be within
+    primary care depends on how a country names its tiers."""
+
+    @staticmethod
+    def _decide(a: str, b: str, pack: str) -> str:
+        out = reconcile([{"id": "a", "name": a, "lat": -30.0, "lon": 25.0}],
+                        [{"id": "b", "name": b, "lat": -30.0005, "lon": 25.0}],
+                        entity=pack, id_field="id")
+        return out["matches"][0]["decision"]
+
+    def test_across_kinds_both_packs_hold(self):
+        for pack in ("health_facility", "health_facility_za"):
+            assert self._decide("Nelspoort Clinic", "Nelspoort Hospital", pack) == "review"
+            assert self._decide("Umzimkhulu Clinic", "Umzimkhulu Psychiatric Hospital",
+                                pack) == "review"
+
+    def test_within_primary_care_only_the_za_pack_holds(self):
+        # Nigerian lists name one facility PHC, health clinic or health centre.
+        assert self._decide("Turmi Primary Health Centre", "Turmi Health Clinic",
+                            "health_facility") == "match"
+        assert self._decide("Ngangelizwe CHC", "Ngangelizwe Clinic",
+                            "health_facility") == "match"
+        assert self._decide("Ngangelizwe CHC", "Ngangelizwe Clinic",
+                            "health_facility_za") == "review"
+
+    def test_a_name_without_a_type_is_silent(self):
+        for pack in ("health_facility", "health_facility_za"):
+            assert self._decide("Healdtown", "Healdtown Clinic", pack) == "match"
+
+    def test_groups_are_pinned(self):
+        from arche.resolve._matcher import load_type_groups
+
+        assert load_type_groups("health_facility")["CHC"] == "primary_care"
+        assert load_type_groups("organization") == {}

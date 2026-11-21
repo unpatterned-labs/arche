@@ -20,6 +20,6 @@ Places ingestion. Needs ``shapely`` (+ ``duckdb`` for Overture); install with
 (``arche.resolve._block``) — only polygon joins live here.
 """
 
-from arche.resolve._geo.annotate import AdminIndex, annotate_admin
+from arche.resolve._geo.annotate import AdminIndex, admin_index_from_files, annotate_admin
 
-__all__ = ["AdminIndex", "annotate_admin"]
+__all__ = ["AdminIndex", "admin_index_from_files", "annotate_admin"]

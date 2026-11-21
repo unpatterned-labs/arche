@@ -104,6 +104,50 @@ class AdminIndex:
         return path
 
 
+def admin_index_from_files(
+    layers: dict[str, tuple[Any, Any]],
+) -> tuple[AdminIndex, dict[str, str]]:
+    """Build an :class:`AdminIndex` from boundary files the caller downloaded.
+
+    ``layers`` maps a level (coarse -> fine) to ``(path, name_of)``: a GeoJSON
+    FeatureCollection or GeoJSON-lines file (``.gz`` either way) and a function
+    from a feature's ``properties`` to the name -- or code -- that level should
+    report (``lambda p: p["CAT_B"]`` for a South African local municipality).
+    A feature whose ``name_of`` returns nothing is skipped.
+
+    Returns the index and ``{level: "sha256:<hex>"}`` over each file's bytes,
+    for the run's pins: a decision that read a boundary must name which one.
+    arche ships no boundaries; licences differ by country (Nigeria's GRID3
+    LGAs are CC BY 4.0; South Africa's MDB boundaries forbid commercial use).
+    """
+    import gzip
+    import hashlib
+    import json
+    from pathlib import Path
+
+    from shapely.geometry import shape
+
+    built: dict[str, list[tuple[str, Any]]] = {}
+    digests: dict[str, str] = {}
+    for level, (path, name_of) in layers.items():
+        path = Path(path)
+        raw = path.read_bytes()
+        digests[level] = "sha256:" + hashlib.sha256(raw).hexdigest()
+        text = (gzip.decompress(raw) if path.suffix == ".gz" else raw).decode("utf-8")
+        stripped = text.lstrip()
+        if stripped.startswith("{") and '"FeatureCollection"' in stripped[:200]:
+            features = json.loads(text)["features"]
+        else:
+            features = [json.loads(line) for line in text.splitlines() if line.strip()]
+        out = []
+        for feature in features:
+            name = name_of(feature.get("properties") or {})
+            if name and feature.get("geometry"):
+                out.append((str(name), shape(feature["geometry"])))
+        built[level] = out
+    return AdminIndex(built), digests
+
+
 def annotate_admin(lat: float, lon: float, index: AdminIndex) -> dict[str, str]:
     """Reverse-geocode a coordinate to its admin path via a prebuilt ``AdminIndex``."""
     return index.annotate(lat, lon)

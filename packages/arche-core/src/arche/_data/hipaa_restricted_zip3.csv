@@ -1,0 +1,31 @@
+# HIPAA Safe Harbor restricted three-digit ZIP codes (45 CFR 164.514(b)(2)(i)(B)).
+# A ZIP3 listed here formed a geographic unit of 20,000 or fewer people, so under
+# Safe Harbor its initial three digits must be written as 000.
+# Source: US HHS OCR, "Guidance Regarding Methods for De-identification of PHI",
+#   https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html
+#   ("Utilizing 2000 Census data, the following three-digit ZIP codes contain
+#   20,000 or fewer persons"). Recorded 2026-11-20. hhs.gov refused automated
+#   fetches that day (HTTP 403), so the list was checked against a secondary copy:
+#   https://www.johndcook.com/blog/2016/06/29/sparsely-populated-zip-codes/
+# Census basis: 2000 Census, as published by HHS. The rule itself refers to
+#   "current publicly available data from the Bureau of the Census"; refresh this
+#   table from Census ZCTA populations when HHS or Census publishes a newer list.
+# Licence: US government work, public domain (17 U.S.C. 105).
+zip3
+036
+059
+063
+102
+203
+556
+692
+790
+821
+823
+830
+831
+878
+879
+884
+890
+893

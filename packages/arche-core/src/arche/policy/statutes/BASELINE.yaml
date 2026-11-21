@@ -74,6 +74,25 @@ lawful_bases: []
 data_subject_rights: []
 
 policy_mappings:
+  PII-8-URL_OTHER:
+    action: retain
+    tier: low
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
+    rationale: "A URL that names or identifies no one is not personal data; without this entry the pack default masked every link."
+  PII-1-DOB:
+    action: generalize
+    tier: moderate
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
+    rationale: "A date of birth is reduced to its year (the over-89 birth year goes too)."
+  PII-1-DATE:
+    action: retain
+    tier: low
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
+    rationale: "A calendar date on its own is not personal data; without this entry the pack default masked every appointment and invoice date."
+  PII-1-AGE:
+    action: retain
+    tier: low
+    statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"
   # Names. Tokenised rather than masked so records stay linkable for
   # resolution while the surface form is protected.
   PII-1-NAME:
@@ -99,7 +118,7 @@ policy_mappings:
   # Government identifiers. Masked rather than tokenised: a national identifier
   # is the highest-cost re-identification vector arche detects, and a token is
   # still a stable handle for the same person across documents.
-  PII-2-NATIONAL-ID:
+  PII-2-NATIONAL_ID:
     action: mask
     tier: high
     statute_reference: "no statute pack for this jurisdiction: arche baseline floor, not law"

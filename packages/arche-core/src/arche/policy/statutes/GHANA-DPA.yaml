@@ -35,6 +35,49 @@ data_subject_rights:
   - prevent_processing_for_direct_marketing
 
 policy_mappings:
+  PII-6-POLITICAL_AFFILIATION:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20 (sensitive personal data)"
+  PII-6-TRADE_UNION:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20 (sensitive personal data)"
+  PII-2-MRN:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20 (sensitive personal data)"
+  PII-2-HEALTH_PLAN_ID:
+    action: mask
+    tier: high
+    statute_reference: "Ghana DPA s.20 (sensitive personal data)"
+  PII-8-VEHICLE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "Ghana DPA s.18 (conditions for processing)"
+  PII-8-URL:
+    action: mask
+    tier: moderate
+    statute_reference: "Ghana DPA s.18 (conditions for processing)"
+  PII-8-URL_OTHER:
+    action: retain
+    tier: low
+    statute_reference: "Ghana DPA s.18 (conditions for processing)"
+    rationale: "A URL that names or identifies no one is not personal data; without this entry the pack default masked every link."
+  PII-1-DOB:
+    action: generalize
+    tier: moderate
+    statute_reference: "Ghana Data Protection Act 2012 (Act 843) (minimality principle)"
+    rationale: "A date of birth is reduced to its year (the over-89 birth year goes too)."
+  PII-1-DATE:
+    action: retain
+    tier: low
+    statute_reference: "Ghana Data Protection Act 2012 (Act 843)"
+    rationale: "A calendar date on its own is not personal data; without this entry the pack default masked every appointment and invoice date."
+  PII-1-AGE:
+    action: retain
+    tier: low
+    statute_reference: "Ghana Data Protection Act 2012 (Act 843)"
 
   PII-1-NAME:
     action: tokenize

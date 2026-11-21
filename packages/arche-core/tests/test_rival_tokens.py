@@ -200,7 +200,8 @@ class TestThePackWiring:
 
         adopted = {name for name, specs in ENTITY_PACKS.items()
                    if any(s.get("kind") == "rival" for s in specs)}
-        assert adopted == {"product_home_goods", "product_grocery", "health_facility"}
+        assert adopted == {"product_home_goods", "product_grocery", "health_facility",
+                           "health_facility_za"}
 
     def test_it_needs_a_table_and_says_so(self):
         """`tftoken` raises the same way. A comparator whose whole job is

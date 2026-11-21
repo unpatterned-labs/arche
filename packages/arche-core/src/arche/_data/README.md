@@ -56,3 +56,28 @@ After refreshing, bump the fetch date in this file and verify
 **Why vendored:** the installed package used to detect 118 names — the
 equivalence-group starter set — and nothing else. The 13k lexicon existed only
 as a file in the source tree. Loaded lazily, on the first detection call.
+
+---
+
+## `hipaa_restricted_zip3.csv`
+
+| Field | Value |
+|---|---|
+| Source | US HHS OCR, *Guidance Regarding Methods for De-identification of PHI*, <https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html> |
+| Census basis | 2000 Census, as published by HHS ("three-digit ZIP codes [that] contain 20,000 or fewer persons") |
+| Recorded | 2026-11-20 (hhs.gov refused automated fetches that day; checked against a secondary copy, cited in the file header) |
+| Rows | 17 ZIP3 prefixes |
+| License | US government work, public domain (17 U.S.C. §105) |
+| arche use | HIPAA Safe Harbor 3-digit-ZIP rule: `generalize` on `PII-4-ZIP` keeps the ZIP3, or writes `000` for a listed prefix |
+| Refresh policy | Manual. The rule refers to current Census data; replace with a ZCTA3 population table when HHS or Census publishes a newer list |
+| Consumer | `arche.detect.us.zip.safe_harbor_zip3` |
+
+## `detect/_names/common_names_v1.txt` (lives beside the name lexicon, listed here for provenance)
+
+| Field | Value |
+|---|---|
+| What | 9,163 given-name and surname tokens added to the rules-only name detector (20 Nov 2026) |
+| Sources | US Census Bureau 2010 surnames, top 3,000 (a US government work: public domain, 17 U.S.C. §105); `datasets/data/wikidata_name_pairs.jsonl` in this repository (8,156 given + family name pairs from ZA, NG, GH, KE and 7 other countries; Wikidata, CC0 — see `WIKIDATA_DATACARD.md`) |
+| Rebuild | the file's own header says how |
+| Not used | the SSA baby-names list (refused automated download); a fresh Wikidata query (rate-limited) |
+| Caveat | some benchmark held-out names are now in this list, so the benchmark's held-out name pool is no longer fully held out |
