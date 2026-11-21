@@ -67,6 +67,15 @@ CROSS_CUTTING_CATEGORIES: dict[str, frozenset[str]] = {
     "digital_id": frozenset({"PII-2-DID", "PII-5-CRYPTO_WALLET"}),
     "core": frozenset({"PII-3-PHONE"}),
     "phones": frozenset({"PII-3-PHONE"}),
+    # In every default detector set since it shipped, and missing here, so
+    # every pack's PII-5-BANK_ACCOUNT and PII-5-CARD read as uncovered.
+    "financial": frozenset({"PII-5-BANK_ACCOUNT", "PII-5-CARD"}),
+    "dates": frozenset({"PII-1-DOB", "PII-1-DATE", "PII-1-AGE"}),
+    "special": frozenset({"PII-6-HEALTH", "PII-6-RELIGION", "PII-6-RACE",
+                          "PII-6-SEXUAL_ORIENTATION", "PII-6-POLITICAL_AFFILIATION",
+                          "PII-6-TRADE_UNION"}),
+    "records": frozenset({"PII-2-MRN", "PII-2-HEALTH_PLAN_ID", "PII-8-VEHICLE_ID",
+                          "PII-8-DEVICE_ID", "PII-8-URL", "PII-8-URL_OTHER"}),
 }
 
 # Country ID packs, and where each keeps its pattern table. The categories are
@@ -76,10 +85,18 @@ _COUNTRY_ID_PACKS: dict[str, tuple[str, str]] = {
     "ke": ("arche.detect.ke.ids", "KE_PATTERNS"),
     "za": ("arche.detect.za.ids", "ZA_PATTERNS"),
     "gh": ("arche.detect.gh.ids", "GH_PATTERNS"),
+    "us": ("arche.detect.us.ids", "US_PATTERNS"),
+    "gb": ("arche.detect.gb.ids", "GB_PATTERNS"),
 }
 
-#: The multi-country pack is the union of the per-country ones.
+#: Categories a country pack emits beyond its ID pattern table.
+_COUNTRY_EXTRA_CATEGORIES: dict[str, frozenset[str]] = {
+    "us": frozenset({"PII-4-ZIP"}),
+}
+
+#: The multi-country pack is the union of the per-country African ones.
 _AFRICA_PACK = "africa"
+_AFRICAN_COUNTRY_PACKS = ("ng", "ke", "za", "gh")
 
 
 def _country_categories(pack: str) -> frozenset[str]:
@@ -103,7 +120,7 @@ def _country_categories(pack: str) -> frozenset[str]:
         f"PII-2-{spec['id_type']}"
         for spec in table.values()
         if isinstance(spec, dict) and spec.get("id_type")
-    )
+    ) | _COUNTRY_EXTRA_CATEGORIES.get(pack, frozenset())
 
 
 def detectable_categories(packages: list[str] | tuple[str, ...]) -> set[str]:
@@ -121,7 +138,7 @@ def detectable_categories(packages: list[str] | tuple[str, ...]) -> set[str]:
         elif pack in _COUNTRY_ID_PACKS:
             found |= _country_categories(pack)
         elif pack == _AFRICA_PACK:
-            for country in _COUNTRY_ID_PACKS:
+            for country in _AFRICAN_COUNTRY_PACKS:
                 found |= _country_categories(country)
     return found
 
@@ -157,10 +174,13 @@ DETECTOR_CALIBRATION: dict[str, tuple[frozenset[str], str]] = {
                   "African place vocabulary; non-African place names are "
                   "largely absent"),
     # Measured: +234 found; +44 and +49 missed. Not a global phone parser.
-    "core": (frozenset({_AFRICA}),
-             "African numbering plans; other country codes are not matched"),
-    "phones": (frozenset({_AFRICA}),
-               "African numbering plans; other country codes are not matched"),
+    # NANP numbers are matched for a US jurisdiction (arche.detect.us.phones).
+    "core": (frozenset({_AFRICA, "US"}),
+             "African and North American numbering plans; other country codes "
+             "are not matched"),
+    "phones": (frozenset({_AFRICA, "US"}),
+               "African and North American numbering plans; other country codes "
+               "are not matched"),
     # Measured: both an Abuja street address and a London postcode parse.
     "addr": (frozenset({_AFRICA, "GB"}),
              "African informal and street forms plus UK postcodes; other "
@@ -169,12 +189,23 @@ DETECTOR_CALIBRATION: dict[str, tuple[frozenset[str], str]] = {
     "emails": (frozenset({_GLOBAL}), ""),
     "ip": (frozenset({_GLOBAL}), ""),
     "digital_id": (frozenset({_GLOBAL}), ""),
+    # IBANs (mod-97) and cards (Luhn) are format-defined everywhere.
+    "financial": (frozenset({_GLOBAL}), ""),
+    # Calendar dates and stated ages are format-defined; numeric order is
+    # read per jurisdiction (M/D/Y for US).
+    "dates": (frozenset({_GLOBAL}), ""),
+    # Cue-anchored: English cue words only.
+    "special": (frozenset({_GLOBAL}), "English cue words only (Dx:, diagnosed with, "
+                "religion:); conditions named without a cue are not found"),
+    "records": (frozenset({_GLOBAL}), ""),
     # National ID packs are calibrated for exactly their own country, and the
     # pipeline already refuses to run them elsewhere.
     "ng": (frozenset({"NG"}), ""),
     "ke": (frozenset({"KE"}), ""),
     "za": (frozenset({"ZA"}), ""),
     "gh": (frozenset({"GH"}), ""),
+    "us": (frozenset({"US"}), ""),
+    "gb": (frozenset({"GB"}), ""),
     "africa": (frozenset({_AFRICA}), ""),
 }
 
@@ -321,9 +352,15 @@ def _note(verdict: str, statute_id: str, uncovered: list[str],
           degraded: list[str] | None = None) -> str:
     """One sentence a person can act on, not a status word."""
     if verdict == "full":
-        return (f"every category {statute_id} governs has a detector installed. "
+        text = (f"every category {statute_id} governs has a detector installed. "
                 "This is about capability, not recall: a detector that ran may "
                 "still have missed something.")
+        # Stated even when nothing is uncovered: "full" with a name detector
+        # built for another country's names is the case most worth saying.
+        if degraded:
+            text += (f" {len(degraded)} of them had a detector built for "
+                     f"somewhere else: {', '.join(degraded)}.")
+        return text
     if verdict == "none":
         return (f"no detector installed can find anything {statute_id} governs. "
                 "A clean result from this pipeline means nothing was looked for.")

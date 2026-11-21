@@ -93,6 +93,12 @@ def detect_phones(text: str, *, default_country: str = "NG") -> list[Detection]:
         seen = [(h["start"], h["end"]) for h in hits]
         hits += [h for h in _uk_phones(text)
                  if not any(s < h["end"] and h["start"] < e for s, e in seen)]
+    if default_country == "US" or "+1" in text:
+        from arche.detect.us.phones import detect_us_phones
+
+        seen = [(h["start"], h["end"]) for h in hits]
+        hits += [h for h in detect_us_phones(text)
+                 if not any(s < h["end"] and h["start"] < e for s, e in seen)]
     # a number straight after "Account number:", "NUBAN" or "BVN" is that, not a
     # phone: leave it to the financial and ID detectors (an NG account
     # 0123456789 has a Lagos landline's shape)

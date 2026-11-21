@@ -38,6 +38,45 @@ data_subject_rights:
   - portability  # via the conditions for lawful processing
 
 policy_mappings:
+  PII-6-TRADE_UNION:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.26 (special), s.32 (health data)"
+  PII-2-MRN:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.26 (special), s.32 (health data)"
+  PII-2-HEALTH_PLAN_ID:
+    action: mask
+    tier: high
+    statute_reference: "POPIA s.26 (special), s.32 (health data)"
+  PII-8-VEHICLE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "POPIA s.11 (lawful processing)"
+  PII-8-URL:
+    action: mask
+    tier: moderate
+    statute_reference: "POPIA s.11 (lawful processing)"
+  PII-8-URL_OTHER:
+    action: retain
+    tier: low
+    statute_reference: "POPIA s.11 (lawful processing)"
+    rationale: "A URL that names or identifies no one is not personal data; without this entry the pack default masked every link."
+  PII-1-DOB:
+    action: generalize
+    tier: moderate
+    statute_reference: "POPIA s.1 (personal information (a): age); s.10 (minimality)"
+    rationale: "A date of birth is reduced to its year (the over-89 birth year goes too)."
+  PII-1-DATE:
+    action: retain
+    tier: low
+    statute_reference: "POPIA s.11"
+    rationale: "A calendar date on its own is not personal data; without this entry the pack default masked every appointment and invoice date."
+  PII-1-AGE:
+    action: generalize
+    tier: low
+    statute_reference: "POPIA s.1 (personal information (a): age)"
 
   # ── PII-1 — Direct person identifiers ────────────────────────────────
   PII-1-NAME:
@@ -49,8 +88,8 @@ policy_mappings:
   PII-2-NATIONAL_ID:
     action: mask
     tier: high
-    statute_reference: "POPIA s.26 (special personal information — biometric)"
-    rationale: "SA ID number encodes DOB and gender; treat as special category."
+    statute_reference: "POPIA s.1 (personal information: 'any identifying number'); s.19 (security safeguards)"
+    rationale: "An SA ID number is an identifying number and encodes date of birth and gender; it is not biometric information (s.26). Masked at the high tier."
 
   PII-2-TAX_REFERENCE:
     action: mask
@@ -150,6 +189,11 @@ policy_mappings:
     statute_reference: "POPIA s.26"
 
   # ── PII-8 — Behavioural ──────────────────────────────────────────────
+  PII-5-CARD:
+    action: drop
+    tier: high
+    statute_reference: "POPIA s.19 (security safeguards); PCI-DSS applies independently"
+    rationale: "Payment card numbers are dropped, as in every other pack; masking alone left the card in the audit trail."
   PII-8-IP_ADDRESS:
     action: generalize
     tier: low

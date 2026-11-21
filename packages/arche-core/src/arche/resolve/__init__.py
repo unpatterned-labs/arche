@@ -388,8 +388,17 @@ ENTITY_PACKS["health_facility"] = [
     # ward in Nigeria. A ward disagreement stops the walk at the LGA (it never
     # refutes -- only the coarsest level can), which matters because GRID3's
     # own ward label disagrees with its coordinates' ward on 23.6% of records.
+    #
+    # And the facility TYPE refutes across kinds (20 Nov 2026): a clinic is
+    # never the hospital of the same town (`Nelspoort Clinic` / `Nelspoort
+    # Hospital`). Only across type *groups* -- Nigerian lists call one facility
+    # a PHC, a health clinic or a health centre, and refuting those held 353
+    # GRID3 duplicates that are one facility. Silent when either name states no
+    # type. `health_facility_za` refutes any tier difference.
     *[{**spec, "levels": ["admin1", "admin2", "admin3", "settlement"]}
-      if spec.get("kind") == "containment" else spec for spec in ENTITY_PACKS["place"]],
+      if spec.get("kind") == "containment"
+      else {**spec, "refutes_below": 0.5, "compare": "group"} if spec.get("kind") == "type"
+      else spec for spec in ENTITY_PACKS["place"]],
     {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5,
      "strip_type": "health_facility", "near": 0.85},
     {"field": "name", "kind": "designator", "weight": 0.0, "refutes_below": 0.5},
@@ -420,6 +429,16 @@ ENTITY_PACKS["site"] = [
     {"field": "postcode", "kind": "postcode", "weight": 0.0, "refutes_below": 0.3},
 ]
 
+# South Africa: `health_facility` with the facility type refuting on any tier
+# difference. Its lists name tiers officially -- clinic, community health
+# centre, satellite clinic, district / regional hospital -- so `Ngangelizwe
+# CHC` and `Ngangelizwe Clinic` are two facilities, and a gateway clinic is not
+# the hospital it fronts. Measured on WHO/KEMRI ZA against OSM and Overture.
+ENTITY_PACKS["health_facility_za"] = [
+    {k: v for k, v in spec.items() if k != "compare"} if spec.get("kind") == "type" else spec
+    for spec in ENTITY_PACKS["health_facility"]
+]
+
 # Packs whose tftoken comparator defaults to a SHIPPED population table rather
 # than self-calibration (small artist catalogs mislead a self-calibrated table
 # — the toy-corpus trap the place tutorials document).
@@ -432,6 +451,7 @@ ENTITY_PACKS["site"] = [
 # with the same evidence as two sharing a genuinely distinctive name.
 _PACK_TF_DOMAIN: dict[str, str] = {
     "artist": "artist", "place": "place", "health_facility": "place",
+    "health_facility_za": "place",
     # Both spellings, because both are keys of ENTITY_PACKS. Without a
     # shipped table the pack self-calibrated over the two lists being
     # linked, which is not a population: fourteen records cannot know

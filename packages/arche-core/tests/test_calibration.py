@@ -110,9 +110,11 @@ class TestTheOriginalCase:
         assert set(report["degraded_categories"]) <= set(report["covered"])
         assert not set(report["degraded_categories"]) & set(report["uncovered"])
 
-    def test_the_note_mentions_both_problems(self, report):
+    def test_the_note_mentions_the_mismatch_even_at_full_coverage(self, report):
+        # Since 20 Nov 2026 every UK-GDPR category has a rule detector, so
+        # nothing is uncovered; the mismatch must still be said, not implied.
         note = report["note"]
-        assert "no detector installed" in note
+        assert report["uncovered"] == []
         assert "built for somewhere else" in note
 
     def test_each_mismatch_says_where_it_was_built_for(self, report):
@@ -184,12 +186,15 @@ class TestTheDeclarationIsComplete:
 def test_calibration_is_the_layer_below_coverage():
     """Stated as a test because the two are easy to conflate.
 
-    For GB: 6 categories have no detector, 3 have a detector built elsewhere,
-    and 4 are genuinely covered. Only the first number is `uncovered`.
+    For GB: nothing UK-GDPR governs lacks a detector (since 20 Nov 2026: the GB
+    identifier pack, dates, special categories, record ids), 3 categories have
+    a detector built elsewhere, and the rest are genuinely covered. Only the
+    first number is `uncovered`; a degraded category is never moved there.
+    (It was 4 uncovered before the GB pack; 6 before `financial` was declared.)
     """
     report = coverage(Pipeline(jurisdiction="GB"))
     genuinely_covered = set(report["covered"]) - set(report["degraded_categories"])
-    assert len(report["uncovered"]) == 6
-    assert len(report["degraded_categories"]) == 3
-    assert genuinely_covered == {
-        "PII-2-DID", "PII-3-EMAIL", "PII-4-ADDRESS", "PII-5-CRYPTO_WALLET"}
+    assert report["uncovered"] == []
+    assert report["degraded_categories"] == ["PII-1-NAME", "PII-3-PHONE", "PII-4-LOCATION"]
+    assert {"PII-2-NHS", "PII-2-NIN", "PII-1-DOB", "PII-6-HEALTH", "PII-8-URL",
+            "PII-5-CARD", "PII-8-IP_ADDRESS"} <= genuinely_covered

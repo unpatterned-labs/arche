@@ -93,7 +93,9 @@ class TestSilenceIsNeverMistakenForSafety:
         assert "coverage" in handlers.detect_pii(GB_TEXT, jurisdiction="GB")
 
     def test_guarded_scan_carries_coverage_even_when_it_allows(self):
-        result = handlers.guarded_scan(GB_TEXT, key="k", jurisdiction="GB")
+        # GDPR, not UK-GDPR: since 20 Nov 2026 every UK-GDPR category has a
+        # detector, while GDPR still governs biometrics and passwords.
+        result = handlers.guarded_scan(GB_TEXT, key="k", jurisdiction="GB", statute="GDPR")
         assert result["denied"] is False
         assert result["coverage"]["verdict"] == "partial"
 

@@ -58,6 +58,49 @@ data_subject_rights:
 # Per-PII-category action mappings. Categories use the Pan-African PII
 # Taxonomy v0.1 keys (PRD §4.3).
 policy_mappings:
+  PII-6-POLITICAL_AFFILIATION:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+  PII-6-TRADE_UNION:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+  PII-2-MRN:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+  PII-2-HEALTH_PLAN_ID:
+    action: mask
+    tier: high
+    statute_reference: "NDPA-2023 s.32 (special category data)"
+  PII-8-VEHICLE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+  PII-8-URL:
+    action: mask
+    tier: moderate
+    statute_reference: "NDPA-2023 s.30"
+  PII-8-URL_OTHER:
+    action: retain
+    tier: low
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "A URL that names or identifies no one is not personal data; without this entry the pack default masked every link."
+  PII-1-DOB:
+    action: generalize
+    tier: moderate
+    statute_reference: "NDPA-2023 s.24(1)(c) (data minimisation)"
+    rationale: "A date of birth is reduced to its year (the over-89 birth year goes too)."
+  PII-1-DATE:
+    action: retain
+    tier: low
+    statute_reference: "NDPA-2023 s.30"
+    rationale: "A calendar date on its own is not personal data; without this entry the pack default masked every appointment and invoice date."
+  PII-1-AGE:
+    action: retain
+    tier: low
+    statute_reference: "NDPA-2023 s.30"
 
   # ── PII-1 — Direct person identifiers ──────────────────────────────────
   PII-1-NAME:

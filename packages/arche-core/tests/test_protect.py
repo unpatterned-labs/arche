@@ -82,8 +82,9 @@ def test_the_statute_decides_the_rendering_by_default():
 def test_a_method_overrides_the_rendering_not_the_finding(method, marker):
     safe = _deid(method=method)
     assert marker in safe.text
-    # The finding and the citation are still the statute's.
-    assert safe.count == 3
+    # The finding and the citation are still the statute's. Five: the NIN, the
+    # phone, the email and both words of "Casey Example" (found since 20 Nov 2026).
+    assert safe.count == 5
     assert all(d.regulatory_citation for d in safe.detections)
 
 
@@ -96,7 +97,7 @@ def test_an_unknown_method_is_refused():
 def test_the_repr_never_carries_the_text():
     safe = _deid()
     assert "Casey" not in repr(safe) and "12345678901" not in repr(safe)
-    assert "count=3" in repr(safe)
+    assert "count=5" in repr(safe)
 
 
 def test_spans_are_value_free():
@@ -189,7 +190,8 @@ def test_a_stored_redaction_is_explained_by_id(ledger):
     safe = _deid(store=ledger)
     why = ledger.explain(safe.decision_id)
     assert why["verb"] == "deidentify"
-    assert why["by_category"] == {"PII-2-NIN": 1, "PII-3-EMAIL": 1, "PII-3-PHONE": 1}
+    assert why["by_category"] == {"PII-1-NAME": 2, "PII-2-NIN": 1, "PII-3-EMAIL": 1,
+                                  "PII-3-PHONE": 1}
     assert any("NDPA-2023" in c for c in why["citations"])
     assert all("text" not in span for span in why["spans"])
 
@@ -271,7 +273,7 @@ def test_arche_redact_from_the_shell(tmp_path):
     text, _, rest = proc.stdout.partition("\n")
     assert "12345678901" not in text and "[NIN]" in text
     payload = json.loads(rest)
-    assert payload["count"] == 3 and payload["decision_id"].startswith("red:sha256:")
+    assert payload["count"] == 5 and payload["decision_id"].startswith("red:sha256:")
     assert all("text" not in s for s in payload["spans"])
 
 

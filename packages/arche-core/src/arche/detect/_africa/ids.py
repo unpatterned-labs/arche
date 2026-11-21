@@ -346,6 +346,8 @@ def detect_african_ids(text: str) -> list[NationalID]:
         "TZ_NIDA", "RW_NID", "EG_NID",
         "ZA_ID",  # 13 digits + Luhn — comes before shorter digit patterns
         "SN_CNI",
+        # Label-anchored digit patterns: the label is the evidence
+        "NG_NIN_LABELLED", "NG_BVN_LABELLED",
         # Constrained digit patterns (require specific prefix or length)
         "NG_BVN",  # 11 digits, must start with 22
         # Bare-digit patterns (most ambiguous, last)

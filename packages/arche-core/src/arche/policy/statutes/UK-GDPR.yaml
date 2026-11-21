@@ -57,6 +57,78 @@ data_subject_rights:  # UK GDPR Art 12–22
   - no_automated_decision
 
 policy_mappings:
+  PII-6-HEALTH:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-6-RELIGION:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-6-RACE:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-6-SEXUAL_ORIENTATION:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-6-POLITICAL_AFFILIATION:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-6-TRADE_UNION:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 9(1); DPA 2018 Sch 1"
+  PII-2-MRN:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1); UK GDPR Art 9(1); DPA 2018 Sch 1 (health data)"
+  PII-2-HEALTH_PLAN_ID:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1); UK GDPR Art 9(1); DPA 2018 Sch 1 (health data)"
+  PII-8-VEHICLE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1)"
+  PII-8-DEVICE_ID:
+    action: mask
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1) (online identifiers)"
+  PII-8-URL:
+    action: mask
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1)"
+  PII-8-URL_OTHER:
+    action: retain
+    tier: low
+    statute_reference: "UK GDPR Art 4(1)"
+    rationale: "A URL that names or identifies no one is not personal data; without this entry the pack default masked every link."
+  PII-1-DOB:
+    action: generalize
+    tier: moderate
+    statute_reference: "UK GDPR Art 4(1); Art 5(1)(c) (data minimisation)"
+    rationale: "A date of birth is reduced to its year (the over-89 birth year goes too)."
+  PII-1-DATE:
+    action: retain
+    tier: low
+    statute_reference: "UK GDPR Art 4(1)"
+    rationale: "A calendar date on its own is not personal data; without this entry the pack default masked every appointment and invoice date."
+  PII-1-AGE:
+    action: retain
+    tier: low
+    statute_reference: "UK GDPR Art 4(1)"
+  PII-2-NHS:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1); Art 9 where it reveals health-service contact"
+    rationale: "The NHS number is the consistent identifier for a person across health and care."
+  PII-2-PASSPORT:
+    action: mask
+    tier: high
+    statute_reference: "UK GDPR Art 4(1)"
   PII-1-NAME:
     action: tokenize
     tier: moderate
@@ -110,6 +182,11 @@ policy_mappings:
     action: drop
     tier: high
     statute_reference: "UK GDPR Art 4(1); PCI-DSS applies independently of data protection law"
+  PII-8-IP_ADDRESS:
+    action: generalize
+    tier: low
+    statute_reference: "UK GDPR Art 4(1) (online identifiers; Recital 30)"
+    rationale: "An IP address is an online identifier; truncate to /24 (IPv4) or /48 (IPv6), as the GDPR pack does. Without this entry it fell to the default, cited to Art 6."
   PII-5-CRYPTO_WALLET:
     action: mask
     tier: high

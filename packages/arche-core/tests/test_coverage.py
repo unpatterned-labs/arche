@@ -56,7 +56,14 @@ from arche.guard import EgressGuard, GuardDeniedError
 
 
 class TestTheReportedBug:
-    """British text, a British statute, and nothing removed."""
+    """British text, a statute that governs more than is installed, and nothing removed.
+
+    Since 20 Nov 2026 every category UK-GDPR maps has a rule detector (the GB
+    identifier pack, dates, special categories), so `Pipeline("GB")` reports
+    full coverage. The bug this class pins -- a text that comes back unchanged
+    looking clean -- is shown under GDPR, which also governs biometric
+    references and passwords that nothing installed can find.
+    """
 
     # The phone that was here ("tel 07700 900123") is detected since 20 Nov 2026 (UK numbers in
     # arche.detect.phones); the point of this class, that a British text with nothing the installed
@@ -65,7 +72,8 @@ class TestTheReportedBug:
 
     @pytest.fixture
     def projection(self):
-        return EgressGuard(Pipeline(jurisdiction="GB"), key="secret").guarded(self.TEXT)
+        return EgressGuard(Pipeline(jurisdiction="GB", statute="GDPR"),
+                           key="secret").guarded(self.TEXT)
 
     def test_the_text_still_comes_back_unchanged(self, projection):
         """The premise. Fixing this was never about detecting more."""
@@ -77,9 +85,9 @@ class TestTheReportedBug:
         assert projection.coverage["verdict"] == "partial"
 
     def test_and_it_names_what_it_cannot_find(self, projection):
-        """UK-GDPR governs a National Insurance number. Nothing installed
-        can find one, and that is now on the record rather than implied."""
-        assert "PII-2-NIN" in projection.coverage["uncovered"]
+        """GDPR governs biometric references. Nothing installed can find one,
+        and that is on the record rather than implied."""
+        assert "PII-6-BIOMETRIC" in projection.coverage["uncovered"]
 
     def test_the_note_is_actionable_rather_than_a_status_word(self, projection):
         note = projection.coverage["note"]
@@ -89,7 +97,7 @@ class TestTheReportedBug:
     def test_a_caller_reading_only_metadata_still_sees_it(self, projection):
         """The MCP handlers serialise `metadata` and drop the rest."""
         assert projection.metadata["coverage"] == "partial"
-        assert "PII-2-NIN" in projection.metadata["uncovered_categories"]
+        assert "PII-6-BIOMETRIC" in projection.metadata["uncovered_categories"]
 
 
 class TestItCannotOverstate:
@@ -154,8 +162,9 @@ class TestTheFifthTooth:
 class TestNigeriaIsPartialToo:
     """The honest half. This is not a report about foreigners.
 
-    NDPA-2023 governs health, religion, biometric and device categories that
-    arche ships no detector for. A report that said "full" for Nigeria and
+    NDPA-2023 governs biometric references, face templates and passwords that
+    arche ships no rule detector for (health and religion have cue-anchored
+    rules since 20 Nov 2026). A report that said "full" for Nigeria and
     "partial" for Britain would be flattering rather than true.
     """
 
@@ -167,7 +176,7 @@ class TestNigeriaIsPartialToo:
         assert report["verdict"] == "partial"
 
     @pytest.mark.parametrize("category", [
-        "PII-6-HEALTH", "PII-6-RELIGION", "PII-6-BIOMETRIC", "PII-8-PASSWORD",
+        "PII-7-FINGERPRINT_REF", "PII-7-FACE_TEMPLATE", "PII-6-BIOMETRIC", "PII-8-PASSWORD",
     ])
     def test_the_sensitive_categories_are_named_as_uncovered(self, report, category):
         assert category in report["uncovered"]

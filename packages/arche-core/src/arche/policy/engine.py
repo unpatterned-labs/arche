@@ -343,16 +343,33 @@ def _drop(category: str, original: str) -> str:
 _DATE_RE = re.compile(r"^(\d{4})[-/](\d{2})[-/](\d{2})$")
 
 
-def _generalize(category: str, original: str) -> str:
+def _generalize(category: str, original: str, metadata: dict | None = None) -> str:
     """Replace with a less-specific value.
 
     - Dates ``YYYY-MM-DD`` collapse to the year ``YYYY``.
     - IPv4 addresses (``a.b.c.d``) truncate to the /24 (``a.b.c.0/24``).
+    - US ZIP codes (``PII-4-ZIP``) keep their first three digits, or become
+      ``000`` where that three-digit area holds 20,000 or fewer people: the
+      HIPAA Safe Harbor rule, from a bundled table (``arche.detect.us.zip``).
     - Free-form addresses are not generalized here at the engine layer;
       ``arche.addr`` does jurisdiction-aware address generalization.
     Otherwise we return a category placeholder (same as ``mask``).
     """
     cleaned = original.strip()
+    if metadata:
+        if metadata.get("kind") == "age":
+            # 45 CFR 164.514(b)(2)(i)(C): only ages over 89 are aggregated.
+            return "90+" if metadata.get("over_89") else original
+        if metadata.get("year") is not None:
+            # Any date format keeps only its year; for someone over 89 even
+            # the birth year goes (aggregated to 90+).
+            if metadata.get("kind") == "dob" and metadata.get("over_89"):
+                return "[DOB 90+]"
+            return str(metadata["year"])
+    if category == "PII-4-ZIP":
+        from arche.detect.us.zip import safe_harbor_zip3
+
+        return safe_harbor_zip3(cleaned)
     m = _DATE_RE.match(cleaned)
     if m:
         return m.group(1)
@@ -371,6 +388,9 @@ def _retain(category: str, original: str) -> str:
     """Leave the span in place. No audit event."""
     return original
 
+
+#: Actions that keep the value: `method=` never turns them into a removal.
+_KEEPING_ACTIONS = frozenset({"retain", "audit"})
 
 _ACTION_HANDLERS = {
     "mask": _mask,
@@ -471,7 +491,11 @@ def apply_policy(
         category = getattr(det, detection_category_attr, None) or "PII-1-UNKNOWN"
         det_id = getattr(det, "id", None) or f"det:{start}:{end}"
         action, statute_ref, rationale = statute.action_for(category)
-        if action_override is not None:
+        # `method=` chooses HOW a removal is done, not WHETHER: a category the
+        # statute keeps (`retain`, `audit` -- a company number, a city) stays
+        # kept. Overriding those too masked `Company RC 1234567 in Kano` while
+        # still citing the provision that keeps it (20 Nov 2026 audit).
+        if action_override is not None and action not in _KEEPING_ACTIONS:
             action = action_override
         resolved.append(
             (start, end, original_index, category, det_id, action, statute_ref, rationale)
@@ -507,6 +531,15 @@ def apply_policy(
         handler = _ACTION_HANDLERS[action]
         if action == "tokenize":
             replacement = handler(category, original, salt=tokenize_salt)
+        elif action == "generalize":
+            # The widest member's metadata (a date's year, an age), but only
+            # when that detection IS the whole region: metadata describes its
+            # own span, not a merged one.
+            widest = max(g["members"], key=lambda r: (r[1] - r[0]))
+            meta = None
+            if (widest[0], widest[1]) == (g["start"], g["end"]):
+                meta = getattr(detections[widest[2]], "metadata", None)
+            replacement = _generalize(category, original, meta)
         else:
             replacement = handler(category, original)
         g["replacement"] = replacement

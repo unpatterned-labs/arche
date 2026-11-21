@@ -7,34 +7,44 @@
 # 18 handled AND no actual knowledge of residual re-identifiability. arche covers
 # the subset it can detect and states the rest openly below.
 #
-# ── 18-IDENTIFIER COVERAGE (detected / partial / not-detected) ────────────────
-#  1  Names ..................... detected   PII-1-NAME            -> mask
-#  2  Geo < state ............... partial    PII-4-ADDRESS/LOCATION-> generalize
-#                                            (generalised to city/region, not the
-#                                             3-digit-ZIP rule)
-#  3  Dates except year ......... partial    engine _generalize collapses
-#                                            YYYY-MM-DD -> YYYY, but there is no
-#                                            date PII CATEGORY detector; ages>89
-#                                            aggregation is NOT handled.
-#  4  Telephone numbers ......... detected   PII-3-PHONE           -> mask
-#  5  Fax numbers ............... not-detected (no fax detector)
-#  6  Email addresses ........... detected   PII-3-EMAIL           -> mask
-#  7  Social Security numbers ... not-detected (US SSN detector not shipped)
-#  8  Medical record numbers .... not-detected (detector-pending: PII-2-MRN)
-#  9  Health-plan beneficiary ... not-detected (detector-pending)
-# 10  Account numbers ........... partial    PII-5-BANK_ACCOUNT    -> mask
-# 11  Certificate/licence nums .. partial    PII-2-DRIVERS_LICENCE -> mask
-# 12  Vehicle identifiers ....... not-detected
-# 13  Device identifiers ........ partial    PII-8-DEVICE_ID       -> mask
-# 14  URLs ...................... detector-pending PII-8-URL       -> mask
-# 15  IP addresses .............. detected   PII-8-IP_ADDRESS      -> mask (removed,
-#                                            NOT merely generalised, per Safe Harbor)
-# 16  Biometric identifiers ..... detected   PII-6-BIOMETRIC /
-#                                            PII-7-FINGERPRINT_REF -> drop
-# 17  Full-face photos .......... detected   PII-7-FACE_TEMPLATE   -> drop
-# 18  Any other unique id ....... partial    PII-2-* national IDs  -> mask
+# ── 18-IDENTIFIER COVERAGE ────────────────────────────────────────────────────
+# The machine-readable version is `safe_harbor_identifiers` at the end of this
+# file, and `tests/test_statute_coverage.py` checks every claim in it against
+# the detectors that actually run for `Pipeline(jurisdiction="US",
+# statute="HIPAA-SAFE-HARBOR", backend="basic")`. Statuses:
+#   rules       a rule detector emits the category on the rules-only path
+#   model-only  only the GLiNER2-PII proposer emits it (backend="gliner2-pii")
+#   none        nothing in arche emits it; the mapping is for caller-supplied
+#               detections and for when a detector ships
 #
-# Detected/partial for ~10 of 18; the not-detected rows are the honest gap.
+#  1  Names ..................... rules       PII-1-NAME (lexicon; partial recall)
+#  2  Geo < state ............... rules       PII-4-ADDRESS, PII-4-LOCATION,
+#                                             PII-4-ZIP -> 3-digit-ZIP rule
+#  3  Dates except year; ages>89  rules       PII-1-DOB, PII-1-DATE, PII-1-AGE (any
+#                                             format to the year; ages >89 to 90+)
+#  4  Telephone numbers ......... rules       PII-3-PHONE (NANP + African plans)
+#  5  Fax numbers ............... rules       PII-3-PHONE (a fax is phone-shaped)
+#  6  Email addresses ........... rules       PII-3-EMAIL
+#  7  Social Security numbers ... rules       PII-2-SSN
+#  8  Medical record numbers .... rules       PII-2-MRN (after an MRN label)
+#  9  Health-plan beneficiary ... rules       PII-2-HEALTH_PLAN_ID (after a label)
+# 10  Account numbers ........... rules       PII-5-BANK_ACCOUNT, PII-5-CARD
+# 11  Certificate/licence nums .. model-only  PII-2-DRIVERS_LICENCE
+# 12  Vehicle identifiers ....... rules       PII-8-VEHICLE_ID (VIN check digit)
+# 13  Device identifiers ........ rules       PII-8-DEVICE_ID (labelled serial, IMEI)
+# 14  URLs ...................... rules       PII-8-URL, PII-8-URL_OTHER (every URL)
+# 15  IP addresses .............. rules       PII-8-IP_ADDRESS (removed, NOT
+#                                             merely generalised, per Safe Harbor)
+# 16  Biometric identifiers ..... none        PII-6-BIOMETRIC, PII-7-FINGERPRINT_REF
+# 17  Full-face photos .......... none        PII-7-FACE_TEMPLATE
+# 18  Any other unique id ....... rules       PII-2-ITIN, PII-2-EIN, PII-2-NPI
+#
+# Rules-only: 15 of 18 (1-10, 12-15, 18). With the model: 16 (adds 11).
+# Nothing in arche: 2 (16, 17).
+# "rules" is capability, not recall: names come from a lexicon and miss many.
+# Before November 2026 this table claimed 16 and 17 as "detected" and 4 as
+# "detected" for US numbers; no detector emitted those categories, and only
+# African numbering plans were matched. The rows marked none are the honest gap.
 # Source: https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html#safeharbor
 # Reference: https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164/subpart-E/section-164.514 
 
@@ -49,6 +59,50 @@ authority: "US HHS — HIPAA Privacy Rule, 45 CFR §164.514(b)(2)"
 breach_notification_window_hours: 1440  # Breach Notification Rule: no later than 60 days
 
 policy_mappings:
+  PII-6-RELIGION:
+    action: retain
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes identifiers, not the information they were attached to)"
+  PII-6-RACE:
+    action: retain
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes identifiers, not the information they were attached to)"
+  PII-6-SEXUAL_ORIENTATION:
+    action: retain
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes identifiers, not the information they were attached to)"
+  PII-6-POLITICAL_AFFILIATION:
+    action: retain
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes identifiers, not the information they were attached to)"
+  PII-6-TRADE_UNION:
+    action: retain
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes identifiers, not the information they were attached to)"
+  PII-2-MRN:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(H) (medical record numbers)"
+  PII-2-HEALTH_PLAN_ID:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(I) (health plan beneficiary numbers)"
+  PII-8-VEHICLE_ID:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(L) (vehicle identifiers and serial numbers)"
+  PII-8-URL_OTHER:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(N) (web URLs)"
+  PII-1-DATE:
+    action: generalize
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(C) (all date elements except year)"
+  PII-1-AGE:
+    action: generalize
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(C) (ages over 89 aggregated to 90 or older)"
 
   PII-1-NAME:
     action: mask
@@ -66,6 +120,21 @@ policy_mappings:
     action: generalize
     tier: low
     statute_reference: "45 CFR §164.514(b)(2)(i)(B)"
+  PII-4-ZIP:
+    action: generalize
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(B)"
+    rationale: "Identifier #2: the initial three digits of a ZIP are kept only where that three-digit area holds more than 20,000 people, otherwise written 000 (bundled HHS table, arche/_data/hipaa_restricted_zip3.csv)."
+
+  # Identifier #3. Proposed only by the model (backend="gliner2-pii"): no rule
+  # date detector ships, so on the rules-only path dates stay in clear.
+  # generalize keeps the year of an ISO date (1961-03-14 -> 1961) and masks any
+  # other format; ages over 89 are not aggregated.
+  PII-1-DOB:
+    action: generalize
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(C)"
+    rationale: "Identifier #3 (all elements of dates except year)."
 
   PII-3-PHONE:
     action: mask
@@ -124,7 +193,31 @@ policy_mappings:
     statute_reference: "45 CFR §164.514(b)(2)(i)(Q)"
     rationale: "Identifier #17 (full-face photographs and comparable images)."
 
+  PII-2-SSN:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(G)"
+    rationale: "Identifier #7 (Social Security numbers)."
+
+  # US identifiers treated as #18 (any other unique identifying number). An
+  # EIN can identify the individual's employer, which Safe Harbor also covers;
+  # an NPI identifies a provider, masked here as the conservative choice.
+  PII-2-ITIN:
+    action: mask
+    tier: high
+    statute_reference: "45 CFR §164.514(b)(2)(i)(R)"
+  PII-2-EIN:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(R)"
+  PII-2-NPI:
+    action: mask
+    tier: moderate
+    statute_reference: "45 CFR §164.514(b)(2)(i)(R)"
+
   # National IDs treated as identifier #18 (any other unique identifying number).
+  # African ID packs do not run for a US jurisdiction, so these apply only to
+  # caller-supplied detections or a Pipeline with an African jurisdiction.
   PII-2-NIN:
     action: mask
     tier: high
@@ -136,9 +229,10 @@ policy_mappings:
 
   # Health data itself is PHI — dropped in a de-identification workflow.
   PII-6-HEALTH:
-    action: drop
+    action: retain
     tier: high
-    statute_reference: "45 CFR §164.514(b) (PHI de-identification)"
+    statute_reference: "45 CFR §164.514(b)(2) (Safe Harbor removes the 18 identifiers; clinical content is what de-identified data keeps)"
+    rationale: "Safe Harbor de-identifies by removing identifiers, not the health information they were attached to; dropping diagnoses would gut every de-identified note under a citation that does not say that. Special-category handling for other jurisdictions belongs to GDPR, UK GDPR, POPIA and NDPA."
 
 # Any category not mapped is masked by default (safe for de-identification).
 default_action: mask
@@ -149,3 +243,34 @@ retention_limits:
 
 penalties:
   note: "HIPAA civil penalties tiered up to ~$1.9M per identical violation per year (informational only)."
+
+# The 18 Safe Harbor identifiers, each with the categories that carry it and
+# where those categories come from. Checked by tests/test_statute_coverage.py:
+# a `rules` row whose categories no rule detector emits fails, and so does a
+# `none` or `model-only` row once a rule detector ships for it.
+safe_harbor_identifiers:
+  - {n: 1, name: names, status: rules, categories: [PII-1-NAME]}
+  - {n: 2, name: geographic subdivisions smaller than a state, status: rules,
+     categories: [PII-4-ADDRESS, PII-4-LOCATION, PII-4-ZIP]}
+  - {n: 3, name: dates except year and ages over 89, status: rules,
+     categories: [PII-1-DOB, PII-1-DATE, PII-1-AGE]}
+  - {n: 4, name: telephone numbers, status: rules, categories: [PII-3-PHONE]}
+  - {n: 5, name: fax numbers, status: rules, categories: [PII-3-PHONE]}
+  - {n: 6, name: email addresses, status: rules, categories: [PII-3-EMAIL]}
+  - {n: 7, name: social security numbers, status: rules, categories: [PII-2-SSN]}
+  - {n: 8, name: medical record numbers, status: rules, categories: [PII-2-MRN]}
+  - {n: 9, name: health plan beneficiary numbers, status: rules,
+     categories: [PII-2-HEALTH_PLAN_ID]}
+  - {n: 10, name: account numbers, status: rules,
+     categories: [PII-5-BANK_ACCOUNT, PII-5-CARD]}
+  - {n: 11, name: certificate and license numbers, status: model-only,
+     categories: [PII-2-DRIVERS_LICENCE]}
+  - {n: 12, name: vehicle identifiers, status: rules, categories: [PII-8-VEHICLE_ID]}
+  - {n: 13, name: device identifiers, status: rules, categories: [PII-8-DEVICE_ID]}
+  - {n: 14, name: urls, status: rules, categories: [PII-8-URL, PII-8-URL_OTHER]}
+  - {n: 15, name: ip addresses, status: rules, categories: [PII-8-IP_ADDRESS]}
+  - {n: 16, name: biometric identifiers, status: none,
+     categories: [PII-6-BIOMETRIC, PII-7-FINGERPRINT_REF]}
+  - {n: 17, name: full-face photographs, status: none, categories: [PII-7-FACE_TEMPLATE]}
+  - {n: 18, name: any other unique identifying number, status: rules,
+     categories: [PII-2-ITIN, PII-2-EIN, PII-2-NPI]}

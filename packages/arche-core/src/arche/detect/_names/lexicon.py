@@ -25,6 +25,12 @@ Key capabilities:
 - Cross-ethnic variant recognition (e.g., Fulani Diallo = Jallow = Diaw)
 - Phonetic similarity via Jaro-Winkler distance
 - Optional lexicon-backed known-name coverage (from DataOps `african_names_*` exports)
+- ``common_names_v1.txt`` beside this module (loaded by :func:`load_common_names`):
+  the 3,000 commonest US Census 2010 surnames (US government work, public
+  domain) and the name tokens of ``datasets/data/wikidata_name_pairs.jsonl``
+  (Wikidata, CC0). Source, licence and rebuild notes are in the file header.
+  It is read by ``arche.detect.names`` only; ``KNOWN_AFRICAN_NAMES`` and the
+  equivalence matcher do not include it.
 """
 
 from __future__ import annotations
@@ -613,6 +619,23 @@ def _normalise_tokens_for_lookup(text: str) -> list[str]:
 
 KNOWN_AFRICAN_NAMES: set[str] = _build_known_name_lookup()
 """Known African name tokens from equivalence tables + optional lexicon."""
+
+
+def load_common_names() -> set[str]:
+    """Name tokens of ``common_names_v1.txt`` (US Census surnames, Wikidata pairs).
+
+    Provenance and licences are in the file header: US Census 2010 surnames
+    (public domain, 17 U.S.C. 105) and Wikidata name pairs (CC0 1.0).
+    """
+    path = Path(__file__).resolve().parent / "common_names_v1.txt"
+    if not path.is_file():
+        return set()
+    out: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith(("#", "[")):
+            out.add(line)
+    return out
 
 
 def normalize_african_name(name: str) -> str:

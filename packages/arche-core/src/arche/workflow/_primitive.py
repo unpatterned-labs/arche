@@ -258,8 +258,9 @@ class Pipeline:
         # `Pipeline(detectors=[...])` if you need the old output.
         cross_cutting = [
             "names", "locations", "emails", "ip", "digital_id", "addr", "core", "financial",
+            "dates", "special", "records",
         ]
-        if self.jurisdiction in {"NG", "KE", "ZA", "GH"}:
+        if self.jurisdiction in {"NG", "KE", "ZA", "GH", "US", "GB"}:
             return [self.jurisdiction.lower(), *cross_cutting]
         if self.jurisdiction is None or self.jurisdiction in self._AFRICAN_JURISDICTIONS:
             # Unspecified (back-compat) or another African jurisdiction: the
@@ -267,8 +268,8 @@ class Pipeline:
             return ["africa", *cross_cutting]
         # Explicit NON-African jurisdiction: cross-cutting ONLY. The African ID
         # pack must not run here — an 11-digit EU identifier would confidently
-        # mislabel as PII-2-NIN in a signed audit log. (EU/US ID detector packs
-        # are future work; add "emails" or other packs via detectors=.)
+        # mislabel as PII-2-NIN in a signed audit log. (The US has its own pack,
+        # above; EU ID packs are future work.)
         return list(cross_cutting)
 
     #: African ID packs, which must not run outside Africa.
@@ -517,6 +518,19 @@ class Pipeline:
             elif pkg == "gh":
                 from arche.detect.gh.ids import detect_ghanaian_ids
                 results.extend(detect_ghanaian_ids(text))
+            elif pkg == "us":
+                # SSN, ITIN, EIN, NPI (label-anchored where the digits alone are
+                # ambiguous) and ZIP codes after a state or "ZIP" (PII-4-ZIP).
+                # NANP phones ride the `core` package with the jurisdiction.
+                from arche.detect.us.ids import detect_us_ids
+                from arche.detect.us.zip import detect_us_zips
+                results.extend(detect_us_ids(text))
+                results.extend(detect_us_zips(text))
+            elif pkg == "gb":
+                # NHS (mod 11), NINO (HMRC prefix rules), DVLA licence (encoded
+                # DOB); passport, UTR and company number only after their labels.
+                from arche.detect.gb.ids import detect_gb_ids
+                results.extend(detect_gb_ids(text))
             elif pkg == "africa":
                 from arche.detect._africa.ids import detect_african_ids
                 results.extend(detect_african_ids(text))
@@ -584,6 +598,21 @@ class Pipeline:
                 except ImportError:
                     # arche.addr not installed; skip gracefully
                     pass
+            elif pkg == "dates":
+                # Dates, DOBs and stated ages (HIPAA identifier C). Numeric dates
+                # read M/D/Y for US, D/M/Y elsewhere; metadata carries y/m/d.
+                from arche.detect.dates import detect_dates
+                results.extend(detect_dates(text, self.jurisdiction))
+            elif pkg == "special":
+                # Special-category content (health, religion, race/ethnicity, sexual
+                # orientation, political, trade union): cue-anchored, precision first.
+                from arche.detect.special import detect_special_categories
+                results.extend(detect_special_categories(text))
+            elif pkg == "records":
+                # MRN, health-plan id, VIN, device id; URLs that name a person
+                # (PII-8-URL) apart from those that do not (PII-8-URL_OTHER).
+                from arche.detect.records import detect_record_ids
+                results.extend(detect_record_ids(text))
             elif pkg == "financial":
                 # IBANs (mod-97), cards (Luhn), sort codes and labelled account numbers: every
                 # statute pack governs PII-5-BANK_ACCOUNT and PII-5-CARD, and only a model
@@ -634,7 +663,9 @@ class Pipeline:
             # HUDUMA is the NIIMS number — Kenya's foundational identity under
             # the National Integrated Identity Management System, not a
             # sector-specific functional id like NHIF or a KRA PIN.
-            "NIN", "NATIONAL_ID", "GHANA_CARD", "HUDUMA"
+            "NIN", "NATIONAL_ID", "GHANA_CARD", "HUDUMA",
+            # The SSN is the de facto US national identifier.
+            "SSN",
         } else "functional"
         return Detection(
             # Detector-qualified id: span-only ids collide when two detectors

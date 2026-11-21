@@ -69,10 +69,12 @@ _IPV6_RE = re.compile(
     # generic leading-double-colon rule (treating 192 as hex) and the
     # `.0.2.1` suffix gets dropped.
     r"::[Ff]{4}:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-    r"|(?:[A-Fa-f0-9]{1,4}:){2,7}[A-Fa-f0-9]{1,4}"     # full or short
-    r"|(?:[A-Fa-f0-9]{1,4}:){1,6}:[A-Fa-f0-9]{1,4}"    # double-colon middle
-    r"|(?:[A-Fa-f0-9]{1,4}:){1,7}:"                     # trailing double-colon
-    r"|::(?:[A-Fa-f0-9]{1,4}:){0,6}[A-Fa-f0-9]{1,4}"   # leading double-colon
+    # Any run of hex groups and colons with at least two colons; validity is
+    # `ipaddress.IPv6Address`'s call. The previous "double-colon middle"
+    # branch allowed one group after `::`, so `2001:db8:85a3::8a2e:370:7334`
+    # and `fe80::1:2:3` were missed (20 Nov 2026). Times (`10:30:00`) and MAC
+    # addresses still fail the IPv6 check.
+    r"|(?:[A-Fa-f0-9]{0,4}:){2,7}[A-Fa-f0-9]{0,4}"
     r")"
     r"(?:%[A-Za-z0-9._-]+)?"  # optional zone identifier
     r"(?![\w:])"               # boundary: not followed by word char or colon
@@ -182,6 +184,10 @@ def detect_ipv6(text: str) -> list[Detection]:
         else:
             addr_str, zone = raw_with_zone, None
 
+        # A lone `::` (or `:::`) parses as the unspecified address but is
+        # almost never one in prose; an address carries at least one hex digit.
+        if not any(c.isalnum() for c in addr_str):
+            continue
         try:
             addr = ipaddress.IPv6Address(addr_str)
         except ipaddress.AddressValueError:

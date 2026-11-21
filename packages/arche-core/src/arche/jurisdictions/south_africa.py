@@ -30,7 +30,9 @@ Usage:
 from __future__ import annotations  # noqa: I001
 
 import re
+from typing import Any
 
+from ._admin import build, fold, strip_suffix
 from ._profile import JurisdictionProfileModel
 from .nigeria import ValidationResult
 
@@ -513,3 +515,56 @@ def detect_ids(text: str) -> list[ValidationResult]:
                 results.append(tax_result)
 
     return results
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADMIN PATH (province → district → local municipality → ward)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+#: Province names, codes and common spellings -> the Municipal Demarcation
+#: Board's province code. Keys are folded (`_admin.fold`).
+PROVINCES = {
+    "eastern cape": "EC", "ec": "EC",
+    "free state": "FS", "orange free state": "FS", "fs": "FS",
+    "gauteng": "GP", "gp": "GP", "gt": "GP",
+    "kwazulu natal": "KZN", "kwa zulu natal": "KZN", "kzn": "KZN", "natal": "KZN",
+    "limpopo": "LP", "lp": "LP", "lim": "LP",
+    "mpumalanga": "MP", "mp": "MP",
+    "north west": "NW", "northwest": "NW", "nw": "NW",
+    "northern cape": "NC", "nc": "NC",
+    "western cape": "WC", "wc": "WC",
+}
+#: An MDB code: a district (DC10), a metro (BUF, CPT, JHB), a local
+#: municipality (EC101, KZN225, GT421, LIM354), or an 8-digit ward id.
+_MDB_CODE = re.compile(r"^(?:[A-Za-z]{2,3}\d{0,3}|\d{8})$")
+_UNIT_WORDS = (" local municipality", " metropolitan municipality", " district municipality",
+               " metro municipality", " municipality", " metro", " district", " ward")
+
+
+def _unit(value: Any) -> str:
+    """A district, municipality or ward: its MDB code if it is one, else its name."""
+    raw = str(value or "").strip()
+    # A code has the MDB shape AND a digit or capitals only: `KZN225`, `DC10`,
+    # `BUF`. `Ilembe` and `eThekwini` have the shape of nothing but a name.
+    if _MDB_CODE.match(raw) and (any(c.isdigit() for c in raw) or raw.isupper()):
+        return raw.lower()
+    return strip_suffix(fold(raw), _UNIT_WORDS)
+
+
+def admin_path(province: Any = None, district: Any = None, municipality: Any = None,
+               ward: Any = None) -> dict[str, str]:
+    """``{"admin1": province, "admin2": district, "admin3": local municipality,
+    "admin4": ward}``, keyed on MDB codes where given.
+
+    Province names, codes and spellings map to the MDB code (``KwaZulu-Natal``,
+    ``KZN`` and ``Natal`` are one province). A district, municipality or ward
+    given as an MDB code (``DC10``, ``KZN225``, ``BUF``, ``79900001``) is kept
+    as the code, lower-cased; given as a name, it is folded and its unit word
+    dropped ("Local Municipality", "Metropolitan Municipality"). Names repeat
+    across provinces and codes do not, which is why containment walks from
+    the province down and why codes are preferred. Metros are both a district
+    and a municipality and carry the same code at both levels.
+    """
+    p = fold(province)
+    return build([("admin1", PROVINCES.get(p, p).lower()), ("admin2", _unit(district)),
+                  ("admin3", _unit(municipality)), ("admin4", _unit(ward))])

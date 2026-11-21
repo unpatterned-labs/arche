@@ -32,6 +32,10 @@ from arche.workflow._primitive import Detection
 
 _IBAN = re.compile(r"\b([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,4})?)\b")
 _CARD = re.compile(r"(?<![\d-])((?:\d[ -]?){12,18}\d)(?![\d-])")
+#: The word just before a number that makes it not a card.
+_NOT_A_CARD = re.compile(r"(?i)\b(?:order|invoice|inv|ref|reference|po|sku|model|imei|serial|"
+                         r"tracking|isbn)\b[^0-9\n]{0,15}$")
+_CARD_CUE = re.compile(r"(?i)\b(?:card|visa|mastercard|amex|credit|debit|pan)\b[^0-9\n]{0,20}$")
 _SORT_CODE = re.compile(r"(?i)\bsort[ -]?code\s*:?\s*(\d{2}[- ]?\d{2}[- ]?\d{2})\b")
 _ACCOUNT = re.compile(
     r"(?i)\b(?:account|acct|a/c|nuban)(?:\s+(?:no|number|num|#))?\.?\s*(?::|#|-)?\s*"
@@ -62,6 +66,31 @@ def luhn_valid(raw: str) -> bool:
                 d -= 9
         total += d
     return total % 10 == 0
+
+
+def card_shape(raw: str, before: str = "") -> bool:
+    """Luhn AND a card's issuer range and length, and no word saying otherwise.
+
+    Luhn alone made any 13-19 digit number a card: every South African ID (13
+    digits, Luhn-valid) was also a CARD and, under GDPR, dropped citing
+    PCI-DSS; `order 4000123412341234` and `IMEI 490154203237518` were cards
+    too (20 Nov 2026). Lengths and first digits by scheme: 16 or 19 starting
+    2-6 (Visa, Mastercard, Discover, UnionPay), 15 starting 34/37 (Amex), 14
+    starting 36/38 (Diners); 13 (legacy Visa) only after a card word.
+    """
+    digits = "".join(c for c in raw if c.isdigit())
+    if not luhn_valid(digits) or _NOT_A_CARD.search(before):
+        return False
+    n, head = len(digits), digits[:2]
+    if n in (16, 17, 18, 19):
+        return digits[0] in "23456"
+    if n == 15:
+        return head in ("34", "37")
+    if n == 14:
+        return head in ("36", "38")
+    if n == 13:
+        return digits[0] == "4" and bool(_CARD_CUE.search(before))
+    return False
 
 
 def _det(kind: str, category: str, m: re.Match[str], group: int, confidence: float,
@@ -103,7 +132,8 @@ def detect_financial(text: str) -> list[Detection]:
                             "rule:account_number"))
             taken.append(m.span(1))
     for m in _CARD.finditer(text):
-        if luhn_valid(m.group(1)) and free(*m.span(1)):
+        if card_shape(m.group(1), text[max(0, m.start(1) - 40):m.start(1)]) \
+                and free(*m.span(1)):
             out.append(_det("card", "PII-5-CARD", m, 1, 0.95, "rule:card_luhn"))
             taken.append(m.span(1))
     out.sort(key=lambda d: d.start)
@@ -117,4 +147,4 @@ ACCOUNT_CONTEXT = re.compile(
     r"(?:\s+(?:no|number|num|#))?\.?\s*(?::|#|-)?\s*$"
 )
 
-__all__ = ["ACCOUNT_CONTEXT", "detect_financial", "iban_valid", "luhn_valid"]
+__all__ = ["ACCOUNT_CONTEXT", "card_shape", "detect_financial", "iban_valid", "luhn_valid"]

@@ -56,6 +56,25 @@ def _validate_nin(text: str) -> tuple[bool, dict]:
     return True, {}
 
 
+def _validate_labelled_11(text: str) -> tuple[bool, dict]:
+    """Eleven digits after an explicit NIN/BVN label, separators allowed.
+
+    The label is the evidence, so no phone veto: `pls send ur nin 08724385469`
+    is a NIN although it starts like a mobile, and `NIN 4829 173 6451` is one
+    although it is spaced (found 20 Nov 2026; both leaked).
+    """
+    digits = re.sub(r"[\s-]", "", text)
+    return (len(digits) == 11 and digits.isdigit()), {}
+
+
+def _validate_labelled_bvn(text: str) -> tuple[bool, dict]:
+    return _validate_bvn(re.sub(r"[\s-]", "", text))
+
+
+#: "NIN", "NIN no", "NIN number:" ... then eleven digits, spaced or not.
+_LABELLED_11 = r"(?:\s*(?:no|number|num|#))?\.?\s*[:#-]?\s*((?:\d[ -]?){10}\d)(?![0-9])"
+
+
 def _validate_ng_tin(text: str) -> tuple[bool, dict]:
     """Nigerian TIN - FIRS-issued tax identification number.
 
@@ -107,6 +126,22 @@ _DOCUMENT_PREFIXES = frozenset({
 
 
 NG_PATTERNS: dict[str, dict] = {
+    "NG_NIN_LABELLED": {
+        "country": "NG",
+        "id_type": "NIN",
+        "description": "Nigeria NIN after an explicit NIN label; spaces or dashes allowed",
+        "pattern": re.compile(r"(?i)\bnin\b" + _LABELLED_11),
+        "validator": _validate_labelled_11,
+        "base_confidence": 0.90,  # the label is doing the work
+    },
+    "NG_BVN_LABELLED": {
+        "country": "NG",
+        "id_type": "BVN",
+        "description": "Nigeria BVN after an explicit BVN label; spaces or dashes allowed",
+        "pattern": re.compile(r"(?i)\bbvn\b" + _LABELLED_11),
+        "validator": _validate_labelled_bvn,
+        "base_confidence": 0.90,
+    },
     "NG_NIN": {
         "country": "NG",
         "id_type": "NIN",
@@ -202,7 +237,8 @@ def detect_nigerian_ids(text: str) -> list[NationalID]:
     # Process the more-specific patterns first so a BVN isn't double-counted
     # as a NIN, and the alphanumeric RC/DL/PVC patterns are tried before the
     # bare-digit NIN/BVN/TIN patterns.
-    for key in ("NG_RC", "NG_DRIVERS", "NG_PVC", "NG_BVN", "NG_TIN", "NG_NIN"):
+    for key in ("NG_RC", "NG_DRIVERS", "NG_PVC", "NG_NIN_LABELLED", "NG_BVN_LABELLED",
+                "NG_BVN", "NG_TIN", "NG_NIN"):
         spec = NG_PATTERNS[key]
         for m in spec["pattern"].finditer(text):
             span = (m.start(1), m.end(1))

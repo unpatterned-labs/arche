@@ -159,8 +159,9 @@ def test_every_mapped_category_is_one_a_statute_can_govern():
         governed |= set(load_statute(statute_id).policy_mappings)
     orphaned = sorted(set(CATEGORY_FOR_LABEL.values()) - governed)
     # A category no pack maps falls to the statute's default action. Naming
-    # the orphans here keeps that a known list rather than a surprise.
-    assert orphaned == ["PII-1-DOB"], orphaned
+    # the orphans here keeps that a known list rather than a surprise. (PII-1-DOB
+    # was the one orphan until HIPAA-SAFE-HARBOR mapped it as identifier #3.)
+    assert orphaned == [], orphaned
 
 
 # ---------------------------------------------------------------------------
