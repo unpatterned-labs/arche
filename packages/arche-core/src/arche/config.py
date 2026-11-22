@@ -57,6 +57,15 @@ class ArcheConfig:
     # receipt, because the two agree to about the fourth decimal, not exactly.
     # The PII model is span-architecture and stays on torch.
     gliner2_runtime: str = "torch"
+    # CPU threads torch may use while arche runs a model (GLiNER, encoders),
+    # restored afterwards. None = automatic: half the logical CPUs, at most 8,
+    # unless OMP_NUM_THREADS or MKL_NUM_THREADS is set (then torch is left
+    # alone). 0 = never touch torch's setting. Measured 21 Nov 2026 on a
+    # 16-thread WSL2 laptop, one setting per fresh process: masking one invoice
+    # 965 ms at torch's default (16) and 760 ms capped at 8; one encoder query
+    # 556 ms at the default and 6 ms capped. Speed only: outputs are
+    # identical, so it is never pinned.
+    torch_threads: int | None = None
 
     # Entity resolution
     similarity_threshold: float = 0.80
@@ -119,4 +128,9 @@ def configure(**kwargs: object) -> None:
             raise TypeError(f"configure({key}=...): expected bool, got {type(val).__name__}")
         if expected == "str" and not isinstance(val, str):
             raise TypeError(f"configure({key}=...): expected str, got {type(val).__name__}")
+    if "torch_threads" in kwargs:
+        val = kwargs["torch_threads"]
+        if val is not None and (isinstance(val, bool) or not isinstance(val, int) or val < 0):
+            raise TypeError("configure(torch_threads=...): expected None, 0 or a positive int, "
+                            f"got {val!r}")
     _config = replace(_config, **kwargs)

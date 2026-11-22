@@ -1,0 +1,106 @@
+{
+  "clarifications": [
+    {
+      "at": "2026-11-21T15:59:36+00:00",
+      "before_any_training_or_ranking": true,
+      "change": "hard negatives exclude names identical to the anchor (a dry check of the training data showed HFR duplicates of the anchor's own name being drawn as negatives)"
+    }
+  ],
+  "known_bias": "T1 pairs were proposed by the engine's own name step (favours TF-IDF); T2 is engine-independent but HFR is partly compiled from GRID3",
+  "labels": {
+    "different": 94,
+    "file": "data/review_packs/nigeria_facilities_2026-08-19/adjudication_pack_reviewed.csv",
+    "note": "includes 3 corrections made 2026-11-21 after a shared-source-id check",
+    "reviewer": "one (the maintainer)",
+    "same_entity": 86,
+    "sha256": "sha256:ec5823f97c0313d66d17130d18c2711c7cc5b7bfa753234c753ce7244a033ead"
+  },
+  "question": "Does an encoder trained on the GRID3-HFR crosswalk of other states, or a facility-type tier normalisation, retrieve better than character TF-IDF on Nigerian facilities?",
+  "rule": {
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "query"
+    },
+    "gallery": "every HFR facility name in the query's state (data/hfr_<state>.csv)",
+    "hypotheses": {
+      "H1_encoder_transfer": {
+        "arm": "fine_tuned:crosswalk (mean of seeds 0-2)",
+        "baseline": "tfidf_char3",
+        "shown": "on T2: mean gain@10 >= 2 points AND paired bootstrap 95% lower bound > 0; AND on T1: lower bound > -2 points (no harm)"
+      },
+      "H2_tier_normalisation": {
+        "arm": "tfidf_char3_tier",
+        "baseline": "tfidf_char3",
+        "shown": "same rule as H1"
+      },
+      "H3_union": {
+        "arm": "rrf(tfidf_char3_tier, fine_tuned:crosswalk seed0..2 mean of 3 runs), k=60",
+        "baseline": "tfidf_char3",
+        "shown": "same rule as H1"
+      }
+    },
+    "metric": "recall@10",
+    "query": "GRID3 facility_name",
+    "test_sets": {
+      "T1": "the 86 review-band pairs the maintainer marked same_entity (same labels file as the E0b transfer test)",
+      "T2": "every GRID3 v2 / HFR pair joined on globalid = global_id in Edo, Kano and Ondo whose names differ after case and space folding (independent of the engine)"
+    }
+  },
+  "rule_sha256": "sha256:5addfb3ecdec3aca40d75b07980566ff62ef1b7af6a79c4fc37c7d5d44ce8584",
+  "schema": "arche.e0c_facility_preregistration.v1",
+  "tier_map": {
+    "hospital": [
+      "specialist hospital",
+      "general hospital",
+      "cottage hospital",
+      "teaching hospital",
+      "hospital",
+      "medical centre",
+      "medical center"
+    ],
+    "primary": [
+      "primary health care centre",
+      "primary health care center",
+      "model primary health care centre",
+      "model primary health care center",
+      "comprehensive health centre",
+      "comprehensive health center",
+      "primary health centre",
+      "primary health center",
+      "basic health centre",
+      "basic health center",
+      "health centre",
+      "health center",
+      "health clinic",
+      "health post",
+      "dispensary",
+      "maternity",
+      "clinic",
+      "mphc",
+      "phc",
+      "bhc",
+      "chc"
+    ]
+  },
+  "tier_map_note": "fixed from type-word swaps in training-state crosswalk pairs only, before any test ranking; longest phrase first; the phrase is removed and its tier word appended",
+  "tier_map_sha256": "sha256:674e0fab478d5997bc33a5caa7698dc93d711aa42a0b38c9d6bdcb64fe0731ae",
+  "training": {
+    "base": "intfloat/multilingual-e5-small",
+    "config": "TrainConfig defaults (2 epochs, batch 64, lr 2e-5, temperature 0.05)",
+    "hard_negatives": "up to 3 HFR names in the same state and LGA, from the TF-IDF top 10 of the anchor, that are other facilities and whose folded name is neither the positive's nor the anchor's",
+    "hfr_source": {
+      "file": "~/.cache/arche/e0c/hfr_national.json",
+      "sha256": "a190e07a9427089100455e38a4108107c0211949790f8dd7ac92122bf0e6d097"
+    },
+    "pairs": "GRID3 facility_name -> HFR name where they differ after folding, plus HFR name -> HFR alternate_name where they differ",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "states": "the 34 GRID3 states other than Edo, Kano and Ondo (no test-state record is ever a positive or negative)"
+  },
+  "written_at": "2026-11-21T15:58:25+00:00",
+  "written_before_any_training_or_ranking": true
+}

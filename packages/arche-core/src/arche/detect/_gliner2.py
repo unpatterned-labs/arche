@@ -78,12 +78,13 @@ def propose(text: str, labels: list[str] | dict[str, str], *, model: str | None 
             include_confidence=True, include_spans=True,
         )
     else:
-        from arche._models import get_gliner2
+        from arche._models import get_gliner2, torch_threads
 
         extractor = get_gliner2(model)
-        result = extractor.extract_entities(
-            text, labels, threshold=threshold, include_confidence=True, include_spans=True,
-        )
+        with torch_threads():
+            result = extractor.extract_entities(
+                text, labels, threshold=threshold, include_confidence=True, include_spans=True,
+            )
     out: list[Span] = []
     for label, spans in (result or {}).get("entities", {}).items():
         for span in spans or []:

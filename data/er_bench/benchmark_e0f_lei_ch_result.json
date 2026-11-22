@@ -1,0 +1,106 @@
+{
+  "arms": {
+    "ch_trained:seed0": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.548,
+      "recall@10": 0.6172,
+      "recall@10_no_shared_word": 0.0469,
+      "recall@50": 0.6633
+    },
+    "ch_trained:seed1": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.5467,
+      "recall@10": 0.6142,
+      "recall@10_no_shared_word": 0.0531,
+      "recall@50": 0.6633
+    },
+    "ch_trained:seed2": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.5457,
+      "recall@10": 0.6178,
+      "recall@10_no_shared_word": 0.0406,
+      "recall@50": 0.6637
+    },
+    "lei_trained:seed0": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.5425,
+      "recall@10": 0.6112,
+      "recall@10_no_shared_word": 0.0563,
+      "recall@50": 0.6525
+    },
+    "lei_trained:seed1": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.545,
+      "recall@10": 0.612,
+      "recall@10_no_shared_word": 0.0531,
+      "recall@50": 0.6532
+    },
+    "lei_trained:seed2": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.5437,
+      "recall@10": 0.6105,
+      "recall@10_no_shared_word": 0.0594,
+      "recall@50": 0.6518
+    },
+    "rrf(tfidf, lei_trained:seed0)": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.555,
+      "recall@10": 0.6255,
+      "recall@10_no_shared_word": 0.0531,
+      "recall@50": 0.6727
+    },
+    "tfidf_char3": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.5375,
+      "recall@10": 0.6078,
+      "recall@10_no_shared_word": 0.025,
+      "recall@50": 0.653
+    },
+    "zero_shot:multilingual-e5-small": {
+      "no_shared_word_pairs": 320,
+      "recall@1": 0.554,
+      "recall@10": 0.6132,
+      "recall@10_no_shared_word": 0.0563,
+      "recall@50": 0.6522
+    }
+  },
+  "gains_vs_tfidf": {
+    "ch_trained": {
+      "bootstrap95": [
+        0.0008,
+        0.0163
+      ],
+      "gain@10": 0.0086
+    },
+    "lei_trained": {
+      "bootstrap95": [
+        -0.0043,
+        0.0113
+      ],
+      "gain@10": 0.0034
+    },
+    "rrf(tfidf, lei_trained:seed0)": {
+      "bootstrap95": [
+        0.012,
+        0.0235
+      ],
+      "gain@10": 0.0177
+    },
+    "zero_shot:multilingual-e5-small": {
+      "bootstrap95": [
+        -0.002,
+        0.013
+      ],
+      "gain@10": 0.0054
+    }
+  },
+  "gallery": 20000,
+  "preregistration_sha256": "sha256:10e7010ea08591652c383bdd8fff7a97fdaa97875b8fb72be18cb0e92cb1d44b",
+  "queries": 4000,
+  "schema": "arche.e0f_lei_ch.v1",
+  "seconds": 178.2,
+  "verdict": {
+    "no_harm": true,
+    "transfer_shown": false
+  }
+}

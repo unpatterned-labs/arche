@@ -1,0 +1,67 @@
+{
+  "build": {
+    "gallery": 20000,
+    "gallery_sha256": "sha256:d41370fc4e83a705cceb351d5eef5f683fcfae7cff78ba192e749085762d3e66",
+    "identical_share": 0.9587,
+    "in_e0d_or_e0e_lanes": 295,
+    "joined_usable": 97159,
+    "lei_ra000585_kept": 114235,
+    "names_differ": 4017,
+    "not_on_register": 16762,
+    "number_on_two_leis": 19,
+    "pairs_sha256": "sha256:fe4dda3aaa40e39126758fa544c6fbe488ad489cb7c4febc682cceca61c027c1",
+    "test_pairs": 4000
+  },
+  "code": {
+    "e0_retrieval.py": "sha256:5a456be74a1de471fe12e3e43283d34240f12cec06546bf5ebc6c34185b0ef3b",
+    "e0f_lei_ch.py": "sha256:ca1ffe275fc45c481231483e218eec866e05ce32cb18f73d9c53595cc4bc1f62"
+  },
+  "data": {
+    "ch_parquet_sha256": "7a3f250fd9b098d3b561a376a4c19e9d921f82ce48d0b82a577119949619b5c8",
+    "gallery_sha256": "sha256:d41370fc4e83a705cceb351d5eef5f683fcfae7cff78ba192e749085762d3e66",
+    "lei_zip_sha256": "7800144be5ef90922fd649c649358e7d786ce552d5a4db5e22c4db59910488a6",
+    "pairs_sha256": "sha256:fe4dda3aaa40e39126758fa544c6fbe488ad489cb7c4febc682cceca61c027c1"
+  },
+  "exclusions": "sole proprietors; ANNULLED and DUPLICATE registrations; company numbers carried by two LEIs (19 LEIs); the 4,000 lei_global entities of E0d and the 4,000 ch_gb companies of E0e (295 LEIs)",
+  "gallery": "the 4,000 targets plus 16,000 salted-hash random Companies House current names (live register, excluding test companies); 20,000 in all",
+  "known_ceiling": "an LEI legal name can be stale after a rename on the register; no string method retrieves those",
+  "link": "GLEIF registration authority RA000585 (Companies House, confirmed by an 85.3% join to the live register; 16,510 of the 16,762 unjoined LEIs are INACTIVE) entity id = Companies House CompanyNumber, zero-padded",
+  "models": {
+    "ch_trained": {
+      "seed0": "sha256:d81c05936c39bc0a74c06ac6d86b8271d08e1c6e2026dde7b57f047bc4ba8282",
+      "seed1": "sha256:2f9aac81a4e9df5e598a72b7c3046ba552e0e5c5784f27249d5deb6236d02f3b",
+      "seed2": "sha256:ccefd28ab48ec7d98f8a037a083d16a3318efd202437c197480fadbed0c542ca"
+    },
+    "lei_trained": {
+      "seed0": "sha256:ec03c85dfb1f25620fc4fe8fb957344b9cb2d8fb96d1a09e87128798262ca658",
+      "seed1": "sha256:6c6c25db907b8f416d6555c750cd50abd118d2734d74f5cfd0b4a84205d190fa",
+      "seed2": "sha256:4e52af1313f3a594d0799fed70ce7c5ab869ea037528c2b5863674722dfd7566"
+    }
+  },
+  "question": "Do encoders trained on LEI names retrieve a UK company's current Companies House name from its LEI legal name better than character TF-IDF?",
+  "rule": {
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "query (one per company)"
+    },
+    "primary": {
+      "arm": "lei_trained (E0d lei_global seeds 0-2, mean)",
+      "baseline": "tfidf_char3",
+      "k": 10,
+      "no_harm": "lower bound > -2 points",
+      "transfer_shown": "mean gain >= 2 points and paired query-bootstrap 95% lower bound > 0"
+    },
+    "secondary": [
+      "ch_trained (E0e ch_gb seeds 0-2) against tfidf_char3, same statistics",
+      "rrf(tfidf_char3, lei_trained seed0)",
+      "zero-shot multilingual-e5-small",
+      "recall@1, recall@50, recall@10 on pairs sharing no word"
+    ]
+  },
+  "rule_sha256": "sha256:0b24aebaf7aa88f49181c2c6ddf931a7b863361f9d3ca31f1c9ebd89053706a0",
+  "schema": "arche.e0f_lei_ch_preregistration.v1",
+  "test_set": "pairs whose names differ after case and space folding (4,017 of 97,159; 95.87% identical), salted-hash sample of 4,000; query = LEI legal name, target = Companies House name",
+  "written_at": "2026-11-21T21:36:44+00:00",
+  "written_before_any_ranking": true
+}

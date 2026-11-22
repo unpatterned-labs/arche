@@ -93,6 +93,15 @@ def _has_point(r: Mapping[str, Any]) -> bool:
         return False
 
 
+def records_release(records: Iterable[Mapping[str, Any]]) -> str:
+    """The content digest of a record list, independent of its order: what a
+    reference pins as its ``release`` when the caller names none."""
+    from arche.ids import canonical_json
+
+    body = canonical_json(sorted((dict(r) for r in records), key=lambda r: str(r["id"])))
+    return "sha256:" + hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
 class FileReference:
     """Records you hold, indexed for linking. Nothing is sent anywhere.
 
@@ -127,12 +136,7 @@ class FileReference:
                 raise ValueError(f"{name}: every reference record needs an id ({id_field!r})")
             row["id"] = str(row["id"])
             self._records.append(row)
-        if release is None:
-            from arche.ids import canonical_json
-
-            body = canonical_json(sorted(self._records, key=lambda r: r["id"]))
-            release = "sha256:" + hashlib.sha256(body.encode("utf-8")).hexdigest()
-        self._release = release
+        self._release = release or records_release(self._records)
         self._index: dict[str, list[int]] = {}
         for i, r in enumerate(self._records):
             for token in self._tokens(r):
@@ -261,4 +265,4 @@ def link(mentions: Sequence[Mapping[str, Any]], reference: Reference, *,
     return result
 
 
-__all__ = ["DEFAULT_QUERY_FIELDS", "FileReference", "Reference", "link"]
+__all__ = ["DEFAULT_QUERY_FIELDS", "FileReference", "Reference", "link", "records_release"]

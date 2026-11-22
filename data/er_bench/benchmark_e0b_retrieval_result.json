@@ -1,0 +1,456 @@
+{
+  "base": "intfloat/multilingual-e5-small",
+  "device": "cuda",
+  "lanes": {
+    "wikidata_ng": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12085,
+            "weights": "sha256:4e8ace6ee560de4696daf089895a3daeedefab0ed7eb9f15d1ad33e9f2f646b7"
+          },
+          "recall@1": 0.2134,
+          "recall@10": 0.6255,
+          "recall@10_zero_overlap": 0.2721,
+          "recall@5": 0.5625,
+          "recall@50": 0.7232,
+          "training": "sha256:0cbf1dc56687f61c03f29c3e0c0ef9670dc0560698c812e441e33b15e9dfc8b1",
+          "zero_overlap_pairs": 7436
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12085,
+            "weights": "sha256:b9c179958ced6e5ddcf0affc2c56d43124e194e80bd7c4f4fa4636a564d9c0d2"
+          },
+          "recall@1": 0.2134,
+          "recall@10": 0.623,
+          "recall@10_zero_overlap": 0.2686,
+          "recall@5": 0.5585,
+          "recall@50": 0.7215,
+          "training": "sha256:0cbf1dc56687f61c03f29c3e0c0ef9670dc0560698c812e441e33b15e9dfc8b1",
+          "zero_overlap_pairs": 7436
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12085,
+            "weights": "sha256:aff0e139d26d38a4ef990f16e7adbb9af725e9229e99aa7d1dc37662c536eaf8"
+          },
+          "recall@1": 0.2133,
+          "recall@10": 0.6249,
+          "recall@10_zero_overlap": 0.2708,
+          "recall@5": 0.5603,
+          "recall@50": 0.7214,
+          "training": "sha256:0cbf1dc56687f61c03f29c3e0c0ef9670dc0560698c812e441e33b15e9dfc8b1",
+          "zero_overlap_pairs": 7436
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.1976,
+          "recall@10": 0.5889,
+          "recall@10_zero_overlap": 0.2153,
+          "recall@5": 0.5077,
+          "recall@50": 0.7214,
+          "zero_overlap_pairs": 7436
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 12085,
+            "vocabulary": "sha256:f3b2abe753a62400704b6a35e76e294dfa88cca8979a505b1c0703112f765e4b"
+          },
+          "recall@1": 0.1779,
+          "recall@10": 0.4884,
+          "recall@10_zero_overlap": 0.1343,
+          "recall@5": 0.4323,
+          "recall@50": 0.5969,
+          "zero_overlap_pairs": 7436
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 18.8,
+          "recall": 0.5007
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12085,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.1665,
+          "recall@10": 0.4624,
+          "recall@10_zero_overlap": 0.138,
+          "recall@5": 0.4015,
+          "recall@50": 0.5712,
+          "zero_overlap_pairs": 7436
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 12085,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.1294,
+          "recall@10": 0.3523,
+          "recall@10_zero_overlap": 0.0636,
+          "recall@5": 0.3144,
+          "recall@50": 0.4302,
+          "zero_overlap_pairs": 7436
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          0.1207,
+          0.1514
+        ],
+        "bootstrap95_lower_at_50": 0.1116,
+        "checks": {
+          "bootstrap_lower>0": true,
+          "cpu_latency": true,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": true,
+          "model_size": true,
+          "zero_overlap_improves": true
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 6.0,
+          "p95_ms": 8.4,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.1371,
+          0.1346,
+          0.1365
+        ],
+        "mean_gain_at_10": 0.1361,
+        "verdict": "pass",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": 0.2705,
+          "tfidf": 0.1343
+        }
+      },
+      "gallery": 12085,
+      "note": "4000 of 9782 multi-name entities, <= 8 names each, salted-hash sample",
+      "queries": {
+        "dev": 5989,
+        "test": 6096
+      },
+      "sources": {
+        "ng_Q1033.csv": "sha256:a732e50fe71e3a8f761c2373dc9e46552bf1c28deeee37c62136a40a814752cf"
+      },
+      "training": {
+        "pairs": 16374,
+        "with_hard_negatives": 16353
+      }
+    },
+    "wikidata_wa": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12402,
+            "weights": "sha256:373dadbcb031e3d80abfd28d68457c081d8eb7b135a5b08f69cf432539fe3902"
+          },
+          "recall@1": 0.296,
+          "recall@10": 0.7935,
+          "recall@10_zero_overlap": 0.5926,
+          "recall@5": 0.7299,
+          "recall@50": 0.8673,
+          "training": "sha256:242df38df070a2be0450f2604de0d576dbf96426b86c97c27d71280db6602a09",
+          "zero_overlap_pairs": 8024
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12402,
+            "weights": "sha256:c0501e581a59118153137b581bc5af2a73e517cd77976b10d4538b86336d04e4"
+          },
+          "recall@1": 0.2958,
+          "recall@10": 0.7934,
+          "recall@10_zero_overlap": 0.5922,
+          "recall@5": 0.731,
+          "recall@50": 0.8677,
+          "training": "sha256:242df38df070a2be0450f2604de0d576dbf96426b86c97c27d71280db6602a09",
+          "zero_overlap_pairs": 8024
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12402,
+            "weights": "sha256:a2bae5098e52d0353fc44109ba395df8e47ff1a997046f9bd5dc32e43b591739"
+          },
+          "recall@1": 0.2954,
+          "recall@10": 0.7922,
+          "recall@10_zero_overlap": 0.5904,
+          "recall@5": 0.7293,
+          "recall@50": 0.869,
+          "training": "sha256:242df38df070a2be0450f2604de0d576dbf96426b86c97c27d71280db6602a09",
+          "zero_overlap_pairs": 8024
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.2739,
+          "recall@10": 0.7528,
+          "recall@10_zero_overlap": 0.5307,
+          "recall@5": 0.669,
+          "recall@50": 0.8647,
+          "zero_overlap_pairs": 8024
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 12402,
+            "vocabulary": "sha256:31f076d39dfbc3081e18230d707d67ee9895f966fcd2a907fed3b15988a14de5"
+          },
+          "recall@1": 0.2454,
+          "recall@10": 0.6376,
+          "recall@10_zero_overlap": 0.4004,
+          "recall@5": 0.5732,
+          "recall@50": 0.7508,
+          "zero_overlap_pairs": 8024
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 13.5,
+          "recall": 0.4987
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 12402,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.2651,
+          "recall@10": 0.6988,
+          "recall@10_zero_overlap": 0.4741,
+          "recall@5": 0.6311,
+          "recall@50": 0.7857,
+          "zero_overlap_pairs": 8024
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 12402,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.1884,
+          "recall@10": 0.5124,
+          "recall@10_zero_overlap": 0.2441,
+          "recall@5": 0.4595,
+          "recall@50": 0.5995,
+          "zero_overlap_pairs": 8024
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          0.1417,
+          0.17
+        ],
+        "bootstrap95_lower_at_50": 0.1047,
+        "checks": {
+          "bootstrap_lower>0": true,
+          "cpu_latency": true,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": true,
+          "model_size": true,
+          "zero_overlap_improves": true
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 7.2,
+          "p95_ms": 11.3,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.1559,
+          0.1558,
+          0.1547
+        ],
+        "mean_gain_at_10": 0.1555,
+        "verdict": "pass",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": 0.5917,
+          "tfidf": 0.4004
+        }
+      },
+      "gallery": 12402,
+      "note": "4000 of 19964 multi-name entities, <= 8 names each, salted-hash sample",
+      "queries": {
+        "dev": 6128,
+        "test": 6274
+      },
+      "sources": {
+        "wa_Q1006.csv": "sha256:55c2a6a4611da38577207b507f59aea25cd84b5a8ad8a272213ce63866f27405",
+        "wa_Q1008.csv": "sha256:c4bdb78aa692c391903848e9df7a05390cf2fbb4693406d7d479fc7956279b2e",
+        "wa_Q1009.csv": "sha256:31f88435b7468479cd4921998fd99130d3bfe9f2e438619e816b909186925141",
+        "wa_Q1032.csv": "sha256:3bac395591fbfa7519f50101f4478e3b8d2517668be2c739a6bcb5369974f43f",
+        "wa_Q1041.csv": "sha256:5d81b5316542099a6abb9980c2d57d6b45434a8e8712a13ffdeaa1fc1143f2c8",
+        "wa_Q117.csv": "sha256:0f74dc0812aa4ec6b747677916f19059f617aa9b2777ff4ca2a9ee439d2cdf49",
+        "wa_Q912.csv": "sha256:45382dc799161a2b656a3886910189c43effb49d77a8ee4c557ecde8bcdbb50d",
+        "wa_Q945.csv": "sha256:0d6addc1d060d82b57f0fb6cba7c161d4634bd5b896148811ac4a9fee9545762",
+        "wa_Q962.csv": "sha256:c04b2bf0266c209eb4848b072c0b851cf5224bc24e04f45c94a3e41f0da6082f"
+      },
+      "training": {
+        "pairs": 17044,
+        "with_hard_negatives": 16983
+      }
+    }
+  },
+  "pass_rule": {
+    "bootstrap": 2000,
+    "bootstrap_lower_gt": 0.0,
+    "cpu_p95_ms_max": 50.0,
+    "k": 10,
+    "k50_lower_gt": -0.01,
+    "min_mean_gain": 0.02,
+    "model_mb_max": 500.0,
+    "zero_overlap_must_improve": true
+  },
+  "post_hoc": {
+    "decided_after_results": true,
+    "part_of_verdict": false,
+    "reading": "The gain is spread across acronyms, names that share a token but are outranked by template words (language, dialect, district, federal constituency), and names that share none. It is not one artefact. It is also Wikidata's naming conventions learned from Wikidata: transfer to facility records is not shown by this run.",
+    "script": "python data/scripts/e0b_retrieval.py --strata (added to the script after the verdict; the decision path is unchanged from the preregistered sha256)",
+    "strata": {
+      "wikidata_ng": {
+        "acronym": {
+          "fine_tuned_seed0@10": 0.319,
+          "gain_contribution_pt": 2.18,
+          "pairs": 1512,
+          "share": 0.089,
+          "tfidf@10": 0.076
+        },
+        "has_digit_code": {
+          "fine_tuned_seed0@10": 0.525,
+          "gain_contribution_pt": 0.89,
+          "pairs": 1802,
+          "share": 0.107,
+          "tfidf@10": 0.442
+        },
+        "no_shared_token": {
+          "fine_tuned_seed0@10": 0.287,
+          "gain_contribution_pt": 3.54,
+          "pairs": 4992,
+          "share": 0.295,
+          "tfidf@10": 0.167
+        },
+        "one_contains_other": {
+          "fine_tuned_seed0@10": 0.879,
+          "gain_contribution_pt": -0.03,
+          "pairs": 2316,
+          "share": 0.137,
+          "tfidf@10": 0.881
+        },
+        "punct_or_accent_only": {
+          "fine_tuned_seed0@10": 0.994,
+          "gain_contribution_pt": 0.0,
+          "pairs": 324,
+          "share": 0.019,
+          "tfidf@10": 0.994
+        },
+        "shared_token": {
+          "fine_tuned_seed0@10": 0.898,
+          "gain_contribution_pt": 7.11,
+          "pairs": 5958,
+          "share": 0.352,
+          "tfidf@10": 0.696
+        }
+      },
+      "wikidata_wa": {
+        "acronym": {
+          "fine_tuned_seed0@10": 0.434,
+          "gain_contribution_pt": 2.27,
+          "pairs": 1098,
+          "share": 0.064,
+          "tfidf@10": 0.08
+        },
+        "has_digit_code": {
+          "fine_tuned_seed0@10": 0.743,
+          "gain_contribution_pt": 0.78,
+          "pairs": 834,
+          "share": 0.049,
+          "tfidf@10": 0.584
+        },
+        "no_shared_token": {
+          "fine_tuned_seed0@10": 0.625,
+          "gain_contribution_pt": 6.68,
+          "pairs": 6400,
+          "share": 0.374,
+          "tfidf@10": 0.447
+        },
+        "one_contains_other": {
+          "fine_tuned_seed0@10": 0.941,
+          "gain_contribution_pt": -0.16,
+          "pairs": 1518,
+          "share": 0.089,
+          "tfidf@10": 0.959
+        },
+        "punct_or_accent_only": {
+          "fine_tuned_seed0@10": 1.0,
+          "gain_contribution_pt": 0.0,
+          "pairs": 640,
+          "share": 0.037,
+          "tfidf@10": 1.0
+        },
+        "shared_token": {
+          "fine_tuned_seed0@10": 0.968,
+          "gain_contribution_pt": 6.03,
+          "pairs": 6630,
+          "share": 0.387,
+          "tfidf@10": 0.812
+        }
+      }
+    },
+    "what": "test recall@10 by pair type, TF-IDF vs fine_tuned:seed0. Strata in order: has_digit_code (either name has a digit), acronym (either is 2-8 capitals), punct_or_accent_only, one_contains_other, shared_token, no_shared_token."
+  },
+  "preregistration_sha256": "sha256:5de93c153ad577656272076ec2388c26aede0e7aba3463df583bdbaa5cc794dd",
+  "schema": "arche.e0b_retrieval.v1",
+  "seconds": 907.6,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "torch": "2.11.0+cu128"
+}

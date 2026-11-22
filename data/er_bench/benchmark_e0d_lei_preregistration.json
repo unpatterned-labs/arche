@@ -1,0 +1,73 @@
+{
+  "admission": {
+    "lei_africa": 0.6122,
+    "lei_global": 0.675,
+    "rule": "dev TF-IDF char-3 recall@10 <= 0.92"
+  },
+  "arms": [
+    "union_blocker",
+    "tfidf_char3",
+    "zero_shot:multilingual-e5-small",
+    "zero_shot:paraphrase-multilingual-MiniLM-L12-v2",
+    "fine_tuned:seed0..2 (base intfloat/multilingual-e5-small, prefix 'query: ', TrainConfig defaults, epochs 2, hard negatives: up to 5 TF-IDF top-50 neighbours of dev entities)",
+    "rrf(tfidf, fine_tuned:seed0)"
+  ],
+  "base": "intfloat/multilingual-e5-small",
+  "candidates": [
+    "lei_global",
+    "lei_africa"
+  ],
+  "code": {
+    "e0_retrieval.py": "sha256:5a456be74a1de471fe12e3e43283d34240f12cec06546bf5ebc6c34185b0ef3b",
+    "e0b_retrieval.py": "sha256:32a4b6268d39b17e07056996a35380a81605e002aff33dcb672f4a9f934615f1",
+    "e0d_lei.py": "sha256:87f49f296aa00eb114ae061eac95b8ed8ae2f4979cd6c1a71cb18ef36b8ea8e6"
+  },
+  "data": {
+    "extract": "~/.cache/arche/lei/lei_names.jsonl.gz",
+    "extract_sha256": "sha256:38ab42b9602de8cb0534180d4cf9ea2ff88e619dc9d0e616235006373bcc2fef",
+    "source": "GLEIF LEI-CDF 3.1 Golden Copy, publish 2026-11-21 08:00 UTC, CC0 1.0",
+    "zip_sha256": "7800144be5ef90922fd649c649358e7d786ce552d5a4db5e22c4db59910488a6"
+  },
+  "exclusions": "SOLE_PROPRIETOR entities (people's names); registrations ANNULLED or DUPLICATE",
+  "follow_up_not_in_this_rule": "whether the lei_global model transfers to lei_africa",
+  "known_ceiling": "a previous legal name can share nothing with the current one (a rebrand); no string method can retrieve those, which lowers the ceiling for every arm equally",
+  "ks": [
+    1,
+    5,
+    10,
+    50
+  ],
+  "lanes_admitted": [
+    "lei_global",
+    "lei_africa"
+  ],
+  "lanes_rejected": [],
+  "pass_rule": {
+    "bootstrap": 2000,
+    "bootstrap_lower_gt": 0.0,
+    "cpu_p95_ms_max": 50.0,
+    "k": 10,
+    "k50_lower_gt": -0.01,
+    "min_mean_gain": 0.02,
+    "model_mb_max": 500.0,
+    "zero_overlap_must_improve": true
+  },
+  "pass_rule_sha256": "sha256:7ca08f9c978f978612aa4059dcc4f340df7432597574e07636f43182615248d3",
+  "pass_rule_unchanged_from_e0": true,
+  "question": "Does a fine-tuned encoder retrieve organisations by their registry-asserted other names (previous, trading, transliterated, other-language) better than character TF-IDF?",
+  "sampling": "lei_global: salted-hash sample of 4,000 of 504,350 entities outside Africa; lei_africa: all 2,053 African entities; <= 8 names per entity; names folded for de-duplication",
+  "schema": "arche.e0d_lei_preregistration.v1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "splits": {
+    "rule": "dev if int(sha256(lane + '\\0' + entity)[:8], 16) % 2 == 0 else test",
+    "same_as_e0": true,
+    "unit": "entity (Wikidata QID); every name of one item is in one split"
+  },
+  "why_e0d": "GLEIF publishes alias labels asserted by registration authorities; E0b's Wikidata lanes showed a large gain but did not transfer to facilities, so organisations get their own lane with their own data",
+  "written_at": "2026-11-21T16:55:57+00:00",
+  "written_before_test_was_read": true
+}

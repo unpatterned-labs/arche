@@ -1,0 +1,724 @@
+{
+  "addenda": [
+    {
+      "date": "2026-11-21",
+      "quiet_cpu": {
+        "abt_buy": {
+          "model_mb": 470.6,
+          "p50_ms": 6.9,
+          "p95_ms": 8.6,
+          "threads": 4
+        },
+        "dblp_acm": {
+          "model_mb": 470.6,
+          "p50_ms": 9.6,
+          "p95_ms": 13.2,
+          "threads": 4
+        },
+        "london": {
+          "model_mb": 470.6,
+          "p50_ms": 5.5,
+          "p95_ms": 7.1,
+          "threads": 4
+        },
+        "settlements": {
+          "model_mb": 470.6,
+          "p50_ms": 5.6,
+          "p95_ms": 7.0,
+          "threads": 4
+        }
+      },
+      "what": "cpu latency re-measured on a quiet machine",
+      "why": "The recorded london latency (p95 64.9 ms, check failed) was taken while another timing script ran on the same CPU. Re-measured alone with the same seed-0 model and settings it is p95 7.1 ms, which passes. No verdict changes: every lane fails on gain."
+    },
+    {
+      "date": "2026-11-21",
+      "what": "headroom",
+      "why": "No lane could pass the 2-point bar: TF-IDF recall@10 on the test split is 0.988 (settlements), 0.976 (london), 1.000 (dblp_acm) and 0.987 (abt_buy), so the largest possible gain is under 2 points everywhere. The result says these lanes are saturated for retrieval at k=10, not that a bi-encoder cannot help on harder data."
+    }
+  ],
+  "base": "intfloat/multilingual-e5-small",
+  "device": "cuda",
+  "lanes": {
+    "abt_buy": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 1092,
+            "weights": "sha256:957a5d3c9dc8418b78d7207a94812f6f4934060ed893cd45ec1a0d5871fd5462"
+          },
+          "recall@1": 0.8683,
+          "recall@10": 0.9907,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9814,
+          "recall@50": 0.9981,
+          "training": "sha256:e7971b917b93c1a90bc287ffe47e81db12b0632852bb91ab8c57556e7ef6b3a5",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 1092,
+            "weights": "sha256:8bc0476dd0fe1d69b8033a6e100d1bb92bd553dd426804036ad2481fc959bbf7"
+          },
+          "recall@1": 0.8683,
+          "recall@10": 0.9907,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9833,
+          "recall@50": 0.9981,
+          "training": "sha256:e7971b917b93c1a90bc287ffe47e81db12b0632852bb91ab8c57556e7ef6b3a5",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 1092,
+            "weights": "sha256:eeacc9a19f9f5923631644743939dea8a8cac6f5d1f19021502ead18342b5b69"
+          },
+          "recall@1": 0.872,
+          "recall@10": 0.9926,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9833,
+          "recall@50": 0.9981,
+          "training": "sha256:e7971b917b93c1a90bc287ffe47e81db12b0632852bb91ab8c57556e7ef6b3a5",
+          "zero_overlap_pairs": 0
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.8571,
+          "recall@10": 0.9907,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9777,
+          "recall@50": 1.0,
+          "zero_overlap_pairs": 0
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 1092,
+            "vocabulary": "sha256:92b68fe30d08e7fa67f44217f923bdefba35535a37d2d31d4a9dc444c082d963"
+          },
+          "recall@1": 0.8386,
+          "recall@10": 0.987,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9647,
+          "recall@50": 1.0,
+          "zero_overlap_pairs": 0
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 46.2,
+          "recall": 0.987
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 1092,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.8293,
+          "recall@10": 0.9907,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.974,
+          "recall@50": 0.9963,
+          "zero_overlap_pairs": 0
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 1092,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.5714,
+          "recall@10": 0.9239,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.8404,
+          "recall@50": 0.987,
+          "zero_overlap_pairs": 0
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          -0.0056,
+          0.0143
+        ],
+        "bootstrap95_lower_at_50": -0.0056,
+        "checks": {
+          "bootstrap_lower>0": false,
+          "cpu_latency": true,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": false,
+          "model_size": true,
+          "zero_overlap_improves": null
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 6.8,
+          "p95_ms": 8.5,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.0037,
+          0.0037,
+          0.0056
+        ],
+        "mean_gain_at_10": 0.0043,
+        "verdict": "fail",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": NaN,
+          "tfidf": NaN
+        }
+      },
+      "gallery": 1092,
+      "note": "",
+      "queries": {
+        "dev": 548,
+        "test": 533
+      },
+      "sources": {
+        "Abt.csv": "sha256:c249d5bfce0ce4a67719a6871006273d5c657a4a6d258e30203d2c9a5ccbf1d8",
+        "Buy.csv": "sha256:3fa3e1dabe5b12161536b5ab545138465db010163e3ead78166ac4ce76b7d345",
+        "abt_buy_perfectMapping.csv": "sha256:3cb650f5a37242526da708f395f3a7634b8813c0136a40f3a5f28a3c1471b01c"
+      },
+      "training": {
+        "pairs": 558,
+        "with_hard_negatives": 558
+      }
+    },
+    "dblp_acm": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 2616,
+            "weights": "sha256:8856275fc03686bd9b37eeeca2f5c233eb4d5eb346f016961675d7853f575110"
+          },
+          "recall@1": 0.9927,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9991,
+          "recall@50": 1.0,
+          "training": "sha256:d7c056508e0711322a000d1fa740032b83a2dc8996eb108a821b9132c69dd75f",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 2616,
+            "weights": "sha256:51d35111665381029b5b6a305f24d35a4af44d98e2b48a830dff3576ff31dd0f"
+          },
+          "recall@1": 0.9936,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9991,
+          "recall@50": 1.0,
+          "training": "sha256:d7c056508e0711322a000d1fa740032b83a2dc8996eb108a821b9132c69dd75f",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 2616,
+            "weights": "sha256:35321102bdf0b7cf0c9b5bd3e3d193294588c16e766c6b9f9f266886e8dd96ce"
+          },
+          "recall@1": 0.9945,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 1.0,
+          "recall@50": 1.0,
+          "training": "sha256:d7c056508e0711322a000d1fa740032b83a2dc8996eb108a821b9132c69dd75f",
+          "zero_overlap_pairs": 0
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.9909,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9991,
+          "recall@50": 1.0,
+          "zero_overlap_pairs": 0
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 2616,
+            "vocabulary": "sha256:47184dff7fe779cdc335769d53e81d9201e29faf528cf74d550e632a018f3fd6"
+          },
+          "recall@1": 0.9918,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9991,
+          "recall@50": 1.0,
+          "zero_overlap_pairs": 0
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 77.5,
+          "recall": 1.0
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 2616,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.9927,
+          "recall@10": 1.0,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9991,
+          "recall@50": 1.0,
+          "zero_overlap_pairs": 0
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 2616,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.9818,
+          "recall@10": 0.9954,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9918,
+          "recall@50": 0.9991,
+          "zero_overlap_pairs": 0
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          0.0,
+          0.0
+        ],
+        "bootstrap95_lower_at_50": 0.0,
+        "checks": {
+          "bootstrap_lower>0": false,
+          "cpu_latency": true,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": false,
+          "model_size": true,
+          "zero_overlap_improves": null
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 11.8,
+          "p95_ms": 32.8,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mean_gain_at_10": 0.0,
+        "verdict": "fail",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": NaN,
+          "tfidf": NaN
+        }
+      },
+      "gallery": 2616,
+      "note": "",
+      "queries": {
+        "dev": 1126,
+        "test": 1098
+      },
+      "sources": {
+        "ACM.csv": "sha256:572f5ae4d40f64b6b58d290aaf7a06c21ddce7c0cfc2853a1579d95bf7c20c47",
+        "DBLP-ACM_perfectMapping.csv": "sha256:f03c3610f3e32440fc9e4c936d14fedb9efb51195a3d536d30c97486a3f29001",
+        "DBLP2.csv": "sha256:1f77ff9b5a3ebe42642e8c700f855521dd9ad3c474c6d98ae7038964f7d83d0d"
+      },
+      "training": {
+        "pairs": 1126,
+        "with_hard_negatives": 1126
+      }
+    },
+    "london": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 273,
+            "weights": "sha256:ead71e75faf3da28cf70b2e496ba648a13d1b4d80a2f0f701884fea7891afbf8"
+          },
+          "recall@1": 0.9512,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "training": "sha256:eb6c85ab324bf00cb61cd4528b1c05a03eb9b14bfd6aaffa2f556f70ac4efc7e",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 273,
+            "weights": "sha256:3eefb8009ec62b1dca501941e407350e7501a45b729a4c622cd1c5b4bb976273"
+          },
+          "recall@1": 0.9512,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "training": "sha256:eb6c85ab324bf00cb61cd4528b1c05a03eb9b14bfd6aaffa2f556f70ac4efc7e",
+          "zero_overlap_pairs": 0
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 273,
+            "weights": "sha256:4f55b91f06c73dc5c9960a9225d952617db1d448145dedb95bed5fec7cbf1b3b"
+          },
+          "recall@1": 0.9512,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "training": "sha256:eb6c85ab324bf00cb61cd4528b1c05a03eb9b14bfd6aaffa2f556f70ac4efc7e",
+          "zero_overlap_pairs": 0
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.9268,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "zero_overlap_pairs": 0
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 273,
+            "vocabulary": "sha256:b2caf43e5356214834414c0590b441e032768836e804e717895e5d4e3de23a7f"
+          },
+          "recall@1": 0.9268,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "zero_overlap_pairs": 0
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 78.6,
+          "recall": 1.0
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 273,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.9512,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "zero_overlap_pairs": 0
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 273,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.9512,
+          "recall@10": 0.9756,
+          "recall@10_zero_overlap": NaN,
+          "recall@5": 0.9756,
+          "recall@50": 0.9756,
+          "zero_overlap_pairs": 0
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          0.0,
+          0.0
+        ],
+        "bootstrap95_lower_at_50": 0.0,
+        "checks": {
+          "bootstrap_lower>0": false,
+          "cpu_latency": false,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": false,
+          "model_size": true,
+          "zero_overlap_improves": null
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 24.5,
+          "p95_ms": 64.9,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mean_gain_at_10": 0.0,
+        "verdict": "fail",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": NaN,
+          "tfidf": NaN
+        }
+      },
+      "gallery": 273,
+      "note": "truth is recall-only: unlabelled pairs may be true",
+      "queries": {
+        "dev": 45,
+        "test": 41
+      },
+      "sources": {
+        "osm_london_hospitals.csv": "sha256:5d107e2a453e07b2b7817fba38e72d48b3d9877661a0e97f5d88c6f44de289d7",
+        "truth_pairs_london.csv": "sha256:0e316daa913c5a52407b9d65b496391403e91d6d13bb7dd638391bff9cf94665",
+        "wikidata_london_hospitals.csv": "sha256:6d8422dabaa0dae72da87bd2721051e69b38d654f37d63eb06cc61ae495a9398"
+      },
+      "training": {
+        "pairs": 45,
+        "with_hard_negatives": 45
+      }
+    },
+    "settlements": {
+      "arms": {
+        "fine_tuned:seed0": {
+          "pins": {
+            "encoder": "seed0",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 3054,
+            "weights": "sha256:3c8994b9007c2e8b7e21bd810427ae8c7456c107522fef80596547d1da759fa1"
+          },
+          "recall@1": 0.331,
+          "recall@10": 0.995,
+          "recall@10_zero_overlap": 0.9158,
+          "recall@5": 0.9825,
+          "recall@50": 0.9993,
+          "training": "sha256:c6570385bdfbd4bb9ed97713d573b438f5c585f15024f7861b0576e0e274a054",
+          "zero_overlap_pairs": 190
+        },
+        "fine_tuned:seed1": {
+          "pins": {
+            "encoder": "seed1",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 3054,
+            "weights": "sha256:32408a0f810a5e823c5b5fa3853ec1fc0316fd04c2daa3d796c562d692913d25"
+          },
+          "recall@1": 0.331,
+          "recall@10": 0.9959,
+          "recall@10_zero_overlap": 0.9421,
+          "recall@5": 0.9822,
+          "recall@50": 1.0,
+          "training": "sha256:c6570385bdfbd4bb9ed97713d573b438f5c585f15024f7861b0576e0e274a054",
+          "zero_overlap_pairs": 190
+        },
+        "fine_tuned:seed2": {
+          "pins": {
+            "encoder": "seed2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 3054,
+            "weights": "sha256:777b90df354fc835ea94055d445273b9f99b22e8846572eb1a276575cf9fc4b9"
+          },
+          "recall@1": 0.3308,
+          "recall@10": 0.9954,
+          "recall@10_zero_overlap": 0.9263,
+          "recall@5": 0.9831,
+          "recall@50": 0.9989,
+          "training": "sha256:c6570385bdfbd4bb9ed97713d573b438f5c585f15024f7861b0576e0e274a054",
+          "zero_overlap_pairs": 190
+        },
+        "rrf(tfidf, fine_tuned:seed0)": {
+          "recall@1": 0.3349,
+          "recall@10": 0.9961,
+          "recall@10_zero_overlap": 0.9105,
+          "recall@5": 0.9893,
+          "recall@50": 0.9995,
+          "zero_overlap_pairs": 190
+        },
+        "tfidf_char3": {
+          "pins": {
+            "n": 3,
+            "retriever": "tfidf-char",
+            "rows": 3054,
+            "vocabulary": "sha256:df51bc1be498fef9ebd0e8f5cbf72cc9a6e644941f85a78536ee40a27985d4d1"
+          },
+          "recall@1": 0.3271,
+          "recall@10": 0.9882,
+          "recall@10_zero_overlap": 0.8474,
+          "recall@5": 0.9718,
+          "recall@50": 0.9964,
+          "zero_overlap_pairs": 190
+        },
+        "union_blocker": {
+          "mean_candidates_per_query": 10.4,
+          "recall": 0.9964
+        },
+        "zero_shot:multilingual-e5-small": {
+          "pins": {
+            "encoder": "intfloat/multilingual-e5-small",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "query: ",
+            "retriever": "encoder",
+            "rows": 3054,
+            "weights": "sha256:c111805f9aef42ea0a0d0dd91c8a7dc3ad4c6953720fc41f1ca7054f829d7da0"
+          },
+          "recall@1": 0.3276,
+          "recall@10": 0.982,
+          "recall@10_zero_overlap": 0.8684,
+          "recall@5": 0.9597,
+          "recall@50": 0.9973,
+          "zero_overlap_pairs": 190
+        },
+        "zero_shot:paraphrase-multilingual-MiniLM-L12-v2": {
+          "pins": {
+            "encoder": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "max_length": 64,
+            "pooling": "mean",
+            "prefix": "",
+            "retriever": "encoder",
+            "rows": 3054,
+            "weights": "sha256:1927a088b831c4b24a5891fc34e3846bbf7605c27956bb437f6b7c7e8bd8a5b6"
+          },
+          "recall@1": 0.2631,
+          "recall@10": 0.7096,
+          "recall@10_zero_overlap": 0.5053,
+          "recall@5": 0.6572,
+          "recall@50": 0.7923,
+          "zero_overlap_pairs": 190
+        }
+      },
+      "decision": {
+        "bootstrap95_at_10": [
+          0.0005,
+          0.0145
+        ],
+        "bootstrap95_lower_at_50": -0.0007,
+        "checks": {
+          "bootstrap_lower>0": true,
+          "cpu_latency": true,
+          "k50_lower>-1pt": true,
+          "mean_gain>=2pt": false,
+          "model_size": true,
+          "zero_overlap_improves": true
+        },
+        "cpu": {
+          "model_mb": 470.6,
+          "p50_ms": 7.2,
+          "p95_ms": 11.7,
+          "threads": 4
+        },
+        "gain_per_seed": [
+          0.0068,
+          0.0077,
+          0.0073
+        ],
+        "mean_gain_at_10": 0.0073,
+        "verdict": "fail",
+        "zero_overlap_at_10": {
+          "fine_tuned_mean": 0.9281,
+          "tfidf": 0.8474
+        }
+      },
+      "gallery": 3054,
+      "note": "",
+      "queries": {
+        "dev": 1516,
+        "test": 1504
+      },
+      "sources": {
+        "combinedSettlements_perfectMatch.json": "sha256:3d851ff2861e8942ea6a2cf46ea6763299e77f2c27673e841b6f589579dfcd3d",
+        "settlements.json": "sha256:030e3a7ceebfba58c39513f3c3d61bc4a485d2dfe1582a8293cd1b74bcae8a5a"
+      },
+      "training": {
+        "pairs": 4386,
+        "with_hard_negatives": 4386
+      }
+    }
+  },
+  "not_run": {
+    "nigeria_facilities": "no adjudicated pairs yet"
+  },
+  "pass_rule": {
+    "bootstrap": 2000,
+    "bootstrap_lower_gt": 0.0,
+    "cpu_p95_ms_max": 50.0,
+    "k": 10,
+    "k50_lower_gt": -0.01,
+    "min_mean_gain": 0.02,
+    "model_mb_max": 500.0,
+    "zero_overlap_must_improve": true
+  },
+  "schema": "arche.e0_retrieval.v1",
+  "seconds": 269.3,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "torch": "2.11.0+cu128"
+}

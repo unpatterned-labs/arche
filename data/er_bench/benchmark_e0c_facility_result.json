@@ -1,0 +1,106 @@
+{
+  "models": "/home/dennis/.cache/arche/models/e0c/crosswalk",
+  "preregistration_sha256": "sha256:0ec25b92e88e2af90aa0415c6d688e9894c0941a28be603597e5a605876742d5",
+  "result": {
+    "T1": {
+      "H1_encoder_transfer": {
+        "bootstrap95": [
+          0.0116,
+          0.1163
+        ],
+        "gain@10": 0.0581,
+        "lost": 0,
+        "recall@10": 1.0,
+        "won": 5
+      },
+      "H2_tier_normalisation": {
+        "bootstrap95": [
+          -0.0581,
+          0.0581
+        ],
+        "gain@10": 0.0,
+        "lost": 3,
+        "recall@10": 0.9419,
+        "won": 3
+      },
+      "H3_union": {
+        "bootstrap95": [
+          0.0116,
+          0.093
+        ],
+        "gain@10": 0.0465,
+        "lost": 0,
+        "recall@10": 0.9884,
+        "won": 4
+      },
+      "encoder_seeds_recall@10": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "queries": 86,
+      "tfidf_char3": {
+        "recall@10": 0.9419
+      }
+    },
+    "T2": {
+      "H1_encoder_transfer": {
+        "bootstrap95": [
+          0.0115,
+          0.0293
+        ],
+        "gain@10": 0.0202,
+        "lost": 11,
+        "recall@10": 0.9896,
+        "won": 43
+      },
+      "H2_tier_normalisation": {
+        "bootstrap95": [
+          0.0045,
+          0.0217
+        ],
+        "gain@10": 0.0127,
+        "lost": 14,
+        "recall@10": 0.9822,
+        "won": 34
+      },
+      "H3_union": {
+        "bootstrap95": [
+          0.0164,
+          0.0329
+        ],
+        "gain@10": 0.0244,
+        "lost": 5,
+        "recall@10": 0.9938,
+        "won": 43
+      },
+      "encoder_seeds_recall@10": [
+        0.9892,
+        0.9892,
+        0.9904
+      ],
+      "queries": 1569,
+      "tfidf_char3": {
+        "recall@10": 0.9694
+      }
+    }
+  },
+  "schema": "arche.e0c_facility.v1",
+  "seconds": 455.3,
+  "training_pairs": 24882,
+  "training_pairs_with_hard_negatives": 24881,
+  "verdict": {
+    "H1_encoder_transfer": {
+      "T1_no_harm": true,
+      "shown": true
+    },
+    "H2_tier_normalisation": {
+      "T1_no_harm": false,
+      "shown": false
+    },
+    "H3_union": {
+      "T1_no_harm": true,
+      "shown": true
+    }
+  }
+}

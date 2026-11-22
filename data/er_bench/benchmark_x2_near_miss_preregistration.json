@@ -1,0 +1,46 @@
+{
+  "code": {
+    "build_near_miss_pack.py": "sha256:fe50f4140ecbf8e880e640eff7ffc41f0fa17c6de492f984e00aca0b960c28b5",
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x1_combiner.py": "sha256:e93303b8ca4c8bd89598b01ccf277cd6827a6831bb262a7d7cfac59b6ab0730c",
+    "x2_near_miss.py": "sha256:6f79a4bde289d86c7b047d736da40964db187290016666a495e84c70d93f4524"
+  },
+  "development_labels_sha256": "sha256:ec5823f97c0313d66d17130d18c2711c7cc5b7bfa753234c753ce7244a033ead",
+  "known_risks": [
+    "all near-miss pairs share an LGA, so LGA agreement cannot help there; the cross-encoder carries it",
+    "one reviewer",
+    "the reviewer sees the engine's 'different' on every near-miss row"
+  ],
+  "near_miss_construction": "for each GRID3 facility in Edo, Kano and Ondo (salted order), the HFR facility in the same LGA with the closest name under character TF-IDF (cosine >= 0.35), not surfaced by today's engine run with it, kept only if arche.compare calls it different; 80 per state; records of the 2026-08-19 pack and pairs of the X1 pack excluded (data/scripts/build_near_miss_pack.py)",
+  "question": "Do the X1 and X0 deciders keep false merges within bound when the test holds enough different pairs?",
+  "rule": {
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "pair"
+    },
+    "deciders": "unchanged: the X1 combiner refitted exactly as X1 fitted it (checked against X1's recorded weights) with its development thresholds; X0's cross-encoder with its recorded crosswalk thresholds",
+    "error_bound": "errors among auto-decided <= 3% and Wilson 95% upper bound <= 10%",
+    "false_merge_bound": "different pairs auto-matched / all different pairs <= 2% and Wilson 95% upper bound <= 5%",
+    "fewer_held": "coverage >= 0.20 and pair-bootstrap 95% lower bound >= 0.10",
+    "informative": "void unless the test holds at least 60 different pairs",
+    "pass": "informative, and every one of the 3 seeds meets fewer_held, error_bound and false_merge_bound",
+    "population": "the X1 pack's 272 labelled pairs together with the near-miss pack's pairs (data/review_packs/nigeria_facilities_nearmiss_2026-11-21, 240) marked same_entity or different; the near-miss labels are read once, after this file",
+    "reference": "match-everything is scored under the same rule; it must fail for the rule to mean anything",
+    "secondary": [
+      "the X1 and near-miss parts reported separately",
+      "per-seed AUC"
+    ]
+  },
+  "rule_sha256": "sha256:4e7da2cc7f4e7bc5a4fa1d9697b6a0b3d64d1f3c64abaa3d2e36a40b5a79d117",
+  "schema": "arche.x2_near_miss_preregistration.v1",
+  "test": {
+    "near_miss_pack_sha256": "sha256:704893e4290480b839df00836e63c99edc70d8f3ba69b9d7502fb5e5b04b6b90",
+    "x1_labels_sha256": "sha256:841f34ef603e065300fddb1968ed6608b9c438c3d98058144a620bdb6dfd90e4"
+  },
+  "why": "X1 passed on 264 same / 8 different, where match-everything also passed; that pack could not show false merges",
+  "written_at": "2026-11-21T21:47:02+00:00",
+  "written_before_near_miss_labels_existed": true,
+  "x0_result_sha256": "sha256:0272cd415b75edcfe0e42816f2956ffce427eb319ca120dc624c277621196bf4",
+  "x1_result_sha256": "sha256:32e0969fbd2ea04ffb07a0fcd86508566379369777aa1cefc9254c9b985b59ef"
+}

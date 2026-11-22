@@ -1,0 +1,240 @@
+{
+  "baseline_replication": {
+    "auto_match": 28,
+    "auto_reject": 6,
+    "coverage": 0.125,
+    "coverage_bootstrap95": [
+      0.0882,
+      0.1654
+    ],
+    "error_bound": false,
+    "error_rate": 0.0294,
+    "error_wilson95_upper": 0.1492,
+    "errors": 1,
+    "fewer_held": false,
+    "held": 238,
+    "review_auc": 0.9934,
+    "thresholds": {
+      "hi": 0.863372,
+      "lo": 0.032322
+    }
+  },
+  "gate_alone": {
+    "coverage": 0.0,
+    "held": 272
+  },
+  "labels_sha256": "sha256:841f34ef603e065300fddb1968ed6608b9c438c3d98058144a620bdb6dfd90e4",
+  "preregistration_sha256": "sha256:084d3a055753ba57021c945598cc5ac838f284c7609f97530abeebae625ff2e6",
+  "schema": "arche.x1_combiner.v1",
+  "seconds": 15.2,
+  "test": {
+    "by_state": {
+      "Edo": 15,
+      "Kano": 5,
+      "Ondo": 252
+    },
+    "pairs": 272,
+    "same_entity": 264
+  },
+  "verdict": {
+    "baseline_replication_pass": false,
+    "x0_replication_pass": true,
+    "x1_pass": true
+  },
+  "x0_replication": {
+    "seed0": {
+      "auto_match": 141,
+      "auto_reject": 10,
+      "coverage": 0.5551,
+      "coverage_bootstrap95": [
+        0.4963,
+        0.614
+      ],
+      "error_bound": true,
+      "error_rate": 0.0132,
+      "error_wilson95_upper": 0.047,
+      "errors": 2,
+      "fewer_held": true,
+      "held": 121,
+      "review_auc": 0.9957,
+      "thresholds": {
+        "hi": 0.809041,
+        "lo": 0.008512
+      }
+    },
+    "seed1": {
+      "auto_match": 111,
+      "auto_reject": 6,
+      "coverage": 0.4301,
+      "coverage_bootstrap95": [
+        0.3713,
+        0.489
+      ],
+      "error_bound": true,
+      "error_rate": 0.0085,
+      "error_wilson95_upper": 0.0468,
+      "errors": 1,
+      "fewer_held": true,
+      "held": 155,
+      "review_auc": 0.9962,
+      "thresholds": {
+        "hi": 0.901989,
+        "lo": 0.010436
+      }
+    },
+    "seed2": {
+      "auto_match": 140,
+      "auto_reject": 9,
+      "coverage": 0.5478,
+      "coverage_bootstrap95": [
+        0.489,
+        0.6066
+      ],
+      "error_bound": true,
+      "error_rate": 0.0134,
+      "error_wilson95_upper": 0.0476,
+      "errors": 2,
+      "fewer_held": true,
+      "held": 123,
+      "review_auc": 0.9962,
+      "thresholds": {
+        "hi": 0.849786,
+        "lo": 0.015023
+      }
+    }
+  },
+  "x1": {
+    "seed0": {
+      "auto_match": 127,
+      "auto_reject": 0,
+      "by_state": {
+        "Edo": {
+          "decided": 6,
+          "errors": 0,
+          "pairs": 15
+        },
+        "Kano": {
+          "decided": 5,
+          "errors": 0,
+          "pairs": 5
+        },
+        "Ondo": {
+          "decided": 116,
+          "errors": 0,
+          "pairs": 252
+        }
+      },
+      "coverage": 0.4669,
+      "coverage_bootstrap95": [
+        0.4081,
+        0.5257
+      ],
+      "error_bound": true,
+      "error_rate": 0.0,
+      "error_wilson95_upper": 0.0294,
+      "errors": 0,
+      "fewer_held": true,
+      "held": 145,
+      "review_auc": 0.9957,
+      "thresholds": {
+        "hi": 0.98513,
+        "lo": 0.055192
+      },
+      "weights": [
+        0.9234,
+        -0.0087,
+        0.9261,
+        0.0,
+        1.5203
+      ]
+    },
+    "seed1": {
+      "auto_match": 145,
+      "auto_reject": 0,
+      "by_state": {
+        "Edo": {
+          "decided": 10,
+          "errors": 0,
+          "pairs": 15
+        },
+        "Kano": {
+          "decided": 5,
+          "errors": 0,
+          "pairs": 5
+        },
+        "Ondo": {
+          "decided": 130,
+          "errors": 0,
+          "pairs": 252
+        }
+      },
+      "coverage": 0.5331,
+      "coverage_bootstrap95": [
+        0.4743,
+        0.5919
+      ],
+      "error_bound": true,
+      "error_rate": 0.0,
+      "error_wilson95_upper": 0.0258,
+      "errors": 0,
+      "fewer_held": true,
+      "held": 127,
+      "review_auc": 0.9962,
+      "thresholds": {
+        "hi": 0.983999,
+        "lo": 0.047303
+      },
+      "weights": [
+        0.9857,
+        -0.0121,
+        1.0895,
+        0.0,
+        1.4467
+      ]
+    },
+    "seed2": {
+      "auto_match": 133,
+      "auto_reject": 5,
+      "by_state": {
+        "Edo": {
+          "decided": 7,
+          "errors": 0,
+          "pairs": 15
+        },
+        "Kano": {
+          "decided": 5,
+          "errors": 0,
+          "pairs": 5
+        },
+        "Ondo": {
+          "decided": 126,
+          "errors": 1,
+          "pairs": 252
+        }
+      },
+      "coverage": 0.5074,
+      "coverage_bootstrap95": [
+        0.4449,
+        0.5662
+      ],
+      "error_bound": true,
+      "error_rate": 0.0072,
+      "error_wilson95_upper": 0.0399,
+      "errors": 1,
+      "fewer_held": true,
+      "held": 134,
+      "review_auc": 0.9962,
+      "thresholds": {
+        "hi": 0.985828,
+        "lo": 0.049282
+      },
+      "weights": [
+        0.9887,
+        0.0451,
+        1.2977,
+        0.0,
+        1.37
+      ]
+    }
+  }
+}

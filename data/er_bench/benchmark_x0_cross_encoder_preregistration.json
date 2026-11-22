@@ -1,0 +1,44 @@
+{
+  "arms": {
+    "cross_encoder": "intfloat/multilingual-e5-small with a one-logit head, sentence pair '<name> | <LGA>' each side, BCE, 1 epoch, lr 3e-5, batch 32, max_length 96, warmup 0.1, seeds 0-2, Platt-calibrated on the development slice",
+    "gate_alone": "the engine as is: holds all 180",
+    "logistic_baseline": "logistic regression on [TF-IDF char-3 cosine, E0c crosswalk encoder seed0 cosine] of the two names, fit on the training examples, Platt-free (its output is a probability), thresholds by the same rule"
+  },
+  "labels": {
+    "different": 94,
+    "file": "data/review_packs/nigeria_facilities_2026-08-19/adjudication_pack_reviewed.csv",
+    "note": "labels file re-saved 2026-11-21 with three corrections; digest is of the file used by the E0b transfer test, unchanged since",
+    "reviewer": "one (the maintainer)",
+    "same_entity": 86,
+    "sha256": "sha256:ec5823f97c0313d66d17130d18c2711c7cc5b7bfa753234c753ce7244a033ead"
+  },
+  "question": "Can a cross-encoder trained on the GRID3/HFR crosswalk of other states decide part of the Nigerian review band automatically, within an error bound?",
+  "rule": {
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "pair"
+    },
+    "decision": "auto-match if calibrated P >= hi, auto-reject if P <= lo, else held. hi = smallest threshold whose false-positive rate on the development slice is <= 1%; lo = largest threshold whose false-negative rate there is <= 1%",
+    "error_bound": "errors among auto-decided <= 3% and Wilson 95% upper bound <= 10%",
+    "fewer_held": "coverage (auto-decided / 180) >= 0.20 and pair-bootstrap 95% lower bound >= 0.10",
+    "latency": "CPU p95 per pair at 4 threads <= 50 ms",
+    "pass": "every one of the 3 seeds meets fewer_held and error_bound",
+    "population": "the 180 review-band pairs of data/review_packs/nigeria_facilities_2026-08-19 marked same_entity or different (86 / 94); used once, never for training, calibration or thresholds",
+    "secondary": [
+      "coverage minus the logistic baseline's coverage (same threshold procedure), paired bootstrap: 'worth its cost' if the lower bound > 0",
+      "pair AUC against TF-IDF cosine and the E0c encoder cosine, paired bootstrap",
+      "the LLM-judge arm and the cost comparison are deferred: they would send pairs to an outside service"
+    ]
+  },
+  "rule_sha256": "sha256:331e03470dd9f0633ff43d55991547ff43fdeffff75481fd16dda83281b75dfc",
+  "schema": "arche.x0_cross_encoder_preregistration.v1",
+  "training": {
+    "negatives": "per anchor, up to 3 HFR facilities in the same state and LGA from the TF-IDF top 10 of the GRID3 name, excluding the linked record and any whose folded name equals the GRID3 or linked HFR name",
+    "positives": "GRID3 globalid = HFR global_id pairs; all whose names differ after folding, plus a salted-hash 25% of those whose names are identical",
+    "split": "salted hash of GRID3 globalid: 90% training, 10% development (calibration and thresholds)",
+    "states": "the 34 GRID3 states other than Edo, Kano and Ondo"
+  },
+  "written_at": "2026-11-21T16:42:58+00:00",
+  "written_before_any_training_or_scoring": true
+}
