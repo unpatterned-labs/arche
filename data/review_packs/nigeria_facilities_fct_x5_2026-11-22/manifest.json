@@ -1,0 +1,30 @@
+{
+  "decision_ids_sha256": "4d66819a559a52954d9750f1312385e0f11179d031b81c5d2f3b941d2bce61ed",
+  "decisions": {
+    "review": 200
+  },
+  "review_fields": [
+    "review_outcome",
+    "reviewer",
+    "reviewed_at",
+    "reason"
+  ],
+  "review_outcomes": [
+    "same_entity",
+    "different",
+    "unresolved"
+  ],
+  "rows": 200,
+  "schema": "arche.facility_adjudication_pack.v1",
+  "sources": [
+    {
+      "decisions": {
+        "review": 200
+      },
+      "path": "adjudication_sample.csv",
+      "rows": 200,
+      "sha256": "4c92db3a74ed2748eab614625031bf32030e9e590a591777608d091dbcdca788",
+      "state": "FCT"
+    }
+  ]
+}

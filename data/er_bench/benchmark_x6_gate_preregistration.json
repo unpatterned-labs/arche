@@ -1,0 +1,115 @@
+{
+  "amendments": [],
+  "code": {
+    "build_x3_pack.py": "sha256:99bd322acd9e5de34b914bb6b7068e936d0b8fd9a0d0f2fc6f18b2c302104959",
+    "build_x4_pack.py": "sha256:201b2dfc1ac818997c5f42a3071f5a234f9ab1211fbd548abf0bbaa8edc815f5",
+    "build_x6_pack.py": "sha256:22474dfd4ea2ab70008423b964b398efd6f4b6c67759ffc47ac2be071b278b66",
+    "evaluate_facility_master.py": "sha256:a3cacac1356929076df186effc3b0c11dc459d820dac7b49575ecfaacf1f9766",
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x1_combiner.py": "sha256:e93303b8ca4c8bd89598b01ccf277cd6827a6831bb262a7d7cfac59b6ab0730c",
+    "x2_near_miss.py": "sha256:b6245ba17affbeae246154e42c867a498e63cee2e9f75e49cb9aa2e9bf214634",
+    "x3_level.py": "sha256:6d7c9935bbd4e65c589a392c0742316dd6dff40e2cbc104aeb1a9113924765b3",
+    "x4_lagos.py": "sha256:b89a21fdddfb4fae9962d365fd0af5d306cc71b282b3e0b3e6cd1879390ae830",
+    "x5_density.py": "sha256:48f9522e46d9634dc3ae13b64984d42b2caf745017bba637b232451f48b22777",
+    "x6_gate.py": "sha256:f71213af97bcbe89615fb351951d0d7f516da62e3670db1e4050b606cca07ce2"
+  },
+  "development_labels_sha256": {
+    "2026-08-19": "sha256:c66d10ddbe693f53814ab06d85f434e00968cb1d707050da6d418f3411c8e268",
+    "corrections": "sha256:ba1ffc629b69f307dd8fd5ce696924ce316f1887fef37fa02834ec13585fe642",
+    "near_miss": "sha256:d575f88c1cd0821e8140239fc1fe6bdb239955cb33d6c995d02a05db886b9617",
+    "x1": "sha256:01c396ae37190ddd0fcc7feb2bcd630678447593abcbbf56e875260db8b4ece7",
+    "x3": "sha256:08baf92bc1fbb28892c5917601d752c1a9e2ec4033e6fa485feed8a452b2a945",
+    "x4": "sha256:d87cdcca417936d102a06a2e3a711c83561cc548b5b7b42968f481023755ed5b",
+    "x5": "sha256:7871c23a97f6f867e08c45224f4e31c0a64d320ccb874facc10baf4a43270ded"
+  },
+  "environment": {
+    "device": "cuda",
+    "python": "~/.cache/arche-scratch/e0/bin/python",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "expectation": "the gate holds back much of Ibadan; coverage falls but stays above 0.20 and false merges stay in bound. Control alone may fail in Oyo as it did in Lagos",
+  "inputs": {
+    "engine_decisions": {
+      "match": 1281,
+      "review": 342
+    },
+    "engine_edges": "sha256:d6633e695d4c7f80d792db65d8372558248c0b03daa7dfba8d25cb0d73797bb5",
+    "grid3_v2": "sha256:0affbed54ecc15b62324e2442341bbb2860ffc982747c4a4f29a9c293f88ee5b",
+    "hfr_national_sha256": "sha256:a190e07a9427089100455e38a4108107c0211949790f8dd7ac92122bf0e6d097",
+    "hfr_oyo.csv": "sha256:7a1bee95a2d083d8df30d6b037d3904863ae494ad7ba79d87104c58e8f2c3518"
+  },
+  "known_risks": [
+    "one reviewer",
+    "shared source ids are shown to the reviewer",
+    "GATE_N was chosen on development labels that include Lagos, the case it was designed for; Oyo is its first independent test",
+    "the FCT label on Joefag Alheri Clinic and Maternity (its own twin, marked different) is kept as exported in development",
+    "the crowd count includes HFR duplicates of the facility itself, which inflates n slightly"
+  ],
+  "lga_aliases_sha256": "sha256:522268a4d8e8f8c5482108a72b8f044d549be9bce38391aece6fcaa22bdcb3f4",
+  "models": {
+    "seed0": "sha256:0926d40bac16d5df5f1d6c0be41431079219c0896c4b98ea6be85fbeab431cd9",
+    "seed1": "sha256:e158e6841d74a94cf056fbb1ef98f2329208e15c37a98b374e4286541fc12cfb",
+    "seed2": "sha256:f9066586b00be3366b229f825078976b99593981a547ac8c389f9fbf5245a20a"
+  },
+  "question": "With crowded neighbourhoods held back from auto-matching, does the pair decider keep errors and false merges in bound, and still settle enough pairs, in a dense held-out state (Oyo)?",
+  "rule": {
+    "arms": {
+      "control": "the same combiner without the gate; reported, not tested",
+      "gated": "the X5 control combiner [cross-encoder logit, log1p km, LGA agree through the alias table, coordinates missing]; a pair whose GRID3 point has more than 15 other HFR facilities within 2 km (HFR national coordinates, the pair's HFR record excluded) is never auto-matched, though it may still be auto-rejected",
+      "reference": "match-everything, scored under the same rule; it must fail"
+    },
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "pair"
+    },
+    "cross_encoder": "X0's recipe with Edo, Kano, Ondo, Lagos, FCT and Oyo held out; weights pinned below",
+    "development": "1,310 labelled pairs: X5's development labels with the X4 corrections file, and the FCT pack as exported (no relabel)",
+    "error_bound": "errors among auto-decided <= 3% and Wilson 95% upper bound <= 10%",
+    "false_merge_bound": "different pairs auto-matched / all different pairs <= 2% and Wilson 95% upper bound <= 5%",
+    "fewer_held": "coverage >= 0.20 and pair-bootstrap 95% lower bound >= 0.10",
+    "gate": "GATE_N = 15, fixed from development out-of-fold predictions before the Oyo pack was built: on 1,310 labels it leaves 1-2 of 6 out-of-fold false merges with X5's models, and out-of-fold coverage about 0.71 against 0.74-0.76 ungated",
+    "informative": "void unless the test holds at least 60 different pairs",
+    "pass": "informative, and every seed of the gated arm meets fewer_held, error_bound and false_merge_bound on the whole pack",
+    "population": "the X6 pack (data/review_packs/nigeria_facilities_oyo_x6_2026-11-22, 250 Oyo pairs: 150 review_band, 50 lookalike, 50 near_miss) marked same_entity or different; read once, after this file",
+    "review_band": "reported on its own: every seed of the gated arm meets fewer_held and error_bound on the review_band pairs",
+    "secondary": [
+      "control_pass",
+      "results by pair kind",
+      "share of test pairs gated",
+      "per seed AUC",
+      "crosswalk development AUC",
+      "development out-of-fold false merges, gated and ungated"
+    ],
+    "thresholds": "5-fold out-of-fold development predictions of the ungated combiner (x3_level.fit); the gate is applied after"
+  },
+  "rule_sha256": "sha256:7d69befaa087bc6ee632b4bd0f14320bc5e848dfa1e73b3cd5b2111c7aaa086c",
+  "schema": "arche.x6_gate_preregistration.v1",
+  "test": {
+    "blind": "the reviewer sees neither the engine's decision nor the pair's kind",
+    "construction": "data/scripts/build_x6_pack.py (build_x4_pack.py with STATE = 'Oyo', BAND 150, STRESS 50): 150 of the engine's 342 Oyo review pairs (one per GRID3 facility, salted-hash order), 50 lookalike and 50 near_miss; every row 'review', no score, kind kept out of the pack",
+    "kinds_sha256": "sha256:5a6ce31c9523a9969815a7a1ad02b4844c4f661b463cfb3afbbd7112db2fb7d8",
+    "pack_sha256": "sha256:a443d97ab683947109274d812b0c5fe779740c8ac2b90ef791f75b1a1a4b1a83"
+  },
+  "training": {
+    "seed0": [
+      0.21405
+    ],
+    "seed1": [
+      0.21435
+    ],
+    "seed2": [
+      0.21196
+    ]
+  },
+  "training_examples": {
+    "dev": 12725,
+    "dev_positive": 2316,
+    "train": 113344,
+    "train_positive": 20754
+  },
+  "why": "X5 density features failed in FCT (one false merge on two of three seeds); the control combiner passed. Five of its six development out-of-fold false merges are in Lagos. Oyo is the densest unlabelled state: median other HFR facilities within 2 km of a GRID3 point Lagos 40, Anambra 12, Oyo 11, FCT 3",
+  "written_at": "2026-11-22T17:43:24+00:00",
+  "written_before_test_labels_existed": true
+}

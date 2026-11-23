@@ -59,7 +59,7 @@ def false_merges(p: np.ndarray, y: np.ndarray, hi: float) -> dict[str, Any]:
             "wilson95_upper": round(x0.wilson_upper(fm, n_diff), 4)}
 
 
-def score(name: str, p: np.ndarray, y: np.ndarray, lo: float, hi: float, part: np.ndarray):
+def score(name: str, p: np.ndarray, lo: float, hi: float, y: np.ndarray, part: np.ndarray):
     res = x0.apply(p, y, lo, hi)
     res.pop("_decided")
     res["false_merges"] = false_merges(p, y, hi)
@@ -97,8 +97,14 @@ def main() -> None:
     x0r = json.loads(x1.X0_RESULT.read_text(encoding="utf-8"))
     started = time.time()
     labelled = bool(args.x1_labels and args.near_miss_labels)
-    if labelled and tr._sha(args.x1_labels) != prereg["test"]["x1_labels_sha256"]:
-        raise SystemExit("X1 labels changed since X1 was scored")
+    allowed = {prereg["test"]["x1_labels_sha256"]}
+    allowed |= {a["x1_labels_sha256"] for a in prereg.get("amendments", [])}
+    if labelled and tr._sha(args.x1_labels) not in allowed:
+        raise SystemExit("X1 labels are neither X1's nor an amended file")
+    if labelled:
+        named = {a.get("near_miss_labels_sha256") for a in prereg.get("amendments", [])}
+        if named - {None} and tr._sha(args.near_miss_labels) not in named:
+            raise SystemExit("near-miss labels differ from the file named in the amendment")
     a = read(args.x1_labels, True) if labelled else []
     b = read(args.near_miss_labels if labelled else NEAR_MISS_PACK, labelled)
     if labelled:
@@ -139,7 +145,7 @@ def main() -> None:
         result["x0_cross_encoder"][f"seed{seed}"] = score(f"X0 seed {seed}", *arm["x0"], y,
                                                           part)
     everything = np.ones(len(y))
-    result["match_everything"] = score("match everything", everything, y, -1.0, 0.5, part)
+    result["match_everything"] = score("match everything", everything, -1.0, 0.5, y, part)
     informative = n_diff >= MIN_DIFFERENT
     verdict = {"informative": informative,
                "x1_pass": informative and all(s["pass"] for s in

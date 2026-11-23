@@ -131,15 +131,14 @@ Look at the first line. The toy model put the general hospital above the dispens
 
 ## What this looked like on real data
 
-Two experiments, run with the same base model and the same rules. The rule, the data digests and the code digests were written down before each test split was read; the scripts and results are in `data/scripts/` and `data/er_bench/`.
+Two encoders from the same base model, one trained on Wikidata names of places and organisations in Nigeria, one on the GRID3/HFR crosswalk of 34 other Nigerian states, each searched against every HFR facility in three held-out states for the 1,569 crosswalk pairs there whose names differ:
 
-| Trained on | Tested on | TF-IDF recall@10 | Fine-tuned | Gain, 95% interval |
-|---|---|---:|---:|---:|
-| Wikidata names of places and organisations in Nigeria | 86 reviewed GRID3/HFR facility pairs | 0.942 | 0.857 | −8.5 points [−17.1, −0.4] |
-| GRID3/HFR crosswalk of 34 other states | the same 86 pairs | 0.942 | 1.000 | +5.8 [+1.2, +11.6] |
-| GRID3/HFR crosswalk of 34 other states | 1,569 crosswalk pairs in three held-out states | 0.969 | 0.990 | +2.0 [+1.2, +2.9] |
+| Trained on | TF-IDF recall@10 | Fine-tuned | Gain, 95% interval |
+|---|---:|---:|---:|
+| Wikidata names in Nigeria | 0.969 | 0.930 | −3.9 points [−5.4, −2.5] |
+| GRID3/HFR crosswalk of 34 other states | 0.969 | 0.990 | +2.0 [+1.2, +2.9] |
 
-The first model was good at Wikidata: on Wikidata's own test split it gained 13.6 points. On facilities it lost queries the baseline found, on names split or joined differently in the two registries and on names whose type word differed ("Health Post" in one, "Dispensary" in the other). The second model learned those conventions from facility names. Rule 5 is this table.
+The crosswalk result was preregistered; the Wikidata row was measured afterwards, on the same pairs. The first model was good at Wikidata: on Wikidata's own test split it gained 13.6 points. On facilities it lost queries the baseline found, on names split or joined differently in the two registries and on names whose type word differed ("Health Post" in one, "Dispensary" in the other). The second model learned those conventions from facility names. Rule 5 is this table. The scripts and results are in `data/scripts/` and `data/er_bench/`.
 
 Sources: GRID3 NGA Health Facilities v2.0, CIESIN, Columbia University (2024), CC BY 4.0, https://doi.org/10.7916/kv1n-0743; Nigeria Health Facility Registry via the Humanitarian Data Exchange, CC BY; Wikidata, CC0.
 

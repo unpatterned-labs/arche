@@ -1,4 +1,37 @@
 {
+  "amendments": [
+    {
+      "at": "2026-11-22T07:49:48+00:00",
+      "before_any_near_miss_label_read": true,
+      "change": "the X1 part of the test uses the recheck-corrected X1 labels: 36 suspect same_entity marks were rechecked with the GRID3 facility's own HFR record shown; 2 became different (262 same / 10 different)",
+      "code": {
+        "apply_recheck.py": "sha256:7d5e96b6c7ad86c94f55966fba91428f5ee0da90279b13a1c6f383a50c18a894",
+        "x2_near_miss.py": "sha256:3a54aa9b4577fb3e4c1a0b29eeb96cd1a538b7251a43e45da67510828ff7a26f"
+      },
+      "id": 1,
+      "known_risk": "the deciders were fitted on the 2026-08-19 labels, 33 of whose 86 same_entity marks the recheck reversed; X2 tests those deciders as fitted, so a failure may come from the training labels rather than the method",
+      "near_miss_labels_sha256": "sha256:d575f88c1cd0821e8140239fc1fe6bdb239955cb33d6c995d02a05db886b9617",
+      "recheck_labels_sha256": "sha256:73b65c79ceb8fae85997529080603d8d9c8729d1c8d3a58043c3062dbb3c2e95",
+      "unchanged": "rule (rule_sha256 still matches), deciders, development labels and thresholds",
+      "x1_labels": "data/review_packs/nigeria_facilities_x1_2026-11-21/adjudication_pack_corrected_reviewed.csv",
+      "x1_labels_sha256": "sha256:01c396ae37190ddd0fcc7feb2bcd630678447593abcbbf56e875260db8b4ece7"
+    }
+  ],
+  "clarifications": [
+    {
+      "at": "2026-11-22T05:15:51+00:00",
+      "before_any_near_miss_label": true,
+      "change": "e0c_facility.py now writes its model folder as '~/.cache/arche/models/e0c/crosswalk' instead of an absolute path (repository hygiene); no behaviour changed",
+      "e0c_facility.py_sha256": "sha256:b97cf4148f1c869787b59685d9d88d34d9375fdd0d2a0905efe863aba29ec099",
+      "pending": "the recheck pack (data/review_packs/nigeria_facilities_recheck_2026-11-22) may correct X1 labels; if so, an amendment naming the corrected labels file will be written before the near-miss labels are read"
+    },
+    {
+      "at": "2026-11-22T07:51:01+00:00",
+      "change": "score() took (p, y, lo, hi) while its callers passed (p, lo, hi, y); the first labelled run raised TypeError inside the first score() call, before any metric was computed or printed, and wrote nothing. The parameter order was fixed; no rule, decider or label changed",
+      "labels_already_loaded_by_crashed_run": true,
+      "x2_near_miss.py_sha256": "sha256:b6245ba17affbeae246154e42c867a498e63cee2e9f75e49cb9aa2e9bf214634"
+    }
+  ],
   "code": {
     "build_near_miss_pack.py": "sha256:fe50f4140ecbf8e880e640eff7ffc41f0fa17c6de492f984e00aca0b960c28b5",
     "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",

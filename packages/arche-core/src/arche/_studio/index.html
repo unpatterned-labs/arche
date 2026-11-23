@@ -121,7 +121,7 @@ table.grid th{position:sticky;top:0;background:var(--paper);z-index:2;padding:11
   cursor:pointer;user-select:none;box-shadow:inset 0 -1px 0 var(--rule);border-bottom:0}
 table.grid th:hover{color:var(--ink)}
 table.grid th .sort{color:var(--accent);font-family:var(--mono);font-size:9px;margin-left:5px}
-table.grid th+th,table.grid td+td{padding-left:24px}
+table.grid th+th,table.grid td+td{padding-left:18px}
 table.grid td{padding:9px 0;font-size:15px;white-space:nowrap;max-width:300px;
   overflow:hidden;text-overflow:ellipsis}
 table.grid td.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -327,7 +327,7 @@ textarea{font-size:16px;padding:14px;min-height:180px}.row{gap:10px;margin-top:2
 button.act{font-family:var(--serif);font-size:13px;letter-spacing:.01em;text-transform:none;border-radius:8px;background:var(--ink);border-color:var(--ink);color:var(--surface);padding:10px 14px;transition:transform .14s,background .14s,border-color .14s}
 button.act:hover{background:var(--ink-press);color:var(--surface);transform:translateY(-1px)}button.act.quiet{background:var(--surface);border-color:var(--rule);color:var(--ink)}button.act.quiet:hover{background:var(--code);border-color:var(--rule-strong)}
 .stat{font-family:var(--mono);font-size:11px}.dz{background:var(--surface);border:1px dashed var(--rule-strong);border-radius:10px;padding:22px}.passage,.doctext,.cres{border-radius:8px}
-.gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th{background:var(--surface)}
+.gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th:first-child,.gridwrap table.grid td:first-child{padding-left:16px}.gridwrap table.grid th:last-child,.gridwrap table.grid td:last-child{padding-right:16px}.gridwrap table.grid th{background:var(--surface)}
 .desk-grid{gap:42px}.desk-hero{padding:48px 0 38px;border-bottom:0}.desk-hero h2{font-family:var(--display);font-size:clamp(44px,5vw,74px);line-height:.98;max-width:12ch}.desk-hero .lede{max-width:58ch;margin-top:26px}
 .question-list{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}.question-list li{padding:22px 20px}.question-list li:hover{background:var(--hover)}.question-list strong{font-size:18px}.question-list span:last-of-type{font-size:14px}
 .case-rail{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:12px;margin-top:48px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.case-rail h3,.desk-section h3{font-size:12px;letter-spacing:.07em}.desk-section{padding:24px 0}.desk-section:first-child{padding-top:30px}
@@ -344,6 +344,57 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 .threat-case{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:20px;margin:20px 0}.threat-case h2{font-family:var(--display);font-size:30px;line-height:1.08;margin:0 0 9px;letter-spacing:-.025em}.threat-case p{margin:0;color:var(--muted);max-width:72ch}.threat-list{border-top:1px solid var(--rule);margin-top:24px}.threat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);padding:16px 0;text-align:left;color:var(--ink);cursor:pointer}.threat-row:hover,.threat-row[aria-selected=true]{background:var(--hover)}.threat-row[aria-selected=true]{box-shadow:inset 3px 0 0 var(--accent);padding-left:13px}.threat-row strong{display:block;font-size:16px;line-height:1.35}.threat-row small{display:block;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.5;margin-top:4px}.threat-outcome{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;align-self:start;white-space:nowrap}.threat-context{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin:16px 0 0}.threat-context p{font-size:13px}.threat-context b{display:block;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}.threat-relationship{border-bottom:1px solid var(--rule);padding:0 0 14px;margin:0 0 14px}.threat-relationship p{margin:0 0 6px}.threat-relationship small{font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--muted)}.d-not_linked{color:var(--no)}.vrule-not_linked{border-top-color:var(--no)!important}
 @media(max-width:980px){header{position:static}.split,#s-chat .split{grid-template-columns:1fr}.margin{position:static}.case-rail{margin-top:0}}
 @media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}.threat-row{grid-template-columns:1fr}.threat-context{grid-template-columns:1fr}}
+
+/* ── review queue: a bar, a progress line, a plain sentence about saving, and a
+   card per pair. The evidence sits beside the pair, not under it, so the call
+   buttons are on screen with the two records they decide. */
+.rv-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.rv-bar .searchbox{flex:1 1 220px;min-width:180px}
+.rv-who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);white-space:nowrap}
+.rv-who input{width:180px}
+.rv-status{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:center;margin:18px 0 10px}
+.rv-progress{display:flex;flex-direction:column;gap:6px}
+.rv-meter{display:block;height:6px;background:var(--code);border-radius:3px;overflow:hidden}
+.rv-meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .18s}
+.rv-save{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 16px}
+.rv-save p{margin:0;flex:1 1 320px;font-size:14px;line-height:1.5;color:var(--muted)}
+.rv-save p b{color:var(--ink)}
+#pnotes{margin:8px 0;font-size:13px;color:var(--muted)}#pnotes summary{cursor:pointer}
+.rv-hint{margin-top:10px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);border-radius:4px;padding:1px 5px;margin-left:4px;color:var(--muted);background:var(--surface)}
+.rv-dialog{width:min(1240px,94vw);max-height:92vh;border:1px solid var(--rule);border-radius:12px;padding:0;background:var(--paper);color:var(--ink)}
+.rv-dialog::backdrop{background:rgba(16,24,40,.38)}
+.rv-head{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--paper);z-index:1}
+.rv-body{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;padding:20px}
+.rv-side{border-left:1px solid var(--rule);padding-left:24px;font-size:14px}
+.rv-side .verdict{margin-top:0}
+.rv-pair{width:100%;border-collapse:collapse;font-size:16px}
+.rv-pair th,.rv-pair td{text-align:left;vertical-align:top;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule)}
+.rv-pair thead th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rv-pair tbody th{width:110px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.rv-pair td:nth-child(2),.rv-pair td:nth-child(3){width:38%}
+.rv-pair .rv-note{font-size:13px;color:var(--muted);white-space:nowrap}
+.tok-diff{text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:2px;text-underline-offset:3px}
+.rv-pair .mono{font-family:var(--mono);font-size:11px;word-break:break-all}
+.rv-link{margin:16px 0 4px;padding:14px 18px;background:var(--code);border:1px solid var(--rule);border-radius:10px}
+.rv-link p{margin:0}
+.rv-link-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px!important}
+.rv-link-name{font-size:17px;font-weight:600;color:var(--ink)}
+.rv-link-body{font-size:15px;color:var(--ink)}
+.rv-link-meta{font-size:14px;color:var(--muted);margin-top:2px!important}
+.rv-link-meta .mono{font-family:var(--mono);font-size:12px}
+.rv-link-guide{font-size:13px;color:var(--muted);margin-top:10px!important;padding-top:10px;border-top:1px solid var(--rule)}
+.rv-ids{margin-top:10px;font-size:13px}.rv-ids summary{cursor:pointer;color:var(--muted)}
+.rv-q{margin:22px 0 8px}
+.rv-call{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+button.act.rv-btn{padding:14px 12px;font-size:15px;background:var(--surface);color:var(--ink);border:1px solid var(--rule-strong,var(--rule))}
+button.act.rv-btn:hover{background:var(--ink);color:var(--surface)}
+button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+#b-same[aria-pressed=true]{background:var(--ok);border-color:var(--ok)}
+#b-diff[aria-pressed=true]{background:var(--no);border-color:var(--no)}
+.rv-main #reason{margin-top:12px}
+.rv-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
+@media(max-width:980px){.rv-body{grid-template-columns:1fr}.rv-side{border-left:0;padding-left:0;border-top:1px solid var(--rule);padding-top:16px}.rv-status{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -635,61 +686,69 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 
 <!-- ═══════════════════════════════════════════════════════════ REVIEW ══ -->
 <section id="s-review" hidden>
-  <div class="row tight">
+  <div class="rv-bar">
     <select id="pack" style="width:auto"></select>
     <select id="filter" style="width:auto">
       <option value="review" selected>Still needs a human</option>
       <option value="all">Everything</option>
       <option value="settled">Settled by a reviewer</option>
+      <option value="unresolved">Marked can't tell</option>
       <option value="match">Standing answer: match</option>
       <option value="no_match">Standing answer: no match</option>
       <option value="unmarked">Not yet marked</option>
     </select>
-    <input id="q" class="searchbox" placeholder="search any field">
+    <input id="q" class="searchbox" placeholder="search names, places, codes">
     <button class="act quiet" id="b-cols">Columns</button>
-    <span class="stat" id="pmeta"></span>
-    <span class="stat" id="marks"></span>
+    <label class="rv-who">Reviewing as <input id="reviewer" placeholder="your name" autocomplete="name"></label>
   </div>
 
-  <div id="pprob"></div>
+  <div class="rv-status">
+    <div class="rv-progress"><span class="rv-meter"><i id="rv-meter"></i></span><span class="stat" id="marks"></span></div>
+    <div class="rv-save">
+      <p><b>Your calls save on this machine as you make them.</b> Closing the tab loses nothing.
+        Export when you want to hand the work on: it writes your copy, with names, and a
+        masked copy that is safe to share.</p>
+      <button class="act" id="b-save">Export labelled copy</button>
+      <span class="stat" id="rv-export">Not exported yet.</span>
+    </div>
+  </div>
 
+  <details id="pnotes" hidden><summary>Notes on this pack</summary><div id="pprob"></div></details>
   <div class="cols" id="colpick"></div>
+  <p class="stat" id="pmeta"></p>
 
   <div class="gridwrap"><table class="grid">
     <thead><tr id="ghead"></tr></thead><tbody id="gbody"></tbody>
   </table></div>
+  <p class="dek rv-hint">Choose a row to open it. In the card: <b>1</b> same, <b>2</b> different, <b>3</b> can't tell, <b>j</b>/<b>k</b> next and previous, <b>Esc</b> to close.</p>
+  <div class="err" id="rerr"></div>
+</section>
 
-  <div class="split" style="margin-top:28px">
-    <div>
-      <div id="pairout"><p class="dek">Choose a row to see the pair and its evidence.</p></div>
-      <div id="revout"></div>
-      <div id="callbox" hidden>
-        <hr class="rule">
-        <p class="label">Your call</p>
-        <div class="row tight">
-          <button class="act quiet" id="b-same">Same entity</button>
-          <button class="act quiet" id="b-diff">Different</button>
-          <button class="act quiet" id="b-unres">Cannot tell</button>
-          <span class="keys"><b>1</b> <b>2</b> <b>3</b> to call it · <b>j</b> <b>k</b> to move</span>
-        </div>
-        <div class="pair" style="margin-top:22px;max-width:900px">
-          <div><p class="label">Reason</p><input id="reason" placeholder="what settled it, or what is missing"></div>
-          <div><p class="label">Reviewer</p><input id="reviewer" placeholder="your name"></div>
-        </div>
-        <div class="row"><button class="act" id="b-save">Save labelled copy</button></div>
-        <div class="err" id="rerr"></div>
+<dialog id="rv-dialog" class="rv-dialog" aria-label="Review a pair" tabindex="-1">
+  <div class="rv-head">
+    <span class="stat" id="rv-pos"></span>
+    <label class="rv-who">Reviewing as <input id="rv-name" placeholder="your name" autocomplete="name"></label>
+    <button class="act quiet" id="rv-close" type="button">Close <kbd>Esc</kbd></button>
+  </div>
+  <div class="rv-body">
+    <div class="rv-main">
+      <div id="pairout"></div>
+      <p class="label rv-q">Are these the same facility?</p>
+      <div class="rv-call">
+        <button class="act rv-btn" id="b-same" type="button">Same <kbd>1</kbd></button>
+        <button class="act rv-btn" id="b-diff" type="button">Different <kbd>2</kbd></button>
+        <button class="act rv-btn" id="b-unres" type="button">Can't tell <kbd>3</kbd></button>
+      </div>
+      <input id="reason" placeholder="Reason, optional: what settled it, or what is missing">
+      <div class="rv-nav">
+        <button class="act quiet" id="rv-prev" type="button">Previous <kbd>k</kbd></button>
+        <span class="stat" id="rv-said"></span>
+        <button class="act quiet" id="rv-next" type="button">Next <kbd>j</kbd></button>
       </div>
     </div>
-    <aside class="margin">
-      <p><b>Three refusals.</b></p>
-      <p>It will not overwrite the matcher's output. Saving writes a new
-        <span style="font-family:var(--mono);font-size:13px">_reviewed.csv</span> beside the pack.</p>
-      <p>It will not save anonymously. An unattributed adjudication cannot be audited.</p>
-      <p>It shows an integrity digest over the pack's decision ids, so a pack edited
-        between matching and reviewing gives itself away.</p>
-    </aside>
+    <aside class="rv-side"><p class="label">What the engine saw</p><div id="revout"></div></aside>
   </div>
-</section>
+</dialog>
 
 <!-- ══════════════════════════════════════════════════════════ COMPARE ══ -->
 <!-- ══════════════════════════════════════════════════════════ EXPLAIN ══ -->
@@ -852,10 +911,15 @@ async function loadPacks(){
 async function loadPack(){
   const id=$("#pack").value;if(!id)return;
   PACK=await(await fetch("/api/pack?id="+encodeURIComponent(id))).json();
+  TRAIL.length=0;AT=-1;
   if(PACK.error){$("#rerr").textContent=PACK.error;return;}
-  // Open on the columns a reviewer reads. Everything else is one click away.
-  HIDE=new Set(PACK.fields.filter(f=>/^(decision_id|evidence|reviewed_at|reviewer|reason)$/.test(f)));
-  SEL=null;$("#callbox").hidden=true;
+  // Open on the columns a reviewer reads: who, where, and what the engine said.
+  // Ids, codes, coordinates and the rest are one click away under Columns.
+  HIDE=new Set(PACK.fields.filter(f=>!/^(state|decision|score)$|_(name|admin_path)$/.test(f)
+    ||/_own_/.test(f)
+    // A blind pack has no scores; an empty column only pushes the rest off screen.
+    ||PACK.rows.every(r=>r[f]===""||r[f]==null)));
+  SEL=null;if($("#rv-dialog").open)$("#rv-dialog").close();
   // A pack that fails its own integrity check is still shown — refusing to
   // display it helps nobody — but the reviewer hears about it now rather than
   // after forty rows of work.
@@ -868,6 +932,9 @@ async function loadPack(){
         they carry will say so.`
     : (warn.length?warn.map(x=>esc(x.detail)).join(" "):"");
   $("#pprob").className=bad.length?"err":"stat";
+  // Problems stay in view; housekeeping notes fold away, because a reviewer
+  // reading a schema warning above the queue reads it as "something is broken".
+  $("#pnotes").hidden=!(bad.length||warn.length);$("#pnotes").open=!!bad.length;
   cols();await loadMarks();draw();homeSummary();
 }
 const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
@@ -885,7 +952,10 @@ function visible(){
     const ok=f==="all"?true
       :f==="unmarked"?!(M[r.decision_id]||r.review_outcome)
       :f==="settled"?settled(r)
-      :f==="review"?(r.decision==="review"&&!settled(r))
+      // "Can't tell" is an answer for now: it leaves this view (it is under its
+      // own filter), or the last few such pairs would cycle back forever.
+      :f==="review"?(r.decision!=="match"&&!settled(r)&&!cantTell(r))
+      :f==="unresolved"?cantTell(r)
       :effective(r)===f;
     if(!ok)return false;
     if(!q)return true;
@@ -910,6 +980,7 @@ function effective(r){
   return (PACK.outcome_decision||{})[o]||r.decision;
 }
 const settled=r=>{const o=M[r.decision_id]?.outcome||r.review_outcome||"";return o&&o!=="unresolved";};
+const cantTell=r=>(M[r.decision_id]?.outcome||r.review_outcome||"")==="unresolved";
 function sparkline(json){
   let ev={};try{ev=JSON.parse(json||"{}")}catch{}
   const ks=Object.keys(ev).filter(k=>typeof ev[k]==="number"&&!/distance/.test(k)).sort();
@@ -1100,45 +1171,157 @@ async function loadThreat(){
   })();
   return THREAT_LOADING;
 }
-function pick(id){
-  SEL=id;draw();$("#callbox").hidden=false;
+function pick(id,fromTrail=false){
+  SEL=id;draw();
   const r=PACK.rows.find(x=>x.decision_id===id);if(!r)return;
-  const[a,b]=PACK.sides;
-  const side=p=>PACK.fields.filter(f=>f.startsWith(p+"_"))
-    .map(f=>`<p class="kv"><b>${esc(f.slice(p.length+1))}</b>${esc(pretty(r[f]))||"&mdash;"}</p>`).join("");
-  $("#pairout").innerHTML=`<div class="pair" style="max-width:1150px">
-    <div><p class="label">${esc(a)}</p>${side(a)}</div>
-    <div><p class="label">${esc(b)}</p>${side(b)}</div></div>`;
+  if(!fromTrail&&TRAIL[AT]!==id){TRAIL.splice(AT+1);TRAIL.push(id);AT=TRAIL.length-1;}
+  const rows=visible(),at=rows.findIndex(x=>x.decision_id===id);
+  $("#rv-pos").textContent=at>=0?`Pair ${at+1} of ${rows.length} in this view`
+    :"A pair you already decided. Choose again to change it.";
+  $("#pairout").innerHTML=pairCard(r);
   let ev={};try{ev=JSON.parse(r.evidence||"{}")}catch{}
   $("#revout").innerHTML=panel({decision:r.decision,score:Number(r.score),evidence:ev,
     distinctive_max:r.distinctive_max?Number(r.distinctive_max):null,
     distinctive_floor:0.75,decision_id:r.decision_id,pins:{}});
   $("#reason").value=M[id]?.reason||r.reason||"";
+  const o=M[id]?.outcome||r.review_outcome||"";
+  $("#rv-said").innerHTML=o?`Your call: <b>${esc(o.replace("_"," "))}</b>`:"";
+  for(const [b,v] of [["b-same","same_entity"],["b-diff","different"],["b-unres","unresolved"]])
+    $("#"+b).setAttribute("aria-pressed",String(o===v));
+  if(!$("#rv-dialog").open){
+    $("#rv-dialog").showModal();
+    if(reviewerName())$("#rv-dialog").focus();else $("#rv-name").focus();
+  }
+  if(!reviewerName())$("#rv-said").innerHTML="Type your name in “Reviewing as” before your first call.";
+}
+// Words one side has and the other does not, so the eye goes to what differs.
+function diffWords(a,b){
+  const w=s=>String(s||"").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const other=new Set(w(b));
+  return esc(String(a||"")).replace(/[\p{L}\p{N}]+/gu,m=>other.has(m.toLowerCase())?m:`<u class="tok-diff">${m}</u>`);
+}
+const fold=s=>String(s||"").toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim();
+// 1 minus edit distance over the longer length: 0.89 for igueben / iguegben.
+function similar(a,b){
+  if(a===b)return 1;const m=a.length,n=b.length;if(!m||!n)return 0;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const cur=[i];
+    for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;}
+  return 1-prev[n]/Math.max(m,n);
+}
+function adminParts(v){try{return JSON.parse(String(v||"{}").replace(/'/g,'"'))}catch{return {}}}
+function where(r,p){
+  const lat=r[p+"_lat"],lon=r[p+"_lon"];
+  if(!lat||!lon)return "";
+  const map=`https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lon)}#map=17/${encodeURIComponent(lat)}/${encodeURIComponent(lon)}`;
+  return `<span class="mono">${esc(r[p+"_plus_code"]||"")}</span>`
+    +(r[p+"_h3"]?` <span class="stat" title="H3 cell, resolution 9">H3 ${esc(r[p+"_h3"])}</span>`:"")
+    +` <a href="${map}" target="_blank" rel="noopener noreferrer">map</a>`;
+}
+function pairCard(r){
+  const[a,b]=PACK.sides;
+  const suffixes=new Set();
+  for(const f of PACK.fields)for(const s of[a,b])
+    if(f.startsWith(s+"_")&&!f.startsWith(a+"_own_"))suffixes.add(f.slice(s.length+1));
+  const skip=/^(id|code|uuid|lat|lon|h3|plus_code|h3_steps|km_from_.*|km_to_.*)$/;
+  const order=["name","admin_path"];
+  const rest=[...suffixes].filter(s=>!skip.test(s)&&!order.includes(s)).sort();
+  const row=(label,x,y,note="")=>`<tr><th>${esc(label)}</th><td>${x||"&mdash;"}</td><td>${y||"&mdash;"}</td><td class="rv-note">${note}</td></tr>`;
+  let html=`<table class="rv-pair"><thead><tr><th></th><th>${esc(a)}</th><th>${esc(b)}</th><th></th></tr></thead><tbody>`;
+  html+=row("Name",diffWords(r[a+"_name"],r[b+"_name"]),diffWords(r[b+"_name"],r[a+"_name"]),
+    fold(r[a+"_name"])===fold(r[b+"_name"])?"identical":"");
+  const pa=adminParts(r[a+"_admin_path"]),pb=adminParts(r[b+"_admin_path"]);
+  let lga="";
+  if(pa.admin2&&pb.admin2){
+    const x=fold(pa.admin2),y=fold(pb.admin2);
+    lga=x===y?"same LGA":similar(x,y)>=0.8?"same LGA,<br>spelt differently":"<b>different LGA</b>";
+  }
+  html+=row("Where",esc(pretty(r[a+"_admin_path"])),esc(pretty(r[b+"_admin_path"])),lga);
+  for(const s of rest)
+    if(r[a+"_"+s]!==undefined||r[b+"_"+s]!==undefined)
+      html+=row(s.replaceAll("_"," "),esc(pretty(r[a+"_"+s]??"")),esc(pretty(r[b+"_"+s]??"")));
+  const wa=where(r,a),wb=where(r,b);
+  if(wa||wb){
+    const km=r[b+"_km_from_"+a]||r.distance_km,steps=r[b+"_h3_steps"];
+    html+=row("Location",wa,wb,[km!==undefined&&km!==""?`${esc(km)} km apart`:"",
+      steps?`${esc(steps)} H3 steps`:""].filter(Boolean).join("<br>"));
+  }
+  // Source ids, side by side. GRID3 v2 and the HFR share one id for most
+  // facilities, so whether the ids agree is the quickest fact on the card.
+  const bare=v=>String(v||"").replace(/^[a-z0-9_]+:/i,"");
+  const ia=bare(r[a+"_id"]),ib=bare(r[b+"_id"]);
+  if(ia||ib)html+=row("Source id",`<span class="mono">${esc(ia)}</span>`,`<span class="mono">${esc(ib)}</span>`,
+    ia&&ia===ib?"same id":"different ids");
+  html+="</tbody></table>";
+  // What the GRID3 id links to on the other side, as a note under the table.
+  // It settles the commonest mistake: two facilities that share a name.
+  const own=a+"_own_"+b+"_";
+  if(PACK.fields.includes(own+"id")){
+    const A=esc(a.toUpperCase()),B=esc(b.toUpperCase());
+    const note=(label,body,guide)=>`<aside class="rv-link"><p class="rv-link-label">${label}</p>${body}<p class="rv-link-guide">${guide}</p></aside>`;
+    if(ia&&ia===ib){
+      html+=note(`Same source id`,`<p class="rv-link-body">Both registries file these two records under one id.</p>`,
+        `Call them different only if they are two facilities and the shared id is wrong.`);
+    }else if(r[own+"name"]){
+      const km=r[a+"_km_to_own_"+b];
+      const meta=[r[own+"lga"]?esc(r[own+"lga"]):"",km?`${esc(km)} km from the ${A} point`:"",
+        r[own+"plus_code"]?`<span class="mono">${esc(r[own+"plus_code"])}</span>`:""].filter(Boolean).join(" · ");
+      html+=note(`The ${B} record that carries this ${A} id`,
+        `<p class="rv-link-name">${esc(r[own+"name"])}</p>${meta?`<p class="rv-link-meta">${meta}</p>`:""}`,
+        `If the ${B} record above is another facility with a similar name, call it different. If it is a second entry for this same facility, call it same.`);
+    }else{
+      html+=note(`No ${B} record carries this ${A} id`,"",
+        `Decide from the names, places and levels above.`);
+    }
+  }
+  const ids=PACK.fields.filter(f=>/(^|_)(id|code)$/.test(f)&&r[f]);
+  if(ids.length)html+=`<details class="rv-ids"><summary>Identifiers</summary>${ids.map(f=>`<p class="kv"><b>${esc(f)}</b><span class="mono">${esc(r[f])}</span></p>`).join("")}</details>`;
+  return html;
+}
+// The pairs opened in this sitting, in order. A call takes a pair out of the
+// "still needs a human" view, so Previous walks this trail instead of the
+// view: it always returns to the pair before, decided or not, so a call made
+// by mistake can be changed.
+const TRAIL=[];let AT=-1;
+function step(d){
+  if(d<0&&AT>0){AT--;pick(TRAIL[AT],true);return;}
+  if(d>0&&AT>=0&&AT<TRAIL.length-1){AT++;pick(TRAIL[AT],true);return;}
+  const rows=visible();if(!rows.length)return;
+  const at=rows.findIndex(r=>r.decision_id===SEL);
+  if(d<0&&at<=0)return;
+  const i=at<0?0:Math.max(0,Math.min(rows.length-1,at+d));
+  pick(rows[i].decision_id);
+}
+function reviewerName(){return(($("#rv-name").value||$("#reviewer").value)||"").trim();}
+function setReviewer(v){
+  $("#reviewer").value=v;$("#rv-name").value=v;
+  try{localStorage.setItem("arche.reviewer",v)}catch{}
 }
 // Marks are written through to SQLite immediately. They used to live in M
 // until someone pressed Save, so a refresh lost the work and there was no
 // history of a reviewer changing their mind.
 async function mark(o){
   if(!SEL){$("#rerr").textContent="Choose a row first.";return;}
-  const who=($("#reviewer").value||"").trim();
-  if(!who){$("#rerr").textContent="Put your name in the reviewer field first. An unattributed adjudication cannot be audited.";return;}
-  $("#rerr").textContent="";
+  const who=reviewerName();
+  if(!who){$("#rv-said").innerHTML="<b>Type your name in “Reviewing as” first.</b> An unattributed call cannot be audited.";
+    $("#rv-name").focus();return;}
+  setReviewer(who);
   const r=await(await fetch("/api/mark",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({pack:$("#pack").value,pack_digest:PACK.digest,decision_id:SEL,
                          outcome:o,reviewer:who,reason:$("#reason").value})})).json();
-  if(r.error){$("#rerr").textContent=r.error;return;}
-  const after=visible();
+  if(r.error){$("#rv-said").textContent=r.error;return;}
+  const before=visible(),at=before.findIndex(x=>x.decision_id===SEL);
   await loadMarks();draw();
-  // Advance to the next row still wanting a call. Without this the reviewer
-  // marks a row, it leaves the filtered view, and the panel keeps showing a
-  // pair that is no longer in the queue.
+  // Move on to the next pair still wanting a call, in the order the reviewer
+  // was reading. The card says what was saved, so the click is never silent.
   const rest=visible();
-  const next=rest.find(x=>x.decision_id!==SEL)||rest[0];
-  if(next&&!rest.some(x=>x.decision_id===SEL))pick(next.decision_id);
-  else draw();
-  $("#rerr").innerHTML=`<span class="saved">Recorded.</span> `+
-    `${after.length-rest.length>0?`${after.length-rest.length} fewer in this view. `:""}`+
-    `Nothing is written to the pack until you save.`;
+  const next=before.slice(at+1).find(x=>rest.some(y=>y.decision_id===x.decision_id))
+    ||rest.find(x=>x.decision_id!==SEL);
+  const said=`<span class="saved">Saved on this machine:</span> ${esc(o.replace("_"," "))}.`;
+  if(next&&next.decision_id!==SEL){pick(next.decision_id);$("#rv-said").innerHTML=said+" Next pair.";}
+  else{pick(SEL);$("#rv-said").innerHTML=said+(rest.length?"":" Nothing left in this view.");}
+  exportNote();
 }
 
 async function loadMarks(){
@@ -1148,23 +1331,39 @@ async function loadMarks(){
   for(const [k,v] of Object.entries(d.current||{}))M[k]=v;
   const s=d.summary||{};
   const left=d.outstanding;
-  $("#marks").innerHTML=(s.marked
-    ? `${s.marked} marked${s.revisions?`, ${s.revisions} revised`:""}`+
-      ` · ${Object.entries(s.by_outcome||{}).map(([k,v])=>k+" "+v).join(" · ")}`
-    : "")
-    +(left==null?"":` · <b>${left} still need a human</b>`);
+  const done=Object.values(M).filter(m=>m.outcome&&m.outcome!=="unresolved").length;
+  const total=PACK?PACK.rows.length:0;
+  $("#rv-meter").style.width=total?`${Math.round(100*Math.min(done,total)/total)}%`:"0%";
+  const unsure=Object.values(M).filter(m=>m.outcome==="unresolved").length;
+  const revised=s.revisions||0;
+  $("#marks").innerHTML=`<b>${done} of ${total} decided</b>`
+    +(unsure?` · ${unsure} can't tell`:"")+(revised?` · ${revised} changed`:"")
+    +(left==null?"":` · ${left} still need a human`);
+  exportNote();
+}
+// What the export would contain now, against what was last exported.
+let LAST_EXPORT={};
+function exportNote(){
+  const id=$("#pack").value,last=LAST_EXPORT[id],n=Object.keys(M).length;
+  if(!last){$("#rv-export").textContent=n?`Not exported yet · ${n} call${n===1?"":"s"} saved here.`:"Not exported yet.";return;}
+  const since=n-last.n;
+  $("#rv-export").innerHTML=`Exported at ${esc(last.at)}`+(since>0?` · <b>${since} call${since===1?"":"s"} since</b>`:" · up to date");
 }
 async function save(){
   $("#rerr").textContent="";
+  const who=reviewerName();
+  if(!who){$("#rerr").textContent="Type your name in “Reviewing as” first. An unattributed export cannot be audited.";$("#reviewer").focus();return;}
   const r=await(await fetch("/api/review",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value})})).json();
+    body:JSON.stringify({pack:$("#pack").value,reviewer:who})})).json();
   if(r.error){$("#rerr").textContent=r.error;return;}
   // Two files, and the difference between them is the whole point. Name both,
   // and say which one leaves this machine — somebody is about to attach one of
   // them to an email and the filenames alone do not tell them apart.
   const f=p=>`<span style="font-family:var(--mono);font-size:15px">${esc(p)}</span>`;
+  LAST_EXPORT[$("#pack").value]={n:r.rows_marked,at:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+  exportNote();
   $("#rerr").innerHTML=
-    `${r.rows_marked} rows marked.<br>`+
+    `<span class="saved">Exported ${r.rows_marked} call${r.rows_marked===1?"":"s"}.</span><br>`+
     `<b>Your copy</b> — ${f(r.written)}<br>`+
     (r.shared
       ? `<b>Safe to share</b> — ${f(r.shared)}, names and dates masked.`
@@ -1614,6 +1813,12 @@ on("b-same","click",()=>mark("same_entity"));
 on("b-diff","click",()=>mark("different"));
 on("b-unres","click",()=>mark("unresolved"));
 on("b-save","click",save);
+on("rv-close","click",()=>$("#rv-dialog").close());
+on("rv-prev","click",()=>step(-1));
+on("rv-next","click",()=>step(1));
+on("reviewer","change",()=>setReviewer($("#reviewer").value.trim()));
+on("rv-name","change",()=>setReviewer($("#rv-name").value.trim()));
+on("rv-dialog","close",()=>draw());
 on("pack","change",loadPack);
 on("t-chat","click",()=>{tab("chat");chatReady();chatDraw();});
 on("b-chat","click",()=>chatSend());
@@ -1631,14 +1836,12 @@ document.addEventListener("keydown",e=>{
 // Working a queue is repetitive by nature: look, decide, next. Reaching for the
 // mouse between every row is what makes 360 of them feel like 360.
 document.addEventListener("keydown",e=>{
-  if($("#s-review").hidden)return;
+  if($("#s-review").hidden&&!$("#rv-dialog").open)return;
   const t=e.target.tagName;
   if(t==="INPUT"||t==="TEXTAREA"||t==="SELECT"||e.metaKey||e.ctrlKey)return;
   const rows=visible(),at=rows.findIndex(r=>r.decision_id===SEL);
-  if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();
-    if(rows.length)pick(rows[Math.min(at+1,rows.length-1)>=0?Math.min(at+1,rows.length-1):0].decision_id);}
-  else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();
-    if(rows.length)pick(rows[Math.max(at-1,0)].decision_id);}
+  if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();step(1);}
+  else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();step(-1);}
   else if(e.key==="1")mark("same_entity");
   else if(e.key==="2")mark("different");
   else if(e.key==="3")mark("unresolved");
@@ -1662,6 +1865,7 @@ $("#ptext").addEventListener("input",count);
   $("#entity").innerHTML=Object.keys(ENTITIES).map(
     x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
   $("#entity").addEventListener("change",()=>describeEntity(""));
+  try{const who=localStorage.getItem("arche.reviewer");if(who)setReviewer(who);}catch{}
   example();pexample();rexample();await loadPacks();homeSummary();ledgerStatus();
   // `?explain=ID` opens straight onto a decision: the link a CLI or a service
   // response can carry so "explain by id" is a click, not a paste.

@@ -1,0 +1,104 @@
+{
+  "clarifications": [
+    {
+      "after_result": true,
+      "at": "2026-11-22T12:23:34+00:00",
+      "build_x4_pack.py_sha256": "sha256:201b2dfc1ac818997c5f42a3071f5a234f9ab1211fbd548abf0bbaa8edc815f5",
+      "change": "build_x4_pack.py reads data/hfr_<state>.csv instead of the literal data/hfr_lagos.csv, so X5 can reuse it for FCT; with STATE = 'Lagos' it reads the same file and builds the same pack"
+    }
+  ],
+  "code": {
+    "build_x3_pack.py": "sha256:99bd322acd9e5de34b914bb6b7068e936d0b8fd9a0d0f2fc6f18b2c302104959",
+    "build_x4_pack.py": "sha256:27e032a7b3f9297c70e3b5fed7ba6eed874c183a5005d477c5bce6bfac90f36b",
+    "evaluate_facility_master.py": "sha256:a3cacac1356929076df186effc3b0c11dc459d820dac7b49575ecfaacf1f9766",
+    "fetch_facility_data.py": "sha256:8338f2713ebf5f053914ad9ea32c182ac055695a09cfd9e9bbd645e4b45b4a86",
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x1_combiner.py": "sha256:e93303b8ca4c8bd89598b01ccf277cd6827a6831bb262a7d7cfac59b6ab0730c",
+    "x2_near_miss.py": "sha256:b6245ba17affbeae246154e42c867a498e63cee2e9f75e49cb9aa2e9bf214634",
+    "x3_level.py": "sha256:6d7c9935bbd4e65c589a392c0742316dd6dff40e2cbc104aeb1a9113924765b3",
+    "x4_lagos.py": "sha256:b89a21fdddfb4fae9962d365fd0af5d306cc71b282b3e0b3e6cd1879390ae830"
+  },
+  "development_labels_sha256": {
+    "2026-08-19": "sha256:c66d10ddbe693f53814ab06d85f434e00968cb1d707050da6d418f3411c8e268",
+    "near_miss": "sha256:d575f88c1cd0821e8140239fc1fe6bdb239955cb33d6c995d02a05db886b9617",
+    "x1": "sha256:01c396ae37190ddd0fcc7feb2bcd630678447593abcbbf56e875260db8b4ece7"
+  },
+  "environment": {
+    "device": "cuda",
+    "python": "~/.cache/arche-scratch/e0/bin/python",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "inputs": {
+    "engine_decisions": {
+      "match": 1762,
+      "review": 360
+    },
+    "engine_edges": "sha256:29f9e499a6a0cbb77f950b09894a50854c55d2891d0856813b953b2e9d2bccd1",
+    "grid3_v2": "sha256:0affbed54ecc15b62324e2442341bbb2860ffc982747c4a4f29a9c293f88ee5b",
+    "hfr_lagos.csv": "sha256:54de070ebc3c917bba9247158b68a25f3decdbc2d0444143511d2d708ae91845",
+    "hfr_national_sha256": "sha256:a190e07a9427089100455e38a4108107c0211949790f8dd7ac92122bf0e6d097"
+  },
+  "known_risks": [
+    "one reviewer",
+    "111 of the 150 review-band pairs share a source id, and the card shows it, so those labels lean on it",
+    "the development labels come from Edo, Kano and Ondo only; Lagos is urban and may name facilities differently",
+    "the first training attempt ran in the repository's CPU-only environment and was stopped before finishing; its partial output was deleted and nothing from it was used"
+  ],
+  "models": {
+    "seed0": "sha256:bc8fa9414a7b3d56db6289b223f21816496a4b7c0407724b55d6ffb4c195c3ae",
+    "seed1": "sha256:6f75efa213d6cb57ac68401535c2ab64f197bb8d4d3654c0d0e001092f809b52",
+    "seed2": "sha256:929890e6d1a605e92d86fd39089b3838e8e539b74c8cdd71742c0399cb1c3b72"
+  },
+  "question": "Does the pair decider settle part of the engine's review band in a state that no part of it was trained or tuned on, with errors and false merges in bound?",
+  "rule": {
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "pair"
+    },
+    "combiner": "X3's control arm: [cross-encoder logit, log1p km, LGA agree, coordinates missing], fitted on the 692 corrected development labels, thresholds from 5-fold out-of-fold predictions (x3_level.fit); no facility-level feature (X3 found no measurable gain)",
+    "cross_encoder": "X0's recipe (x0.examples, x0.train, seeds 0-2, same schedule) with Lagos held out together with Edo, Kano and Ondo; weights pinned below",
+    "error_bound": "errors among auto-decided <= 3% and Wilson 95% upper bound <= 10%",
+    "false_merge_bound": "different pairs auto-matched / all different pairs <= 2% and Wilson 95% upper bound <= 5%",
+    "fewer_held": "coverage >= 0.20 and pair-bootstrap 95% lower bound >= 0.10",
+    "informative": "void unless the test holds at least 60 different pairs",
+    "pass": "informative, and every seed meets fewer_held, error_bound and false_merge_bound on the whole pack",
+    "population": "the X4 pack (data/review_packs/nigeria_facilities_lagos_x4_2026-11-22, 240 Lagos pairs: 150 review_band, 45 lookalike, 45 near_miss) marked same_entity or different; read once, after this file",
+    "reference": "match-everything, scored under the same rule; it must fail",
+    "review_band": "reported as its own verdict: every seed meets fewer_held and error_bound on the review_band pairs alone. This is the production question: how much of what the engine holds for a person in an unseen state the decider settles",
+    "secondary": [
+      "results by pair kind",
+      "per seed AUC",
+      "crosswalk development AUC of the retrained cross-encoder"
+    ]
+  },
+  "rule_sha256": "sha256:d98de0b84deceaef1b86a86ff085ffe12b00e51e337cf6dc49ed77c01c88be86",
+  "schema": "arche.x4_lagos_preregistration.v1",
+  "test": {
+    "blind": "the reviewer sees neither the engine's decision nor the pair's kind",
+    "construction": "data/scripts/build_x4_pack.py: 150 of the engine's 360 Lagos review pairs in salted order, one per GRID3 facility; 45 lookalike and 45 near_miss pairs built as in X3 from records not already sampled; every row 'review', no score, kind kept out of the pack; the GRID3 facility's own HFR record shown when it has one",
+    "kinds_sha256": "sha256:a29ecec13b4db1d21ffd4ea1f44f17a3345d864d03772092a44848a7b1d09f09",
+    "pack_sha256": "sha256:9abcea8f6fbf98b5d3d9e9f4143e80cfdb480f9307b9df8a8e05c714cacb78d5"
+  },
+  "training": {
+    "seed0": [
+      0.21256
+    ],
+    "seed1": [
+      0.21184
+    ],
+    "seed2": [
+      0.21102
+    ]
+  },
+  "training_examples": {
+    "dev": 13512,
+    "dev_positive": 2461,
+    "train": 120327,
+    "train_positive": 21994
+  },
+  "why": "every state other than Edo, Kano and Ondo was in X0's cross-encoder training, and the review bands of those three are used up",
+  "written_at": "2026-11-22T10:11:13+00:00",
+  "written_before_test_labels_existed": true
+}

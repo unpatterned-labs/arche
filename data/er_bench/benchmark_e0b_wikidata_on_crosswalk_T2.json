@@ -1,0 +1,17 @@
+{
+  "bootstrap95": [
+    -0.0535,
+    -0.0249
+  ],
+  "gain@10": -0.0393,
+  "lost": 109,
+  "post_hoc": true,
+  "recall@10": {
+    "tfidf_char3": 0.9694,
+    "wikidata_ng_mean_of_3": 0.9301
+  },
+  "schema": "arche.e0b_wikidata_on_crosswalk.v1",
+  "script": "data/scripts/e0c_facility.py (test_sets, Arm) with the E0b models; not preregistered",
+  "why": "the E0b transfer test's 86 reviewed pairs turned out to carry suspect labels (2026-11-22); this re-measures the same E0b amendment-1 wikidata_ng models (seeds 0-2) on E0c's engine-independent T2 set: 1,569 GRID3/HFR crosswalk pairs in Edo, Kano and Ondo whose names differ, against every HFR facility in the state",
+  "won": 39
+}

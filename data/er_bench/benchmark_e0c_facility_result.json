@@ -1,5 +1,5 @@
 {
-  "models": "/home/dennis/.cache/arche/models/e0c/crosswalk",
+  "models": "~/.cache/arche/models/e0c/crosswalk",
   "preregistration_sha256": "sha256:0ec25b92e88e2af90aa0415c6d688e9894c0941a28be603597e5a605876742d5",
   "result": {
     "T1": {

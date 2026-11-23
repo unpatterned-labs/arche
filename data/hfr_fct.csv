@@ -1,0 +1,577 @@
+id,name,alternate_name,category,lga,ward_code,lon,lat
+fa6d4998-e692-4cd1-bd23-28ca14426e76,Oripisaka Primary Health Care,,Primary Health Center,Abaji,FCTABJ02,6.945605,8.4701683
+c6d5d4a6-40e0-4430-9353-18bc01323a60,Owner Occupier Model Primary Health Center,,Primary Health Center,Bwari,FCTBWR10,7.36036,9.1378664
+c0f41bf4-c5af-4838-adfa-41c2e6f31bb5,Bwari Primary Health Center,,Primary Health Center,Bwari,FCTBWR07,7.3776311,9.2890095
+fa5d1603-656c-49f1-aa3f-796aa4e4ba2e,Durumi Primary Health Center,,Primary Health Center,Bwari,FCTBWR03,7.3930577,9.1248817
+ba93af5d-8b19-46e5-a81a-5bc73cef8b76,Kilankwa Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA08,7.0637932,8.9488509
+7873c8ab-3865-4772-a75b-13f92431f9a3,Kilankwa Primary Health Center,,Primary Health Center,Kwali,FCTKWL04,7.0637932,8.877568
+0abda6a5-103e-4404-bfa8-c372963e75c5,Aleyita Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.3978628,8.988193
+ebedc02c-64f3-48c3-86d0-83b525a010e1,Galadinmawa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.4259867,8.9921167
+f917d0a1-5c2e-4ac3-8894-239668026c4d,Apo Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC12,7.4772066,9.0766981
+26aec85d-b7d6-475a-a9c4-cd3fd7d5f1c6,Wumba Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.4864837,8.9586469
+e0baa86a-de96-46e4-9056-8b8abe81682d,Kobi Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.5241246,8.9992791
+9f94321a-8353-4b60-9eff-bdf1916504bf,Divine Mercy Hospital,,Primary Health Center,Bwari,FCTBWR10,7.34991455100004,9.15350341800007
+a926efa4-d855-47ab-babd-6293ad1dcc49,Massan Health Clinic,,Primary Health Center,Municipal Area Council,FCTABC07,7.362487793000071,8.98468017600004
+a34d0bec-56ad-4aac-8460-f97b9d915e9d,Agbade Hospital and Maternity,,Maternity Home,Bwari,FCTBWR10,7.343872071000021,9.157287598000039
+5d488993-e2d1-45e0-ba13-fd29195160a3,Taprobane Medical Center,,Medical Center,Municipal Area Council,FCTABC07,7.460299,8.9753947
+37fe3ca1-b093-4b4c-9560-8bd0c17ec2b7,Nigeria Police Hospital,,Military and Paramilitary Clinic,Bwari,FCTBWR06,7.27367,9.1302233
+ec9a2222-3830-4bf3-90cd-47308d545f40,Petterevera Maternity and Health Services,,Maternity Home,Bwari,FCTBWR02,7.3317158,9.1803545
+be445574-cd3f-4d21-9dad-73d23f469f76,Kasada Hospital,,Primary Health Center,Kuje,FCTKUJ06,7.25347,8.9047517
+26693763-36ea-4825-9068-34a789912302,Medical Mission of Mary,,Primary Health Center,Municipal Area Council,FCTABC03,7.3270702,8.9359225
+87d22620-5212-4c55-94c8-aff187eeb02c,Jabi Federal Medical Center,,Federal Medical Center,Municipal Area Council,FCTABC05,7.407894557,9.014514471
+0bb8a8c5-9384-4083-9987-51c005a1eb77,Zinta Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.4425385,9.1069036
+bca44915-2df8-4b9f-9c3f-f1d0bb8f23d2,Wassa Health Post,,Dispensary,Municipal Area Council,FCTABC07,7.4808878,8.8769868
+a4524a18-979c-4515-9683-5b2216d18e87,Shenegu Health Post,,Dispensary,Gwagwalada,FCTGWA09,7.150512696000021,9.08288574200003
+c870dcae-4968-48c3-93cb-e9c037cb66c4,Padan Gbagyi Primary Health Center,,Primary Health Center,Bwari,FCTBWR08,7.576293946000021,9.25689697200005
+ec81d1d5-a8af-42dc-9001-697400203631,Our Lady of Fatima Catholic Hospital,Our Lady Of Fatima Hospital Bwari,Private Non Profit,Bwari,FCTBWR01,7.380493164000029,9.27532959000007
+15b699a6-4c26-4425-a9fc-3ae84d12bd56,Sos Medical Center,,Medical Center,Gwagwalada,FCTGWA09,7.19952392600004,9.05908203100006
+d69a3f84-c173-4253-9ee0-02340c70fc44,Chukukwu Primary Health Center,,Primary Health Center,Kuje,FCTKUJ01,7.11846,8.92168
+588ab12b-c997-4c07-a8d5-0b49e0e06fa5,Shadalafiya Primary Health Care Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.43411,8.93979
+51148684-9f1d-4662-8549-6378741cc6a9,Anagada Primary Health Care Center,,Primary Health Center,Gwagwalada,FCTGWA09,7.17479,9.0394
+7dd050c9-8da1-454e-bed9-c215f8bec9c1,Dakwa Health Post,,Dispensary,Bwari,FCTBWR06,7.231283441090492,9.111658505417699
+2ab5c25e-937f-49f6-a04b-81975079ff48,Dei Dei Primary Health Center,,Primary Health Center,Bwari,FCTBWR06,7.25939,9.11479
+1318b473-4391-4e98-accc-599a1558bb16,Kawu Primary Health Center,,Primary Health Center,Bwari,FCTBWR05,7.574994191018499,9.31253535735999
+0b575a5b-ae1a-43af-a0e7-acdf11e81818,Shere Primary Health Center,,Primary Health Center,Bwari,FCTBWR08,7.49858,9.23516
+e30b74fa-8fb2-4e92-8839-9f988f1c1b24,Ibrahim Abu Memorial Clinic,,Primary Health Center,Municipal Area Council,FCTABC04,7.29529,9.09491
+1d0de2cf-f200-4b99-823a-d50fac7105c9,Gurara Primary Health Care Center Izom,,Primary Health Center,Gwagwalada,FCTGWA04,7.014473333,9.242543333
+2c1fef6b-f46b-4d06-a2fd-d85ef6e2dc74,Gods Able Clinic,,Primary Health Center,Kuje,FCTKUJ02,7.28884000000005,8.86080000000004
+6b78bd8a-81ce-42c0-a1e0-7a01cd38f9c7,Karu Ecwa Comprehensive Medical Center,,Private Non Profit,Municipal Area Council,FCTABC09,7.574861338563429,9.009604119548081
+3c38ee06-508d-4649-bebb-ae298b53ed64,College of Education Clinic,,Educational Clinic,Gwagwalada,FCTGWA10,7.21759000000003,9.10029000000003
+5a093ab0-fec0-4b49-86f5-068b72827d11,Acupuncture Hospital,,Primary Health Center,Municipal Area Council,FCTABC02,7.490790000000061,9.01863000000003
+040c5b54-5251-4fa8-90cf-39b38e98d362,National Hospital Abuja,,Primary Health Center,Municipal Area Council,FCTABC01,7.463290000000029,9.03911000000005
+bc3811a0-4148-4d53-aa92-b0f36856d3bb,Kasada Primary Health Care,,Primary Health Center,Kuje,FCTKUJ02,7.380278868248381,8.79953906691113
+105f9e44-ac48-45ca-8e1e-04d14199d8f4,Wuse District Hospital,,District Hospital,Municipal Area Council,FCTABC12,7.46879,9.06269
+154b22f4-37a7-497d-a689-eb84784287de,Hands Wellness Clinic Physiotherapi,,Primary Health Center,Municipal Area Council,FCTABC05,7.43160000000006,9.07519000000002
+8e7e1eea-102b-41e9-bfd0-a33a65cfe9fd,Yaupe Health Post,,Dispensary,Bwari,FCTBWR01,7.43772000000007,9.248250000000041
+26a787d7-0634-4b80-aa42-9d0b39ce7b08,Piko 1 Primary Health Care,,Primary Health Center,Bwari,FCTBWR08,7.480130000000031,9.23780000000005
+1ee68c96-934d-4c0b-b04b-4f337c79c214,Leda Primary Health Care,,Primary Health Center,Kwali,FCTKWL10,7.052090000000021,8.66471000000007
+bad11614-8bf2-4c94-acd9-047cc44bf2b7,Bwari General Hospital,,General Hospital,Bwari,FCTBWR01,7.384800000000041,9.28141000000005
+1308b16f-e5d4-4164-8fae-26887b1e3b7a,Cornelian Maternity Gidan Mangoro,,Maternity Home,Municipal Area Council,FCTABC11,7.56504,8.91843
+b6ec571a-8523-477b-a563-b335ef1d255b,Takushara Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.4598351,8.88395171150224
+8da4d187-ba43-435b-9647-952aea91f642,Kungbobokun Health Center,,Primary Health Center,Bwari,FCTBWR02,7.33735212186141,9.194660874033419
+eeaa5aee-f7d5-4181-acb0-39f980f0d016,Yelwa Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.839103665870459,9.21268127742638
+30208bfc-8e17-43b1-b508-5dd8ea5c673e,Aviation Medical Center,,Medical Center,Municipal Area Council,FCTABC06,7.27697,9.00839
+ff997c8f-e3fb-44fc-92fc-a58aa43b76e0,Dukpa Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.07860126314195,8.99208017649074
+e19f3466-1f48-4d56-ae01-8a290062a3ca,Kiyi Health Clinic,,Primary Health Center,Kuje,FCTKUJ01,7.141568148128011,8.91091016902066
+5a0cb2d2-560e-4732-8a89-4c5223628fcb,Gaube Comprehensive Health Center,,Comprehensive Health Center,Kuje,FCTKUJ02,7.340046875338241,8.82104203439008
+58a907ce-c410-4d1e-afeb-8152f15049b8,Gumbo Primary Health Center,,Primary Health Center,Kwali,FCTKWL03,6.96586756031458,8.71054213136094
+03dc807a-7941-4cff-a97d-27cf9967ebf7,Sheda Sarki Primary Health Care,Primary Health Center Tungan Sarki,Primary Health Center,Kwali,FCTKWL05,6.943480000000001,8.80392
+5d01b8eb-9316-4860-bd0b-7205303a40c1,Tungan Kwasou Health Post,,Dispensary,Bwari,FCTBWR06,7.2475983,9.10354
+7e71c6e3-c2a6-4db0-aad5-f04b6fee4670,Sumit Hospital,,Primary Health Center,Bwari,FCTBWR01,7.380493164000029,9.27728271500007
+ce5dc21d-052f-4f62-8811-27ccec970207,Adagba Health Clinic,,Primary Health Center,Abaji,FCTABJ10,6.796081543000071,8.682312011000022
+8467b935-ac53-403b-acd9-2edd399d9c5f,Umuogerem Health Center,,Primary Health Center,Bwari,FCTBWR10,7.345403333,9.151333333
+b9edacd6-c2de-4fc1-9386-0978bf275a76,Yenche Primary Health Care,,Primary Health Center,Kuje,FCTKUJ10,7.12246,8.64098
+a9f1c137-736c-4988-ac84-ada0c066aec0,Kings Care Hospital,,Primary Health Center,Bwari,FCTBWR10,7.341308594000054,9.151489258000026
+2e5740e4-202f-4c05-bf24-044556dac6c5,Paikon Kore Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA07,7.029724121000072,8.995117188000052
+5c9020be-1b15-4f03-a909-a7934a58eaf7,Tunga Maje Primary Health Center,T Maye Primary Health Center,Primary Health Center,Gwagwalada,FCTGWA09,7.198730469000054,9.06048584000007
+ef365cdf-358d-490d-820e-169aa6ca3876,Fgc Health Clinic,,Educational Clinic,Kwali,FCTKWL04,7.051330566000047,8.836120606000065
+f9f48335-ddc9-45f3-807b-f7e080bf371e,Choice Maternity Hospital,,Maternity Home,Kwali,FCTKWL06,7.046875000000057,8.822326660000044
+f052389c-a062-4a9f-ac28-4170578491f0,Redmees Maternity,,Maternity Home,Kwali,FCTKWL01,6.893127441000047,8.638488769000048
+e7a613e3-90df-421f-bbee-1b89a924250a,Queen Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC12,7.462524414000029,9.072082519000048
+6fa8995f-932f-4030-95a4-1cf07aeb5f2f,Gabic Divine Clinic and Maternity Ltd,,Maternity Home,Bwari,FCTBWR01,7.374328614000035,9.267700195000032
+faf53313-9adf-4b8a-a78e-7d5810f6d4ae,Mapa Health Center,,Primary Health Center,Bwari,FCTBWR08,7.480529785000044,9.15991211000005
+18fd7d61-898b-40b4-aa46-9ab3ab854bcd,Unity Clinic and Maternity,,Maternity Home,Bwari,FCTBWR10,7.347290039000029,9.154724121000072
+92b8004d-a13a-4c69-a177-137a7d0091f8,Madonna Hospital and Maternity,,Maternity Home,Bwari,FCTBWR03,7.501892089000023,9.14007568300002
+8fd14efb-20ac-47a8-90bb-207dc6313195,Junex Hospital and Maternity,,Maternity Home,Bwari,FCTBWR03,7.3779296880000516,9.149475098000039
+45b42cd7-9b88-44cf-9d08-a6d677b88771,Mayor Clinic and Maternity,,Maternity Home,Gwagwalada,FCTGWA05,7.215881348000039,9.109924316000047
+47bd017d-64cd-40f1-8993-fc1bf1d0ea86,Alheri Clinic and Maternity Gwako,,Maternity Home,Gwagwalada,FCTGWA03,7.129272461000028,8.963073730000076
+f2e6445b-f142-43d7-98f0-ef6bd202fca3,Leleyi Gwari Primary Health Center,,Primary Health Center,Kwali,FCTKWL07,7.020690918000071,8.882690430000025
+4e848e49-904a-4414-83ad-34098962a594,Gawu Primary Health Care Clinic,Gawu Health Clinic,Primary Health Center,Kuje,FCTKUJ08,7.16687011700003,8.720703125000057
+1ddb5979-5e50-4332-822d-9971646064c4,Shekwonya Maternity Home,,Maternity Home,Municipal Area Council,FCTABC07,7.489685059000067,8.92572021500007
+df4cf9fa-0583-437c-b904-169cea2212ca,The Comforter Clinic and Diagnostic Center Limited,,Laboratory,Municipal Area Council,FCTABC07,7.357299805000025,8.99389648400006
+b8a6e2c7-4f8b-4aef-8c8d-bd8c3b360917,First Hospital Maternity Karu,,Maternity Home,Municipal Area Council,FCTABC09,7.563720703000058,8.999511719000054
+f2fb10c5-bf43-437f-9395-1c1d1c4ee233,Gethsemane Hospital and Maternity,,Maternity Home,Bwari,FCTBWR03,7.492126465000069,9.132080078000058
+5737880f-428f-4797-b7e2-f20dbcb3bd40,Miracle Seed Clinic and Maternity,,Maternity Home,Bwari,FCTBWR10,7.325500488000046,9.143920898000033
+0e36f7f3-b992-4687-806c-59f143a969c1,Yaba Comprehensive Health Center,,Comprehensive Health Center,Abaji,FCTABJ10,6.797912598000039,8.647094727000024
+1a478ba2-ba0c-4c9a-988b-f2b25e5b89bf,Ketti Comprehensive Health Center,,Comprehensive Health Center,Municipal Area Council,FCTABC07,7.394287109000061,8.926513672000056
+71b26653-63ab-4506-a121-3ae2f7d1ccdf,Jikwoyi Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC09,7.564514161000034,8.98431396500007
+1f4da49a-965c-4c4b-a0ef-4d05cf708869,Gasakpa 1 Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.844664517812628,9.214349951550615
+6ddc24f6-8b67-4298-8a8a-750af4314cbb,Mamagi Primary Health Center,,Primary Health Center,Abaji,FCTABJ08,6.850672326864123,8.50462247918137
+07969dc4-08ff-4af1-9913-9f0aa1aa27a8,Rubochi Primary Health Center,,Primary Health Center,Abaji,FCTABJ06,6.930225566800698,8.527135908051237
+a0d9a261-dd35-45e5-ba98-0046639da09a,Kwaita Hausa Primary Health Center,,Primary Health Center,Kwali,FCTKWL08,6.9199394856945,8.640051146180825
+28ed3546-bbc5-4d3d-9b0b-9e2757dd3c70,Fsp Health Center,,Primary Health Center,Kwali,FCTKWL09,6.989790613965959,8.775432450470527
+4224d60f-a8a8-46ed-964c-36c9cd5fcb47,Kwali Health Post,,Dispensary,Kwali,FCTKWL06,7.035649011942101,8.814592555916365
+d89fc4a8-e562-4124-bb8f-2887bc6b2d12,Jigo Health Post,Jigo Health Center,Dispensary,Bwari,FCTBWR09,7.389099121000072,9.22772216800007
+4e5cfcfe-1c03-4cb3-97de-074a7337660a,Alpha Clinic,Alpha Clinic Dutse,Primary Health Center,Bwari,FCTBWR03,7.373718262000068,9.14007568300002
+528fd332-7837-468d-87ef-296352e83e00,Mpape Clinics Limited,,Primary Health Center,Bwari,FCTBWR03,7.48468017600004,9.134277344000054
+acd38ae0-7763-4aab-94bd-483b6a8be450,Gideon Legacy Hospital,,Primary Health Center,Bwari,FCTBWR03,7.380920410000044,9.14093017600004
+da01ec06-5d92-4db8-8e70-39667c2af8be,Tungan Bijimi Health Post,,Dispensary,Bwari,FCTBWR05,7.656921387000068,9.360107422000056
+7f15d44b-37f1-4c9e-ade8-7460eebe34cc,Asher Hospital Kubwa,,Primary Health Center,Bwari,FCTBWR06,7.326293945000032,9.151489258000026
+9fe2a6fd-1d3a-433a-a4aa-11c986bfa8e4,Walleco Clinic,,Primary Health Center,Abaji,FCTABJ06,6.942321777000075,8.473327637000068
+456a8ba1-c6b6-4362-9960-7284b1adf7c2,Hetti Hospital,,Primary Health Center,Kwali,FCTKWL09,6.994323731000065,8.78210449200003
+0fb7be26-2807-4a9a-bd28-fd94c6d47572,Bodi Primary Health Clinic,Total Clinic,Primary Health Center,Municipal Area Council,FCTABC05,7.435119629000042,9.073913574000073
+05eadebf-43db-4eb3-8efd-9e8ebc085a01,Tunga Adaka Primary Health Clinic,,Primary Health Center,Bwari,FCTBWR05,7.64288330100004,9.396118164000029
+7ec0af27-9318-4e4f-802e-fd1369efcad0,Giri Kpasere,,Primary Health Center,Gwagwalada,FCTGWA03,7.155090332000043,9.005676270000038
+69e1f4be-b6b8-4e91-b761-1097a06c6550,Ruwa Primary Health Clinic,,Primary Health Center,Kwali,FCTKWL01,6.815490723000039,8.718322754000042
+0659c0ce-f33e-4b2d-be84-0d6076aa1216,Zhigakuchi Primary Health Care,,Primary Health Center,Bwari,FCTBWR03,7.556884766000053,9.110717773000033
+1c25f8d8-ced0-438f-a9be-e68c359b42a4,Giri Primary Health Center,Giri Clinic and Maternity,Primary Health Center,Gwagwalada,FCTGWA03,7.1530761720000555,9.00311279300007
+ebb7007b-62d6-451a-8cb8-5e6547631223,Ike Health Post,,Dispensary,Kwali,FCTKWL01,6.887512207000043,8.630920411000034
+37f14aae-6918-4d8f-b8dd-73053862fc13,Rafin Zurfi Primary Health Center,Dukpa Health Clinic,Primary Health Center,Gwagwalada,FCTGWA04,7.061523437000062,9.024902344000054
+4b9081c5-7b1e-4e1f-89a5-ce06abce2087,Kundu Primary Health Center,,Primary Health Center,Kwali,FCTKWL05,6.926879883000026,8.90087890600006
+7abdd054-b091-47aa-8a13-783805e219b6,Koroko Primary Health Center,Primary Health Center Koroko,Primary Health Center,Kwali,FCTKWL09,6.991271973000039,8.796508789000029
+a6b25565-0904-4013-b6c2-bda9efaf75f0,Rafin Daji Primary Health Center,Rafindaji Primary Health Center,Primary Health Center,Abaji,FCTABJ05,6.820495605000076,8.953674316000047
+f7ddc67f-71ae-4a24-ae6f-0cc3205ad843,Kpache Health Clinic,Yaba CHealth Center,Primary Health Center,Abaji,FCTABJ10,6.800109863000046,8.643493652000075
+d4857576-0953-4262-8342-1154233c8972,Yewuti Primary Health Center,,Primary Health Center,Kwali,FCTKWL08,6.961486816000047,8.528076172000056
+24337010-6d5f-4571-8466-0b92acdd37e5,Piri Primary Health Center,,Primary Health Center,Kwali,FCTKWL03,6.959899902000075,8.746887207000043
+be1b18a9-7a65-429d-b2e9-f625d9c65a9c,Dogon Ruwa Primary Health Center,,Primary Health Center,Abaji,FCTABJ05,6.808105469000054,9.006530762000068
+98ed1ce0-9883-4c33-9e3f-dbd14347de50,Gomani Primary Health Center,,Primary Health Center,Kwali,FCTKWL05,6.878479004000042,8.843078613000046
+545988b9-3f97-477c-b49a-23fc3a346979,Petti Primary Health Center,,Primary Health Center,Kwali,FCTKWL04,7.105285644000048,8.877929688000052
+30b58e35-a7d8-44ab-969c-0663a872ad03,Wuna Primary Health Center,Rafin Zurfi Health Clinic,Primary Health Center,Gwagwalada,FCTGWA04,7.100280761000022,9.008911133000026
+b10816df-8553-469f-8a7e-89d0d8d7f25f,Faith Clinic,,Primary Health Center,Kwali,FCTKWL04,7.051879883000026,8.839477539000029
+16c9b71b-9860-4e9e-b229-2045232dc055,Public Health Clinic,,Primary Health Center,Kwali,FCTKWL09,6.994506836000028,8.788513184000067
+0b13d1fc-42c1-4f1f-9ecd-f4e0bbfc9992,Garki Hospital Abuja,Garki Hospital,Primary Health Center,Municipal Area Council,FCTABC01,7.4851074220000555,9.03369140600006
+fbbe431a-7583-409c-afaa-fbc1d33acc5c,Primus International Super Speciality Hosiptal,Primus Super Specialist Hospital,Primary Health Center,Municipal Area Council,FCTABC09,7.566528320000032,9.006530762000068
+2d929574-ee05-4d74-a735-ffdf9c9a023a,Ledi 1 Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,7.000122070000032,9.092529297000056
+2528bd2a-7a57-4f35-bdb4-375ea3c0f56f,Gigbe Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.795288086000028,9.21850585900006
+954909ef-237e-4658-a72e-7740e4238035,Unity Primary Health Center Tufa,,Primary Health Center,Abaji,FCTABJ04,6.93072509700005,9.248291015000063
+c2ac2755-35af-42ae-8cb6-4715f926397e,Sherepe Primary Health Center,,Primary Health Center,Bwari,FCTBWR08,7.500122070000032,9.22491455100004
+2c28b2ab-9924-4bd9-95f7-a99ab9ffeeff,Mabushi Public Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.454284668000071,9.082092285000044
+c3b9c437-0cac-4e09-abeb-f8d8f14bf100,Ikwa Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA05,7.206726075000063,9.088317871000072
+25f63cc6-07ae-4619-87b9-5c7d2e16a7f8,Ojochogwu Out Patient Clinic,,Primary Health Center,Gwagwalada,FCTGWA05,7.208679199000073,9.09490966800007
+fe0328c8-33b8-4785-bc63-19fd97ef7d0d,Posing Hospital,,Primary Health Center,Bwari,FCTBWR10,7.351318359000061,9.141906738000046
+522e35fc-eef9-4694-a075-f869dc7cea55,Kurmin Daudu Model Primary Health Care,,Primary Health Center,Bwari,FCTBWR05,7.649630379711988,9.299558666318855
+cb76ec44-7953-40a4-9093-233baed36414,Salisu Hospital,Comprehensive Health Center Madalla,Primary Health Center,Gwagwalada,FCTGWA10,7.215087891000053,9.105895996000072
+2e6ed0a4-4aae-4ddb-8f7e-b562a557e887,Gaza Hospital,,Primary Health Center,Gwagwalada,FCTGWA05,7.212890625000057,9.105895996000072
+48e7ea13-13f8-4069-b1de-ba9ba507b4f7,Oiza Clinic,Ozia Clinic and Maternity,Primary Health Center,Bwari,FCTBWR06,7.23132324200003,9.112304688000052
+9a43cef4-82f0-4146-8cf4-d7f28c7bb223,Samhev Musulucin and Meternity,Samhev Muslinch Clinic,Primary Health Center,Bwari,FCTBWR06,7.236328125000057,9.113281250000057
+1b6338fc-b5fc-4e35-a22c-f42540b5aa77,Madalla Hospital,,Primary Health Center,Bwari,FCTBWR06,7.222900391000053,9.112670898000033
+badef80f-4031-4aae-bf1f-2d4f7c944b4a,St Peters Catholic Hospital,St Peter Clinic,Private Non Profit,Abaji,FCTABJ06,6.939880371000072,8.487915039000029
+fa4d9c7e-d8cd-42d3-a3a6-45308c41c872,Awaura Comprehensive Promary Health Care,,Primary Health Center,Abaji,FCTABJ06,6.9368896490000225,8.483276368000077
+e6ef9095-f909-4233-a080-900fd58eb3fa,Abattoir Primary Health Center,Abattor Primary Health Center,Primary Health Center,Abaji,FCTABJ07,6.952697754000042,8.469726563000052
+5293f1ba-7f0c-4929-b1fb-04e2cf7911a1,Rimba Primary Health Care,Rimba Primary Health Center,Primary Health Center,Abaji,FCTABJ03,6.851318359000061,8.476684571000021
+8d0d6f73-53ae-481a-b810-7a973146334c,Ozoro Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC11,7.574890136000022,8.895507813000052
+0fb67dd4-029e-4983-a9b7-a2c6fbb21df6,Garki Village Primary Health Center,Garki Primary Health Center,Primary Health Center,Municipal Area Council,FCTABC02,7.4885253900000635,9.01928711000005
+ea6e086d-38f4-4242-97f5-6087a6074506,Dafara Primary Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.279113770000038,8.849914550000051
+401e9d3d-3bb5-4066-a97b-4b2a415135a7,Gasaki Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC08,7.570429055266389,8.808218327058958
+13224d6a-c99b-407f-acfa-aa657a6c3421,Pyakasa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.405517578000058,8.96569824200003
+d8235608-1706-4a76-8842-1a30c684532f,Kabusa Health Post,,Dispensary,Municipal Area Council,FCTABC07,7.445129395000038,8.95007324200003
+cd145a92-f0f1-4fad-bc89-e19470a936f0,Burum Health Post,,Dispensary,Municipal Area Council,FCTABC07,7.442077637000068,8.889099121000072
+10c63f22-60ff-41a9-ad71-2a78b9708406,Kurudu Health Post,,Dispensary,Municipal Area Council,FCTABC11,7.543884278000064,8.94647216800007
+7287dfbf-9570-4977-9074-8a7c2632b7f6,Hulumi Health Clinic,,Primary Health Center,Municipal Area Council,FCTABC06,7.349670410000044,9.030700684000067
+fa68490e-1d02-411c-9a05-f32d9618dd1b,Abuja Clinic,,Primary Health Center,Municipal Area Council,FCTABC09,7.56530761700003,9.002319336000028
+5e227dd3-dcdb-4749-8ee2-81e10c80a233,Stephen Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.394104004000042,9.002685547000056
+918be923-16bc-4138-82df-69e8ba46bf3b,Pigba Medical Center,,Medical Center,Municipal Area Council,FCTABC02,7.495727539000029,8.949890136000022
+ab941e2a-e88d-44a9-a0a4-f2a6c92ad5f0,Moli Medical Center,,Medical Center,Municipal Area Council,FCTABC10,7.585510254000042,9.01751709000007
+2d226813-1718-4340-93d2-7f6457a7a2ee,Gawu Comprehensive Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.9885253900000635,9.265686035000044
+ee788aae-40b4-42f6-b2e2-2e0b20255ab0,Nukuchi Health Center,,Primary Health Center,Bwari,FCTBWR08,7.5183105470000555,9.161926269000048
+92fc5e97-31d5-461c-8c1d-066b6995b9e8,Kubwa Muslim Community Hospital,,Private Non Profit,Bwari,FCTBWR10,7.345886230000076,9.155273437000062
+769b3b83-4cef-4a13-97fe-5e2c1965e1ba,Omega Medical Center Mpape,,Medical Center,Bwari,FCTBWR03,7.494079590000069,9.141906738000046
+01725b2c-2907-43ca-9a5f-e00afd2501a2,Shishipe Primary Health Center,,Primary Health Center,Bwari,FCTBWR08,7.5307006830000205,9.159118652000075
+d7540328-414f-4a10-9929-ef51e23fc559,Sumpe Health Post,Primary Health Care Sumpe,Dispensary,Bwari,FCTBWR08,7.546508789000029,9.196105957000043
+fed1a776-aa0f-4503-b5f8-c9a690491b80,Kagini Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC04,7.2993164060000595,9.130126953000058
+4ca48dbc-e29f-4464-9f57-1bd15836536a,Gwarinpa Primary Health Care Center,Primary Health Care,Primary Health Center,Municipal Area Council,FCTABC05,7.416076660000044,9.112304688000052
+cf7a25b8-46c5-4b77-a31c-98aed0d80d13,Customs Medical Center,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC09,7.564270020000038,9.003723145000038
+1d286cb0-f8b3-462a-a891-d4dee6f3612f,National Assembly Clinic,Prolfa Hospital,Federal Staff Clinic,Municipal Area Council,FCTABC01,7.4948730470000555,9.040893555000025
+fab9c5d7-d26a-428c-9a58-7fe5d7d3db4e,Gwarinpa Federal Staff Hospital,,Federal Staff Clinic,Municipal Area Council,FCTABC05,7.421325684000067,9.11431884700005
+2821a595-174f-41b6-94f3-972869169958,Anguwan Dodo,,Primary Health Center,Gwagwalada,FCTGWA01,7.097900391000053,8.937683105000076
+099fffb4-8513-4aa1-a1eb-6e338fa953e6,Dagiri Primary Health Center,Gonita Clinic,Primary Health Center,Gwagwalada,FCTGWA01,7.08428955100004,8.931701660000044
+a9968f40-53ed-4307-9d4a-a40c6daf9d6e,Bwari Town Clinic,,Primary Health Center,Bwari,FCTBWR07,7.380920410000044,9.281677246000072
+29809b75-e986-4cb6-b172-1678b16b105e,Kwaoita Hausa Primary Health Care,,Primary Health Center,Kwali,FCTKWL03,6.925903320000032,8.666687012000068
+d3a8b35a-7157-499c-848c-e12cf3221d37,Kabi Kasa Primary Health Care Center,,Primary Health Center,Kuje,FCTKUJ05,7.318115234000061,8.679870605000076
+aa3bb2b2-2d46-4035-9296-0037c1d4508b,Bari Bari Primary Health Center,,Primary Health Center,Abaji,FCTABJ05,6.896484375000057,8.958679199000073
+278208b3-05dc-4130-b081-c62912566af6,Old Kutunku Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA06,7.057312012000068,8.929687500000057
+1fde81e6-6e54-45f5-9b61-bd6836b2475c,Wako Primary Health Center,,Primary Health Center,Kwali,FCTKWL08,6.909729004000042,8.596130371000072
+249a7236-3385-411b-9f98-afc7148f0260,Kwaita Model Primary Health Center,,Primary Health Center,Kwali,FCTKWL10,6.935729980000076,8.669921875000057
+a82eef57-ff52-44bc-99e4-52f849a513e4,Gurdi Health Center,Gurdi Primary Health Center,Primary Health Center,Abaji,FCTABJ05,6.803100586000028,8.767272949000073
+981bed19-8911-45a4-90d3-bc66771cecc2,Karu Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC09,7.5787334713188805,9.008950047910377
+39d28b76-e95d-44dd-be8e-e20e3c460f4b,Gbagalape Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC10,7.580348145452053,9.054084667724696
+fe654321-5880-4c1a-9e85-b89a22c9e718,Gudun Karya Primary Health Care,Gundunikarya Primary Health Center,Primary Health Center,Kuje,FCTKUJ03,7.343698114786264,8.495320720873243
+0abe2a17-3c2c-41f8-ad5f-fb1de25a4dd8,Piwoyi Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.393920898000033,8.999328613000046
+5f895711-00a0-4a13-9efa-523b47e2c7e0,Gawu Primary Health Center,Gawu CHealth Center,Primary Health Center,Abaji,FCTABJ04,6.8450927740000225,9.21069336000005
+657094cf-e2c7-4cd2-8df7-cc855194c8f8,Tolulo Health Post,Tokolu Health Center,Dispensary,Bwari,FCTBWR04,7.478698730000076,9.326477050000051
+9652d109-1c9f-4d3d-ba3a-f4c208a85fc1,Dutse Alhaji Primary Health Center,Alpha Clinic Dutse,Primary Health Center,Bwari,FCTBWR03,7.372924805000025,9.141723633000026
+b237cb9d-f543-4c08-ae8a-365f7cbf5b12,Ajana Primary Health Care Center,Agyana Primary Health Center,Primary Health Center,Abaji,FCTABJ08,6.895690918000071,8.515319824000073
+77c3ed7b-ca11-42b8-b803-b7f1e922a0ac,Nuku Primary Health Center,Nuku Primary Health Center,Primary Health Center,Abaji,FCTABJ07,6.983520508000026,8.49407959000007
+35749a49-821e-44cf-816c-866b5f63f6c5,Kuchiyako Party Healthcare Center,,Primary Health Center,Kuje,FCTKUJ06,7.250122070000032,8.870117187000062
+6c374a9a-76d0-485c-ae27-3f05f51cc8a4,Gui Health Post,,Dispensary,Municipal Area Council,FCTABC03,7.221496582000043,8.925476074000073
+1bc5c440-eaa0-4552-aa8e-4f0688af121a,Kujekwa Primary Health Care,Kujekwa Primary Health Center,Primary Health Center,Kuje,FCTKUJ07,7.378479004000042,8.577697754000042
+7b57f132-713d-4ef1-8559-f2931677da01,Lugbe Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.371276855000076,8.972290039000029
+8dadced0-1b0c-42ba-b1a0-265ee3568930,Kuchigoro Primary Health Care Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.42272949200003,9.015930175000051
+099bf1bd-8aee-4670-a119-2bd080b113b3,Igu Primary Health Care Center,Primary Health Care Igu,Primary Health Center,Bwari,FCTBWR04,7.469726562000062,9.27850341800007
+b3b20251-8538-47bd-ac75-eeefc9e9f3e1,Kuduru Primary Health Center,,Primary Health Center,Bwari,FCTBWR07,7.363891602000024,9.297485351000034
+21e74fc1-3423-4f98-93ee-0c5bb739c19c,Anagada Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA09,7.175720215000069,9.036926269000048
+50beacd0-c7f8-4990-bc97-8f1876743977,Achimbi Primary Health Care,,Primary Health Center,Kuje,FCTKUJ08,7.2221069330000205,8.604919434000067
+d36237a4-62de-4586-81d6-f6fd67297fd1,Aqwai Health Post,Agwal Health Clinic,Dispensary,Kuje,FCTKUJ08,7.202087402000075,8.61767578100006
+9822e7f1-d2cf-4073-bd35-2d5a878c3589,Odu Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC08,7.4773597163624075,8.635901355384103
+70387a6c-ee77-4857-b73c-9fd528e76db6,University of Abuja Teaching Hospital,UATH,Teaching Hospital,Gwagwalada,FCTGWA08,7.062316895000038,8.95288086000005
+03af89e3-21e1-4642-933a-602061443b7c,Fsp Health Center,,Primary Health Center,Kwali,FCTKWL06,7.014586611741054,8.802276682498391
+3c17b0f0-e8fb-4afc-930b-e2e1483eca8d,Nakowa Clinic Kutunku,,Private Non Profit,Gwagwalada,FCTGWA06,7.053549999999998,8.928620000000002
+df5e6900-5549-420b-855e-e598c0bcd366,63 Naf Hospital,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC03,7.263679405976593,8.974870637499325
+7c4f9f9a-b058-468d-9dc2-b336727c2831,Zhudi Amac Clinic,,Private Non Profit,Municipal Area Council,FCTABC05,7.380977502173796,9.104168733696529
+fdca12d8-9657-47de-a1ef-171131b7ecb1,Amac Hospital,,Private Non Profit,Municipal Area Council,FCTABC07,7.360011248913102,9.002
+41ab9f84-5fbf-4321-a1cc-43f44495e9fc,Duda Primary Health Center,,Primary Health Center,Kuje,FCTKUJ03,7.353033746739307,8.511191231522735
+7726362f-4eea-4344-b482-a64015081154,Usuma Hospital,,Private Non Profit,Bwari,FCTBWR10,7.354898759782082,9.146168733696529
+c3930280-1186-42ad-9042-d9f5bb164cac,Gss Health Center,,Primary Health Center,Municipal Area Council,FCTABC01,7.482572541302121,9.036707528259347
+c4f6136d-24d2-4f48-b7aa-1f3d0255b1aa,Gbkaiya Primary Health Center,,Primary Health Center,Abaji,FCTABJ07,6.950966253260693,8.469887510868979
+afa0556b-9323-4ef0-b34b-b406a04163d9,Hammersmith Medical Center,,Medical Center,Municipal Area Council,FCTABC07,7.379932506521387,8.953966253260694
+0226a187-7ab2-4f64-ac39-855fbefab546,Living Faith Church Clinic,,Private Non Profit,Municipal Area Council,FCTABC07,7.340808768477265,9.003123738044122
+b95d1787-ca5f-4848-9cf1-986d0fdeb18b,Nysc Clinic,,Private Non Profit,Bwari,FCTBWR06,7.317247476088246,9.149292471740656
+98ef47b9-d3a5-4145-bc88-0ec4bdc6bf01,Nigerian Air Force Clinic,,Private Non Profit,Bwari,FCTBWR09,7.389022497826204,9.241
+a99df27d-5a1f-4512-92ca-cd99e50e7a6f,Saburi Health Center,,Primary Health Center,Municipal Area Council,FCTABC04,7.28005624456551,9.107876261955878
+8513a576-809b-41d3-b814-f101b2fc5a36,Divine Clinic,New Township Clinic,Primary Health Center,Abaji,FCTABJ06,6.948292649426604,8.474360422118812
+d876d0a6-ff26-4293-9cb4-fd8550149777,Lafiak Hospital,New Township Clinic,Primary Health Center,Abaji,FCTABJ06,6.946913342825086,8.474355135332093
+544297c5-c377-4f2f-b3ec-c91775df53e4,Kefat Medical Center,,Medical Center,Municipal Area Council,FCTABC05,7.404724121000072,9.10272216800007
+31dfabe6-e3ce-4d05-ae7d-886a74797ded,Kuje General Hospital,,General Hospital,Kuje,FCTKUJ06,7.231872559000067,8.881713868000077
+b5c0a330-061a-444f-9e64-f1301ce552a9,Kings Care Hospital Ltd,,Primary Health Center,Municipal Area Council,FCTABC12,7.473850000000027,9.065540000000055
+9feced0a-3dfd-4918-80d7-9b65787cbfcd,Hi Fi Clinics,,Primary Health Center,Municipal Area Council,FCTABC12,7.483890000000031,9.061960000000056
+e5a8601a-8c73-4557-9f19-eaf4b35d9d96,Minat Clinic and Maternity Tungwa Maje,,Maternity Home,Gwagwalada,FCTGWA09,7.195290000000057,9.057980000000043
+27359c35-77f3-46dc-aecd-0493a147d773,Capital Doctors Clinic,,Primary Health Center,Kuje,FCTKUJ01,7.213330000000042,8.884270000000072
+5b4e6ad5-6443-460e-979f-e18ed12fa576,St Georges Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.414450000000045,9.09286000000003
+c3824cdc-94e5-4073-b75e-dbfe419fcc8f,Our Ladys Maternity Homes,,Maternity Home,Municipal Area Council,FCTABC04,7.315710000000024,9.089810000000057
+77fb61ad-b7c4-4240-8f2e-b87d6303a51b,Kaida Sabo Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,6.943390000000022,9.039790000000039
+abf6b64a-309f-431a-bfa1-0f310abbabc0,Mayday Specialist Hospital,,Specialist Hospital,Municipal Area Council,FCTABC10,7.583930844681195,9.030329402259985
+e5887195-7ba9-4e08-b6e6-a0872f0e04f5,Omega Medical Lab and Scan Center,,Primary Health Center,Municipal Area Council,FCTABC12,7.468870000000038,9.061390000000074
+7e53f840-2835-4e96-b4e5-b4cf8888abed,Ruz Medical and Diagnostic Center,,Laboratory,Municipal Area Council,FCTABC02,7.490350000000035,9.01547000000005
+8bb39ddd-3e42-4587-be3c-653a6001e2bd,Arewa Specialist Hospital,,Specialist Hospital,Municipal Area Council,FCTABC05,7.415790000000072,9.072820000000036
+05f79f11-dc7c-4844-9fea-d4bd43896c9d,Primed Clinic and Diagnostic,,Laboratory,Municipal Area Council,FCTABC12,7.478640000000041,9.064010000000053
+1999a7dc-9883-4415-a8db-15b251773846,Alfad Specialist Medical Center,,Specialist Hospital,Kuje,FCTKUJ06,7.226310000000069,8.880030000000033
+cc9d8be7-0ae8-46cd-b26d-73907a400298,Princess Mary Specialist Hospital,,Specialist Hospital,Municipal Area Council,FCTABC05,7.411500000000046,9.093110000000024
+1a1d7440-e0dc-4b5a-83ec-b4258f430adf,Iduna Specialist Hospital,,Specialist Hospital,Municipal Area Council,FCTABC12,7.4654200000000515,9.07472000000007
+1e6859fa-ec20-4239-b1f4-aa5ab407e552,Ecwa Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC04,7.315650000000062,9.088720000000023
+b974b0e0-9627-4f62-b0a7-f82dba376b21,Decency Amana Specialist Medical,,Specialist Hospital,Municipal Area Council,FCTABC08,7.570405035770861,8.831815633510939
+dda31944-63f3-450d-9f56-1e2bff250f3b,G and S Specialist Clinic,,Specialist Hospital,Municipal Area Council,FCTABC12,7.488410000000044,9.104940000000056
+156b1b93-2841-43d6-84b0-e327c50fdb25,Medicaid Radioagnostic,,Primary Health Center,Municipal Area Council,FCTABC12,7.462080000000071,9.077420000000075
+ea579e15-9cc3-4f58-a1d0-0988b360995b,Gwarimpa Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.373768051753565,9.115803663119637
+c43d41e2-de64-4452-bede-cc4d8e0c99f3,Jorab Hospital,,Primary Health Center,Gwagwalada,FCTGWA06,7.076270000000022,8.932980000000043
+149da7ba-9272-4b59-b4c6-efd2c3260cb0,Lifeway Medical Center,,Medical Center,Gwagwalada,FCTGWA04,7.049230000000023,9.049230000000023
+db1fbfa6-58c7-4abb-ad06-276dcea8f572,Giri Clinic and Maternity,,Maternity Home,Gwagwalada,FCTGWA03,7.1541200000000345,9.00260000000003
+e92c29cc-1dfe-4f32-ad2d-a8f1336c72e9,Alheri Clinic and Maternity,,Maternity Home,Gwagwalada,FCTGWA06,7.085540000000037,8.942250000000058
+0cd76d2c-01e0-45ed-a342-3855be091dc0,Jamad Clinic,,Primary Health Center,Gwagwalada,FCTGWA01,7.088420000000042,8.930530000000033
+5152d2df-3dc1-4912-ad0a-a5e4d288ba17,Gwagwalada Clinic and Maternity,,Maternity Home,Gwagwalada,FCTGWA06,7.078970000000027,8.934830000000034
+11497073-1357-4fe2-ad2e-2d924802a832,Choice Maternity and Nursing Home,,Maternity Home,Kwali,FCTKWL09,7.044560000000047,8.80099000000007
+0861bc41-82e9-4304-8b15-408e68cd5510,King Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC10,7.582170000000076,9.029590000000042
+65f0dd73-8091-41b5-92d9-16c9bbe43bfa,Blessed Trinity Hospital,,Primary Health Center,Municipal Area Council,FCTABC10,7.5879635218079935,9.031259330718346
+f7630fde-606c-4b1e-aa28-db98039588b1,Fountain Head Hospital,,Primary Health Center,Municipal Area Council,FCTABC10,7.586330000000032,9.023810000000026
+73fe5592-8710-40ac-bf75-48c8bf2a31e6,Rouz Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC02,7.4796100000000365,9.001010000000065
+2127d16f-537d-40d0-bceb-f5da4383deea,Prolfa Hospital,,Primary Health Center,Municipal Area Council,FCTABC01,7.495230000000049,9.042520000000025
+e38ec536-ce11-4de4-a873-41cf016ccb92,Fct Hospital Management Board,,Primary Health Center,Municipal Area Council,FCTABC01,7.502570000000048,9.044110000000046
+ff65258e-17f1-4fe6-8474-f951e32ad933,Abuja Clinic,,Primary Health Center,Municipal Area Council,FCTABC02,7.4800200000000245,9.020080000000064
+b816831c-43ee-49b3-87b1-44eae2c282a2,Foundation Prevention Clinic,,Primary Health Center,Municipal Area Council,FCTABC12,7.478670000000022,9.064510000000041
+90e3c86a-bf85-453b-87d3-226853424861,Limi Hospital and Maternity Limited,,Maternity Home,Municipal Area Council,FCTABC01,7.468590000000063,9.043400000000076
+c7a2a19e-2720-429c-aaaf-dd331fb26304,Bepos Clini and Maternity,,Maternity Home,Municipal Area Council,FCTABC01,7.475280000000055,9.029570000000035
+31a5b853-9110-457d-8406-9181900fd6cf,Rainbow Hospital,,Primary Health Center,Municipal Area Council,FCTABC02,7.472570000000076,9.01135000000005
+9ecabed4-dfca-4baf-9b53-29393a85a010,Awmecare Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC02,7.4708400000000665,9.013780000000054
+150a8017-1a5b-4798-97bd-dc51a54d1ddf,White Diamond Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC02,7.501370000000065,8.986390000000029
+887ab2d2-4bd9-461b-a89a-c74917b3a8c5,Leblon Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.401700000000062,9.069510000000037
+dffd597b-1457-4f5f-8305-b449403ccafa,Egahi Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.399550000000033,9.066490000000044
+6e25fb3f-3ddc-447c-9515-8703d3b8003c,Nisa Premier Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.411490000000072,9.067350000000033
+327b20cb-db61-455f-9c93-85f519dbd20d,Guinue Savannah Medical Center,,Medical Center,Municipal Area Council,FCTABC01,7.500120000000038,9.040190000000052
+c75a35fb-6f9d-49de-8a4a-07320e53e324,Vinette Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC02,7.491610000000037,9.017590000000041
+dcdaf09d-6f71-4fae-bd78-ec80c4f843a7,Diamond Medical Center,,Medical Center,Municipal Area Council,FCTABC02,7.491030000000023,9.013030000000072
+b36ecb51-427b-433d-b2f1-d6548564b1f0,Our Lady Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC01,7.483410000000049,9.030260000000055
+c630a66c-a8d4-4db2-baf8-e3b60f5babf7,Zenith Medical and Kidney Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.489310000000046,9.015880000000038
+3d4d9c02-2d55-421c-97f4-962517f3ae4b,Bethel Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC03,7.206860000000063,8.985780000000034
+74dc76ad-5fcd-4fa8-ad45-eaa84302723d,Faith Medical Center,,Medical Center,Municipal Area Council,FCTABC06,7.374340000000075,9.060510000000022
+f2b61183-0144-4e40-bf5e-48e2c837bfdb,Sauki Good Samaritan Clinic,,Primary Health Center,Municipal Area Council,FCTABC07,7.448750000000075,8.948440000000062
+b74fe3b2-769c-4dd0-b7fa-6f9ff2ee7456,Karu Ecwa Clinic,,Private Non Profit,Municipal Area Council,FCTABC09,7.5799689083777535,9.010461689362392
+c7f3308b-27bc-4ec1-ae43-09f24fc241fe,St Patrick Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC10,7.570120000000031,9.027670000000057
+2311a70e-433d-4032-93cf-b2430dfe362c,Kella Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC10,7.5765630994674495,9.025803450266366
+eea291a6-c704-49e2-9b03-14c0a7b2407b,Alibu and Maternity,,Maternity Home,Municipal Area Council,FCTABC10,7.570320000000038,9.026200000000074
+2d86e8bb-7739-4daf-801e-9aa63c18ec4e,Bismol Medical Center,,Medical Center,Municipal Area Council,FCTABC10,7.5753041195480755,9.036597712897642
+cab374d7-358b-4c1d-badd-84d49e764cc5,Saferon Hospital Ltd,,Primary Health Center,Municipal Area Council,FCTABC10,7.579864717288109,9.037414294947514
+30f25be5-6164-4afa-a323-e9820a4b942a,Albama Clinic,,Primary Health Center,Municipal Area Council,FCTABC09,7.5801400000000285,9.00416000000007
+eb75efb7-9e2b-4e6d-9a27-26b20e736d48,Nufin Allah Maternity Home,,Maternity Home,Municipal Area Council,FCTABC09,7.574800000000039,9.003700000000038
+eaf6d7ad-f990-47fc-92cd-7227a5a0e59f,Rapha Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC09,7.568140000000028,8.976830000000064
+3de262c6-622c-4f96-8fb2-8ee2e3ca804c,Samrock Hospital,,Primary Health Center,Municipal Area Council,FCTABC11,7.55021000000005,8.933130000000062
+d6063429-d125-40a8-b758-6049f0d825f4,Mercy Maternity Home,,Maternity Home,Municipal Area Council,FCTABC09,7.567290000000071,8.974020000000053
+551439f8-923f-4ad4-ad35-bb4db1165c3a,Rose of Sharon Clinic,,Primary Health Center,Municipal Area Council,FCTABC09,7.5633300000000645,8.976570000000038
+c250a444-1b4e-4727-816e-d05df21f5a67,Midland Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC09,7.560140000000047,9.012640000000033
+18cd7788-afaf-4aab-94eb-05ec28ab683e,Fredrickson Mecal Clinic,,Primary Health Center,Municipal Area Council,FCTABC09,7.564540000000022,9.01231000000007
+5d7c2b9f-56f9-47cd-9d73-3c4806d40e4c,Arewa Clinic,,Primary Health Center,Municipal Area Council,FCTABC09,7.562150000000031,9.013630000000035
+1f97e800-6bc0-436a-bef6-bf3e7c42f9fc,Femili Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC11,7.577730000000031,8.897350000000074
+a751481a-da62-4bae-8c4a-be5e40ca81e6,Comforter Place,,Primary Health Center,Municipal Area Council,FCTABC02,7.467580000000055,8.998500000000035
+4c75209c-cb36-48fc-b1ca-87c853cfa710,Precious Life Medical Center,,Medical Center,Municipal Area Council,FCTABC01,7.444520000000068,9.014610000000062
+32d962fb-0770-4080-b799-0077d2fd6000,Mery Clinic,,Primary Health Center,Municipal Area Council,FCTABC07,7.444080000000042,8.951890000000049
+56bd4b2f-fdf6-41c0-811a-d5ed21b9f90b,Al Nur Maternity Home,,Maternity Home,Municipal Area Council,FCTABC03,7.210200000000043,8.990600000000029
+58ffd8ca-2879-4b13-9a66-d743b537f43d,Jerab Hospital,,Primary Health Center,Kuje,FCTKUJ06,7.236620000000073,8.879770000000065
+3677eec3-d58d-471f-a62d-36520baa718c,St Micheal Clinic and Maternity,,Maternity Home,Kuje,FCTKUJ06,7.216730000000041,8.882120000000043
+9bba00c6-6ee4-4cdb-9ed7-72e608bb6b94,Hemado Clinic,,Primary Health Center,Kuje,FCTKUJ01,7.21819000000005,8.884380000000021
+5a25e134-9ab1-44ea-bd70-1be2d4beded1,Vinto Clinic,,Primary Health Center,Kuje,FCTKUJ01,7.212420000000066,8.883800000000065
+f21d0a4f-eab9-4d09-a606-9340f15154a6,Stevan Hospital and Maternity,,Maternity Home,Kuje,FCTKUJ06,7.228050000000053,8.875830000000065
+5a499897-c885-49c0-99e4-a9aa63f96917,Allison Hospital and Maternity,,Maternity Home,Kuje,FCTKUJ01,7.215380000000039,8.885540000000049
+94869723-56a0-41da-b809-103038a3346a,Peace Care Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.409730000000025,9.098870000000034
+03f8ba70-d8fb-4960-b3ad-9f3939cdb84b,Jilf Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.41306000000003,9.080460000000073
+a81692e4-0475-4803-98ed-8e1d02491c76,Relina Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.404280000000028,9.107290000000035
+6db6e17f-6ee7-4cbe-a615-00aca05cce46,Camel Wood Medical Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.416100000000029,9.082280000000026
+9b0343af-08e6-4234-95da-c89ad16f730e,Jedonec Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.404160000000047,9.095900000000029
+a9ff95d1-6867-4a72-95d5-c6f8b75bc6f1,Ebony Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.407680000000028,9.099960000000067
+0a663448-c42b-438b-8fe2-b43dc0b1628d,4 Bn Mrs Clinic,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC01,7.511150000000043,9.09549000000004
+c1ef35c0-c7f6-4416-9448-2f0914d89539,Wellpoint Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.410810000000026,9.115820000000042
+72b255e4-7ac7-47a3-a95d-8818eeb36c70,Recovery Medical Services,,Primary Health Center,Municipal Area Council,FCTABC05,7.41324000000003,9.117230000000063
+9a1d7b51-94b6-4337-86fa-44404ce6023b,Faith Nursing Home,,Primary Health Center,Municipal Area Council,FCTABC04,7.318880000000036,9.088760000000036
+00a3abc7-d6d6-4ae1-843a-0bf111271012,Camek Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.41936000000004,9.086680000000058
+9f837072-f3c8-49f5-8dbf-5f1228f11984,Kings House Medical Center,,Medical Center,Municipal Area Council,FCTABC05,7.415560000000028,9.094450000000052
+f5c99b2f-9238-46a7-a8ed-876f4aba509f,The Crown Hosptal,,Primary Health Center,Municipal Area Council,FCTABC04,7.313100000000077,9.090510000000052
+35e9c8fa-e6b0-47a1-8006-fb4cf5d4531e,Viewpoint Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.410050000000069,9.091150000000027
+c26870dc-1bf8-4e40-8dc5-c62a8583d9e6,Cream Medics and Materity Homes,,Primary Health Center,Municipal Area Council,FCTABC04,7.315580000000068,9.090790000000027
+52f5bdee-557d-4dac-bf8c-17ffe266a3de,Suzzy Ville Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC04,7.311740000000043,9.087370000000021
+b49bcd25-4b46-4600-80f9-93c6addd925b,Access Hospital,,Primary Health Center,Municipal Area Council,FCTABC04,7.313450000000046,9.09006000000005
+6cf8f67d-e027-4419-9d3e-b7f0b88f8bc1,Julius Berger Medical Services Ltd,,Primary Health Center,Municipal Area Council,FCTABC05,7.391560000000027,9.078590000000077
+a08aca2e-dcf7-40f6-a9ae-9cc413c7cc62,Dr Hassan Clinic and Diagnostic Center,,Laboratory,Municipal Area Council,FCTABC12,7.495530000000031,9.094180000000051
+feb6e27a-89b5-4e8e-91da-736e585a2cd7,Abuja Clinics Ltd,,Primary Health Center,Municipal Area Council,FCTABC12,7.484830000000045,9.098460000000046
+8ab1450c-fa6c-4f6f-abb9-e72e28481d4c,Laura Hospital and Maternity,,Maternity Home,Bwari,FCTBWR01,7.384740000000022,9.259730000000047
+05db4ec6-2b72-4d63-b920-7bf5fefabb1c,Bwari Medical Center,,Medical Center,Bwari,FCTBWR01,7.376770000000022,9.276720000000068
+5c0d8643-459a-4d43-9c70-cad6ab3045a4,Gbbic Divine Clinic Bwari,,Primary Health Center,Bwari,FCTBWR07,7.376650000000041,9.275090000000034
+c58db3e9-fb29-4799-b21f-7e387dfb0b1b,Maryland Clinic Sabon Gari,,Primary Health Center,Bwari,FCTBWR07,7.370560000000069,9.264940000000024
+e9371eb2-d190-4b1a-b2fe-be677ccfc160,Royal Lords Hospital 7 Maternity,,Maternity Home,Bwari,FCTBWR03,7.37393000000003,9.144250000000056
+6eae1f79-e178-4853-ab06-e6b7018fd77b,St Vincent Catholic Hospital,,Private Non Profit,Bwari,FCTBWR02,7.323120000000074,9.16262000000006
+cf89d9c9-c14b-4d30-8b79-598d67c57e3b,Salihu Memeorial Hospital,,Primary Health Center,Gwagwalada,FCTGWA10,7.215000000000032,9.096900000000062
+03f61e3c-3d98-40f6-98cd-5abe5affa6e0,Bapha Clinic and Maternity,,Maternity Home,Bwari,FCTBWR06,7.234330000000057,9.112170000000049
+9562b209-e2b0-48b8-bf73-7e90a0f94514,Maraba Clinic and Maternity,,Maternity Home,Gwagwalada,FCTGWA06,7.077210000000036,8.94395000000003
+0a6eca72-deb6-42e6-ac12-f5b5ceca53cd,Smart Motherhood Maternity,,Maternity Home,Municipal Area Council,FCTABC01,7.501430000000028,9.043840000000046
+ad621cb0-7027-44fa-9594-963aa215af32,Suleja Clinic,,Primary Health Center,Municipal Area Council,FCTABC01,7.489750000000072,9.032950000000028
+a08eb10b-1159-4218-ba5d-2360d8aa1bff,Azony Maternity,,Maternity Home,Municipal Area Council,FCTABC01,7.480120000000056,9.033610000000067
+5019bcfc-aa5e-469a-ae51-3b920014aea6,Luna Hospital,,Primary Health Center,Municipal Area Council,FCTABC07,7.444430000000068,8.948020000000042
+6eeb3bd4-b284-43de-999f-6b1e966669f9,Samto Medical Services,,Primary Health Center,Municipal Area Council,FCTABC09,7.571040000000039,9.001480000000072
+c461da99-1922-4a08-8eed-72b828769fff,Jikwoyi Native Hospital,,Primary Health Center,Municipal Area Council,FCTABC09,7.562130000000025,8.986290000000054
+401728ed-9ca7-482b-ae36-f9aa0609a7cf,Sophy Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC09,7.560640000000035,8.978910000000042
+1b810264-5676-403c-b8b9-8d64c7acd06f,Vintage Medical Center,,Medical Center,Municipal Area Council,FCTABC05,7.405980000000056,9.046170000000075
+bc18207d-cc8e-4abc-8a96-9e5381fc73f1,Asher Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.474150000000066,9.099350000000072
+6476674e-91d0-425b-86a8-71a3be3b932e,The Central Clinic,,Primary Health Center,Municipal Area Council,FCTABC12,7.480780000000038,9.075450000000046
+80c29a5b-a531-4f31-8cd5-6c09039e810c,Asokoro District Hospital,,District Hospital,Municipal Area Council,FCTABC01,7.523270000000025,9.045610000000067
+3023b48c-b997-44e2-8d15-dd06e24a7f4f,Efab Medical Center,,Medical Center,Municipal Area Council,FCTABC05,7.395790000000034,9.060730000000035
+a86bf4eb-0ef5-4a38-b66d-b5375f500ef7,Gurfata Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.059384272308632,9.127942338643583
+920fff62-4c03-4db6-b93d-1cd83333a1ec,Unity Clinic,,Primary Health Center,Abaji,FCTABJ04,6.931289000000049,9.248294000000044
+45d43c8b-1d6d-43e1-b58a-cf1a89a046f2,Boku Sarki Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.830353000000059,9.249539000000027
+0d7ca58e-c537-4c61-bd76-e9abaa6bf485,Bid Wagun Memorial Clinic,,Primary Health Center,Gwagwalada,FCTGWA04,7.00578500000006,9.244072000000074
+5ed22986-f470-49be-b1e1-4152f2e3fe50,Haske Clinic,,Primary Health Center,Gwagwalada,FCTGWA04,7.007062000000076,9.240988000000073
+a089536a-61b8-4f17-96c2-27f0091b0df8,Tufa Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.9371040000000335,9.25074600000005
+ca56cfde-512e-43b1-ba80-a212992d202c,Kabimangoro Primary Health Care,,Primary Health Center,Kuje,FCTKUJ05,7.376204221540482,8.727968493313998
+4ef2efff-0e03-4704-a037-285f791432ad,Kasada Health Clinic,,Primary Health Center,Kuje,FCTKUJ02,7.380680000000041,8.799420000000055
+b5ee71a1-5092-4a03-8048-b369e946552a,Budupe Primary Health Care,,Primary Health Center,Bwari,FCTBWR09,7.47006,9.187419999999998
+f0a782a7-0d15-42ad-abbd-688f8dc6e75e,Tugan Madaki Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC03,7.245194202591966,9.022663751417905
+5b47a601-f438-459a-ae35-e6d0d1d9ae69,Chikuku Soho Community Primary Health Center,,Primary Health Center,Kwali,FCTKWL04,7.126268153181547,8.87757296479825
+759d7493-e09b-4ff2-9dd5-8f63e9f5339b,Damakusa Primary Health Center,,Primary Health Center,Kwali,FCTKWL05,6.946360973281493,8.823092080217721
+ad4d407b-d7a9-4a62-a7ff-933fdd1210f6,Kaida Tsoho Primary Health Care,,Primary Health Center,Gwagwalada,FCTGWA07,7.0188,8.938310236297397
+91fb7b13-cba4-4e25-99c0-c2992082ddb5,Panunuke Primary Health Center,,Primary Health Center,Bwari,FCTBWR04,7.502674946067901,9.304311865007763
+78e04705-ea9a-4de2-827b-3d00b24056f6,Wuse General Hospital,,General Hospital,Municipal Area Council,FCTABC12,7.469489999999999,9.062789999999996
+914c3cb7-4939-4045-8074-320ac5c8720f,Kohadahanu Primary Health Center,,Primary Health Center,Kuje,FCTKUJ08,7.258410984110384,8.770034110590645
+168f9faa-c6cf-4435-bbc1-2a88085616e5,Nakowa Clinic,,Private Non Profit,Gwagwalada,FCTGWA02,6.99365764567999,9.056884428771498
+9176c864-90f5-4a9e-a221-5fb1385cf2a2,Byazhin Primary Health Center,,Primary Health Center,Bwari,FCTBWR02,7.327285035847345,9.170972739563636
+f96c5473-8c9b-4136-a7ea-f10a78c7e84e,Kogo Primary Health Center,,Primary Health Center,Bwari,FCTBWR01,7.388084958294493,9.25627634290063
+a636faf1-caf6-45ea-99ec-664c0bc44c25,Maitama General Hospital,,General Hospital,Municipal Area Council,FCTABC12,7.481280000000027,9.086220000000026
+e256e935-ee1a-44f1-b1af-bd893faf632b,Maitama District Hospital,,District Hospital,Municipal Area Council,FCTABC12,7.481193572099977,9.086656168889471
+01b220a3-7435-4083-9b66-d4fb12c4bbf5,Dei Dei Comprehensive Health Center,,Comprehensive Health Center,Municipal Area Council,FCTABC04,7.282170000000065,9.105380000000025
+0ca93328-e5a5-4e2d-a389-f9a0201c403b,Kwaoita Hausa Model Primary Health Care Center,,Primary Health Center,Kwali,FCTKWL03,6.924910000000068,8.665010000000052
+05025101-1ead-4fe0-9b73-212233024281,Petti Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL04,7.105540000000076,8.87516000000005
+4dabaecd-18ba-4e53-a177-158ee51d8dde,Leleyi Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL07,7.031850000000077,8.891390000000058
+2604e930-8bfb-4892-ae23-e56f02fecf7b,Yebu Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL10,7.093210000000056,8.68214000000006
+ca9f325f-8719-4f4c-9217-70926dd439a9,Kigbe Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL10,7.114750000000072,8.698390000000074
+c4af1859-0801-41d5-89f7-9a5b6aaff9e3,Kundu Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL02,6.952670000000069,8.856090000000052
+faa2e09e-e2e2-47c4-a6c9-624d0fa3eee1,Lanto Health Clinic,,Primary Health Center,Kuje,FCTKUJ01,7.200070000000039,8.869890000000055
+f5d4d666-a18a-42d5-b479-518853dcf462,Gurfata Clinic,Wuna Health Clinic,Private Non Profit,Gwagwalada,FCTGWA04,7.059160000000077,9.129040000000032
+d2ce6140-a7ef-4bb0-b042-1a61bb1feb3d,Madalla Comprehensive Health Center,,Comprehensive Health Center,Gwagwalada,FCTGWA10,7.215370000000064,9.104390000000024
+9e961881-8f4a-448c-97ba-7972e6f96df3,Karshi Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC11,7.5694800000000555,8.92566000000005
+67fcc951-46c5-4a08-83cc-e40550cbc1d6,Crystal Paediatric Clinic,,Primary Health Center,Municipal Area Council,FCTABC02,7.465820000000065,8.997120000000052
+4fedd490-b063-43cd-8c18-54cb6b07d21e,Nandi Basic Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.280910000000063,8.856110000000058
+3d32318e-cfce-4434-a51b-c55a97bf5a88,Pandagi Primary Health Center,,Primary Health Center,Abaji,FCTABJ08,6.854900000000043,8.513900000000035
+416dd5b6-48d3-407f-a4dc-10995bada0ae,Manderegi Primary Health Center,,Primary Health Center,Abaji,FCTABJ06,6.926030000000026,8.53526000000005
+e3f81e15-94f7-49d5-8704-5d8fc7ad8d49,Lowcost Primary Health Center,,Primary Health Center,Abaji,FCTABJ07,6.960220000000049,8.470320000000072
+ec1bd74e-e7a5-4cee-b767-563f08b4775d,Divine Health Clinic,,Primary Health Center,Abaji,FCTABJ07,6.961430000000064,8.470560000000035
+0c8e5b42-2669-41bf-a198-294fb73ab334,Paikon Kore Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA07,7.027370000000076,8.998240000000067
+19d149ec-68fd-4689-9f0e-4bc11b70a2cf,Gwagwalada Township Clinic,,Primary Health Center,Gwagwalada,FCTGWA06,7.087200000000053,8.940870000000075
+5002d62d-5432-49f7-9c53-58d5d2314ff8,Toton Gambiya Health Clinic,,Primary Health Center,Kuje,FCTKUJ09,7.0991618970780035,8.436108661436673
+ebb2f68c-b99b-4de8-aa1b-4988cf198e46,Kulo Health Clinic,,Primary Health Center,Kuje,FCTKUJ09,7.04961000000003,8.491250000000036
+c341e990-a0fa-4844-af79-823986cd45a2,Gwargwada Primary Health Center,,Primary Health Center,Kuje,FCTKUJ04,7.104050000000029,8.557170000000042
+03f095d4-53dc-46ba-88ff-53b41b6afca9,Gombe Health Clinic,,Primary Health Center,Kuje,FCTKUJ04,7.113210000000038,8.512800000000027
+e3b7213e-8d5e-4b3e-96d2-9b74b0bd3eb8,Kilankwa 2 Primary Health Center,,Primary Health Center,Kwali,FCTKWL04,7.082550000000026,8.870660000000044
+76b4b88a-b3e8-41b9-9bac-2c7363f41731,Unboni Kamadi Tsoho Primary Health Center,,Primary Health Center,Kwali,FCTKWL03,6.964040000000068,8.742950000000064
+e9610fc8-51a6-4aea-a506-575dd23110bd,Ike Primary Health Clinic,,Primary Health Center,Kwali,FCTKWL10,7.0285500000000525,8.665890000000047
+0b8a998e-6925-47ff-b6fb-90f8fb56b42b,Kwali Basic Health Center,,Primary Health Center,Kwali,FCTKWL07,7.032420000000059,8.917400000000043
+bf3e7481-1e1d-40c1-8260-6bc094e68ef2,Ubasharu Primary Health Center,,Primary Health Center,Kwali,FCTKWL01,6.824000000000069,8.626600000000053
+aff66c3e-eb6a-4e56-a57a-adef22f12f02,Kwaita Hausa Primary Health Care,,Primary Health Center,Kwali,FCTKWL01,6.888600000000054,8.66602000000006
+b38287ca-576f-4b5a-bf69-6dd677afe2e9,Farakuti Health Clinic,,Primary Health Center,Kwali,FCTKWL10,7.056470000000047,8.68485000000004
+a7c850b5-42c2-4bcc-8b54-b90b0419ae60,Wako Primary Health Care,,Primary Health Center,Kwali,FCTKWL08,6.9119700000000535,8.597660000000076
+84e6757d-5f4b-4074-b955-5753b93ff647,Piri Primary Health Care,,Primary Health Center,Kwali,FCTKWL03,6.9615400000000704,8.742040000000031
+2bf9df87-bff9-4701-90cd-65e8feccbfdf,United Health Care,,Primary Health Center,Municipal Area Council,FCTABC01,7.503170000000068,9.045510000000036
+6d7520e8-b1f7-443c-8e4b-476d7db62710,Intergrated Health Care,,Primary Health Center,Municipal Area Council,FCTABC01,7.480000000000075,9.031550000000038
+9b19f724-6e45-45d4-ac21-702f5318392b,Shadalafiya Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC07,7.44658000000004,8.948750000000075
+e3f590ba-7aa0-48d1-bd47-7bc61c9b9e6a,Kobi Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC08,7.57788000000005,8.829670000000021
+7ae4fdc4-ff20-4353-842b-b3ee0d066970,Hulumi Primary Health Care,Amana Maternity Center,Primary Health Center,Municipal Area Council,FCTABC01,7.489630000000034,9.034410000000037
+ac5ad1a0-c009-431d-b156-58bef9dea471,Kugbo Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC10,7.546520000000044,9.022100000000023
+86ceeade-abea-49f2-b384-186e6438d9fb,Gugu Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC11,7.574940000000026,8.868420000000071
+a614c65f-03eb-40ca-98a8-05cc9eea6776,Kuseki Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC08,7.572840000000042,8.829670000000021
+7bc7f021-35a9-4787-b891-a7ef16342e8b,Anagada Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA09,7.1990200000000755,9.05609000000004
+6cfa7e59-a08b-4683-8df3-b42615b1d5a6,Kabinmangoro Health Clinic,,Primary Health Center,Kuje,FCTKUJ05,7.374600000000044,8.726480000000038
+214b8759-91c6-45d6-b8bb-789bd1dbdf68,Nekan Health Clinic,,Primary Health Center,Kuje,FCTKUJ03,7.351334574204838,8.496468486037177
+e0808342-2249-4964-85fb-91b8e2f19ef0,Sabo Health Clinic,,Primary Health Center,Kuje,FCTKUJ08,7.209970000000055,8.681550000000072
+98328c63-bc00-4f0a-9727-43f5e3de65db,Gadoro Health Clinic,,Primary Health Center,Kuje,FCTKUJ08,7.244260000000054,8.686450000000036
+7971ba79-4e7a-4102-b9d9-bcc681998b8d,Yanga Health Clinic,,Primary Health Center,Kuje,FCTKUJ02,7.40665000000007,8.834390000000042
+a044f138-9dff-4d93-aa6d-db463bc39568,Kusaki Health Clinic,,Primary Health Center,Kuje,FCTKUJ02,7.400970000000029,8.789470000000051
+3bc6cf96-4645-4f7e-834e-d42880c74427,Godoji Primary Health Center,,Primary Health Center,Kuje,FCTKUJ06,7.210280000000068,8.841910000000041
+3551f88f-93bf-4998-80b9-a482d604b058,Kazuga Gata Basic Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.282550000000072,8.85534000000007
+31365e99-56a0-4931-a8b2-e96ea4d2d2c0,Kabinkasa Health Clinic,,Primary Health Center,Kuje,FCTKUJ05,7.313770000000034,8.680280000000039
+c7ff2aea-df73-4aa0-a2b8-f79ecb441d0d,Zagabutu Health Clinic,,Primary Health Center,Kuje,FCTKUJ03,7.212730000000022,8.513070000000027
+5a827b14-35bc-48c3-92a1-4c8dd87e8faa,Tufa Primary Health Care,,Primary Health Center,Abaji,FCTABJ04,6.9325300000000425,9.244090000000028
+0761ad2e-7bc1-46e9-a80c-002cf788562b,Boku Madaki Primary Health Care,,Primary Health Center,Abaji,FCTABJ04,6.826610000000073,9.249930000000063
+0d784a00-bd12-4cee-8372-1cc06dfa2722,Abuchi Gwari Health Post,,Dispensary,Gwagwalada,FCTGWA05,7.110020000000077,9.18924000000004
+0e5f9161-133e-45ed-b308-7c9d44c59598,Deide Health Center,,Primary Health Center,Bwari,FCTBWR03,7.527780000000064,9.114310000000046
+948ca5b9-df90-497a-bc20-3c5997c085f5,Gbagarape Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC04,7.316740000000038,9.08671000000004
+f5ece564-83b0-4b2a-a69f-7bdf905e96a1,Gaba Primary Health Care,,Primary Health Center,Bwari,FCTBWR01,7.423670000000072,9.291960000000074
+673b4ff3-889e-4f71-8260-e340aa6614ae,Kute Health Clinic,,Primary Health Center,Bwari,FCTBWR08,7.548680000000047,9.246110000000044
+8fb97433-42fd-4847-9201-5458c95dafb9,Galuwyi Health Clinic,,Primary Health Center,Bwari,FCTBWR08,7.504130000000032,9.21013000000005
+499b8165-52d5-43cf-8b81-0c07cf9747f1,Base Primary Health Clinic,,Primary Health Center,Municipal Area Council,FCTABC03,7.211260000000038,8.983480000000043
+ee239ce8-d8a3-44f4-be27-a5eea99b4a36,Jikowyi Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC09,7.555940000000021,8.975630000000024
+d43246d1-fa68-40f5-b52a-6d31d65486ef,Kurudu Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC11,7.570550000000026,8.856450000000052
+b68adaa8-6f39-4169-ab0c-22c869622196,Lefu Basic Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,6.9775000000000205,9.124720000000025
+a32b9a66-40e8-4d0a-9ae8-54564a862dce,Zamwawasiyi Primary Health Care,,Primary Health Center,Gwagwalada,FCTGWA04,7.0151200000000244,9.243800000000022
+ae9163c6-a89e-416c-9b28-161af3034de9,Haske Primary Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA04,7.007790000000057,9.241080000000068
+dd8888c4-220f-42ff-9ec7-cda009b1e032,Dakwa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC04,7.269210000000044,9.113210000000038
+b2987f50-1cb8-4be3-a183-be15031c9bf4,Army Headquarters Clinic,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC01,7.488570000000038,9.04060000000004
+2067ad7b-7e45-4b0c-9ef5-e629129352a5,Police Hospital,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC01,7.470760000000041,9.032070000000033
+c6639211-304a-4602-a2a3-516e94a3b7aa,Cbn Staff Clinic,,Federal Staff Clinic,Municipal Area Council,FCTABC01,7.496240000000057,9.029240000000073
+edd173ac-3adc-472b-b3da-42feda40a70a,Naval Headquarters Sickbay,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC01,7.489520000000027,9.039300000000026
+1a8d43ab-1e02-4c33-8c5d-0d4228d020ec,Inec Staff Clinic,,Federal Staff Clinic,Municipal Area Council,FCTABC01,7.484240000000057,9.040800000000047
+c185e3c3-126d-4c3a-9076-de1de967472b,Mogadishu Cantonment Hospital,,Military and Paramilitary Clinic,Municipal Area Council,FCTABC01,7.540380000000027,9.046740000000057
+e4606647-931f-4fbd-8f82-c676a5159a1f,Garki Federal Staff Hospital,,Federal Staff Clinic,Municipal Area Council,FCTABC02,7.495330000000024,9.019420000000025
+3cd29dc0-323a-4487-a9b3-8d66fde60502,Frsc Medical Center,,Federal Staff Clinic,Municipal Area Council,FCTABC12,7.463090000000022,9.070210000000031
+95c3e76a-eb9f-4578-94b1-aa4fb244f1b5,Kuje Prison Hospital,,Military and Paramilitary Clinic,Kuje,FCTKUJ01,7.214420000000075,8.894190000000037
+0f40401e-0e16-4013-903d-3c35caf6922e,Nnpc Medical Center,,Federal Staff Clinic,Municipal Area Council,FCTABC12,7.497840000000053,9.076520000000073
+08e10d7c-0b21-48ac-a3be-c1a3a6d17518,Zhiko Health Post,,Dispensary,Bwari,FCTBWR02,7.310040000000072,9.222430000000031
+26c62e93-bc79-4f21-a41a-58aef2ff6907,Rubochi Primary Health Center,,Primary Health Center,Kuje,FCTKUJ09,7.021840000000054,8.54215000000005
+799a36ef-3f08-406f-a743-261c9194b5db,Family Health Care,,Primary Health Center,Municipal Area Council,FCTABC01,7.478460000000041,9.036020000000065
+132cf411-66ce-4dd7-a133-52c2e3ae8841,Dutse Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.486620000000073,8.97738000000004
+e0fdc5cf-d9de-4d06-97a6-3a73e44e7c0c,Kuje Primary Health Center,,Primary Health Center,Kuje,FCTKUJ06,7.230710000000045,8.884380000000021
+8bae724d-70d8-43a2-b2ad-16368444d07a,Gwagwa Ward Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC04,7.3141200000000595,9.091150000000027
+99b1e8e2-10b4-4401-9305-f9889c670cb1,Durumi Health Post,,Dispensary,Bwari,FCTBWR08,7.496390000000076,9.168790000000058
+03c59b51-149b-42af-a6c0-54baeae3b6d1,Kuchibuyi Health Post,,Dispensary,Bwari,FCTBWR02,7.344900000000052,9.207260000000076
+131fa866-dae4-4404-8fd4-cc1a42460490,Lower Usman D Primary Health Center,,Primary Health Center,Bwari,FCTBWR09,7.400290000000041,9.194700000000068
+df821ba9-ae1c-4f9a-8e33-3a584f59bb77,Barangoni Primary Health Care,,Primary Health Center,Bwari,FCTBWR01,7.388480000000072,9.311920000000043
+612f9e44-ac81-441d-97fd-7d8b55f3888b,Mpape Primary Health Center,,Primary Health Center,Bwari,FCTBWR03,7.493150000000071,9.139350000000036
+2b8de8b1-9bff-4f6a-86bf-f278698093f3,Dutse Makaranta Health Center,,Primary Health Center,Bwari,FCTBWR03,7.377920000000074,9.165650000000028
+c2c22ad5-229a-4e8e-95d8-707bde18840b,Abaji General Hospital,,General Hospital,Abaji,FCTABJ06,6.943700000000035,8.487010000000055
+41fc22e6-ac2e-4d70-82c4-5bb06996fb2b,Rubochi General Hospital,,General Hospital,Kuje,FCTKUJ09,7.0347000000000435,8.529510000000073
+fde87240-466a-4ba2-8671-eefc7921149f,Kwali General Hospital,,General Hospital,Kwali,FCTKWL06,7.026410000000055,8.812230000000056
+afd963b8-49b6-432a-9d13-eeb1252e9002,Karshi General Hospital,,General Hospital,Municipal Area Council,FCTABC08,7.571126972074297,8.82603943457617
+238f6007-b578-40ec-9fe3-d80f6b8b4a00,Gwarimpa General Hospital,,General Hospital,Municipal Area Council,FCTABC05,7.398670000000038,9.076990000000023
+2fb4079c-cf80-4fec-9ada-57730a45697d,Kubwa General Hospital,,General Hospital,Bwari,FCTBWR10,7.340780000000052,9.157060000000058
+77f1b2b2-03f9-4e08-bee4-c32fdff757d5,Pabeyi Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA02,7.015350000000069,9.203870000000052
+32627847-fea1-48b5-8b4c-f16d17ec0138,Bida Health Clinic,,Primary Health Center,Kuje,FCTKUJ08,7.243010000000027,8.636180000000024
+5882cc59-254b-4142-82b1-1498903386cd,Achimbi Health Clinic,,Primary Health Center,Kuje,FCTKUJ08,7.2091100000000665,8.613290000000063
+e6430d08-e544-4b39-97c0-30c610c67542,Lanto Health Center,,Primary Health Center,Kuje,FCTKUJ01,7.196890000000001,8.867279999999997
+64a335ce-6640-44f0-8805-373fbd937394,Jikwoyi Medical Center,,Medical Center,Municipal Area Council,FCTABC09,7.56365,8.984659999999998
+7453cbba-5951-4271-890d-296ad758b7b9,National Primary Health Institution Wulmo,,Primary Health Center,Municipal Area Council,FCTABC03,7.273550000000003,8.990410000000002
+24c87338-64a5-402c-b227-cac8db90d36a,Hunigade Primary Health Care,,Primary Health Center,Kuje,FCTKUJ03,7.242419999999998,8.489610000000006
+0e15ad28-8b61-444a-b439-76cb86e6c0a9,Tube Primary Health Care,,Primary Health Center,Kuje,FCTKUJ04,7.154530000000001,8.555990000000001
+66623e9e-0306-4396-ad88-9ece150bc640,Bako Health Center,,Primary Health Center,Kwali,FCTKWL07,7.0736799999999995,8.909740000000001
+09a09906-c53a-4e2b-bb18-64bf7f0bbbd5,Bako Primary Health Care Durumi 3,,Primary Health Center,Kwali,FCTKWL07,7.079589999999998,8.90977
+ad12c452-bd89-48da-aa02-57a51e4a12d6,Kawu Koro Primary Health Care,,Primary Health Center,Bwari,FCTBWR05,7.579489999999997,9.310930000000004
+9c0d0f72-e942-4ac1-b61c-8da479503313,Wumi Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,6.892900000000001,9.130910000000002
+f2903a43-a75d-4a0c-9a40-5576e3c6c82c,Rije Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.338980000000001,8.874020000000002
+cc0c064f-1961-4313-8ee9-4b61f221c584,Dakuma Primary Health Care,,Primary Health Center,Bwari,FCTBWR05,7.6789099999999975,9.365209999999998
+2d7aa5f9-54c6-46fb-b9ce-e33230495364,Sabon Lugbe Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC07,7.334819999999998,8.944839999999997
+4c8f752b-ca6a-4d55-905d-93948ed45fac,Pani Primary Health Care,,Primary Health Center,Kuje,FCTKUJ09,7.035127274000002,8.4541882065
+49dc9f32-4a8b-4af8-8853-a6fdcd7f252f,Biriri Dispensary,,Dispensary,Municipal Area Council,FCTABC07,7.456533605829961,8.968111544645089
+a044f0d7-19d7-4eb5-b300-9ea5c718165a,Gaube Primary Health Care,,Primary Health Center,Kuje,FCTKUJ02,7.408019999999999,8.835069999999996
+cf521238-61a4-43fd-af14-3da14947f549,Kurudu Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC11,7.542629899999999,8.945327900000002
+2aed4fb4-b80b-453d-a752-e5e7ac88d00f,Yaupe Primary Health Center,,Primary Health Center,Bwari,FCTBWR01,7.437891696889131,9.249733924724202
+f49819a0-7e85-41ec-90c5-695bea0feeab,Abaji Central Primary Health Center,,Primary Health Center,Abaji,FCTABJ02,6.944024327170043,8.470190920502711
+bc7c6bf0-3697-498e-b134-9a77daa5bf05,Abuja Community Clinic,,Primary Health Center,Kuje,FCTKUJ06,7.249237818229215,8.829114067579718
+a6caeca5-ef17-460b-b44e-072912f01f4c,Zuba Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA10,7.2155108783992565,9.096081480894615
+4880b3d5-79c4-4ecb-b29c-c843f05fd9cb,Damagaza Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.468094800000004,8.981531800000004
+c0721221-05d2-4635-bbe9-09ae52df5ad9,Kabusa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.4412903816839,8.949674091642565
+4c393a2e-c15a-4942-9677-65a954bcf14a,Abuchi Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA05,7.115418091059172,9.188396065706787
+0245ce0c-f53e-4cfd-9e35-8508b1d60cee,Waru Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.4866167,8.928389199999998
+e0edd7b1-5555-4961-9679-3aec046f0524,Gui Primary Health Center,,Primary Health Center,Kuje,FCTKUJ06,7.237637799913114,8.882095920083675
+881fe37d-0e21-41d4-80dc-458f50fa5799,Gosa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC03,7.3010474,8.945301000000004
+01986ca6-a75f-42c1-b296-74070093b3d5,Zhigbado Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.0538519398299595,9.230004216666543
+136650e5-98c6-4e2e-bcf6-67f9459e44c7,Dnako Sabin Gari Primary Health Center,,Primary Health Center,Bwari,FCTBWR07,7.363964635937096,9.26021656401005
+ba9de5c7-1943-41da-8895-42f4c790f937,Kpakuru Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC03,7.205538060604485,9.013748866102027
+bb54e456-1df2-4cad-a7da-1769388d1b67,Kpeyegyi Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC11,7.547332518142325,8.95464756687254
+ebd3d1bd-b1ad-4f84-b2c4-fc811819ca55,Sukuku Primary Health Center,,Primary Health Center,Kwali,FCTKWL03,7.049796606090624,8.7392605349689
+03e2cf3f-292f-4207-94ae-76db854c7578,Ushafa New Layout Primary Health Center,,Primary Health Center,Bwari,FCTBWR09,7.402925485316102,9.21976950664431
+6c2c185c-8337-4434-b65c-894912ba52e8,Chorin Bisa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC11,7.514449363889132,8.856210813407365
+09848ff3-2e9a-4597-b360-298de120d900,Kuchiko Primary Health Center,,Primary Health Center,Bwari,FCTBWR07,7.341175500000002,9.270189900000002
+d7c7d6cc-1063-4f77-9199-49b35a893cc4,Phase 3 Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA08,7.0658894238853955,8.957803648118823
+c046bb3d-951f-438c-a4f4-9a94f617b15b,Zhidu Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.3779056270831544,9.01764097601482
+5116ce5b-0d77-49b9-947a-fd6f76175be9,Kekeshi Primary Health Center,,Primary Health Center,Abaji,FCTABJ07,6.9716333330000015,8.467703333000003
+21f3c520-41c9-430f-8682-639ce4ae3db9,Adagba Primary Health Center,,Primary Health Center,Abaji,FCTABJ10,6.792911667868884,8.704571229847033
+898f2995-7595-401e-8a1b-b6548a33403c,Kuwizhi Primary Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.283546667000003,8.886485000000002
+714c06cc-2758-49dd-a21e-7ffbc9675cca,Tukpechi Primary Health Center,,Primary Health Center,Kuje,FCTKUJ06,7.234173757972283,8.856385058053474
+9e64e4f4-9341-4d93-8178-d463af6de79c,Chikakore Health Clinic,,Primary Health Center,Bwari,FCTBWR02,7.342590000000002,9.176276667
+fc125cda-f979-4059-b982-b15b53851e26,Katampe Primary Health Center,,Primary Health Center,Bwari,FCTBWR03,7.515625,9.119748333000004
+3efdf3af-a33a-4825-bc8f-b98f08eb89fd,Jikoko Health Clinic,,Primary Health Center,Bwari,FCTBWR03,7.467075939743072,9.142116606913438
+fab66550-e2a9-4f71-b8b7-efd46fa42697,Gishiri Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.464889900000002,9.100068300000004
+a93f9524-b2a6-4d0e-ad24-885a132ba21b,Holy Trinity Hospital,,Primary Health Center,Municipal Area Council,FCTABC01,7.502720388779342,9.031889298755491
+62aef970-cdc3-48a9-8b2f-a91534827102,Salama Clinic,,Primary Health Center,Gwagwalada,FCTGWA04,7.00680114686683,9.243173171966188
+00a1e4a6-58eb-4272-a8c5-f9d72babe64c,State House Clinic Mambilla B,,Private Non Profit,Municipal Area Council,FCTABC01,7.520650000000002,9.086860000000001
+0e66319a-89c5-4e1b-bbb2-89cf16b03e46,Ajiji Clinic,,Private Non Profit,Bwari,FCTBWR08,7.5024998517500014,9.231488697749999
+bd143ec5-edff-4db0-a8bc-ec2d0fe2ab8c,Eereprod Medical Center,,Medical Center,Municipal Area Council,FCTABC01,7.5018225795000015,9.040550098250002
+c5f0741b-438f-487c-a60b-ce373acd1133,Living Rock Hospital,,Private Non Profit,Gwagwalada,FCTGWA10,7.213989999999999,9.094839999999998
+eac0fc4f-2a51-4f55-bbde-8cef9f0a9ba1,Spring Field Hospital,,Private Non Profit,Municipal Area Council,FCTABC11,7.547339999999999,8.945999999999996
+e6a587fe-5f9a-42ac-ab62-51509f217a89,Minat Clinic,,Primary Health Center,Gwagwalada,FCTGWA09,7.197082519000048,9.06048584000007
+f8378d07-cb6e-40be-a577-a688e13b9655,Yenche Primary Health Center,,Primary Health Center,Kuje,FCTKUJ10,7.096923828000058,8.630920411000034
+96c5c198-7ec6-4090-b163-98fe3d44f109,Gugugu Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC11,7.5231789068820305,8.885151172248472
+723bd3a1-8495-4167-933a-e148138e56f1,Sherreti Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC07,7.440673829000048,8.942504883000026
+c39306dd-d9b0-4137-84cb-c389a8283d1c,Kamadi Primary Health Clinic,,Primary Health Center,Kwali,FCTKWL01,6.812559829302027,8.661573124937952
+5ee36677-e82a-472e-8c86-99bd488bea86,Dawaki Primary Health Center,,Primary Health Center,Bwari,FCTBWR03,7.387745119233235,9.124443872544289
+208c1cc0-3d5d-4bd8-970a-a9e14994222c,Gudupe Health Clinic,,Primary Health Center,Bwari,FCTBWR09,7.4684932106689335,9.184748276971384
+6fd2f213-5a6c-4957-981d-d53aefca52a9,Tsauni Clinic,,Primary Health Center,Gwagwalada,FCTGWA02,6.965913428625952,9.14719355447207
+272ad91d-3765-4193-851d-342712ba4b6d,Gwako Health Clinic,Gwako Primary Health Center,Primary Health Center,Gwagwalada,FCTGWA03,7.130175519660044,8.96362263214529
+4c67aaf2-f2f6-470c-bf43-4ed751dabed4,Nanda Primary Health Center,,Primary Health Center,Abaji,FCTABJ08,6.8574888277515536,8.525466589352185
+eb1bcbc0-fa6d-4c7a-a171-a093de16e5e8,Kpache Primary Health Center,,Primary Health Center,Abaji,FCTABJ10,6.813578173324479,8.599217126922152
+2f8a0c6d-d224-49ac-a179-da3283d0e8b3,Mamagi Primary Health Center,,Primary Health Center,Abaji,FCTABJ01,6.79211734265836,8.482216321452471
+1408734b-892f-4b7c-a555-6f0e3f266d61,Mawogi Primary Health Center,,Primary Health Center,Abaji,FCTABJ01,6.8290477274152,8.514976562385133
+c4ff67a9-3bf7-43e4-a5e5-7bae479ed7db,Ushafa Health Center,,Primary Health Center,Bwari,FCTBWR09,7.412722202443399,9.216639534342159
+e4b73c61-7674-4548-b911-d49443d2d625,Pabeyi Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,7.020507812000062,9.178527832000043
+57eccb0a-af85-4010-9422-9ed715078ac4,Gasapa Primary Health Center,,Primary Health Center,Abaji,FCTABJ04,6.86627197200005,9.118103027000075
+047cfce8-1beb-4026-9045-983e359278ae,Dobi Comprehensive Health Center,,Comprehensive Health Center,Gwagwalada,FCTGWA02,6.993270605931099,9.065732698179877
+fe4b455a-e13a-4bda-8abf-31317824c2e2,Chitumu Primary Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA05,7.121856768309169,9.099238180589639
+90bd7e47-b791-48f6-9dc0-0c5078c7fec6,Ibwa Pada Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.063720703000058,9.059326172000056
+9802f05c-a143-4fd1-8fab-59d83755b5b2,Tunga Gaya Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA05,7.15209961000005,9.127685547000056
+6d8eb6c1-e855-4a76-a5a9-baaad372dc27,Chibiri Primary Health Center,,Primary Health Center,Kuje,FCTKUJ01,7.179013473571026,8.898352157498394
+fa0f7e65-733b-4111-8d27-b8c319dac963,Fogbe Primary Health Center,,Primary Health Center,Kwali,FCTKWL01,6.841705651171974,8.712334524415182
+8b330242-183c-4dce-bd6a-74346949c367,Sabo Primary Health Center,,Primary Health Center,Kuje,FCTKUJ08,7.197888783949437,8.791268423752548
+34b8d46c-c723-4b27-8d70-1377aa7f1468,Kwaku Primary Health Center,,Primary Health Center,Kuje,FCTKUJ08,7.155052184465407,8.683513437614973
+172a2bfb-2163-4951-8701-e375289661ce,Gbaupe Health Clinic,,Primary Health Center,Kuje,FCTKUJ02,7.343457833512691,8.906384395897781
+a5b3548e-a3e6-43e3-ad35-aa185b954f1b,Kohodahanu Primary Health Center,,Primary Health Center,Kuje,FCTKUJ08,7.257939946065983,8.768590062923126
+45ce5229-0321-4027-8773-47c6c131c44f,Ashara Basic Health Center,,Primary Health Center,Kwali,FCTKWL01,6.874267268975727,8.591990000000067
+6754ab95-9bcf-49d7-8b53-5892cddf27dc,Pagi Primary Health Center,,Primary Health Center,Kuje,FCTKUJ02,7.281253446603975,8.818603061847178
+5d365ecc-dc21-4576-bdf6-9d46516dd371,Maikwari Primary Health Center,,Primary Health Center,Kwali,FCTKWL01,6.818218791932141,8.637384023694208
+a62ad444-0c0a-4e2b-9a6f-187bcb0b5729,Sheda Primary Health Center,Primary Health Care Sheda,Primary Health Center,Kwali,FCTKWL04,7.067677444447978,8.865936608172017
+066f56cd-2b6c-4b6e-a18d-3f5f96b5cc12,Kilankwa 1 Primary Health Center,Primary Health Clinic Kilankwa 1,Primary Health Center,Kwali,FCTKWL04,7.101031604832832,8.863565434152965
+e95dde03-0e20-4031-9add-637af9260c53,Dafa Primary Health Care,,Primary Health Center,Kwali,FCTKWL02,6.955485515982765,8.796205084510344
+33526110-4c7e-4007-93ba-f514a5ab6431,Fuka Primary Health Center,,Primary Health Center,Kwali,FCTKWL02,6.819703270897802,8.790909006140122
+578068a0-ec0f-4549-80a7-9f3543ed3c6a,Ija Sarki Primary Health Center,Primary Health Center Ijah Sarki,Primary Health Center,Kwali,FCTKWL09,7.079501368055954,8.800518215312518
+65124d50-0c79-4214-a3fa-7c380854f2e6,Farakuti Primary Health Center,,Primary Health Center,Kwali,FCTKWL10,7.056049799160572,8.635833346454431
+6693a2d9-aafb-4ed8-822c-2d2ce201924e,Ubosharu Primary Health Center,,Primary Health Center,Kwali,FCTKWL08,6.92171214387819,8.548966658040108
+00301c38-9047-4c66-9e52-2ba6924d9fc7,Dabi Bako Comprehensice Health Clinic,Comprehensive Health Center Bako,Primary Health Center,Kwali,FCTKWL07,7.083184671643609,8.91155990038178
+eaa951f3-9ea1-4971-ab96-420a6a17a954,Kwali Primary Health Center,,Primary Health Center,Kwali,FCTKWL06,7.031715349611627,8.81675047632114
+3c940b21-c3ae-43af-b122-ea79aa43f12b,Dangara Primary Health Center,Dangara,Primary Health Center,Kwali,FCTKWL08,6.886486311621632,8.579957947419068
+c466322f-0d07-4d5c-ad41-f68535d4e55a,Chida Primary Health Center,Primary Health Center Chida,Primary Health Center,Kwali,FCTKWL08,6.95659760002534,8.591116244896813
+08565908-a463-41ce-8919-a6bb4cbea75e,Yebu Primary Health Center,,Primary Health Center,Kwali,FCTKWL10,7.095606195044028,8.682409888665584
+3a65e9f6-ca62-48fe-879d-9fff6ff90c3c,Pai Primary Health Center,Primary Health Center Pai,Primary Health Center,Kwali,FCTKWL07,6.954553158952719,8.912413289054015
+93f9d42f-acab-414a-a464-35e3abb44d44,Yewuti Primary Health Care Clinic,,Primary Health Center,Kwali,FCTKWL08,6.922916526429068,8.547727752611618
+a9bd4ea0-3093-449b-9b73-a446917991db,Yambabu Primary Health Clinic,,Primary Health Center,Kwali,FCTKWL10,7.017973849338797,8.65596781553469
+93e65dd2-a993-40da-a7f8-e1b4f6b4162c,Bukpe Health Clinic,,Primary Health Center,Kwali,FCTKWL08,6.941796105716231,8.575036105716231
+d8ce9f5e-d5d6-41d9-b929-796d71a3e095,Dapa Primary Health Care,,Primary Health Center,Kwali,FCTKWL08,6.975720841425747,8.598713912261898
+8317e786-2431-471b-bbdb-d2ba90873308,Yangoji Primary Health Center,Hetti Hospital Yangoji,Primary Health Center,Kwali,FCTKWL09,6.994700000000023,8.778090000000077
+0ff8a247-3830-4149-b642-f49c0a58add6,Apo Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC02,7.5053440144147485,8.981102979098011
+e953ee12-4cfd-4d00-b23a-ed16dc39b36c,Iddo Primary Health Care,Iddo Pada Primary Health Center,Primary Health Center,Municipal Area Council,FCTABC03,7.2101200000000745,8.98509000000007
+a2538ca0-c8fb-49aa-8b1d-655f711afadf,Jahi 1 Public Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.441156337498356,9.095487010294855
+d850f937-7e08-4265-8a69-4230b0a77f3e,Bassan Jiwa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC06,7.28631833139614,9.019611337305816
+f0209dd3-918d-450d-bbdc-7098ce264be3,Dakwa Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC06,7.243508300347553,9.09918135414788
+f8c48dd7-78e6-40c4-9bfc-a08bbb62cba3,Gidan Mangoro Comprehensive Health Center,Orozo Primary Health Care,Comprehensive Health Center,Municipal Area Council,FCTABC11,7.563720703000058,8.91687011700003
+248aa5cc-9d2d-4b27-9475-2ee7a9b760b5,Sako Health Center,,Primary Health Center,Kuje,FCTKUJ06,7.237916390624728,8.881168599322532
+fb30770b-c022-474d-85ed-289cf81566bd,Baga Sabo Primary Health Center,,Primary Health Center,Kuje,FCTKUJ03,7.367267084811623,8.49902532429207
+4799c4f5-0aa1-4be1-ba20-1ea00d654304,Izom Basic Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.004633025891133,9.24118910464026
+5183339b-13f4-4707-8d1e-a2d942608b01,Lamingo Primary Health Center,,Primary Health Center,Municipal Area Council,FCTABC05,7.410385308853943,9.105566800000004
+08781157-ce03-478c-8579-ad41f0a08dcf,Gongolong Health Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.405518311888791,9.106967223058255
+cd610152-995d-496f-a04b-2f5beec62837,Kaida Sabo Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA02,6.989096162903444,9.057421235171537
+e4734503-2757-4354-a092-07fddea98339,Munape Health Post,,Dispensary,Municipal Area Council,FCTABC11,7.497027657206871,8.823595238937392
+fe9f1c46-94cf-4bc7-ac6e-7371500e7224,Nyanya Genaral Hospital,,General Hospital,Municipal Area Council,FCTABC10,7.569885254000042,9.028686523000033
+69610891-d987-4266-b35a-3c33e2c5bb3f,Sagari Quarters Comprehensive Primary Health Center,,Primary Health Center,Bwari,FCTBWR06,7.252503693636907,9.114485806098472
+391e5209-404c-40ad-b802-f54f96c72b3e,Us Medical Center,,Primary Health Center,Gwagwalada,FCTGWA02,6.994689942000036,9.063720703000058
+23bee8aa-2a21-4d6d-a47d-eb8238a22101,Numa Abaji Health Clinic,,Primary Health Center,Abaji,FCTABJ09,6.941910000000064,8.46995000000004
+2432bf16-953f-4187-a87d-d5a1ba6e2f48,Unguwan Nupawa Maternity and Clinic,,Maternity Home,Abaji,FCTABJ06,6.943430000000035,8.471240000000023
+4e8b60de-453c-4be6-a60d-e2d3acf58532,Yimi Health Clinic,,Primary Health Center,Gwagwalada,FCTGWA05,7.19768,9.09326
+4f906924-48c6-4821-86de-bb2e29e0bcb2,Naharati Health Center,,Primary Health Center,Abaji,FCTABJ09,6.94224,8.46046
+306fa2f4-ba07-4223-bc9c-2b1b96ba0c70,Gumbo Primary Health Center,,Primary Health Center,Kwali,FCTKWL03,6.967536975087947,8.705415863524943
+400c957b-2080-47f6-9358-60d30bd6075d,Ibwa 1 Primary Health Center,,Primary Health Center,Gwagwalada,FCTGWA04,7.05847168,9.063720703
+05db945c-c123-44ce-aa43-28cac0383cf9,Get Well Hospital and Maternity,,Maternity Home,Municipal Area Council,FCTABC05,7.321716309000067,9.084899903000064
+c829da92-7a14-4e43-be4d-44ac0f2bec0d,Una Clinic,,Primary Health Center,Municipal Area Council,FCTABC05,7.324279785000044,9.084106445000032
+f3ee9856-3c1a-46c1-99a0-a89d469d58c7,Idu Karmo Health Post,Primary Health Center Idu,Dispensary,Municipal Area Council,FCTABC05,7.359497070000032,9.071716309000067
+75216a8b-d54b-4102-86a9-e364eaf3b9e5,Aso Hospital,,Primary Health Center,Municipal Area Council,FCTABC05,7.362760000000037,9.070630000000051
+dd6ed0c5-40ba-4a9d-a2e3-529584780e37,Life Clinic and Maternity,,Maternity Home,Municipal Area Council,FCTABC04,7.309490000000039,9.088800000000049
+cc44f94f-d01c-497e-aa38-892aaf8fa7fd,Jiwa Primary Health Care,,Primary Health Center,Municipal Area Council,FCTABC04,7.309780000000046,9.080220000000054
+4adac95b-4b15-41d8-85f1-dd1781eb5185,Elan Clinic,,Private Non Profit,Municipal Area Council,FCTABC05,7.364149999999998,9.068669999999996

@@ -300,7 +300,7 @@ Five modes over one evidence panel:
 | **Spatial roles** | paste text or drop a document; origins, destinations and waypoints marked with the cue that decided each |
 | **Redact** | run a record through a statute pack and see the action, the cited section, and what was written instead |
 | **Verify** | check a signed decision two ways: the signature, and whether its id recomputes from its own evidence |
-| **Review queue** | a dense grid over an adjudication pack, sortable and searchable, marking outcomes to a labelled copy |
+| **Review queue** | a queue over an adjudication pack; each pair opens as a card with the evidence beside it, calls save as they are made, and an export writes the labelled copy |
 
 It is alpha, says so on the page, binds to `127.0.0.1`, and has no
 authentication. It is a tool for reading our own queues, not a product.

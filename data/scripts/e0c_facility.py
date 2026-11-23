@@ -248,7 +248,7 @@ def main() -> None:
     out = {"schema": "arche.e0c_facility.v1", "preregistration_sha256": tr._sha(PREREG),
            "training_pairs": len(train_pairs),
            "training_pairs_with_hard_negatives": sum(bool(n) for n in negs),
-           "models": str(MODELS / "crosswalk"), "result": result, "verdict": verdict,
+           "models": "~/.cache/arche/models/e0c/crosswalk", "result": result, "verdict": verdict,
            "seconds": round(time.time() - started, 1)}
     if args.out:
         Path(args.out).write_text(json.dumps(out, indent=2, sort_keys=True) + "\n",

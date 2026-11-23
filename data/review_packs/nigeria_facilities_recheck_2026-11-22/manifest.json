@@ -1,0 +1,48 @@
+{
+  "decision_ids_sha256": "352acde900b58c5670fd573e611def76df001a81c29247778d3478e5a97d8eb9",
+  "decisions": {
+    "review": 89
+  },
+  "review_fields": [
+    "review_outcome",
+    "reviewer",
+    "reviewed_at",
+    "reason"
+  ],
+  "review_outcomes": [
+    "same_entity",
+    "different",
+    "unresolved"
+  ],
+  "rows": 89,
+  "schema": "arche.facility_adjudication_pack.v1",
+  "sources": [
+    {
+      "decisions": {
+        "review": 20
+      },
+      "path": "adjudication_sample.csv",
+      "rows": 20,
+      "sha256": "bfc94480c100cb28aff1bdd7f80e7a78e56cb86248413188595809277f76c155",
+      "state": "Edo"
+    },
+    {
+      "decisions": {
+        "review": 31
+      },
+      "path": "adjudication_sample.csv",
+      "rows": 31,
+      "sha256": "35e576a4f1ac36e753e6f243046e57f90e0df50ccbb8e13c18c35ef69d2fc22c",
+      "state": "Kano"
+    },
+    {
+      "decisions": {
+        "review": 38
+      },
+      "path": "adjudication_sample.csv",
+      "rows": 38,
+      "sha256": "a75840efe7569ce7796a9f8bd85f4b6c0c13c7c58ebd9ed125e8324edf804040",
+      "state": "Ondo"
+    }
+  ]
+}
