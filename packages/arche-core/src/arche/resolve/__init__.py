@@ -34,6 +34,11 @@ from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
 from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
 from arche.resolve.artists import artist_aliases  # noqa: E402,F401
 
+# A learned decider for the pairs the engine holds: a pinned cross-encoder and a
+# logistic combiner, loaded from a bundle. Light to import; the model loads on
+# first use.
+from arche.resolve.decider import PairDecider, PairDecision  # noqa: E402,F401
+
 # The engine, imported privately. The public `reconcile` below IS this
 # function plus entity-pack lookup: handed the same comparators the two
 # produce byte-identical output, `decision_id` included, which is why they
