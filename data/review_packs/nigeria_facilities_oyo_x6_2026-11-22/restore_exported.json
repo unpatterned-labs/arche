@@ -1,0 +1,14 @@
+{
+  "outcomes": {
+    "x3:sha256:12207ef2b01e9cfa16149f5650046ff76c85d593b1b1715f81de77b23b0eed64": "same_entity",
+    "x3:sha256:3adaee19fb04ffee65e983f2b9c778ccd02f01fdb9d9d7bd86bb497d9d1f5a2a": "same_entity",
+    "x3:sha256:cd51f4dff484a2116c00f98b6a295210091eeff23b1b2642f859420dfe7bf1ca": "same_entity"
+  },
+  "pairs": [
+    "Blessed Hospital",
+    "God Mercy Clinic",
+    "Ilogbo Health Post"
+  ],
+  "schema": "arche.label_restore.v1",
+  "why": "Three Oyo labels were changed from same_entity to different on 2026-11-23 (06:06-06:08 UTC), after X6's result was read; they are exactly the three far-duplicate pairs reported as model errors. Development reads them as originally exported, so labels are never changed only where the model erred. The reviewer's file is left as is."
+}

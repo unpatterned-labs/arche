@@ -1,0 +1,30 @@
+{
+  "decision_ids_sha256": "d608c956ac7d8821712fff243c0691e73405372e8befd796b2b745376947fa57",
+  "decisions": {
+    "review": 150
+  },
+  "review_fields": [
+    "review_outcome",
+    "reviewer",
+    "reviewed_at",
+    "reason"
+  ],
+  "review_outcomes": [
+    "same_entity",
+    "different",
+    "unresolved"
+  ],
+  "rows": 150,
+  "schema": "arche.facility_adjudication_pack.v1",
+  "sources": [
+    {
+      "decisions": {
+        "review": 150
+      },
+      "path": "adjudication_sample.csv",
+      "rows": 150,
+      "sha256": "1a56958bb784c3c69db2ecca8885043e406fa137fc850f17d6c7f025eeec338e",
+      "state": "Lagos"
+    }
+  ]
+}

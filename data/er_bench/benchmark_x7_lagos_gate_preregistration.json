@@ -1,0 +1,114 @@
+{
+  "amendments": [
+    {
+      "code_x7_lagos_gate_py": "sha256:bb092ba65ffdc406c6a360456e043db4f3bf6cc0861f2197ef7eb1cdd148ebcc",
+      "id": 1,
+      "known_risk": "the reviewer reports marking far HFR duplicates as different in X7, while development mostly reads them as same (18 such pairs in X3-X6 marked same at 2 km or more). Development and test may disagree on that slice; the far-duplicate definition is to be settled afterwards by a blind recheck of the whole slice",
+      "restore_sha256": "sha256:e9883526e8f7740767c686947db4feaf874adb6998e48b8f32187d2b042bc1fd",
+      "what": "the Oyo label file (development key x6) changed after this preregistration: three pairs (Ilogbo Health Post, God Mercy Clinic, Blessed Hospital), the far-duplicate lookalikes reported as X6's model errors, were changed from same_entity to different at 06:06-06:08 UTC. Development reads them as exported through restore_exported.json, giving back X6's 148 same / 100 different. The rule is unchanged",
+      "written_at": "2026-11-23T06:36:31+00:00",
+      "written_before_test_labels_were_read": true,
+      "x6_file_sha256_now": "sha256:b71ac3f1fcb530ce5e18366b60e6127dcc801d9ed20c1c96493fe4300fd3e263",
+      "x6_file_sha256_preregistered": "sha256:e46392bf5c4374bcf94f2721090a4ee8f532950302431ca6b1b335d6b30a8c0d"
+    }
+  ],
+  "code": {
+    "build_x3_pack.py": "sha256:99bd322acd9e5de34b914bb6b7068e936d0b8fd9a0d0f2fc6f18b2c302104959",
+    "build_x4_pack.py": "sha256:201b2dfc1ac818997c5f42a3071f5a234f9ab1211fbd548abf0bbaa8edc815f5",
+    "build_x7_pack.py": "sha256:effea465444d956459df33eedb0e8d1108ca5b0eaa823c8d337a4295878163b2",
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x1_combiner.py": "sha256:e93303b8ca4c8bd89598b01ccf277cd6827a6831bb262a7d7cfac59b6ab0730c",
+    "x3_level.py": "sha256:6d7c9935bbd4e65c589a392c0742316dd6dff40e2cbc104aeb1a9113924765b3",
+    "x4_lagos.py": "sha256:b89a21fdddfb4fae9962d365fd0af5d306cc71b282b3e0b3e6cd1879390ae830",
+    "x5_density.py": "sha256:48f9522e46d9634dc3ae13b64984d42b2caf745017bba637b232451f48b22777",
+    "x6_gate.py": "sha256:f71213af97bcbe89615fb351951d0d7f516da62e3670db1e4050b606cca07ce2",
+    "x7_lagos_gate.py": "sha256:b6a9e2cb5cdc23a4b36b4987ce1427209106773ba69e70633836648f83baaf1d"
+  },
+  "development_labels_sha256": {
+    "2026-08-19": "sha256:c66d10ddbe693f53814ab06d85f434e00968cb1d707050da6d418f3411c8e268",
+    "corrections": "sha256:ba1ffc629b69f307dd8fd5ce696924ce316f1887fef37fa02834ec13585fe642",
+    "near_miss": "sha256:d575f88c1cd0821e8140239fc1fe6bdb239955cb33d6c995d02a05db886b9617",
+    "x1": "sha256:01c396ae37190ddd0fcc7feb2bcd630678447593abcbbf56e875260db8b4ece7",
+    "x3": "sha256:08baf92bc1fbb28892c5917601d752c1a9e2ec4033e6fa485feed8a452b2a945",
+    "x4": "sha256:d87cdcca417936d102a06a2e3a711c83561cc548b5b7b42968f481023755ed5b",
+    "x5": "sha256:7871c23a97f6f867e08c45224f4e31c0a64d320ccb874facc10baf4a43270ded",
+    "x6": "sha256:b71ac3f1fcb530ce5e18366b60e6127dcc801d9ed20c1c96493fe4300fd3e263"
+  },
+  "environment": {
+    "device": "cuda",
+    "python": "~/.cache/arche-scratch/e0/bin/python",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "expectation": "the ungated decider may again auto-match dense-city lookalikes in Lagos; the gate should stop those, at a cost in coverage and possibly in the error-per-settled-pair bound",
+  "inputs": {
+    "engine_edges": "sha256:29f9e499a6a0cbb77f950b09894a50854c55d2891d0856813b953b2e9d2bccd1",
+    "engine_review_pairs_after_excluding_x4": 190,
+    "grid3_v2": "sha256:0affbed54ecc15b62324e2442341bbb2860ffc982747c4a4f29a9c293f88ee5b",
+    "hfr_lagos.csv": "sha256:54de070ebc3c917bba9247158b68a25f3decdbc2d0444143511d2d708ae91845",
+    "hfr_national_sha256": "sha256:a190e07a9427089100455e38a4108107c0211949790f8dd7ac92122bf0e6d097"
+  },
+  "known_risks": [
+    "one reviewer, and a smaller pack (150) to keep review load down; with about 60-80 different pairs, one false merge can put the Wilson upper bound over 5%",
+    "informative needs at least 60 different pairs; X4's Lagos review band was 23% different, so most different pairs come from the lookalike and near-miss kinds",
+    "GATE_N was chosen on development labels that include X4's Lagos pairs; the X7 pairs are disjoint from them but from the same city",
+    "the output file's schema field reads arche.x6_gate.v1 because X7 runs X6's code unchanged",
+    "the X6 lookalike labels (a far HFR duplicate of a facility marked same) are kept as exported in development"
+  ],
+  "lga_aliases_sha256": "sha256:522268a4d8e8f8c5482108a72b8f044d549be9bce38391aece6fcaa22bdcb3f4",
+  "models": {
+    "seed0": "sha256:0926d40bac16d5df5f1d6c0be41431079219c0896c4b98ea6be85fbeab431cd9",
+    "seed1": "sha256:e158e6841d74a94cf056fbb1ef98f2329208e15c37a98b374e4286541fc12cfb",
+    "seed2": "sha256:f9066586b00be3366b229f825078976b99593981a547ac8c389f9fbf5245a20a"
+  },
+  "models_check": {
+    "seed0": "sha256:0926d40bac16d5df5f1d6c0be41431079219c0896c4b98ea6be85fbeab431cd9",
+    "seed1": "sha256:e158e6841d74a94cf056fbb1ef98f2329208e15c37a98b374e4286541fc12cfb",
+    "seed2": "sha256:f9066586b00be3366b229f825078976b99593981a547ac8c389f9fbf5245a20a"
+  },
+  "question": "On fresh Lagos pairs, does the gated decider pass X6's rule, and does the ungated one?",
+  "rule": {
+    "arms": {
+      "control": "the same combiner without the gate; reported, not tested",
+      "gated": "the X5 control combiner [cross-encoder logit, log1p km, LGA agree through the alias table, coordinates missing]; a pair whose GRID3 point has more than 15 other HFR facilities within 2 km (HFR national coordinates, the pair's HFR record excluded) is never auto-matched, though it may still be auto-rejected",
+      "reference": "match-everything, scored under the same rule; it must fail"
+    },
+    "bootstrap": {
+      "n": 10000,
+      "seed": 0,
+      "unit": "pair"
+    },
+    "cross_encoder": "X6's models unchanged (Edo, Kano, Ondo, Lagos, FCT and Oyo held out of training); weights pinned below",
+    "development": "1,558 labelled pairs: X6's 1,310 development labels plus the Oyo pack as exported (2 unresolved dropped); no relabel",
+    "error_bound": "errors among auto-decided <= 3% and Wilson 95% upper bound <= 10%",
+    "false_merge_bound": "different pairs auto-matched / all different pairs <= 2% and Wilson 95% upper bound <= 5%",
+    "fewer_held": "coverage >= 0.20 and pair-bootstrap 95% lower bound >= 0.10",
+    "gate": "GATE_N = 15, fixed from development out-of-fold predictions before the Oyo pack was built: on 1,310 labels it leaves 1-2 of 6 out-of-fold false merges with X5's models, and out-of-fold coverage about 0.71 against 0.74-0.76 ungated",
+    "informative": "void unless the test holds at least 60 different pairs",
+    "pass": "informative, and every seed of the gated arm meets fewer_held, error_bound and false_merge_bound on the whole pack",
+    "population": "the X7 pack (data/review_packs/nigeria_facilities_lagos_x7_2026-11-23, 150 Lagos pairs: 80 review_band, 35 lookalike, 35 near_miss) marked same_entity or different; read once, after this file",
+    "review_band": "reported on its own: every seed of the gated arm meets fewer_held and error_bound on the review_band pairs",
+    "secondary": [
+      "control_pass",
+      "results by pair kind",
+      "share of test pairs gated",
+      "per seed AUC",
+      "crosswalk development AUC",
+      "development out-of-fold false merges, gated and ungated"
+    ],
+    "thresholds": "5-fold out-of-fold development predictions of the ungated combiner (x3_level.fit); the gate is applied after",
+    "unchanged_from_x6": "features, GATE_N = 15, thresholds, bounds and pass rule are X6's, unchanged after X6's result was read"
+  },
+  "rule_sha256": "sha256:70284f127eeb134471932d1338452fc2818758d840ce845ee81bc5a9f24f4cf5",
+  "schema": "arche.x7_lagos_gate_preregistration.v1",
+  "test": {
+    "blind": "the reviewer sees neither the engine's decision nor the pair's kind",
+    "construction": "data/scripts/build_x7_pack.py: every GRID3 and HFR record in the X4 Lagos pack, and each GRID3 record's own HFR twin, removed first; then build_x4_pack.py with BAND 80, STRESS 35: 80 of the 190 remaining engine review pairs (salted-hash order), 35 lookalike and 35 near_miss",
+    "kinds_sha256": "sha256:0f9bffa04011f3027a66a464b27f9e66b3e5699e906c4fa945d6a7bc4d83f29a",
+    "overlap_with_x4_records": 0,
+    "pack_sha256": "sha256:740433b121d8ebd273359280f88240e8b9c3001ea8d850091c73baea6a6b74ee"
+  },
+  "why": "X6's gate failed in Oyo on errors per settled pair (it held back correct matches; no false merge in either arm), and the ungated decider passed. Oyo did not need the gate. Lagos, where X4 failed with 7-9 false merges, is the case it was built for. The rule is kept unchanged rather than redefined after a failure",
+  "written_at": "2026-11-23T06:06:26+00:00",
+  "written_before_test_labels_existed": true
+}

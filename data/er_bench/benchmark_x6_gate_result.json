@@ -1,0 +1,577 @@
+{
+  "control": {
+    "seed0": {
+      "auto_match": 87,
+      "auto_reject": 89,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 44,
+          "false_merges": 0,
+          "false_rejects": 4,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 1,
+          "auto_reject": 40,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 86,
+          "auto_reject": 5,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.7097,
+      "coverage_bootstrap95": [
+        0.6532,
+        0.7661
+      ],
+      "error_bound": true,
+      "error_rate": 0.0284,
+      "error_wilson95_upper": 0.0648,
+      "errors": 5,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 72,
+      "pass": true,
+      "review_auc": 0.9834,
+      "review_band": {
+        "auto_match": 86,
+        "auto_reject": 5,
+        "coverage": 0.6107,
+        "coverage_bootstrap95": [
+          0.5302,
+          0.6846
+        ],
+        "error_bound": true,
+        "error_rate": 0.011,
+        "error_wilson95_upper": 0.0597,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 58,
+        "thresholds": {
+          "hi": 0.966463,
+          "lo": 0.122679
+        }
+      },
+      "thresholds": {
+        "hi": 0.966463,
+        "lo": 0.122679
+      },
+      "weights": [
+        0.9452,
+        -1.6874,
+        3.1817,
+        0.0,
+        0.202
+      ]
+    },
+    "seed1": {
+      "auto_match": 85,
+      "auto_reject": 93,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 43,
+          "false_merges": 0,
+          "false_rejects": 3,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 2,
+          "auto_reject": 41,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 83,
+          "auto_reject": 9,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.7177,
+      "coverage_bootstrap95": [
+        0.6613,
+        0.7742
+      ],
+      "error_bound": true,
+      "error_rate": 0.0225,
+      "error_wilson95_upper": 0.0563,
+      "errors": 4,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 70,
+      "pass": true,
+      "review_auc": 0.9855,
+      "review_band": {
+        "auto_match": 83,
+        "auto_reject": 9,
+        "coverage": 0.6174,
+        "coverage_bootstrap95": [
+          0.5369,
+          0.6913
+        ],
+        "error_bound": true,
+        "error_rate": 0.0109,
+        "error_wilson95_upper": 0.059,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 57,
+        "thresholds": {
+          "hi": 0.965115,
+          "lo": 0.139511
+        }
+      },
+      "thresholds": {
+        "hi": 0.965115,
+        "lo": 0.139511
+      },
+      "weights": [
+        0.9043,
+        -1.6756,
+        3.0819,
+        0.0,
+        0.1321
+      ]
+    },
+    "seed2": {
+      "auto_match": 96,
+      "auto_reject": 92,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 44,
+          "false_merges": 0,
+          "false_rejects": 4,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 2,
+          "auto_reject": 41,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 94,
+          "auto_reject": 7,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.7581,
+      "coverage_bootstrap95": [
+        0.7056,
+        0.8105
+      ],
+      "error_bound": true,
+      "error_rate": 0.0266,
+      "error_wilson95_upper": 0.0607,
+      "errors": 5,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 60,
+      "pass": true,
+      "review_auc": 0.983,
+      "review_band": {
+        "auto_match": 94,
+        "auto_reject": 7,
+        "coverage": 0.6779,
+        "coverage_bootstrap95": [
+          0.604,
+          0.7517
+        ],
+        "error_bound": true,
+        "error_rate": 0.0099,
+        "error_wilson95_upper": 0.054,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 48,
+        "thresholds": {
+          "hi": 0.959836,
+          "lo": 0.152153
+        }
+      },
+      "thresholds": {
+        "hi": 0.959836,
+        "lo": 0.152153
+      },
+      "weights": [
+        0.9163,
+        -1.6863,
+        3.0786,
+        0.0,
+        0.3479
+      ]
+    }
+  },
+  "crosswalk_dev_auc": {
+    "seed0": 0.9717,
+    "seed1": 0.9714,
+    "seed2": 0.9717
+  },
+  "development_false_merges": {
+    "seed0": {
+      "gated": 2,
+      "ungated": 6
+    },
+    "seed1": {
+      "gated": 2,
+      "ungated": 6
+    },
+    "seed2": {
+      "gated": 1,
+      "ungated": 6
+    }
+  },
+  "gated": {
+    "seed0": {
+      "auto_match": 53,
+      "auto_reject": 89,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 44,
+          "false_merges": 0,
+          "false_rejects": 4,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 1,
+          "auto_reject": 40,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 52,
+          "auto_reject": 5,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.5726,
+      "coverage_bootstrap95": [
+        0.5121,
+        0.6331
+      ],
+      "error_bound": false,
+      "error_rate": 0.0352,
+      "error_wilson95_upper": 0.0798,
+      "errors": 5,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 106,
+      "pass": false,
+      "review_auc": 0.9834,
+      "review_band": {
+        "auto_match": 52,
+        "auto_reject": 5,
+        "coverage": 0.3826,
+        "coverage_bootstrap95": [
+          0.3087,
+          0.4631
+        ],
+        "error_bound": true,
+        "error_rate": 0.0175,
+        "error_wilson95_upper": 0.0929,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 92,
+        "thresholds": {
+          "hi": 0.966463,
+          "lo": 0.122679
+        }
+      },
+      "thresholds": {
+        "hi": 0.966463,
+        "lo": 0.122679
+      },
+      "weights": [
+        0.9452,
+        -1.6874,
+        3.1817,
+        0.0,
+        0.202
+      ]
+    },
+    "seed1": {
+      "auto_match": 51,
+      "auto_reject": 93,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 43,
+          "false_merges": 0,
+          "false_rejects": 3,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 2,
+          "auto_reject": 41,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 49,
+          "auto_reject": 9,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.5806,
+      "coverage_bootstrap95": [
+        0.5161,
+        0.6411
+      ],
+      "error_bound": true,
+      "error_rate": 0.0278,
+      "error_wilson95_upper": 0.0692,
+      "errors": 4,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 104,
+      "pass": true,
+      "review_auc": 0.9855,
+      "review_band": {
+        "auto_match": 49,
+        "auto_reject": 9,
+        "coverage": 0.3893,
+        "coverage_bootstrap95": [
+          0.3154,
+          0.4698
+        ],
+        "error_bound": true,
+        "error_rate": 0.0172,
+        "error_wilson95_upper": 0.0914,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 91,
+        "thresholds": {
+          "hi": 0.965115,
+          "lo": 0.139511
+        }
+      },
+      "thresholds": {
+        "hi": 0.965115,
+        "lo": 0.139511
+      },
+      "weights": [
+        0.9043,
+        -1.6756,
+        3.0819,
+        0.0,
+        0.1321
+      ]
+    },
+    "seed2": {
+      "auto_match": 60,
+      "auto_reject": 92,
+      "by_kind": {
+        "lookalike": {
+          "auto_match": 0,
+          "auto_reject": 44,
+          "false_merges": 0,
+          "false_rejects": 4,
+          "pairs": 49,
+          "same_entity": 6
+        },
+        "near_miss": {
+          "auto_match": 2,
+          "auto_reject": 41,
+          "false_merges": 0,
+          "false_rejects": 0,
+          "pairs": 50,
+          "same_entity": 5
+        },
+        "review_band": {
+          "auto_match": 58,
+          "auto_reject": 7,
+          "false_merges": 0,
+          "false_rejects": 1,
+          "pairs": 149,
+          "same_entity": 137
+        }
+      },
+      "coverage": 0.6129,
+      "coverage_bootstrap95": [
+        0.5524,
+        0.6734
+      ],
+      "error_bound": false,
+      "error_rate": 0.0329,
+      "error_wilson95_upper": 0.0747,
+      "errors": 5,
+      "false_merge_bound": true,
+      "false_merges": {
+        "auto_matched": 0,
+        "different_pairs": 100,
+        "rate": 0.0,
+        "wilson95_upper": 0.037
+      },
+      "fewer_held": true,
+      "held": 96,
+      "pass": false,
+      "review_auc": 0.983,
+      "review_band": {
+        "auto_match": 58,
+        "auto_reject": 7,
+        "coverage": 0.4362,
+        "coverage_bootstrap95": [
+          0.3557,
+          0.5168
+        ],
+        "error_bound": true,
+        "error_rate": 0.0154,
+        "error_wilson95_upper": 0.0821,
+        "errors": 1,
+        "fewer_held": true,
+        "held": 84,
+        "thresholds": {
+          "hi": 0.959836,
+          "lo": 0.152153
+        }
+      },
+      "thresholds": {
+        "hi": 0.959836,
+        "lo": 0.152153
+      },
+      "weights": [
+        0.9163,
+        -1.6863,
+        3.0786,
+        0.0,
+        0.3479
+      ]
+    }
+  },
+  "match_everything": {
+    "auto_match": 248,
+    "auto_reject": 0,
+    "by_kind": {
+      "lookalike": {
+        "auto_match": 49,
+        "auto_reject": 0,
+        "false_merges": 43,
+        "false_rejects": 0,
+        "pairs": 49,
+        "same_entity": 6
+      },
+      "near_miss": {
+        "auto_match": 50,
+        "auto_reject": 0,
+        "false_merges": 45,
+        "false_rejects": 0,
+        "pairs": 50,
+        "same_entity": 5
+      },
+      "review_band": {
+        "auto_match": 149,
+        "auto_reject": 0,
+        "false_merges": 12,
+        "false_rejects": 0,
+        "pairs": 149,
+        "same_entity": 137
+      }
+    },
+    "coverage": 1.0,
+    "coverage_bootstrap95": [
+      1.0,
+      1.0
+    ],
+    "error_bound": false,
+    "error_rate": 0.4032,
+    "error_wilson95_upper": 0.4653,
+    "errors": 100,
+    "false_merge_bound": false,
+    "false_merges": {
+      "auto_matched": 100,
+      "different_pairs": 100,
+      "rate": 1.0,
+      "wilson95_upper": 1.0
+    },
+    "fewer_held": true,
+    "held": 0,
+    "pass": false,
+    "review_auc": 0.5,
+    "thresholds": {
+      "hi": 0.5,
+      "lo": -1.0
+    }
+  },
+  "preregistration_sha256": "sha256:3efdf95a620d8b74a3048a7ba0723195851d3f1b794fc9ab0ead94413603e4a3",
+  "schema": "arche.x6_gate.v1",
+  "seconds": 45.5,
+  "test": {
+    "different": 100,
+    "gated_share": 0.4476,
+    "pairs": 248,
+    "review_band_pairs": 149,
+    "same_entity": 148
+  },
+  "test_labels_sha256": "sha256:e46392bf5c4374bcf94f2721090a4ee8f532950302431ca6b1b335d6b30a8c0d",
+  "verdict": {
+    "control_pass": true,
+    "gated_pass": false,
+    "gated_review_band_pass": true,
+    "informative": true,
+    "match_everything_pass": false
+  }
+}
