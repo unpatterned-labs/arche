@@ -43,7 +43,11 @@ Not intended for:
 - **Overruling the engine's own matches.** The decider was tested on the
   engine's held pairs and on lookalike and near-miss pairs, not on pairs the
   engine already matched.
-- **Other entity types or countries.** It has not been tested on them.
+- **Other entity types or countries,** with one exception: English GP
+  practices, inside the one-to-one workflow below. On its own, pair by pair, it
+  fails there (X11, X12).
+- **Use without the one-to-one rule outside Nigeria.** In England its wrong
+  matches are second links for a practice the engine had already matched.
 - **Deduplicating the HFR against itself.**
 
 ## Training data
@@ -100,6 +104,47 @@ behaviour are the same:
   pairs settled);
 - name uniqueness in the LGA (X8: no consistent gain without location).
 
+## England: CQC GP locations against ODS GP practices
+
+Adopted on 2026-11-23 as **engine, then this decider unchanged, then one-to-one,
+with flags reviewed by a person**. It narrowly fails one preregistered bound
+(below). No UK model is trained or shipped.
+
+- **Lists:** CQC HSCA active locations whose category is "GP Practices", against
+  ODS epraccur practices with role RO76 that are not closed. A hub, clinic or
+  other cost centre at a practice's site counts as a different facility. Region
+  and local authority come from the ONS Postcode Directory for both sides, and
+  names are upper-cased before the engine runs.
+- **Truth:** CQC's `Location ODS Code`, which measures agreement with the
+  registries' key.
+- **X11** (`benchmark_x11_uk_transfer_*`): pair by pair on the full ODS list,
+  false merges were 18% (bound 2%). Fail. Most were a second cost centre at a
+  practice the engine had already matched.
+- **X12** (`benchmark_x12_uk_finetune_*`): with GP practices only, this decider
+  still had 17% false merges, mostly a second similarly named practice in the
+  same town. A UK-trained decider made no matches and its rejects were 32-44%
+  wrong. Both fail. The registry key is too noisy on held pairs to train a UK
+  model on.
+- **X13** (`benchmark_x13_uk_pipeline_*`), the adopted workflow, on six regions
+  that had not been looked at:
+
+  | | agrees with key | twins found |
+  |---|---|---|
+  | engine, one-to-one | 99.889% | 88.3% (2,706 / 3,066) |
+  | engine + decider + one-to-one | 99.867% | 98.1% (3,009) |
+
+  Bounds: precision within 0.1 point of the engine (pass); recall +5 points
+  (pass, +9.9); twins lost to one-to-one at most 0.1% (**fail**: 11, or
+  0.36%). All 11 lost twins are among the 42 flags, so a person who reviews the
+  flags sees every one. A person handles the 42 flags and 148 still-held pairs,
+  where the engine alone would leave about 400 held pairs.
+- **Regions under 1,000 records** (the North East) are scored by arche's own
+  engine rather than Splink. That engine holds more weak candidates, and the
+  decider rejects them: all 67 North East rejects are pairs the key calls
+  different.
+- **Not covered:** hospitals (NHS acute locations in CQC carry no ODS code),
+  dentists, care homes, Wales, Scotland and Northern Ireland.
+
 ## Limits and known risks
 
 - **One reviewer** labelled everything. No second annotator, no agreement
@@ -117,6 +162,16 @@ behaviour are the same:
   GRID3 and the HFR, and GRID3 v4. v4's ids don't join to the HFR.
 - **The alias table** is built from where facilities stand in GRID3 v2 and the
   HFR. It may not cover other lists' spellings.
+
+## Not yet tried
+
+- **Active learning on the held pairs.** Two model changes did not lift the
+  engine's held pairs: distilling a local Qwen2.5-7B teacher (X9) and synthetic
+  name variants (X10). Every arm's AUC there was 0.61-0.65 against the id
+  crosswalk, which points at noisy truth, not model capacity. The next thing to
+  try is a small blind pack (about 50 pairs) that the decider picks by rule, the
+  pairs it is least sure of, labelled by a person, preregistered like X3-X8.
+  It needs new labels, so it waits until labelling resumes.
 
 ## Distribution
 

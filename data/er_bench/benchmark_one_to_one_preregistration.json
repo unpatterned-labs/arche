@@ -1,0 +1,35 @@
+{
+  "code_sha256": "sha256:d5bbdce95988289df21c1ef005faeed4d055f93da8ac62a1d9275bf005663786",
+  "groups": {
+    "primary": "the 30 states not scored in the linker comparison (the decider's cross-encoder trained on their twins, so its matches there are in-sample; the rule itself has no parameters)",
+    "seen": "the 7 states of the linker comparison, already inspected post hoc; secondary only"
+  },
+  "inputs": {
+    "grid3_v2": "sha256:0affbed54ecc15b62324e2442341bbb2860ffc982747c4a4f29a9c293f88ee5b",
+    "hfr_national": "sha256:a190e07a9427089100455e38a4108107c0211949790f8dd7ac92122bf0e6d097",
+    "national_crosswalk_summary": "sha256:d8ea3ccab097062ec79e751798bc835d421d58a7e157131b3159d138147a73bd"
+  },
+  "metrics": {
+    "extra_links": "links beyond the first per GRID3 facility",
+    "precision": "links joining a facility to its twin / links whose GRID3 facility has a twin (every link counted; no best-per-facility pick)",
+    "recall": "twins linked / twins",
+    "twins_lost": "twins the many-to-many decider crosswalk matched but the rule flagged"
+  },
+  "pass": "on the primary group: one_to_one precision >= engine precision; one_to_one recall >= decider (many-to-many) recall - 0.1 points; twins_lost <= 0.1% of twins",
+  "question": "Does a one-to-one rule (engine matches first, then decider matches by probability; later conflicting matches become duplicate flags) remove the decider's extra links without losing twins or precision?",
+  "rule": {
+    "accept": "greedily, at most one link per GRID3 facility and one per HFR record per state",
+    "flags": "a match whose GRID3 facility is already linked -> possible_hfr_duplicate; whose HFR record is already linked -> possible_grid3_duplicate",
+    "ranking": "engine matches first by engine score (descending), then decider matches by decider probability (descending), ties by decision id",
+    "scope": "the national crosswalk already produced (engine + nigeria-facility-decider-v1, decider spec sha256:3b37abf9...); no model or threshold changes"
+  },
+  "schema": "arche.one_to_one_preregistration.v1",
+  "secondary": [
+    "the same verdicts on the seen group",
+    "flag counts by kind",
+    "flags that sit on a twin (a twin kept out by an earlier non-twin link)"
+  ],
+  "truth": "GRID3 globalid = HFR global_id, same state; agreement with the registries' crosswalk, not accuracy",
+  "why": "Post hoc in the linker comparison (7 states): the decider added 88 extra links (40 to 128), 75 of them a second HFR record for a facility whose twin was also matched, mostly HFR duplicates",
+  "written_at": "2026-11-23T09:13:51+00:00"
+}

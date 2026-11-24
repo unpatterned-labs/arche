@@ -100,6 +100,9 @@ class Recipe:
     #: The columns a caller must supply *before* ``prepare``. Defaults to
     #: ``columns`` when there is no prepare step.
     input_columns: tuple[str, ...] | None = None
+    #: Columns case-folded on both sides when the two lists are written in
+    #: different cases (see :func:`align_case`). Empty: compared as given.
+    align_case: tuple[str, ...] = ()
     #: Whether ``backend="auto"`` may choose this recipe. True only where
     #: Splink beat the engine on the recipe's own benchmark; a recipe that
     #: lost stays available by name and is never picked silently.
@@ -325,6 +328,56 @@ PERSON = Recipe(
     ),
 )
 
+# --------------------------------------------------------------- case ---------
+
+#: A list "writes in capitals" when at least this share of its cased values has
+#: no lower-case letter; it "does not" below CAPITALS_MIXED.
+CAPITALS_SHARE = 0.9
+CAPITALS_MIXED = 0.5
+
+
+def _capitals_share(rows: Sequence[dict], column: str) -> float | None:
+    cased = [v for v in (r.get(column) for r in rows)
+             if isinstance(v, str) and v.lower() != v.upper()]
+    if not cased:
+        return None
+    return sum(v == v.upper() for v in cased) / len(cased)
+
+
+def align_case(list_a: Sequence[dict], list_b: Sequence[dict], columns: Sequence[str]
+               ) -> tuple[list[dict], list[dict], tuple[str, ...]]:
+    """Case-fold ``columns`` on both lists where one writes in capitals and the other does not.
+
+    Splink compares strings exactly, so "Melrose Surgery" against "MELROSE
+    SURGERY" agrees on nothing, and a recipe that trains on exact agreement has
+    no pairs to learn from. Lists written in one case are returned unchanged,
+    because folding them would move a recipe that already works. Returns the
+    lists and the columns that were folded.
+    """
+    folded = []
+    for col in columns:
+        sa, sb = _capitals_share(list_a, col), _capitals_share(list_b, col)
+        if sa is None or sb is None:
+            continue
+        if (sa >= CAPITALS_SHARE and sb < CAPITALS_MIXED) or \
+                (sb >= CAPITALS_SHARE and sa < CAPITALS_MIXED):
+            folded.append(col)
+    if not folded:
+        return list(list_a), list(list_b), ()
+
+    def fold(rows: Sequence[dict]) -> list[dict]:
+        out = []
+        for r in rows:
+            row = dict(r)
+            for col in folded:
+                if isinstance(row.get(col), str):
+                    row[col] = " ".join(row[col].casefold().split())
+            out.append(row)
+        return out
+
+    return fold(list_a), fold(list_b), tuple(folded)
+
+
 # --------------------------------------------------------------- place --------
 
 PLACE_COLUMNS = ("name", "lat", "lon")
@@ -379,10 +432,11 @@ def _place_prepare(records: Sequence[dict]) -> list[dict]:
 
 
 PLACE = Recipe(
-    name="place/name-coords-v1",
+    name="place/name-coords-v2",
     entity="place",
     columns=PLACE_COLUMNS,
     prepare=_place_prepare,
+    align_case=("name",),
     settings=_place_settings,
     train=_place_train,
     threshold=0.9,
@@ -395,6 +449,11 @@ PLACE = Recipe(
         "same model at 0.5 merges 368 of 400 known-different schools; at 0.9, 2.",
         "lat and lon must be numeric; a string coordinate makes DuckDB refuse "
         "radians(VARCHAR), which is how the first derived run died.",
+        "v2: when one list writes its names in capitals and the other does not "
+        "(CQC against ODS GP practices), both lists' names are case-folded "
+        "before Splink sees them, and the pins say so. v1 compared them as "
+        "given, found no exact-name training pairs and stopped. Lists written "
+        "in one case are untouched: folding them too moved Lagos's scores.",
     ),
 )
 

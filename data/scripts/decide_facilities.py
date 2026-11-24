@@ -36,14 +36,14 @@ from arche.resolve import PairDecider  # noqa: E402
 DATA = REPO / "data"
 
 
-def points(state: str) -> tuple[dict, dict]:
+def points(state: str, hfr_csv: Path | None = None) -> tuple[dict, dict]:
     grid3, hfr = {}, {}
     with (DATA / "GRID3_NGA_health_facilities_v2.csv").open(encoding="utf-8-sig") as fh:
         for r in csv.DictReader(fh):
             if r["state"].strip().casefold() == state.casefold():
                 with contextlib.suppress(ValueError):
                     grid3[r["globalid"]] = (float(r["latitude"]), float(r["longitude"]))
-    with (DATA / f"hfr_{state.casefold()}.csv").open(encoding="utf-8") as fh:
+    with (hfr_csv or DATA / f"hfr_{state.casefold()}.csv").open(encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             with contextlib.suppress(ValueError):
                 hfr[r["id"]] = (float(r["lat"]), float(r["lon"]))
@@ -63,9 +63,10 @@ def main() -> None:
     ap.add_argument("--state", required=True)
     ap.add_argument("--bundle", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--hfr", type=Path, help="HFR state CSV; defaults to data/hfr_<state>.csv")
     args = ap.parse_args()
     decider = PairDecider.load(args.bundle.expanduser())
-    grid3, hfr = points(args.state)
+    grid3, hfr = points(args.state, args.hfr.expanduser() if args.hfr else None)
     with args.edges.expanduser().open(encoding="utf-8") as fh:
         edges = list(csv.DictReader(fh))
         fields = list(edges[0].keys()) if edges else []

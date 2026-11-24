@@ -693,6 +693,7 @@ def splink_crosswalk(
     from arche.resolve.recipes import Recipe
 
     recipe: Recipe | None = None
+    case_folded: tuple[str, ...] = ()
     if isinstance(splink_settings, Recipe):
         recipe = splink_settings
         recipe.check(list_a, side="list_a")
@@ -704,6 +705,10 @@ def splink_crosswalk(
             prepared_a = recipe.prepare(list_a)
             prepared_b = prepared_a if dedupe_call else recipe.prepare(list_b)
             list_a, list_b = prepared_a, prepared_b
+        if recipe.align_case and not dedupe_call:
+            from arche.resolve.recipes import align_case
+
+            list_a, list_b, case_folded = align_case(list_a, list_b, recipe.align_case)
         splink_settings = recipe.settings("dedupe_only" if dedupe_call else "link_only")
         if splink_train is None:
             splink_train = lambda ln, _r=recipe: _r.train(ln, seed)  # noqa: E731
@@ -854,6 +859,10 @@ def splink_crosswalk(
         "seed": seed,
         "gate": bool(gate),
     }
+    if case_folded:
+        # Only when it happened, so a run on lists written in one case keeps
+        # the pins (and the decision ids) it had before.
+        pins["case_folded"] = list(case_folded)
     if comparators is not None:
         pins["comparators_sha256"] = content_hash(
             comparators, prefix="cmp").split(":")[-1]

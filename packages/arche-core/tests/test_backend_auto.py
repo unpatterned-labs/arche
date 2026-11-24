@@ -142,4 +142,4 @@ class TestARecipeThatLostStaysOut:
         b = [dict(r, id="b" + r["id"][1:]) for r in a]
         res = reconcile(a, b, entity="place")
         assert res["backend"]["chosen"] == "splink"
-        assert res["backend"]["recipe"] == "place/name-coords-v1"
+        assert res["backend"]["recipe"] == "place/name-coords-v2"

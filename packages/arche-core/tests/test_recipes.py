@@ -135,6 +135,34 @@ class TestTheOtherTwo:
         assert rows[0]["lat"] == 53.8 and rows[0]["lon"] == -1.5
         assert rows[1]["lat"] is None and rows[1]["lon"] is None
 
+    def test_place_links_mixed_case_against_capitals(self):
+        """v1 stopped here: no exact-name training pairs across a case difference."""
+        pytest.importorskip("splink")
+        from arche.resolve import reconcile
+        from arche.resolve.recipes import PLACE
+
+        a = [{"id": f"a{i}", "name": f"Practice {i} Surgery",
+              "lat": 51.0 + i * 1e-3, "lon": -1.0 + i * 1e-3} for i in range(300)]
+        b = [{"id": f"b{i}", "name": f"PRACTICE {i} SURGERY",
+              "lat": 51.0 + i * 1e-3, "lon": -1.0 + i * 1e-3} for i in range(300)]
+        res = reconcile(a, b, id_field="id", backend="splink", splink_settings=PLACE)
+        matched = {(e["a_id"], e["b_id"]) for e in res["matches"] if e["decision"] == "match"}
+        assert len(matched) >= 290
+        assert all(x[1:] == y[1:] for x, y in matched)
+        assert res["pins"]["case_folded"] == ["name"]
+
+    def test_align_case_leaves_lists_in_one_case_alone(self):
+        from arche.resolve.recipes import align_case
+
+        mixed = [{"name": "Abule Eko Health Center"}, {"name": "PHC Ikeja"}]
+        caps = [{"name": "ABULE EKO HEALTH CENTRE"}, {"name": "PHC IKEJA"}]
+        assert align_case(mixed, mixed, ("name",))[2] == ()
+        assert align_case(caps, caps, ("name",))[2] == ()
+        a, b, folded = align_case(mixed, caps, ("name",))
+        assert folded == ("name",)
+        assert a[1]["name"] == "phc ikeja" and b[1]["name"] == "phc ikeja"
+        assert mixed[1]["name"] == "PHC Ikeja"
+
     def test_product_requires_a_name_and_reads_derived_columns(self):
         from arche.resolve.recipes import PRODUCT
 

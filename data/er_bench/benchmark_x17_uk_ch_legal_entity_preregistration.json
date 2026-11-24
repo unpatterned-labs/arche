@@ -1,0 +1,287 @@
+{
+  "amendments": [],
+  "code": {
+    "data/scripts/build_uk_ch.py": "sha256:6477519a0c44a1b34cd6ecadd3257673632bf2f1b48acb0d7f4fc8b42bce8e62",
+    "data/scripts/x16_uk_ch.py": "sha256:9d56f301533402600865e57b402a9ca73ae17b96c6ebe9cfa395719f2e383cb3",
+    "data/scripts/x17_dev_refuters.py": "sha256:45f5087534823e220a7b8ed6d60d514f11648bfbc11af68e631c492f2ec84a74",
+    "data/scripts/x17_uk_ch_legal_entity.py": "sha256:8eb55cd02875b2ec0ca4d8f35075581cc5c056a471423f2553b1dbe892ff08d3",
+    "packages/arche-core/src/arche/resolve/__init__.py": "sha256:2b99f68c936c54a8271a2ba3e5c5085d5f5edbab4832c3cfd9660ab0f855c7b3",
+    "packages/arche-core/src/arche/resolve/_gate.py": "sha256:83be2dbf1761c00749f5ead88d8dfc2d9b3bfd6ff3d79c5ceac38d0a6598b04b",
+    "packages/arche-core/src/arche/resolve/reconcile.py": "sha256:a888c2b44a8b41ac5930f9fab54f95b8bb6e51f4ac0d93a2ef5b444e4965aabe"
+  },
+  "date": "2026-11-23",
+  "dev_choice": "name refuter: rival with mutual=False, shared_overrides=False, ordinary_words=False, near=0.85, legal form stripped; best dev precision of five settings (99.29% against 98.32% with no refuter) for 0.2pt recall",
+  "dev_results": {
+    "arms": {
+      "exact_district": {
+        "links": 8786,
+        "precision": 0.99772,
+        "precision_wilson95": [
+          0.99648,
+          0.99852
+        ],
+        "recall_all": 0.69695,
+        "recall_reachable": 0.98153
+      },
+      "exact_district+mutual_no_shared": {
+        "links": 9024,
+        "precision": 0.98598,
+        "precision_wilson95": [
+          0.98334,
+          0.98822
+        ],
+        "recall_all": 0.70635,
+        "recall_reachable": 0.99515
+      },
+      "exact_district+mutual_no_shared_no_english": {
+        "links": 9004,
+        "precision": 0.98796,
+        "precision_wilson95": [
+          0.98549,
+          0.99002
+        ],
+        "recall_all": 0.70627,
+        "recall_reachable": 0.99504
+      },
+      "exact_district+none": {
+        "links": 9043,
+        "precision": 0.98424,
+        "precision_wilson95": [
+          0.98145,
+          0.98661
+        ],
+        "recall_all": 0.70659,
+        "recall_reachable": 0.9955
+      },
+      "exact_district+one_sided_no_shared_no_english": {
+        "links": 8928,
+        "precision": 0.99337,
+        "precision_wilson95": [
+          0.99146,
+          0.99486
+        ],
+        "recall_all": 0.70484,
+        "recall_reachable": 0.99296
+      },
+      "exact_district+one_sided_no_shared_no_english_near": {
+        "links": 8931,
+        "precision": 0.99338,
+        "precision_wilson95": [
+          0.99147,
+          0.99486
+        ],
+        "recall_all": 0.70508,
+        "recall_reachable": 0.9933
+      },
+      "exact_district+organisation": {
+        "links": 8999,
+        "precision": 0.98795,
+        "precision_wilson95": [
+          0.98548,
+          0.99001
+        ],
+        "recall_all": 0.70587,
+        "recall_reachable": 0.99446
+      },
+      "exact_district+rival_as_shipped": {
+        "links": 9042,
+        "precision": 0.98435,
+        "precision_wilson95": [
+          0.98157,
+          0.98671
+        ],
+        "recall_all": 0.70659,
+        "recall_reachable": 0.9955
+      },
+      "exact_national": {
+        "links": 12311,
+        "precision": 0.9969,
+        "precision_wilson95": [
+          0.99575,
+          0.99774
+        ],
+        "recall_all": 0.9749,
+        "recall_reachable": 0.98014
+      },
+      "exact_national+mutual_no_shared": {
+        "links": 12462,
+        "precision": 0.99597,
+        "precision_wilson95": [
+          0.99469,
+          0.99694
+        ],
+        "recall_all": 0.9851,
+        "recall_reachable": 0.99492
+      },
+      "exact_national+mutual_no_shared_no_english": {
+        "links": 12460,
+        "precision": 0.99605,
+        "precision_wilson95": [
+          0.99478,
+          0.99701
+        ],
+        "recall_all": 0.98502,
+        "recall_reachable": 0.9948
+      },
+      "exact_national+none": {
+        "links": 12466,
+        "precision": 0.99589,
+        "precision_wilson95": [
+          0.9946,
+          0.99687
+        ],
+        "recall_all": 0.98534,
+        "recall_reachable": 0.99527
+      },
+      "exact_national+one_sided_no_shared_no_english": {
+        "links": 12432,
+        "precision": 0.99613,
+        "precision_wilson95": [
+          0.99487,
+          0.99708
+        ],
+        "recall_all": 0.98358,
+        "recall_reachable": 0.99273
+      },
+      "exact_national+one_sided_no_shared_no_english_near": {
+        "links": 12435,
+        "precision": 0.99613,
+        "precision_wilson95": [
+          0.99487,
+          0.99708
+        ],
+        "recall_all": 0.98382,
+        "recall_reachable": 0.99307
+      },
+      "exact_national+organisation": {
+        "links": 12453,
+        "precision": 0.99613,
+        "precision_wilson95": [
+          0.99487,
+          0.99708
+        ],
+        "recall_all": 0.98462,
+        "recall_reachable": 0.99423
+      },
+      "exact_national+rival_as_shipped": {
+        "links": 12466,
+        "precision": 0.99589,
+        "precision_wilson95": [
+          0.9946,
+          0.99687
+        ],
+        "recall_all": 0.98534,
+        "recall_reachable": 0.99527
+      },
+      "mutual_no_shared": {
+        "links": 8705,
+        "precision": 0.98501,
+        "precision_wilson95": [
+          0.98223,
+          0.98736
+        ],
+        "recall_all": 0.68061,
+        "recall_reachable": 0.98614
+      },
+      "mutual_no_shared_no_english": {
+        "links": 8685,
+        "precision": 0.98706,
+        "precision_wilson95": [
+          0.98445,
+          0.98923
+        ],
+        "recall_all": 0.68053,
+        "recall_reachable": 0.98603
+      },
+      "none": {
+        "links": 8724,
+        "precision": 0.9832,
+        "precision_wilson95": [
+          0.98028,
+          0.9857
+        ],
+        "recall_all": 0.68085,
+        "recall_reachable": 0.98649
+      },
+      "one_sided_no_shared_no_english": {
+        "links": 8607,
+        "precision": 0.99289,
+        "precision_wilson95": [
+          0.99088,
+          0.99446
+        ],
+        "recall_all": 0.6791,
+        "recall_reachable": 0.98395
+      },
+      "one_sided_no_shared_no_english_near": {
+        "links": 8610,
+        "precision": 0.9929,
+        "precision_wilson95": [
+          0.99089,
+          0.99446
+        ],
+        "recall_all": 0.67934,
+        "recall_reachable": 0.9843
+      },
+      "organisation": {
+        "links": 8339,
+        "precision": 0.98567,
+        "precision_wilson95": [
+          0.98288,
+          0.98801
+        ],
+        "recall_all": 0.6524,
+        "recall_reachable": 0.94527
+      },
+      "rival_as_shipped": {
+        "links": 8723,
+        "precision": 0.98331,
+        "precision_wilson95": [
+          0.9804,
+          0.9858
+        ],
+        "recall_all": 0.68085,
+        "recall_reachable": 0.98649
+      }
+    },
+    "providers": 12709
+  },
+  "inputs": {
+    "BasicCompanyDataAsOneFile-2026-11-01.zip": "sha256:c64fb0b5538d9b7a1e1ae4d8388f9c414b550270645f7f71837708c718ed78cb",
+    "ch_in_cqc_districts.csv": "sha256:756912b7963dc81eca911e7198f943ae6b4d7cf65f95bbddea210e48cdcdbe8c",
+    "hsca_active_locations.csv": "sha256:fde2859423aea825b6d9d4a63e2a5c0ad596d3f501f01d2174e7fdf7b6e83be0",
+    "postcodes.csv": "sha256:cdf844f6cc72b3dc823ab0cbeca2bda7fe21e7e8630bd0c2e0edfff14823f874"
+  },
+  "known_risks": [
+    "CQC may record a sister company's number; key errors count as errors in every arm",
+    "exact_national needs the folded name unique on the whole register; dissolved companies stay on the file and can make a name non-unique",
+    "companies that renamed since CQC registration fail every exact arm",
+    "the test half is about the same size as dev (district split, not provider split)"
+  ],
+  "name": "x17_uk_ch_legal_entity",
+  "post_hoc_basis": "X17 was designed after reading X16's errors (identical address overriding a distinctive name difference; registered office refuting exact names). That is why its test is on districts X17's choices never saw; X16's own districts include them, so organisation's test-half numbers are X16 numbers re-sliced, not fresh.",
+  "question": "On held-out postcode districts, does an exact-name cascade with a legal-entity pack link CQC providers to their Companies House company better than X16's exact arm, does the engine add anything after a national exact pass, and does the legal-entity pack beat the organisation pack?",
+  "rule": {
+    "arms": {
+      "exact_district": "X16's exact arm: folded names equal and unique among companies registered in the provider's postcode district",
+      "exact_national": "folded names equal and unique across the whole Companies House file, wherever registered",
+      "exact_national+legal_entity": "the candidate: exact_national links first, then legal_entity links for providers and companies still free",
+      "legal_entity": "reconcile(entity='legal_entity') on the same per-district candidates as X16 (distinctive-word first pass), matches only",
+      "organisation": "X16's engine edges (reconcile(entity='organisation')), matches only, restricted to test districts",
+      "others": "exact_district+organisation, exact_district+legal_entity, exact_national+organisation are reported, not judged"
+    },
+    "metrics": "precision with Wilson 95% interval, recall_all (over providers whose company is in the file), recall_reachable",
+    "one_to_one": "every arm kept one-to-one (higher score first, ties by id); within district for engine arms, nationally for exact_national",
+    "split": "districts by sha256(district)[0] % 2: even = dev (used to choose the name refuter, 12,709 providers), odd = test (scored once, here)",
+    "truth": "the Companies House number CQC records for the provider; providers whose number is not in the file are not evaluable",
+    "verdict": {
+      "pass": "all of q1, q2, q3",
+      "q1": "cascade precision >= exact_district precision - 0.002, Wilson lower >= 0.99, recall_all >= exact_district recall_all + 0.05",
+      "q2": "cascade recall_all >= exact_national recall_all + 0.005 and cascade precision >= exact_national precision - 0.002 (the engine earns its place after the national exact pass)",
+      "q3": "legal_entity precision >= organisation precision + 0.003 and legal_entity recall_all >= organisation recall_all"
+    }
+  },
+  "rule_sha256": "sha256:1fa9786146cff90134fc987cc88888e0b10c9c0f4e135f7c3d899fbf45481d25",
+  "x16_disclosure": "X16's recall bound (engine >= exact + 10pt) could not be met by any in-district arm: the in-district reachable ceiling was ~71% of providers against a bar of 79.7%. The bound was set without computing that ceiling. X16's verdict stands; the bound was unattainable by construction, which X16 did not say.",
+  "x16_edges": "sha256:53fd0cee93f0b5ddfc468f44f25559420f05e79681673554337d8a575657d16f"
+}

@@ -1,0 +1,586 @@
+{
+  "arms": {
+    "arche": {
+      "all": {
+        "addresses": 2617,
+        "fields": {
+          "city": {
+            "exact": 9,
+            "gold_present": 2599,
+            "recall": 0.0035,
+            "spurious": 5
+          },
+          "house_number": {
+            "exact": 31,
+            "gold_present": 2585,
+            "recall": 0.012,
+            "spurious": 3
+          },
+          "postcode": {
+            "exact": 15,
+            "gold_present": 2431,
+            "recall": 0.0062,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 36,
+            "gold_present": 2601,
+            "recall": 0.0138,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 1689,
+            "recall": 0.0,
+            "spurious": 4
+          },
+          "suburb": {
+            "exact": 4,
+            "gold_present": 100,
+            "recall": 0.04,
+            "spurious": 13
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 135,
+            "recall": 0.0,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 5,
+        "parse_correct_rate": 0.0019,
+        "parse_correct_wilson95": [
+          0.0008,
+          0.0045
+        ]
+      },
+      "au": {
+        "addresses": 76,
+        "fields": {
+          "city": {
+            "exact": 0,
+            "gold_present": 76,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "house_number": {
+            "exact": 0,
+            "gold_present": 76,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "postcode": {
+            "exact": 0,
+            "gold_present": 76,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 0,
+            "gold_present": 76,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 6,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 0,
+            "gold_present": 61,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 8,
+            "recall": 0.0,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 0,
+        "parse_correct_rate": 0.0,
+        "parse_correct_wilson95": [
+          0.0,
+          0.0481
+        ]
+      },
+      "gb": {
+        "addresses": 255,
+        "fields": {
+          "city": {
+            "exact": 8,
+            "gold_present": 253,
+            "recall": 0.0316,
+            "spurious": 1
+          },
+          "house_number": {
+            "exact": 9,
+            "gold_present": 241,
+            "recall": 0.0373,
+            "spurious": 1
+          },
+          "postcode": {
+            "exact": 14,
+            "gold_present": 182,
+            "recall": 0.0769,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 18,
+            "gold_present": 254,
+            "recall": 0.0709,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 2,
+            "recall": 0.0,
+            "spurious": 4
+          },
+          "suburb": {
+            "exact": 3,
+            "gold_present": 24,
+            "recall": 0.125,
+            "spurious": 6
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 3,
+            "recall": 0.0,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 4,
+        "parse_correct_rate": 0.0157,
+        "parse_correct_wilson95": [
+          0.0061,
+          0.0396
+        ]
+      },
+      "us": {
+        "addresses": 2233,
+        "fields": {
+          "city": {
+            "exact": 0,
+            "gold_present": 2217,
+            "recall": 0.0,
+            "spurious": 4
+          },
+          "house_number": {
+            "exact": 20,
+            "gold_present": 2216,
+            "recall": 0.009,
+            "spurious": 2
+          },
+          "postcode": {
+            "exact": 1,
+            "gold_present": 2134,
+            "recall": 0.0005,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 16,
+            "gold_present": 2219,
+            "recall": 0.0072,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 1679,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 1,
+            "gold_present": 7,
+            "recall": 0.1429,
+            "spurious": 7
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 123,
+            "recall": 0.0,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 1,
+        "parse_correct_rate": 0.0004,
+        "parse_correct_wilson95": [
+          0.0001,
+          0.0025
+        ]
+      },
+      "za": {
+        "addresses": 53,
+        "fields": {
+          "city": {
+            "exact": 1,
+            "gold_present": 53,
+            "recall": 0.0189,
+            "spurious": 0
+          },
+          "house_number": {
+            "exact": 2,
+            "gold_present": 52,
+            "recall": 0.0385,
+            "spurious": 0
+          },
+          "postcode": {
+            "exact": 0,
+            "gold_present": 39,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 2,
+            "gold_present": 52,
+            "recall": 0.0385,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 2,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 0,
+            "gold_present": 8,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 1,
+            "recall": 0.0,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 0,
+        "parse_correct_rate": 0.0,
+        "parse_correct_wilson95": [
+          -0.0,
+          0.0676
+        ]
+      }
+    },
+    "libpostal": {
+      "all": {
+        "addresses": 2617,
+        "fields": {
+          "city": {
+            "exact": 2570,
+            "gold_present": 2599,
+            "recall": 0.9888,
+            "spurious": 1
+          },
+          "house_number": {
+            "exact": 2570,
+            "gold_present": 2585,
+            "recall": 0.9942,
+            "spurious": 2
+          },
+          "postcode": {
+            "exact": 2427,
+            "gold_present": 2431,
+            "recall": 0.9984,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 2532,
+            "gold_present": 2601,
+            "recall": 0.9735,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 1685,
+            "gold_present": 1689,
+            "recall": 0.9976,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 98,
+            "gold_present": 100,
+            "recall": 0.98,
+            "spurious": 2
+          },
+          "unit": {
+            "exact": 128,
+            "gold_present": 135,
+            "recall": 0.9481,
+            "spurious": 88
+          }
+        },
+        "parse_correct": 2454,
+        "parse_correct_rate": 0.9377,
+        "parse_correct_wilson95": [
+          0.9278,
+          0.9463
+        ]
+      },
+      "au": {
+        "addresses": 76,
+        "fields": {
+          "city": {
+            "exact": 76,
+            "gold_present": 76,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "house_number": {
+            "exact": 76,
+            "gold_present": 76,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "postcode": {
+            "exact": 76,
+            "gold_present": 76,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 75,
+            "gold_present": 76,
+            "recall": 0.9868,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 6,
+            "gold_present": 6,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 61,
+            "gold_present": 61,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "unit": {
+            "exact": 7,
+            "gold_present": 8,
+            "recall": 0.875,
+            "spurious": 0
+          }
+        },
+        "parse_correct": 75,
+        "parse_correct_rate": 0.9868,
+        "parse_correct_wilson95": [
+          0.9292,
+          0.9977
+        ]
+      },
+      "gb": {
+        "addresses": 255,
+        "fields": {
+          "city": {
+            "exact": 244,
+            "gold_present": 253,
+            "recall": 0.9644,
+            "spurious": 0
+          },
+          "house_number": {
+            "exact": 232,
+            "gold_present": 241,
+            "recall": 0.9627,
+            "spurious": 1
+          },
+          "postcode": {
+            "exact": 180,
+            "gold_present": 182,
+            "recall": 0.989,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 223,
+            "gold_present": 254,
+            "recall": 0.878,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 1,
+            "gold_present": 2,
+            "recall": 0.5,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 23,
+            "gold_present": 24,
+            "recall": 0.9583,
+            "spurious": 2
+          },
+          "unit": {
+            "exact": 3,
+            "gold_present": 3,
+            "recall": 1.0,
+            "spurious": 21
+          }
+        },
+        "parse_correct": 200,
+        "parse_correct_rate": 0.7843,
+        "parse_correct_wilson95": [
+          0.7298,
+          0.8304
+        ]
+      },
+      "us": {
+        "addresses": 2233,
+        "fields": {
+          "city": {
+            "exact": 2199,
+            "gold_present": 2217,
+            "recall": 0.9919,
+            "spurious": 1
+          },
+          "house_number": {
+            "exact": 2211,
+            "gold_present": 2216,
+            "recall": 0.9977,
+            "spurious": 1
+          },
+          "postcode": {
+            "exact": 2133,
+            "gold_present": 2134,
+            "recall": 0.9995,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 2190,
+            "gold_present": 2219,
+            "recall": 0.9869,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 1678,
+            "gold_present": 1679,
+            "recall": 0.9994,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 7,
+            "gold_present": 7,
+            "recall": 1.0,
+            "spurious": 0
+          },
+          "unit": {
+            "exact": 118,
+            "gold_present": 123,
+            "recall": 0.9593,
+            "spurious": 62
+          }
+        },
+        "parse_correct": 2141,
+        "parse_correct_rate": 0.9588,
+        "parse_correct_wilson95": [
+          0.9497,
+          0.9663
+        ]
+      },
+      "za": {
+        "addresses": 53,
+        "fields": {
+          "city": {
+            "exact": 51,
+            "gold_present": 53,
+            "recall": 0.9623,
+            "spurious": 0
+          },
+          "house_number": {
+            "exact": 51,
+            "gold_present": 52,
+            "recall": 0.9808,
+            "spurious": 0
+          },
+          "postcode": {
+            "exact": 38,
+            "gold_present": 39,
+            "recall": 0.9744,
+            "spurious": 0
+          },
+          "road": {
+            "exact": 44,
+            "gold_present": 52,
+            "recall": 0.8462,
+            "spurious": 0
+          },
+          "state": {
+            "exact": 0,
+            "gold_present": 2,
+            "recall": 0.0,
+            "spurious": 0
+          },
+          "suburb": {
+            "exact": 7,
+            "gold_present": 8,
+            "recall": 0.875,
+            "spurious": 0
+          },
+          "unit": {
+            "exact": 0,
+            "gold_present": 1,
+            "recall": 0.0,
+            "spurious": 5
+          }
+        },
+        "parse_correct": 38,
+        "parse_correct_rate": 0.717,
+        "parse_correct_wilson95": [
+          0.5843,
+          0.8203
+        ]
+      }
+    }
+  },
+  "libpostal_minus_arche": {
+    "all": {
+      "bootstrap95": [
+        0.9263,
+        0.9454
+      ],
+      "diff": 0.9358
+    },
+    "au": {
+      "bootstrap95": [
+        0.9605,
+        1.0
+      ],
+      "diff": 0.9868
+    },
+    "gb": {
+      "bootstrap95": [
+        0.7176,
+        0.8196
+      ],
+      "diff": 0.7686
+    },
+    "us": {
+      "bootstrap95": [
+        0.9498,
+        0.9664
+      ],
+      "diff": 0.9584
+    },
+    "za": {
+      "bootstrap95": [
+        0.5849,
+        0.8302
+      ],
+      "diff": 0.717
+    }
+  },
+  "preregistration_sha256": "sha256:1126c64ee2a88edc0d43cd9a6cbef6325d53cf9d5de7662950a642509f6a6469",
+  "schema": "arche.g0_parsers.v1",
+  "seconds": 11.3,
+  "test_sha256": "sha256:db58065bf7508b862e9c6ee68774312bfc7e675192e21b8ee6aa9f7aa32ed51a",
+  "verdict": {
+    "all": "libpostal",
+    "au": "libpostal",
+    "gb": "libpostal",
+    "us": "libpostal",
+    "za": "libpostal"
+  }
+}

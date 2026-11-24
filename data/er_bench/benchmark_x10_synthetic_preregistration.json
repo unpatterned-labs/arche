@@ -1,0 +1,54 @@
+{
+  "amendments": [],
+  "baseline_models": {
+    "seed0": "sha256:7da60c47626455d32a85655b4969e075605a49418d1224a08aaf4d86d45ea039",
+    "seed1": "sha256:34dd52d5950c138ac39640959febc8c8df4b8de1fb794ff604a1d2580b90ccf9",
+    "seed2": "sha256:cd495a8aba256d77e1611c9187b4e850689b9ca5ca0ef10114b2693f238223e2"
+  },
+  "code": {
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x10_synthetic.py": "sha256:345648ebdaa1dec378e35736ff63c3d7b9f15226ce0dba1ccb2779d7833efb0e",
+    "x8_uniqueness.py": "sha256:ce02542512a52b59b3edc77c6f083d5899acd435e570e89f499314bb7a487045",
+    "x9_distill.py": "sha256:b9b91f46eb85d2b9435b6f22db8b2ad013dc168269f530abdb4e3057559026b5"
+  },
+  "known_risks": [
+    "the test was read once for X9; X10 uses it a second time, with nothing tuned on it",
+    "the test truth is the id crosswalk; matching an HFR duplicate counts as wrong",
+    "synthetic spelling edits are random, not learned from real variation; some 'same' variants may read as different names to a person",
+    "number negatives teach that 'X' and 'X 2' differ; the registries sometimes drop numbers for the same facility"
+  ],
+  "models": {
+    "synth": {
+      "seed0": "sha256:a498c6c2b54d24cb53c7ab08f0af30bf9a54294d68ea923282748791c01ea80a",
+      "seed1": "sha256:69f1efac0861d1833008a13081deb9db542cd150d6fbe49dfb5ea3e136f821ea",
+      "seed2": "sha256:4a45aa30ee5222efb8ebda2b5c47cda2d9915ff04e6c757361b21beae7bad8dc"
+    },
+    "synth_hard": {
+      "seed0": "sha256:6202ff886e6017587de197c11c61c980aca85796dbe1e2a40ec44560620c9c52",
+      "seed1": "sha256:36f30f59535a621e7cf1caa2bc7fd3c4594cc74faf9c82223a79ad1b94a64525",
+      "seed2": "sha256:ebbba88fcf40207db00aaefb85b1a7eaa35c9fd61b6de77f2b76731854aa7b92"
+    }
+  },
+  "question": "Do synthetic name variants, with known answers, let the decider settle more of the engine's held pairs without more wrong matches?",
+  "rule": {
+    "arms": {
+      "baseline": "X8's cross-encoder",
+      "synth": "X8's training examples plus the synthetic pairs",
+      "synth_hard": "plus the engine's held pairs in the training states with id labels (X9's hard arm)"
+    },
+    "cross_encoder": "X0 recipe, seeds 0-2, X8's held-out states",
+    "decider": "X8's augmented combiner fitted on the 1,707 development labels for every arm and seed; located thresholds",
+    "fallback": "if neither arm passes, the owner asked for active learning next (option 3)",
+    "pass": "per arm: mean twins_matched >= 1.05 x baseline mean, and mean wrong_matched <= baseline mean",
+    "secondary": "AUC of the cross-encoder on scorable pairs; held counts; synth against synth_hard",
+    "synthetic": "12,000 positives (swap: type phrases swapped as between id-linked records, >= 30 occurrences, drawn by frequency; fuse: one space removed; spell: one vowel change, h insertion or single/double letter in the longest place word; abbrev: PHC, BHC, MCH) and 4,000 negatives (number: a number changed or '2' added), from GRID3 v2 facilities in the training states only, seed 20261123; level-change negatives built but not used (facilities get upgraded)",
+    "test": "X9's test, unchanged: the engine's held pairs in the seven held-out states against the id crosswalk (1 = twin, 0 = another record of a facility with a twin in the state). Read once before, for X9"
+  },
+  "rule_sha256": "sha256:890f4ed614bc0ff41e7259e98d9d7636c8f190fbe918b3197999e843f6e16f60",
+  "schema": "arche.x10_synthetic_preregistration.v1",
+  "swaps_sha256": "sha256:ea3ff43178afe79d4d18f83933613313a13bd0b8702d683891b4920ed0181c42",
+  "synthetic_sha256": "sha256:8f7ecd639e759dbbb70d2dd4f2f115720095f90faeb1cc7a4e633323807f1373",
+  "why": "X9: a local Qwen teacher's soft labels lowered matches by 11%; adding the held pairs with id labels raised them 7% but with more wrong matches. Synthetic variants give clean labels aimed at the reviewed failure modes",
+  "written_at": "2026-11-23T11:39:32+00:00",
+  "written_before_the_test_was_scored_for_x10": true
+}

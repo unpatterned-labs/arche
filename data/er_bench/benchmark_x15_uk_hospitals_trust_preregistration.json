@@ -1,0 +1,64 @@
+{
+  "amendments": [],
+  "build_summary": {
+    "backends": {
+      "arche": 156
+    },
+    "decisions": {
+      "match": 864,
+      "review": 1216
+    },
+    "edges": 2080,
+    "records": {
+      "cqc_hospitals": 732,
+      "cqc_no_region": 1,
+      "cqc_trust_without_sites": 36,
+      "ets_no_region": 195,
+      "ets_open": 34711
+    },
+    "schema": "arche.uk_hospital_trust_edges.v1",
+    "trusts": 158
+  },
+  "bundle_pins": {
+    "cross_encoder": "sha256:7da60c47626455d32a85655b4969e075605a49418d1224a08aaf4d86d45ea039",
+    "decider_spec": "sha256:3b37abf92aa0707918f32b94376a5fc0a7b84fb89ad6542a06bd30909043498d"
+  },
+  "code": {
+    "build_uk_gp.py": "sha256:c840b35bcc3b3e04ac12a916f966cf5c3f5cf32a7260b88cc243c078f9b57494",
+    "x11_uk_transfer.py": "sha256:3b78134b052877f790c1ed4123a5a362e78aae616cf8ccb97a4b653916ff6070",
+    "x13_uk_pipeline.py": "sha256:8ba59944212ffc01e9643c2d63d9eacd75d33445ecfcf41f2966b14d0c6251e7",
+    "x14_uk_hospitals.py": "sha256:290a1bcd3139e15c685a8d9c0789b4755919a7239067dd0a037f4da60cec514f",
+    "x15_uk_hospitals_trust.py": "sha256:d3062dc99fedfabc7079d53a27dde9fa1e5499e9fbe6d84be13bb6299c50c2be"
+  },
+  "date": "2026-11-23",
+  "edges": "sha256:19f2d3c55ae80ca65ef90eddc3beef587efccd2af5a6a138097955b364474c4e",
+  "inputs": {
+    "ets.csv": "sha256:939c5936916c545f1de972ef5dd8739f87c2113c780af067d9862340bde3ac69",
+    "hsca_active_locations.csv": "sha256:fde2859423aea825b6d9d4a63e2a5c0ad596d3f501f01d2174e7fdf7b6e83be0",
+    "postcodes.csv": "sha256:cdf844f6cc72b3dc823ab0cbeca2bda7fe21e7e8630bd0c2e0edfff14823f874"
+  },
+  "known_risks": [
+    "X14's post-hoc look motivated this design; X14's edges and results have been seen, X15's have not",
+    "36 CQC hospitals have a provider with no open ets site (provider ID is not a trust code)",
+    "per-trust lists are under the Splink floor, so arche's own engine scores them (unlike X14)",
+    "truth is the id key"
+  ],
+  "question": "With each CQC acute NHS location compared only with the open ODS sites of its own trust, does the England workflow find clearly more of the registries' twins than the engine without losing agreement?",
+  "rule": {
+    "approved": "user decision 2026-11-23: candidates limited by organisation code (CQC Provider ID = ets parent trust code); the site code remains the answer key and is never read by the engine",
+    "baseline": "engine under the same one-to-one rule",
+    "blocking": "one engine run per trust (reconcile(entity='place') as shipped); trusts with no open ets site produce no edges",
+    "definition": "as X14: a unit with its own site code on a hospital's grounds is a different facility",
+    "interpretation": "pass: hospitals join the England workflow with trust blocking. Recall gain < 5 points but engine high: the engine with trust blocking suffices. Otherwise report.",
+    "lists_records_truth": "as X14 (x14_uk_hospitals.load); twins = CQC locations whose Location ID is an open ets site in the same region, including twins under another trust, which this rule cannot find",
+    "pass": "X13/X14 bounds, pooled: precision >= engine precision - 0.001, recall >= engine recall + 0.05, twins_lost <= 0.1% of twins",
+    "pipeline": "as X14: engine matches stand; held pairs decided by nigeria-facility-decider-v1 as shipped; one-to-one, engine first by score, then decider by probability",
+    "secondary": [
+      "engine one-to-one precision/recall against X14's engine (36.5% / 30.9%): does trust blocking alone fix hospitals?",
+      "pair rule on labelled held pairs",
+      "flags, pairs still held, twins outside own trust"
+    ]
+  },
+  "rule_sha256": "sha256:ec4ee8a2656acc6bfba5dc41a481c1dc1f68a3574802b0a8844a2969c3e8ef84",
+  "schema": "arche.x15_uk_hospitals_trust.preregistration.v1"
+}

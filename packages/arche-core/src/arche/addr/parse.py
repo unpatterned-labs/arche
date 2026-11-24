@@ -524,6 +524,9 @@ def _build_landmark_address_from_match(m: re.Match[str], full_text: str) -> Addr
 # Internal: tail parsing (city, region, country, postal)
 # ---------------------------------------------------------------------------
 
+_REGION_PART_RE = re.compile(r"(?i)\s(state|region|county|province)\.?$")
+
+
 def _parse_tail(tail: str, components: AddressComponents) -> None:
     """Split the comma-delimited tail into neighborhood/city/region/country/postal.
 
@@ -571,6 +574,14 @@ def _parse_tail(tail: str, components: AddressComponents) -> None:
 
     if not parts:
         return
+
+    # A last part that names its own level is the region: "Lagos State",
+    # "Greater Accra Region", "Kiambu County", "Western Cape Province". Without
+    # this, "Lagos State" hit the gazetteer as a city and pushed the real town
+    # ("Ikorodu, Lagos State") down to neighborhood.
+    if len(parts) >= 2 and _REGION_PART_RE.search(parts[-1]):
+        components.region = parts[-1]
+        parts = parts[:-1]
 
     # Find ALL parts that match a known city; prefer the rightmost.
     gazetteer_hits: list[int] = [

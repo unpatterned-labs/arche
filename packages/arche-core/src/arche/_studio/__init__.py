@@ -31,6 +31,9 @@ Three modes, one renderer
 All three draw the same evidence panel, because a reviewer and an engineer
 should be looking at the same thing.
 
+**Label** is the exception: it marks the parts of a text (an address, a
+sentence) for gold data, and shows no model output at all (``labels.py``).
+
 Typefaces
 ---------
 `index.html` links Source Serif 4 and JetBrains Mono from Google Fonts. That is
@@ -86,6 +89,7 @@ PACKS = Path(os.environ.get("ARCHE_STUDIO_PACKS") or HOME / "review_packs").expa
 
 OUTCOMES = ("same_entity", "different", "unresolved")
 
+from . import labels  # noqa: E402
 from .state import Store  # noqa: E402
 
 # NOT under PACKS. `/api/pack?id=...` reads any file inside the pack directory
@@ -1566,6 +1570,10 @@ class Handler(BaseHTTPRequestHandler):
                                     reveal=q.get("reveal", ["0"])[0] in ("1", "true")))
             elif u.path == "/api/marks":
                 self._json(_marks(parse_qs(u.query).get("pack", [""])[0]))
+            elif u.path == "/api/label_packs":
+                self._json(labels.packs(HOME))
+            elif u.path == "/api/label_pack":
+                self._json(labels.load(HOME, parse_qs(u.query).get("id", [""])[0]))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:  # surfaced in the UI rather than the console
@@ -1597,6 +1605,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_sign_pack(payload))
             elif u.path == "/api/review":
                 self._json(_save_review(payload))
+            elif u.path == "/api/label":
+                self._json(labels.save(HOME, payload))
+            elif u.path == "/api/label_export":
+                self._json(labels.export(HOME, payload.get("pack", "")))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:
@@ -1632,6 +1644,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--port", type=int, default=PORT,
                     help=f"listen on 127.0.0.1:PORT (default {PORT})")
     ap.add_argument("--packs", default=None, help=f"review pack directory (default {PACKS})")
+    ap.add_argument("--labels", default=None,
+                    help="label pack directory (default: $ARCHE_LABEL_PACKS or "
+                         "<studio home>/label_packs)")
     ap.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
     ap.add_argument("--ledger", default=None,
                     help="ledger file the Explain pane reads (default: $ARCHE_LEDGER)")
@@ -1640,6 +1655,8 @@ def main(argv: list[str] | None = None) -> int:
         PACKS = Path(args.packs).expanduser().resolve()
     if args.ledger:
         LEDGER_URI = args.ledger
+    if args.labels:
+        os.environ["ARCHE_LABEL_PACKS"] = str(Path(args.labels).expanduser().resolve())
     PACKS.mkdir(parents=True, exist_ok=True)
     if not (HERE / "index.html").exists():
         print("index.html is missing from the arche package", file=sys.stderr)
@@ -1653,6 +1670,7 @@ def main(argv: list[str] | None = None) -> int:
     url = f"http://127.0.0.1:{args.port}"
     print(f"  arche studio  ->  {url}")
     print(f"  review packs  ->  {PACKS}")
+    print(f"  label packs   ->  {labels.root(HOME)}")
     print(f"  state         ->  {STUDIO_STATE}")
     print(f"  ledger        ->  {LEDGER_URI or 'none (--ledger FILE or ARCHE_LEDGER)'}")
     print("  ctrl-c to stop")

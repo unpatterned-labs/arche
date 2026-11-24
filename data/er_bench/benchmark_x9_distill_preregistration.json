@@ -1,0 +1,63 @@
+{
+  "amendments": [],
+  "baseline_models": {
+    "seed0": "sha256:7da60c47626455d32a85655b4969e075605a49418d1224a08aaf4d86d45ea039",
+    "seed1": "sha256:34dd52d5950c138ac39640959febc8c8df4b8de1fb794ff604a1d2580b90ccf9",
+    "seed2": "sha256:cd495a8aba256d77e1611c9187b4e850689b9ca5ca0ef10114b2693f238223e2"
+  },
+  "code": {
+    "x0_cross_encoder.py": "sha256:b340594b64bf028ad1ec54e74c2c8240d03a46772b19e70846d765554f55b0a0",
+    "x8_uniqueness.py": "sha256:ce02542512a52b59b3edc77c6f083d5899acd435e570e89f499314bb7a487045",
+    "x9_distill.py": "sha256:b9b91f46eb85d2b9435b6f22db8b2ad013dc168269f530abdb4e3057559026b5",
+    "x9_teacher.py": "sha256:731f13cc33bbf053e2a233e2a78c980a5968056f6a47767aa10749461f014422"
+  },
+  "fewshot_sha256": "sha256:ae0b4d02b1fb5d0135ea8d2d5fdc7058340fa9d68201c2fda8ed26ac50b34f98",
+  "known_risks": [
+    "the teacher prompt was chosen on development labels that also fit the combiner",
+    "the six worked examples come from the id crosswalk and inherit its noise (one is a likely HFR duplicate labelled different)",
+    "the test truth is the id crosswalk; a match to an HFR duplicate counts as wrong",
+    "the combiner was fitted on about 1,700 labelled pairs from the seven test states, the same for every arm"
+  ],
+  "models": {
+    "hard": {
+      "seed0": "sha256:5e25bec19d217392944a7331271a475294cf888bba99d76ccc03949c843eea55",
+      "seed1": "sha256:682e302d8045ef62f90a857bb282aebb5fde4187247ef478448e3208c9e00ead",
+      "seed2": "sha256:deb2c9409c08d4196347e408b7e92318d1d178897a10b2c616c37d563f368c0d"
+    },
+    "student": {
+      "seed0": "sha256:5b0b69c26a058ddc2fffd5df4eb54eab0f3888ece4a6aacbc964aeb2bbfd62ae",
+      "seed1": "sha256:8026a1b5ea92181659c6dbf0081b4f3103c05e2057c696b2c21e6e81ceffcf66",
+      "seed2": "sha256:bd8c06095819385e52197b3e7a41b0bfc98503febce132731e527c679f0087eb"
+    }
+  },
+  "national_summary_sha256": "sha256:d8ea3ccab097062ec79e751798bc835d421d58a7e157131b3159d138147a73bd",
+  "question": "Does distilling a local Qwen2.5-7B teacher into the cross-encoder let the decider settle more of the engine's held pairs without more wrong matches?",
+  "rule": {
+    "arms": {
+      "baseline": "X8's cross-encoder, unchanged",
+      "hard": "X8's training examples plus the engine's held pairs in the training states that have an id label (hard labels only)",
+      "student": "X8's training examples plus every engine held pair in the training states; targets 0.5*hard + 0.5*teacher where a hard label exists, teacher alone otherwise; close negatives and far positives blended the same way"
+    },
+    "cross_encoder": "X0 recipe (e5-small, 1 epoch, lr 3e-5, batch 32), seeds 0-2, the same states held out as X8 (Edo, Kano, Ondo, Lagos, FCT, Oyo, Anambra)",
+    "decider": "for every arm and seed: X8's augmented combiner fitted on the 1,707 development labels; located thresholds",
+    "fallback": "if student_pass is false, the owner asked to try synthetic name variants next (option 2), then active learning (option 3)",
+    "hard_subsets": "training states only: negatives with name trigram cosine >= 0.85, positives with cosine < 0.5, and the engine's held pairs (hard label from the id crosswalk where the facility has a twin in the state)",
+    "metrics": {
+      "auc_cross_encoder": "AUC of the cross-encoder logit on scorable pairs",
+      "held": "pairs neither matched nor rejected",
+      "twins_matched": "scorable pairs auto-matched that are twins",
+      "wrong_matched": "scorable pairs auto-matched that are not twins"
+    },
+    "pass": "student_pass: mean over seeds of twins_matched >= 1.05 x the baseline mean, and mean wrong_matched <= the baseline mean",
+    "secondary": "teacher_helps: student mean twins_matched >= hard mean and student mean wrong_matched <= hard mean; AUCs; held counts",
+    "teacher": "Qwen/Qwen2.5-7B-Instruct, 4-bit nf4 (bitsandbytes), local; score P(Yes)/(P(Yes)+P(No)) from next-token logits; prompt in x9_teacher.py with the six worked examples in data/er_bench/x9_teacher_fewshot.json (drawn at random, seed 0, from the training-state hard subsets)",
+    "teacher_selection": "two prompts tried on the 1,707 development labels: zero-shot AUC 0.849 (below the student's 0.902), six-shot AUC 0.909; the six-shot prompt is used. The test was not consulted",
+    "test": "the engine's held (review) pairs in the seven held-out states (national run), against the id crosswalk: label 1 if the HFR record is the GRID3 facility's twin, 0 if the facility has a twin in the state and this is another record, unscorable otherwise. The teacher never saw these pairs"
+  },
+  "rule_sha256": "sha256:e5ebb725eebcf83ee944e22fbc9c31341a2b275d42fdfa80852be56abeb3364d",
+  "schema": "arche.x9_distill_preregistration.v1",
+  "teacher_inputs_sha256": "sha256:b0791476b46b081970103ec2bf107cdbd1272833b2f5a3c9d50db00ba8f13c6c",
+  "teacher_outputs_sha256": "sha256:d9fc48197f7d273caebcb01249edbd0ae6acba323a3e354f292caf32f6289a14",
+  "written_at": "2026-11-23T11:03:21+00:00",
+  "written_before_the_test_was_scored": true
+}

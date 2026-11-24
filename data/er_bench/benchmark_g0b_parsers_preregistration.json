@@ -1,0 +1,120 @@
+{
+  "amendments": [
+    {
+      "before_labels": true,
+      "change": "labelling may be done in arche studio's Label mode (pack.json + items.csv, a copy of addresses.csv, beside the pinned files); its Export writes labels.csv with the same part columns plus source and labelled_by. The scorer now counts only rows with a labeller (labelled_by non-empty) when that column exists, so an unlabelled row is never scored as an empty gold answer.",
+      "date": "2026-11-23",
+      "g0b_parsers_sha256_after": "sha256:52ede564a5804b556c1a5906a370a27ddfda66a2b1bccc8cbbaa53ce499135a4",
+      "g0b_parsers_sha256_before": "sha256:ab0440b8732501710e1bc4876d1cebac9fc6dc7de9d86dffe6d5714f36ea08e8"
+    },
+    {
+      "date": "2026-11-23",
+      "labelling_guide_sha256_after": "sha256:dff87cfa182b333095b5b4da5c9c00aab72b519723804027af86d116489a1412",
+      "labelling_guide_sha256_before": "sha256:61fecb5b562cfcc6345597923e061d5968acaeee5005c13d00f66096d623d8cf",
+      "labels_at_amendment": "one saved item in the Studio label history; its content was not read",
+      "n": 2,
+      "what": "LABELLING.md rewritten for Studio's Label tab: how to select and mark, the same parts table and the same two hard-case rules, plus six invented worked examples. No labelling rule was added or changed; the spreadsheet instructions were removed because labelling is done in Studio.",
+      "why": "the labeller saw the guide as raw Markdown that described a spreadsheet, and asked for examples"
+    },
+    {
+      "chunking_is_not_a_label": "chunks come from punctuation and a number pattern only; no part is suggested, and every chunk starts unlabelled",
+      "date": "2026-11-23",
+      "labelling_guide_sha256_after": "sha256:696e9cba9bfe3dff44e1276066942de558c09764363fbd720cec0ef0a5b24766",
+      "labelling_guide_sha256_before": "sha256:dff87cfa182b333095b5b4da5c9c00aab72b519723804027af86d116489a1412",
+      "labels_at_amendment": "the Studio label history was not read",
+      "n": 3,
+      "what": "Studio's Label tab gains chunk mode (the address split at commas and after a leading number, one key per chunk) and a country filter; LABELLING.md's 'How to mark' section rewritten for it, with an invented example in place of one that quoted a pack item. The parts, the rules and the worked examples are unchanged. pack.json gains group_field 'country', which changes the pack digest recorded with each save; items.csv is unchanged.",
+      "why": "the labeller asked for an easier way than selecting each part with the mouse"
+    }
+  ],
+  "code": {
+    "addr/parse.py": "sha256:548551bd64db3ff8dc7585beca7b1cc44b9c1e406f22e8ff8e44c29dcd55caa9",
+    "build_g0b_pack.py": "sha256:2ff5fe4a5ec2abd6632222b5e09433d2d32f22b90f92ff10aaa89424cf2c7ba1",
+    "g0_parsers.py": "sha256:716b4928edc72d2c049c581d72d60f44739dd666db3296690635b8c357c23a84",
+    "g0b_parsers.py": "sha256:52ede564a5804b556c1a5906a370a27ddfda66a2b1bccc8cbbaa53ce499135a4"
+  },
+  "date": "2026-11-23",
+  "known_risks": [
+    "one labeller, no agreement figure",
+    "the provider lists are health facilities, mostly urban; NG list dated 2021",
+    "labelling conventions (suburb vs city, landmark vs road) are judgement calls; LABELLING.md fixes them before labelling",
+    "arche's parser was fixed on 2026-11-23 before this preregistration: a last part ending in State/Region/County/Province is now the region (found on the synthetic set, which is therefore not independent); the fixed parser is pinned below",
+    "libpostal was trained on OSM; allowed at inference only"
+  ],
+  "pack": {
+    "addresses_sha256": "sha256:cc293342da4f104eaba14e0535240bd96ce323f1eb799af2cfc28b87032f1aa0",
+    "build": {
+      "counts": {
+        "gh/equity": {
+          "cells": 689,
+          "distinct": 454,
+          "sampled": 50
+        },
+        "ke/cic": {
+          "cells": 1415,
+          "distinct": 1277,
+          "sampled": 60
+        },
+        "ke/nafuu": {
+          "cells": 102,
+          "distinct": 100,
+          "sampled": 40
+        },
+        "ng/clearline": {
+          "cells": 603,
+          "distinct": 592,
+          "sampled": 100
+        }
+      },
+      "quota": {
+        "gh/equity": 50,
+        "ke/cic": 60,
+        "ke/nafuu": 40,
+        "ng/clearline": 100
+      },
+      "raw_sha256": {
+        "CORPORATE-PROVIDER-PANEL-2026-1.pdf": "sha256:0131c7f31e75db4c4b1e65978a209650f13cc26dff3902391086b7b001f30a9e",
+        "Cover-Nafuu-Panel.pdf": "sha256:75caf33ef4ca9094c8177dfe8016920bc80c34c2c15ad9a04567033684853ebe",
+        "ROSEWOOD-HSP-List-2025.xlsx": "sha256:7cb3bc282d30d73193276fb55e66507273429116c5644b9953b1afdc6d9847f8",
+        "clearline-hmo-hospital-list.pdf": "sha256:bf40a3b2267f559a60743e8ad3170a8e9759b6b8eb2f9b8bf9f5cb289cc8c79c"
+      },
+      "rows": 250,
+      "seed": 20261123
+    },
+    "labelling_guide_sha256": "sha256:61fecb5b562cfcc6345597923e061d5968acaeee5005c13d00f66096d623d8cf"
+  },
+  "question": "On real NG, KE and GH addresses, which parser splits an address into its parts best: arche's, arche's after fixing all-caps/all-lower input, or libpostal (Senzing v1.2)?",
+  "rule": {
+    "arms": {
+      "arche": "arche.addr.parse.parse_address, fields mapped as G0a",
+      "arche_cased": "same parser; input with no lower-case or no upper-case letters re-cased word by word first (each run of letters capitalised); mixed case unchanged",
+      "libpostal": "G0a's libpostal arm (Senzing v1.2 parser model); measured only, never a label source"
+    },
+    "comparisons": "paired bootstrap (10,000 resamples, seed 0, unit address) of arche_cased - arche, libpostal - arche, libpostal - arche_cased, per country and pooled",
+    "decision": "per country: arche_cased replaces arche if arche_cased - arche has a 95% interval above 0; then libpostal becomes the default if libpostal - (best arche arm) is above 0, the arche arm stays default if below 0, otherwise no difference and the arche arm stays",
+    "fields": [
+      "house_number",
+      "road",
+      "unit",
+      "suburb",
+      "city",
+      "state",
+      "postcode"
+    ],
+    "interpretation": "NG/KE/GH default parser chosen per country by the decision rule",
+    "match": "G0a's: equal after casefold and removing non-alphanumerics; empty gold must be empty; plus a trailing 'state', 'region' or 'county' dropped from state on both sides",
+    "population": "the blind pack (build_g0b_pack.py, seed 20261123): 250 address cells from four published health-insurance provider lists, NG Clearline 100, KE CIC 60, KE Jubilee Nafuu 40, GH Equity 50; labelled by one person following LABELLING.md; rows marked skip dropped",
+    "primary": "parse_correct (all seven fields match), per country and pooled, with Wilson intervals",
+    "secondary": [
+      "per-field recall and spurious counts",
+      "landmark column (not scored): how often each arm puts landmark text into road/suburb/city",
+      "synthetic sanity set (300 sanov NG/GH addresses x as-is/upper/lower)"
+    ]
+  },
+  "rule_sha256": "sha256:cb000fb1d0d7e087a63d5f17cecdf6d629509f55a02c004518681d2eefe58286",
+  "schema": "arche.g0b_parsers.preregistration.v1",
+  "synthetic": {
+    "rows": 900,
+    "sha256": "sha256:3dd2a657bc74addb26c9861ec1563a93bac7cc6640b0af9982b4f3e7afffdb2a"
+  }
+}

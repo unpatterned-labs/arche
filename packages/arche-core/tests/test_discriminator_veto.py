@@ -240,6 +240,10 @@ class TestGeneralisation:
         `site` — the `organisation` pack plus a refute-only postcode, shipped
         on its first release (20 Nov 2026). No published number to move.
 
+        `legal_entity` — the `organisation` pack for a register of companies,
+        with `rival` on the name and no premises refuter, shipped on its first
+        release (23 Nov 2026). No published number to move.
+
         `organisation` — the party as named on a document, where sameness of
         *site* is not sameness of party. `Nyeri Hill Factory` and `Nyeri Hill
         Tea Factory Co Ltd` share a name and a coordinate, so every string and
@@ -259,6 +263,7 @@ class TestGeneralisation:
                   ENTITY_PACKS["organisation"],
                   ENTITY_PACKS["health_facility"],
                   ENTITY_PACKS["site"],
+                  ENTITY_PACKS["legal_entity"],
                   ENTITY_PACKS["health_facility_za"]]
         established = {
             name for name, specs in ENTITY_PACKS.items()

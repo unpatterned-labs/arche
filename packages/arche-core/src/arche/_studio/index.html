@@ -361,6 +361,52 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 .rv-save p b{color:var(--ink)}
 #pnotes{margin:8px 0;font-size:13px;color:var(--muted)}#pnotes summary{cursor:pointer}
 .rv-hint{margin-top:10px}
+.lb-text{font-family:var(--mono);font-size:19px;line-height:1.9;padding:22px 20px;border:1px solid var(--rule);background:var(--surface,#fff);white-space:pre-wrap;word-break:break-word;user-select:text;min-height:64px}
+.lb-text mark{background:var(--lbt);box-shadow:inset 0 -3px 0 var(--lbc);color:var(--ink);padding:2px 3px;border-radius:3px;cursor:pointer}
+.lb-text mark:hover{text-decoration:line-through}
+.lb-text mark sup{font-family:var(--serif);font-size:10px;font-weight:600;color:var(--lbc);margin-left:4px;letter-spacing:.02em;user-select:none;vertical-align:super}
+.lb-text .lb-pending{outline:2px dashed var(--ink);outline-offset:2px;border-radius:2px}
+.lb-text sup{font-family:var(--serif);font-size:10px;font-weight:600;color:var(--lbc);margin-left:4px;letter-spacing:.02em;user-select:none;vertical-align:super}
+.lb-text sup[data-x]{cursor:pointer}
+.lb-chunk{border-radius:4px;padding:3px 3px;box-shadow:inset 0 0 0 1px var(--rule);cursor:pointer;transition:background 140ms}
+.lb-chunk:hover{background:var(--code)}
+.lb-chunk.on{background:var(--lbt);box-shadow:inset 0 -3px 0 var(--lbc)}
+.lb-chunk.cur{outline:2px solid var(--ink);outline-offset:3px}
+.lb-gap{cursor:col-resize;border-radius:2px;padding:0 2px}
+.lb-gap:hover{background:var(--rule)}
+.lb-gap.cut{padding:0 4px}
+.lb-progress{display:inline-block;width:140px;height:5px;background:var(--rule);vertical-align:middle;border-radius:3px;overflow:hidden}
+.lb-progress i{display:block;height:100%;width:0;background:var(--ink);transition:width 180ms}
+.lb-recent{font-size:13px;padding-left:18px;margin:4px 0}
+.lb-recent li{margin-bottom:6px}
+.lb-recent a{color:var(--ink)}
+.lb-rparts span{border-left:3px solid var(--lbc);padding-left:4px}
+.lb-rparts b{font-weight:600;color:var(--lbc);font-size:11px}
+.lb-hint kbd,.lb-row kbd{font-size:11px}
+.lb-c0{--lbc:#2F5F8A;--lbt:#E3ECF5}.lb-c1{--lbc:#3C7A3C;--lbt:#E4F1E4}.lb-c2{--lbc:#6B4F8A;--lbt:#EEE7F5}
+.lb-c3{--lbc:#9A7420;--lbt:#F6EDD6}.lb-c4{--lbc:#1F6E6E;--lbt:#DDF0EF}.lb-c5{--lbc:#7A4A2A;--lbt:#F2E6DC}
+.lb-c6{--lbc:#4F5C1F;--lbt:#ECF0DA}.lb-c7{--lbc:#8A2F5F;--lbt:#F5E3EC}
+.lb-keys button{border-left:4px solid var(--lbc)}
+.lb-keys.armed button{background:var(--lbt)}
+.lb-hint{font-size:14px;min-height:22px;margin:10px 0 0}
+.lb-hint b{font-family:var(--mono);font-weight:500}
+.lb-keys{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.lb-keys button{font-family:var(--serif);font-size:13px}
+.lb-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.lb-parts{margin-top:14px;font-size:14px}
+.lb-parts dt{font-family:var(--mono);font-size:11px;color:var(--lbc);border-left:3px solid var(--lbc);padding-left:6px}
+.lb-parts dd{padding-left:9px}
+.lb-parts dd{margin:0 0 6px 0}
+.lb-skip{color:var(--hold);font-weight:600}
+.lb-guide{font-size:13px;line-height:1.5;max-height:75vh;overflow:auto;border-left:1px solid var(--rule);padding-left:14px}
+.lb-guide h1{font-size:17px;margin:0 0 8px}.lb-guide h2{font-size:14px;margin:18px 0 6px}
+.lb-guide p,.lb-guide ul,.lb-guide ol{margin:0 0 8px}.lb-guide ul,.lb-guide ol{padding-left:18px}
+.lb-guide table{border-collapse:collapse;margin:4px 0 12px;font-size:12px}
+.lb-guide th,.lb-guide td{border-bottom:1px solid var(--rule);padding:4px 10px 4px 0;text-align:left;vertical-align:top;font-size:12.5px;line-height:1.4}
+.lb-guide th{font-size:10px;letter-spacing:.06em}
+.lb-guide th+th,.lb-guide td+td{padding-left:0}
+.lb-guide code{white-space:nowrap}
+.lb-guide code{font-family:var(--mono);font-size:12px;background:var(--code);padding:0 3px}
 kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);border-radius:4px;padding:1px 5px;margin-left:4px;color:var(--muted);background:var(--surface)}
 .rv-dialog{width:min(1240px,94vw);max-height:92vh;border:1px solid var(--rule);border-radius:12px;padding:0;background:var(--paper);color:var(--ink)}
 .rv-dialog::backdrop{background:rgba(16,24,40,.38)}
@@ -417,6 +463,7 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
     <button id="t-redact"  aria-current="false">Redact</button>
     <button id="t-verify"  aria-current="false">Verify</button>
     <button id="t-review"  aria-current="false">Review queue</button>
+    <button id="t-label"   aria-current="false">Label</button>
     <button id="t-explain" aria-current="false">Explain</button>
     <button class="command-key" id="b-command" type="button">Open <kbd>Ctrl K</kbd></button>
   </nav>
@@ -752,6 +799,43 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
 
 <!-- ══════════════════════════════════════════════════════════ COMPARE ══ -->
 <!-- ══════════════════════════════════════════════════════════ EXPLAIN ══ -->
+<!-- ════════════════════════════════════════════════════════════ LABEL ══ -->
+<section id="s-label" hidden>
+  <div class="rv-bar">
+    <select id="lb-pack" style="width:auto" aria-label="Label pack"></select>
+    <select id="lb-group" style="width:auto" aria-label="Show" hidden></select>
+    <label class="rv-who">Labelling as <input id="lb-by" placeholder="your name, then Enter" autocomplete="name"></label>
+    <span class="lb-progress" id="lb-progress" aria-hidden="true"><i></i></span>
+    <span class="stat" id="lb-count"></span>
+    <button class="act" id="lb-export" type="button">Export labels</button>
+    <span class="stat" id="lb-exported"></span>
+  </div>
+  <div class="split">
+    <div>
+      <p class="lede measure">Press a part's key for the highlighted chunk; the next chunk comes
+        up. Nothing a model guessed is shown here: these labels are gold, saved on this machine
+        with your name and the time.</p>
+      <p class="label" id="lb-pos"></p>
+      <div class="lb-text" id="lb-text"></div>
+      <p class="lb-hint" id="lb-hint"></p>
+      <div class="lb-keys" id="lb-keys"></div>
+      <div class="lb-row">
+        <span>
+          <button class="act quiet" id="lb-prev" type="button">Previous <kbd>k</kbd></button>
+          <button class="act quiet" id="lb-skipb" type="button">Not an address <kbd>x</kbd></button>
+          <button class="act quiet" id="lb-clear" type="button">Clear</button>
+          <button class="act quiet" id="lb-mode" type="button">Free select</button>
+        </span>
+        <button class="act" id="lb-next" type="button">Save and next <kbd>Enter</kbd></button>
+      </div>
+      <dl class="lb-parts" id="lb-parts"></dl>
+      <p class="stat" id="lb-msg"></p>
+      <div id="lb-recent-box" hidden><p class="label">Saved just now</p><ol class="lb-recent" id="lb-recent"></ol></div>
+    </div>
+    <aside><p class="label">Guide</p><div class="lb-guide" id="lb-guide">No guide in this pack.</div></aside>
+  </div>
+</section>
+
 <section id="s-explain" hidden>
  <div class="split">
   <div>
@@ -872,9 +956,10 @@ const WORKSPACE_COPY={
   redact:"Prepare text for a safer downstream workflow.",
   verify:"Check whether signed evidence is still intact.",
   review:"Resolve the uncertainty that the engine should not settle alone.",
+  label:"Mark the parts of a text by hand, for gold data.",
   explain:"Read a recorded decision: what, why, and whether it still holds."
 };
-const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","explain"]){
+const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","label","explain"]){
   const button=$("#t-"+k),section=$("#s-"+k);
   if(button)button.setAttribute("aria-current",String(k===t));
   if(section)section.hidden=k!==t;
@@ -1794,6 +1879,304 @@ on("t-places","click",()=>tab("places"));
 on("t-redact","click",()=>tab("redact"));
 on("t-verify","click",()=>tab("verify"));
 on("t-review","click",()=>tab("review"));
+/* ═══════════════════════════════════════════════════════════════ label ══ */
+// Two ways to mark. Chunks (the default): the text is split into words, and
+// into chunks at commas and after a leading house number; a key labels the
+// chunk under the cursor and moves on. Splitting is punctuation, never a guess
+// at what a part is. Free select: drag any stretch, press its key. Both save
+// the same thing, character spans, so the export does not know which was used.
+const LB={pack:null,order:[],p:0,i:0,spans:[],skip:false,sel:null,tk:[],cuts:new Set(),
+          cur:0,free:false,undo:[],recent:[],group:""};
+function lbColour(k){const i=LB.pack.labels.findIndex(x=>x.key===k);return "lb-c"+(i<0?0:i%8);}
+function lbName(k){const l=LB.pack.labels.find(x=>x.key===k);return l?l.name:k;}
+function mdLite(src){
+  const inl=t=>esc(t).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>");
+  const L=src.split("\n"),out=[];let i=0;
+  while(i<L.length){
+    const l=L[i];
+    if(/^#{1,3} /.test(l)){const n=l.match(/^#+/)[0].length;out.push(`<h${n}>${inl(l.slice(n+1))}</h${n}>`);i++;continue;}
+    if(/^\|/.test(l)){const rows=[];while(i<L.length&&/^\|/.test(L[i]))rows.push(L[i++]);
+      const cells=r=>r.replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+      const body=rows.filter(r=>!/^\|[\s|:-]+\|$/.test(r));
+      out.push("<table><thead><tr>"+cells(body[0]).map(c=>`<th>${inl(c)}</th>`).join("")+"</tr></thead><tbody>"+
+        body.slice(1).map(r=>"<tr>"+cells(r).map(c=>`<td>${inl(c)}</td>`).join("")+"</tr>").join("")+"</tbody></table>");continue;}
+    if(/^\s*([-*]|\d+\.) /.test(l)){const ol=/^\s*\d+\./.test(l);const it=[];
+      while(i<L.length&&/^\s*([-*]|\d+\.) /.test(L[i])){let t=L[i++].replace(/^\s*([-*]|\d+\.) /,"");
+        while(i<L.length&&/^\s{2,}\S/.test(L[i]))t+=" "+L[i++].trim();it.push(`<li>${inl(t)}</li>`);}
+      out.push((ol?"<ol>":"<ul>")+it.join("")+(ol?"</ol>":"</ul>"));continue;}
+    if(!l.trim()){i++;continue;}
+    const para=[];while(i<L.length&&L[i].trim()&&!/^(#|\||\s*([-*]|\d+\.) )/.test(L[i]))para.push(L[i++]);
+    out.push(`<p>${inl(para.join(" "))}</p>`);
+  }
+  return out.join("");
+}
+
+/* words, and the cuts between them. cuts holds i when a chunk ends after word i */
+function lbTokens(t){const out=[],re=/[^\s,;]+/g;let m;while((m=re.exec(t)))out.push([m.index,m.index+m[0].length]);return out;}
+const LB_NUM=/^\d+[a-z]?([\/-]\d+[a-z]?)*$/i, LB_NUMWORD=/^(no\.?|plot|#)$/i;
+function lbDefaultCuts(t,tk){
+  const c=new Set();
+  for(let i=0;i<tk.length-1;i++)if(/[,;]/.test(t.slice(tk[i][1],tk[i+1][0])))c.add(i);
+  const w=i=>t.slice(tk[i][0],tk[i][1]);
+  let st=0;
+  for(let i=0;i<tk.length;i++){
+    if(i===st){
+      let last=i;while(last<tk.length-1&&!c.has(last))last++;
+      if(last>i){
+        if(LB_NUMWORD.test(w(i))&&LB_NUM.test(w(i+1))){c.add(i);if(i+1<last)c.add(i+1);}
+        else if(LB_NUM.test(w(i)))c.add(i);
+      }
+    }
+    if(c.has(i))st=i+1;
+  }
+  return c;
+}
+function lbChunks(){
+  const out=[];let a=0;
+  for(let i=0;i<LB.tk.length;i++)if(LB.cuts.has(i)||i===LB.tk.length-1){
+    out.push({a,b:i,s:LB.tk[a][0],e:LB.tk[i][1]});a=i+1;}
+  return out;
+}
+function lbSpanOf(ch){return LB.spans.find(s=>s.start===ch.s&&s.end===ch.e);}
+// Fit the cuts to saved spans; a span that does not sit on word edges needs free select.
+function lbFit(){
+  const tk=LB.tk;
+  for(const s of LB.spans){
+    const a=tk.findIndex(x=>x[0]===s.start),b=tk.findIndex(x=>x[1]===s.end);
+    if(a<0||b<0||b<a)return false;
+    if(a>0)LB.cuts.add(a-1);
+    LB.cuts.add(b);
+    for(let i=a;i<b;i++)LB.cuts.delete(i);
+  }
+  return true;
+}
+function lbSnap(){return{spans:LB.spans.map(s=>({...s})),cuts:new Set(LB.cuts),cur:LB.cur,skip:LB.skip};}
+function lbPush(){LB.undo.push(lbSnap());if(LB.undo.length>100)LB.undo.shift();}
+
+async function lbPacks(){
+  const p=await(await fetch("/api/label_packs")).json();
+  const sel=$("#lb-pack");
+  sel.innerHTML=(p.length?p.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join("")
+    :'<option value="">No label packs found</option>');
+  if(p.length)await lbLoad(sel.value);
+}
+async function lbLoad(id){
+  const r=await(await fetch("/api/label_pack?id="+encodeURIComponent(id))).json();
+  if(r.error){LB.pack=null;$("#lb-msg").textContent=r.error;
+    $("#lb-guide").textContent="This pack could not be opened: "+r.error;$("#lb-keys").innerHTML="";return;}
+  $("#lb-msg").textContent="";
+  LB.pack=r;LB.recent=[];LB.group="";
+  if(r.guide)$("#lb-guide").innerHTML=mdLite(r.guide);else $("#lb-guide").textContent="No guide in this pack.";
+  $("#lb-keys").innerHTML=r.labels.map((l,i)=>`<button class="act quiet lb-c${i%8}" type="button" data-lb="${esc(l.key)}">${esc(l.name)} <kbd>${esc(l.hotkey)}</kbd></button>`).join("");
+  for(const b of document.querySelectorAll("[data-lb]")){
+    b.addEventListener("mousedown",e=>e.preventDefault());
+    b.addEventListener("click",()=>lbKey(b.dataset.lb));}
+  const groups=[...new Set(r.items.map(x=>x.group).filter(Boolean))].sort();
+  const g=$("#lb-group");g.hidden=!groups.length;
+  g.innerHTML=`<option value="">All items</option>`+groups.map(x=>`<option value="${esc(x)}">${esc(x.toUpperCase())}</option>`).join("");
+  lbFilter();
+}
+function lbFilter(){
+  const P=LB.pack;
+  LB.order=P.items.map((x,i)=>i).filter(i=>!LB.group||P.items[i].group===LB.group);
+  const first=LB.order.findIndex(i=>!P.current[P.items[i].id]);
+  lbShow(first<0?0:first);
+}
+function lbShow(p){
+  const P=LB.pack;if(!P||!LB.order.length)return;
+  LB.p=Math.max(0,Math.min(p,LB.order.length-1));LB.i=LB.order[LB.p];
+  const it=P.items[LB.i],cur=P.current[it.id];
+  LB.spans=cur?cur.spans.map(s=>({...s})):[];LB.skip=cur?cur.skip:false;LB.sel=null;LB.undo=[];
+  LB.tk=lbTokens(it.text);LB.cuts=lbDefaultCuts(it.text,LB.tk);
+  LB.free=!lbFit()||!LB.tk.length;
+  const ch=lbChunks();const open=ch.findIndex(c=>!lbSpanOf(c));
+  LB.cur=open<0?ch.length:open;
+  lbRender();
+}
+function lbRenderChunks(t){
+  const ch=lbChunks();let h=esc(t.slice(0,ch.length?ch[0].s:t.length));
+  ch.forEach((c,n)=>{
+    const sp=lbSpanOf(c);
+    let inner="";
+    for(let i=c.a;i<=c.b;i++){
+      inner+=esc(t.slice(LB.tk[i][0],LB.tk[i][1]));
+      if(i<c.b)inner+=`<span class="lb-gap" data-g="${i}" title="split here">${esc(t.slice(LB.tk[i][1],LB.tk[i+1][0]))}</span>`;
+    }
+    const cls=["lb-chunk",sp?"on "+lbColour(sp.label):"",n===LB.cur?"cur":""].join(" ");
+    h+=`<span class="${cls}" data-c="${n}">${inner}${sp?`<sup title="remove this label" data-x="${n}">${esc(lbName(sp.label))} ×</sup>`:""}</span>`;
+    if(n<ch.length-1)h+=`<span class="lb-gap cut" data-g="${c.b}" title="join">${esc(t.slice(c.e,ch[n+1].s))}</span>`;
+    else h+=esc(t.slice(c.e));
+  });
+  return [h,ch];
+}
+function lbRenderFree(t){
+  let h="",at=0;
+  const plain=(a,b)=>{
+    const p=LB.sel;
+    if(!p||p[1]<=a||p[0]>=b)return esc(t.slice(a,b));
+    const x=Math.max(a,p[0]),y=Math.min(b,p[1]);
+    return esc(t.slice(a,x))+`<span class="lb-pending">${esc(t.slice(x,y))}</span>`+esc(t.slice(y,b));
+  };
+  for(const [n,s] of LB.spans.entries()){
+    h+=plain(at,s.start)+`<mark class="${lbColour(s.label)}" data-n="${n}" title="click to remove">${esc(t.slice(s.start,s.end))}<sup>${esc(lbName(s.label))}</sup></mark>`;
+    at=s.end;
+  }
+  return h+plain(at,t.length);
+}
+function lbRender(){
+  const P=LB.pack,it=P.items[LB.i],t=it.text;
+  const box=$("#lb-text");
+  box.classList.toggle("free",LB.free);
+  $("#lb-mode").textContent=LB.free?"Chunks":"Free select";
+  if(LB.free){
+    box.innerHTML=lbRenderFree(t);
+    for(const m of box.querySelectorAll("mark"))m.addEventListener("click",()=>{lbPush();LB.spans.splice(+m.dataset.n,1);lbRender();});
+    $("#lb-hint").innerHTML=LB.sel
+      ?`Selected <b>${esc(t.slice(LB.sel[0],LB.sel[1]))}</b>. Press its key, or click a part below. <span class="stat">Esc cancels</span>`
+      :`<span class="stat">Free select: drag across a part, then press its key. Click a part to remove it.</span>`;
+  }else{
+    const [h,ch]=lbRenderChunks(t);box.innerHTML=h;
+    for(const el of box.querySelectorAll(".lb-chunk"))el.addEventListener("click",e=>{
+      if(e.target.dataset.x!==undefined||e.target.classList.contains("lb-gap"))return;
+      LB.cur=+el.dataset.c;lbRender();});
+    for(const el of box.querySelectorAll("sup[data-x]"))el.addEventListener("click",()=>{
+      const c=ch[+el.dataset.x];lbPush();LB.spans=LB.spans.filter(s=>!(s.start===c.s&&s.end===c.e));LB.cur=+el.dataset.x;lbRender();});
+    for(const el of box.querySelectorAll(".lb-gap"))el.addEventListener("click",()=>lbToggleCut(+el.dataset.g));
+    const c=ch[LB.cur];
+    $("#lb-hint").innerHTML=LB.skip?`<span class="stat">Marked as not an address. Enter saves; any key relabels.</span>`
+      :c?`<b>${esc(t.slice(c.s,c.e))}</b>: press its part's key. <span class="stat"><kbd>space</kbd> leave it · <kbd>←</kbd><kbd>→</kbd> move · click between words to split or join · <kbd>⌫</kbd> undo</span>`
+      :`<span class="stat">All chunks done. <kbd>Enter</kbd> saves and moves on · <kbd>⌫</kbd> undo · click a chunk to change it</span>`;
+  }
+  $("#lb-keys").classList.toggle("armed",LB.free?!!LB.sel:!!ch_at());
+  const done=Object.keys(P.current).length,inG=LB.order.filter(i=>P.current[P.items[i].id]).length;
+  $("#lb-pos").textContent=`Item ${LB.p+1} of ${LB.order.length}`+(LB.group?` (${LB.group.toUpperCase()})`:"")+
+    (P.current[it.id]?` · saved by ${P.current[it.id].by}`:"");
+  $("#lb-count").textContent=`${done} of ${P.items.length} labelled`+(LB.group?` · ${LB.group.toUpperCase()} ${inG} of ${LB.order.length}`:"");
+  $("#lb-progress i").style.width=(100*done/Math.max(1,P.items.length)).toFixed(1)+"%";
+  $("#lb-parts").innerHTML=(LB.skip?'<dd class="lb-skip">Not an address: skipped</dd>':"")+
+    P.labels.map((l,i)=>{const v=LB.spans.filter(s=>s.label===l.key).map(s=>t.slice(s.start,s.end).trim()).join(" ");
+      return v?`<div class="lb-c${i%8}"><dt>${esc(l.name)}</dt><dd>${esc(v)}</dd></div>`:"";}).join("");
+  lbRecent();
+}
+function ch_at(){return LB.free?null:lbChunks()[LB.cur];}
+function lbToggleCut(g){
+  lbPush();
+  const ch=lbChunks(),touch=ch.filter(c=>c.a<=g+1&&c.b>=g);
+  LB.spans=LB.spans.filter(s=>!touch.some(c=>s.start<c.e&&c.s<s.end));
+  if(LB.cuts.has(g))LB.cuts.delete(g);else LB.cuts.add(g);
+  const n=lbChunks().findIndex(c=>c.a<=g&&c.b>=g);LB.cur=n<0?0:n;LB.skip=false;
+  lbRender();
+}
+function lbSelection(){
+  const sel=window.getSelection(),box=$("#lb-text");
+  if(!sel.rangeCount||sel.isCollapsed)return null;
+  const r=sel.getRangeAt(0);
+  if(!box.contains(r.startContainer)||!box.contains(r.endContainer))return null;
+  const off=(node,o)=>{const pre=document.createRange();pre.selectNodeContents(box);pre.setEnd(node,o);
+    const f=pre.cloneContents();for(const s of f.querySelectorAll("sup"))s.remove();return f.textContent.length;};
+  let a=off(r.startContainer,r.startOffset),b=off(r.endContainer,r.endOffset);
+  const t=LB.pack.items[LB.i].text;
+  while(a<b&&/\s|,/.test(t[a]))a++;while(b>a&&/\s|,/.test(t[b-1]))b--;
+  return a<b?[a,b]:null;
+}
+// A key: label the free selection, or the chunk under the cursor and move on.
+function lbKey(key){
+  if(LB.free){
+    const s=lbSelection()||LB.sel;
+    if(!s){$("#lb-msg").textContent="Select part of the text first.";return;}
+    if(LB.spans.some(x=>s[0]<x.end&&x.start<s[1])){$("#lb-msg").textContent="That overlaps a marked part; click it to remove it first.";return;}
+    lbPush();LB.spans.push({start:s[0],end:s[1],label:key});LB.spans.sort((x,y)=>x.start-y.start);
+    LB.skip=false;LB.sel=null;window.getSelection().removeAllRanges();$("#lb-msg").textContent="";lbRender();return;
+  }
+  const ch=lbChunks(),c=ch[LB.cur];
+  if(!c){$("#lb-msg").textContent="Click a chunk to change it.";return;}
+  lbPush();
+  LB.spans=LB.spans.filter(s=>!(s.start<c.e&&c.s<s.end));
+  LB.spans.push({start:c.s,end:c.e,label:key});LB.spans.sort((x,y)=>x.start-y.start);
+  LB.skip=false;$("#lb-msg").textContent="";
+  const nx=ch.findIndex((x,n)=>n>LB.cur&&!lbSpanOf(x));
+  LB.cur=nx<0?ch.length:nx;lbRender();
+}
+function lbRecent(){
+  const P=LB.pack;$("#lb-recent-box").hidden=!LB.recent.length;
+  $("#lb-recent").innerHTML=LB.recent.map(i=>{const it=P.items[i],c=P.current[it.id];
+    const parts=c&&c.skip?"skipped":(c?c.spans.map(s=>`<span class="${lbColour(s.label)}"><b>${esc(lbName(s.label))}</b> ${esc(it.text.slice(s.start,s.end))}</span>`).join(" · "):"");
+    return `<li><a href="#" data-i="${i}">${esc(it.text)}</a><br><span class="lb-rparts">${parts}</span></li>`;}).join("");
+  for(const a of $("#lb-recent").querySelectorAll("a"))a.addEventListener("click",e=>{e.preventDefault();
+    const i=+a.dataset.i;if(!LB.order.includes(i)){LB.group="";$("#lb-group").value="";LB.order=P.items.map((x,k)=>k);}
+    lbShow(LB.order.indexOf(i));});
+}
+async function lbSave(){
+  const by=$("#lb-by").value.trim();
+  if(!by){$("#lb-msg").textContent="Put your name in first: an unattributed label cannot be audited.";$("#lb-by").focus();return false;}
+  try{localStorage.setItem("arche.labeller",by);}catch(e){}
+  const it=LB.pack.items[LB.i];
+  const r=await(await fetch("/api/label",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:LB.pack.id,item:it.id,spans:LB.spans,skip:LB.skip,by})})).json();
+  if(r.error){$("#lb-msg").textContent=r.error;return false;}
+  LB.pack.current[it.id]={spans:LB.spans.map(s=>({...s})),skip:LB.skip,by,at:""};
+  LB.recent=[LB.i,...LB.recent.filter(x=>x!==LB.i)].slice(0,6);
+  $("#lb-msg").textContent="Saved.";return true;
+}
+async function lbNext(){if(await lbSave())lbShow(LB.p+1);}
+on("t-label","click",()=>{tab("label");if(!LB.pack)lbPacks();});
+on("lb-pack","change",()=>lbLoad($("#lb-pack").value));
+on("lb-group","change",()=>{LB.group=$("#lb-group").value;lbFilter();});
+on("lb-next","click",lbNext);
+on("lb-prev","click",()=>lbShow(LB.p-1));
+on("lb-clear","click",()=>{lbPush();LB.spans=[];LB.skip=false;LB.sel=null;
+  if(!LB.free){LB.cuts=lbDefaultCuts(LB.pack.items[LB.i].text,LB.tk);LB.cur=0;}lbRender();});
+on("lb-mode","click",()=>{
+  if(LB.free){const saved=LB.spans;LB.cuts=lbDefaultCuts(LB.pack.items[LB.i].text,LB.tk);
+    if(!lbFit()){LB.spans=saved;$("#lb-msg").textContent="A part here does not start and end on whole words, so it stays in free select. Clear it to use chunks.";return;}
+    LB.free=false;const ch=lbChunks(),o=ch.findIndex(c=>!lbSpanOf(c));LB.cur=o<0?ch.length:o;}
+  else{LB.free=true;LB.sel=null;}
+  $("#lb-msg").textContent="";lbRender();});
+on("lb-skipb","click",async()=>{lbPush();LB.spans=[];LB.skip=true;lbRender();if(await lbSave())lbShow(LB.p+1);});
+on("lb-export","click",async()=>{
+  const r=await(await fetch("/api/label_export",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:LB.pack&&LB.pack.id})})).json();
+  $("#lb-exported").textContent=r.error?r.error:`Wrote ${r.labelled} of ${r.items} to ${r.written}`;
+});
+try{const n=localStorage.getItem("arche.labeller");if(n)$("#lb-by").value=n;}catch(e){}
+// Enter in the name box hands the keyboard back to the labelling.
+on("lb-by","keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();$("#lb-by").blur();}});
+on("lb-text","mouseup",()=>{
+  if(!LB.pack)return;
+  const s=lbSelection();if(!s)return;
+  window.getSelection().removeAllRanges();
+  if(LB.free){
+    if(LB.spans.some(x=>s[0]<x.end&&x.start<s[1])){$("#lb-msg").textContent="That overlaps a marked part; click it to remove it first.";return;}
+    LB.sel=s;$("#lb-msg").textContent="";lbRender();return;
+  }
+  // In chunks, a drag makes the dragged words one chunk.
+  const tk=LB.tk,a=tk.findIndex(x=>x[1]>s[0]);let b=-1;
+  for(let i=tk.length-1;i>=0;i--)if(tk[i][0]<s[1]){b=i;break;}
+  if(a<0||b<a)return;
+  lbPush();
+  const A=tk[a][0],B=tk[b][1];
+  LB.spans=LB.spans.filter(x=>!(x.start<B&&A<x.end));
+  if(a>0)LB.cuts.add(a-1);LB.cuts.add(b);for(let i=a;i<b;i++)LB.cuts.delete(i);
+  LB.cur=lbChunks().findIndex(c=>c.a===a);LB.skip=false;lbRender();
+});
+document.addEventListener("keydown",e=>{
+  if($("#s-label").hidden||!LB.pack||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName))return;
+  const n=lbChunks().length;
+  if(e.key==="Escape"&&LB.sel){LB.sel=null;lbRender();return;}
+  if(e.key==="Enter"){e.preventDefault();lbNext();return;}
+  if(e.key==="Backspace"){e.preventDefault();const u=LB.undo.pop();
+    if(u){LB.spans=u.spans;LB.cuts=u.cuts;LB.cur=u.cur;LB.skip=u.skip;lbRender();}return;}
+  if(!LB.free&&(e.key===" "||e.key==="ArrowRight")){e.preventDefault();LB.cur=Math.min(LB.cur+1,n);lbRender();return;}
+  if(!LB.free&&e.key==="ArrowLeft"){e.preventDefault();LB.cur=Math.max(LB.cur-1,0);lbRender();return;}
+  if(!LB.free&&e.key==="Delete"){const c=lbChunks()[LB.cur];if(c){lbPush();LB.spans=LB.spans.filter(s=>!(s.start===c.s&&s.end===c.e));lbRender();}return;}
+  if(e.key==="k"){lbShow(LB.p-1);return;}
+  if(e.key==="j"){lbShow(LB.p+1);return;}
+  if(e.key==="x"){$("#lb-skipb").click();return;}
+  const l=LB.pack.labels.find(x=>x.hotkey===e.key);
+  if(l){e.preventDefault();lbKey(l.key);}
+});
+
 on("b-command","click",openCommand);
 on("b-command-close","click",closeCommand);
 on("command-input","input",commandFilter);
