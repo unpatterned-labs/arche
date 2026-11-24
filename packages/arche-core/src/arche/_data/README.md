@@ -93,7 +93,7 @@ as a file in the source tree. Loaded lazily, on the first detection call.
 | Contents | Folded place names, grouped by kind and rank: towns of 5,000+ everywhere; every state, region, county and province; for Nigeria, Kenya and Ghana every populated place, the areas within towns, and the second- and third-level divisions, with ASCII alternate names. No coordinates, no ids. |
 | File size | ~600 KB (about 16 MB in memory once loaded, on first use) |
 | License | Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Contains data from GeoNames; the names are folded and grouped, not otherwise changed. |
-| arche use | Whether some words name a town, and how large a one, so the address parser can split "22 Erinje Road Okitipupa" and read "Dunkwa Atechem" larger to smaller |
+| arche use | Whether some words name a town, and how large a one, so the address parser can split "22 Ajala Road Ibadan" and read "Kumasi Kanyiri" larger to smaller |
 | Consumer | `arche.addr.places` |
 
 **Refresh command** (after downloading the five files into one directory, keeping

@@ -2,7 +2,7 @@
 """Build the place list the address parser uses, from GeoNames.
 
 The parser uses it to tell whether some words name a town, so it can split
-"22 Erinje Road Okitipupa" and read "Dunkwa Atechem" larger to smaller. It
+"22 Ajala Road Ibadan" and read "Kumasi Kanyiri" larger to smaller. It
 never overrides an address's own order. Written to
 ``packages/arche-core/src/arche/_data/places_v1.json.gz``.
 

@@ -26,8 +26,8 @@ def _pack(base: Path, name: str = "addr", **spec_extra) -> Path:
     with (d / "items.csv").open("w", encoding="utf-8", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["id", "country", "address"])
-        w.writerow(["a1", "ng", "57 POUND ROAD, ABA"])
-        w.writerow(["a2", "ke", "Along Dunga road, South B"])
+        w.writerow(["a1", "ng", "14 AJALA ROAD, TEMANU"])
+        w.writerow(["a2", "ke", "Along Kanyiri road, Ashgrove"])
     return d
 
 
@@ -45,7 +45,8 @@ def test_a_pack_is_offered_with_its_progress(home):
 
 def test_load_shows_text_labels_and_guide_and_no_model_output(home):
     p = labels.load(home, "addr")
-    assert [i["text"] for i in p["items"]] == ["57 POUND ROAD, ABA", "Along Dunga road, South B"]
+    assert [i["text"] for i in p["items"]] == [
+        "14 AJALA ROAD, TEMANU", "Along Kanyiri road, Ashgrove"]
     assert p["guide"] == "Copy each part as written."
     assert set(p) == {"id", "title", "labels", "guide", "digest", "items", "current"}
 
@@ -54,14 +55,14 @@ def test_save_then_export_writes_the_marked_text(home):
     labels.save(home, {"pack": "addr", "item": "a1", "by": "dee", "spans": [
         {"start": 0, "end": 2, "label": "house_number"},
         {"start": 3, "end": 13, "label": "road"},
-        {"start": 15, "end": 18, "label": "city"}]})
+        {"start": 15, "end": 21, "label": "city"}]})
     labels.save(home, {"pack": "addr", "item": "a2", "by": "dee", "skip": True, "spans": []})
     out = labels.export(home, "addr")
     assert out["labelled"] == 2
     with Path(out["written"]).open(encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
-    assert rows[0] == {"id": "a1", "country": "ng", "address": "57 POUND ROAD, ABA",
-                            "house_number": "57", "road": "POUND ROAD", "city": "ABA",
+    assert rows[0] == {"id": "a1", "country": "ng", "address": "14 AJALA ROAD, TEMANU",
+                            "house_number": "14", "road": "AJALA ROAD", "city": "TEMANU",
                             "skip": "", "labelled_by": "dee"}
     assert rows[1]["skip"] == "x" and rows[1]["road"] == ""
 

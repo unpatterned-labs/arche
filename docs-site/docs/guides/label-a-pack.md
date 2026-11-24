@@ -10,8 +10,8 @@ A label pack is a directory with two files.
 
 ```text
 id,country,address
-a1,ng,"57 POUND ROAD, ABA"
-a2,ke,"Along Dunga road, South B"
+a1,ng,"14 AJALA ROAD, TEMANU"
+a2,ke,"Along Kanyiri road, Ashgrove"
 ```
 
 `pack.json` names the columns and the labels:

@@ -4,8 +4,8 @@
 """Which words name a place: the place list the address parser consults.
 
 The parser reads an address by its order and punctuation. Where those run out
-("22 Erinje Road Okitipupa", with no comma before the town, or "Dunkwa
-Atechem", a town and then an area inside it) it asks this list whether some
+("22 Ajala Road Ibadan", with no comma before the town, or "Kumasi
+Kanyiri", a town and then an area inside it) it asks this list whether some
 words name a town, and how large a one. It never overrides the address's own
 order: a place list only decides where to split.
 

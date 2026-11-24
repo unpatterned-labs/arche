@@ -22,10 +22,10 @@ def _c(text: str):
 @pytest.mark.parametrize(("text", "number"), [
     ("4B, Adeleke Crescent, Temanu", "4B"),          # a comma after the number
     ("12, Ajala Lane, Temanu", "12"),
-    ("62-80 Obodo Road, Temanu", "62-80"),           # a range
+    ("40-58 Obodo Road, Temanu", "40-58"),           # a range
     ("1/5 Kanyiri Street, Temanu", "1/5"),           # a pair
-    ("NW4/183 Ashgrove Street, Temanu", "NW4/183"),  # a layout code
-    ("Plot CL-6 Pond Street, Temanu", "CL-6"),
+    ("NX6/207 Ashgrove Street, Temanu", "NX6/207"),  # a layout code
+    ("Plot CK-9 Ajala Street, Temanu", "CK-9"),
     ("No. 3 Ajala Lane, Temanu", "3"),               # the word is left out
     ("No 3, Ajala Lane, Temanu", "3"),
     ("Plot 14 Ajala Lane, Temanu", "14"),
@@ -65,7 +65,7 @@ def test_plot_is_not_a_unit():
 
 @pytest.mark.parametrize(("text", "unit"), [
     ("Kanyiri Plaza 4th floor", "4th floor"),
-    ("Temanu doctors plaza room 405", "room 405"),
+    ("Kanyiri health plaza room 12", "room 12"),
     ("Obodo House, Shop 12", "Shop 12"),
     ("Ashgrove Centre, ground floor", "ground floor"),
 ])
@@ -133,8 +133,8 @@ def test_parse_locality_larger_to_smaller():
     # A second road is a landmark too.
     ("8 Ajala Close, Kanyiri Road, Temanu", "Temanu", "Kanyiri Road"),
     # A P.O. box between them is passed over.
-    ("51 Ajala Road, P.O. Box 555, Temanu", "Temanu", None),
-    ("89 Ajala Street, P.M.B. 6185, Temanu", "Temanu", None),
+    ("51 Ajala Road, P.O. Box 712, Temanu", "Temanu", None),
+    ("89 Ajala Street, P.M.B. 2040, Temanu", "Temanu", None),
 ])
 def test_town_after_a_landmark(text, city, anchor):
     c = _c(text)
@@ -151,10 +151,10 @@ def test_a_landmark_alone_after_the_street_is_not_a_town():
     # All capitals and all lowercase read as the mixed-case form does, and come back as written.
     ("6 AJALA STREET, OFF KANYIRI ROAD, TEMANU", "6", "AJALA STREET", "TEMANU"),
     ("6 ajala street, off kanyiri road, temanu", "6", "ajala street", "temanu"),
-    ("FC 7, AJALA STREET, TEMANU", "FC 7", "AJALA STREET", "TEMANU"),     # the code stays
-    ("fc 7, ajala street, temanu", "fc 7", "ajala street", "temanu"),
+    ("KD 7, AJALA STREET, TEMANU", "KD 7", "AJALA STREET", "TEMANU"),     # the code stays
+    ("kd 7, ajala street, temanu", "kd 7", "ajala street", "temanu"),
     ("NO 7, AJALA STREET, TEMANU", "7", "AJALA STREET", "TEMANU"),        # the word does not
-    ("SW7/217, AJALA STREET, TEMANU", "SW7/217", "AJALA STREET", "TEMANU"),
+    ("SX5/311, AJALA STREET, TEMANU", "SX5/311", "AJALA STREET", "TEMANU"),
 ])
 def test_all_capitals_and_all_lowercase(text, number, street, city):
     c = _c(text)
