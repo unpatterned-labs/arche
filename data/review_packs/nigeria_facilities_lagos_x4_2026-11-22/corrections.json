@@ -1,8 +1,0 @@
-{
-  "outcomes": {
-    "x3:sha256:b1b80b9a9d60308861fd888d1d234afe65b1309207535e573a0200a161609bc8": "unresolved",
-    "x3:sha256:ef583612b01b9cf1182ebe85ce17a381899d808f05311cf0d5a743cc1109d4f3": "unresolved"
-  },
-  "schema": "arche.review_corrections.v1",
-  "why": "the reviewer meant can't tell for these pairs (their reasons say so, and they said so on 2026-11-22); a Studio bug kept can't-tell pairs cycling through the queue until another answer was given. Applied to development use only; the X4 result was scored on the labels as exported"
-}
