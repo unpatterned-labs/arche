@@ -467,6 +467,25 @@ def _component_field_sim(field_name: str, a: str, b: str) -> float:
     return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
 
 
+_ROAD_QUALIFIERS = {"old", "new", "north", "south", "east", "west", "upper", "lower",
+                    "great", "little", "back", "inner", "outer"}
+
+
+def _same_road_longer_line(a: dict[str, str], b: dict[str, str]) -> bool:
+    """One street is the other with the line before it read in ("beau-lieu
+    boddington crescent"), as happens when an address has no commas. Only with
+    the same house number, and not when the extra words tell two roads apart
+    ("Old Park Road" is not Park Road)."""
+    if not a.get("street_number") or _normalise_text(a["street_number"]) != \
+            _normalise_text(b.get("street_number", "")):
+        return False
+    x, y = (_normalise_text(c["street"]).split() for c in (a, b))
+    short, long = sorted((x, y), key=len)
+    extra = long[:len(long) - len(short)]
+    return (len(short) >= 2 and bool(extra) and long[-len(short):] == short
+            and not set(extra) & _ROAD_QUALIFIERS)
+
+
 def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     """Compare two addresses using their parsed structure.
 
@@ -499,6 +518,9 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     # Nothing structured in common: fall back to raw fuzzy similarity.
     if not shared:
         return max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
+
+    if "street" in shared and _same_road_longer_line(comps_a, comps_b):
+        comps_a = {**comps_a, "street": comps_b["street"]}
 
     weighted_sum = 0.0
     weight_total = 0.0

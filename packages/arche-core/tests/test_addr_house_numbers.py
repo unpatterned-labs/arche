@@ -164,3 +164,55 @@ def test_all_capitals_and_all_lowercase(text, number, street, city):
 def test_the_raw_span_is_as_written():
     a = parse_address("6 AJALA STREET, TEMANU")
     assert a.raw == "6 AJALA STREET, TEMANU"
+
+
+@pytest.mark.parametrize(("text", "street", "city"), [
+    # A road without capitals in an otherwise mixed-case address, as Kenyan lists write it.
+    ("Kanyiri road, Temanu town", "Kanyiri road", "Temanu town"),
+    ("Obodo Plaza, ashgrove avenue", "ashgrove avenue", None),
+    ("3rd Floor Obodo House, Kanyiri street", "Kanyiri street", None),
+])
+def test_lowercase_road(text, street, city):
+    c = _c(text)
+    assert (c.street, c.city) == (street, city)
+
+
+@pytest.mark.parametrize("text", [
+    "She was on the long road, then went home",
+    "Please meet us by the main road, thanks",
+    "It is a dirt road, they said",
+])
+def test_lowercase_road_not_in_prose(text):
+    a = parse_address(text)
+    assert a is None or a.components.street is None
+
+
+@pytest.mark.parametrize(("text", "street"), [
+    ("3 Ajala Drive Off Kanyiri Road, Temanu", "Ajala Drive"),     # not across "Off"
+    ("Obodo Estate Ajala Avenue, Temanu", "Ajala Avenue"),         # nor an estate
+    ("12 Estate Road, Temanu", "Estate Road"),                     # unless it is the road's name
+    ("12 Clinic Road, Temanu", "Clinic Road"),
+])
+def test_street_name_bounds(text, street):
+    assert _c(text).street == street
+
+
+def test_a_bus_stop_is_not_an_area():
+    c = _c("3 Ajala Street, Kanyiri Bus-Stop, Temanu")
+    assert (c.neighborhood, c.city) == (None, "Temanu")
+
+
+def test_an_estate_straight_after_the_road_is_the_area():
+    c = _c("7 Ajala Street Kanyiri Estate, Temanu")
+    assert (c.neighborhood, c.city) == ("Kanyiri Estate", "Temanu")
+
+
+def test_dotted_initials_in_an_area():
+    c = _c("11 Ajala Road, Kanyiri G.R.A., Temanu")
+    assert (c.neighborhood, c.city) == ("Kanyiri G.R.A", "Temanu")
+
+
+def test_lowercase_road_not_across_a_landmark_word():
+    # "of" here is "off": the road is where the place is off, not its own road.
+    a = parse_address("Temanu, Ashgrove of Kanyiri road")
+    assert a is None or a.components.street is None

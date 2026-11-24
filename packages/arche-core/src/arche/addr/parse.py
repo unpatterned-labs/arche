@@ -106,9 +106,18 @@ _STREET_SUFFIX_RE = (
 
 # A street name: capitalized words followed by a suffix.
 #   "Allen Avenue", "Long Street", "Mountain of Fire Crescent"
+# Not across a landmark word ("Destiny Drive Off Obodo Road" is two roads), nor
+# across a building or estate ("Tudor Estate Ishara Avenue"), unless that word
+# is the road's own name ("Estate Road", "Clinic Road").
+_STREET_WORD_RE = (
+    r"(?!(?:Off|Opposite|Opp|Near|Behind|Beside|Along|Adj|Adjacent|By)\b)"
+    r"(?!(?:Estate|Plaza|Mall|Floor|Clinic|Building|House|Centre|Center)\s+(?!"
+    + _STREET_SUFFIX_RE + r"))"
+    r"[A-Z][\w'\-]+"
+)
 _STREET_NAME_RE = (
     r"(?P<street>"
-    r"(?:[A-Z][\w'\-]+\s+){1,4}" + _STREET_SUFFIX_RE +
+    r"(?:" + _STREET_WORD_RE + r"\s+){1,4}" + _STREET_SUFFIX_RE +
     r")"
 )
 
@@ -305,7 +314,8 @@ _TAIL_SEGMENT = (
     + _GB_POSTCODE + r"\b"                             # a GB postcode on its own
     r"|"
     r"[A-Z][\w'\-]{1,25}"                           # 1st capitalized word
-    r"(?:\s+(?:[A-Z][\w'\-]{1,25}|es|of|the)){0,3}" # 0-3 follow-on words
+    # 0-3 follow-on words; lists write "Nyeri town" as often as "Nyeri Town"
+    r"(?:\s+(?:[A-Z][\w'\-]{1,25}|es|of|the|(?:town|estate|village|area)\b)){0,3}"
     r"|"
     r"\d{4,6}"                                       # 4-6 digit postal
     r"|"
@@ -505,7 +515,8 @@ def parse_locality(text: str) -> AddressComponents | None:
                 anchor = anchor or phrase
             part = part[:m_start].strip(" .")
         if (not part or part[0].isdigit() or _NUMBER_WORD_RE.match(part)
-                or _BOX_PART_RE.match(part) or _NOT_A_PLACE_RE.search(part)):
+                or _BOX_PART_RE.match(part)
+                or (_NOT_A_PLACE_RE.search(part) and not _AREA_END_RE.match(part))):
             continue
         parts.append(part)
     if not parts:
@@ -574,6 +585,20 @@ _NOT_CODES = {"no", "at", "in", "on", "by", "of", "to", "km", "rd", "st", "nd", 
               "box", "pmb", "rm", "apt", "plot", "flat", "shop", "room", "unit"}
 
 
+# A road written without capitals in an otherwise mixed-case address: a whole
+# comma part ("Tengecha road, Kericho town"), or one after "along". Only the full
+# street words, and only in a short single line that does not read as prose.
+_LOWER_ROAD_RE = re.compile(
+    r"(?:(?<=^)|(?<=,)|(?<=, )|(?<=\balong )|(?<=\bAlong ))"
+    r"(?:\d{1,4}[A-Za-z]?\s+)?"
+    r"(?:(?!(?:of|off|opp|opposite|near|behind|by|along|adj|the|a|an|and)\b)"
+    r"[A-Za-z][\w'\-]*\s+){1,3}"
+    r"(?:road|street|avenue|drive|crescent|lane|close|way|highway|boulevard)\b")
+_PROSE_RE = re.compile(
+    r"(?i)\b(?:is|was|are|were|be|been|i|we|you|he|she|they|it|my|our|your|his|their|"
+    r"will|would|has|have|had|from|with|that|this|these|please|when|then|who|which)\b")
+
+
 def _recase(text: str) -> str:
     """All-capitals or all-lowercase text with each word capitalised.
 
@@ -590,6 +615,10 @@ def _recase(text: str) -> str:
         return _CODE_BEFORE_NUMBER_RE.sub(
             lambda m: m.group(0) if m.group(0).lower() in _NOT_CODES
             else m.group(0).upper(), cased)
+    if "\n" not in text and len(text) <= 120 and not _PROSE_RE.search(text):
+        return _LOWER_ROAD_RE.sub(
+            lambda m: re.sub(r"[A-Za-z]+", lambda w: w.group(0)[:1].upper() + w.group(0)[1:],
+                             m.group(0)), text)
     return text
 
 
@@ -717,7 +746,13 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
     )
 
 
-_TAIL_SEGMENT_RE = re.compile(_TAIL_SEGMENT)
+_TAIL_SEGMENT_RE = re.compile(
+    r"(?:(?:[A-Z][\w'\-]+\s+){0,2}(?:[A-Z]\.){1,4}[A-Z]?\.?"      # "Abakpa G.R.A."
+    r"(?:\s+[A-Z][\w'\-]+){0,2})|" + _TAIL_SEGMENT)
+# A stop or junction is a landmark; an estate or quarter is an area.
+_STOP_END_RE = re.compile(r"(?i)\b(?:bus[\s-]?stop|b/stop|junction|round\s*about)\.?$")
+_AREA_END_RE = re.compile(
+    r"(?i)^\S+(?:\s+\S+){0,3}\s+(?:estate|layout|quarters|village|extension|area)\.?$")
 _BOX_IN_PART_RE = re.compile(r"(?i)\b(?:p\.?\s*o\.?\s*)?box\s*\d|\bp\.?\s*m\.?\s*b\.?\s*\d")
 
 
@@ -740,8 +775,13 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
     # Straight after the street, before any comma: a town only if the place
     # list knows it ("22 Erinje Road Okitipupa"); anything else ends the tail.
     first = chunks[0].strip(" .")
-    if first:
-        if not (_places.town_rank(first) >= 3
+    if first and (_LANDMARK_START_RE.match(first) or _LANDMARK_WORD_RE.match(first)):
+        landmark, town = _town_at_end(first)
+        anchor = _clean(landmark)
+        if town:
+            places.append(town)
+    elif first:
+        if not (_AREA_END_RE.search(first) or _places.town_rank(first) >= 3
                 or any(_places.focus_rank(p) for p in _split_places(first))):
             return "", None
         places.append(first)
@@ -753,7 +793,8 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
         # ("Lagos and copy the invoice to 12 Long Street").
         second_road = (len(part.split()) <= 6
                        and re.search(r"(?i)\b" + _STREET_SUFFIX_RE, part))
-        if _LANDMARK_START_RE.match(part) or _LANDMARK_WORD_RE.match(part) or second_road:
+        if (_LANDMARK_START_RE.match(part) or _LANDMARK_WORD_RE.match(part) or second_road
+                or _STOP_END_RE.search(part)):
             # A landmark may end in the town: "Off Ada George Road Portharcourt".
             landmark, town = _town_at_end(part)
             anchor = anchor or _clean(landmark)
