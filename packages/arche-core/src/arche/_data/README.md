@@ -81,3 +81,24 @@ as a file in the source tree. Loaded lazily, on the first detection call.
 | Rebuild | the file's own header says how |
 | Not used | the SSA baby-names list (refused automated download); a fresh Wikidata query (rate-limited) |
 | Caveat | some benchmark held-out names are now in this list, so the benchmark's held-out name pool is no longer fully held out |
+
+---
+
+## `places_v1.json.gz`
+
+| Field | Value |
+|---|---|
+| Source | GeoNames, https://www.geonames.org/ (`cities1000.txt`, `admin1CodesASCII.txt`, `NG.txt`, `KE.txt`, `GH.txt` from https://download.geonames.org/export/dump/) |
+| Fetch date | 2026-11-24 (the source files' sha256 are recorded in the file's `built_from`) |
+| Contents | Folded place names, grouped by kind and rank: towns of 5,000+ everywhere; every state, region, county and province; for Nigeria, Kenya and Ghana every populated place, the areas within towns, and the second- and third-level divisions, with ASCII alternate names. No coordinates, no ids. |
+| File size | ~600 KB (about 16 MB in memory once loaded, on first use) |
+| License | Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Contains data from GeoNames; the names are folded and grouped, not otherwise changed. |
+| arche use | Whether some words name a town, and how large a one, so the address parser can split "22 Erinje Road Okitipupa" and read "Dunkwa Atechem" larger to smaller |
+| Consumer | `arche.addr.places` |
+
+**Refresh command** (after downloading the five files into one directory, keeping
+`cities1000/`, `NG/`, `KE/`, `GH/` as the zips unpack):
+
+```bash
+python data/scripts/build_places_geonames.py <geonames-dir>
+```

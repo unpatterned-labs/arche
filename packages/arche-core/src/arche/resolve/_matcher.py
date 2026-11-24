@@ -445,6 +445,9 @@ def _address_components(addr: str) -> dict[str, str]:
             fields["anchor"] = anchor[0]
     fields.pop("anchor_type", None)
     fields.pop("country", None)
+    # Not weighed yet: two shops in one plaza differ only here, and that needs
+    # measuring before it moves a match.
+    fields.pop("unit", None)
     return fields
 
 

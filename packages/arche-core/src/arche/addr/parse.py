@@ -50,6 +50,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from arche.addr import places as _places
+
 # ---------------------------------------------------------------------------
 # Data model (PRD §5.3)
 # ---------------------------------------------------------------------------
@@ -59,6 +61,7 @@ class AddressComponents:
     """Per-component breakdown of a parsed address."""
 
     plot: str | None = None                # e.g., "Plot 14", "7B"
+    unit: str | None = None                # "5th Floor", "Room 6", "Shop 12"
     street_number: str | None = None       # the bare number portion
     street: str | None = None              # "Allen Avenue", "Long Street"
     anchor: str | None = None              # landmark reference
@@ -109,9 +112,23 @@ _STREET_NAME_RE = (
     r")"
 )
 
-# Plot / number prefixes
-_PLOT_RE = r"(?P<plot>(?:Plot|Block|Unit|Suite|Flat|Apt|Apartment|No\.?)\s+\w+)"
-_NUMBER_RE = r"(?P<number>\d{1,4}[A-Za-z]?)"
+# Plot / number prefixes. "No" needs a digit after it, so "North" and "Nobel"
+# are not read as "No" plus a number.
+_PLOT_RE = (r"(?P<plot>\b(?i:(?:Plot|Block|Unit|Suite|Flat|Apt|Apartment)\s+|No\.?\s*(?=\d))"
+            r"[\w/-]+)")
+# A house number as written: "7", "4B", a range or pair ("62-80", "1/5"), or
+# one carrying a layout code ("NW4/183", "CL-6", "FC 7"). A code joined by a
+# space must be capitals, so "At 7" or "In 2" is not taken for one.
+_NUMBER_RE = (r"(?P<number>(?<![\w/-])"
+              r"(?:[A-Za-z]{1,3}\d{0,2}\s?[/-]\s?|[A-Z]{2,3}\s)?"
+              r"\d{1,4}[A-Za-z]?(?:\s?[-/]\s?\d{1,4}[A-Za-z]?)?)")
+# The word in front of a number that only says "a number follows".
+_NUMBER_WORD_RE = re.compile(r"(?i)^(?:No\.?|Plot)\s*(?P<n>[A-Za-z]{0,3}-?\d[\w/-]*)$")
+# A unit inside a building: a floor, room, suite, shop, flat or office.
+_UNIT_RE = re.compile(
+    r"(?i)\b(?:(?:\d{1,2}(?:st|nd|rd|th)|ground|first|second|third|fourth|fifth|top)"
+    r"\s+floor\b|(?:floor|room|rm|suite|shop|flat|apt|apartment|unit|office)"
+    r"\s*(?:no\.?\s*)?[A-Za-z]?\d[\w/-]*)")
 
 # Landmark anchor (informal African addresses). The relation words and
 # place-type keywords below are the built-in defaults; ``address_tokens.yaml``
@@ -297,7 +314,7 @@ _TAIL_SEGMENT = (
 )
 _ADDRESS_RE = re.compile(
     r"(?:" + _PLOT_RE + r"[\s,]+)?"
-    r"(?:" + _NUMBER_RE + r"\s+)?"
+    r"(?:" + _NUMBER_RE + r"[\s,]+)?"
     + _STREET_NAME_RE
     + r"(?P<tail>(?:\s*,\s*" + _TAIL_SEGMENT + r"){0,4})",
 )
@@ -342,6 +359,179 @@ def extract_anchor(text: str) -> tuple[str, str] | None:
     return anchor_text, _classify_anchor(anchor_text)
 
 
+def extract_unit(text: str) -> str | None:
+    """The unit inside a building ("5th Floor", "Room 6", "Shop 12"), if any.
+
+    Like :func:`extract_anchor`, for text the street parser finds nothing in:
+    "Sarit Centre 4th floor" has no street, so it parses to ``None``.
+    """
+    m = _UNIT_RE.search(text)
+    return _clean(m.group(0)) if m else None
+
+
+# Where a landmark begins inside a part: the relation words, plus the short
+# forms provider lists use ("Opp", "adj"). The words that are also ordinary
+# English ("by", "off", "of", "after", "before") count only at the start of a
+# part. "along" is not one: "along Kanyiri Road" says the place is on that road.
+_LANDMARK_WORD_RE = re.compile(
+    r"(?i)\b(?:" + "|".join(
+        re.escape(p) for p in _ANCHOR_PREPOSITIONS if p not in ("after", "before"))
+    + r"|opp|adj|inside|along)\b\.?")
+_ALONG_RE = re.compile(r"(?i)^along\s+(?P<road>.+)$")
+# Words that say what a place is, not which part of it ("Mombasa town").
+_PLACE_WORDS = {"town", "city", "municipality", "township"}
+_LANDMARK_START_RE = re.compile(r"(?i)^(?:by|off|of|after|before)\b")
+# A part that names a road or a building rather than a place.
+_NOT_A_PLACE_RE = re.compile(
+    r"(?i)\b(?:" + "|".join(_STREET_SUFFIXES) + "|" + _ANCHOR_NOUN_RE
+    + r"|building|plaza|complex|centre|center|tower|round\s*about|bypass|expressway"
+    r"|b/stop|bus\s*stop|stop|stage|garage)\b")
+_LEADING_COUNT_RE = re.compile(r"^\s*\d{1,2}\)\.?\s*")
+_BOX_PART_RE = re.compile(r"(?i)^(?:p\.?\s*o\.?\s*box|box|p\.?\s*m\.?\s*b)\b")
+
+
+# Words that only qualify a place ("New Legon", "Old Cairo", "Nairobi West");
+# a place name is never split to leave one of these on its own.
+_QUALIFIERS = {"new", "old", "north", "south", "east", "west", "upper", "lower",
+               "central", "greater", "little", "big", "town", "city", "municipality",
+               "township", "state", "region", "county", "province", "district",
+               "division", "lga", "sub county", "subcounty"}
+# Words that make a place name with the word before them ("Maraba Estate",
+# "Sabo Area", "Anthony Village", "Tema Community 1"); a part holding one is
+# one place, not two.
+_PLACE_NOUN_RE = re.compile(
+    r"(?i)\b(?:estate|area|village|quarters?|community|comm|location|layout|"
+    r"extension|phase|zone|camp|bus[\s-]?stop|b/stop|stop|stage|junction|house|"
+    r"plaza|building|centre|center|market|residential|city|development|annex)\b")
+
+
+def _split_places(part: str) -> list[str]:
+    """A part naming two places with no comma between, as two parts.
+
+    "Oke-Ado Ibadan" and "Roman Ridge Accra" run smaller to larger and give
+    ``["Oke-Ado", "Ibadan"]``; "Kumasi Santasi" and "Dunkwa Atechem" run larger
+    to smaller and are put the same way round, ``["Santasi", "Kumasi"]``, so
+    the town is last either way. The split is where the place list knows one
+    side as a town (or both, the larger deciding the order), in a country it
+    covers in full (:func:`arche.addr.places.focus_rank`): elsewhere it lacks
+    small places, so "Moss Side" would split on a Side it knows from Turkey.
+    A part the list knows whole ("Benin City", "Port Harcourt"), a postcode,
+    or a part holding a place noun ("Maraba Estate") is returned as it is.
+    """
+    words = part.split()
+    if (len(words) < 2 or _places.lookup(part) is not None or _PLACE_NOUN_RE.search(part)
+            or normalise_gb_postcode(part) or _looks_like_postal_code(part)):
+        return [part]
+    best: tuple | None = None
+    for k in range(1, len(words)):
+        head, tail = " ".join(words[:k]), " ".join(words[k:])
+        if _places.fold(head) in _QUALIFIERS or _places.fold(tail) in _QUALIFIERS:
+            continue
+        rh, rt = _places.focus_rank(head), _places.focus_rank(tail)
+        # A town, not a village: villages share names with ordinary words
+        # ("Side", "State"), and a village alone is too weak to split on.
+        if max(rh, rt) < 3:
+            continue
+        score = ((rh > 0) + (rt > 0), max(rh, rt), len(head if rh >= rt else tail))
+        if best is None or score > best[0]:
+            best = (score, head, tail, rh, rt)
+    if best is None:
+        return [part]
+    _, head, tail, rh, rt = best
+    return [head, tail] if rt >= rh else [tail, head]
+
+
+def _order_places(parts: list[str]) -> list[str]:
+    """The place parts, split where two share a part, smallest first.
+
+    Addresses usually name places smallest first, so the town is last. When the
+    first part is a town that outranks every later one ("Kumasi, Ahodwo"), the
+    address runs the other way, and the town is moved to the end. Every later
+    part must be a place the list knows; an unknown one keeps the order.
+    """
+    out = [p for part in parts for p in _split_places(part)]
+    if len(out) >= 2:
+        first = _places.focus_rank(out[0])
+        # Every later part must be known, and smaller: "Ashgrove, Temanu" with
+        # Temanu unknown keeps its order, whatever Ashgrove is elsewhere.
+        if first >= 3 and all(0 < _places.focus_rank(p) < first for p in out[1:]) \
+                and not any(_places.lookup(p) and _places.lookup(p).region for p in out[1:]):
+            out = out[1:] + out[:1]
+    return out
+
+
+def parse_locality(text: str) -> AddressComponents | None:
+    """The places in an address with no street: "Tamale near Agric Traffic light".
+
+    For text :func:`parse_address` finds no street in, as
+    :func:`extract_anchor` is. The text is split at commas, newlines and
+    dashes; landmark phrases ("near ...", "Opp ..."), units, numbers, P.O.
+    boxes, and parts naming a road or a building are set aside. Of the parts
+    left, the last is the city unless it names its own level ("Lagos State"),
+    when it is the region and the one before it the city; parts before the
+    city are neighbourhood and area: in "Ithanga, Gatanga" the city is Gatanga,
+    whether or not either is in the gazetteer. The one exception is an address
+    that runs larger to smaller: when it begins with a town the gazetteer knows
+    and no later part is one ("Kumasi Santasi Kagyase"), that town is the city
+    and the rest are neighbourhood and area. "along" names the road the place
+    is on ("Ashgrove along Kanyiri Road"), not a landmark.
+
+    Returns ``None`` when no place is left, or when what is left is too long
+    to be a place name (more than four words).
+    """
+    unit = extract_unit(text)
+    rest = _UNIT_RE.sub(" ", text) if unit else text
+    parts: list[str] = []
+    anchor: str | None = None
+    street: str | None = None
+    for raw in re.split(r"[,;\n]|\s-\s|(?<=\w)-\s", _LEADING_COUNT_RE.sub("", rest)):
+        part = raw.strip(" .")
+        if not part:
+            continue
+        m = _LANDMARK_WORD_RE.search(part)
+        if _LANDMARK_START_RE.match(part):
+            m_start = 0
+        elif m is not None:
+            m_start = m.start()
+        else:
+            m_start = None
+        if m_start is not None:
+            phrase = _clean(part[m_start:]) or ""
+            along = _ALONG_RE.match(phrase)
+            if (along and street is None
+                    and re.search(r"(?i)\b" + _STREET_SUFFIX_RE, along.group("road"))):
+                street = along.group("road")
+            else:
+                anchor = anchor or phrase
+            part = part[:m_start].strip(" .")
+        if (not part or part[0].isdigit() or _NUMBER_WORD_RE.match(part)
+                or _BOX_PART_RE.match(part) or _NOT_A_PLACE_RE.search(part)):
+            continue
+        parts.append(part)
+    if not parts:
+        if street is None:
+            return None
+        return AddressComponents(street=street, anchor=anchor, unit=unit,
+                                 anchor_type=_classify_anchor(anchor) if anchor else None)
+    components = AddressComponents(street=street, anchor=anchor, unit=unit)
+    if len(parts) >= 2 and _looks_like_postal_code(parts[-1]):
+        components.postal_code = parts.pop()
+    if len(parts) >= 2 and _REGION_PART_RE.search(parts[-1]):
+        components.region = parts.pop()
+    parts = _order_places(parts)
+    city = parts.pop()
+    if len(city.split()) > 4:
+        return None
+    components.city = _clean(city)
+    if parts:
+        components.neighborhood = _clean(parts[0])
+        if len(parts) > 1:
+            components.area = _clean(", ".join(parts[1:]))
+    if components.anchor:
+        components.anchor_type = _classify_anchor(components.anchor)
+    return components
+
+
 def normalize_landmark(text: str) -> str:
     """Strip the leading relation word + article from a landmark descriptor.
 
@@ -374,12 +564,64 @@ def parse_address(text: str) -> Address | None:
     return addresses[0] if addresses else None
 
 
+# The fields read from the text, as opposed to inferred (country, anchor_type).
+_TEXT_FIELDS = ("plot", "unit", "street_number", "street", "anchor", "neighborhood",
+                "area", "city", "region", "postal_code")
+
+
+_CODE_BEFORE_NUMBER_RE = re.compile(r"\b[A-Za-z]{1,3}(?=\s?\d)")
+_NOT_CODES = {"no", "at", "in", "on", "by", "of", "to", "km", "rd", "st", "nd", "th",
+              "box", "pmb", "rm", "apt", "plot", "flat", "shop", "room", "unit"}
+
+
+def _recase(text: str) -> str:
+    """All-capitals or all-lowercase text with each word capitalised.
+
+    The patterns read case: a street or a town is a run of capitalised words,
+    and a layout code ("FC 7") is capitals. Provider lists are often written
+    all in capitals ("6 MADUKU STREET, WARRI") or all in lowercase, where
+    case says nothing; this gives the patterns the case they expect. Only
+    ASCII letters change, so every offset into the text stays the same.
+    """
+    if text == text.upper() or text == text.lower():
+        cased = re.sub(r"[A-Za-z]+", lambda m: m.group(0).capitalize(), text)
+        # A short code before a number stays in capitals ("FC 7", "SW7/217"),
+        # but not a word ("No 7", "At 7", "KM 3").
+        return _CODE_BEFORE_NUMBER_RE.sub(
+            lambda m: m.group(0) if m.group(0).lower() in _NOT_CODES
+            else m.group(0).upper(), cased)
+    return text
+
+
+def _restore_case(addr: Address, cased: str, text: str) -> None:
+    """Put each component back as written, where it is a slice of the text."""
+    addr.raw = text[addr.span[0]:addr.span[1]].strip()
+    start = max(0, addr.span[0] - 80)
+    for name in _TEXT_FIELDS:
+        value = getattr(addr.components, name)
+        if value:
+            i = cased.find(value, start)
+            if i >= 0:
+                setattr(addr.components, name, text[i:i + len(value)])
+
+
 def parse_addresses(text: str) -> list[Address]:
     """Detect and parse every address-like span in ``text``.
 
     Returns a list of :class:`Address` records sorted by start offset.
-    Overlapping spans are deduplicated (longest wins).
+    Overlapping spans are deduplicated (longest wins). Text written all in
+    capitals or all in lowercase is read as if each word were capitalised;
+    the components come back as written.
     """
+    cased = _recase(text)
+    found = _parse_addresses(cased)
+    if cased != text:
+        for addr in found:
+            _restore_case(addr, cased, text)
+    return found
+
+
+def _parse_addresses(text: str) -> list[Address]:
     candidates: list[tuple[tuple[int, int], Address]] = []
 
     # 1) Run the headline street-suffix regex
@@ -432,9 +674,19 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
         street_number=_clean(m.groupdict().get("number")),
         street=_clean(m.groupdict().get("street")),
     )
+    # "No 7" and "Plot 7" carry a house number of 7; "Unit 4" and "Suite 4" a unit.
+    if components.plot is not None:
+        bare = _NUMBER_WORD_RE.match(components.plot)
+        if bare is not None and components.street_number is None:
+            components.street_number = bare.group("n")
+        elif re.match(r"(?i)(?:unit|suite|flat|apt|apartment)\b", components.plot):
+            components.unit = components.plot
+    if components.unit is None:
+        components.unit = _find_unit_near(full_text, span)
 
-    # Parse the trailing "city, region, country, postal" segment
-    tail = m.groupdict().get("tail") or ""
+    # Parse the trailing "city, region, country, postal" segment, past any
+    # landmark, P.O. box or second road between the street and the town.
+    tail, tail_anchor = _tail_after(full_text, m.end("street"))
     _parse_tail(tail, components)
 
     # Look for a landmark anchor in the text near the address span
@@ -445,6 +697,10 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
         start = min(span[0], _find_anchor_start(full_text, span))
         span = (start, span[1])
         raw = full_text[start:span[1]].strip()
+
+    if components.anchor is None and tail_anchor is not None:
+        components.anchor = tail_anchor
+        components.anchor_type = _classify_anchor(tail_anchor)
 
     country, country_conf = _infer_country(components, full_text)
     components.country = country
@@ -459,6 +715,80 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
         country_confidence=country_conf,
         confidence=confidence,
     )
+
+
+_TAIL_SEGMENT_RE = re.compile(_TAIL_SEGMENT)
+_BOX_IN_PART_RE = re.compile(r"(?i)\b(?:p\.?\s*o\.?\s*)?box\s*\d|\bp\.?\s*m\.?\s*b\.?\s*\d")
+
+
+def _tail_after(text: str, start: int) -> tuple[str, str | None]:
+    """The places after a street, and the first landmark between them.
+
+    Reads the comma-separated parts from ``start`` to the end of the line. A
+    part that begins with a landmark word ("OFF OKERE/UGBORIKOKO ROAD", "By
+    Benson Bus Stop", "Near Pen Cinema") or names a second road is a landmark;
+    a P.O. box or PMB part, or a unit, is passed over. The places are the
+    parts after those, each read as a tail segment; reading stops at the first
+    part that is not one, so a sentence after an address ("..., Ikeja and then
+    Lagos") gives "Ikeja", as the segment pattern alone did.
+    """
+    end = text.find("\n", start)
+    rest = text[start:] if end < 0 else text[start:end]
+    chunks = rest.split(",")
+    places: list[str] = []
+    anchor: str | None = None
+    # Straight after the street, before any comma: a town only if the place
+    # list knows it ("22 Erinje Road Okitipupa"); anything else ends the tail.
+    first = chunks[0].strip(" .")
+    if first:
+        if not (_places.town_rank(first) >= 3
+                or any(_places.focus_rank(p) for p in _split_places(first))):
+            return "", None
+        places.append(first)
+    for raw in chunks[1:]:
+        part = raw.strip(" .")
+        if not part:
+            continue
+        # A second road is a short part; a long one is prose running on
+        # ("Lagos and copy the invoice to 12 Long Street").
+        second_road = (len(part.split()) <= 6
+                       and re.search(r"(?i)\b" + _STREET_SUFFIX_RE, part))
+        if _LANDMARK_START_RE.match(part) or _LANDMARK_WORD_RE.match(part) or second_road:
+            # A landmark may end in the town: "Off Ada George Road Portharcourt".
+            landmark, town = _town_at_end(part)
+            anchor = anchor or _clean(landmark)
+            if town:
+                places.append(town)
+            continue
+        if _BOX_IN_PART_RE.search(part) or _UNIT_RE.fullmatch(part):
+            continue
+        seg = _TAIL_SEGMENT_RE.match(part)
+        if seg is None:
+            break
+        places.append(seg.group(0))
+        if seg.end() < len(part):
+            break
+    return ", ".join(_order_places(places)), anchor
+
+
+def _town_at_end(part: str) -> tuple[str, str | None]:
+    """A landmark and the town after it, when the town has no comma before it.
+
+    The town is the words after the landmark's last road or landmark word
+    ("... Road Portharcourt", "... Bus Stop Ikorodu"), when the place list
+    knows them as a town.
+    """
+    last = None
+    for m in re.finditer(r"(?i)\b(?:" + "|".join(_STREET_SUFFIXES) + r"|" + _ANCHOR_NOUN_RE
+                         + r"|b/stop|stop|stage|garage|estate)\b\.?", part):
+        last = m
+    if last is None:
+        return part, None
+    town = part[last.end():].strip(" .")
+    if 1 <= len(town.split()) <= 3 and (_places.focus_rank(town) >= 2
+                                       or _places.town_rank(town) >= 3):
+        return part[:last.end()].strip(), town
+    return part, None
 
 
 def _build_box_address_from_match(m: re.Match[str], full_text: str) -> Address | None:
@@ -626,6 +956,20 @@ def _find_anchor_near(text: str, address_span: tuple[int, int]) -> tuple[str, st
         return None
     anchor_text = m.group("anchor")
     return anchor_text, _classify_anchor(anchor_text)
+
+
+def _find_unit_near(text: str, address_span: tuple[int, int]) -> str | None:
+    """A unit in the address or just around it, on the same line.
+
+    "5th Floor, 18 Moi Avenue" puts the floor before the street the parser
+    matches. The window stops at a line break, so a unit from a neighbouring
+    line of a document is not attached.
+    """
+    start, end = address_span
+    before = text[max(0, start - 60):start].rsplit("\n", 1)[-1]
+    after = text[end:end + 40].split("\n", 1)[0]
+    m = _UNIT_RE.search(before + text[start:end] + after)
+    return _clean(m.group(0)) if m else None
 
 
 def _find_anchor_start(text: str, address_span: tuple[int, int]) -> int:
