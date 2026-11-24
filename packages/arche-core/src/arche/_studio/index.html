@@ -398,7 +398,17 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 .lb-parts dd{padding-left:9px}
 .lb-parts dd{margin:0 0 6px 0}
 .lb-skip{color:var(--hold);font-weight:600}
-.lb-guide{font-size:13px;line-height:1.5;max-height:75vh;overflow:auto;border-left:1px solid var(--rule);padding-left:14px}
+#s-label .split{grid-template-columns:minmax(0,1.3fr) minmax(380px,1fr);gap:36px}
+.lb-aside{position:sticky;top:var(--lb-top,180px);max-height:calc(100vh - var(--lb-top,180px) - 16px);display:flex;flex-direction:column;
+  background:var(--surface,#fff);border:1px solid var(--rule);border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+.lb-aside-head{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--rule)}
+.lb-aside-head .label{margin:0}
+.lb-guide{font-size:13.5px;line-height:1.55;overflow:auto;padding:14px 18px 18px}
+.lb-dialog{width:min(860px,94vw);max-height:90vh;border:1px solid var(--rule);border-radius:12px;padding:0;background:var(--paper);color:var(--ink)}
+.lb-dialog::backdrop{background:rgba(17,17,17,.35)}
+.lb-dialog .lb-guide{max-height:calc(90vh - 60px);font-size:15px;padding:18px 26px 26px}
+.lb-dialog .lb-guide td,.lb-dialog .lb-guide th{font-size:14px}
+@media(max-width:980px){#s-label .split{grid-template-columns:1fr}.lb-aside{position:static;max-height:none}}
 .lb-guide h1{font-size:17px;margin:0 0 8px}.lb-guide h2{font-size:14px;margin:18px 0 6px}
 .lb-guide p,.lb-guide ul,.lb-guide ol{margin:0 0 8px}.lb-guide ul,.lb-guide ol{padding-left:18px}
 .lb-guide table{border-collapse:collapse;margin:4px 0 12px;font-size:12px}
@@ -832,8 +842,17 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
       <p class="stat" id="lb-msg"></p>
       <div id="lb-recent-box" hidden><p class="label">Saved just now</p><ol class="lb-recent" id="lb-recent"></ol></div>
     </div>
-    <aside><p class="label">Guide</p><div class="lb-guide" id="lb-guide">No guide in this pack.</div></aside>
+    <aside class="lb-aside">
+      <div class="lb-aside-head"><p class="label">Guide</p>
+        <button class="act quiet" id="lb-guide-open" type="button">Open full width</button></div>
+      <div class="lb-guide" id="lb-guide">No guide in this pack.</div>
+    </aside>
   </div>
+  <dialog id="lb-guide-dialog" class="lb-dialog" aria-label="Labelling guide">
+    <div class="lb-aside-head"><p class="label">Guide</p>
+      <button class="act quiet" id="lb-guide-close" type="button">Close <kbd>Esc</kbd></button></div>
+    <div class="lb-guide" id="lb-guide-full"></div>
+  </dialog>
 </section>
 
 <section id="s-explain" hidden>
@@ -2122,6 +2141,14 @@ async function lbNext(){if(await lbSave())lbShow(LB.p+1);}
 on("t-label","click",()=>{tab("label");if(!LB.pack)lbPacks();});
 on("lb-pack","change",()=>lbLoad($("#lb-pack").value));
 on("lb-group","change",()=>{LB.group=$("#lb-group").value;lbFilter();});
+// The guide card sticks below the header, whose height moves with the window width.
+function lbTop(){
+  const root=document.documentElement,h=document.querySelector("header");
+  if(!root||!root.style||typeof getComputedStyle!=="function")return;
+  root.style.setProperty("--lb-top",((h&&getComputedStyle(h).position==="sticky")?h.offsetHeight:0)+16+"px");}
+window.addEventListener("resize",lbTop);lbTop();
+on("lb-guide-open","click",()=>{$("#lb-guide-full").innerHTML=$("#lb-guide").innerHTML;$("#lb-guide-dialog").showModal();});
+on("lb-guide-close","click",()=>$("#lb-guide-dialog").close());
 on("lb-next","click",lbNext);
 on("lb-prev","click",()=>lbShow(LB.p-1));
 on("lb-clear","click",()=>{lbPush();LB.spans=[];LB.skip=false;LB.sel=null;
@@ -2161,6 +2188,7 @@ on("lb-text","mouseup",()=>{
 });
 document.addEventListener("keydown",e=>{
   if($("#s-label").hidden||!LB.pack||e.ctrlKey||e.metaKey||e.altKey)return;
+  if($("#lb-guide-dialog").open)return;
   if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName))return;
   const n=lbChunks().length;
   if(e.key==="Escape"&&LB.sel){LB.sel=null;lbRender();return;}

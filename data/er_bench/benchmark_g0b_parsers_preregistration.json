@@ -25,13 +25,56 @@
       "n": 3,
       "what": "Studio's Label tab gains chunk mode (the address split at commas and after a leading number, one key per chunk) and a country filter; LABELLING.md's 'How to mark' section rewritten for it, with an invented example in place of one that quoted a pack item. The parts, the rules and the worked examples are unchanged. pack.json gains group_field 'country', which changes the pack digest recorded with each save; items.csv is unchanged.",
       "why": "the labeller asked for an easier way than selecting each part with the mouse"
+    },
+    {
+      "date": "2026-11-24",
+      "labelling_guide_sha256_after": "sha256:f8352580a564401342022993578295f1510f56fef1d715c49818eecaad26f7d8",
+      "labelling_guide_sha256_before": "sha256:696e9cba9bfe3dff44e1276066942de558c09764363fbd720cec0ef0a5b24766",
+      "labels_at_amendment": "labelling under way; the Studio label history was not read",
+      "n": 4,
+      "what": "LABELLING.md: the Road row names the street types it covers (Street, Road, Avenue, Crescent, Close, Lane, Way, Drive), which the existing rule 'the street, with its type word' already meant, and one invented worked example (a crescent, misspelt, kept as written). Studio's guide panel is wider, stays in view, and opens full width; no label changes.",
+      "why": "the labeller asked whether a Street is labelled Road"
+    },
+    {
+      "date": "2026-11-24",
+      "effect_on_scoring": "suburb is scored and landmark is not, so this decides rows where a mall could otherwise be read as an area",
+      "labelling_guide_sha256_after": "sha256:839bd42ca050cdd6fea3090eaa21211a3a69c759905819edbcb0bb9a4a523d8b",
+      "labelling_guide_sha256_before": "sha256:f8352580a564401342022993578295f1510f56fef1d715c49818eecaad26f7d8",
+      "labels_at_amendment": "labelling under way; the Studio label history was not read",
+      "n": 5,
+      "what": "LABELLING.md, hard cases: a building, plaza or mall name is a landmark when the address also gives a street (the earlier rule covered only the no-street case), a shop or unit inside it is Unit / floor, and a mall is never an area, even when named after one. One invented example.",
+      "why": "the labeller asked whether a mall is a landmark or an area; the guide did not say when a street is also present"
+    },
+    {
+      "date": "2026-11-24",
+      "effect_on_scoring": "(1) decides city against suburb, both scored, on addresses ending in a district of a larger city (e.g. Lagos districts named without 'Lagos'); a parser that returns the district as suburb is scored wrong on city there. (2) none: landmark is not scored and the export joins the two spans",
+      "known_risk": "the position rule labels what the address says, not the administrative truth; a parser with gazetteer knowledge may be penalised for being right about the larger city. Accepted for reproducibility across three countries.",
+      "labelling_guide_sha256_after": "sha256:434c2dd803265b1f7397961ce55a4da55d0af500c1528659a020125584ab19f8",
+      "labelling_guide_sha256_before": "sha256:839bd42ca050cdd6fea3090eaa21211a3a69c759905819edbcb0bb9a4a523d8b",
+      "labels_at_amendment": "labelling under way; the Studio label history was not read",
+      "n": 6,
+      "what": "LABELLING.md, hard cases: (1) City / town by position: when no larger town follows, the last place named is City / town even if it is part of a bigger city; a state, county or region after it does not count as a town; when a town follows, the earlier place is Suburb / area. (2) Two landmarks in one cell are split and each marked landmark with its own word. Invented examples only.",
+      "why": "the labeller met '..., MUSHIN' (a Lagos district, no city named) and chose the position rule"
+    },
+    {
+      "n": 7,
+      "date": "2026-11-24",
+      "what": "g0b_parsers.py looked for the pinned 'addr/parse.py' beside the scripts and crashed before reading any label. The pin check now finds it in packages/arche-core/src/arche/. No other line changed; the rule, the fields, the matching and the arms are untouched.",
+      "code_before": {
+        "g0b_parsers.py": "sha256:52ede564a5804b556c1a5906a370a27ddfda66a2b1bccc8cbbaa53ce499135a4"
+      },
+      "code_after": {
+        "g0b_parsers.py": "sha256:712dfd6a031d26014715195ab1b329255a997f3c20579245bd8f31537c491209"
+      },
+      "checked_before_the_fix": "the other three pins (addr/parse.py, build_g0b_pack.py, g0_parsers.py) were hashed by hand and match",
+      "labels_at_amendment": "exported (250 rows), not read or scored; the crash came before read_primary"
     }
   ],
   "code": {
     "addr/parse.py": "sha256:548551bd64db3ff8dc7585beca7b1cc44b9c1e406f22e8ff8e44c29dcd55caa9",
     "build_g0b_pack.py": "sha256:2ff5fe4a5ec2abd6632222b5e09433d2d32f22b90f92ff10aaa89424cf2c7ba1",
     "g0_parsers.py": "sha256:716b4928edc72d2c049c581d72d60f44739dd666db3296690635b8c357c23a84",
-    "g0b_parsers.py": "sha256:52ede564a5804b556c1a5906a370a27ddfda66a2b1bccc8cbbaa53ce499135a4"
+    "g0b_parsers.py": "sha256:712dfd6a031d26014715195ab1b329255a997f3c20579245bd8f31537c491209"
   },
   "date": "2026-11-23",
   "known_risks": [

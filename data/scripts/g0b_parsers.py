@@ -58,6 +58,12 @@ FIELDS = g0.FIELDS
 _STATE_SUFFIX = re.compile(r"(?i)\s+(state|region|county)\s*$")
 
 
+def _pinned(name: str) -> Path:
+    """A pinned file: a script here, or the parser in the package."""
+    return HERE / name if (HERE / name).exists() else \
+        REPO / "packages" / "arche-core" / "src" / "arche" / name
+
+
 def sha(p: Path) -> str:
     return "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()
 
@@ -129,7 +135,7 @@ def main() -> None:
                 .hexdigest() != prereg["rule_sha256"]:
             raise SystemExit("rule differs from its recorded digest")
         for name, digest in prereg["code"].items():
-            if sha(HERE / name) != digest:
+            if sha(_pinned(name)) != digest:
                 raise SystemExit(f"{name} changed since the preregistration")
         if sha(G0B / "pack" / "addresses.csv") != prereg["pack"]["addresses_sha256"]:
             raise SystemExit("the pack changed since the preregistration")
