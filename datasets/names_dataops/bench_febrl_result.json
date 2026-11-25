@@ -12,7 +12,7 @@
   "configurations": {
     "name + address": {
       "pairs_truth": 5000,
-      "true_merges": 3274,
+      "true_merges": 3275,
       "false_merges": 225,
       "precision": 0.9357,
       "auto_resolved": 0.657,

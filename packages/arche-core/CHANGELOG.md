@@ -5,6 +5,7 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 ## [Unreleased]
 
 ### Added
+- **Address parser: UK and US addresses that close with a postcode.** A GB postcode or a US state and ZIP is read with or without commas and with no street, and the town before it is found with the place list. A code after the town in a comma part ("Nairobi 00100") is read. Street names may close with a direction, hold an ordinal, and end in Parkway, Trail or Pike; house numbers may have five digits.
 - **Address parser: lowercase roads, and where a road name stops.** "Kanyiri road, Temanu town" is read; a road name no longer runs across a landmark word or a building. `compare_addresses` treats two streets as one when the house numbers agree and one only has the preceding line read into it. Recorded Febrl 4, name + address: precision 0.8716 to 0.9357, true merges 3,285 to 3,274, false merges 484 to 225; most of the true merges lost have differing house numbers and now go to review.
 - **Place list for the address parser** (`arche.addr.places`, data from GeoNames, CC BY 4.0). Used to decide where to split an address, such as a town with no comma before it. `places.register_places(...)` adds your own names; loads on first use (about 0.5 s, 16 MB).
 - **Address parser: text in all capitals or all lowercase** is read; components and `raw` come back as written.
