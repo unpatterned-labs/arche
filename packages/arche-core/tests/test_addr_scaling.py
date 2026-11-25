@@ -38,7 +38,8 @@ def test_parse_addresses_is_not_quadratic(make):
 
 
 @pytest.mark.parametrize("text", [
-    "Temanu Ajala " * 3200, "Temanu" + " , " * 3200 + "x", "Temanu - " * 3200])
+    "Temanu Ajala " * 3200, "Temanu" + " , " * 3200 + "x", "Temanu - " * 3200,
+], ids=["words", "commas", "dashes"])  # pytest puts the id in the environment; Windows caps it
 def test_parse_locality_stays_quick(text):
     assert _seconds(parse_locality, text) < 1.0
 
