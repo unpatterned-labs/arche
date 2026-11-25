@@ -10,6 +10,7 @@ LGA and the engine matched one of them.
 
 from __future__ import annotations
 
+import pytest
 from arche.ids import edge_decision_id
 from arche.jurisdictions.nigeria import admin_path, is_state
 from arche.resolve import ENTITY_PACKS, reconcile
@@ -149,3 +150,45 @@ class TestFacilityTypeRefutation:
 
         assert load_type_groups("health_facility")["CHC"] == "primary_care"
         assert load_type_groups("organization") == {}
+
+
+BRANCHES = [
+    {"id": "r1", "name": "Kanyiri Medical Centre", "address": "14 Ajala Road, Temanu"},
+    {"id": "r3", "name": "Kanyiri Medical Centre", "address": "90 Ashgrove Road, Obodo"},
+]
+NO_ADDRESS = {"id": "r2", "name": "Kanyiri Medical Centre"}
+
+
+class TestNameOnly:
+    """A record with only a name agrees with every branch, and would join them."""
+
+    def _decisions(self, left, right, mode):
+        out = reconcile(left, right, entity="place", id_field="id", unique_match=mode)
+        return {(m["a_id"], m["b_id"]): m["decision"] for m in out["matches"]}
+
+    def test_the_fault_it_is_for(self):
+        d = self._decisions(BRANCHES, [NO_ADDRESS], False)
+        assert set(d.values()) == {"match"} and len(d) == 2
+
+    def test_a_name_that_meets_two_branches_is_held(self):
+        assert set(self._decisions(BRANCHES, [NO_ADDRESS], "name_only").values()) == {"review"}
+
+    def test_one_branch_still_matches_on_the_name(self):
+        assert self._decisions(BRANCHES[:1], [NO_ADDRESS], "name_only") == {("r1", "r2"): "match"}
+
+    def test_a_supported_match_stands_beside_a_held_one(self):
+        same = {"id": "r5", "name": "Kanyiri Medical Centre", "address": "14 Ajala Road, Temanu"}
+        d = self._decisions(BRANCHES[:1], [NO_ADDRESS, same], "name_only")
+        assert d == {("r1", "r2"): "review", ("r1", "r5"): "match"}
+
+    def test_pinned_and_verifiable(self):
+        out = reconcile(BRANCHES, [NO_ADDRESS], entity="place", id_field="id",
+                        unique_match="name_only")
+        assert out["pins"]["unique_match"] == "name_only"
+        edge = dict(out["matches"][0])
+        assert edge["ambiguous"] == 2
+        assert edge.pop("decision_id") == edge_decision_id(edge, out["pins"])
+
+    def test_an_unknown_mode_is_refused(self):
+        with pytest.raises(ValueError, match="name_only"):
+            reconcile(BRANCHES, [NO_ADDRESS], entity="place", id_field="id", unique_match="names")

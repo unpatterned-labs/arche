@@ -1,0 +1,40 @@
+{
+  "benchmark": "Febrl 4 with twins, hard twins and parents added",
+  "seed": 20261125,
+  "added": {
+    "twin": 300,
+    "hard_twin": 300,
+    "parent": 200
+  },
+  "fields": [
+    "name",
+    "address",
+    "birth_date"
+  ],
+  "configurations": {
+    "person": {
+      "pairs_truth": 5000,
+      "true_merges": 4154,
+      "false_merges": 433,
+      "precision": 0.9056,
+      "recall": 0.8308,
+      "review": 1949,
+      "merged_twin": 128,
+      "merged_hard_twin": 300,
+      "merged_parent": 0,
+      "merged_other": 5
+    },
+    "person_typos": {
+      "pairs_truth": 5000,
+      "true_merges": 4374,
+      "false_merges": 433,
+      "precision": 0.9099,
+      "recall": 0.8748,
+      "review": 1911,
+      "merged_twin": 128,
+      "merged_hard_twin": 300,
+      "merged_parent": 0,
+      "merged_other": 5
+    }
+  }
+}

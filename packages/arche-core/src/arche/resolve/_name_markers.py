@@ -13,12 +13,15 @@ token that carried the difference:
   ``Birds Eye Ireland Ltd. (Invoicing Only)``: two legal entities at one
   invoicing address, separated only by the country in the name.
 
-Both comparators return ``None`` unless BOTH names carry a marker. A name that
+Those two comparators return ``None`` unless BOTH names carry a marker. A name that
 states no unit or no country is missing evidence, not a disagreement —
 ``Geregu Power Plant`` says nothing about which unit — so absence never
 refutes. Declared with ``weight 0`` and ``refutes_below``, they can only demote
 a ``match`` to ``review``; they never create agreement and never reach
 ``no_match``. That bounds the cost of a wrong refutation at one human glance.
+
+A third, :func:`compare_group_words`, separates the companies of one group on a
+register, and is the one that does read absence; see its docstring.
 
 What is deliberately NOT a designator: number words (``One``, ``Two``), because
 ``One Stop Shop`` and ``East Anglia One`` are names, not units. So ``East Anglia
@@ -122,6 +125,66 @@ def compare_designators(name_a: str, name_b: str) -> float | None:
     if a == b:
         return 1.0
     return 0.0 if (a - b) and (b - a) else None
+
+
+# ── words that separate companies in one group ───────────────────────────────
+
+#: Words a group uses to name its companies apart, each with its other spellings.
+#: `Pondwell Limited`, `Pondwell Holdings Limited` and `Pondwell Services
+#: Limited` are three companies, usually at one registered office. The words are
+#: common, so a token table reads them as saying little; on a register they are
+#: the whole difference. On CQC providers against Companies House (X17's dev
+#: districts, 25 Nov 2026) pairs whose group words differ were 547 of the 872
+#: wrong matches and 9 of the 8,534 right ones.
+_GROUP_WORDS = {
+    "holdings": ("holding", "hldgs"), "group": ("grp",), "trading": (),
+    "services": ("service",), "properties": ("property",),
+    "investments": ("investment",), "management": (),
+    "developments": ("development",), "finance": ("financing",), "capital": (),
+    "nominees": ("nominee",), "trustees": ("trustee",), "pension": ("pensions",),
+    "enterprises": ("enterprise",), "international": ("intl",), "logistics": (),
+    "estates": (), "assets": (), "ventures": (), "operations": (),
+    "recruitment": (), "training": (), "consulting": ("consultancy",),
+    "solutions": (), "partners": ("partnership",),
+}
+_GROUP = {w: k for k, forms in _GROUP_WORDS.items() for w in (k, *forms)}
+
+
+def _trailing_letter(tokens: list[str]) -> str | None:
+    """The letter that closes a name, its legal form aside: `Pondwell A Limited`."""
+    while tokens and tokens[-1] in _LEGAL_TAIL:
+        tokens = tokens[:-1]
+    if len(tokens) > 1 and len(tokens[-1]) == 1 and tokens[-1].isalpha():
+        return tokens[-1]
+    return None
+
+
+_LEGAL_TAIL = frozenset({"ltd", "limited", "plc", "llp", "lp", "inc", "llc", "corp",
+                         "corporation", "company", "co", "cic", "cio", "gmbh"})
+
+
+def compare_group_words(name_a: str, name_b: str) -> float | None:
+    """``0.0`` when two names differ in a group word or a closing letter, else ``None``.
+
+    Unlike the comparators above, one side is enough: the parent is usually the
+    company that states no group word. That is only right between legal names,
+    which is why the ``legal_entity`` pack carries it and ``organisation``, whose
+    lists hold trading names, does not. Refuting only: it never returns 1.0.
+    """
+    a, b = (re.sub(r"[^a-z0-9]+", " ", _normalise_text(str(n)).replace("'", "")).split()
+            for n in (name_a, name_b))
+    if {_GROUP[t] for t in a if t in _GROUP} != {_GROUP[t] for t in b if t in _GROUP}:
+        return 0.0
+    letter_a, letter_b = _trailing_letter(a), _trailing_letter(b)
+    return 0.0 if letter_a and letter_b and letter_a != letter_b else None
+
+
+def group_words_pin() -> str:
+    """Content address of the group words, so a receipt names them."""
+    from arche.ids import content_hash
+
+    body = {"group_words": sorted(_GROUP.items()), "legal_tail": sorted(_LEGAL_TAIL)}
+    return "group_words@" + content_hash(body, prefix="gw").split(":")[-1]
 
 
 # ── country words ────────────────────────────────────────────────────────────

@@ -469,6 +469,22 @@ ENTITY_PACKS["legal_entity"] = [
     {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5,
      "strip_type": "organization", "mutual": False, "shared_overrides": False,
      "ordinary_words": False, "near": 0.85},
+    # `group_words`: `Pondwell Limited` and `Pondwell Holdings Limited` are two
+    # companies. `rival` cannot see it, because the group word is common.
+    {"field": "name", "kind": "group_words", "weight": 0.0, "refutes_below": 0.5},
+]
+
+# `person` with misspelt name tokens counting (`near`). In `person` a one-letter
+# error in a name scores 0 on the token comparator and can also miss the
+# distinctive floor, so a pair with the same birth date and address is held for
+# review. On Febrl 4 (name, address, birth date) that is most of the true pairs
+# held. `near` 0.90 was chosen on half of Febrl's people and scored once on the
+# other half: true matches 2,164 -> 2,266 of 2,563, false 5 -> 6. On Parrish's
+# children's records 258 -> 269 of 294, false 0 -> 0. Twins whose first names
+# look alike merge, as they do in `person`; see `bench_twins.py`. EXPERIMENTAL.
+ENTITY_PACKS["person_typos"] = [
+    {**spec, "near": 0.90} if spec.get("kind") == "tftoken" else spec
+    for spec in ENTITY_PACKS["person"]
 ]
 
 # South Africa: `health_facility` with the facility type refuting on any tier
@@ -852,6 +868,9 @@ COMPARATOR_NOTES = {
                 "number, compared on its own. Two different units on one estate share "
                 "nearly all their address text, so this is the only part that separates "
                 "them",
+    "house_number": "how the house numbers of two addresses on one road stand: agree, "
+                    "one missing, one inside the other's range, or different. Silent "
+                    "when they are not on one road",
     "tokenset": "how much of the shorter text is also in the longer one, as a bag of "
                 "words. Order- and length-tolerant, for long titles and descriptions",
     "rival": "whether each side names something distinctive the other does "
@@ -864,6 +883,10 @@ COMPARATOR_NOTES = {
     "country": "whether two names name different countries -- Birds Eye UK "
                "against Birds Eye Ireland. Silent when either names none. It "
                "can only hold a pair back",
+    "group_words": "whether two company names differ in a word groups use to "
+                   "name their companies apart -- Holdings, Services, "
+                   "Properties -- or in a closing letter. It can only hold a "
+                   "pair back",
     "postcode": "whether two postal codes agree -- same code, same district, "
                 "or different districts. Silent when either side has none. "
                 "In the site pack it can only hold a pair back",
@@ -912,6 +935,8 @@ def compare_names(name_a, name_b, priors=None):
 # project exists to prevent, arriving one level above where it was defended.
 ENTITY_PACK_PURPOSE: dict[str, str] = {
     "person": "people: names, dates of birth, national IDs, phone, email, address",
+    "person_typos": "people, as `person`, where names are often misspelt: a token spelled "
+                    "alike counts. EXPERIMENTAL",
     "place": "physical locations: facilities, buildings, sites, addresses and "
              "coordinates. Use this for anything you would visit or deliver to, "
              "including hospitals, schools and clinics",

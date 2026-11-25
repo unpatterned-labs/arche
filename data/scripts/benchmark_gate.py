@@ -25,6 +25,8 @@ exactly the configuration its result file records:
   (`data/er_bench/benchmark_leipzig_result.json`, `year_refutes_below_0.99`).
 * **Febrl 4**, name + address, identifier withheld
   (`datasets/names_dataops/bench_febrl_result.json`, `name + address`).
+* **Febrl 4 with twins and parents added** (`bench_twins.py`), for `person` and
+  `person_typos`: the people a looser matcher merges and Febrl cannot show.
 * **Abt-Buy**, the `product_electronics` pack on product names alone
   (`data/er_bench/benchmark_abt_buy_result.json`, `product_electronics`). This
   one also carries two **invariants** the changelog once claimed a test
@@ -76,6 +78,7 @@ TRUE_MERGE_TOLERANCE = 0.005
 
 LEIPZIG = _REPO / "data" / "er_bench" / "benchmark_leipzig_result.json"
 FEBRL = _REPO / "datasets" / "names_dataops" / "bench_febrl_result.json"
+TWINS = _REPO / "datasets" / "names_dataops" / "bench_twins_result.json"
 ABT_BUY = _REPO / "data" / "er_bench" / "benchmark_abt_buy_result.json"
 RECIPE_PERSON = _REPO / "datasets" / "names_dataops" / "bench_recipe_person_result.json"
 RECIPE_PLACE = _REPO / "datasets" / "names_dataops" / "bench_recipe_place_result.json"
@@ -332,9 +335,39 @@ def _write_febrl(now: dict) -> None:
     FEBRL.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 
+def _twins(pack: str):
+    """`bench_twins.py`: Febrl 4 with people who share a home or a birthday and must not merge."""
+    def run() -> dict:
+        import bench_twins
+
+        r = bench_twins.score(pack)
+        return {"true_merges": r["true_merges"], "false_merges": r["false_merges"],
+                "precision": r["precision"], "_full": r}
+    return run
+
+
+def _recorded_twins(pack: str):
+    def read() -> dict:
+        r = json.loads(TWINS.read_text(encoding="utf-8"))["configurations"][pack]
+        return {k: r[k] for k in ("true_merges", "false_merges", "precision")}
+    return read
+
+
+def _write_twins(pack: str):
+    def write(now: dict) -> None:
+        doc = json.loads(TWINS.read_text(encoding="utf-8"))
+        doc["configurations"][pack] = now["_full"]
+        TWINS.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    return write
+
+
 BENCHMARKS = (
     ("DBLP-ACM, year refutes", _dblp_acm, _recorded_dblp, _write_dblp, LEIPZIG),
     ("Febrl 4, name + address", _febrl, _recorded_febrl, _write_febrl, FEBRL),
+    ("Febrl 4 + twins and parents, person", _twins("person"), _recorded_twins("person"),
+     _write_twins("person"), TWINS),
+    ("Febrl 4 + twins and parents, person_typos", _twins("person_typos"),
+     _recorded_twins("person_typos"), _write_twins("person_typos"), TWINS),
     ("Abt-Buy, product names", _abt_buy, _recorded_abt_buy, _write_abt_buy, ABT_BUY),
     ("Recipe person, Febrl 4 via Splink", _recipe_person, _recorded_recipe_person,
      _write_recipe_person, RECIPE_PERSON),

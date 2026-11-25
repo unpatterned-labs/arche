@@ -38,150 +38,150 @@
       },
       "cross_cluster_examples": [
         {
-          "entity_id": "ent_4d855a61f06b4e4990dae35d462b1feb",
+          "entity_id": "ent_d32ece94b075d9a358c954bb078590df",
           "records": 12,
           "clusters": 8,
           "held": "transitive",
           "linked_by": 32,
           "sample": [
-            "dblp:journals/sigmod/Aberer02",
-            "acm:601865",
-            "acm:507353",
+            "acm:601864",
             "acm:565129",
-            "acm:637424",
-            "dblp:journals/sigmod/Aberer02b"
+            "dblp:journals/sigmod/Aberer02a",
+            "dblp:journals/sigmod/Aberer02c",
+            "acm:637423",
+            "acm:637424"
           ]
         },
         {
-          "entity_id": "ent_488c7a75db7541eba31a866a73701dd7",
+          "entity_id": "ent_57fe4c82d9cd1b077007a6678446c7ca",
           "records": 8,
           "clusters": 6,
           "held": "transitive",
           "linked_by": 9,
           "sample": [
-            "dblp:journals/sigmod/Aberer03d",
-            "acm:776994",
-            "acm:959078",
-            "dblp:journals/sigmod/Aberer03b",
             "dblp:journals/sigmod/Aberer03",
-            "acm:776993"
+            "dblp:journals/sigmod/Aberer03b",
+            "acm:959078",
+            "acm:776993",
+            "dblp:journals/sigmod/Aberer03d",
+            "acm:945740"
           ]
         },
         {
-          "entity_id": "ent_115b957f51e041a5a02a501701ddcee9",
-          "records": 6,
-          "clusters": 5,
-          "held": "transitive",
-          "linked_by": 5,
-          "sample": [
-            "dblp:journals/sigmod/RossNO03",
-            "acm:641001",
-            "dblp:journals/sigmod/RossGR03",
-            "dblp:journals/sigmod/CherniakV03",
-            "dblp:journals/sigmod/RossGN03",
-            "acm:641000"
-          ]
-        },
-        {
-          "entity_id": "ent_3258cbdf6cf448ccaad68a02daa15c7b",
+          "entity_id": "ent_bb45416745968a9af10d5e93a214fc7e",
           "records": 6,
           "clusters": 4,
           "held": "transitive",
           "linked_by": 8,
           "sample": [
+            "dblp:journals/sigmod/RossAA02",
             "dblp:journals/sigmod/RossFS02",
             "acm:507364",
-            "dblp:journals/sigmod/RossAA02",
+            "dblp:journals/sigmod/RossKMV02",
             "acm:601875",
-            "dblp:journals/sigmod/RossAJS02",
-            "dblp:journals/sigmod/RossKMV02"
+            "dblp:journals/sigmod/RossAJS02"
           ]
         },
         {
-          "entity_id": "ent_4b4037b2ce084ed1a6268e5e96288cc4",
+          "entity_id": "ent_eff38eb17aa67e57883f2a2742d49768",
+          "records": 6,
+          "clusters": 5,
+          "held": "transitive",
+          "linked_by": 5,
+          "sample": [
+            "dblp:journals/sigmod/CherniakV03",
+            "acm:641000",
+            "dblp:journals/sigmod/RossGR03",
+            "dblp:journals/sigmod/RossGN03",
+            "dblp:journals/sigmod/RossNO03",
+            "acm:641001"
+          ]
+        },
+        {
+          "entity_id": "ent_13aed831c182cf1ca58304945d0520fd",
           "records": 5,
           "clusters": 3,
           "held": "transitive",
           "linked_by": 6,
           "sample": [
+            "dblp:conf/vldb/ShashaB02",
             "dblp:conf/sigmod/ShashaB02",
-            "acm:564799",
-            "dblp:conf/sigmod/ShashaB02a",
             "acm:564798",
-            "dblp:conf/vldb/ShashaB02"
+            "acm:564799",
+            "dblp:conf/sigmod/ShashaB02a"
           ]
         },
         {
-          "entity_id": "ent_8a6a4a85ec964ffb988e1047ab9de114",
+          "entity_id": "ent_cbbbfb8b0a3fc830bb1adbec8a30da95",
+          "records": 5,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 6,
+          "sample": [
+            "dblp:journals/sigmod/RossHKRRSS01",
+            "dblp:journals/sigmod/RossHLW01",
+            "dblp:journals/sigmod/RossCGLLM01",
+            "acm:604262",
+            "acm:603882"
+          ]
+        },
+        {
+          "entity_id": "ent_df977cc1b63c1d070cb62fe0be26bdf2",
           "records": 5,
           "clusters": 3,
           "held": "transitive",
           "linked_by": 6,
           "sample": [
             "dblp:journals/sigmod/Snodgrass98a",
-            "acm:290599",
-            "dblp:journals/sigmod/SnodgrassGIMSU98",
             "dblp:journals/sigmod/SnodgrassHMOPRRWY98",
-            "acm:390004"
+            "dblp:journals/sigmod/SnodgrassGIMSU98",
+            "acm:390004",
+            "acm:290599"
           ]
         },
         {
-          "entity_id": "ent_bb42c0457ec74bf295b12e78d40ed437",
-          "records": 5,
-          "clusters": 3,
-          "held": "transitive",
-          "linked_by": 6,
-          "sample": [
-            "dblp:journals/sigmod/RossHLW01",
-            "acm:603882",
-            "acm:604262",
-            "dblp:journals/sigmod/RossHKRRSS01",
-            "dblp:journals/sigmod/RossCGLLM01"
-          ]
-        },
-        {
-          "entity_id": "ent_00a94c55db934796abe0b3682df844c7",
+          "entity_id": "ent_03e4c401aeba8588f68df3cedf4c05f0",
           "records": 4,
           "clusters": 2,
           "held": "transitive",
           "linked_by": 3,
           "sample": [
-            "dblp:journals/vldb/RamamohanaraoH94",
-            "acm:615193",
-            "dblp:journals/vldb/Guting94",
-            "acm:615206"
+            "acm:245886",
+            "dblp:journals/sigmod/Camps96",
+            "acm:234890",
+            "dblp:journals/sigmod/Darwen96"
           ]
         },
         {
-          "entity_id": "ent_0ad4a4a7f0d14934b2649b1ecf981335",
-          "records": 4,
-          "clusters": 3,
-          "held": "transitive",
-          "linked_by": 3,
-          "sample": [
-            "dblp:journals/sigmod/RossFLOSSVW00",
-            "acm:602302",
-            "dblp:journals/sigmod/RossIJP00",
-            "dblp:journals/sigmod/RossAKSSY00"
-          ]
-        },
-        {
-          "entity_id": "ent_18205a2a23df4a88a391e465144d0019",
+          "entity_id": "ent_05986f615ffbd1e08ed531a5070f8e12",
           "records": 4,
           "clusters": 2,
           "held": "transitive",
           "linked_by": 4,
           "sample": [
-            "dblp:conf/vldb/Brodie00",
-            "acm:671680",
-            "dblp:conf/vldb/Schek00",
-            "acm:671861"
+            "dblp:journals/sigmod/FernandezFLS97",
+            "acm:253403",
+            "acm:262763",
+            "dblp:conf/sigmod/FernandezFKLS97"
+          ]
+        },
+        {
+          "entity_id": "ent_0de2c30c4d17ae31fdb891e7f0033f65",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 4,
+          "sample": [
+            "dblp:conf/sigmod/Cohen98",
+            "acm:276380",
+            "dblp:conf/sigmod/Cohen98a",
+            "acm:276323"
           ]
         }
       ],
       "seconds": {
-        "reconcile_with_store": 262.5,
-        "entities": 10.4
+        "reconcile_with_store": 50.1,
+        "entities": 12.8
       }
     },
     "febrl4_name_address": {
@@ -189,196 +189,172 @@
       "true_clusters_of_size_gt_1": 5000,
       "pairs": {
         "true": 5000,
-        "matched_true": 3285,
-        "matched_false": 484,
-        "precision": 0.8716
+        "matched_true": 3170,
+        "matched_false": 45,
+        "precision": 0.986
       },
       "entities": {
-        "built": 3155,
+        "built": 3159,
         "by_size": {
-          "2": 2971,
-          "3": 66,
-          "4": 57,
-          "5": 28,
-          "6": 13,
-          "7": 6,
-          "8": 4,
-          "9": 5,
-          "10": 1,
-          "11": 2,
-          "14": 1,
-          "17": 1
+          "2": 3127,
+          "3": 19,
+          "4": 11,
+          "5": 1,
+          "10": 1
         },
         "held": {
-          "transitive": 184,
-          "direct": 2971
+          "transitive": 32,
+          "direct": 3127
         },
-        "true_clusters_recovered_whole": 2960,
-        "recovered_whole_rate": 0.592,
-        "cross_cluster": 195,
-        "cross_cluster_rate": 0.0618,
-        "records_in_cross_cluster_entities": 848,
+        "true_clusters_recovered_whole": 3126,
+        "recovered_whole_rate": 0.6252,
+        "cross_cluster": 33,
+        "cross_cluster_rate": 0.0104,
+        "records_in_cross_cluster_entities": 118,
         "cross_cluster_by_held": {
-          "transitive": 184,
-          "direct": 11
+          "transitive": 32,
+          "direct": 1
         },
-        "largest_cross_cluster": 17
+        "largest_cross_cluster": 10
       },
       "cross_cluster_examples": [
         {
-          "entity_id": "ent_a6dbc250a9c24a3ab1cc6d53779389d7",
-          "records": 17,
-          "clusters": 10,
-          "held": "transitive",
-          "linked_by": 21,
-          "sample": [
-            "rec-1866-org",
-            "rec-1866-dup-0",
-            "rec-2346-org",
-            "rec-2346-dup-0",
-            "rec-484-org",
-            "rec-484-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_de62a5f0a26647578b60d0e610a86302",
-          "records": 14,
-          "clusters": 9,
-          "held": "transitive",
-          "linked_by": 25,
-          "sample": [
-            "rec-2762-org",
-            "rec-2762-dup-0",
-            "rec-826-org",
-            "rec-826-dup-0",
-            "rec-4579-org",
-            "rec-4579-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_c0ae6656efa645b49ce6b86cb518eeb6",
-          "records": 11,
-          "clusters": 8,
-          "held": "transitive",
-          "linked_by": 14,
-          "sample": [
-            "rec-406-org",
-            "rec-406-dup-0",
-            "rec-4937-org",
-            "rec-4937-dup-0",
-            "rec-374-org",
-            "rec-374-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_ea767c5b05cf4e409004d3ce1619107a",
-          "records": 11,
-          "clusters": 7,
-          "held": "transitive",
-          "linked_by": 17,
-          "sample": [
-            "rec-1360-org",
-            "rec-1360-dup-0",
-            "rec-4978-org",
-            "rec-4978-dup-0",
-            "rec-1935-org",
-            "rec-1935-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_6d0d10c4cfc94ba58eac019ce87e6074",
+          "entity_id": "ent_ad0e41a8bb58d5b60fb2f1b74eca97c7",
           "records": 10,
-          "clusters": 7,
-          "held": "transitive",
-          "linked_by": 9,
-          "sample": [
-            "rec-2116-org",
-            "rec-2116-dup-0",
-            "rec-4549-dup-0",
-            "rec-2003-org",
-            "rec-475-dup-0",
-            "rec-2003-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_0c89fe5f27634291a3684fa6ed3f6a39",
-          "records": 9,
-          "clusters": 5,
-          "held": "transitive",
-          "linked_by": 10,
-          "sample": [
-            "rec-3193-org",
-            "rec-3193-dup-0",
-            "rec-3394-org",
-            "rec-3394-dup-0",
-            "rec-996-org",
-            "rec-996-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_3d3e97f9f02a45f2b1215f7c07b564ab",
-          "records": 9,
           "clusters": 6,
           "held": "transitive",
           "linked_by": 10,
           "sample": [
-            "rec-393-org",
-            "rec-393-dup-0",
-            "rec-3244-dup-0",
-            "rec-1084-org",
-            "rec-2409-dup-0",
-            "rec-3244-org"
-          ]
-        },
-        {
-          "entity_id": "ent_82986057fa884c3a81f702429caca31c",
-          "records": 9,
-          "clusters": 5,
-          "held": "transitive",
-          "linked_by": 11,
-          "sample": [
-            "rec-1133-org",
-            "rec-1133-dup-0",
-            "rec-1747-org",
-            "rec-1747-dup-0",
-            "rec-1612-org",
-            "rec-1612-dup-0"
-          ]
-        },
-        {
-          "entity_id": "ent_a484392415a04455867d0e149a216622",
-          "records": 9,
-          "clusters": 6,
-          "held": "transitive",
-          "linked_by": 14,
-          "sample": [
-            "rec-4599-org",
             "rec-4599-dup-0",
-            "rec-2911-org",
-            "rec-2911-dup-0",
+            "rec-3725-org",
+            "rec-3725-dup-0",
             "rec-4662-dup-0",
-            "rec-4662-org"
+            "rec-2619-org",
+            "rec-3959-org"
           ]
         },
         {
-          "entity_id": "ent_ba8e97b352df4ff89396a80c4511c1e7",
-          "records": 9,
-          "clusters": 5,
+          "entity_id": "ent_9663d4b53f89f6f2b8f48b89629865fb",
+          "records": 5,
+          "clusters": 3,
           "held": "transitive",
-          "linked_by": 11,
+          "linked_by": 5,
           "sample": [
-            "rec-363-org",
-            "rec-363-dup-0",
-            "rec-1491-org",
-            "rec-1491-dup-0",
-            "rec-3770-org",
-            "rec-2079-org"
+            "rec-4414-dup-0",
+            "rec-25-org",
+            "rec-1399-org",
+            "rec-25-dup-0",
+            "rec-4414-org"
+          ]
+        },
+        {
+          "entity_id": "ent_0002d67aff363a2343de3318e730681c",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-1407-org",
+            "rec-1407-dup-0",
+            "rec-117-dup-0",
+            "rec-117-org"
+          ]
+        },
+        {
+          "entity_id": "ent_1a87ce2586e3596d3feccc3e718109f4",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-1855-dup-0",
+            "rec-1855-org",
+            "rec-1952-org",
+            "rec-1952-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_2274af36ab751f7c80c5e066c757de6c",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-484-dup-0",
+            "rec-4807-dup-0",
+            "rec-4807-org",
+            "rec-484-org"
+          ]
+        },
+        {
+          "entity_id": "ent_4f48e602be4624265d7a5c6928ebab39",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-1042-org",
+            "rec-966-dup-0",
+            "rec-966-org",
+            "rec-1042-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_58559bcbb49b1b7ca01467d6dfaa1273",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 4,
+          "sample": [
+            "rec-1392-org",
+            "rec-2316-org",
+            "rec-1392-dup-0",
+            "rec-2316-dup-0"
+          ]
+        },
+        {
+          "entity_id": "ent_8cd56b5aa594e92ee3245d778f2edb12",
+          "records": 4,
+          "clusters": 2,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-4915-org",
+            "rec-602-dup-0",
+            "rec-4915-dup-0",
+            "rec-602-org"
+          ]
+        },
+        {
+          "entity_id": "ent_9075274c6360787b87d7659893f25ba9",
+          "records": 4,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-4586-org",
+            "rec-932-dup-0",
+            "rec-4586-dup-0",
+            "rec-1765-org"
+          ]
+        },
+        {
+          "entity_id": "ent_a08eeded48020d9834d9c203c59834e2",
+          "records": 4,
+          "clusters": 3,
+          "held": "transitive",
+          "linked_by": 3,
+          "sample": [
+            "rec-4506-dup-0",
+            "rec-2406-org",
+            "rec-4506-org",
+            "rec-2194-dup-0"
           ]
         }
       ],
       "seconds": {
-        "reconcile_with_store": 468.7,
-        "entities": 37.4
+        "reconcile_with_store": 24.2,
+        "entities": 25.9
       }
     }
   }

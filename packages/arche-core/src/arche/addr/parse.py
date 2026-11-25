@@ -272,7 +272,7 @@ _POSTAL_PARTIAL_PATTERNS = {
 # in either case. Case-insensitivity is scoped to the postcode itself so the
 # tail's [A-Z] classes stay case-sensitive. Normalised by
 # :func:`normalise_gb_postcode`.
-_GB_POSTCODE = r"(?i:GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})"
+_GB_POSTCODE = r"(?i:GIR\s*0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})"
 _GB_POSTCODE_FULL_RE = re.compile(r"^" + _GB_POSTCODE + r"$")
 _GB_POSTCODE_SUFFIX_RE = re.compile(r"^(?P<head>.*?)\s+(?P<pc>" + _GB_POSTCODE + r")$")
 
@@ -432,8 +432,9 @@ def _split_places(part: str) -> list[str]:
     or a part holding a place noun ("Kanyiri Estate") is returned as it is.
     """
     words = part.split()
-    if (len(words) < 2 or _places.lookup(part) is not None or _PLACE_NOUN_RE.search(part)
-            or normalise_gb_postcode(part) or _looks_like_postal_code(part)):
+    if (len(words) < 2 or len(words) > 10 or _places.lookup(part) is not None
+            or _PLACE_NOUN_RE.search(part) or normalise_gb_postcode(part)
+            or _looks_like_postal_code(part)):
         return [part]
     best: tuple | None = None
     for k in range(1, len(words)):
@@ -769,13 +770,12 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
 _US_STATES = (
     "AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|"
     "NJ|NM|NY|NC|ND|OH|OK|OR|PA|PR|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY")
-_CLOSING_COUNTRY_RE = re.compile(
-    r"(?i)[\s,]+(?:usa?|united states|uk|united kingdom|gb|england|scotland|wales)\.?\s*$")
-_US_CLOSE_RE = re.compile(
-    r"(?i)^(?P<head>.*?)[\s,]+(?P<state>" + _US_STATES + r")[\s,]+(?P<pc>\d{5}(?:-\d{4})?)$")
-_PART_CODE_RE = re.compile(r"^(?P<head>.*,\s*[A-Za-z][^,\d]*[A-Za-z])\s+(?P<pc>\d{4,6})$")
-_GB_CLOSE_RE = re.compile(r"^(?P<head>.*?)(?:^|[\s,]+)(?P<pc>" + _GB_POSTCODE + r")$")
-
+_COUNTRY_END_RE = re.compile(
+    r"(?i)(?<![A-Za-z])(?:usa?|united states|uk|united kingdom|gb|england|scotland|wales)$")
+_US_END_RE = re.compile(
+    r"(?i)(?<![A-Za-z])(?P<state>" + _US_STATES + r")[\s,]{1,3}(?P<pc>\d{5}(?:-\d{4})?)$")
+_CODE_END_RE = re.compile(r"(?<![\w/-])(?P<pc>\d{4,6})$")
+_GB_END_RE = re.compile(r"(?<![A-Za-z0-9])(?P<pc>" + _GB_POSTCODE + r")$")
 
 # Counties that close a UK address before the postcode; some are also towns
 # elsewhere ("Cheshire" in Connecticut).
@@ -794,19 +794,42 @@ _UK_COUNTIES = frozenset([
 ])
 
 
+# No address runs longer than this after its street. Text beyond it is prose,
+# and everything below reads only this much, so a long line costs no more.
+_MAX_REST = 240
+
+
 def _closing_code(rest: str) -> tuple[str, str | None, str | None]:
-    """``rest`` without the postcode that closes it, the postcode, and a US state."""
+    """``rest`` without the postcode that closes it, the postcode, and a US state.
+
+    Only the last few words are matched: a pattern that also consumed what
+    comes before them would cost the square of a long line.
+    """
+    if len(rest) > _MAX_REST:
+        return rest, None, None
     t = rest.rstrip(" .,")
-    for cut in (t, _CLOSING_COUNTRY_RE.sub("", t).rstrip(" .,")):
-        m = _GB_CLOSE_RE.match(cut)
+    cut = t
+    for _ in range(2):
+        at = max(0, len(cut) - 24)
+        end = cut[at:]
+        m = _GB_END_RE.search(end)
         if m is not None:
-            return m.group("head"), normalise_gb_postcode(m.group("pc")), None
-        m = _US_CLOSE_RE.match(cut)
+            return cut[:at + m.start()], normalise_gb_postcode(m.group("pc")), None
+        m = _US_END_RE.search(end)
         if m is not None:
-            return m.group("head"), m.group("pc"), m.group("state")
-        m = _PART_CODE_RE.match(cut)
-        if m is not None and not _BOX_IN_PART_RE.search(cut):
-            return m.group("head"), m.group("pc"), None
+            return cut[:at + m.start()], m.group("pc"), m.group("state")
+        m = _CODE_END_RE.search(end)
+        if m is not None:
+            head = cut[:at + m.start()].rstrip()
+            town = head.rpartition(",")
+            if town[1] and re.fullmatch(r"\s*[A-Za-z][^,\d]*[A-Za-z]", town[2]) \
+                    and not _BOX_IN_PART_RE.search(cut):
+                return head, m.group("pc"), None
+        # Once more without a closing country: "... Bellport NY 11713, us".
+        country = _COUNTRY_END_RE.search(cut[max(0, len(cut) - 24):])
+        if country is None:
+            break
+        cut = cut[:max(0, len(cut) - 24) + country.start()].rstrip(" .,")
     return rest, None, None
 
 
@@ -850,9 +873,9 @@ def _tail_after(
     Lagos") gives "Ikeja", as the segment pattern alone did.
     """
     end = text.find("\n", start)
-    rest = text[start:] if end < 0 else text[start:end]
-    rest, code, state = _closing_code(rest)
-    chunks = rest.split(",")
+    stop = len(text) if end < 0 else end
+    rest, code, state = _closing_code(text[start:min(stop, start + _MAX_REST + 1)])
+    chunks = rest[:_MAX_REST].split(",")
     places: list[str] = []
     anchor: str | None = None
     # Straight after the street, before any comma: a town only if the place

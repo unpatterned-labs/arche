@@ -9,7 +9,9 @@ uv run python data/scripts/benchmark_gate.py --update   # re-record the baseline
 
 ```text
 PASS      DBLP-ACM, year refutes     precision 0.9506 -> 0.9506  true 2215 -> 2215  false 115 -> 115  (171.5s)
-PASS      Febrl 4, name + address    precision 0.9357 -> 0.9357  true 3275 -> 3275  false 225 -> 225  (9.5s)
+PASS      Febrl 4, name + address    precision 0.9860 -> 0.9860  true 3170 -> 3170  false 45 -> 45  (13.1s)
+PASS      Febrl 4 + twins and parents, person precision 0.9056 -> 0.9056  true 4154 -> 4154  false 433 -> 433  (17.5s)
+PASS      Febrl 4 + twins and parents, person_typos precision 0.9099 -> 0.9099  true 4374 -> 4374  false 433 -> 433  (19.4s)
 PASS      Abt-Buy, product names     precision 0.9712 -> 0.9712  true 741 -> 741  false 22 -> 22  (61.0s)
           invariants spec_refutation_neutral=ok, stop_list_inert=ok
 PASS      Recipe person, Febrl 4 via Splink precision 1.0000 -> 1.0000  true 4761 -> 4761  false 0 -> 0  (18.7s)
@@ -447,19 +449,21 @@ Two complete-truth sets, run through `reconcile(store=ledger)` with exactly the 
 | | DBLP-ACM, year refutes | Febrl 4, name + address |
 | --- | ---: | ---: |
 | records / true clusters | 4,910 / 2,224 | 10,000 / 5,000 |
-| pairwise: true merges / false merges | 2,215 / 115 | 3,285 / 484 |
-| entities built | 2,179 | 3,155 |
-| true clusters recovered whole | 2,135 (96.0%) | 2,960 (59.2%) |
-| **cross-cluster entities** | **44 (2.0%)** | **195 (6.2%)** |
-| records inside them | 187 | 848 |
-| of which `transitive` / `direct` | 44 / 0 | 184 / 11 |
-| largest cross-cluster entity | 12 records, 8 clusters | 17 records, 10 clusters |
+| pairwise: true merges / false merges | 2,215 / 115 | 3,170 / 45 |
+| entities built | 2,179 | 3,159 |
+| true clusters recovered whole | 2,135 (96.0%) | 3,126 (62.5%) |
+| **cross-cluster entities** | **44 (2.0%)** | **33 (1.0%)** |
+| records inside them | 187 | 118 |
+| of which `transitive` / `direct` | 44 / 0 | 32 / 1 |
+| largest cross-cluster entity | 12 records, 8 clusters | 10 records, 6 clusters |
 
-The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 184 of 195 are transitive; the 11 direct ones are two-record entities, which is to say ordinary pairwise false merges wearing an entity id. So `held == "direct"` is a usable guarantee, such an entity is exactly as trustworthy as its pairwise decisions, and `held == "transitive"` is where review effort belongs.
+The hypothesis the run was designed to test held on both sets: **cross-cluster merges are a transitive phenomenon.** On DBLP-ACM every one of the 44 is transitive and every direct entity is pure. On Febrl 32 of 33 are transitive; the direct one is a two-record entity, which is to say an ordinary pairwise false merge wearing an entity id. So `held == "direct"` is a usable guarantee, such an entity is exactly as trustworthy as its pairwise decisions, and `held == "transitive"` is where review effort belongs.
 
-The compounding is visible in the sizes. DBLP-ACM's 115 pairwise false merges become 44 bad entities holding 187 records; the worst is a 12-record entity built from eight different SIGMOD editorials that share a generic title. Febrl's 484 become 195 entities holding 848 records; the worst chains ten different people through seventeen records. A pairwise precision of 0.95 does not translate into 95% of entities being right when the errors cluster, and on DBLP-ACM they do: recurring generic titles pull many records toward one another.
+The compounding is visible in the sizes. DBLP-ACM's 115 pairwise false merges become 44 bad entities holding 187 records; the worst is a 12-record entity built from eight different SIGMOD editorials that share a generic title. Febrl's 45 become 33 entities holding 118 records; the worst chains six different people through ten records. A pairwise precision of 0.95 does not translate into 95% of entities being right when the errors cluster, and on DBLP-ACM they do: recurring generic titles pull many records toward one another.
 
-Two caveats. The Febrl pairwise line here (484 false merges) is not the 282 recorded on 2026-08-17, and the difference has been bisected to one commit: `e9cc9a8` (2026-08-22), which added **conjunction blocking**, a candidate key on a *pair* of over-common tokens, so two records both called *Nicholas Jackson* can be compared even though neither token is rare enough to block on alone. On `historical_50k` that recovered 27,055 true pairs that were never being proposed. On Febrl 4 it recovered none (3,285 true merges before and after; rare tokens already reached every true pair) and raised candidate pairs from 176,201 to 330,861, and among the extra pairs the scorer merged 202 more: identical common names with addresses agreeing at 0.70–0.78, scored above 0.94. The blocker did not get worse; it stopped hiding scorer errors. The number to fix is the scorer's, and the number to watch is this one, which nothing watched, because the benchmark was not gated in CI. And whole-cluster recovery (59% on Febrl) is bounded by pairwise recall (65.7% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
+**Re-run 2026-11-25**, after the address parser and comparison changed: before them the Febrl column read 3,285 / 484 pairs, 195 cross-cluster entities (184 of them transitive) holding 848 records, and 59.2% recovered whole. The address comparison was chosen while looking at this set. Fewer pairs are merged and more clusters are whole, because a wrong link costs every record it chains.
+
+Two caveats. That earlier line (484 false merges) is not the 282 recorded on 2026-08-17, and the difference has been bisected to one commit: `e9cc9a8` (2026-08-22), which added **conjunction blocking**, a candidate key on a *pair* of over-common tokens, so two records both called *Nicholas Jackson* can be compared even though neither token is rare enough to block on alone. On `historical_50k` that recovered 27,055 true pairs that were never being proposed. On Febrl 4 it recovered none (3,285 true merges before and after; rare tokens already reached every true pair) and raised candidate pairs from 176,201 to 330,861, and among the extra pairs the scorer merged 202 more: identical common names with addresses agreeing at 0.70–0.78, scored above 0.94. The blocker did not get worse; it stopped hiding scorer errors. The number to fix was the scorer's, and the number to watch is this one, which nothing watched, because the benchmark was not gated in CI. And whole-cluster recovery (63% on Febrl) is bounded by pairwise recall (63.4% auto-resolved): a cluster is whole only if its one true pair matched, so this column restates recall at the entity level rather than adding to it.
 
 Script: `data/scripts/benchmark_entity_formation.py`, result in `data/er_bench/benchmark_entity_formation_result.json`. Run with a results file already present and it adds to it rather than replacing it.
 
