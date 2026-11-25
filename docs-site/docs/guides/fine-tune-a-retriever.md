@@ -16,7 +16,7 @@ Five rules. Each one is here because breaking it produced a number that looked l
 2. **Split by entity, before anything else.** Every name of one entity goes to the same side. Use a hash of the entity id, not a random draw you can re-run until it looks good. When you can, hold out whole regions instead.
 3. **Measure the baseline first.** arche's `CharNgramIndex` (character 3-gram TF-IDF) is fast, needs no model, and is hard to beat. If it already finds more than about 92% of true pairs in its top 10 on your development split, there is no room for a model to show a gain: stop here.
 4. **Write the rule down before you look at the test split.** What gain counts, at which `k`, with which interval, and what latency and model size are acceptable. Save it in a file, with the date. A rule chosen after the results is a description, not a test.
-5. **Train on the domain you will search.** Names in one domain follow conventions another domain does not share. See [what this looked like on real data](#what-this-looked-like-on-real-data).
+5. **Train on the domain you will search.** Names in one domain follow conventions another domain does not share.
 
 ## A worked example
 
@@ -125,22 +125,9 @@ Look at the first line. The toy model put the general hospital above the dispens
 
 **Settings.** The defaults (`TrainConfig()`: two epochs, batch 64, learning rate 2e-5) are a sound start for tens of thousands of pairs. Larger batches give each step more negatives for free. Train three seeds and report their mean; if they disagree by more than a point, the result is noise.
 
-**A GPU.** The facility experiment below trained three seeds on 24,882 pairs and evaluated them in under eight minutes on a laptop GPU; on a CPU, expect hours. Search at inference time is cheap on either.
+**A GPU.** A few tens of thousands of pairs train in minutes on a laptop GPU; on a CPU, expect hours. Search at inference time is cheap on either.
 
 **Evaluation.** Recall at 10 against the TF-IDF baseline on the test entities, searching the whole gallery. Put an interval on the gain with a paired bootstrap over test entities (resample entities, recompute both arms, take the 2.5th and 97.5th percentiles of the difference). Then check for leakage: no test entity in training, and count how many test name pairs appear verbatim among the training pairs. Then read the queries the model lost, one by one; they say more than the average.
-
-## What this looked like on real data
-
-Two encoders from the same base model, one trained on Wikidata names of places and organisations in Nigeria, one on the GRID3/HFR crosswalk of 34 other Nigerian states, each searched against every HFR facility in three held-out states for the 1,569 crosswalk pairs there whose names differ:
-
-| Trained on | TF-IDF recall@10 | Fine-tuned | Gain, 95% interval |
-|---|---:|---:|---:|
-| Wikidata names in Nigeria | 0.969 | 0.930 | −3.9 points [−5.4, −2.5] |
-| GRID3/HFR crosswalk of 34 other states | 0.969 | 0.990 | +2.0 [+1.2, +2.9] |
-
-The crosswalk result was preregistered; the Wikidata row was measured afterwards, on the same pairs. The first model was good at Wikidata: on Wikidata's own test split it gained 13.6 points. On facilities it lost queries the baseline found, on names split or joined differently in the two registries and on names whose type word differed ("Health Post" in one, "Dispensary" in the other). The second model learned those conventions from facility names. Rule 5 is this table. The scripts and results are in `data/scripts/` and `data/er_bench/`.
-
-Sources: GRID3 NGA Health Facilities v2.0, CIESIN, Columbia University (2024), CC BY 4.0, https://doi.org/10.7916/kv1n-0743; Nigeria Health Facility Registry via the Humanitarian Data Exchange, CC BY; Wikidata, CC0.
 
 ## When it goes wrong
 
