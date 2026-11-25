@@ -405,13 +405,17 @@ class TokenFrequencyTable:
         return {tok: f for tok, f in self._rel.items() if f >= min_freq}
 
     def weighted_token_sim(
-        self, a: str, b: str, *, orthography: str | None = None
+        self, a: str, b: str, *, orthography: str | None = None,
+        near: float | None = None
     ) -> float:
         """TF-weighted token-set similarity in [0, 1] (distinctiveness-weighted Jaccard).
 
         Overlap is weighted by distinctiveness, so agreeing on a rare token counts
         far more than agreeing on a common one. Returns 0.0 if either side has no
         tokens.
+
+        ``near`` (off by default) also counts tokens spelled alike, at that
+        Jaro-Winkler similarity or better: "michaela" and "micheala".
 
         ``orthography`` optionally names a pack (e.g. ``"hausa"``) describing how
         one name gets written two ways across registries. Tokens are then
@@ -433,11 +437,12 @@ class TokenFrequencyTable:
         # `plain`, and take the better — strictly additive, so a richer
         # tokenisation can only ever recover a pair, never demote one.
         if self.token_rule != DEFAULT_TOKEN_RULE:
-            best = self._token_sim(a, b, DEFAULT_TOKEN_RULE, orthography)
-            return max(best, self._token_sim(a, b, self.token_rule, orthography))
-        return self._token_sim(a, b, self.token_rule, orthography)
+            best = self._token_sim(a, b, DEFAULT_TOKEN_RULE, orthography, near)
+            return max(best, self._token_sim(a, b, self.token_rule, orthography, near))
+        return self._token_sim(a, b, self.token_rule, orthography, near)
 
-    def _token_sim(self, a: str, b: str, rule: str, orthography: str | None) -> float:
+    def _token_sim(self, a: str, b: str, rule: str, orthography: str | None,
+                   near: float | None = None) -> float:
         """One tokenisation's distinctiveness-weighted Jaccard."""
         ta, tb = set(_tokens(a, rule)), set(_tokens(b, rule))
         if not ta or not tb:
@@ -447,6 +452,8 @@ class TokenFrequencyTable:
         num = sum(self.distinctiveness(t) for t in inter)
         den = sum(self.distinctiveness(t) for t in union)
         literal = num / den if den else 0.0
+        if near is not None:
+            literal = max(literal, self._near_sim(inter, ta - inter, tb - inter, near))
 
         if orthography:
             from arche.resolve._orthography import load_orthography
@@ -490,6 +497,32 @@ class TokenFrequencyTable:
                 return max(literal, keyed)
 
         return literal
+
+    def _near_sim(self, inter: set[str], ra: set[str], rb: set[str], near: float) -> float:
+        """The overlap when tokens spelled alike also count, each at most once.
+
+        A misspelt token is in no one else's name, so the literal overlap reads
+        it as a rare disagreement on both sides. Here the closest unshared
+        pairs at ``near`` or better (Jaro-Winkler) agree by that similarity,
+        weighted by the commoner of the two.
+        """
+        import jellyfish
+
+        num = den = sum(self.distinctiveness(t) for t in inter)
+        ra, rb = set(ra), set(rb)
+        scored = sorted(((jellyfish.jaro_winkler_similarity(x, y), x, y)
+                         for x in ra for y in rb), reverse=True)
+        for sim, x, y in scored:
+            if sim < near:
+                break
+            if x in ra and y in rb:
+                ra.discard(x)
+                rb.discard(y)
+                d = min(self.distinctiveness(x), self.distinctiveness(y))
+                num += sim * d
+                den += d
+        den += sum(self.distinctiveness(t) for t in ra | rb)
+        return num / den if den else 0.0
 
     # ── composition + introspection ────────────────────────────────────────────
     def _as_counts(self) -> dict[str, float]:

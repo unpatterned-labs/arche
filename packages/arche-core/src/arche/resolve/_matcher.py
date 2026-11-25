@@ -389,6 +389,16 @@ def _normalise_anchor(anchor: str) -> str:
 _ADDR_COMPONENT_KEYS = set(_ADDR_FIELD_WEIGHTS)
 
 
+# "3rd floor", "ground floor": where in a building, not which building.
+_FLOOR_RE = re.compile(
+    r"\b(?:ground|lower|upper|top|mezzanine|first|second|third|fourth|fifth|sixth|seventh"
+    r"|eighth|ninth|tenth|[0-9]{1,2}(?:st|nd|rd|th)?) (?:floor|flr)\b|\bfloor [0-9]{1,2}\b",
+    re.IGNORECASE)
+# A range of house numbers the parser reads only with a hyphen: "48–52", "48 - 52".
+_RANGE_RE = re.compile(r"(?<![\w-])(\d{1,4}[A-Za-z]?) ?(?:[–—-]|to) ?(\d{1,4}[A-Za-z]?)(?![\w-])",
+                       re.IGNORECASE)
+
+
 def _coerce_address(addr: Any) -> tuple[str, dict[str, str]]:
     """Normalise an address input to ``(raw_string, matchable-components)``.
 
@@ -399,7 +409,7 @@ def _coerce_address(addr: Any) -> tuple[str, dict[str, str]]:
     and uses the pipeline's landmark ``anchor`` directly.
     """
     if isinstance(addr, str):
-        return addr, _address_components(addr)
+        return addr, _address_components(_FLOOR_RE.sub(" ", _RANGE_RE.sub(r"\1-\2", addr)))
     if isinstance(addr, Mapping):
         source: dict[str, Any] = dict(addr)
     elif hasattr(addr, "__dict__"):  # AddressComponents / dataclass instance
@@ -439,6 +449,10 @@ def _address_components(addr: str) -> dict[str, str]:
         for key, value in vars(parsed.components).items():
             if value:
                 fields[key] = value
+    # The word before a number is not part of it: "Care Of Ajala LLP 1", "Hub 5".
+    if "street_number" in fields:
+        fields["street_number"] = re.sub(
+            r"^[A-Za-z]{2,12}\.?\s+(?=\d)", "", fields["street_number"])
     if "anchor" not in fields:
         anchor = extract_anchor(addr)
         if anchor is not None:
@@ -467,6 +481,62 @@ def _component_field_sim(field_name: str, a: str, b: str) -> float:
     return max(_jaro_winkler(na, nb), _token_sort_ratio(na, nb))
 
 
+# What a pair of addresses on one road can score when their house numbers do not
+# agree. Below the 0.70 that callers read as the same, so a person looks; above
+# the 0.55 review floor, so the pair is not dropped.
+_NUMBER_OPEN_CAP = 0.65
+_NUMBER_RE = re.compile(r"(\d+)([a-z]?)(?:-(\d+)([a-z]?))?")
+
+
+# A house number written only as a unit: "Unit 82A, James Carter Road".
+_UNIT_NUMBER_RE = re.compile(r"^(?:unit|suite|no\.?|number|plot|office|shop)\s+(\d+[a-z]?)$")
+
+
+def _house_number(comps: dict[str, str]) -> str | None:
+    """The house number as one spelling: ``48 - 52``, ``48–52`` and ``48 to 52``
+    are ``48-52``. Where the road has none, the number of a unit stands for it."""
+    raw = (comps.get("street_number") or "").casefold()
+    number = re.sub(r"\s*(?:[-–—/]|\bto\b)\s*", "-", raw).strip(" .,-")
+    number = re.sub(r"^(?:no\.?|#)\s*", "", number)
+    if number:
+        return number
+    for part in ("unit", "plot"):
+        match = _UNIT_NUMBER_RE.match((comps.get(part) or "").casefold().strip())
+        if match:
+            return match[1]
+    return None
+
+
+def _number_relation(a: dict[str, str], b: dict[str, str]) -> str | None:
+    """How two addresses on one road stand by house number.
+
+    ``"agree"``, ``"conflict"``, ``"range"`` (one is a range the other falls in),
+    ``"letter"`` (the same number, a letter or a unit on one side) or
+    ``"missing"`` (one side has none). ``None`` when they are not on one road, or
+    neither has a number.
+    """
+    sa, sb = _normalise_text(a.get("street", "")), _normalise_text(b.get("street", ""))
+    if not sa or not sb or max(_jaro_winkler(sa, sb), _token_sort_ratio(sa, sb)) < 0.9:
+        return None
+    na, nb = _house_number(a), _house_number(b)
+    if na is None and nb is None:
+        return None
+    if na is None or nb is None:
+        return "missing"
+    if na == nb:
+        return "agree"
+    ma, mb = _NUMBER_RE.fullmatch(na), _NUMBER_RE.fullmatch(nb)
+    if ma is None or mb is None:
+        return "conflict"
+    lo_a, hi_a = int(ma[1]), int(ma[3] or ma[1])
+    lo_b, hi_b = int(mb[1]), int(mb[3] or mb[1])
+    if (ma[3] or mb[3]) and max(lo_a, lo_b) <= min(hi_a, hi_b):
+        return "range"
+    if lo_a == lo_b and not ma[3] and not mb[3]:
+        return "letter"
+    return "conflict"
+
+
 _ROAD_QUALIFIERS = {"old", "new", "north", "south", "east", "west", "upper", "lower",
                     "great", "little", "back", "inner", "outer"}
 
@@ -484,6 +554,94 @@ def _same_road_longer_line(a: dict[str, str], b: dict[str, str]) -> bool:
     extra = long[:len(long) - len(short)]
     return (len(short) >= 2 and bool(extra) and long[-len(short):] == short
             and not set(extra) & _ROAD_QUALIFIERS)
+
+
+# Words that say what kind of thing follows, in almost any address. They are not
+# place words: sharing "road" or "town" is no evidence.
+_ADDR_GENERIC = frozenset([
+    "road", "rd", "street", "st", "avenue", "ave", "lane", "ln", "close", "crescent",
+    "drive", "way", "highway", "court", "place", "building", "bldg", "house", "plaza",
+    "mall", "complex", "centre", "center", "tower", "floor", "shop", "suite", "room",
+    "unit", "flat", "block", "plot", "no", "number", "near", "opposite", "opp", "behind",
+    "off", "along", "beside", "adjacent", "adj", "next", "to", "by", "of", "the", "at",
+    "on", "in", "and", "inside", "from", "junction", "stage", "stop", "bus", "market",
+    "town", "city", "estate", "area", "layout", "extension", "village", "quarters", "box",
+    "po", "pmb", "ltd", "limited", "hospital", "clinic",
+])
+# Fields that settle an address when both sides have one; without any, shared
+# place words speak too.
+_ADDR_STRONG = {"street", "street_number", "postal_code", "plot"}
+_ADDR_WORDS_WEIGHT = 2.0
+
+
+# A building called by name: "Ashgrove House", "Kanyiri Business Centre".
+_BUILDING_RE = re.compile(
+    r"\b((?:[a-z]{1,20} ){1,4})(?:house|buildings?|centre|center|plaza|towers?|chambers)\b")
+# What can stand before the kind of building without being its name.
+_BUILDING_FILLER = frozenset([
+    "the", "business", "office", "offices", "shopping", "trade", "trading", "technology",
+    "enterprise", "innovation", "at", "in", "of", "and", "near", "opposite", "behind",
+    "beside", "suite", "unit", "room", "floor", "c", "o", "ltd", "limited", "llp", "plc",
+    "public", "civic", "community", "health", "medical", "city", "town", "apartment",
+    "commercial", "main", "new", "old", "north", "south", "east", "west",
+])
+# What two addresses can score on one named building and nothing against it.
+_BUILDING_SCORE = 0.8
+
+
+def _building_names(text: str) -> set[str]:
+    """The last word of each building name: ``Ashgrove House`` gives ``ashgrove``."""
+    flat = " ".join(re.sub(r"[^a-z0-9]+", " ", text[:400].casefold()).split())
+    flat = _FLOOR_RE.sub(" , ", flat)
+    out = set()
+    for match in _BUILDING_RE.finditer(flat):
+        words = [w for w in match[1].split() if w not in _BUILDING_FILLER]
+        if words and len(words[-1]) > 2:
+            out.add(words[-1])
+    return out
+
+
+def _same_building(
+    raw_a: str, raw_b: str, comps_a: dict[str, str], comps_b: dict[str, str],
+) -> bool:
+    """Whether both name one building, and no number, unit or town of theirs differs."""
+    if not _building_names(raw_a) & _building_names(raw_b):
+        return False
+    for part in ("street", "street_number", "plot", "postal_code", "city", "region"):
+        va, vb = comps_a.get(part), comps_b.get(part)
+        if va and vb and _component_field_sim(part, va, vb) < 0.9:
+            return False
+    numbers_a, numbers_b = (
+        set(re.findall(r"[0-9]+", _FLOOR_RE.sub(" ", raw[:400].casefold())))
+        for raw in (raw_a, raw_b))
+    return not (numbers_a - numbers_b and numbers_b - numbers_a)
+
+
+def _place_words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", text.casefold())
+            if w not in _ADDR_GENERIC and (len(w) > 2 or w.isdigit())}
+
+
+def _place_word_overlap(a: str, b: str) -> float | None:
+    """The share of place words two addresses have in common (Dice), where a
+    word spelt alike counts. ``None`` when either has none.
+
+    Letter similarity reads two unrelated addresses as fairly alike ("Temanu
+    Stage, Opposite Ajala" and "Temanu Road, Kanyiri") because they share so many
+    letters and filler words. Words do not.
+    """
+    # An address has few words; text with many is not one, and need not be read.
+    wa, wb = _place_words(a[:400]), _place_words(b[:400])
+    if not wa or not wb:
+        return None
+    n, left = 0, set(wb)
+    for x in sorted(wa):
+        y = x if x in left else max(left, key=lambda z: (_jaro_winkler(x, z), z), default=None)
+        if y is not None and (x == y or (len(x) > 3 and not x.isdigit()
+                                         and _jaro_winkler(x, y) >= 0.92)):
+            n += 1
+            left.discard(y)
+    return 2 * n / (len(wa) + len(wb))
 
 
 def compare_addresses(addr_a: Any, addr_b: Any) -> float:
@@ -515,8 +673,12 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
 
     shared = set(comps_a) & set(comps_b)
 
-    # Nothing structured in common: fall back to raw fuzzy similarity.
+    # Nothing structured in common: the place words the two share.
+    building = not shared & _ADDR_STRONG and _same_building(raw_a, raw_b, comps_a, comps_b)
     if not shared:
+        words = _place_word_overlap(raw_a, raw_b)
+        if words is not None:
+            return max(words, _BUILDING_SCORE) if building else words
         return max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
 
     if "street" in shared and _same_road_longer_line(comps_a, comps_b):
@@ -532,11 +694,53 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
         weight_total += weight
     score = weighted_sum / weight_total if weight_total else 0.0
 
+    # No street, number or postcode in common: a landmark or a town alone. The
+    # place words of the whole text speak too, so a shared town does not stand
+    # for a shared address and two unlike landmarks do not stand for two places.
+    if not shared & _ADDR_STRONG:
+        words = _place_word_overlap(raw_a, raw_b)
+        if words is not None:
+            score = ((score * weight_total + words * _ADDR_WORDS_WEIGHT)
+                     / (weight_total + _ADDR_WORDS_WEIGHT))
+        if building:
+            score = max(score, _BUILDING_SCORE)
+
+    # On one road, a house number that is missing, different or only a range is
+    # not agreement, however much else agrees: 124 and 128 City Road share a
+    # road and a postcode and are two buildings.
+    relation = _number_relation(comps_a, comps_b)
+    if relation is not None and relation != "agree":
+        score = min(score, _NUMBER_OPEN_CAP)
+
     # A match resting only on shared city/region is weak — cap it.
-    if not (shared & _ADDR_DISTINCTIVE):
+    if not (shared & _ADDR_DISTINCTIVE) and not building:
         score = min(score, _ADDR_WEAK_MATCH_CAP)
 
     return score
+
+
+_HOUSE_NUMBER_SIMS = {"agree": 1.0, "missing": 0.5, "range": 0.25, "letter": 0.25,
+                      "conflict": 0.0}
+
+
+def compare_house_numbers(addr_a: Any, addr_b: Any) -> float | None:
+    """How the house numbers of two addresses on one road stand.
+
+    ``1.0`` they agree; ``0.5`` one address has none; ``0.25`` one is a range the
+    other falls in, or they differ by a letter; ``0.0`` they differ. ``None`` when
+    the two are not on one road, or neither has a number: nothing to compare.
+
+    A comparator of its own because a similarity over the whole address can be
+    outvoted: "City Road" is wholly contained in "128 City Road". Pair it with
+    weight 0.0 and ``refutes_below``: 0.2 holds only numbers that differ, 0.4
+    ranges and letters as well, 0.6 a missing number too. Missing is not
+    disagreement, which is why it scores apart and the caller says whether it
+    should hold a pair.
+    """
+    _, comps_a = _coerce_address(addr_a)
+    _, comps_b = _coerce_address(addr_b)
+    relation = _number_relation(comps_a, comps_b)
+    return None if relation is None else _HOUSE_NUMBER_SIMS[relation]
 
 
 def haversine_km(lat_a: float, lon_a: float, lat_b: float, lon_b: float) -> float:

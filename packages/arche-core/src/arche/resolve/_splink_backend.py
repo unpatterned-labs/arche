@@ -878,6 +878,9 @@ def splink_crosswalk(
         raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
     if relation != "same_as":
         pins["relation"] = relation
+    if unique_match not in (True, False):
+        raise ValueError(
+            f"the Splink backend takes unique_match True or False, got {unique_match!r}")
     if unique_match:
         pins["unique_match"] = True
     if extra_pins:

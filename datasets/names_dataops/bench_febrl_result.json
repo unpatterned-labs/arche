@@ -12,9 +12,9 @@
   "configurations": {
     "name + address": {
       "pairs_truth": 5000,
-      "true_merges": 3274,
-      "false_merges": 225,
-      "precision": 0.9357,
+      "true_merges": 3170,
+      "false_merges": 45,
+      "precision": 0.986,
       "auto_resolved": 0.657,
       "surfaced": 0.9488
     },

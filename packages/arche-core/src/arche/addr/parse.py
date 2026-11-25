@@ -98,7 +98,8 @@ _STREET_SUFFIXES = [
     "Avenue", "Street", "Road", "Drive", "Crescent", "Boulevard",
     "Lane", "Highway", "Close", "Way", "Court", "Square",
     "Place", "Terrace", "Gardens", "Grove", "Mews", "Walk", "Parade", "Row",
-    "Ave", "St", "Rd", "Dr", "Blvd", "Ln", "Hwy", "Cl", "Sq",
+    "Parkway", "Trail", "Pike",
+    "Ave", "St", "Rd", "Dr", "Blvd", "Ln", "Hwy", "Cl", "Sq", "Pkwy",
 ]
 _STREET_SUFFIX_RE = (
     r"(?:" + "|".join(_STREET_SUFFIXES) + r")\b"
@@ -113,11 +114,13 @@ _STREET_WORD_RE = (
     r"(?!(?:Off|Opposite|Opp|Near|Behind|Beside|Along|Adj|Adjacent|By)\b)"
     r"(?!(?:Estate|Plaza|Mall|Floor|Clinic|Building|House|Centre|Center)\s+(?!"
     + _STREET_SUFFIX_RE + r"))"
-    r"[A-Z][\w'\-]+"
+    r"(?:[A-Z][\w'\-]+|\d{1,3}(?:st|nd|rd|th|St|Nd|Rd|Th))"
 )
+# "Breakspear Road South", "Penn Avenue South": a direction closing the name.
 _STREET_NAME_RE = (
     r"(?P<street>"
     r"(?:" + _STREET_WORD_RE + r"\s+){1,4}" + _STREET_SUFFIX_RE +
+    r"(?:\s+(?:North|South|East|West)\b(?=\s*(?:,|$)))?"
     r")"
 )
 
@@ -130,7 +133,7 @@ _PLOT_RE = (r"(?P<plot>\b(?i:(?:Plot|Block|Unit|Suite|Flat|Apt|Apartment)\s+|No\
 # space must be capitals, so "At 7" or "In 2" is not taken for one.
 _NUMBER_RE = (r"(?P<number>(?<![\w/-])"
               r"(?:[A-Za-z]{1,3}\d{0,2}\s?[/-]\s?|[A-Z]{2,3}\s)?"
-              r"\d{1,4}[A-Za-z]?(?:\s?[-/]\s?\d{1,4}[A-Za-z]?)?)")
+              r"\d{1,5}[A-Za-z]?(?:\s?[-/]\s?\d{1,4}[A-Za-z]?)?)")
 # The word in front of a number that only says "a number follows".
 _NUMBER_WORD_RE = re.compile(r"(?i)^(?:No\.?|Plot)\s*(?P<n>[A-Za-z]{0,3}-?\d[\w/-]*)$")
 # A unit inside a building: a floor, room, suite, shop, flat or office.
@@ -269,7 +272,7 @@ _POSTAL_PARTIAL_PATTERNS = {
 # in either case. Case-insensitivity is scoped to the postcode itself so the
 # tail's [A-Z] classes stay case-sensitive. Normalised by
 # :func:`normalise_gb_postcode`.
-_GB_POSTCODE = r"(?i:GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})"
+_GB_POSTCODE = r"(?i:GIR\s*0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})"
 _GB_POSTCODE_FULL_RE = re.compile(r"^" + _GB_POSTCODE + r"$")
 _GB_POSTCODE_SUFFIX_RE = re.compile(r"^(?P<head>.*?)\s+(?P<pc>" + _GB_POSTCODE + r")$")
 
@@ -429,8 +432,9 @@ def _split_places(part: str) -> list[str]:
     or a part holding a place noun ("Kanyiri Estate") is returned as it is.
     """
     words = part.split()
-    if (len(words) < 2 or _places.lookup(part) is not None or _PLACE_NOUN_RE.search(part)
-            or normalise_gb_postcode(part) or _looks_like_postal_code(part)):
+    if (len(words) < 2 or len(words) > 10 or _places.lookup(part) is not None
+            or _PLACE_NOUN_RE.search(part) or normalise_gb_postcode(part)
+            or _looks_like_postal_code(part)):
         return [part]
     best: tuple | None = None
     for k in range(1, len(words)):
@@ -491,6 +495,7 @@ def parse_locality(text: str) -> AddressComponents | None:
     """
     unit = extract_unit(text)
     rest = _UNIT_RE.sub(" ", text) if unit else text
+    rest, code, state = _closing_code(rest)
     parts: list[str] = []
     anchor: str | None = None
     street: str | None = None
@@ -524,8 +529,9 @@ def parse_locality(text: str) -> AddressComponents | None:
             return None
         return AddressComponents(street=street, anchor=anchor, unit=unit,
                                  anchor_type=_classify_anchor(anchor) if anchor else None)
-    components = AddressComponents(street=street, anchor=anchor, unit=unit)
-    if len(parts) >= 2 and _looks_like_postal_code(parts[-1]):
+    components = AddressComponents(street=street, anchor=anchor, unit=unit,
+                                   postal_code=code, region=state)
+    if code is None and len(parts) >= 2 and _looks_like_postal_code(parts[-1]):
         components.postal_code = parts.pop()
     if len(parts) >= 2 and _REGION_PART_RE.search(parts[-1]):
         components.region = parts.pop()
@@ -715,8 +721,20 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
 
     # Parse the trailing "city, region, country, postal" segment, past any
     # landmark, P.O. box or second road between the street and the town.
-    tail, tail_anchor = _tail_after(full_text, m.end("street"))
+    tail, tail_anchor, code, state = _tail_after(full_text, m.end("street"))
     _parse_tail(tail, components)
+    if code is not None:
+        components.postal_code = code
+        # Before a postcode the last part is the town, if it is one ("Stretford,
+        # Manchester"); a county there is not ("Chesterfield, Derbyshire").
+        parts = [p.strip() for p in tail.split(",") if p.strip()]
+        if len(parts) >= 2 and state is None and _places.town_rank(parts[-1]) >= 3 \
+                and parts[-1].casefold() not in _UK_COUNTIES and components.city != parts[-1]:
+            components.city, components.region = parts[-1], None
+            components.neighborhood = parts[0]
+            components.area = ", ".join(parts[1:-1]) or None
+    if state is not None and components.region is None:
+        components.region = state
 
     # Look for a landmark anchor in the text near the address span
     anchor_match = _find_anchor_near(full_text, span)
@@ -746,6 +764,90 @@ def _build_address_from_match(m: re.Match[str], full_text: str) -> Address | Non
     )
 
 
+# What closes an address: a GB postcode, a US state and ZIP, or a number after
+# the town inside a comma part ("Westlands, Nairobi 00100"). A bare number in
+# text with no commas is not read: it may be anything.
+_US_STATES = (
+    "AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|"
+    "NJ|NM|NY|NC|ND|OH|OK|OR|PA|PR|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY")
+_COUNTRY_END_RE = re.compile(
+    r"(?i)(?<![A-Za-z])(?:usa?|united states|uk|united kingdom|gb|england|scotland|wales)$")
+_US_END_RE = re.compile(
+    r"(?i)(?<![A-Za-z])(?P<state>" + _US_STATES + r")[\s,]{1,3}(?P<pc>\d{5}(?:-\d{4})?)$")
+_CODE_END_RE = re.compile(r"(?<![\w/-])(?P<pc>\d{4,6})$")
+_GB_END_RE = re.compile(r"(?<![A-Za-z0-9])(?P<pc>" + _GB_POSTCODE + r")$")
+
+# Counties that close a UK address before the postcode; some are also towns
+# elsewhere ("Cheshire" in Connecticut).
+_UK_COUNTIES = frozenset([
+    "bedfordshire", "berkshire", "buckinghamshire", "cambridgeshire", "cheshire", "cornwall",
+    "cumbria", "derbyshire", "devon", "dorset", "county durham", "east sussex",
+    "east yorkshire", "essex", "gloucestershire", "greater london", "greater manchester",
+    "hampshire", "herefordshire", "hertfordshire", "isle of wight", "kent", "lancashire",
+    "leicestershire", "lincolnshire", "merseyside", "middlesex", "norfolk",
+    "north yorkshire", "northamptonshire", "northumberland", "nottinghamshire",
+    "oxfordshire", "rutland", "shropshire", "somerset", "south yorkshire", "staffordshire",
+    "suffolk", "surrey", "tyne and wear", "warwickshire", "west midlands", "west sussex",
+    "west yorkshire", "wiltshire", "worcestershire", "yorkshire", "gwent", "dyfed", "powys",
+    "clwyd", "gwynedd", "aberdeenshire", "angus", "argyll", "ayrshire", "fife",
+    "lanarkshire", "renfrewshire", "perthshire",
+])
+
+
+# No address runs longer than this after its street. Text beyond it is prose,
+# and everything below reads only this much, so a long line costs no more.
+_MAX_REST = 240
+
+
+def _closing_code(rest: str) -> tuple[str, str | None, str | None]:
+    """``rest`` without the postcode that closes it, the postcode, and a US state.
+
+    Only the last few words are matched: a pattern that also consumed what
+    comes before them would cost the square of a long line.
+    """
+    if len(rest) > _MAX_REST:
+        return rest, None, None
+    t = rest.rstrip(" .,")
+    cut = t
+    for _ in range(2):
+        at = max(0, len(cut) - 24)
+        end = cut[at:]
+        m = _GB_END_RE.search(end)
+        if m is not None:
+            return cut[:at + m.start()], normalise_gb_postcode(m.group("pc")), None
+        m = _US_END_RE.search(end)
+        if m is not None:
+            return cut[:at + m.start()], m.group("pc"), m.group("state")
+        m = _CODE_END_RE.search(end)
+        if m is not None:
+            head = cut[:at + m.start()].rstrip()
+            town = head.rpartition(",")
+            if town[1] and re.fullmatch(r"\s*[A-Za-z][^,\d]*[A-Za-z]", town[2]) \
+                    and not _BOX_IN_PART_RE.search(cut):
+                return head, m.group("pc"), None
+        # Once more without a closing country: "... Bellport NY 11713, us".
+        country = _COUNTRY_END_RE.search(cut[max(0, len(cut) - 24):])
+        if country is None:
+            break
+        cut = cut[:max(0, len(cut) - 24) + country.start()].rstrip(" .,")
+    return rest, None, None
+
+
+def _town_suffix(words: str) -> list[str]:
+    """``words`` that a postcode follows, as ``[area, town]`` or ``[town]``.
+
+    The town is the longest ending the place list knows as a town. Where it
+    knows none, the words are one place.
+    """
+    w = words.split()
+    for k in range(min(4, len(w)), 0, -1):
+        town = " ".join(w[-k:])
+        if _places.town_rank(town) >= 3:
+            head = " ".join(w[:-k])
+            return [head, town] if head else [town]
+    return [words]
+
+
 _TAIL_SEGMENT_RE = re.compile(
     r"(?:(?:[A-Z][\w'\-]+\s+){0,2}(?:[A-Z]\.){1,4}[A-Z]?\.?"      # "Kanyiri G.R.A."
     r"(?:\s+[A-Z][\w'\-]+){0,2})|" + _TAIL_SEGMENT)
@@ -756,8 +858,11 @@ _AREA_END_RE = re.compile(
 _BOX_IN_PART_RE = re.compile(r"(?i)\b(?:p\.?\s*o\.?\s*)?box\s*\d|\bp\.?\s*m\.?\s*b\.?\s*\d")
 
 
-def _tail_after(text: str, start: int) -> tuple[str, str | None]:
-    """The places after a street, and the first landmark between them.
+def _tail_after(
+    text: str, start: int,
+) -> tuple[str, str | None, str | None, str | None]:
+    """The places after a street, the first landmark between them, and the
+    postcode and US state that close the line.
 
     Reads the comma-separated parts from ``start`` to the end of the line. A
     part that begins with a landmark word ("OFF OBODO/KANYIRI ROAD", "By
@@ -768,12 +873,14 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
     Lagos") gives "Ikeja", as the segment pattern alone did.
     """
     end = text.find("\n", start)
-    rest = text[start:] if end < 0 else text[start:end]
-    chunks = rest.split(",")
+    stop = len(text) if end < 0 else end
+    rest, code, state = _closing_code(text[start:min(stop, start + _MAX_REST + 1)])
+    chunks = rest[:_MAX_REST].split(",")
     places: list[str] = []
     anchor: str | None = None
     # Straight after the street, before any comma: a town only if the place
-    # list knows it ("22 Ajala Road Ibadan"); anything else ends the tail.
+    # list knows it ("22 Ajala Road Ibadan"), or a postcode closes the line;
+    # anything else ends the tail.
     first = chunks[0].strip(" .")
     if first and (_LANDMARK_START_RE.match(first) or _LANDMARK_WORD_RE.match(first)):
         landmark, town = _town_at_end(first)
@@ -781,14 +888,22 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
         if town:
             places.append(town)
     elif first:
-        if not (_AREA_END_RE.search(first) or _places.town_rank(first) >= 3
-                or any(_places.focus_rank(p) for p in _split_places(first))):
-            return "", None
-        places.append(first)
+        known = (_AREA_END_RE.search(first) or _places.town_rank(first) >= 3
+                 or any(_places.focus_rank(p) for p in _split_places(first)))
+        if known:
+            places.append(first)
+        elif code is not None and len(first.split()) <= 6 and not re.search(r"\d", first):
+            places += _town_suffix(first) if len(chunks) == 1 else [first]
+        else:
+            return "", None, code, state
+    road_part: str | None = None       # the last part, if it was set aside as a road
     for raw in chunks[1:]:
         part = raw.strip(" .")
         if not part:
             continue
+        if code is not None:
+            part = re.sub(r"\bSt\.\s", "St ", part)
+        road_part = None
         # A second road is a short part; a long one is prose running on
         # ("Lagos and copy the invoice to 12 Long Street").
         second_road = (len(part.split()) <= 6
@@ -800,8 +915,15 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
             anchor = anchor or _clean(landmark)
             if town:
                 places.append(town)
+            elif second_road and not re.search(r"\d", part):
+                road_part = part
             continue
         if _BOX_IN_PART_RE.search(part) or _UNIT_RE.fullmatch(part):
+            continue
+        # A postcode closes the line, so it is an address to its end: a part is a
+        # place however it is written ("Burton on Trent").
+        if code is not None and len(part.split()) <= 5 and not re.search(r"\d", part):
+            places.append(part)
             continue
         seg = _TAIL_SEGMENT_RE.match(part)
         if seg is None:
@@ -809,7 +931,11 @@ def _tail_after(text: str, start: int) -> tuple[str, str | None]:
         places.append(seg.group(0))
         if seg.end() < len(part):
             break
-    return ", ".join(_order_places(places)), anchor
+    # "68 Ajala Road, Earls Court, SW5 0RD": a town named like a road.
+    if code is not None and not places and road_part is not None:
+        places.append(road_part)
+        anchor = None if anchor == road_part else anchor
+    return ", ".join(_order_places(places)), anchor, code, state
 
 
 def _town_at_end(part: str) -> tuple[str, str | None]:

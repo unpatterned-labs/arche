@@ -65,6 +65,7 @@ from arche.resolve._matcher import (
     compare_dates,
     compare_emails,
     compare_geo,
+    compare_house_numbers,
     compare_ids,
     compare_names,
     compare_phones,
@@ -120,6 +121,7 @@ _FIELD_COMPARATORS = {
 _STRUCTURAL_KINDS = frozenset({
     "geo", "containment", "postcode", "date", "type", "code", "spec",
     "premises", "tokenset", "rival", "tftoken", "designator", "country",
+    "group_words", "house_number",
 })
 
 
@@ -235,6 +237,10 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
         from arche.resolve._name_markers import country_markers_pin
 
         out["country_markers"] = country_markers_pin()
+    if any(spec.get("kind") == "group_words" for spec in comparators):
+        from arche.resolve._name_markers import group_words_pin
+
+        out["group_words"] = group_words_pin()
     return out
 
 
@@ -448,16 +454,28 @@ def _field_sim(
             return compare_specs(str(ra[field]), str(rb[field]), category)
         table = (code_tf or {}).get(category) if isinstance(code_tf, dict) else code_tf
         return compare_codes(str(ra[field]), str(rb[field]), table, category)
-    if kind in ("designator", "country"):
-        # Unit labels and country words in a name: refute-only, and None unless
-        # both names state one. See `arche.resolve._name_markers`.
-        from arche.resolve._name_markers import compare_countries, compare_designators
+    if kind in ("designator", "country", "group_words"):
+        # Unit labels, country words and group words in a name: refute-only.
+        # See `arche.resolve._name_markers`.
+        from arche.resolve._name_markers import (
+            compare_countries,
+            compare_designators,
+            compare_group_words,
+        )
 
         field = spec.get("field", "name")
         if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
             return None
-        fn = compare_designators if kind == "designator" else compare_countries
+        fn = {"designator": compare_designators, "country": compare_countries,
+              "group_words": compare_group_words}[kind]
         return fn(str(ra[field]), str(rb[field]))
+    if kind == "house_number":
+        # The house number of two addresses on one road, read apart from the
+        # rest of the address, where it can be outvoted.
+        field = spec.get("field", "address")
+        if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
+            return None
+        return compare_house_numbers(ra[field], rb[field])
     if kind == "premises":
         # The premises number in an address, compared on its own. A similarity
         # over the whole address cannot carry it: `Unit 4` against `Unit 9`
@@ -528,8 +546,11 @@ def _field_sim(
         # one name count as the same token rather than two rare ones. Opt-in
         # per comparator, like `strip_type`: it changes what agreement means,
         # and therefore every number a pack has published.
+        # `near`: a misspelt token still counts, by its similarity. Opt-in too.
+        near = spec.get("near")
         return tf.weighted_token_sim(
-            a_val, b_val, orthography=spec.get("orthography"))
+            a_val, b_val, orthography=spec.get("orthography"),
+            near=float(near) if near is not None else None)
     fn = _FIELD_COMPARATORS.get(kind)
     if fn is None:
         # An unknown kind used to return None here, which reads as "nothing to
@@ -863,7 +884,7 @@ def reconcile(
     candidate_pairs: list[dict[str, Any]] | None = None,
     candidate_pins: dict[str, Any] | None = None,
     relation: str = "same_as",
-    unique_match: bool = False,
+    unique_match: bool | str = False,
 ) -> dict[str, Any]:
     """Reconcile two record lists into scored, decisioned match candidates.
 
@@ -956,6 +977,10 @@ def reconcile(
         without a location that could tell siblings apart -- a facility list
         matched within its LGA by name, where `Makera PHC` meets both `Makera
         I` and `Makera II`. Demotes only; pinned when on.
+        With ``"name_only"``, only a ``match`` that rests on the names alone is
+        held, and only when either of its records has another ``match``: a
+        record with no address that agrees in name with two branches would
+        otherwise join them.
 
     Returns
     -------
@@ -1148,8 +1173,11 @@ def reconcile(
         raise ValueError(f"relation must be one of {sorted(RELATIONS)}, got {relation!r}")
     if relation != "same_as":
         pins["relation"] = relation
+    if unique_match not in (True, False, "name_only"):
+        raise ValueError(
+            f'unique_match must be True, False or "name_only", got {unique_match!r}')
     if unique_match:
-        pins["unique_match"] = True
+        pins["unique_match"] = unique_match
     if tuple(distinctive_kinds) != _DISTINCTIVE_KINDS:
         pins["distinctive_kinds"] = sorted(distinctive_kinds)
     if code_tf:
@@ -1180,6 +1208,7 @@ def reconcile(
 
     # --- score + band -----------------------------------------------------
     matches: list[dict[str, Any]] = []
+    name_only: list[dict[str, Any]] = []
     floor = threshold - review_margin
     for i, j in pairs:
         ra, rb = list_a[i], list_b[j]
@@ -1231,8 +1260,13 @@ def reconcile(
         if (candidate := retrieval.get((i, j))) is not None:
             edge["candidate"] = candidate
         matches.append(edge)
+        if (unique_match == "name_only" and edge["decision"] == "match"
+                and _rests_on_name(ra, rb, comparators, tf, code_tf)):
+            name_only.append(edge)
 
-    if unique_match:
+    if unique_match == "name_only":
+        hold_ambiguous([m for m in matches if m["decision"] == "match"], only=name_only)
+    elif unique_match:
         hold_ambiguous(matches)
     # The reproducible address of each edge: a pure function of the (rounded)
     # evidence and the pins — no timestamp, recomputable by anyone holding the
@@ -1263,19 +1297,42 @@ def reconcile(
     }
 
 
-def hold_ambiguous(matches: list[dict[str, Any]]) -> None:
+#: Comparators that read a name, or something read out of one.
+_NAME_READING_KINDS = frozenset(
+    {"name", "placename", "tftoken", "qualifier", "legal_form", "type"})
+
+
+def _rests_on_name(
+    ra: dict[str, Any], rb: dict[str, Any], comparators: Any, tf: Any, code_tf: Any,
+    *, floor: float = 0.5,
+) -> bool:
+    """Whether nothing but the names supports a pair: no other weighted comparator
+    agrees at ``floor`` or better."""
+    for spec in comparators:
+        if float(spec.get("weight", 1.0)) <= 0 or spec["kind"] in _NAME_READING_KINDS:
+            continue
+        sim = _field_sim(spec, ra, rb, tf, code_tf)
+        if sim is not None and sim >= floor:
+            return False
+    return True
+
+
+def hold_ambiguous(
+    matches: list[dict[str, Any]], *, only: list[dict[str, Any]] | None = None,
+) -> None:
     """Demote every ``match`` that is not the only plausible candidate, both ways.
 
     Plausible means scored ``match`` or ``review`` (every edge the engine
     keeps). Writes ``ambiguous`` -- the larger of the two competitor counts --
-    onto each demoted edge. Mutates in place; call before decision ids are
-    computed.
+    onto each demoted edge. With ``only``, all of ``matches`` count as
+    competitors and only the edges in it are demoted. Mutates in place; call
+    before decision ids are computed.
     """
     from collections import Counter
 
     per_a = Counter(str(m["a_id"]) for m in matches)
     per_b = Counter(str(m["b_id"]) for m in matches)
-    for m in matches:
+    for m in matches if only is None else only:
         n = max(per_a[str(m["a_id"])], per_b[str(m["b_id"])])
         if m["decision"] == "match" and n > 1:
             m["decision"] = "review"
