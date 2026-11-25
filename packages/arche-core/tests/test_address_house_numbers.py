@@ -74,3 +74,29 @@ def test_the_threshold_says_what_is_held():
     assert _decision(*pair, 0.2) == "match"
     assert _decision(*pair, 0.4) == "review"
     assert _decision("128 Ashgrove Road", "128 Ashgrove Road", 0.6) == "match"
+
+
+@pytest.mark.parametrize("a,b", [
+    ("Room 3, Ashgrove House, 12 Obodo Road", "Room 4, Ashgrove House, 12 Obodo Road"),
+    ("Unit 5, 12 Ajala Street, Leeds LS2 7HZ", "Unit 6, 12 Ajala Street, Leeds LS2 7HZ"),
+    ("Unit 2A, Pondwell Estate", "Unit 2B, Pondwell Estate"),
+    ("Block C Flat 4, Ajala Estate", "Block D Flat 4, Ajala Estate"),
+    ("Shop 14, Kanyiri Plaza, Temanu", "Shop 15, Kanyiri Plaza, Temanu"),
+    ("Suite RA01, 195 Ajala Street", "Suite RA02, 195 Ajala Street"),
+])
+def test_two_units_of_one_building_are_two_addresses(a, b):
+    assert compare_addresses(a, b) < SAME
+    assert compare_addresses(b, a) == compare_addresses(a, b)
+
+
+@pytest.mark.parametrize("a,b", [
+    ("Unit 5, 12 Ajala Street, Leeds", "12 Ajala Street, Unit 5, Leeds"),
+    ("Shop 14 Kanyiri Plaza", "Kanyiri Plaza, Shop No. 14"),
+    ("Flat 04, 12 Ajala Street", "Flat 4, 12 Ajala Street"),
+    ("Unit E04, Ashgrove Business Centre", "Unit E4, Ashgrove Business Centre"),
+    ("Flat 3, 12 Ajala Street", "12 Ajala Street"),          # one side silent says nothing
+    ("3rd Floor, Ashgrove House", "5th Floor, Ashgrove House"),  # floors of one building
+    ("the office at Ashgrove House", "Ashgrove House"),
+])
+def test_a_unit_written_another_way_or_not_at_all_is_not_a_difference(a, b):
+    assert compare_addresses(a, b) >= SAME
