@@ -160,7 +160,7 @@ for recipe in (PERSON, PLACE, PRODUCT):
 person/febrl-v1 | auto: True | threshold: 0.99 | review_margin: 0.79
    needs ('given_name', 'surname', 'date_of_birth', 'street_number', 'address_1', 'postcode', 'state')
     datasets/names_dataops/bench_splink_febrl.py (no soc_sec_id)
-place/name-coords-v1 | auto: True | threshold: 0.9 | review_margin: 0.4
+place/name-coords-v2 | auto: True | threshold: 0.9 | review_margin: 0.4
    needs ('name', 'lat', 'lon')
     datasets/names_dataops/bench_splink_england_schools.py; bench_splink_nigeria.py
 product/identity-v1 | auto: False | threshold: 0.5 | review_margin: 0.3
@@ -240,8 +240,8 @@ print({k: splink["pins"][k] for k in ("engine", "backend", "settings", "training
 ```text
 splink 186 edges, 167 match
 engine 866 edges, 182 match
-{'name_level': 4, 'lat_lon_level': 3, 'match_probability': 0.9994} xwd:sha256:22073f884
-{'engine': 'crosswalk.splink.v1', 'backend': 'splink', 'settings': 'recipe:place/name-coords-v1@sha256:c7b89bf4b53b38b7', 'training': 'recipe', 'threshold': 0.9, 'gate': False}
+{'name_level': 4, 'lat_lon_level': 3, 'match_probability': 0.9994} xwd:sha256:d371d20a0
+{'engine': 'crosswalk.splink.v1', 'backend': 'splink', 'settings': 'recipe:place/name-coords-v2@sha256:c93dbf92e8ff08f1', 'training': 'recipe', 'threshold': 0.9, 'gate': False}
 ```
 
 The result is the shape `reconcile` always returns, so a review queue, a report or a ledger reads it unchanged. Two things differ. The `evidence` on an edge is Splink's: the comparison level each field landed on and the match probability, not arche's per-field similarities. And the pins name a different engine. `crosswalk.splink.v1` pins the recipe or `caller` or `derived` under `settings`, the trained model's digest, the corpus digest, the blocking, the prior, the seed, and the Splink and DuckDB versions, because a trained scorer is a function of the data it saw and a version string would claim less than the truth. Two runs with different model digests were scored by different models and are not expected to agree.

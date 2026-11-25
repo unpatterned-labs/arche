@@ -168,6 +168,8 @@ data/review_packs/**/*_shared/
 # nothing under the new path had been added yet. A rule that names a path it no
 # longer covers reads as protection and provides none.
 data/_studio/
+# arche studio label packs: gold built from data that may not be redistributable.
+data/label_packs/
 
 # Agent working context and project skills. Untracked on purpose: CLAUDE.md
 # rule 4 keeps agent config and workflow documentation out of the tracked tree,

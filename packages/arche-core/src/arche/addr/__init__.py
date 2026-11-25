@@ -40,11 +40,13 @@ from arche.addr.parse import (
     Address,
     AddressComponents,
     extract_anchor,
+    extract_unit,
     infer_jurisdiction,
     normalise_gb_postcode,
     normalize_landmark,
     parse_address,
     parse_addresses,
+    parse_locality,
 )
 from arche.addr.roles import (
     GoldSentence,
@@ -71,6 +73,7 @@ __all__ = [
     "PlaceRole",
     "RolePack",
     "extract_anchor",
+    "extract_unit",
     "extract_document_address_roles",
     "extract_places",
     "request",
@@ -85,4 +88,5 @@ __all__ = [
     "normalize_landmark",
     "parse_address",
     "parse_addresses",
+    "parse_locality",
 ]

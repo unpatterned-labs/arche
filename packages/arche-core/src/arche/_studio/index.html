@@ -121,7 +121,7 @@ table.grid th{position:sticky;top:0;background:var(--paper);z-index:2;padding:11
   cursor:pointer;user-select:none;box-shadow:inset 0 -1px 0 var(--rule);border-bottom:0}
 table.grid th:hover{color:var(--ink)}
 table.grid th .sort{color:var(--accent);font-family:var(--mono);font-size:9px;margin-left:5px}
-table.grid th+th,table.grid td+td{padding-left:24px}
+table.grid th+th,table.grid td+td{padding-left:18px}
 table.grid td{padding:9px 0;font-size:15px;white-space:nowrap;max-width:300px;
   overflow:hidden;text-overflow:ellipsis}
 table.grid td.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -327,7 +327,7 @@ textarea{font-size:16px;padding:14px;min-height:180px}.row{gap:10px;margin-top:2
 button.act{font-family:var(--serif);font-size:13px;letter-spacing:.01em;text-transform:none;border-radius:8px;background:var(--ink);border-color:var(--ink);color:var(--surface);padding:10px 14px;transition:transform .14s,background .14s,border-color .14s}
 button.act:hover{background:var(--ink-press);color:var(--surface);transform:translateY(-1px)}button.act.quiet{background:var(--surface);border-color:var(--rule);color:var(--ink)}button.act.quiet:hover{background:var(--code);border-color:var(--rule-strong)}
 .stat{font-family:var(--mono);font-size:11px}.dz{background:var(--surface);border:1px dashed var(--rule-strong);border-radius:10px;padding:22px}.passage,.doctext,.cres{border-radius:8px}
-.gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th{background:var(--surface)}
+.gridwrap{background:var(--surface);border:1px solid var(--rule);border-radius:10px;max-height:60vh}.gridwrap table.grid th:first-child,.gridwrap table.grid td:first-child{padding-left:16px}.gridwrap table.grid th:last-child,.gridwrap table.grid td:last-child{padding-right:16px}.gridwrap table.grid th{background:var(--surface)}
 .desk-grid{gap:42px}.desk-hero{padding:48px 0 38px;border-bottom:0}.desk-hero h2{font-family:var(--display);font-size:clamp(44px,5vw,74px);line-height:.98;max-width:12ch}.desk-hero .lede{max-width:58ch;margin-top:26px}
 .question-list{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}.question-list li{padding:22px 20px}.question-list li:hover{background:var(--hover)}.question-list strong{font-size:18px}.question-list span:last-of-type{font-size:14px}
 .case-rail{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:12px;margin-top:48px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.case-rail h3,.desk-section h3{font-size:12px;letter-spacing:.07em}.desk-section{padding:24px 0}.desk-section:first-child{padding-top:30px}
@@ -344,6 +344,113 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 .threat-case{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:20px;margin:20px 0}.threat-case h2{font-family:var(--display);font-size:30px;line-height:1.08;margin:0 0 9px;letter-spacing:-.025em}.threat-case p{margin:0;color:var(--muted);max-width:72ch}.threat-list{border-top:1px solid var(--rule);margin-top:24px}.threat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);padding:16px 0;text-align:left;color:var(--ink);cursor:pointer}.threat-row:hover,.threat-row[aria-selected=true]{background:var(--hover)}.threat-row[aria-selected=true]{box-shadow:inset 3px 0 0 var(--accent);padding-left:13px}.threat-row strong{display:block;font-size:16px;line-height:1.35}.threat-row small{display:block;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.5;margin-top:4px}.threat-outcome{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;align-self:start;white-space:nowrap}.threat-context{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin:16px 0 0}.threat-context p{font-size:13px}.threat-context b{display:block;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}.threat-relationship{border-bottom:1px solid var(--rule);padding:0 0 14px;margin:0 0 14px}.threat-relationship p{margin:0 0 6px}.threat-relationship small{font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--muted)}.d-not_linked{color:var(--no)}.vrule-not_linked{border-top-color:var(--no)!important}
 @media(max-width:980px){header{position:static}.split,#s-chat .split{grid-template-columns:1fr}.margin{position:static}.case-rail{margin-top:0}}
 @media(max-width:640px){nav{margin-left:-6px;margin-right:-6px}.disclaim{display:none}.workspace-status{white-space:normal}.desk-hero h2{font-size:48px}.command{padding:7vh 14px}.command-panel{width:100%}#chatlog{min-height:46vh;padding:15px}.threat-row{grid-template-columns:1fr}.threat-context{grid-template-columns:1fr}}
+
+/* ── review queue: a bar, a progress line, a plain sentence about saving, and a
+   card per pair. The evidence sits beside the pair, not under it, so the call
+   buttons are on screen with the two records they decide. */
+.rv-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.rv-bar .searchbox{flex:1 1 220px;min-width:180px}
+.rv-who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);white-space:nowrap}
+.rv-who input{width:180px}
+.rv-status{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:center;margin:18px 0 10px}
+.rv-progress{display:flex;flex-direction:column;gap:6px}
+.rv-meter{display:block;height:6px;background:var(--code);border-radius:3px;overflow:hidden}
+.rv-meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .18s}
+.rv-save{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 16px}
+.rv-save p{margin:0;flex:1 1 320px;font-size:14px;line-height:1.5;color:var(--muted)}
+.rv-save p b{color:var(--ink)}
+#pnotes{margin:8px 0;font-size:13px;color:var(--muted)}#pnotes summary{cursor:pointer}
+.rv-hint{margin-top:10px}
+.lb-text{font-family:var(--mono);font-size:19px;line-height:1.9;padding:22px 20px;border:1px solid var(--rule);background:var(--surface,#fff);white-space:pre-wrap;word-break:break-word;user-select:text;min-height:64px}
+.lb-text mark{background:var(--lbt);box-shadow:inset 0 -3px 0 var(--lbc);color:var(--ink);padding:2px 3px;border-radius:3px;cursor:pointer}
+.lb-text mark:hover{text-decoration:line-through}
+.lb-text mark sup{font-family:var(--serif);font-size:10px;font-weight:600;color:var(--lbc);margin-left:4px;letter-spacing:.02em;user-select:none;vertical-align:super}
+.lb-text .lb-pending{outline:2px dashed var(--ink);outline-offset:2px;border-radius:2px}
+.lb-text sup{font-family:var(--serif);font-size:10px;font-weight:600;color:var(--lbc);margin-left:4px;letter-spacing:.02em;user-select:none;vertical-align:super}
+.lb-text sup[data-x]{cursor:pointer}
+.lb-chunk{border-radius:4px;padding:3px 3px;box-shadow:inset 0 0 0 1px var(--rule);cursor:pointer;transition:background 140ms}
+.lb-chunk:hover{background:var(--code)}
+.lb-chunk.on{background:var(--lbt);box-shadow:inset 0 -3px 0 var(--lbc)}
+.lb-chunk.cur{outline:2px solid var(--ink);outline-offset:3px}
+.lb-gap{cursor:col-resize;border-radius:2px;padding:0 2px}
+.lb-gap:hover{background:var(--rule)}
+.lb-gap.cut{padding:0 4px}
+.lb-progress{display:inline-block;width:140px;height:5px;background:var(--rule);vertical-align:middle;border-radius:3px;overflow:hidden}
+.lb-progress i{display:block;height:100%;width:0;background:var(--ink);transition:width 180ms}
+.lb-recent{font-size:13px;padding-left:18px;margin:4px 0}
+.lb-recent li{margin-bottom:6px}
+.lb-recent a{color:var(--ink)}
+.lb-rparts span{border-left:3px solid var(--lbc);padding-left:4px}
+.lb-rparts b{font-weight:600;color:var(--lbc);font-size:11px}
+.lb-hint kbd,.lb-row kbd{font-size:11px}
+.lb-c0{--lbc:#2F5F8A;--lbt:#E3ECF5}.lb-c1{--lbc:#3C7A3C;--lbt:#E4F1E4}.lb-c2{--lbc:#6B4F8A;--lbt:#EEE7F5}
+.lb-c3{--lbc:#9A7420;--lbt:#F6EDD6}.lb-c4{--lbc:#1F6E6E;--lbt:#DDF0EF}.lb-c5{--lbc:#7A4A2A;--lbt:#F2E6DC}
+.lb-c6{--lbc:#4F5C1F;--lbt:#ECF0DA}.lb-c7{--lbc:#8A2F5F;--lbt:#F5E3EC}
+.lb-keys button{border-left:4px solid var(--lbc)}
+.lb-keys.armed button{background:var(--lbt)}
+.lb-hint{font-size:14px;min-height:22px;margin:10px 0 0}
+.lb-hint b{font-family:var(--mono);font-weight:500}
+.lb-keys{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.lb-keys button{font-family:var(--serif);font-size:13px}
+.lb-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.lb-parts{margin-top:14px;font-size:14px}
+.lb-parts dt{font-family:var(--mono);font-size:11px;color:var(--lbc);border-left:3px solid var(--lbc);padding-left:6px}
+.lb-parts dd{padding-left:9px}
+.lb-parts dd{margin:0 0 6px 0}
+.lb-skip{color:var(--hold);font-weight:600}
+#s-label .split{grid-template-columns:minmax(0,1.3fr) minmax(380px,1fr);gap:36px}
+.lb-aside{position:sticky;top:var(--lb-top,180px);max-height:calc(100vh - var(--lb-top,180px) - 16px);display:flex;flex-direction:column;
+  background:var(--surface,#fff);border:1px solid var(--rule);border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+.lb-aside-head{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--rule)}
+.lb-aside-head .label{margin:0}
+.lb-guide{font-size:13.5px;line-height:1.55;overflow:auto;padding:14px 18px 18px}
+.lb-dialog{width:min(860px,94vw);max-height:90vh;border:1px solid var(--rule);border-radius:12px;padding:0;background:var(--paper);color:var(--ink)}
+.lb-dialog::backdrop{background:rgba(17,17,17,.35)}
+.lb-dialog .lb-guide{max-height:calc(90vh - 60px);font-size:15px;padding:18px 26px 26px}
+.lb-dialog .lb-guide td,.lb-dialog .lb-guide th{font-size:14px}
+@media(max-width:980px){#s-label .split{grid-template-columns:1fr}.lb-aside{position:static;max-height:none}}
+.lb-guide h1{font-size:17px;margin:0 0 8px}.lb-guide h2{font-size:14px;margin:18px 0 6px}
+.lb-guide p,.lb-guide ul,.lb-guide ol{margin:0 0 8px}.lb-guide ul,.lb-guide ol{padding-left:18px}
+.lb-guide table{border-collapse:collapse;margin:4px 0 12px;font-size:12px}
+.lb-guide th,.lb-guide td{border-bottom:1px solid var(--rule);padding:4px 10px 4px 0;text-align:left;vertical-align:top;font-size:12.5px;line-height:1.4}
+.lb-guide th{font-size:10px;letter-spacing:.06em}
+.lb-guide th+th,.lb-guide td+td{padding-left:0}
+.lb-guide code{white-space:nowrap}
+.lb-guide code{font-family:var(--mono);font-size:12px;background:var(--code);padding:0 3px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);border-radius:4px;padding:1px 5px;margin-left:4px;color:var(--muted);background:var(--surface)}
+.rv-dialog{width:min(1240px,94vw);max-height:92vh;border:1px solid var(--rule);border-radius:12px;padding:0;background:var(--paper);color:var(--ink)}
+.rv-dialog::backdrop{background:rgba(16,24,40,.38)}
+.rv-head{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--paper);z-index:1}
+.rv-body{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;padding:20px}
+.rv-side{border-left:1px solid var(--rule);padding-left:24px;font-size:14px}
+.rv-side .verdict{margin-top:0}
+.rv-pair{width:100%;border-collapse:collapse;font-size:16px}
+.rv-pair th,.rv-pair td{text-align:left;vertical-align:top;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule)}
+.rv-pair thead th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rv-pair tbody th{width:110px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.rv-pair td:nth-child(2),.rv-pair td:nth-child(3){width:38%}
+.rv-pair .rv-note{font-size:13px;color:var(--muted);white-space:nowrap}
+.tok-diff{text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:2px;text-underline-offset:3px}
+.rv-pair .mono{font-family:var(--mono);font-size:11px;word-break:break-all}
+.rv-link{margin:16px 0 4px;padding:14px 18px;background:var(--code);border:1px solid var(--rule);border-radius:10px}
+.rv-link p{margin:0}
+.rv-link-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px!important}
+.rv-link-name{font-size:17px;font-weight:600;color:var(--ink)}
+.rv-link-body{font-size:15px;color:var(--ink)}
+.rv-link-meta{font-size:14px;color:var(--muted);margin-top:2px!important}
+.rv-link-meta .mono{font-family:var(--mono);font-size:12px}
+.rv-link-guide{font-size:13px;color:var(--muted);margin-top:10px!important;padding-top:10px;border-top:1px solid var(--rule)}
+.rv-ids{margin-top:10px;font-size:13px}.rv-ids summary{cursor:pointer;color:var(--muted)}
+.rv-q{margin:22px 0 8px}
+.rv-call{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+button.act.rv-btn{padding:14px 12px;font-size:15px;background:var(--surface);color:var(--ink);border:1px solid var(--rule-strong,var(--rule))}
+button.act.rv-btn:hover{background:var(--ink);color:var(--surface)}
+button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+#b-same[aria-pressed=true]{background:var(--ok);border-color:var(--ok)}
+#b-diff[aria-pressed=true]{background:var(--no);border-color:var(--no)}
+.rv-main #reason{margin-top:12px}
+.rv-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
+@media(max-width:980px){.rv-body{grid-template-columns:1fr}.rv-side{border-left:0;padding-left:0;border-top:1px solid var(--rule);padding-top:16px}.rv-status{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -366,6 +473,7 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
     <button id="t-redact"  aria-current="false">Redact</button>
     <button id="t-verify"  aria-current="false">Verify</button>
     <button id="t-review"  aria-current="false">Review queue</button>
+    <button id="t-label"   aria-current="false">Label</button>
     <button id="t-explain" aria-current="false">Explain</button>
     <button class="command-key" id="b-command" type="button">Open <kbd>Ctrl K</kbd></button>
   </nav>
@@ -635,64 +743,118 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 
 <!-- ═══════════════════════════════════════════════════════════ REVIEW ══ -->
 <section id="s-review" hidden>
-  <div class="row tight">
+  <div class="rv-bar">
     <select id="pack" style="width:auto"></select>
     <select id="filter" style="width:auto">
       <option value="review" selected>Still needs a human</option>
       <option value="all">Everything</option>
       <option value="settled">Settled by a reviewer</option>
+      <option value="unresolved">Marked can't tell</option>
       <option value="match">Standing answer: match</option>
       <option value="no_match">Standing answer: no match</option>
       <option value="unmarked">Not yet marked</option>
     </select>
-    <input id="q" class="searchbox" placeholder="search any field">
+    <input id="q" class="searchbox" placeholder="search names, places, codes">
     <button class="act quiet" id="b-cols">Columns</button>
-    <span class="stat" id="pmeta"></span>
-    <span class="stat" id="marks"></span>
+    <label class="rv-who">Reviewing as <input id="reviewer" placeholder="your name" autocomplete="name"></label>
   </div>
 
-  <div id="pprob"></div>
+  <div class="rv-status">
+    <div class="rv-progress"><span class="rv-meter"><i id="rv-meter"></i></span><span class="stat" id="marks"></span></div>
+    <div class="rv-save">
+      <p><b>Your calls save on this machine as you make them.</b> Closing the tab loses nothing.
+        Export when you want to hand the work on: it writes your copy, with names, and a
+        masked copy that is safe to share.</p>
+      <button class="act" id="b-save">Export labelled copy</button>
+      <span class="stat" id="rv-export">Not exported yet.</span>
+    </div>
+  </div>
 
+  <details id="pnotes" hidden><summary>Notes on this pack</summary><div id="pprob"></div></details>
   <div class="cols" id="colpick"></div>
+  <p class="stat" id="pmeta"></p>
 
   <div class="gridwrap"><table class="grid">
     <thead><tr id="ghead"></tr></thead><tbody id="gbody"></tbody>
   </table></div>
+  <p class="dek rv-hint">Choose a row to open it. In the card: <b>1</b> same, <b>2</b> different, <b>3</b> can't tell, <b>j</b>/<b>k</b> next and previous, <b>Esc</b> to close.</p>
+  <div class="err" id="rerr"></div>
+</section>
 
-  <div class="split" style="margin-top:28px">
-    <div>
-      <div id="pairout"><p class="dek">Choose a row to see the pair and its evidence.</p></div>
-      <div id="revout"></div>
-      <div id="callbox" hidden>
-        <hr class="rule">
-        <p class="label">Your call</p>
-        <div class="row tight">
-          <button class="act quiet" id="b-same">Same entity</button>
-          <button class="act quiet" id="b-diff">Different</button>
-          <button class="act quiet" id="b-unres">Cannot tell</button>
-          <span class="keys"><b>1</b> <b>2</b> <b>3</b> to call it · <b>j</b> <b>k</b> to move</span>
-        </div>
-        <div class="pair" style="margin-top:22px;max-width:900px">
-          <div><p class="label">Reason</p><input id="reason" placeholder="what settled it, or what is missing"></div>
-          <div><p class="label">Reviewer</p><input id="reviewer" placeholder="your name"></div>
-        </div>
-        <div class="row"><button class="act" id="b-save">Save labelled copy</button></div>
-        <div class="err" id="rerr"></div>
+<dialog id="rv-dialog" class="rv-dialog" aria-label="Review a pair" tabindex="-1">
+  <div class="rv-head">
+    <span class="stat" id="rv-pos"></span>
+    <label class="rv-who">Reviewing as <input id="rv-name" placeholder="your name" autocomplete="name"></label>
+    <button class="act quiet" id="rv-close" type="button">Close <kbd>Esc</kbd></button>
+  </div>
+  <div class="rv-body">
+    <div class="rv-main">
+      <div id="pairout"></div>
+      <p class="label rv-q">Are these the same facility?</p>
+      <div class="rv-call">
+        <button class="act rv-btn" id="b-same" type="button">Same <kbd>1</kbd></button>
+        <button class="act rv-btn" id="b-diff" type="button">Different <kbd>2</kbd></button>
+        <button class="act rv-btn" id="b-unres" type="button">Can't tell <kbd>3</kbd></button>
+      </div>
+      <input id="reason" placeholder="Reason, optional: what settled it, or what is missing">
+      <div class="rv-nav">
+        <button class="act quiet" id="rv-prev" type="button">Previous <kbd>k</kbd></button>
+        <span class="stat" id="rv-said"></span>
+        <button class="act quiet" id="rv-next" type="button">Next <kbd>j</kbd></button>
       </div>
     </div>
-    <aside class="margin">
-      <p><b>Three refusals.</b></p>
-      <p>It will not overwrite the matcher's output. Saving writes a new
-        <span style="font-family:var(--mono);font-size:13px">_reviewed.csv</span> beside the pack.</p>
-      <p>It will not save anonymously. An unattributed adjudication cannot be audited.</p>
-      <p>It shows an integrity digest over the pack's decision ids, so a pack edited
-        between matching and reviewing gives itself away.</p>
-    </aside>
+    <aside class="rv-side"><p class="label">What the engine saw</p><div id="revout"></div></aside>
   </div>
-</section>
+</dialog>
 
 <!-- ══════════════════════════════════════════════════════════ COMPARE ══ -->
 <!-- ══════════════════════════════════════════════════════════ EXPLAIN ══ -->
+<!-- ════════════════════════════════════════════════════════════ LABEL ══ -->
+<section id="s-label" hidden>
+  <div class="rv-bar">
+    <select id="lb-pack" style="width:auto" aria-label="Label pack"></select>
+    <select id="lb-group" style="width:auto" aria-label="Show" hidden></select>
+    <label class="rv-who">Labelling as <input id="lb-by" placeholder="your name, then Enter" autocomplete="name"></label>
+    <span class="lb-progress" id="lb-progress" aria-hidden="true"><i></i></span>
+    <span class="stat" id="lb-count"></span>
+    <button class="act" id="lb-export" type="button">Export labels</button>
+    <span class="stat" id="lb-exported"></span>
+  </div>
+  <div class="split">
+    <div>
+      <p class="lede measure">Press a part's key for the highlighted chunk; the next chunk comes
+        up. Nothing a model guessed is shown here: these labels are gold, saved on this machine
+        with your name and the time.</p>
+      <p class="label" id="lb-pos"></p>
+      <div class="lb-text" id="lb-text"></div>
+      <p class="lb-hint" id="lb-hint"></p>
+      <div class="lb-keys" id="lb-keys"></div>
+      <div class="lb-row">
+        <span>
+          <button class="act quiet" id="lb-prev" type="button">Previous <kbd>k</kbd></button>
+          <button class="act quiet" id="lb-skipb" type="button">Not an address <kbd>x</kbd></button>
+          <button class="act quiet" id="lb-clear" type="button">Clear</button>
+          <button class="act quiet" id="lb-mode" type="button">Free select</button>
+        </span>
+        <button class="act" id="lb-next" type="button">Save and next <kbd>Enter</kbd></button>
+      </div>
+      <dl class="lb-parts" id="lb-parts"></dl>
+      <p class="stat" id="lb-msg"></p>
+      <div id="lb-recent-box" hidden><p class="label">Saved just now</p><ol class="lb-recent" id="lb-recent"></ol></div>
+    </div>
+    <aside class="lb-aside">
+      <div class="lb-aside-head"><p class="label">Guide</p>
+        <button class="act quiet" id="lb-guide-open" type="button">Open full width</button></div>
+      <div class="lb-guide" id="lb-guide">No guide in this pack.</div>
+    </aside>
+  </div>
+  <dialog id="lb-guide-dialog" class="lb-dialog" aria-label="Labelling guide">
+    <div class="lb-aside-head"><p class="label">Guide</p>
+      <button class="act quiet" id="lb-guide-close" type="button">Close <kbd>Esc</kbd></button></div>
+    <div class="lb-guide" id="lb-guide-full"></div>
+  </dialog>
+</section>
+
 <section id="s-explain" hidden>
  <div class="split">
   <div>
@@ -813,9 +975,10 @@ const WORKSPACE_COPY={
   redact:"Prepare text for a safer downstream workflow.",
   verify:"Check whether signed evidence is still intact.",
   review:"Resolve the uncertainty that the engine should not settle alone.",
+  label:"Mark the parts of a text by hand, for gold data.",
   explain:"Read a recorded decision: what, why, and whether it still holds."
 };
-const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","explain"]){
+const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","label","explain"]){
   const button=$("#t-"+k),section=$("#s-"+k);
   if(button)button.setAttribute("aria-current",String(k===t));
   if(section)section.hidden=k!==t;
@@ -852,10 +1015,15 @@ async function loadPacks(){
 async function loadPack(){
   const id=$("#pack").value;if(!id)return;
   PACK=await(await fetch("/api/pack?id="+encodeURIComponent(id))).json();
+  TRAIL.length=0;AT=-1;
   if(PACK.error){$("#rerr").textContent=PACK.error;return;}
-  // Open on the columns a reviewer reads. Everything else is one click away.
-  HIDE=new Set(PACK.fields.filter(f=>/^(decision_id|evidence|reviewed_at|reviewer|reason)$/.test(f)));
-  SEL=null;$("#callbox").hidden=true;
+  // Open on the columns a reviewer reads: who, where, and what the engine said.
+  // Ids, codes, coordinates and the rest are one click away under Columns.
+  HIDE=new Set(PACK.fields.filter(f=>!/^(state|decision|score)$|_(name|admin_path)$/.test(f)
+    ||/_own_/.test(f)
+    // A blind pack has no scores; an empty column only pushes the rest off screen.
+    ||PACK.rows.every(r=>r[f]===""||r[f]==null)));
+  SEL=null;if($("#rv-dialog").open)$("#rv-dialog").close();
   // A pack that fails its own integrity check is still shown — refusing to
   // display it helps nobody — but the reviewer hears about it now rather than
   // after forty rows of work.
@@ -868,6 +1036,9 @@ async function loadPack(){
         they carry will say so.`
     : (warn.length?warn.map(x=>esc(x.detail)).join(" "):"");
   $("#pprob").className=bad.length?"err":"stat";
+  // Problems stay in view; housekeeping notes fold away, because a reviewer
+  // reading a schema warning above the queue reads it as "something is broken".
+  $("#pnotes").hidden=!(bad.length||warn.length);$("#pnotes").open=!!bad.length;
   cols();await loadMarks();draw();homeSummary();
 }
 const shown=()=>PACK.fields.filter(f=>!HIDE.has(f));
@@ -885,7 +1056,10 @@ function visible(){
     const ok=f==="all"?true
       :f==="unmarked"?!(M[r.decision_id]||r.review_outcome)
       :f==="settled"?settled(r)
-      :f==="review"?(r.decision==="review"&&!settled(r))
+      // "Can't tell" is an answer for now: it leaves this view (it is under its
+      // own filter), or the last few such pairs would cycle back forever.
+      :f==="review"?(r.decision!=="match"&&!settled(r)&&!cantTell(r))
+      :f==="unresolved"?cantTell(r)
       :effective(r)===f;
     if(!ok)return false;
     if(!q)return true;
@@ -910,6 +1084,7 @@ function effective(r){
   return (PACK.outcome_decision||{})[o]||r.decision;
 }
 const settled=r=>{const o=M[r.decision_id]?.outcome||r.review_outcome||"";return o&&o!=="unresolved";};
+const cantTell=r=>(M[r.decision_id]?.outcome||r.review_outcome||"")==="unresolved";
 function sparkline(json){
   let ev={};try{ev=JSON.parse(json||"{}")}catch{}
   const ks=Object.keys(ev).filter(k=>typeof ev[k]==="number"&&!/distance/.test(k)).sort();
@@ -1100,45 +1275,157 @@ async function loadThreat(){
   })();
   return THREAT_LOADING;
 }
-function pick(id){
-  SEL=id;draw();$("#callbox").hidden=false;
+function pick(id,fromTrail=false){
+  SEL=id;draw();
   const r=PACK.rows.find(x=>x.decision_id===id);if(!r)return;
-  const[a,b]=PACK.sides;
-  const side=p=>PACK.fields.filter(f=>f.startsWith(p+"_"))
-    .map(f=>`<p class="kv"><b>${esc(f.slice(p.length+1))}</b>${esc(pretty(r[f]))||"&mdash;"}</p>`).join("");
-  $("#pairout").innerHTML=`<div class="pair" style="max-width:1150px">
-    <div><p class="label">${esc(a)}</p>${side(a)}</div>
-    <div><p class="label">${esc(b)}</p>${side(b)}</div></div>`;
+  if(!fromTrail&&TRAIL[AT]!==id){TRAIL.splice(AT+1);TRAIL.push(id);AT=TRAIL.length-1;}
+  const rows=visible(),at=rows.findIndex(x=>x.decision_id===id);
+  $("#rv-pos").textContent=at>=0?`Pair ${at+1} of ${rows.length} in this view`
+    :"A pair you already decided. Choose again to change it.";
+  $("#pairout").innerHTML=pairCard(r);
   let ev={};try{ev=JSON.parse(r.evidence||"{}")}catch{}
   $("#revout").innerHTML=panel({decision:r.decision,score:Number(r.score),evidence:ev,
     distinctive_max:r.distinctive_max?Number(r.distinctive_max):null,
     distinctive_floor:0.75,decision_id:r.decision_id,pins:{}});
   $("#reason").value=M[id]?.reason||r.reason||"";
+  const o=M[id]?.outcome||r.review_outcome||"";
+  $("#rv-said").innerHTML=o?`Your call: <b>${esc(o.replace("_"," "))}</b>`:"";
+  for(const [b,v] of [["b-same","same_entity"],["b-diff","different"],["b-unres","unresolved"]])
+    $("#"+b).setAttribute("aria-pressed",String(o===v));
+  if(!$("#rv-dialog").open){
+    $("#rv-dialog").showModal();
+    if(reviewerName())$("#rv-dialog").focus();else $("#rv-name").focus();
+  }
+  if(!reviewerName())$("#rv-said").innerHTML="Type your name in “Reviewing as” before your first call.";
+}
+// Words one side has and the other does not, so the eye goes to what differs.
+function diffWords(a,b){
+  const w=s=>String(s||"").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const other=new Set(w(b));
+  return esc(String(a||"")).replace(/[\p{L}\p{N}]+/gu,m=>other.has(m.toLowerCase())?m:`<u class="tok-diff">${m}</u>`);
+}
+const fold=s=>String(s||"").toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim();
+// 1 minus edit distance over the longer length: 0.89 for igueben / iguegben.
+function similar(a,b){
+  if(a===b)return 1;const m=a.length,n=b.length;if(!m||!n)return 0;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const cur=[i];
+    for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;}
+  return 1-prev[n]/Math.max(m,n);
+}
+function adminParts(v){try{return JSON.parse(String(v||"{}").replace(/'/g,'"'))}catch{return {}}}
+function where(r,p){
+  const lat=r[p+"_lat"],lon=r[p+"_lon"];
+  if(!lat||!lon)return "";
+  const map=`https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lon)}#map=17/${encodeURIComponent(lat)}/${encodeURIComponent(lon)}`;
+  return `<span class="mono">${esc(r[p+"_plus_code"]||"")}</span>`
+    +(r[p+"_h3"]?` <span class="stat" title="H3 cell, resolution 9">H3 ${esc(r[p+"_h3"])}</span>`:"")
+    +` <a href="${map}" target="_blank" rel="noopener noreferrer">map</a>`;
+}
+function pairCard(r){
+  const[a,b]=PACK.sides;
+  const suffixes=new Set();
+  for(const f of PACK.fields)for(const s of[a,b])
+    if(f.startsWith(s+"_")&&!f.startsWith(a+"_own_"))suffixes.add(f.slice(s.length+1));
+  const skip=/^(id|code|uuid|lat|lon|h3|plus_code|h3_steps|km_from_.*|km_to_.*)$/;
+  const order=["name","admin_path"];
+  const rest=[...suffixes].filter(s=>!skip.test(s)&&!order.includes(s)).sort();
+  const row=(label,x,y,note="")=>`<tr><th>${esc(label)}</th><td>${x||"&mdash;"}</td><td>${y||"&mdash;"}</td><td class="rv-note">${note}</td></tr>`;
+  let html=`<table class="rv-pair"><thead><tr><th></th><th>${esc(a)}</th><th>${esc(b)}</th><th></th></tr></thead><tbody>`;
+  html+=row("Name",diffWords(r[a+"_name"],r[b+"_name"]),diffWords(r[b+"_name"],r[a+"_name"]),
+    fold(r[a+"_name"])===fold(r[b+"_name"])?"identical":"");
+  const pa=adminParts(r[a+"_admin_path"]),pb=adminParts(r[b+"_admin_path"]);
+  let lga="";
+  if(pa.admin2&&pb.admin2){
+    const x=fold(pa.admin2),y=fold(pb.admin2);
+    lga=x===y?"same LGA":similar(x,y)>=0.8?"same LGA,<br>spelt differently":"<b>different LGA</b>";
+  }
+  html+=row("Where",esc(pretty(r[a+"_admin_path"])),esc(pretty(r[b+"_admin_path"])),lga);
+  for(const s of rest)
+    if(r[a+"_"+s]!==undefined||r[b+"_"+s]!==undefined)
+      html+=row(s.replaceAll("_"," "),esc(pretty(r[a+"_"+s]??"")),esc(pretty(r[b+"_"+s]??"")));
+  const wa=where(r,a),wb=where(r,b);
+  if(wa||wb){
+    const km=r[b+"_km_from_"+a]||r.distance_km,steps=r[b+"_h3_steps"];
+    html+=row("Location",wa,wb,[km!==undefined&&km!==""?`${esc(km)} km apart`:"",
+      steps?`${esc(steps)} H3 steps`:""].filter(Boolean).join("<br>"));
+  }
+  // Source ids, side by side. GRID3 v2 and the HFR share one id for most
+  // facilities, so whether the ids agree is the quickest fact on the card.
+  const bare=v=>String(v||"").replace(/^[a-z0-9_]+:/i,"");
+  const ia=bare(r[a+"_id"]),ib=bare(r[b+"_id"]);
+  if(ia||ib)html+=row("Source id",`<span class="mono">${esc(ia)}</span>`,`<span class="mono">${esc(ib)}</span>`,
+    ia&&ia===ib?"same id":"different ids");
+  html+="</tbody></table>";
+  // What the GRID3 id links to on the other side, as a note under the table.
+  // It settles the commonest mistake: two facilities that share a name.
+  const own=a+"_own_"+b+"_";
+  if(PACK.fields.includes(own+"id")){
+    const A=esc(a.toUpperCase()),B=esc(b.toUpperCase());
+    const note=(label,body,guide)=>`<aside class="rv-link"><p class="rv-link-label">${label}</p>${body}<p class="rv-link-guide">${guide}</p></aside>`;
+    if(ia&&ia===ib){
+      html+=note(`Same source id`,`<p class="rv-link-body">Both registries file these two records under one id.</p>`,
+        `Call them different only if they are two facilities and the shared id is wrong.`);
+    }else if(r[own+"name"]){
+      const km=r[a+"_km_to_own_"+b];
+      const meta=[r[own+"lga"]?esc(r[own+"lga"]):"",km?`${esc(km)} km from the ${A} point`:"",
+        r[own+"plus_code"]?`<span class="mono">${esc(r[own+"plus_code"])}</span>`:""].filter(Boolean).join(" · ");
+      html+=note(`The ${B} record that carries this ${A} id`,
+        `<p class="rv-link-name">${esc(r[own+"name"])}</p>${meta?`<p class="rv-link-meta">${meta}</p>`:""}`,
+        `If the ${B} record above is another facility with a similar name, call it different. If it is a second entry for this same facility, call it same.`);
+    }else{
+      html+=note(`No ${B} record carries this ${A} id`,"",
+        `Decide from the names, places and levels above.`);
+    }
+  }
+  const ids=PACK.fields.filter(f=>/(^|_)(id|code)$/.test(f)&&r[f]);
+  if(ids.length)html+=`<details class="rv-ids"><summary>Identifiers</summary>${ids.map(f=>`<p class="kv"><b>${esc(f)}</b><span class="mono">${esc(r[f])}</span></p>`).join("")}</details>`;
+  return html;
+}
+// The pairs opened in this sitting, in order. A call takes a pair out of the
+// "still needs a human" view, so Previous walks this trail instead of the
+// view: it always returns to the pair before, decided or not, so a call made
+// by mistake can be changed.
+const TRAIL=[];let AT=-1;
+function step(d){
+  if(d<0&&AT>0){AT--;pick(TRAIL[AT],true);return;}
+  if(d>0&&AT>=0&&AT<TRAIL.length-1){AT++;pick(TRAIL[AT],true);return;}
+  const rows=visible();if(!rows.length)return;
+  const at=rows.findIndex(r=>r.decision_id===SEL);
+  if(d<0&&at<=0)return;
+  const i=at<0?0:Math.max(0,Math.min(rows.length-1,at+d));
+  pick(rows[i].decision_id);
+}
+function reviewerName(){return(($("#rv-name").value||$("#reviewer").value)||"").trim();}
+function setReviewer(v){
+  $("#reviewer").value=v;$("#rv-name").value=v;
+  try{localStorage.setItem("arche.reviewer",v)}catch{}
 }
 // Marks are written through to SQLite immediately. They used to live in M
 // until someone pressed Save, so a refresh lost the work and there was no
 // history of a reviewer changing their mind.
 async function mark(o){
   if(!SEL){$("#rerr").textContent="Choose a row first.";return;}
-  const who=($("#reviewer").value||"").trim();
-  if(!who){$("#rerr").textContent="Put your name in the reviewer field first. An unattributed adjudication cannot be audited.";return;}
-  $("#rerr").textContent="";
+  const who=reviewerName();
+  if(!who){$("#rv-said").innerHTML="<b>Type your name in “Reviewing as” first.</b> An unattributed call cannot be audited.";
+    $("#rv-name").focus();return;}
+  setReviewer(who);
   const r=await(await fetch("/api/mark",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({pack:$("#pack").value,pack_digest:PACK.digest,decision_id:SEL,
                          outcome:o,reviewer:who,reason:$("#reason").value})})).json();
-  if(r.error){$("#rerr").textContent=r.error;return;}
-  const after=visible();
+  if(r.error){$("#rv-said").textContent=r.error;return;}
+  const before=visible(),at=before.findIndex(x=>x.decision_id===SEL);
   await loadMarks();draw();
-  // Advance to the next row still wanting a call. Without this the reviewer
-  // marks a row, it leaves the filtered view, and the panel keeps showing a
-  // pair that is no longer in the queue.
+  // Move on to the next pair still wanting a call, in the order the reviewer
+  // was reading. The card says what was saved, so the click is never silent.
   const rest=visible();
-  const next=rest.find(x=>x.decision_id!==SEL)||rest[0];
-  if(next&&!rest.some(x=>x.decision_id===SEL))pick(next.decision_id);
-  else draw();
-  $("#rerr").innerHTML=`<span class="saved">Recorded.</span> `+
-    `${after.length-rest.length>0?`${after.length-rest.length} fewer in this view. `:""}`+
-    `Nothing is written to the pack until you save.`;
+  const next=before.slice(at+1).find(x=>rest.some(y=>y.decision_id===x.decision_id))
+    ||rest.find(x=>x.decision_id!==SEL);
+  const said=`<span class="saved">Saved on this machine:</span> ${esc(o.replace("_"," "))}.`;
+  if(next&&next.decision_id!==SEL){pick(next.decision_id);$("#rv-said").innerHTML=said+" Next pair.";}
+  else{pick(SEL);$("#rv-said").innerHTML=said+(rest.length?"":" Nothing left in this view.");}
+  exportNote();
 }
 
 async function loadMarks(){
@@ -1148,23 +1435,39 @@ async function loadMarks(){
   for(const [k,v] of Object.entries(d.current||{}))M[k]=v;
   const s=d.summary||{};
   const left=d.outstanding;
-  $("#marks").innerHTML=(s.marked
-    ? `${s.marked} marked${s.revisions?`, ${s.revisions} revised`:""}`+
-      ` · ${Object.entries(s.by_outcome||{}).map(([k,v])=>k+" "+v).join(" · ")}`
-    : "")
-    +(left==null?"":` · <b>${left} still need a human</b>`);
+  const done=Object.values(M).filter(m=>m.outcome&&m.outcome!=="unresolved").length;
+  const total=PACK?PACK.rows.length:0;
+  $("#rv-meter").style.width=total?`${Math.round(100*Math.min(done,total)/total)}%`:"0%";
+  const unsure=Object.values(M).filter(m=>m.outcome==="unresolved").length;
+  const revised=s.revisions||0;
+  $("#marks").innerHTML=`<b>${done} of ${total} decided</b>`
+    +(unsure?` · ${unsure} can't tell`:"")+(revised?` · ${revised} changed`:"")
+    +(left==null?"":` · ${left} still need a human`);
+  exportNote();
+}
+// What the export would contain now, against what was last exported.
+let LAST_EXPORT={};
+function exportNote(){
+  const id=$("#pack").value,last=LAST_EXPORT[id],n=Object.keys(M).length;
+  if(!last){$("#rv-export").textContent=n?`Not exported yet · ${n} call${n===1?"":"s"} saved here.`:"Not exported yet.";return;}
+  const since=n-last.n;
+  $("#rv-export").innerHTML=`Exported at ${esc(last.at)}`+(since>0?` · <b>${since} call${since===1?"":"s"} since</b>`:" · up to date");
 }
 async function save(){
   $("#rerr").textContent="";
+  const who=reviewerName();
+  if(!who){$("#rerr").textContent="Type your name in “Reviewing as” first. An unattributed export cannot be audited.";$("#reviewer").focus();return;}
   const r=await(await fetch("/api/review",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pack:$("#pack").value,reviewer:$("#reviewer").value})})).json();
+    body:JSON.stringify({pack:$("#pack").value,reviewer:who})})).json();
   if(r.error){$("#rerr").textContent=r.error;return;}
   // Two files, and the difference between them is the whole point. Name both,
   // and say which one leaves this machine — somebody is about to attach one of
   // them to an email and the filenames alone do not tell them apart.
   const f=p=>`<span style="font-family:var(--mono);font-size:15px">${esc(p)}</span>`;
+  LAST_EXPORT[$("#pack").value]={n:r.rows_marked,at:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};
+  exportNote();
   $("#rerr").innerHTML=
-    `${r.rows_marked} rows marked.<br>`+
+    `<span class="saved">Exported ${r.rows_marked} call${r.rows_marked===1?"":"s"}.</span><br>`+
     `<b>Your copy</b> — ${f(r.written)}<br>`+
     (r.shared
       ? `<b>Safe to share</b> — ${f(r.shared)}, names and dates masked.`
@@ -1595,6 +1898,313 @@ on("t-places","click",()=>tab("places"));
 on("t-redact","click",()=>tab("redact"));
 on("t-verify","click",()=>tab("verify"));
 on("t-review","click",()=>tab("review"));
+/* ═══════════════════════════════════════════════════════════════ label ══ */
+// Two ways to mark. Chunks (the default): the text is split into words, and
+// into chunks at commas and after a leading house number; a key labels the
+// chunk under the cursor and moves on. Splitting is punctuation, never a guess
+// at what a part is. Free select: drag any stretch, press its key. Both save
+// the same thing, character spans, so the export does not know which was used.
+const LB={pack:null,order:[],p:0,i:0,spans:[],skip:false,sel:null,tk:[],cuts:new Set(),
+          cur:0,free:false,undo:[],recent:[],group:""};
+function lbColour(k){const i=LB.pack.labels.findIndex(x=>x.key===k);return "lb-c"+(i<0?0:i%8);}
+function lbName(k){const l=LB.pack.labels.find(x=>x.key===k);return l?l.name:k;}
+function mdLite(src){
+  const inl=t=>esc(t).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>");
+  const L=src.split("\n"),out=[];let i=0;
+  while(i<L.length){
+    const l=L[i];
+    if(/^#{1,3} /.test(l)){const n=l.match(/^#+/)[0].length;out.push(`<h${n}>${inl(l.slice(n+1))}</h${n}>`);i++;continue;}
+    if(/^\|/.test(l)){const rows=[];while(i<L.length&&/^\|/.test(L[i]))rows.push(L[i++]);
+      const cells=r=>r.replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+      const body=rows.filter(r=>!/^\|[\s|:-]+\|$/.test(r));
+      out.push("<table><thead><tr>"+cells(body[0]).map(c=>`<th>${inl(c)}</th>`).join("")+"</tr></thead><tbody>"+
+        body.slice(1).map(r=>"<tr>"+cells(r).map(c=>`<td>${inl(c)}</td>`).join("")+"</tr>").join("")+"</tbody></table>");continue;}
+    if(/^\s*([-*]|\d+\.) /.test(l)){const ol=/^\s*\d+\./.test(l);const it=[];
+      while(i<L.length&&/^\s*([-*]|\d+\.) /.test(L[i])){let t=L[i++].replace(/^\s*([-*]|\d+\.) /,"");
+        while(i<L.length&&/^\s{2,}\S/.test(L[i]))t+=" "+L[i++].trim();it.push(`<li>${inl(t)}</li>`);}
+      out.push((ol?"<ol>":"<ul>")+it.join("")+(ol?"</ol>":"</ul>"));continue;}
+    if(!l.trim()){i++;continue;}
+    const para=[];while(i<L.length&&L[i].trim()&&!/^(#|\||\s*([-*]|\d+\.) )/.test(L[i]))para.push(L[i++]);
+    out.push(`<p>${inl(para.join(" "))}</p>`);
+  }
+  return out.join("");
+}
+
+/* words, and the cuts between them. cuts holds i when a chunk ends after word i */
+function lbTokens(t){const out=[],re=/[^\s,;]+/g;let m;while((m=re.exec(t)))out.push([m.index,m.index+m[0].length]);return out;}
+const LB_NUM=/^\d+[a-z]?([\/-]\d+[a-z]?)*$/i, LB_NUMWORD=/^(no\.?|plot|#)$/i;
+function lbDefaultCuts(t,tk){
+  const c=new Set();
+  for(let i=0;i<tk.length-1;i++)if(/[,;]/.test(t.slice(tk[i][1],tk[i+1][0])))c.add(i);
+  const w=i=>t.slice(tk[i][0],tk[i][1]);
+  let st=0;
+  for(let i=0;i<tk.length;i++){
+    if(i===st){
+      let last=i;while(last<tk.length-1&&!c.has(last))last++;
+      if(last>i){
+        if(LB_NUMWORD.test(w(i))&&LB_NUM.test(w(i+1))){c.add(i);if(i+1<last)c.add(i+1);}
+        else if(LB_NUM.test(w(i)))c.add(i);
+      }
+    }
+    if(c.has(i))st=i+1;
+  }
+  return c;
+}
+function lbChunks(){
+  const out=[];let a=0;
+  for(let i=0;i<LB.tk.length;i++)if(LB.cuts.has(i)||i===LB.tk.length-1){
+    out.push({a,b:i,s:LB.tk[a][0],e:LB.tk[i][1]});a=i+1;}
+  return out;
+}
+function lbSpanOf(ch){return LB.spans.find(s=>s.start===ch.s&&s.end===ch.e);}
+// Fit the cuts to saved spans; a span that does not sit on word edges needs free select.
+function lbFit(){
+  const tk=LB.tk;
+  for(const s of LB.spans){
+    const a=tk.findIndex(x=>x[0]===s.start),b=tk.findIndex(x=>x[1]===s.end);
+    if(a<0||b<0||b<a)return false;
+    if(a>0)LB.cuts.add(a-1);
+    LB.cuts.add(b);
+    for(let i=a;i<b;i++)LB.cuts.delete(i);
+  }
+  return true;
+}
+function lbSnap(){return{spans:LB.spans.map(s=>({...s})),cuts:new Set(LB.cuts),cur:LB.cur,skip:LB.skip};}
+function lbPush(){LB.undo.push(lbSnap());if(LB.undo.length>100)LB.undo.shift();}
+
+async function lbPacks(){
+  const p=await(await fetch("/api/label_packs")).json();
+  const sel=$("#lb-pack");
+  sel.innerHTML=(p.length?p.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join("")
+    :'<option value="">No label packs found</option>');
+  if(p.length)await lbLoad(sel.value);
+}
+async function lbLoad(id){
+  const r=await(await fetch("/api/label_pack?id="+encodeURIComponent(id))).json();
+  if(r.error){LB.pack=null;$("#lb-msg").textContent=r.error;
+    $("#lb-guide").textContent="This pack could not be opened: "+r.error;$("#lb-keys").innerHTML="";return;}
+  $("#lb-msg").textContent="";
+  LB.pack=r;LB.recent=[];LB.group="";
+  if(r.guide)$("#lb-guide").innerHTML=mdLite(r.guide);else $("#lb-guide").textContent="No guide in this pack.";
+  $("#lb-keys").innerHTML=r.labels.map((l,i)=>`<button class="act quiet lb-c${i%8}" type="button" data-lb="${esc(l.key)}">${esc(l.name)} <kbd>${esc(l.hotkey)}</kbd></button>`).join("");
+  for(const b of document.querySelectorAll("[data-lb]")){
+    b.addEventListener("mousedown",e=>e.preventDefault());
+    b.addEventListener("click",()=>lbKey(b.dataset.lb));}
+  const groups=[...new Set(r.items.map(x=>x.group).filter(Boolean))].sort();
+  const g=$("#lb-group");g.hidden=!groups.length;
+  g.innerHTML=`<option value="">All items</option>`+groups.map(x=>`<option value="${esc(x)}">${esc(x.toUpperCase())}</option>`).join("");
+  lbFilter();
+}
+function lbFilter(){
+  const P=LB.pack;
+  LB.order=P.items.map((x,i)=>i).filter(i=>!LB.group||P.items[i].group===LB.group);
+  const first=LB.order.findIndex(i=>!P.current[P.items[i].id]);
+  lbShow(first<0?0:first);
+}
+function lbShow(p){
+  const P=LB.pack;if(!P||!LB.order.length)return;
+  LB.p=Math.max(0,Math.min(p,LB.order.length-1));LB.i=LB.order[LB.p];
+  const it=P.items[LB.i],cur=P.current[it.id];
+  LB.spans=cur?cur.spans.map(s=>({...s})):[];LB.skip=cur?cur.skip:false;LB.sel=null;LB.undo=[];
+  LB.tk=lbTokens(it.text);LB.cuts=lbDefaultCuts(it.text,LB.tk);
+  LB.free=!lbFit()||!LB.tk.length;
+  const ch=lbChunks();const open=ch.findIndex(c=>!lbSpanOf(c));
+  LB.cur=open<0?ch.length:open;
+  lbRender();
+}
+function lbRenderChunks(t){
+  const ch=lbChunks();let h=esc(t.slice(0,ch.length?ch[0].s:t.length));
+  ch.forEach((c,n)=>{
+    const sp=lbSpanOf(c);
+    let inner="";
+    for(let i=c.a;i<=c.b;i++){
+      inner+=esc(t.slice(LB.tk[i][0],LB.tk[i][1]));
+      if(i<c.b)inner+=`<span class="lb-gap" data-g="${i}" title="split here">${esc(t.slice(LB.tk[i][1],LB.tk[i+1][0]))}</span>`;
+    }
+    const cls=["lb-chunk",sp?"on "+lbColour(sp.label):"",n===LB.cur?"cur":""].join(" ");
+    h+=`<span class="${cls}" data-c="${n}">${inner}${sp?`<sup title="remove this label" data-x="${n}">${esc(lbName(sp.label))} ×</sup>`:""}</span>`;
+    if(n<ch.length-1)h+=`<span class="lb-gap cut" data-g="${c.b}" title="join">${esc(t.slice(c.e,ch[n+1].s))}</span>`;
+    else h+=esc(t.slice(c.e));
+  });
+  return [h,ch];
+}
+function lbRenderFree(t){
+  let h="",at=0;
+  const plain=(a,b)=>{
+    const p=LB.sel;
+    if(!p||p[1]<=a||p[0]>=b)return esc(t.slice(a,b));
+    const x=Math.max(a,p[0]),y=Math.min(b,p[1]);
+    return esc(t.slice(a,x))+`<span class="lb-pending">${esc(t.slice(x,y))}</span>`+esc(t.slice(y,b));
+  };
+  for(const [n,s] of LB.spans.entries()){
+    h+=plain(at,s.start)+`<mark class="${lbColour(s.label)}" data-n="${n}" title="click to remove">${esc(t.slice(s.start,s.end))}<sup>${esc(lbName(s.label))}</sup></mark>`;
+    at=s.end;
+  }
+  return h+plain(at,t.length);
+}
+function lbRender(){
+  const P=LB.pack,it=P.items[LB.i],t=it.text;
+  const box=$("#lb-text");
+  box.classList.toggle("free",LB.free);
+  $("#lb-mode").textContent=LB.free?"Chunks":"Free select";
+  if(LB.free){
+    box.innerHTML=lbRenderFree(t);
+    for(const m of box.querySelectorAll("mark"))m.addEventListener("click",()=>{lbPush();LB.spans.splice(+m.dataset.n,1);lbRender();});
+    $("#lb-hint").innerHTML=LB.sel
+      ?`Selected <b>${esc(t.slice(LB.sel[0],LB.sel[1]))}</b>. Press its key, or click a part below. <span class="stat">Esc cancels</span>`
+      :`<span class="stat">Free select: drag across a part, then press its key. Click a part to remove it.</span>`;
+  }else{
+    const [h,ch]=lbRenderChunks(t);box.innerHTML=h;
+    for(const el of box.querySelectorAll(".lb-chunk"))el.addEventListener("click",e=>{
+      if(e.target.dataset.x!==undefined||e.target.classList.contains("lb-gap"))return;
+      LB.cur=+el.dataset.c;lbRender();});
+    for(const el of box.querySelectorAll("sup[data-x]"))el.addEventListener("click",()=>{
+      const c=ch[+el.dataset.x];lbPush();LB.spans=LB.spans.filter(s=>!(s.start===c.s&&s.end===c.e));LB.cur=+el.dataset.x;lbRender();});
+    for(const el of box.querySelectorAll(".lb-gap"))el.addEventListener("click",()=>lbToggleCut(+el.dataset.g));
+    const c=ch[LB.cur];
+    $("#lb-hint").innerHTML=LB.skip?`<span class="stat">Marked as not an address. Enter saves; any key relabels.</span>`
+      :c?`<b>${esc(t.slice(c.s,c.e))}</b>: press its part's key. <span class="stat"><kbd>space</kbd> leave it · <kbd>←</kbd><kbd>→</kbd> move · click between words to split or join · <kbd>⌫</kbd> undo</span>`
+      :`<span class="stat">All chunks done. <kbd>Enter</kbd> saves and moves on · <kbd>⌫</kbd> undo · click a chunk to change it</span>`;
+  }
+  $("#lb-keys").classList.toggle("armed",LB.free?!!LB.sel:!!ch_at());
+  const done=Object.keys(P.current).length,inG=LB.order.filter(i=>P.current[P.items[i].id]).length;
+  $("#lb-pos").textContent=`Item ${LB.p+1} of ${LB.order.length}`+(LB.group?` (${LB.group.toUpperCase()})`:"")+
+    (P.current[it.id]?` · saved by ${P.current[it.id].by}`:"");
+  $("#lb-count").textContent=`${done} of ${P.items.length} labelled`+(LB.group?` · ${LB.group.toUpperCase()} ${inG} of ${LB.order.length}`:"");
+  $("#lb-progress i").style.width=(100*done/Math.max(1,P.items.length)).toFixed(1)+"%";
+  $("#lb-parts").innerHTML=(LB.skip?'<dd class="lb-skip">Not an address: skipped</dd>':"")+
+    P.labels.map((l,i)=>{const v=LB.spans.filter(s=>s.label===l.key).map(s=>t.slice(s.start,s.end).trim()).join(" ");
+      return v?`<div class="lb-c${i%8}"><dt>${esc(l.name)}</dt><dd>${esc(v)}</dd></div>`:"";}).join("");
+  lbRecent();
+}
+function ch_at(){return LB.free?null:lbChunks()[LB.cur];}
+function lbToggleCut(g){
+  lbPush();
+  const ch=lbChunks(),touch=ch.filter(c=>c.a<=g+1&&c.b>=g);
+  LB.spans=LB.spans.filter(s=>!touch.some(c=>s.start<c.e&&c.s<s.end));
+  if(LB.cuts.has(g))LB.cuts.delete(g);else LB.cuts.add(g);
+  const n=lbChunks().findIndex(c=>c.a<=g&&c.b>=g);LB.cur=n<0?0:n;LB.skip=false;
+  lbRender();
+}
+function lbSelection(){
+  const sel=window.getSelection(),box=$("#lb-text");
+  if(!sel.rangeCount||sel.isCollapsed)return null;
+  const r=sel.getRangeAt(0);
+  if(!box.contains(r.startContainer)||!box.contains(r.endContainer))return null;
+  const off=(node,o)=>{const pre=document.createRange();pre.selectNodeContents(box);pre.setEnd(node,o);
+    const f=pre.cloneContents();for(const s of f.querySelectorAll("sup"))s.remove();return f.textContent.length;};
+  let a=off(r.startContainer,r.startOffset),b=off(r.endContainer,r.endOffset);
+  const t=LB.pack.items[LB.i].text;
+  while(a<b&&/\s|,/.test(t[a]))a++;while(b>a&&/\s|,/.test(t[b-1]))b--;
+  return a<b?[a,b]:null;
+}
+// A key: label the free selection, or the chunk under the cursor and move on.
+function lbKey(key){
+  if(LB.free){
+    const s=lbSelection()||LB.sel;
+    if(!s){$("#lb-msg").textContent="Select part of the text first.";return;}
+    if(LB.spans.some(x=>s[0]<x.end&&x.start<s[1])){$("#lb-msg").textContent="That overlaps a marked part; click it to remove it first.";return;}
+    lbPush();LB.spans.push({start:s[0],end:s[1],label:key});LB.spans.sort((x,y)=>x.start-y.start);
+    LB.skip=false;LB.sel=null;window.getSelection().removeAllRanges();$("#lb-msg").textContent="";lbRender();return;
+  }
+  const ch=lbChunks(),c=ch[LB.cur];
+  if(!c){$("#lb-msg").textContent="Click a chunk to change it.";return;}
+  lbPush();
+  LB.spans=LB.spans.filter(s=>!(s.start<c.e&&c.s<s.end));
+  LB.spans.push({start:c.s,end:c.e,label:key});LB.spans.sort((x,y)=>x.start-y.start);
+  LB.skip=false;$("#lb-msg").textContent="";
+  const nx=ch.findIndex((x,n)=>n>LB.cur&&!lbSpanOf(x));
+  LB.cur=nx<0?ch.length:nx;lbRender();
+}
+function lbRecent(){
+  const P=LB.pack;$("#lb-recent-box").hidden=!LB.recent.length;
+  $("#lb-recent").innerHTML=LB.recent.map(i=>{const it=P.items[i],c=P.current[it.id];
+    const parts=c&&c.skip?"skipped":(c?c.spans.map(s=>`<span class="${lbColour(s.label)}"><b>${esc(lbName(s.label))}</b> ${esc(it.text.slice(s.start,s.end))}</span>`).join(" · "):"");
+    return `<li><a href="#" data-i="${i}">${esc(it.text)}</a><br><span class="lb-rparts">${parts}</span></li>`;}).join("");
+  for(const a of $("#lb-recent").querySelectorAll("a"))a.addEventListener("click",e=>{e.preventDefault();
+    const i=+a.dataset.i;if(!LB.order.includes(i)){LB.group="";$("#lb-group").value="";LB.order=P.items.map((x,k)=>k);}
+    lbShow(LB.order.indexOf(i));});
+}
+async function lbSave(){
+  const by=$("#lb-by").value.trim();
+  if(!by){$("#lb-msg").textContent="Put your name in first: an unattributed label cannot be audited.";$("#lb-by").focus();return false;}
+  try{localStorage.setItem("arche.labeller",by);}catch(e){}
+  const it=LB.pack.items[LB.i];
+  const r=await(await fetch("/api/label",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:LB.pack.id,item:it.id,spans:LB.spans,skip:LB.skip,by})})).json();
+  if(r.error){$("#lb-msg").textContent=r.error;return false;}
+  LB.pack.current[it.id]={spans:LB.spans.map(s=>({...s})),skip:LB.skip,by,at:""};
+  LB.recent=[LB.i,...LB.recent.filter(x=>x!==LB.i)].slice(0,6);
+  $("#lb-msg").textContent="Saved.";return true;
+}
+async function lbNext(){if(await lbSave())lbShow(LB.p+1);}
+on("t-label","click",()=>{tab("label");if(!LB.pack)lbPacks();});
+on("lb-pack","change",()=>lbLoad($("#lb-pack").value));
+on("lb-group","change",()=>{LB.group=$("#lb-group").value;lbFilter();});
+// The guide card sticks below the header, whose height moves with the window width.
+function lbTop(){
+  const root=document.documentElement,h=document.querySelector("header");
+  if(!root||!root.style||typeof getComputedStyle!=="function")return;
+  root.style.setProperty("--lb-top",((h&&getComputedStyle(h).position==="sticky")?h.offsetHeight:0)+16+"px");}
+window.addEventListener("resize",lbTop);lbTop();
+on("lb-guide-open","click",()=>{$("#lb-guide-full").innerHTML=$("#lb-guide").innerHTML;$("#lb-guide-dialog").showModal();});
+on("lb-guide-close","click",()=>$("#lb-guide-dialog").close());
+on("lb-next","click",lbNext);
+on("lb-prev","click",()=>lbShow(LB.p-1));
+on("lb-clear","click",()=>{lbPush();LB.spans=[];LB.skip=false;LB.sel=null;
+  if(!LB.free){LB.cuts=lbDefaultCuts(LB.pack.items[LB.i].text,LB.tk);LB.cur=0;}lbRender();});
+on("lb-mode","click",()=>{
+  if(LB.free){const saved=LB.spans;LB.cuts=lbDefaultCuts(LB.pack.items[LB.i].text,LB.tk);
+    if(!lbFit()){LB.spans=saved;$("#lb-msg").textContent="A part here does not start and end on whole words, so it stays in free select. Clear it to use chunks.";return;}
+    LB.free=false;const ch=lbChunks(),o=ch.findIndex(c=>!lbSpanOf(c));LB.cur=o<0?ch.length:o;}
+  else{LB.free=true;LB.sel=null;}
+  $("#lb-msg").textContent="";lbRender();});
+on("lb-skipb","click",async()=>{lbPush();LB.spans=[];LB.skip=true;lbRender();if(await lbSave())lbShow(LB.p+1);});
+on("lb-export","click",async()=>{
+  const r=await(await fetch("/api/label_export",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:LB.pack&&LB.pack.id})})).json();
+  $("#lb-exported").textContent=r.error?r.error:`Wrote ${r.labelled} of ${r.items} to ${r.written}`;
+});
+try{const n=localStorage.getItem("arche.labeller");if(n)$("#lb-by").value=n;}catch(e){}
+// Enter in the name box hands the keyboard back to the labelling.
+on("lb-by","keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();$("#lb-by").blur();}});
+on("lb-text","mouseup",()=>{
+  if(!LB.pack)return;
+  const s=lbSelection();if(!s)return;
+  window.getSelection().removeAllRanges();
+  if(LB.free){
+    if(LB.spans.some(x=>s[0]<x.end&&x.start<s[1])){$("#lb-msg").textContent="That overlaps a marked part; click it to remove it first.";return;}
+    LB.sel=s;$("#lb-msg").textContent="";lbRender();return;
+  }
+  // In chunks, a drag makes the dragged words one chunk.
+  const tk=LB.tk,a=tk.findIndex(x=>x[1]>s[0]);let b=-1;
+  for(let i=tk.length-1;i>=0;i--)if(tk[i][0]<s[1]){b=i;break;}
+  if(a<0||b<a)return;
+  lbPush();
+  const A=tk[a][0],B=tk[b][1];
+  LB.spans=LB.spans.filter(x=>!(x.start<B&&A<x.end));
+  if(a>0)LB.cuts.add(a-1);LB.cuts.add(b);for(let i=a;i<b;i++)LB.cuts.delete(i);
+  LB.cur=lbChunks().findIndex(c=>c.a===a);LB.skip=false;lbRender();
+});
+document.addEventListener("keydown",e=>{
+  if($("#s-label").hidden||!LB.pack||e.ctrlKey||e.metaKey||e.altKey)return;
+  if($("#lb-guide-dialog").open)return;
+  if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName))return;
+  const n=lbChunks().length;
+  if(e.key==="Escape"&&LB.sel){LB.sel=null;lbRender();return;}
+  if(e.key==="Enter"){e.preventDefault();lbNext();return;}
+  if(e.key==="Backspace"){e.preventDefault();const u=LB.undo.pop();
+    if(u){LB.spans=u.spans;LB.cuts=u.cuts;LB.cur=u.cur;LB.skip=u.skip;lbRender();}return;}
+  if(!LB.free&&(e.key===" "||e.key==="ArrowRight")){e.preventDefault();LB.cur=Math.min(LB.cur+1,n);lbRender();return;}
+  if(!LB.free&&e.key==="ArrowLeft"){e.preventDefault();LB.cur=Math.max(LB.cur-1,0);lbRender();return;}
+  if(!LB.free&&e.key==="Delete"){const c=lbChunks()[LB.cur];if(c){lbPush();LB.spans=LB.spans.filter(s=>!(s.start===c.s&&s.end===c.e));lbRender();}return;}
+  if(e.key==="k"){lbShow(LB.p-1);return;}
+  if(e.key==="j"){lbShow(LB.p+1);return;}
+  if(e.key==="x"){$("#lb-skipb").click();return;}
+  const l=LB.pack.labels.find(x=>x.hotkey===e.key);
+  if(l){e.preventDefault();lbKey(l.key);}
+});
+
 on("b-command","click",openCommand);
 on("b-command-close","click",closeCommand);
 on("command-input","input",commandFilter);
@@ -1614,6 +2224,12 @@ on("b-same","click",()=>mark("same_entity"));
 on("b-diff","click",()=>mark("different"));
 on("b-unres","click",()=>mark("unresolved"));
 on("b-save","click",save);
+on("rv-close","click",()=>$("#rv-dialog").close());
+on("rv-prev","click",()=>step(-1));
+on("rv-next","click",()=>step(1));
+on("reviewer","change",()=>setReviewer($("#reviewer").value.trim()));
+on("rv-name","change",()=>setReviewer($("#rv-name").value.trim()));
+on("rv-dialog","close",()=>draw());
 on("pack","change",loadPack);
 on("t-chat","click",()=>{tab("chat");chatReady();chatDraw();});
 on("b-chat","click",()=>chatSend());
@@ -1631,14 +2247,12 @@ document.addEventListener("keydown",e=>{
 // Working a queue is repetitive by nature: look, decide, next. Reaching for the
 // mouse between every row is what makes 360 of them feel like 360.
 document.addEventListener("keydown",e=>{
-  if($("#s-review").hidden)return;
+  if($("#s-review").hidden&&!$("#rv-dialog").open)return;
   const t=e.target.tagName;
   if(t==="INPUT"||t==="TEXTAREA"||t==="SELECT"||e.metaKey||e.ctrlKey)return;
   const rows=visible(),at=rows.findIndex(r=>r.decision_id===SEL);
-  if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();
-    if(rows.length)pick(rows[Math.min(at+1,rows.length-1)>=0?Math.min(at+1,rows.length-1):0].decision_id);}
-  else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();
-    if(rows.length)pick(rows[Math.max(at-1,0)].decision_id);}
+  if(e.key==="j"||e.key==="ArrowDown"){e.preventDefault();step(1);}
+  else if(e.key==="k"||e.key==="ArrowUp"){e.preventDefault();step(-1);}
   else if(e.key==="1")mark("same_entity");
   else if(e.key==="2")mark("different");
   else if(e.key==="3")mark("unresolved");
@@ -1662,6 +2276,7 @@ $("#ptext").addEventListener("input",count);
   $("#entity").innerHTML=Object.keys(ENTITIES).map(
     x=>`<option${x==="place"?" selected":""}>${esc(x)}</option>`).join("");
   $("#entity").addEventListener("change",()=>describeEntity(""));
+  try{const who=localStorage.getItem("arche.reviewer");if(who)setReviewer(who);}catch{}
   example();pexample();rexample();await loadPacks();homeSummary();ledgerStatus();
   // `?explain=ID` opens straight onto a decision: the link a CLI or a service
   // response can carry so "explain by id" is a click, not a paste.

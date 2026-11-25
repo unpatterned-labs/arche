@@ -9,7 +9,7 @@ uv run python data/scripts/benchmark_gate.py --update   # re-record the baseline
 
 ```text
 PASS      DBLP-ACM, year refutes     precision 0.9506 -> 0.9506  true 2215 -> 2215  false 115 -> 115  (171.5s)
-PASS      Febrl 4, name + address    precision 0.8716 -> 0.8716  true 3285 -> 3285  false 484 -> 484  (40.1s)
+PASS      Febrl 4, name + address    precision 0.9357 -> 0.9357  true 3274 -> 3274  false 225 -> 225  (9.5s)
 PASS      Abt-Buy, product names     precision 0.9712 -> 0.9712  true 741 -> 741  false 22 -> 22  (61.0s)
           invariants spec_refutation_neutral=ok, stop_list_inert=ok
 PASS      Recipe person, Febrl 4 via Splink precision 1.0000 -> 1.0000  true 4761 -> 4761  false 0 -> 0  (18.7s)

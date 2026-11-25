@@ -34,6 +34,11 @@ from arche.resolve._tokenfreq import TokenFrequencyTable  # noqa: E402,F401
 from arche.resolve._unresolved import would_resolve  # noqa: E402,F401
 from arche.resolve.artists import artist_aliases  # noqa: E402,F401
 
+# A learned decider for the pairs the engine holds: a pinned cross-encoder and a
+# logistic combiner, loaded from a bundle. Light to import; the model loads on
+# first use.
+from arche.resolve.decider import PairDecider, PairDecision  # noqa: E402,F401
+
 # The engine, imported privately. The public `reconcile` below IS this
 # function plus entity-pack lookup: handed the same comparators the two
 # produce byte-identical output, `decision_id` included, which is why they
@@ -434,6 +439,38 @@ ENTITY_PACKS["site"] = [
     {"field": "postcode", "kind": "postcode", "weight": 0.0, "refutes_below": 0.3},
 ]
 
+# Legal entities: one side is a register of companies (Companies House, a
+# business registry), where the address is the REGISTERED OFFICE. The
+# `organisation` pack, with the address allowed to support and never to hold a
+# pair back, and the name allowed to.
+#
+# * No `premises` refuter. A registered office is routinely an accountant's or
+#   a business centre's door, not the trading address; on CQC providers against
+#   Companies House (X16, 23 Nov 2026) it held 843 pairs whose names were
+#   identical, `Unit 53` against `Unit 44, Wenta Business Centre`.
+# * `rival` on the name with the legal form stripped, in its register form. A
+#   shared address carried `The Dentist London Ltd` to `The Dentist Putney Ltd`:
+#   two companies a director registers at one office are the commonest false
+#   merge on a register, and only the name separates them. So one side's
+#   distinctive word is enough (`Academy` against `Care`), a shared brand word
+#   does not settle it, and an English word counts (`Putney`). `near` 0.85
+#   keeps one word spelt two ways from counting. Chosen on X17's dev districts
+#   (23 Nov 2026) over the shipped `rival` and two milder forms: engine
+#   precision 98.32% -> 99.29% at recall 68.1% -> 67.9%.
+#
+# Measured once, on X17's held-out districts (13,131 CQC providers, truth the
+# company number CQC records): precision 99.30% and recall 68.1% against
+# `organisation`'s 98.48% and 65.6%, both arms in-district only. Behind an exact
+# name pass over the whole register (names are unique there) it adds 0.9 points
+# of recall for 0.05 of precision: 99.70% / 98.2%. One country, one register,
+# one source list: EXPERIMENTAL.
+ENTITY_PACKS["legal_entity"] = [
+    *[spec for spec in ENTITY_PACKS["organisation"] if spec.get("kind") != "premises"],
+    {"field": "name", "kind": "rival", "weight": 0.0, "refutes_below": 0.5,
+     "strip_type": "organization", "mutual": False, "shared_overrides": False,
+     "ordinary_words": False, "near": 0.85},
+]
+
 # South Africa: `health_facility` with the facility type refuting on any tier
 # difference. Its lists name tiers officially -- clinic, community health
 # centre, satellite clinic, district / regional hospital -- so `Ngangelizwe
@@ -463,7 +500,7 @@ _PACK_TF_DOMAIN: dict[str, str] = {
     # that "Central" is ordinary, so `Central Cooperative Society` in
     # two districts merged on a shared generic token.
     "organisation": "organisation", "organization": "organisation",
-    "site": "organisation",
+    "site": "organisation", "legal_entity": "organisation",
 }
 
 
@@ -881,6 +918,9 @@ ENTITY_PACK_PURPOSE: dict[str, str] = {
     "organisation": "legal and institutional bodies: companies, agencies, "
                     "registered entities, by name and registration id",
     "organization": "alias of `organisation`",
+    "legal_entity": "companies on a register (Companies House, a business registry), "
+                    "where the address is a registered office: it supports a match "
+                    "and never holds one back. EXPERIMENTAL",
     "artist": "performing artists and recording names, including aliases and "
               "stage names",
     "product_electronics": "electronic products, by model code and specification",

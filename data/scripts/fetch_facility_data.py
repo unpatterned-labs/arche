@@ -8,7 +8,7 @@ sources for the arche facility-resolution spike.
           Crowd-mapped, genuinely independent of the government registry.
 
 Writes ``data/hfr_<state>.csv`` and ``data/osm_<state>.csv``. Public data.
-Run:  uv run python notebooks/fetch_facility_data.py [State]   # default Kano
+Run:  uv run python data/scripts/fetch_facility_data.py [State]   # default Kano
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-DATA = Path(__file__).resolve().parent.parent / "data"
+DATA = Path(__file__).resolve().parents[1]
 UA = {"User-Agent": "arche-facility-spike/0.1 (research; unpatterned.org)"}
 
 HFR_URL = (

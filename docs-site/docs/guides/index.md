@@ -10,5 +10,6 @@ One job per page. Each opens with what you will have at the end, and every examp
 - [Extract to your schema](extract-to-your-schema.md): your field names as the labels, one declaration for extraction and matching.
 - [Keep, explain, replay](keep-and-replay.md): the ledger, and what it knows once a few decisions are in it.
 - [Review a queue](review-a-queue.md): the report, the studio, applying outcomes, and evaluating against a truth set.
+- [Fine-tune a retriever](fine-tune-a-retriever.md): train an encoder on your labelled pairs, measure it against the baseline, and pin it in every decision.
 - [Let an agent call arche](mcp-server.md): the MCP server, its tools, and three ways to see it work.
 - [Serve over HTTP](serve-over-http.md): the same verbs behind a port, with the receipts.

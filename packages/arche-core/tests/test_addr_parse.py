@@ -245,3 +245,21 @@ def test_minimal_address_has_lower_confidence():
     a = parse_address("Some Street, Lagos")
     if a is not None:
         assert a.confidence < 0.85
+
+
+class TestRegionNamedByItsLevel:
+    """A last part ending in State/Region/County/Province is the region, not the city."""
+
+    @pytest.mark.parametrize("text, city, region", [
+        ("23 Airport Road, Ikorodu, Lagos State", "Ikorodu", "Lagos State"),
+        ("8 Juma Close, Otukpo, Benue State", "Otukpo", "Benue State"),
+        ("147 Ibrahim Street, Accra, Greater Accra Region", "Accra", "Greater Accra Region"),
+        ("5 Moi Avenue, Thika, Kiambu County", "Thika", "Kiambu County"),
+    ])
+    def test_the_town_stays_the_city(self, text, city, region):
+        c = parse_address(text).components
+        assert (c.city, c.region, c.neighborhood) == (city, region, None)
+
+    def test_a_city_without_a_level_word_is_unchanged(self):
+        c = parse_address("12 Allen Avenue, Ikeja, Lagos").components
+        assert (c.neighborhood, c.city, c.region) == ("Ikeja", "Lagos", None)

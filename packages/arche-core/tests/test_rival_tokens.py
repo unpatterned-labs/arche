@@ -193,6 +193,10 @@ class TestThePackWiring:
         and each carry their own rare name are two clinics. `place` is not
         changed, so nothing published moves.
 
+        `legal_entity` (23 Nov 2026) declares it on its first release, in its
+        register form: one director's companies share the brand word, so a
+        shared distinctive token does not settle the pair there.
+
         `place`, `person`, `organisation` and `artist` have published numbers
         this would move.
         """
@@ -201,7 +205,7 @@ class TestThePackWiring:
         adopted = {name for name, specs in ENTITY_PACKS.items()
                    if any(s.get("kind") == "rival" for s in specs)}
         assert adopted == {"product_home_goods", "product_grocery", "health_facility",
-                           "health_facility_za"}
+                           "health_facility_za", "legal_entity"}
 
     def test_it_needs_a_table_and_says_so(self):
         """`tftoken` raises the same way. A comparator whose whole job is

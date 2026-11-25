@@ -274,6 +274,9 @@ def rival_distinctive_tokens(
     *,
     floor: float = DISTINCTIVE_FLOOR,
     near: float | None = None,
+    mutual: bool = True,
+    shared_overrides: bool = True,
+    ordinary_words: bool = True,
 ) -> float | None:
     """Do both names carry a distinctive token the other lacks?
 
@@ -311,11 +314,27 @@ def rival_distinctive_tokens(
       token, this is not comparable. A terse listing is not a contradiction.
     * **A shared distinctive token.** Handled by the caller's other
       comparators; this one is about what is *not* shared.
+
+    **Registers of legal entities** (the `legal_entity` pack) turn three of the
+    safeguards off, because a register names each company once and its names
+    are not catalogue titles:
+
+    * ``mutual=False``: one side's distinctive token is enough. `Acme Academy`
+      and `Acme Care` are two companies, though `care` is too ordinary to count.
+    * ``shared_overrides=False``: a shared distinctive token does not settle it.
+      One director's companies share the brand (`Kestrel Dental Putney`,
+      `Kestrel Dental Wimbledon`); a catalogue's model code does not recur so.
+    * ``ordinary_words=False``: an English word on a register is a name
+      (`Putney`, `Academy`), not a description of the item.
     """
     rule = getattr(tf, "token_rule", DEFAULT_TOKEN_RULE)
     tokens_a, tokens_b = name_tokens(name_a, rule), name_tokens(name_b, rule)
     only_a, only_b = tokens_a - tokens_b, tokens_b - tokens_a
-    if not only_a or not only_b:
+
+    def _quiet(a: set, b: set) -> bool:
+        return (not a and not b) if not mutual else (not a or not b)
+
+    if _quiet(only_a, only_b):
         return None
 
     # Spelling variants are not rival identifiers. `panels` against `panel` and
@@ -325,7 +344,7 @@ def rival_distinctive_tokens(
     # contained by, a token on the other side.
     only_a = {t for t in only_a if not any(t in u or u in t for u in only_b)}
     only_b = {t for t in only_b if not any(t in u or u in t for u in tokens_a)}
-    if not only_a or not only_b:
+    if _quiet(only_a, only_b):
         return None
 
     # Opt-in (`near`, a Jaro-Winkler floor): an unshared token that is a near
@@ -340,7 +359,7 @@ def rival_distinctive_tokens(
 
         only_a = {t for t in only_a if not any(_jaro_winkler(t, u) >= near for u in only_b)}
         only_b = {t for t in only_b if not any(_jaro_winkler(t, u) >= near for u in tokens_a)}
-        if not only_a or not only_b:
+        if _quiet(only_a, only_b):
             return None
 
     threshold = floor * _distinctiveness_ceiling(tf)
@@ -358,21 +377,24 @@ def rival_distinctive_tokens(
     # corpus -- so nothing positively identifies either side.
     #
     # Without this the rule refuted 45 true pairs to remove 23 false ones.
-    if shared_name_distinctiveness(name_a, name_b, tf) >= threshold:
+    if shared_overrides and shared_name_distinctiveness(name_a, name_b, tf) >= threshold:
         return None
 
     # An ordinary English word is not an identifier, however rare it happens to
     # be in this particular catalogue. Without this the rule refuted on `spout`
     # against `knight` -- one listing describing the part, the other naming the
     # model -- because a 1,200-title corpus had seen `spout` twice.
-    only_a = {t for t in only_a if not _is_ordinary_english(t)}
-    only_b = {t for t in only_b if not _is_ordinary_english(t)}
-    if not only_a or not only_b:
-        return None
+    if ordinary_words:
+        only_a = {t for t in only_a if not _is_ordinary_english(t)}
+        only_b = {t for t in only_b if not _is_ordinary_english(t)}
+        if _quiet(only_a, only_b):
+            return None
 
     best_a = max((tf.distinctiveness(t) for t in only_a), default=0.0)
     best_b = max((tf.distinctiveness(t) for t in only_b), default=0.0)
-    if best_a >= threshold and best_b >= threshold:
+    if mutual and best_a >= threshold and best_b >= threshold:
+        return 0.0
+    if not mutual and max(best_a, best_b) >= threshold:
         return 0.0
     return None
 

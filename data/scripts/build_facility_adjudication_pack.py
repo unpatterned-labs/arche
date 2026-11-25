@@ -58,7 +58,7 @@ def _read_sample(state: str, path: Path) -> list[dict[str, str]]:
     if missing:
         raise ValueError(f"{state}: sample is missing columns {sorted(missing)}")
     for row in rows:
-        if row["decision"] not in {"match", "review"}:
+        if row["decision"] not in {"match", "review", "different"}:
             raise ValueError(f"{state}: invalid decision {row['decision']!r}")
         if any((row.get(field) or "").strip() for field in OUTCOME_FIELDS):
             raise ValueError(f"{state}: sample is already annotated: {path}")

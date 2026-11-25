@@ -507,6 +507,9 @@ def _field_sim(
             a_val, b_val, tf,
             floor=float(spec.get("floor", DISTINCTIVE_FLOOR)),
             near=float(spec["near"]) if spec.get("near") is not None else None,
+            mutual=bool(spec.get("mutual", True)),
+            shared_overrides=bool(spec.get("shared_overrides", True)),
+            ordinary_words=bool(spec.get("ordinary_words", True)),
         )
     if kind == "tftoken":
         if tf is None:

@@ -25,6 +25,7 @@ Usage:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import time
@@ -69,6 +70,48 @@ def _resolve_model_path(name_or_path: str) -> str:
 
     # 3. Return original (HuggingFace will download)
     return name_or_path
+
+
+def torch_thread_count(requested: int | None = None) -> int | None:
+    """The CPU thread count arche asks torch for, or ``None`` to leave it alone.
+
+    ``requested`` overrides ``configure(torch_threads=...)``; see that field.
+    """
+    from arche.config import get_config
+
+    n = requested if requested is not None else get_config().torch_threads
+    if n == 0:
+        return None
+    if n is None:
+        if os.environ.get("OMP_NUM_THREADS") or os.environ.get("MKL_NUM_THREADS"):
+            return None
+        return max(1, min(8, (os.cpu_count() or 2) // 2))
+    return n
+
+
+@contextlib.contextmanager
+def torch_threads(requested: int | None = None):
+    """Cap torch's CPU threads for the block, then restore the previous value.
+
+    torch defaults to every logical CPU, which on a laptop (and under WSL2 in
+    particular) oversubscribes and runs small models many times slower. Only
+    the thread count changes, never the arithmetic's result.
+    """
+    n = torch_thread_count(requested)
+    if n is None:
+        yield
+        return
+    import torch
+
+    previous = torch.get_num_threads()
+    if previous == n:
+        yield
+        return
+    torch.set_num_threads(n)
+    try:
+        yield
+    finally:
+        torch.set_num_threads(previous)
 
 
 def get_gliner2(name_or_path: str | None = None) -> Any:

@@ -95,7 +95,7 @@ The detection primitive underneath `detect_pii` and `deidentify`: detectors, a s
 def compare(a, b, *, entity: str = "person", store=None, **kwargs) -> Receipt
 ```
 
-Are these two the same thing? `a` and `b` are two dicts with your own field names, two `Pipeline` results, two canonical references, or two strings (with `jurisdiction=` and `backend=` so the fields can be read out first). `entity` picks the pack: `person`, `organisation`, `place`, `product_electronics`, `product_grocery`, `product_home_goods`, `artist`. `person` runs the Fellegi-Sunter engine; every other pack runs the pack engine, and the two do not share a score.
+Are these two the same thing? `a` and `b` are two dicts with your own field names, two `Pipeline` results, two canonical references, or two strings (with `jurisdiction=` and `backend=` so the fields can be read out first). `entity` picks the pack: `person`, `organisation`, `place`, `product_electronics`, `product_grocery`, `product_home_goods`, `artist`. `legal_entity` (experimental) is `organisation` for a company register, where the address is a registered office: the address supports a match and never holds one back, and a name that differs in a distinctive word does. Against a register whose names are unique (Companies House), link exact names across the whole register first and give the engine only what is left: on CQC providers that cascade linked 98.2% at 99.70% precision. `person` runs the Fellegi-Sunter engine; every other pack runs the pack engine, and the two do not share a score.
 
 <!-- docs-test: fragment -->
 ```python
@@ -136,7 +136,7 @@ Which of these are the same as those? Two lists of records with a stable `id` ea
 AUTO_SPLINK_FLOOR = 1000
 ```
 
-`backend="auto"` (the default) runs arche's own engine below this many records. At or above it, a shipped Splink recipe scores the batch when the entity has one, `arche-core[resolve]` is installed, and the records carry the recipe's columns; otherwise the engine again. `result["backend"]` says which was chosen and why. Three recipes ship in `arche.resolve.recipes`: `person/febrl-v1` (reads `given_name` and `surname` as two columns, so a `person` caller with one `name` blob stays on the engine at every size), `place/name-coords-v1`, and `product/identity-v1`, which `auto` never picks because the engine's product pack measures better. `backend="arche"` is the engine regardless of size; `backend="splink"` is Splink regardless and needs `splink_settings=`. [Backends](../how-it-works/backends.md) has the measurement behind the floor.
+`backend="auto"` (the default) runs arche's own engine below this many records. At or above it, a shipped Splink recipe scores the batch when the entity has one, `arche-core[resolve]` is installed, and the records carry the recipe's columns; otherwise the engine again. `result["backend"]` says which was chosen and why. Three recipes ship in `arche.resolve.recipes`: `person/febrl-v1` (reads `given_name` and `surname` as two columns, so a `person` caller with one `name` blob stays on the engine at every size), `place/name-coords-v2`, and `product/identity-v1`, which `auto` never picks because the engine's product pack measures better. `backend="arche"` is the engine regardless of size; `backend="splink"` is Splink regardless and needs `splink_settings=`. [Backends](../how-it-works/backends.md) has the measurement behind the floor.
 
 <!-- docs-test: fragment -->
 ```python
