@@ -121,3 +121,35 @@ def test_long_text_is_quick(text):
     t = time.perf_counter()
     extract_times(text, anchor=A)
     assert time.perf_counter() - t < 3.0
+
+
+@pytest.mark.parametrize("text,start,end", [
+    ("5 business days from today", "2026-12-02", "2026-12-03"),
+    ("refund in 7 working days", "2026-12-04", "2026-12-05"),
+    ("ships in 3-5 business days", "2026-11-30", "2026-12-03"),
+])
+def test_business_days_skip_the_weekend(text, start, end):
+    m = one(text)
+    assert (m.start, m.end) == (start, end)
+
+
+def test_holidays_are_skipped_when_given():
+    assert one("ships in 5 business days", holidays=["2026-11-27"]).start == "2026-12-03"
+
+
+def test_a_count_from_an_event_with_no_date_gives_no_date():
+    m = one("payment due 30 days after invoice")
+    assert (m.start, m.relative_to, m.offset) == (None, "event:invoice", {"days": 30})
+    m = one("Delivery within 5 business days from shipping")
+    assert (m.start, m.relative_to, m.mod) == (None, "event:shipping", "ON_OR_BEFORE")
+
+
+def test_or_from_the_date_the_text_gives_it():
+    got = extract_times("payment due 30 days after invoice dated 3 November", anchor=A)
+    assert got[0].start == "2026-12-03"
+    got = extract_times("shipped on 27 Nov, delivery 5 business days later", anchor=A)
+    assert [m.start for m in got] == ["2025-11-27", "2025-12-04"]
+
+
+def test_working_days_as_a_length():
+    assert one("for 3 business days").value == "P3BD"

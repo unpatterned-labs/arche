@@ -8,6 +8,7 @@ from __future__ import annotations
 import calendar
 import datetime as _dt
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -55,7 +56,8 @@ _NUM = (
     + r")"
 )
 _UNIT = (
-    r"(?P<unit>min(?:ute)?s?|mins|hours?|hrs?|days?|nights?|weeks?|wks?|fortnights?|months?|mths?"
+    r"(?P<unit>(?:business|working|work|bank)[\s-]?days?|workdays?|clear\s+days?"
+    r"|min(?:ute)?s?|mins|hours?|hrs?|days?|nights?|weeks?|wks?|fortnights?|months?|mths?"
     r"|years?|yrs?)"
 )
 _WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
@@ -337,13 +339,22 @@ _RE_SW_WEEKDAY = re.compile(
     _B + r"(?P<wd>" + "|".join(_SW_WEEKDAYS) + r")(?:\s+(?P<q>ijayo|iliyopita|hii))?(?![\w])",
     re.IGNORECASE,
 )
+#: Events a period is counted from when the text gives no date for them: "30 days after invoice".
+_EVENTS = (
+    r"shipping|shipment|dispatch|despatch|delivery|receipt|invoice|invoicing|order|ordering"
+    r"|purchase|payment|signing|signature|approval|booking|registration|notice|notification"
+    r"|collection|pickup|pick-up|submission|confirmation|completion|filing|application"
+)
 _RE_OFFSET = re.compile(
     _B
     + r"(?:(?P<in>in|within|after)\s+(?:the\s+next\s+)?)?(?P<n>"
     + _NUM
-    + r")\s+"
+    + r")(?:\s*(?:-|–|to)\s*(?P<n2>\d{1,3}))?\s+"
     + _UNIT
     + r"(?:\s+(?P<dir>from\s+(?:now|today|tomorrow|yesterday|the\s+(?:day|date)\b)"
+    + r"|(?:after|from|following|of)\s+(?:the\s+|your\s+|our\s+|its\s+)?(?P<event>"
+    + _EVENTS
+    + r")\b"
     + r"|ago|time|later|after|before|earlier"
     r"|from\s+" + _WD + r"))?(?![\w])",
     re.IGNORECASE,
@@ -548,6 +559,9 @@ _MOD = {
 
 
 class _Ctx:
+    weekend: tuple[int, ...] = (5, 6)
+    holidays: frozenset = frozenset()
+
     def __init__(self, text: str, anchor: _dt.datetime | None, mdy: bool, language: str | None):
         self.text, self.anchor, self.mdy, self.language = (
             text,
@@ -665,6 +679,8 @@ def _atom_offset(m: re.Match, c: _Ctx) -> _Atom | None:
         "year": "year",
         "yr": "year",
     }.get(unit, unit)
+    if re.match(r"(?:business|working|work|bank|clear)[\s-]*day|workday", unit):
+        unit = "business_day"
     d = (m["dir"] or "").casefold()
     lead = (m["in"] or "").casefold()
     if not d and not lead:
@@ -678,29 +694,68 @@ def _atom_offset(m: re.Match, c: _Ctx) -> _Atom | None:
         base_days = -1
     elif d in ("later", "after", "before", "earlier") or d.startswith("from the"):
         rel = "previous"
+    if m["event"]:
+        rel = "event:" + re.sub(r"\s+", " ", m["event"].casefold())
     wd = m["wd"]
     a = _Atom(m.start(), m.end(), "day", cue=(lead + " " if lead else "") + (d or ""), rel=rel)
     if lead == "within":
         a.mod = "ON_OR_BEFORE"
     days = {"day": 1, "week": 7, "fortnight": 14}.get(unit)
     a.offset = {unit + "s": sign * n} if unit != "fortnight" else {"days": sign * 14 * n}
+    if m["n2"]:
+        a.offset_to = sign * int(m["n2"]) * (14 if unit == "fortnight" else 1)  # type: ignore[attr-defined]
+        if a.offset_to * sign < n:  # type: ignore[attr-defined]
+            return None
     if unit in ("hour", "minute"):
         a.grain = "minute"
     if c.anchor is None:
         return a
-    if rel == "previous":
-        return a  # resolved against the expression before it
+    if rel != "anchor":
+        return a  # counted from another date in the text, or from an event with no date
     base = c.anchor
     if wd:
         base = _midnight(
             _next_weekday(c.today, _WD_FORMS[wd.casefold().rstrip(".")], include_today=False)
         )
     base = base + _D(days=base_days)
-    _shift(a, base, unit, sign * n, days)
+    _shift(a, base, unit, sign * n, days, c)
+    _range_to(a, base, unit, days, c)
     return a
 
 
-def _shift(a: _Atom, base: _dt.datetime, unit: str, n: int, days: int | None) -> None:
+def _range_to(a: _Atom, base: _dt.datetime, unit: str, days: int | None, c: _Ctx) -> None:
+    """ "3-5 business days": from the first count to the end of the last."""
+    to = getattr(a, "offset_to", None)
+    if to is None or a.lo is None:
+        return
+    lo, value = a.lo, a.value
+    if a.offset:
+        a.offset = {**a.offset, next(iter(a.offset)) + "_to": to}
+    _shift(a, base, unit, to, days, c)
+    a.lo, a.value = lo, f"{value}/{a.value}"
+    a.is_range = True  # type: ignore[attr-defined]
+
+
+def _business_days(d: _dt.date, n: int, c: _Ctx | None) -> _dt.date:
+    """``n`` working days after ``d`` (before, when negative), skipping the weekend and holidays."""
+    weekend = c.weekend if c else (5, 6)
+    holidays = c.holidays if c else frozenset()
+    step, left = (1 if n >= 0 else -1), abs(n)
+    while left:
+        d += _D(days=step)
+        if d.weekday() not in weekend and d not in holidays:
+            left -= 1
+    return d
+
+
+def _shift(
+    a: _Atom, base: _dt.datetime, unit: str, n: int, days: int | None, c: _Ctx | None = None
+) -> None:
+    if unit in ("business_day", "business_days"):
+        a.lo = _midnight(_business_days(base.date(), n, c))
+        a.hi = a.lo + DAY
+        a.value = _day_value(a.lo)
+        return
     if unit in ("hour", "minute"):
         t = base + (_D(hours=n) if unit == "hour" else _D(minutes=n))
         t = t.replace(second=0, microsecond=0)
@@ -1117,7 +1172,10 @@ def _atom_sw_clock(m: re.Match, c: _Ctx) -> _Atom | None:
 def _atom_duration(m: re.Match, c: _Ctx) -> _Atom | None:
     n = _num(m["n"] or m["n2"])
     u = (m["unit"] or m["unit2"]).casefold().rstrip("s")
+    if re.match(r"(?:business|working|work|bank|clear)[\s-]*day|workday", u):
+        u = "business day"
     code = {
+        "business day": "BD",  # not TIMEX3: it has no working day; P5BD is five working days
         "min": "TM",
         "minute": "TM",
         "mins": "TM",
@@ -1138,7 +1196,12 @@ def _atom_duration(m: re.Match, c: _Ctx) -> _Atom | None:
     start = m.start("n") if m["n"] else m.start()
     v = ("PT" + str(n) + code[1]) if code.startswith("T") else ("P" + str(n) + code)
     return _Atom(
-        start, m.end(), "duration", value=v, cue=(m["cue"] or "long").casefold(), conf=0.85
+        start,
+        m.end(),
+        "duration",
+        value=v if code != "BD" else f"P{n}BD",
+        cue=(m["cue"] or "long").casefold(),
+        conf=0.85,
     )
 
 
@@ -1325,8 +1388,8 @@ def _finish(text: str, atoms: list[_Atom], c: _Ctx) -> list[TimeMention]:
         if (
             x.rel == "previous"
             and re.search(r"(?:before|after)$", x.cue or "")
-            and k + 1 < len(merged)
-        ):
+            or (x.rel or "").startswith("event:")
+        ) and k + 1 < len(merged):
             nxt = merged[k + 1][0]
             between = text[x.end : nxt.start]
             if (
@@ -1343,17 +1406,24 @@ def _finish(text: str, atoms: list[_Atom], c: _Ctx) -> list[TimeMention]:
         lead = group[0]
         # chained: resolve against the previous date in the text
         for x in group:
+            if (x.rel or "").startswith("event:") and x.offset is not None and k in following:
+                x.rel = (
+                    "previous"  # "30 days after invoice dated 3 November": the date that follows
+                )
             if x.rel == "previous" and x.offset is not None:
                 base = following.get(k) or last_day or (_midnight(c.today) if c.today else None)
                 if base is not None:
                     unit, n = next(iter(x.offset.items()))
                     _shift(
-                        x, base, unit.rstrip("s"), n, {"day": 1, "week": 7}.get(unit.rstrip("s"))
+                        x, base, unit.rstrip("s"), n, {"day": 1, "week": 7}.get(unit.rstrip("s")), c
+                    )
+                    _range_to(
+                        x, base, unit.rstrip("s"), {"day": 1, "week": 7}.get(unit.rstrip("s")), c
                     )
                     x.lo = (
                         x.lo.replace(hour=0, minute=0) if unit not in ("hours", "minutes") else x.lo
                     )
-                    if unit not in ("hours", "minutes"):
+                    if unit not in ("hours", "minutes") and not getattr(x, "is_range", False):
                         x.hi = x.lo + DAY
                         x.value = _day_value(x.lo)
                 x.rel = (
@@ -1419,6 +1489,8 @@ def _finish(text: str, atoms: list[_Atom], c: _Ctx) -> list[TimeMention]:
             if lead.kind == "set"
             else "date"
         )
+        if any(getattr(x, "is_range", False) for x in group):
+            result.kind_out = "range"
         if result.lo is not None and result.kind_out == "date":
             last_day = result.lo
         elif result.lo is not None:
@@ -1572,6 +1644,8 @@ def extract_times(
     anchor: _dt.datetime | _dt.date | str | None = None,
     jurisdiction: str | None = None,
     language: str | None = None,
+    weekend: tuple[int, ...] = (5, 6),
+    holidays: Iterable[_dt.date | str] = (),
 ) -> list[TimeMention]:
     """Every time expression in ``text``, in order, resolved against ``anchor`` when given.
 
@@ -1580,10 +1654,19 @@ def extract_times(
     March 12, everywhere else December 3, and both are returned when both are
     real days. ``language`` (``yo``, ``ha``) admits Yoruba and Hausa day words
     written without tone marks.
+
+    Business and working days ("5 business days from today", "3-5 working
+    days") skip ``weekend`` (weekday numbers, Monday 0; Saturday and Sunday by
+    default) and the dates in ``holidays``. arche ships no holiday calendar:
+    pass the one that applies, or the count is weekends only. A period counted
+    from an event the text gives no date for ("30 days after invoice") keeps its
+    offset and ``relative_to="event:invoice"``, and no date.
     """
     if isinstance(anchor, str):
         anchor = _dt.datetime.fromisoformat(anchor)
     elif isinstance(anchor, _dt.date) and not isinstance(anchor, _dt.datetime):
         anchor = _midnight(anchor)
     c = _Ctx(text[:20000], anchor, (jurisdiction or "").upper() == "US", language)
+    c.weekend = tuple(weekend)
+    c.holidays = frozenset(_dt.date.fromisoformat(h) if isinstance(h, str) else h for h in holidays)
     return _finish(c.text, _mentions(c.text, c), c)
