@@ -116,7 +116,8 @@ def test_yoruba_and_hausa_need_tone_marks_or_a_language():
     assert one("gobe da safe", language="ha").start == "2026-11-26"
 
 
-@pytest.mark.parametrize("text", ["tomorrow " * 4000, "4 " * 8000, "every " * 5000, "3/" * 6000])
+@pytest.mark.parametrize("text", ["tomorrow " * 4000, "4 " * 8000, "every " * 5000, "3/" * 6000],
+                         ids=["tomorrow", "fours", "every", "slashes"])
 def test_long_text_is_quick(text):
     t = time.perf_counter()
     extract_times(text, anchor=A)
