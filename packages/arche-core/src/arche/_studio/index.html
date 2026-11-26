@@ -389,6 +389,12 @@ button.act:hover{background:var(--ink-press);color:var(--surface);transform:tran
 .lb-keys button{border-left:4px solid var(--lbc)}
 .lb-keys.armed button{background:var(--lbt)}
 .lb-hint{font-size:14px;min-height:22px;margin:10px 0 0}
+.ck-context{display:flex;flex-wrap:wrap;gap:4px 20px;margin:0 0 10px;font-size:14px;color:var(--muted)}
+.ck-context dt{font-weight:600}.ck-context dd{margin:0}
+.ck-plabel{margin-top:18px}
+.ck-proposal{font-size:19px;line-height:1.6;padding:14px 20px;border-left:3px solid var(--rule);background:var(--code)}
+.ck-keys{margin-top:16px}.ck-keys button.on{background:var(--lbt)}
+.ck-fix{display:block;margin-top:12px;font-size:14px;color:var(--muted)}.ck-fix input{width:100%;margin-top:4px}
 .lb-hint b{font-family:var(--mono);font-weight:500}
 .lb-keys{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
 .lb-keys button{font-family:var(--serif);font-size:13px}
@@ -474,6 +480,7 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
     <button id="t-verify"  aria-current="false">Verify</button>
     <button id="t-review"  aria-current="false">Review queue</button>
     <button id="t-label"   aria-current="false">Label</button>
+    <button id="t-check"   aria-current="false">Check</button>
     <button id="t-explain" aria-current="false">Explain</button>
     <button class="command-key" id="b-command" type="button">Open <kbd>Ctrl K</kbd></button>
   </nav>
@@ -855,6 +862,47 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
   </dialog>
 </section>
 
+<!-- ════════════════════════════════════════════════════════════ CHECK ══ -->
+<section id="s-check" hidden>
+  <div class="rv-bar">
+    <select id="ck-pack" style="width:auto" aria-label="Check pack"></select>
+    <select id="ck-group" style="width:auto" aria-label="Show" hidden></select>
+    <label class="rv-who">Checking as <input id="ck-by" placeholder="your name, then Enter" autocomplete="name"></label>
+    <span class="lb-progress" id="ck-progress" aria-hidden="true"><i></i></span>
+    <span class="stat" id="ck-count"></span>
+    <button class="act" id="ck-export" type="button">Export checks</button>
+    <span class="stat" id="ck-exported"></span>
+  </div>
+  <div class="split">
+    <div>
+      <p class="lede measure">Each item is a text and a reading of it that someone else proposed. Say
+        whether the reading is right. <span id="ck-controls" hidden>Some readings are wrong on purpose,
+        so read every one before you answer.</span></p>
+      <p class="label" id="ck-pos"></p>
+      <dl class="ck-context" id="ck-context"></dl>
+      <div class="lb-text" id="ck-text"></div>
+      <p class="label ck-plabel">Proposed reading</p>
+      <div class="ck-proposal" id="ck-proposal"></div>
+      <div class="lb-keys ck-keys">
+        <button class="act quiet lb-c1" type="button" id="ck-right">Right <kbd>1</kbd></button>
+        <button class="act quiet lb-c7" type="button" id="ck-wrong">Wrong <kbd>2</kbd></button>
+        <button class="act quiet lb-c3" type="button" id="ck-unsure">Can't tell <kbd>3</kbd></button>
+      </div>
+      <label class="ck-fix" id="ck-fix-box" hidden>What it should be (optional)
+        <input id="ck-fix" placeholder="a few words, then Enter"></label>
+      <div class="lb-row">
+        <span><button class="act quiet" id="ck-prev" type="button">Previous <kbd>k</kbd></button>
+          <button class="act quiet" id="ck-skip" type="button">Next, without answering <kbd>j</kbd></button></span>
+      </div>
+      <p class="stat" id="ck-msg"></p>
+    </div>
+    <aside class="lb-aside">
+      <div class="lb-aside-head"><p class="label">Guide</p></div>
+      <div class="lb-guide" id="ck-guide">No guide in this pack.</div>
+    </aside>
+  </div>
+</section>
+
 <section id="s-explain" hidden>
  <div class="split">
   <div>
@@ -978,7 +1026,7 @@ const WORKSPACE_COPY={
   label:"Mark the parts of a text by hand, for gold data.",
   explain:"Read a recorded decision: what, why, and whether it still holds."
 };
-const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","label","explain"]){
+const tab=t=>{for(const k of["home","chat","compare","threat","extract","places","redact","verify","review","label","check","explain"]){
   const button=$("#t-"+k),section=$("#s-"+k);
   if(button)button.setAttribute("aria-current",String(k===t));
   if(section)section.hidden=k!==t;
@@ -2203,6 +2251,97 @@ document.addEventListener("keydown",e=>{
   if(e.key==="x"){$("#lb-skipb").click();return;}
   const l=LB.pack.labels.find(x=>x.hotkey===e.key);
   if(l){e.preventDefault();lbKey(l.key);}
+});
+
+
+// ── check mode: is a proposed reading right? ─────────────────────────────────
+const CK={pack:null,order:[],p:0,i:0,shown:0,verdict:null,group:""};
+async function ckPacks(){
+  const r=await(await fetch("/api/check_packs")).json(),sel=$("#ck-pack");
+  if(!Array.isArray(r)||!r.length){sel.innerHTML="<option>No check packs</option>";
+    $("#ck-text").textContent="Put a check pack under check_packs/ in the studio home.";return;}
+  sel.innerHTML=r.map(p=>`<option value="${esc(p.id)}">${esc(p.title)} (${p.checked} of ${p.items})</option>`).join("");
+  ckLoad(r[0].id);
+}
+async function ckLoad(id){
+  const r=await(await fetch("/api/check_pack?id="+encodeURIComponent(id))).json();
+  if(r.error){$("#ck-msg").textContent=r.error;return;}
+  CK.pack=r;CK.group="";
+  $("#ck-guide").innerHTML=r.guide?mdLite(r.guide):"No guide in this pack.";
+  $("#ck-controls").hidden=!r.has_controls;
+  const groups=[...new Set(r.items.map(x=>x.group).filter(Boolean))].sort(),g=$("#ck-group");
+  g.hidden=!groups.length;
+  g.innerHTML=`<option value="">All items</option>`+groups.map(x=>`<option value="${esc(x)}">${esc(x.toUpperCase())}</option>`).join("");
+  ckFilter();
+}
+function ckFilter(){
+  const P=CK.pack;CK.order=P.items.map((x,i)=>i).filter(i=>!CK.group||P.items[i].group===CK.group);
+  const first=CK.order.findIndex(i=>!P.current[P.items[i].id]);ckShow(first<0?0:first);
+}
+function ckShow(p){
+  const P=CK.pack;if(!P||!CK.order.length)return;
+  CK.p=Math.max(0,Math.min(p,CK.order.length-1));CK.i=CK.order[CK.p];
+  const it=P.items[CK.i],cur=P.current[it.id];
+  CK.verdict=null;CK.shown=Date.now();
+  const m=it.mark,t=it.text;
+  $("#ck-text").innerHTML=m?esc(t.slice(0,m[0]))+`<mark class="lb-c0">${esc(t.slice(m[0],m[1]))}</mark>`+esc(t.slice(m[1])):esc(t);
+  $("#ck-context").innerHTML=it.context.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
+  $("#ck-proposal").textContent=it.proposal;
+  $("#ck-fix").value=cur?cur.correction||"":"";
+  $("#ck-fix-box").hidden=!(cur&&cur.verdict==="wrong");
+  for(const v of["right","wrong","unsure"])$("#ck-"+v).classList.toggle("on",!!cur&&cur.verdict===v);
+  const done=Object.keys(P.current).length;
+  $("#ck-pos").textContent=`Item ${CK.p+1} of ${CK.order.length}`+(cur?` · checked by ${cur.by}`:"");
+  $("#ck-count").textContent=`${done} of ${P.items.length} checked`;
+  $("#ck-progress i").style.width=(100*done/Math.max(1,P.items.length)).toFixed(1)+"%";
+  $("#ck-msg").textContent="";
+}
+async function ckSave(verdict){
+  const by=$("#ck-by").value.trim();
+  if(!by){$("#ck-msg").textContent="Put your name in first: an unattributed check cannot be audited.";$("#ck-by").focus();return false;}
+  try{localStorage.setItem("arche.labeller",by);}catch(e){}
+  const it=CK.pack.items[CK.i],seconds=(Date.now()-CK.shown)/1000;
+  const r=await(await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:CK.pack.id,item:it.id,verdict,correction:verdict==="wrong"?$("#ck-fix").value:"",by,seconds})})).json();
+  if(r.error){$("#ck-msg").textContent=r.error;return false;}
+  CK.pack.current[it.id]={verdict,correction:$("#ck-fix").value,by,at:""};return true;
+}
+// Right and can't tell save at once; wrong opens the box for what it should be, and Enter saves.
+async function ckAnswer(v){
+  if(v==="wrong"&&$("#ck-fix-box").hidden){CK.verdict="wrong";$("#ck-fix-box").hidden=false;
+    for(const x of["right","wrong","unsure"])$("#ck-"+x).classList.toggle("on",x==="wrong");
+    $("#ck-fix").focus();return;}
+  if(await ckSave(v))ckShow(CK.p+1);
+}
+on("t-check","click",()=>{tab("check");if(!CK.pack)ckPacks();});
+on("ck-pack","change",()=>ckLoad($("#ck-pack").value));
+on("ck-group","change",()=>{CK.group=$("#ck-group").value;ckFilter();});
+on("ck-right","click",()=>ckAnswer("right"));
+on("ck-wrong","click",()=>ckAnswer("wrong"));
+on("ck-unsure","click",()=>ckAnswer("unsure"));
+on("ck-prev","click",()=>ckShow(CK.p-1));
+on("ck-skip","click",()=>ckShow(CK.p+1));
+on("ck-fix","keydown",async e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();if(await ckSave("wrong"))ckShow(CK.p+1);}
+  if(e.key==="Escape"){$("#ck-fix").blur();}});
+on("ck-by","keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();$("#ck-by").blur();}});
+try{const n=localStorage.getItem("arche.labeller");if(n)$("#ck-by").value=n;}catch(e){}
+on("ck-export","click",async()=>{
+  const r=await(await fetch("/api/check_export",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({pack:CK.pack&&CK.pack.id})})).json();
+  if(r.error){$("#ck-exported").textContent=r.error;return;}
+  const s=r.summary,c=s.controls;
+  $("#ck-exported").textContent=`Wrote ${r.checked} of ${r.items} to ${r.written}`+
+    (c?` · ${c.caught} of ${c.checked} planted errors caught`:"")+
+    (s.median_seconds!=null?` · median ${s.median_seconds}s an item`:"");
+});
+document.addEventListener("keydown",e=>{
+  if($("#s-check").hidden||!CK.pack||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName))return;
+  if(e.key==="1"){e.preventDefault();ckAnswer("right");}
+  else if(e.key==="2"){e.preventDefault();ckAnswer("wrong");}
+  else if(e.key==="3"){e.preventDefault();ckAnswer("unsure");}
+  else if(e.key==="k"){ckShow(CK.p-1);}
+  else if(e.key==="j"){ckShow(CK.p+1);}
 });
 
 on("b-command","click",openCommand);

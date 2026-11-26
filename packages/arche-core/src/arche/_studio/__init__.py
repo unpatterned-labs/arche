@@ -33,6 +33,9 @@ should be looking at the same thing.
 
 **Label** is the exception: it marks the parts of a text (an address, a
 sentence) for gold data, and shows no model output at all (``labels.py``).
+**Check** is its counterpart: a person says whether a proposed reading of a
+text is right, with readings made wrong on purpose mixed in so the export can
+say whether the approvals were a check (``checks.py``).
 
 Typefaces
 ---------
@@ -89,7 +92,7 @@ PACKS = Path(os.environ.get("ARCHE_STUDIO_PACKS") or HOME / "review_packs").expa
 
 OUTCOMES = ("same_entity", "different", "unresolved")
 
-from . import labels  # noqa: E402
+from . import checks, labels  # noqa: E402
 from .state import Store  # noqa: E402
 
 # NOT under PACKS. `/api/pack?id=...` reads any file inside the pack directory
@@ -1574,6 +1577,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(labels.packs(HOME))
             elif u.path == "/api/label_pack":
                 self._json(labels.load(HOME, parse_qs(u.query).get("id", [""])[0]))
+            elif u.path == "/api/check_packs":
+                self._json(checks.packs(HOME))
+            elif u.path == "/api/check_pack":
+                self._json(checks.load(HOME, parse_qs(u.query).get("id", [""])[0]))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:  # surfaced in the UI rather than the console
@@ -1609,6 +1616,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(labels.save(HOME, payload))
             elif u.path == "/api/label_export":
                 self._json(labels.export(HOME, payload.get("pack", "")))
+            elif u.path == "/api/check":
+                self._json(checks.save(HOME, payload))
+            elif u.path == "/api/check_export":
+                self._json(checks.export(HOME, payload.get("pack", "")))
             else:
                 self._json({"error": "not found"}, 404)
         except Exception as exc:
@@ -1644,6 +1655,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--port", type=int, default=PORT,
                     help=f"listen on 127.0.0.1:PORT (default {PORT})")
     ap.add_argument("--packs", default=None, help=f"review pack directory (default {PACKS})")
+    ap.add_argument("--checks", default=None,
+                    help="check pack directory (default: $ARCHE_CHECK_PACKS or "
+                         "<studio home>/check_packs)")
     ap.add_argument("--labels", default=None,
                     help="label pack directory (default: $ARCHE_LABEL_PACKS or "
                          "<studio home>/label_packs)")
@@ -1657,6 +1671,8 @@ def main(argv: list[str] | None = None) -> int:
         LEDGER_URI = args.ledger
     if args.labels:
         os.environ["ARCHE_LABEL_PACKS"] = str(Path(args.labels).expanduser().resolve())
+    if args.checks:
+        os.environ["ARCHE_CHECK_PACKS"] = str(Path(args.checks).expanduser().resolve())
     PACKS.mkdir(parents=True, exist_ok=True)
     if not (HERE / "index.html").exists():
         print("index.html is missing from the arche package", file=sys.stderr)
@@ -1671,6 +1687,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  arche studio  ->  {url}")
     print(f"  review packs  ->  {PACKS}")
     print(f"  label packs   ->  {labels.root(HOME)}")
+    print(f"  check packs   ->  {checks.root(HOME)}")
     print(f"  state         ->  {STUDIO_STATE}")
     print(f"  ledger        ->  {LEDGER_URI or 'none (--ledger FILE or ARCHE_LEDGER)'}")
     print("  ctrl-c to stop")
