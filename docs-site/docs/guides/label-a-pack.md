@@ -68,3 +68,26 @@ Each save is appended to `_studio/labels/<pack>.jsonl` in Studio's home, with wh
 ## Export
 
 **Export** writes one row per item: the item's own columns, one column per label (the labelled text, in reading order), `skip` and `labelled_by`. Rows nobody has labelled yet have empty label columns and no `labelled_by`, so a script reading the export can tell an unlabelled row from a row whose answer is empty.
+
+## Check someone else's reading
+
+Label mode makes answers from nothing. **Check** mode is the other job: a parser, a model or another person has proposed a reading of each text, and a person says whether it holds. A check pack is a directory under `check_packs/` in Studio's home (`ARCHE_CHECK_PACKS` to point elsewhere) with `items.csv` and a `pack.json`:
+
+```json
+{
+  "schema": "arche.check_pack.v1",
+  "title": "Time readings",
+  "id_field": "id",
+  "text_field": "text",
+  "proposal_field": "proposal",
+  "mark_field": "words",
+  "occurrence_field": "n",
+  "context_fields": ["written"],
+  "control_field": "control",
+  "guide": "GUIDE.md"
+}
+```
+
+The card shows the context fields, the text with `mark_field`'s words highlighted (the `n`-th occurrence), and the proposal. `1` right, `2` wrong (then type what it should be, and `Enter`), `3` can't tell; `j` / `k` move without answering.
+
+**Controls.** Approving a list of readings is quick, and quick approval is easy to mistake for a check. Rows whose `control_field` is `1` are readings made wrong on purpose. The column never reaches the browser; the page only says that some readings are wrong. Each save also records the seconds the item was on screen. Export writes `checks.csv` (each row with `verdict`, `correction`, `checked_by`, `seconds`) and `checks_summary.json`, which reports how many controls were caught and passed as right, the median seconds an item, and how many items took under three seconds. If the controls were not caught, the approvals are not evidence, and the summary says so in numbers.
