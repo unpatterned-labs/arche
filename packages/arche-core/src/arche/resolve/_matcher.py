@@ -678,8 +678,10 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     if not shared:
         words = _place_word_overlap(raw_a, raw_b)
         if words is not None:
-            return max(words, _BUILDING_SCORE) if building else words
-        return max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
+            words = max(words, _BUILDING_SCORE) if building else words
+        else:
+            words = max(_token_sort_ratio(norm_a, norm_b), _jaro_winkler(norm_a, norm_b))
+        return min(words, _NUMBER_OPEN_CAP) if _units_differ(raw_a, raw_b) else words
 
     if "street" in shared and _same_road_longer_line(comps_a, comps_b):
         comps_a = {**comps_a, "street": comps_b["street"]}
@@ -711,12 +713,48 @@ def compare_addresses(addr_a: Any, addr_b: Any) -> float:
     relation = _number_relation(comps_a, comps_b)
     if relation is not None and relation != "agree":
         score = min(score, _NUMBER_OPEN_CAP)
+    # The same goes for a room, flat, shop, office or block: Room 3 and Room 4 of
+    # one building are two premises.
+    if _units_differ(raw_a, raw_b):
+        score = min(score, _NUMBER_OPEN_CAP)
 
     # A match resting only on shared city/region is weak — cap it.
     if not (shared & _ADDR_DISTINCTIVE) and not building:
         score = min(score, _ADDR_WEAK_MATCH_CAP)
 
     return score
+
+
+# A unit inside a building, by kind: "Room 3", "Flat 4B", "Shop No. 14", "Block C".
+_UNIT_KINDS = {"room": "room", "rm": "room", "unit": "unit", "flat": "flat", "apt": "flat",
+               "apartment": "flat", "suite": "suite", "ste": "suite", "shop": "shop",
+               "stall": "shop", "kiosk": "shop", "office": "office", "block": "block",
+               "blk": "block", "building": "building", "bldg": "building"}
+_UNIT_IN_TEXT_RE = re.compile(
+    r"\b(" + "|".join(sorted(_UNIT_KINDS, key=len, reverse=True)) + r")\b\.?\s*(?:no\.?\s*)?"
+    r"(\d{1,5}[A-Za-z]?\b|[A-Za-z]{1,2}\d{1,4}\b|[A-Z]\b)", re.IGNORECASE)
+
+
+def _units(text: str) -> dict[str, str]:
+    """The first unit of each kind an address states: ``{"room": "3", "block": "c"}``.
+
+    A letter alone counts only as a capital ("Block C", not "the office a"), and
+    a number loses leading zeros, so "Unit 01" is "Unit 1" and "E04" is "E4".
+    """
+    out: dict[str, str] = {}
+    for m in _UNIT_IN_TEXT_RE.finditer(text[:400]):
+        value = m[2]
+        if len(value) == 1 and value.isalpha() and not value.isupper():
+            continue
+        value = re.sub(r"(?<![0-9])0+(?=[0-9])", "", value).casefold()
+        out.setdefault(_UNIT_KINDS[m[1].casefold()], value)
+    return out
+
+
+def _units_differ(raw_a: str, raw_b: str) -> bool:
+    """Both name a unit of one kind, and not the same one. One side silent says nothing."""
+    ua, ub = _units(raw_a), _units(raw_b)
+    return any(ua[k] != ub[k] for k in ua.keys() & ub.keys())
 
 
 _HOUSE_NUMBER_SIMS = {"agree": 1.0, "missing": 0.5, "range": 0.25, "letter": 0.25,
