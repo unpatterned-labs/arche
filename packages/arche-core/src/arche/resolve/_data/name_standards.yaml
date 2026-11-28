@@ -1,0 +1,37 @@
+# name_standards.yaml — tokens written several ways that mean one thing, in organisation names.
+#
+# Read by resolve._standardise, through the opt-in `standardise` key on a comparator
+# ({"field": "name", "kind": "tftoken", "standardise": "organisation"}). Applied to both
+# names before anything else reads them, so "Marks & Spencer P.L.C." and "MARKS AND
+# SPENCER PLC" compare as one name, and the legal form is still found afterwards.
+#
+# Deliberately narrow. Every entry here makes two strings equal, so an entry that is
+# wrong for some names merges companies. What is NOT here, and why:
+#   - "&" inside a word ("M&S", "A&M", "B&Q"): that is part of the name, not a word "and".
+#   - "St": Saint in a name, Street in an address.
+#   - "Int": International, or Interior, or a reference number.
+# Adding an entry changes the decision ids of every organisation pack: the table is pinned.
+
+organisation:
+  # A conjunction written as a symbol, only between two words of two letters or more
+  # ("Mine & Yours"); next to a single letter ("M & S", "C & P") it is part of initials.
+  symbols:
+    "&": and
+    "+": and
+  # A run of single letters each followed by a full stop, ending the word: joined when
+  # it spells a legal form or type word ("P.L.C." is "PLC", "C.I.C." is "CIC"), otherwise
+  # split into letters ("O.A." is "O A", "S.W." is "S W").
+  join_dotted_initials: true
+  # Whole words, case-insensitive, with or without a final full stop.
+  words:
+    co: company
+    coy: company
+    bros: brothers
+    intl: international
+    "int'l": international
+    mfg: manufacturing
+    mfrs: manufacturers
+    assoc: association
+    natl: national
+    svcs: services
+    grp: group

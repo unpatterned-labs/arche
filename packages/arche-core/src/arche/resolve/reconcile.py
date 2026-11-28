@@ -183,6 +183,13 @@ def _text_values(
     therefore every number a pack has published.
     """
     a_val, b_val = str(ra[field]), str(rb[field])
+    std = spec.get("standardise")
+    if std:
+        # First, so the legal form is found in "P.L.C." and the name compared is the
+        # standard one. See `resolve._standardise`.
+        from arche.resolve._standardise import standardise
+
+        a_val, b_val = standardise(a_val, str(std)), standardise(b_val, str(std))
     if spec.get("strip_qualifier"):
         a_val, b_val = split_place_name(a_val)[0], split_place_name(b_val)[0]
     domain = spec.get("strip_type")
@@ -229,6 +236,11 @@ def _shipped_asset_pins(comparators: list[dict]) -> dict[str, str]:
         from arche.resolve._legal_form import pin as _legal_form_pin
 
         out["legal_form"] = _legal_form_pin()
+    stds = {str(spec["standardise"]) for spec in comparators if spec.get("standardise")}
+    for std in sorted(stds):
+        from arche.resolve._standardise import pin as _standards_pin
+
+        out[f"name_standards:{std}"] = _standards_pin(std)
     if any(spec.get("kind") == "designator" for spec in comparators):
         from arche.resolve._name_markers import designator_markers_pin
 
@@ -428,8 +440,14 @@ def _field_sim(
         field = spec.get("field", "name")
         if ra.get(field) in (None, "") or rb.get(field) in (None, ""):
             return None
-        type_a, _ = normalize_type_token(str(ra[field]), vocab)
-        type_b, _ = normalize_type_token(str(rb[field]), vocab)
+        ta, tb = str(ra[field]), str(rb[field])
+        if spec.get("standardise"):
+            from arche.resolve._standardise import standardise
+
+            domain = str(spec["standardise"])
+            ta, tb = standardise(ta, domain), standardise(tb, domain)
+        type_a, _ = normalize_type_token(ta, vocab)
+        type_b, _ = normalize_type_token(tb, vocab)
         if type_a is None or type_b is None:
             return None
         if type_a == type_b:

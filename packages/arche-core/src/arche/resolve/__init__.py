@@ -474,6 +474,17 @@ ENTITY_PACKS["legal_entity"] = [
     {"field": "name", "kind": "group_words", "weight": 0.0, "refutes_below": 0.5},
 ]
 
+# Organisation names written two ways ("Marks & Spencer P.L.C." / "MARKS AND SPENCER
+# PLC", "Premier Quilting Co" / "PREMIER QUILTING COMPANY") are standardised before
+# every name comparator reads them: `resolve/_data/name_standards.yaml`, pinned as
+# `name_standards`. One pass over the three packs that read organisation names, so
+# the specs they share stay one object and none is missed. Not `place` or `person`.
+for _pack in ("organisation", "site", "legal_entity"):
+    for _spec in ENTITY_PACKS[_pack]:
+        if _spec.get("field") == "name":
+            _spec["standardise"] = "organisation"
+del _pack, _spec
+
 # `person` with misspelt name tokens counting (`near`). In `person` a one-letter
 # error in a name scores 0 on the token comparator and can also miss the
 # distinctive floor, so a pair with the same birth date and address is held for
