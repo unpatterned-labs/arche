@@ -1661,6 +1661,9 @@ def extract_times(
     pass the one that applies, or the count is weekends only. A period counted
     from an event the text gives no date for ("30 days after invoice") keeps its
     offset and ``relative_to="event:invoice"``, and no date.
+
+    Only the first 20,000 characters of ``text`` are read, so the time a call
+    takes stays bounded. Split longer text and call once per part.
     """
     if isinstance(anchor, str):
         anchor = _dt.datetime.fromisoformat(anchor)
