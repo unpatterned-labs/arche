@@ -888,8 +888,8 @@ button.act.rv-btn[aria-pressed=true]{background:var(--ink);color:var(--surface);
         <button class="act quiet lb-c7" type="button" id="ck-wrong">Wrong <kbd>2</kbd></button>
         <button class="act quiet lb-c3" type="button" id="ck-unsure">Can't tell <kbd>3</kbd></button>
       </div>
-      <label class="ck-fix" id="ck-fix-box" hidden>What it should be (optional)
-        <input id="ck-fix" placeholder="a few words, then Enter"></label>
+      <label class="ck-fix" id="ck-fix-box">Note (optional): what it should be, or why. Saved with any answer
+        <input id="ck-fix" placeholder="a few words; Esc, then 1, 2 or 3"></label>
       <div class="lb-row">
         <span><button class="act quiet" id="ck-prev" type="button">Previous <kbd>k</kbd></button>
           <button class="act quiet" id="ck-skip" type="button">Next, without answering <kbd>j</kbd></button></span>
@@ -2288,7 +2288,6 @@ function ckShow(p){
   $("#ck-context").innerHTML=it.context.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
   $("#ck-proposal").textContent=it.proposal;
   $("#ck-fix").value=cur?cur.correction||"":"";
-  $("#ck-fix-box").hidden=!(cur&&cur.verdict==="wrong");
   for(const v of["right","wrong","unsure"])$("#ck-"+v).classList.toggle("on",!!cur&&cur.verdict===v);
   const done=Object.keys(P.current).length;
   $("#ck-pos").textContent=`Item ${CK.p+1} of ${CK.order.length}`+(cur?` · checked by ${cur.by}`:"");
@@ -2302,13 +2301,13 @@ async function ckSave(verdict){
   try{localStorage.setItem("arche.labeller",by);}catch(e){}
   const it=CK.pack.items[CK.i],seconds=(Date.now()-CK.shown)/1000;
   const r=await(await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pack:CK.pack.id,item:it.id,verdict,correction:verdict==="wrong"?$("#ck-fix").value:"",by,seconds})})).json();
+    body:JSON.stringify({pack:CK.pack.id,item:it.id,verdict,correction:$("#ck-fix").value,by,seconds})})).json();
   if(r.error){$("#ck-msg").textContent=r.error;return false;}
   CK.pack.current[it.id]={verdict,correction:$("#ck-fix").value,by,at:""};return true;
 }
-// Right and can't tell save at once; wrong opens the box for what it should be, and Enter saves.
+// Right and can't tell save at once, with whatever is in the note; wrong first moves to the note, and Enter (or wrong again) saves.
 async function ckAnswer(v){
-  if(v==="wrong"&&$("#ck-fix-box").hidden){CK.verdict="wrong";$("#ck-fix-box").hidden=false;
+  if(v==="wrong"&&CK.verdict!=="wrong"){CK.verdict="wrong";
     for(const x of["right","wrong","unsure"])$("#ck-"+x).classList.toggle("on",x==="wrong");
     $("#ck-fix").focus();return;}
   if(await ckSave(v))ckShow(CK.p+1);
@@ -2321,7 +2320,10 @@ on("ck-wrong","click",()=>ckAnswer("wrong"));
 on("ck-unsure","click",()=>ckAnswer("unsure"));
 on("ck-prev","click",()=>ckShow(CK.p-1));
 on("ck-skip","click",()=>ckShow(CK.p+1));
-on("ck-fix","keydown",async e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();if(await ckSave("wrong"))ckShow(CK.p+1);}
+on("ck-fix","keydown",async e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();
+    // Enter saves the answer already chosen; with none chosen it asks for one rather than guessing "wrong".
+    if(!CK.verdict){$("#ck-msg").textContent="Choose an answer: Esc, then 1, 2 or 3.";return;}
+    if(await ckSave(CK.verdict))ckShow(CK.p+1);}
   if(e.key==="Escape"){$("#ck-fix").blur();}});
 on("ck-by","keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.stopPropagation();$("#ck-by").blur();}});
 try{const n=localStorage.getItem("arche.labeller");if(n)$("#ck-by").value=n;}catch(e){}

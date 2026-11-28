@@ -4,6 +4,9 @@ All notable changes to `arche-core` are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Fixed
+- **Studio check mode keeps a note on any answer.** The note box was sent only with "wrong", so a note written on an item marked right or can't tell was dropped on save. The box is now always shown and saved with every answer; Enter saves the answer already chosen.
+
 ### Changed
 - **`compare_addresses` holds two units of one building apart.** When both addresses name a room, unit, flat, suite, shop, office, block or building of the same kind and the two differ ("Room 3" / "Room 4", "Block C" / "Block D", "Unit 2A" / "Unit 2B"), the score is at most 0.65. "Room 3" / "Room 4" scored 1.0, "Unit 5" / "Unit 6" 0.81. A unit on one side only, a floor, or a unit written another way ("Shop No. 14" / "Shop 14") does not lower it.
 - **`compare_addresses` reads place words.** Two addresses with no parsed field in common are compared by the place words they share, not by letter similarity, which scores unrelated text highly. With no street, number or postcode in common the place words are added to the parsed fields. Scores and decisions on such pairs change: Febrl 4, name + address, precision 0.9357 to 0.9861, true merges 3,275 to 3,192, false merges 225 to 45. Most of the true merges lost go to review.

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import json
+from pathlib import Path
 
 import pytest
 from arche._studio import checks
@@ -81,6 +82,24 @@ def test_export_reports_caught_controls_and_speed(home):
     with open(out["written"], encoding="utf-8") as fh:
         rows = {r["id"]: r for r in csv.DictReader(fh)}
     assert rows["c3"]["verdict"] == "wrong" and rows["c3"]["correction"] == "Fri 27 Nov"
+
+
+def test_a_note_is_kept_whatever_the_verdict(home):
+    # Notes on readings marked right were dropped once, because only "wrong" sent the box.
+    checks.save(home, {"pack": "times", "item": "c1", "verdict": "right", "by": "dee",
+                       "correction": "right, but only for a school"})
+    checks.save(home, {"pack": "times", "item": "c2", "verdict": "unsure", "by": "dee",
+                       "correction": "the message does not say which Friday"})
+    with open(checks.export(home, "times")["written"], encoding="utf-8") as fh:
+        rows = {r["id"]: r for r in csv.DictReader(fh)}
+    assert rows["c1"]["correction"] == "right, but only for a school"
+    assert rows["c2"]["correction"] == "the message does not say which Friday"
+
+
+def test_the_page_sends_the_note_with_every_verdict():
+    page = (Path(checks.__file__).parent / "index.html").read_text(encoding="utf-8")
+    assert 'verdict==="wrong"?$("#ck-fix").value' not in page
+    assert 'id="ck-fix-box" hidden' not in page
 
 
 def test_a_pack_missing_a_column_is_left_out(home):
