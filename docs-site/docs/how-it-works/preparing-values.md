@@ -50,6 +50,7 @@ Each table is a file in the package, so adding a synonym or a language is a data
 | Country words | the country in a name | `Birds Eye UK` and `Birds Eye Ireland` are held apart |
 | Designators | numbered units, halls and plants | `Hall A102` and `Hall A103` are held apart |
 | Group words | words that separate companies of one group | `Pondwell Ltd` and `Pondwell Holdings Ltd` are held apart |
+| Organisation name forms (`name_standards.yaml`) | the same word written two ways in a company name, before anything else reads it | `Marks & Spencer` = `Marks and Spencer`; `P.L.C.` = `PLC`; `Co` = `Company`; `Bros` = `Brothers`. Initials (`M & S`, `M&M`) and hyphenated words (`Co-operative`) are left alone |
 | Address words (`address_tokens.yaml`) | words that introduce a landmark, and kinds of landmark | `behind`, `opposite`; `filling station`, `motor park` |
 
 The last three are refuters: when they disagree, the pair is held for a person, whatever the rest of the score says.
@@ -70,9 +71,6 @@ A value that holds several facts is split, and each part is compared with its ow
 
 These are known, and each needs measuring before it changes a decision:
 
-- **`&` and `and`** are different tokens: `Marks & Spencer` and `Marks and Spencer` share fewer words than they should.
-- **Dotted abbreviations** are not joined: `P.L.C.` is not read as `PLC`, nor `L.T.D.` as `LTD`.
-- **Common abbreviations in organisation names** (`Co` and `Company`, `Bros` and `Brothers`, `Intl` and `International`) are not standardised.
 - **Street types** (`Rd` and `Road`, `St` and `Street`) are known to be generic words, but are not made equal.
 - **Brackets and quotes** of different kinds are not unified.
 - **Site words in a supplier's name** (`- Leeds`, `(London Office)`, `Plant 2`) are compared as part of the company name.

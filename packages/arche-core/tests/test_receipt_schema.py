@@ -109,8 +109,14 @@ FROZEN_PAYLOAD = {
 #: were added to it, and a vocabulary that changes verdicts must be named in
 #: the receipt. Checked before re-freezing: the edge is byte-identical.
 #: Old id: xwd:sha256:bdfd1287cacf00543192c0d296e1b630255f3552e11ce45fdb9962591bf8ef69
+#: Re-frozen on 2026-11-28, when the organisation packs' name comparators gained
+#: `standardise` ("&" / "and", "P.L.C." / "PLC", "Co" / "Company"), so
+#: `comparators_sha256` moved and the table gained a `data_assets` pin. Checked
+#: before re-freezing: this pair has none of those tokens, and its edge (score,
+#: decision, evidence) is byte-identical.
+#: Old id: xwd:sha256:06472ed706f7fa2f68986a621253f8ad95d6dc33928296d9b2fa05bbd8b0f451
 FROZEN_CROSSWALK_ID = (
-    "xwd:sha256:06472ed706f7fa2f68986a621253f8ad95d6dc33928296d9b2fa05bbd8b0f451"
+    "xwd:sha256:85093f96b026cd11ef4dbd707583834e0ac1849ba59d7f3e35a2965e866a7927"
 )
 
 _ORG_A = {

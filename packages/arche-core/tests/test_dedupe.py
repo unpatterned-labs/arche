@@ -30,12 +30,14 @@ _ORGS = [
 ]
 
 #: Neighbours are close, the ends are not: A matches B, B matches C at a
-#: loosened threshold, and A against C scores 0.000. The shape that makes a
-#: transitive cluster, and the reason `held_together_by` is reported.
+#: loosened threshold, and A against C stays below it (0.47). The shape that
+#: makes a transitive cluster, and the reason `held_together_by` is reported.
+#: (It used to chain on "Co" against "Company", which the organisation packs now
+#: read as one word, so the fixture no longer can.)
 _CHAIN = [
-    {"id": "A", "name": "Kano Central Trading Company Limited"},
-    {"id": "B", "name": "Kano Central Trading Co"},
-    {"id": "C", "name": "Central Trading Co Lagos"},
+    {"id": "A", "name": "Kano Central Traders Limited"},
+    {"id": "B", "name": "Kano Central Traders Nigeria"},
+    {"id": "C", "name": "Central Traders Nigeria Ikeja Lagos"},
 ]
 
 
@@ -94,7 +96,7 @@ def test_a_fully_compared_cluster_is_direct():
 
 def test_a_chained_cluster_says_it_is_transitive():
     # THE honesty property. A matched B and B matched C, so all three group --
-    # but A against C scored 0.000 and was never a match. Every dedupe tool
+    # but A against C scored below the threshold and was never a match. Every dedupe tool
     # does this closure; the failure mode is doing it silently, because that is
     # how two genuinely different records end up merged into one entity.
     run = dedupe(_CHAIN, entity="organisation", block=None, threshold=0.6)
